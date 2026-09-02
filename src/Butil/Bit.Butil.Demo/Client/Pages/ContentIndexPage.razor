@@ -1,0 +1,227 @@
+﻿@page "/content-index"
+@inject Bit.Butil.ContentIndex contentIndex
+@inject Bit.Butil.ServiceWorker serviceWorker
+@inject Bit.Butil.CacheStorage cacheStorage
+
+<PageTitle>ContentIndex - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="ContentIndex"
+            Lead="Tell the browser which pages your app can already show offline, so it can offer them to the user itself - in a list the user reaches without opening your app at all."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Content_Index_API"
+            InjectAs="ContentIndex contentIndex" />
+
+<div class="stack">
+
+    <Callout Type="warning" Title="Chromium only, and it needs a service worker">
+        The API hangs off an active <em>ServiceWorkerRegistration</em>, so <code>IsSupported</code> is
+        false until one is registered. In Chromium on Android the entries appear under
+        <em>Downloads → Articles for you</em>; on desktop Chromium they are registered but there is
+        no UI that lists them. Firefox and Safari do not implement it.
+    </Callout>
+
+    <Callout Type="info" Title="An entry is a claim, not a copy">
+        Indexing stores a title, a description, icons and a URL - nothing else. Cache the page first
+        (see <a href="cache-storage">CacheStorage</a>): an indexed URL that fails offline is worse
+        than no entry, and Chromium removes entries whose cached response goes away.
+    </Callout>
+
+    <DemoSection Title="Prerequisite: register the demo worker"
+                 Api="ServiceWorker.Register / IsSupported"
+                 Description="The same minimal /sw.js the rest of this category uses. Registering it is what makes registration.index exist."
+                 Code=@("""
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+await serviceWorker.Register("/sw.js");
+await serviceWorker.Ready();
+
+var supported = await contentIndex.IsSupported();
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="RegisterWorker">Register /sw.js</button>
+            <button class="secondary" @onclick="CheckSupport">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Register offline content"
+                 Api="Add"
+                 Description="The URL has to be inside the worker's scope, and Chromium requires at least one icon it can fetch. Adding the same id twice replaces the earlier entry rather than adding a second one. The button below caches the page first, so the entry is honest."
+                 Code=@("""
+var added = await contentIndex.Add(new ContentIndexEntry
+{
+    Id = "article-42",
+    Title = "The article's title",
+    Description = "One line about it, shown under the title.",
+    Url = "/articles/42",
+    Category = "article",
+    Icons = [new ContentIndexIcon { Src = "/icon-192.png", Sizes = "192x192", Type = "image/png" }]
+});
+""")>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Entry id</label>
+                <input @bind="entryId" />
+            </div>
+            <div class="field">
+                <label class="field-label">Category</label>
+                <select @bind="category">
+                    <option value="">(none)</option>
+                    <option value="article">article</option>
+                    <option value="audio">audio</option>
+                    <option value="video">video</option>
+                </select>
+            </div>
+        </div>
+        <div class="field">
+            <label class="field-label">Title</label>
+            <input @bind="title" />
+        </div>
+        <div class="field">
+            <label class="field-label">Description</label>
+            <input @bind="description" />
+        </div>
+        <div class="field">
+            <label class="field-label">URL (inside the worker's scope)</label>
+            <input @bind="url" />
+        </div>
+        <div class="controls">
+            <button @onclick="AddEntry">Cache the page, then Add</button>
+        </div>
+        <DemoConsole @ref="addOutput" Title="add output" />
+    </DemoSection>
+
+    <DemoSection Title="List and remove"
+                 Api="GetAll / Delete"
+                 Description="GetAll is the only honest answer to what is currently indexed: the browser removes entries on its own too - when the user deletes one from its UI, or when the cached response behind the URL goes away."
+                 Code=@("""
+ContentIndexEntry[] entries = await contentIndex.GetAll();
+foreach (var entry in entries)
+{
+    // entry.Id, entry.Title, entry.Url, entry.Icons
+}
+
+await contentIndex.Delete("article-42");
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="ListEntries">GetAll</button>
+            <button class="danger" @onclick="DeleteEntry">Delete</button>
+        </div>
+        <DemoConsole @ref="listOutput" Title="index output" />
+    </DemoSection>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the active service worker registration exposes index." />
+        <ApiMember Name="Add" Signature="ValueTask<bool> Add(ContentIndexEntry entry)" Description="Registers one piece of offline-available content, replacing any entry with the same id." />
+        <ApiMember Name="Delete" Signature="ValueTask<bool> Delete(string id)" Description="Removes an entry. Removing an id that is not there is not an error." />
+        <ApiMember Name="GetAll" Signature="ValueTask<ContentIndexEntry[]> GetAll()" Description="Everything currently indexed for this service worker registration." />
+        <ApiMember Name="ContentIndexEntry" Signature="class ContentIndexEntry { string Id; string Title; string Description; string Url; string Category; ContentIndexIcon[] Icons; }" Description="One indexed piece of content. Url must be inside the worker's scope." />
+        <ApiMember Name="ContentIndexIcon" Signature="class ContentIndexIcon { string Src; string Sizes; string Type; string Label; }" Description="One icon for the browser's UI. Fetched while the entry is registered, so an unreachable one fails the Add." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole addOutput = default!;
+    private DemoConsole listOutput = default!;
+
+    private string entryId = "butil-demo-entry";
+    private string title = "Bit.Butil - Content Index";
+    private string description = "This very page, registered as offline-available content.";
+    private string url = "/content-index";
+    private string category = "article";
+
+    private async Task RegisterWorker()
+    {
+        try
+        {
+            var registration = await serviceWorker.Register("/sw.js");
+            await serviceWorker.Ready();
+            await supportOutput.Success($"Register(\"/sw.js\") → registered: {registration.IsRegistered}, scope: {registration.Scope}");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await contentIndex.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported() → true");
+            else await supportOutput.Warn("IsSupported() → false - register the worker first, or this engine has no Content Index.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task AddEntry()
+    {
+        try
+        {
+            // Index nothing the app cannot actually serve offline: cache the page first, which is
+            // also what keeps Chromium from dropping the entry again.
+            await cacheStorage.Add("butil-content-index", url);
+
+            var added = await contentIndex.Add(new Bit.Butil.ContentIndexEntry
+            {
+                Id = entryId,
+                Title = title,
+                Description = description,
+                Url = url,
+                Category = category,
+                Icons = [new Bit.Butil.ContentIndexIcon { Src = "/favicon.png", Sizes = "192x192", Type = "image/png" }]
+            });
+
+            if (added) await addOutput.Success($"Add(\"{entryId}\") → indexed, and \"{url}\" is in the cache.");
+            else await addOutput.Warn($"Add(\"{entryId}\") → false - unsupported, the URL is outside the worker's scope, or an icon could not be fetched.");
+        }
+        catch (Exception ex)
+        {
+            await addOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListEntries()
+    {
+        try
+        {
+            var entries = await contentIndex.GetAll();
+            if (entries.Length == 0)
+            {
+                await listOutput.Warn("GetAll() → nothing indexed.");
+                return;
+            }
+
+            foreach (var entry in entries)
+            {
+                await listOutput.Info($"{entry.Id}: \"{entry.Title}\" → {entry.Url} ({entry.Icons.Length} icon(s), category \"{entry.Category}\")");
+            }
+        }
+        catch (Exception ex)
+        {
+            await listOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteEntry()
+    {
+        try
+        {
+            var deleted = await contentIndex.Delete(entryId);
+            await (deleted
+                ? listOutput.Success($"Delete(\"{entryId}\") → removed.")
+                : listOutput.Warn($"Delete(\"{entryId}\") → false - the API is absent."));
+        }
+        catch (Exception ex)
+        {
+            await listOutput.Error(ex.Message);
+        }
+    }
+}

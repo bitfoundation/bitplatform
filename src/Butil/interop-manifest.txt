@@ -1,5 +1,6 @@
 # Bit.Butil interop contract captured from an untrimmed build. Regenerate with: dotnet run -c Release
-@services|BackgroundSync,BarcodeDetector,Battery,BroadcastChannel,CacheStorage,Clipboard,Compression,Console,ContactPicker,Cookie,CookieStore,Crypto,DeviceOrientation,Document,EventSource,EyeDropper,Fetch,FileReader,FileSystem,Gamepad,Geolocation,History,IdleDetector,IndexedDb,Keyboard,LocalStorage,Location,MediaDevices,MediaRecorder,MediaSession,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,Performance,Permissions,PictureInPicture,Push,Reporting,Screen,ScreenOrientation,ServiceWorker,SessionStorage,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageManager,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebLocks,Window
+@services|BackgroundFetch,BackgroundSync,BarcodeDetector,Battery,BroadcastChannel,CacheStorage,Clipboard,Compression,Console,ContactPicker,ContentIndex,Cookie,CookieStore,Crypto,DeviceOrientation,Document,EventSource,EyeDropper,Fetch,FileReader,FileSystem,Gamepad,Geolocation,History,IdleDetector,IndexedDb,Keyboard,LocalStorage,Location,MediaDevices,MediaRecorder,MediaSession,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,OriginPrivateFileSystem,Performance,Permissions,PictureInPicture,Push,Reporting,Screen,ScreenOrientation,ServiceWorker,SessionStorage,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageBuckets,StorageManager,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebLocks,WebTransport,Window
+Bit.Butil.BackgroundFetch|J|-|1|InvokeBackgroundFetchProgress|
 Bit.Butil.BarProp|-|P|1||Visible
 Bit.Butil.BarcodeDetector|J|-|1|InvokeBarcodesDetected|
 Bit.Butil.Battery|J|-|1|InvokeBatteryChange|
@@ -42,5 +43,6 @@ Bit.Butil.SessionStorage|J|-|1|InvokeStorageEvent|
 Bit.Butil.SpeechRecognition|J|-|1|InvokeSpeechRecognitionEnd,InvokeSpeechRecognitionError,InvokeSpeechRecognitionResult|
 Bit.Butil.ViewTransition|J|-|1|InvokeViewTransitionPhase,InvokeViewTransitionUpdate|
 Bit.Butil.VisualViewport|J|-|1|InvokeVisualViewport|
+Bit.Butil.WebTransport|J|-|1|InvokeWebTransportClosed,InvokeWebTransportDatagram,InvokeWebTransportStreamData,InvokeWebTransportStreamEnd,InvokeWebTransportStreamOpened|
 Bit.Butil.Window|J|-|1|InvokeMediaQueryChange|
-@count|43
+@count|45

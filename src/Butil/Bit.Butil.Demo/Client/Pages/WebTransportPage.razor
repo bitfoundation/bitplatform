@@ -1,0 +1,320 @@
+﻿@page "/web-transport"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebTransport webTransport
+
+<PageTitle>WebTransport - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="WebTransport"
+            Lead="A connection to an HTTP/3 server carrying many independent streams and, separately, unreliable datagrams. What it has over a WebSocket is head-of-line blocking, or the lack of it: a lost packet stalls one stream instead of all of them."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebTransport_API"
+            InjectAs="WebTransport webTransport" />
+
+<div class="stack">
+
+    <Callout Type="warning" Title="You need an HTTP/3 server">
+        This cannot talk to an ordinary HTTPS endpoint and there is no fallback to one - the server
+        has to speak WebTransport over HTTP/3. That is also why the connect button below fails against
+        anything on this site: the demo is served over HTTP/1.1 and HTTP/2. Point it at a WebTransport
+        echo server (Chromium's <code>webtransport over http3</code> sample server, or your own) to
+        watch it work.
+    </Callout>
+
+    <DemoSection Title="Check for support"
+                 Api="IsSupported"
+                 Description="Chromium and Firefox implement WebTransport; Safari does not at the time of writing."
+                 Code=@("""
+@inject Bit.Butil.WebTransport webTransport
+
+if (await webTransport.IsSupported())
+{
+    // safe to connect
+}
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="CheckSupport">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Connect"
+                 Api="Connect"
+                 Description="Connect resolves once the session is usable, and hands back either the session or the reason there is not one. Incoming data arrives through the callbacks rather than being read from the handle: the browser's reader is a pull loop, so it runs on the JS side and dispatches what it reads."
+                 Code=@("""
+var result = await webTransport.Connect("https://example.com:4433/echo",
+    onDatagram: data => Log($"datagram: {data.Length} bytes"),
+    onStreamData: chunk => Log(chunk.Ended
+        ? $"stream {chunk.StreamId} ended"
+        : $"stream {chunk.StreamId}: {chunk.Data.Length} bytes"),
+    onStreamOpened: stream => Log($"the server opened stream {stream.Id}"),
+    onClosed: info => Log($"closed: {info.CloseCode} {info.Reason} {info.Error}"),
+    congestionControl: WebTransportCongestionControl.LowLatency);
+
+if (result.Session is null)
+{
+    Log(result.Error);
+    return;
+}
+
+await using var session = result.Session;
+""")>
+        <div class="field">
+            <label class="field-label">URL (https, HTTP/3)</label>
+            <input @bind="url" />
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Congestion control</label>
+                <select @bind="congestionControl">
+                    <option value="@Bit.Butil.WebTransportCongestionControl.Default">Default</option>
+                    <option value="@Bit.Butil.WebTransportCongestionControl.Throughput">Throughput</option>
+                    <option value="@Bit.Butil.WebTransportCongestionControl.LowLatency">LowLatency</option>
+                </select>
+            </div>
+            <div class="field">
+                <label class="field-label">Allow connection pooling</label>
+                <input type="checkbox" @bind="allowPooling" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="Connect" disabled="@(session is not null)">Connect</button>
+            <button class="secondary" @onclick="ReadState" disabled="@(session is null)">GetState</button>
+            <button class="danger" @onclick="Close" disabled="@(session is null)">Close</button>
+        </div>
+        <DemoConsole @ref="sessionOutput" Title="session output" />
+    </DemoSection>
+
+    <DemoSection Title="Datagrams"
+                 Api="SendDatagram"
+                 Description="Unreliable and unordered, like a UDP packet: nothing is retransmitted, nothing is acknowledged, and one larger than the path MTU (about 1200 bytes) is dropped rather than fragmented. Use it for data that is worthless late - position updates, telemetry, media frames."
+                 Code=@("""
+var sent = await session.SendDatagram(Encoding.UTF8.GetBytes("ping"));
+// true means it was handed to the network, not that it arrived
+""")>
+        <div class="field">
+            <label class="field-label">Datagram text</label>
+            <input @bind="datagramText" />
+        </div>
+        <div class="controls">
+            <button @onclick="SendDatagram" disabled="@(session is null)">SendDatagram</button>
+        </div>
+        <DemoConsole @ref="datagramOutput" Title="datagram output" />
+    </DemoSection>
+
+    <DemoSection Title="Streams"
+                 Api="OpenStream / WebTransportStream.Write"
+                 Description="A stream is ordered and reliable. Streams are independent of each other, so a stall on one does not hold up the rest - which is the reason to open several rather than multiplex your own framing over one. Disposing a stream closes its writable half, which is what tells the peer the message is complete."
+                 Code=@("""
+await using var stream = await session.OpenStream(bidirectional: true);
+
+if (stream is not null)
+{
+    await stream.Write(Encoding.UTF8.GetBytes("hello"));
+    // what comes back arrives through the session's onStreamData callback
+}
+""")>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Stream text</label>
+                <input @bind="streamText" />
+            </div>
+            <div class="field">
+                <label class="field-label">Bidirectional</label>
+                <input type="checkbox" @bind="bidirectional" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="OpenStream" disabled="@(session is null)">OpenStream</button>
+            <button class="secondary" @onclick="WriteStream" disabled="@(stream is null)">Write</button>
+            <button class="secondary" @onclick="CloseStream" disabled="@(stream is null)">Close stream</button>
+        </div>
+        <DemoConsole @ref="streamOutput" Title="stream output" />
+    </DemoSection>
+
+    <Callout Type="info" Title="Reaching a development server">
+        A WebTransport server usually runs behind a certificate no public CA signed. Rather than
+        turning validation off, pass the certificate's SHA-256 hash through
+        <code>certificateHashes</code> - the browser then accepts that exact certificate, and only if
+        it is short-lived (14 days in Chromium) and uses an ECDSA P-256 key.
+    </Callout>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes WebTransport." />
+        <ApiMember Name="Connect" Signature="ValueTask<WebTransportConnectResult> Connect(string url, Action<byte[]>? onDatagram = null, Action<WebTransportStreamData>? onStreamData = null, Action<WebTransportStream>? onStreamOpened = null, Action<WebTransportCloseInfo>? onClosed = null, bool allowPooling = false, WebTransportCongestionControl congestionControl = Default, WebTransportCertificateHash[]? certificateHashes = null)" Description="Connects to an HTTP/3 endpoint and waits until the session is usable." />
+        <ApiMember Name="WebTransportHandle.GetState" Signature="ValueTask<WebTransportState> GetState()" Description="Whether the session is still open." />
+        <ApiMember Name="WebTransportHandle.SendDatagram" Signature="ValueTask<bool> SendDatagram(byte[] data)" Description="Sends one unreliable, unordered datagram." />
+        <ApiMember Name="WebTransportHandle.OpenStream" Signature="ValueTask<WebTransportStream?> OpenStream(bool bidirectional = false)" Description="Opens a stream on the session. Null when the session is closed." />
+        <ApiMember Name="WebTransportHandle.Close" Signature="ValueTask Close(int closeCode = 0, string reason = &quot;&quot;)" Description="Closes the session, telling the peer why. Disposing closes it with no code or reason." />
+        <ApiMember Name="WebTransportStream.Write" Signature="ValueTask<bool> Write(byte[] data)" Description="Writes bytes to the stream - ordered and reliable." />
+        <ApiMember Name="WebTransportStream.Id" Signature="string Id" Description="The stream's id within its session, as it appears in WebTransportStreamData.StreamId." />
+        <ApiMember Name="WebTransportConnectResult" Signature="record WebTransportConnectResult(WebTransportHandle? Session, string Error)" Description="The session, or the reason there is not one." />
+        <ApiMember Name="WebTransportStreamData" Signature="record WebTransportStreamData(string StreamId, byte[] Data, bool Ended)" Description="A chunk read off a stream, or - with Ended - the notification that the stream is finished." />
+        <ApiMember Name="WebTransportCloseInfo" Signature="record WebTransportCloseInfo(int CloseCode, string Reason, string Error)" Description="How the session ended. Error is set when it died rather than closed." />
+        <ApiMember Name="WebTransportCertificateHash" Signature="class WebTransportCertificateHash { string Algorithm; byte[] Value; }" Description="A hash of the exact server certificate to accept - how to reach a development server." />
+        <ApiMember Name="WebTransportCongestionControl" Signature="enum WebTransportCongestionControl { Default, Throughput, LowLatency }" Description="What to tune the connection for." />
+        <ApiMember Name="WebTransportState" Signature="enum WebTransportState { Open, Closed }" Description="Whether a session is still usable." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole sessionOutput = default!;
+    private DemoConsole datagramOutput = default!;
+    private DemoConsole streamOutput = default!;
+
+    private Bit.Butil.WebTransportHandle? session;
+    private Bit.Butil.WebTransportStream? stream;
+
+    private string url = "https://localhost:4433/echo";
+    private bool allowPooling;
+    private Bit.Butil.WebTransportCongestionControl congestionControl = Bit.Butil.WebTransportCongestionControl.Default;
+    private string datagramText = "ping";
+    private string streamText = "hello";
+    private bool bidirectional = true;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await webTransport.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported() → true");
+            else await supportOutput.Warn("IsSupported() → false - this engine has no WebTransport.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Connect()
+    {
+        try
+        {
+            // The callbacks arrive off the JS event loop, so each one marshals its console write
+            // back onto the renderer rather than touching component state directly.
+            var result = await webTransport.Connect(url,
+                onDatagram: data => _ = InvokeAsync(() => datagramOutput.Info($"datagram → {data.Length} bytes: \"{Text(data)}\"")),
+                onStreamData: chunk => _ = InvokeAsync(() => streamOutput.Info(chunk.Ended
+                    ? $"stream {chunk.StreamId} ended."
+                    : $"stream {chunk.StreamId} → {chunk.Data.Length} bytes: \"{Text(chunk.Data)}\"")),
+                onStreamOpened: opened => _ = InvokeAsync(() => streamOutput.Info($"the server opened stream {opened.Id} (bidirectional: {opened.IsBidirectional}).")),
+                onClosed: info => _ = InvokeAsync(() => sessionOutput.Warn($"closed → code {info.CloseCode}, reason \"{info.Reason}\", error \"{info.Error}\"")),
+                allowPooling: allowPooling,
+                congestionControl: congestionControl);
+
+            if (result.Session is null)
+            {
+                await sessionOutput.Error($"Connect(\"{url}\") → {result.Error}");
+                return;
+            }
+
+            session = result.Session;
+            await sessionOutput.Success($"Connect(\"{url}\") → connected.");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ReadState()
+    {
+        if (session is null) return;
+
+        try
+        {
+            await sessionOutput.Info("GetState() →", await session.GetState());
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Close()
+    {
+        if (session is null) return;
+
+        try
+        {
+            await CloseStream();
+            await session.Close(0, "closed from the demo");
+            session = null;
+            await sessionOutput.Info("Close() → session closed.");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task SendDatagram()
+    {
+        if (session is null) return;
+
+        try
+        {
+            var sent = await session.SendDatagram(System.Text.Encoding.UTF8.GetBytes(datagramText));
+            await (sent
+                ? datagramOutput.Success($"SendDatagram(\"{datagramText}\") → queued.")
+                : datagramOutput.Warn("SendDatagram → false - too large for the path, or the queue is full."));
+        }
+        catch (Exception ex)
+        {
+            await datagramOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task OpenStream()
+    {
+        if (session is null) return;
+
+        try
+        {
+            stream = await session.OpenStream(bidirectional);
+            if (stream is null) await streamOutput.Warn("OpenStream → null - the session is closed.");
+            else await streamOutput.Success($"OpenStream(bidirectional: {bidirectional}) → stream {stream.Id}");
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task WriteStream()
+    {
+        if (stream is null) return;
+
+        try
+        {
+            var written = await stream.Write(System.Text.Encoding.UTF8.GetBytes(streamText));
+            await (written
+                ? streamOutput.Success($"Write(\"{streamText}\") → written to stream {stream.Id}.")
+                : streamOutput.Warn("Write → false - the stream has no writable half, or the session is gone."));
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CloseStream()
+    {
+        if (stream is null) return;
+
+        var id = stream.Id;
+        await stream.DisposeAsync();
+        stream = null;
+        await streamOutput.Info($"Stream {id} closed.");
+    }
+
+    private static string Text(byte[] data) => System.Text.Encoding.UTF8.GetString(data);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (stream is not null) await stream.DisposeAsync();
+        if (session is not null) await session.DisposeAsync();
+    }
+}

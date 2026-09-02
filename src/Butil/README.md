@@ -117,6 +117,7 @@ registering everything.
 | `IndexedDb` | Structured, transactional client-side database |
 | `CacheStorage` | The service-worker Cache API |
 | `StorageManager` | Quota, usage estimates and persistence |
+| `StorageBuckets` | Named compartments of the origin's storage, each with its own quota, persistence, durability and expiry |
 | `StorageAccess` | Ask for unpartitioned storage from inside a third-party iframe |
 
 ### Files & data
@@ -125,6 +126,7 @@ registering everything.
 | --- | --- |
 | `FileReader` | Read user-selected files as text, data URLs or bytes |
 | `FileSystem` | The File System Access API: pick real files/folders and write back to them |
+| `OriginPrivateFileSystem` | The origin private file system: private, permissionless storage, with byte-offset reads and writes through a worker |
 | `ObjectUrls` | Create and revoke `blob:` object URLs from C# data |
 | `Clipboard` | Read and write text and typed items on the system clipboard |
 | `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
@@ -135,8 +137,11 @@ registering everything.
 
 | Service | What it wraps |
 | --- | --- |
-| `ServiceWorker` | Register and inspect service workers, and message them |
+| `ServiceWorker` | Register and inspect service workers, message them, navigation preload, `skipWaiting`/`claim` and the Clients API |
 | `BackgroundSync` | Defer work until the user has connectivity (one-shot and periodic) |
+| `BackgroundFetch` | Downloads and uploads the browser owns: they survive the tab closing, with their own progress UI |
+| `ContentIndex` | Register offline-available content with the browser |
+| `WebTransport` | HTTP/3 streams and unreliable datagrams |
 | `Push` | Web push subscriptions |
 | `NetworkInformation` | Connection type, speed, save-data and change events |
 | `BroadcastChannel` | Message other tabs and windows of the same origin |

@@ -6,6 +6,8 @@
 @inject Bit.Butil.BroadcastChannel broadcastChannel
 @inject Bit.Butil.IndexedDb indexedDb
 @inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.OriginPrivateFileSystem opfs
+@inject Bit.Butil.StorageBuckets storageBuckets
 @inject Bit.Butil.WebLocks webLocks
 @inject Bit.Butil.ObjectUrls objectUrls
 @inject Bit.Butil.CookieStore cookieStore
@@ -69,6 +71,17 @@
 <section>
     <h3>CacheStorage</h3>
     <button id="cache-roundtrip" @onclick="CacheRoundTrip">putText + match + delete</button>
+</section>
+
+<section>
+    <h3>Origin private file system</h3>
+    <button id="opfs-roundtrip" @onclick="OpfsRoundTrip">write + read + list + remove</button>
+    <button id="opfs-sync" @onclick="OpfsSyncAccess">sync access handle (worker)</button>
+</section>
+
+<section>
+    <h3>Storage buckets</h3>
+    <button id="buckets-roundtrip" @onclick="StorageBucketsRoundTrip">open + write + keys + delete</button>
 </section>
 
 <section>
@@ -428,6 +441,65 @@
         var deleted = await cacheStorage.DeleteEntry(cacheName, url);
         await cacheStorage.Delete(cacheName);
         Set($"cache:roundtrip:{match.Found}/{body}/{deleted}");
+    }
+
+    // ─── Origin private file system ────────────────────────────────────────────
+    private async Task OpfsRoundTrip()
+    {
+        const string directory = "butil-e2e";
+        const string path = "butil-e2e/note.txt";
+
+        // Start from a clean tree: the harness runs more than once against the same profile.
+        await opfs.Remove(directory, recursive: true);
+
+        var written = await opfs.WriteText(path, "hello-opfs");
+        var read = await opfs.ReadText(path);
+        var entries = await opfs.List(directory);
+        var info = await opfs.GetFileInfo(path);
+        var removed = await opfs.Remove(directory, recursive: true);
+        var exists = await opfs.Exists(path);
+
+        Set($"opfs:roundtrip:{written}/{read}/{entries.Length}/{info?.Size}/{removed}/{exists}");
+    }
+
+    private async Task OpfsSyncAccess()
+    {
+        const string path = "butil-e2e-sync/log.bin";
+
+        await opfs.Remove(path);
+
+        var supported = await opfs.IsSyncAccessSupported();
+        var written = await opfs.SyncWrite(path, System.Text.Encoding.UTF8.GetBytes("record-1;"));
+        var appended = await opfs.SyncAppend(path, System.Text.Encoding.UTF8.GetBytes("record-2;"));
+        var size = await opfs.SyncSize(path);
+        var slice = await opfs.SyncRead(path, offset: 9, length: 9);
+        var text = slice is null ? "null" : System.Text.Encoding.UTF8.GetString(slice);
+        await opfs.Remove("butil-e2e-sync", recursive: true);
+
+        Set($"opfs:sync:{supported}/{written}/{appended}/{size}/{text}");
+    }
+
+    // ─── Storage buckets ───────────────────────────────────────────────────────
+    private async Task StorageBucketsRoundTrip()
+    {
+        const string bucket = "butil-e2e";
+
+        if (await storageBuckets.IsSupported() is false)
+        {
+            // Chromium-only API, and the suite also has to pass where it is absent.
+            Set("buckets:roundtrip:unsupported");
+            return;
+        }
+
+        await storageBuckets.Delete(bucket);
+
+        var opened = await storageBuckets.Open(bucket);
+        var written = await storageBuckets.WriteText(bucket, "letters/draft.txt", "unsent");
+        var read = await storageBuckets.ReadText(bucket, "letters/draft.txt");
+        var keys = await storageBuckets.Keys();
+        var deleted = await storageBuckets.Delete(bucket);
+
+        Set($"buckets:roundtrip:{opened?.Name}/{written}/{read}/{keys.Contains(bucket)}/{deleted}");
     }
 
     // ─── Web Locks ─────────────────────────────────────────────────────────────

@@ -217,7 +217,7 @@ a genuinely exercised code path can be asserted on.
 Run both from this folder, so they share the manifest:
 
 ```bash
-# untrimmed: all 57 [ButilService] classes present; writes interop-manifest.txt
+# untrimmed: all 62 [ButilService] classes present; writes interop-manifest.txt
 dotnet run -c Release
 
 # trimmed, TrimMode=full (what Blazor WebAssembly uses); checks against the manifest
@@ -233,13 +233,13 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 622,080 bytes | 118,272 bytes |
-| types in assembly | 793 | 149 |
-| `[ButilService]` discovered / registered | 57 / 57 | 5 / 5 |
-| interop contract | 43 types captured | 10 checked, 33 trimmed away, 0 problems |
-| JavaScript modules called | 63 of 65 | 6 of 65 (clipboard, cookie, events, geolocation, storage, window) |
-| `bit-butil.js` a publish would ship | 112,422 bytes, all 65 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 8.1% |
-| lazy scripts would download | 147,730 bytes over 63 files | 11,940 bytes over 6 files |
+| `Bit.Butil.dll` | 716,800 bytes | 118,272 bytes |
+| types in assembly | 890 | 149 |
+| `[ButilService]` discovered / registered | 62 / 62 | 5 / 5 |
+| interop contract | 45 types captured | 10 checked, 35 trimmed away, 0 problems |
+| JavaScript modules called | 68 of 70 | 6 of 70 (clipboard, cookie, events, geolocation, storage, window) |
+| `bit-butil.js` a publish would ship | 137,692 bytes, all 70 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 6.6% |
+| lazy scripts would download | 181,870 bytes over 68 files | 11,940 bytes over 6 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 37 / 37 | not run |
 | script-publishing checks | 26 / 26 (9 publishes, ~15s) | not run |

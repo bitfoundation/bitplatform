@@ -1,0 +1,164 @@
+@page "/opfs"
+@inject Bit.Butil.OriginPrivateFileSystem opfs
+@inject Bit.Butil.StorageBuckets storageBuckets
+
+<PageTitle>Butil - OPFS & Storage Buckets Samples</PageTitle>
+
+<PageHeader Category="Storage & State"
+            Title="OPFS & Buckets"
+            Lead="A private file system for the origin - no picker, no permission - and named buckets that give parts of your storage their own quota, persistence and expiry."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system" />
+
+<pre>
+@@inject Bit.Butil.OriginPrivateFileSystem opfs
+@@inject Bit.Butil.StorageBuckets storageBuckets
+
+await opfs.WriteText("notes/today.txt", "hello");
+await opfs.SyncAppend("notes/today.txt", bytes);   // byte-offset write, on a worker
+
+await storageBuckets.Open("drafts", persisted: true);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Files" Api="WriteText / ReadText / GetFileInfo"
+              Description="Paths are relative to the origin's private root; directories along a write are created.">
+        <div class="field">
+            <span class="field-label">Path</span>
+            <input @bind="_path" placeholder="notes/today.txt" />
+        </div>
+        <div class="field">
+            <span class="field-label">Contents</span>
+            <input @bind="_text" placeholder="hello" />
+        </div>
+        <div class="controls">
+            <button @onclick="WriteText">WriteText</button>
+            <button class="secondary" @onclick="ReadText">ReadText</button>
+            <button class="secondary" @onclick="GetInfo">GetFileInfo</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Directories" Api="CreateDirectory / List / Remove"
+              Description="List returns one directory's immediate children - it is not recursive.">
+        <div class="field">
+            <span class="field-label">Directory</span>
+            <input @bind="_directory" placeholder="notes" />
+        </div>
+        <div class="controls">
+            <button @onclick="CreateDirectory">CreateDirectory</button>
+            <button class="secondary" @onclick="ListDirectory">List</button>
+            <button class="danger" @onclick="RemoveDirectory">Remove (recursive)</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Sync access handles" Api="SyncWrite / SyncAppend / SyncRead / SyncSize"
+              Description="Read and write at a byte offset without rewriting the file. createSyncAccessHandle only exists on a worker, so the calls are relayed to one.">
+        <div class="controls">
+            <button @onclick="SyncRoundTrip">Write + append + read back</button>
+            <button class="secondary" @onclick="CheckSyncSupport">IsSyncAccessSupported</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Storage buckets" Api="Open / Keys / Estimate / Delete"
+              Description="Chromium only. A bucket is the unit the browser evicts, so put re-fetchable data in one and irreplaceable data in another.">
+        <div class="field">
+            <span class="field-label">Bucket name</span>
+            <input @bind="_bucket" placeholder="drafts" />
+        </div>
+        <div class="controls">
+            <button @onclick="OpenBucket">Open</button>
+            <button class="secondary" @onclick="ListBuckets">Keys</button>
+            <button class="secondary" @onclick="BucketFile">Write + read a file in it</button>
+            <button class="danger" @onclick="DeleteBucket">Delete</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="opfs output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private string _path = "butil-samples/notes.txt";
+    private string _text = "hello from C#";
+    private string _directory = "butil-samples";
+    private string _bucket = "butil-samples";
+
+    private async Task WriteText()
+    {
+        var written = await opfs.WriteText(_path, _text);
+        await output.Success($"WriteText(\"{_path}\") → {written}");
+    }
+
+    private async Task ReadText()
+    {
+        var read = await opfs.ReadText(_path);
+        await output.Info($"ReadText(\"{_path}\") → {read ?? "null"}");
+    }
+
+    private async Task GetInfo()
+    {
+        var info = await opfs.GetFileInfo(_path);
+        if (info is null) await output.Warn($"GetFileInfo(\"{_path}\") → null");
+        else await output.Success($"GetFileInfo → {info.Name}, {info.Size} bytes, type \"{info.Type}\"");
+    }
+
+    private async Task CreateDirectory()
+    {
+        await output.Info($"CreateDirectory(\"{_directory}\") →", await opfs.CreateDirectory(_directory));
+    }
+
+    private async Task ListDirectory()
+    {
+        var entries = await opfs.List(_directory);
+        if (entries.Length == 0) await output.Warn($"List(\"{_directory}\") → empty");
+        else await output.Success($"List(\"{_directory}\") → {string.Join(", ", entries.Select(e => e.IsDirectory ? e.Name + "/" : e.Name))}");
+    }
+
+    private async Task RemoveDirectory()
+    {
+        await output.Info($"Remove(\"{_directory}\", recursive: true) →", await opfs.Remove(_directory, recursive: true));
+    }
+
+    private async Task CheckSyncSupport()
+    {
+        await output.Info("IsSyncAccessSupported() →", await opfs.IsSyncAccessSupported());
+    }
+
+    private async Task SyncRoundTrip()
+    {
+        const string path = "butil-samples/log.bin";
+        var written = await opfs.SyncWrite(path, System.Text.Encoding.UTF8.GetBytes("record-1;"));
+        var appended = await opfs.SyncAppend(path, System.Text.Encoding.UTF8.GetBytes("record-2;"));
+        var slice = await opfs.SyncRead(path, offset: 9, length: 9);
+        var size = await opfs.SyncSize(path);
+
+        await output.Success($"SyncWrite → {written}, SyncAppend → {appended}, SyncSize → {size}, " +
+            $"SyncRead(9, 9) → \"{(slice is null ? "null" : System.Text.Encoding.UTF8.GetString(slice))}\"");
+    }
+
+    private async Task OpenBucket()
+    {
+        var bucket = await storageBuckets.Open(_bucket, persisted: true);
+        if (bucket is null) await output.Warn($"Open(\"{_bucket}\") → null (Storage Buckets is Chromium only)");
+        else await output.Success($"Open(\"{bucket.Name}\") → persisted: {bucket.Persisted}, usage: {bucket.Usage?.ToString() ?? "(unknown)"}");
+    }
+
+    private async Task ListBuckets()
+    {
+        var names = await storageBuckets.Keys();
+        if (names.Length == 0) await output.Warn("Keys() → no buckets");
+        else await output.Success($"Keys() → {string.Join(", ", names)}");
+    }
+
+    private async Task BucketFile()
+    {
+        var written = await storageBuckets.WriteText(_bucket, "letters/draft.txt", "unsent");
+        var read = await storageBuckets.ReadText(_bucket, "letters/draft.txt");
+        await output.Info($"WriteText → {written}, ReadText → {read ?? "null"}");
+    }
+
+    private async Task DeleteBucket()
+    {
+        await output.Info($"Delete(\"{_bucket}\") →", await storageBuckets.Delete(_bucket));
+    }
+}

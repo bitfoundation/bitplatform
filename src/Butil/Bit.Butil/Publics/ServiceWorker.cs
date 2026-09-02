@@ -138,6 +138,144 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
         => js.Invoke<bool>("BitButil.serviceWorker.postMessage", message);
 
     /// <summary>
+    /// Turns on <see href="https://developer.mozilla.org/en-US/docs/Web/API/NavigationPreloadManager">navigation preload</see>:
+    /// the browser starts the navigation request in parallel with booting the worker, instead of
+    /// after it.
+    /// </summary>
+    /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
+    /// <returns>False when the browser has no navigation preload, or the registration has no active worker yet.</returns>
+    /// <remarks>
+    /// This removes the tens to hundreds of milliseconds a cold worker start adds to the first
+    /// navigation. It only pays off if the worker actually uses the preloaded response: the response
+    /// arrives in its <c>fetch</c> handler as <c>event.preloadResponse</c>, and a worker that ignores
+    /// it has made the browser issue the request twice.
+    /// <br/>
+    /// The state survives restarts - it belongs to the registration, not to the page - so this is
+    /// something to call once after activation rather than on every load.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> EnableNavigationPreload(string? scope = null)
+        => js.Invoke<bool>("BitButil.serviceWorker.enableNavigationPreload", scope);
+
+    /// <summary>Turns navigation preload back off.</summary>
+    /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> DisableNavigationPreload(string? scope = null)
+        => js.Invoke<bool>("BitButil.serviceWorker.disableNavigationPreload", scope);
+
+    /// <summary>
+    /// Sets the value of the <c>Service-Worker-Navigation-Preload</c> header the browser sends on
+    /// preload requests, which is how the server can tell one apart from an ordinary request and
+    /// answer it differently.
+    /// </summary>
+    /// <param name="value">The header value, e.g. a resource version or a fragment name.</param>
+    /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> SetNavigationPreloadHeader(string value, string? scope = null)
+        => js.Invoke<bool>("BitButil.serviceWorker.setNavigationPreloadHeader", scope, value);
+
+    /// <summary>Reads whether navigation preload is enabled, and with what header value.</summary>
+    /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NavigationPreloadState))]
+    public ValueTask<NavigationPreloadState> GetNavigationPreloadState(string? scope = null)
+        => js.Invoke<NavigationPreloadState>("BitButil.serviceWorker.navigationPreloadState", scope);
+
+    /// <summary>
+    /// Asks a waiting worker to call <c>skipWaiting()</c> - the "reload to update" button, without
+    /// the reload.
+    /// </summary>
+    /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
+    /// <returns>False when no worker is waiting, which is the normal state.</returns>
+    /// <remarks>
+    /// A new worker installs and then waits until every page controlled by the old one is gone.
+    /// <c>skipWaiting()</c> can only be called by the worker on itself, so this posts
+    /// <c>{ __butil: 'skipWaiting' }</c> to it and the worker has to act on it:
+    /// <code>
+    /// self.addEventListener('message', event =&gt; {
+    ///     if (event.data?.__butil === 'skipWaiting') self.skipWaiting();
+    /// });
+    /// </code>
+    /// The activation that follows fires <see cref="SubscribeControllerChange"/>. Note that the new
+    /// worker then takes over pages that loaded against the old one, so only do this where the app
+    /// can handle its assets changing underneath it - or reload after the controller change.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> SkipWaiting(string? scope = null)
+        => js.Invoke<bool>("BitButil.serviceWorker.skipWaiting", scope);
+
+    /// <summary>
+    /// Asks the active worker to call <c>clients.claim()</c>, taking control of pages that loaded
+    /// before it activated - including the one calling this.
+    /// </summary>
+    /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
+    /// <param name="timeoutMs">How long to wait for the worker's answer before giving up.</param>
+    /// <returns>False when there is no active worker, or it didn't answer.</returns>
+    /// <remarks>
+    /// A page that loaded without a controller keeps none for its whole life unless the worker
+    /// claims it, which is why the first visit after installing a worker is the one where offline
+    /// support quietly doesn't work.
+    /// <br/>
+    /// Like <see cref="SkipWaiting"/>, only the worker can do this, so it needs a handler that
+    /// answers on the message's port:
+    /// <code>
+    /// self.addEventListener('message', event =&gt; {
+    ///     if (event.data?.__butil !== 'claim') return;
+    ///     event.waitUntil(self.clients.claim().then(() =&gt; event.ports[0]?.postMessage(true)));
+    /// });
+    /// </code>
+    /// </remarks>
+    public ValueTask<bool> Claim(string? scope = null, int timeoutMs = 5_000)
+        => js.Invoke<bool>("BitButil.serviceWorker.claim", scope, timeoutMs);
+
+    /// <summary>
+    /// Lists the clients the worker controls - every tab, iframe and worker of this origin inside
+    /// its scope.
+    /// </summary>
+    /// <param name="includeUncontrolled">Also report clients this worker doesn't control (other tabs of the origin outside its scope, or loaded before it activated).</param>
+    /// <param name="type">Which kinds to report: <c>"window"</c>, <c>"worker"</c>, <c>"sharedworker"</c> or <c>"all"</c>.</param>
+    /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
+    /// <param name="timeoutMs">How long to wait for the worker's answer before giving up.</param>
+    /// <returns>The clients, or an empty array when there is no active worker or it didn't answer.</returns>
+    /// <remarks>
+    /// The <see href="https://developer.mozilla.org/en-US/docs/Web/API/Clients">Clients</see> API
+    /// exists only on the worker's global scope, so this is a question asked over a
+    /// <c>MessageChannel</c> and the worker has to answer it:
+    /// <code>
+    /// self.addEventListener('message', event =&gt; {
+    ///     if (event.data?.__butil !== 'clients') return;
+    ///     event.waitUntil(self.clients
+    ///         .matchAll({ includeUncontrolled: event.data.includeUncontrolled, type: event.data.type })
+    ///         .then(clients =&gt; event.ports[0]?.postMessage(clients.map(c =&gt; ({
+    ///             id: c.id, url: c.url, type: c.type, frameType: c.frameType,
+    ///             focused: c.focused, visibilityState: c.visibilityState
+    ///         })))));
+    /// });
+    /// </code>
+    /// An empty array therefore also means "the worker doesn't implement the protocol" - there is
+    /// always at least the calling page.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ServiceWorkerClientInfo))]
+    public ValueTask<ServiceWorkerClientInfo[]> MatchAllClients(bool includeUncontrolled = false,
+                                                                string type = "window",
+                                                                string? scope = null,
+                                                                int timeoutMs = 5_000)
+        => js.Invoke<ServiceWorkerClientInfo[]>("BitButil.serviceWorker.matchAllClients", scope, includeUncontrolled, type, timeoutMs);
+
+    /// <summary>
     /// Subscribes to messages broadcast from the service worker. The handler receives every
     /// payload as a <see cref="JsonElement"/>.
     /// </summary>
