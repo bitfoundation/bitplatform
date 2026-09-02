@@ -16,7 +16,6 @@
         <PackageVersion Include="Fido2.AspNet" Version="4.0.1" />
         <PackageVersion Include="HtmlSanitizer" Version="9.2.1039" />
         <PackageVersion Include="libphonenumber-csharp" Version="9.0.38" />
-        <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="4.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.11" />
@@ -58,11 +57,10 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.11" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.11" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Docker" Version="13.5.3" />
         <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Maui" Version="13.5.3-preview.1.26425.3" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.5.3" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="13.5.0" />
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.DevTunnels" Version="13.5.3" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.Sqlite" Version="13.5.0" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.Azure.Sql" Version="13.5.3" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" Version="13.5.0" />
@@ -71,7 +69,7 @@
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="13.5.3" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.Minio" Version="13.5.0" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.5.3-preview.1.26425.3" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(cloudflare)' == 'true' OR '$(cloudflare)' == '') " Include="Shirubasoft.Aspire.CloudflareTunnels" Version="1.1.3" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(cloudflare)' == 'true' OR '$(cloudflare)' == '') " Include="Shirubasoft.Aspire.CloudflareTunnels" Version="2.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
         <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.9.0" />
         <PackageVersion Include="Microsoft.Extensions.Telemetry" Version="10.9.0" />
@@ -145,9 +143,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.11" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
         <PackageVersion Include="Microsoft.Extensions.Localization" Version="10.0.11" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.11" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
-        <PackageVersion Include="System.Text.Json" Version="10.0.11" />
         <PackageVersion Include="FakeItEasy" Version="9.0.1" />
         <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.9.0" />
         <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.62.0" />

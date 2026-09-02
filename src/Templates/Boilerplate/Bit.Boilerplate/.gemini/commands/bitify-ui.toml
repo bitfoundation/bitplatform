@@ -5,7 +5,7 @@ description = "Replace raw HTML elements and hardcoded CSS in a Blazor page with
 prompt = """
 Follow these instructions exactly:
 
-@{.agents/skills/bitify-ui/SKILL.md}
+@{.github/agents/bitify-ui.agent.md}
 
 Page to modernize: {{args}}
 """

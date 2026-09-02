@@ -4,9 +4,8 @@ description: Reviews code changes against this project's conventions - Bit.Blazo
 context: fork
 ---
 
-<!-- Bridge stub. Claude Code only discovers skills under .claude/skills/, so this file mirrors
-     the frontmatter of the canonical skill and delegates to it. Edit the canonical file, not
-     this one - only the frontmatter above needs to stay in sync. Tools that read both folders
-     see the same name here and land on the same instructions either way. -->
+<!-- Bridge stub. Claude Code only discovers skills under .claude/skills/. The canonical
+     instructions live in .github/agents/code-reviewer.agent.md - edit that file, not this
+     one; only the frontmatter above needs to stay in sync. -->
 
-Read `.agents/skills/code-reviewer/SKILL.md` (relative to the repository root) and follow it exactly.
+Read `.github/agents/code-reviewer.agent.md` (relative to the repository root) and follow it exactly.

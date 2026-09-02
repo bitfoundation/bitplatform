@@ -58,17 +58,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E
         .github\agents\scaffold-entity.agent.md = .github\agents\scaffold-entity.agent.md
     EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".agents", ".agents", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C1D}"
-    ProjectSection(SolutionItems) = preProject
-        .agents\skills\ai-dlc\SKILL.md = .agents\skills\ai-dlc\SKILL.md
-        .agents\skills\bitify-ui\SKILL.md = .agents\skills\bitify-ui\SKILL.md
-        .agents\skills\code-reviewer\SKILL.md = .agents\skills\code-reviewer\SKILL.md
-        .agents\skills\localize-strings\SKILL.md = .agents\skills\localize-strings\SKILL.md
-        .agents\skills\scaffold-entity\SKILL.md = .agents\skills\scaffold-entity\SKILL.md
-    EndProjectSection
-EndProject
 #if (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989}"
     ProjectSection(SolutionItems) = preProject
@@ -197,8 +186,6 @@ Global
 #endif
         {3E577755-186F-4E63-8153-B8DE890015C9} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
         {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C2D} = {3E577755-186F-4E63-8153-B8DE890015C9}
-        {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
-        {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C1D} = {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}
 #if (pipeline == "GitHub")
         {2347E3B2-FDDE-427E-A0AE-E4DCD47C2989} = {3E577755-186F-4E63-8153-B8DE890015C9}
 #endif

@@ -5,7 +5,7 @@ description = "Scaffold a complete CRUD entity across every layer (entity, EF co
 prompt = """
 Follow these instructions exactly:
 
-@{.agents/skills/scaffold-entity/SKILL.md}
+@{.github/agents/scaffold-entity.agent.md}
 
 Entity to scaffold: {{args}}
 """

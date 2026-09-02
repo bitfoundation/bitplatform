@@ -504,8 +504,6 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 ```json
 {
     "recommendations": [
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
         "ms-dotnettools.csharp",
         "ms-dotnettools.csdevkit",
         "ms-dotnettools.dotnet-maui",

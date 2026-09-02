@@ -307,7 +307,7 @@ response.
 
 ### Registered Checks
 
-`AddDefaultHealthChecks` contributes the disk-space check (at least **5 GB** free), which is the only one tagged
+`AddDefaultHealthChecks` contributes the disk-space check (at least **2 GB** free), which is the only one tagged
 `"live"`. `AddServerApiHealthChecks` adds the database, Hangfire, the user-profile-images blob storage and - when SMS
 is configured - Twilio. The last two reach a remote dependency, so they carry a timeout and report **Degraded** rather
 than Unhealthy: a storage or SMS-provider outage must not take an otherwise healthy instance out of the load balancer.

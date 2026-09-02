@@ -121,14 +121,14 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 
 ## 7. Available Agent Skills
 
-This project ships reusable, tool-neutral [Agent Skills](https://agentskills.io) in `.agents/skills/`. Most agents preload only each skill's `description` and load the body on demand, so **do not read these files unless the trigger below matches the current task** - and when one does match, read the skill in full and follow it instead of improvising.
+This project ships reusable [Agent Skills](https://agentskills.io), canonical in `.github/agents/`. Most agents preload only each skill's `description` and load the body on demand, so **do not read these files unless the trigger below matches the current task** - and when one does match, read the skill in full and follow it instead of improvising.
 
 | Skill | Read it when | Canonical file |
 | --- | --- | --- |
-| `scaffold-entity` | Adding a new entity or a new feature that needs full CRUD | `.agents/skills/scaffold-entity/SKILL.md` |
-| `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx` | `.agents/skills/localize-strings/SKILL.md` |
-| `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.agents/skills/bitify-ui/SKILL.md` |
-| `code-reviewer` | Reviewing a diff or PR against this project's conventions | `.agents/skills/code-reviewer/SKILL.md` |
-| `ai-dlc` | Driving a feature end-to-end through requirements, plan, design, implement, validate | `.agents/skills/ai-dlc/SKILL.md` |
+| `scaffold-entity` | Adding a new entity or a new feature that needs full CRUD | `.github/agents/scaffold-entity.agent.md` |
+| `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx` | `.github/agents/localize-strings.agent.md` |
+| `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
+| `code-reviewer` | Reviewing a diff or PR against this project's conventions | `.github/agents/code-reviewer.agent.md` |
+| `ai-dlc` | Driving a feature end-to-end through requirements, plan, design, implement, validate | `.github/agents/ai-dlc.agent.md` |
 
-Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command. The files under `.claude/skills/`, `.gemini/commands/` and `.github/agents/` are thin bridges for tools that look elsewhere or list agents instead of skills - never edit them for content, only the canonical file above.
+Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command, and Visual Studio lists the canonical files themselves in its agent picker as `@<name>`. The files under `.agents/skills/`, `.claude/skills/` and `.gemini/commands/` are thin bridges that delegate to the canonical file - never edit them for content, only the canonical file above.

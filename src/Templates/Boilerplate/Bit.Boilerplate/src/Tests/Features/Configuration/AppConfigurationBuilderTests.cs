@@ -30,11 +30,11 @@ public class AppConfigurationBuilderTests
             .AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web")
             .Build();
 
-        // Provided by Boilerplate.Client.Core/appsettings.json, whose ServerAddress is the web port under
+        // Provided by Boilerplate.Client.Core/appsettings.json, whose ServerAddress is the relative `/` under
         // api == Integrated and the api port under api == Standalone - two different `replaces` tokens, so this
         // assertion has to be split the same way that file is, or it fails in every generated Standalone project.
         //#if (api == "Integrated")
-        Assert.AreEqual("http://localhost:5030/", configuration["ServerAddress"]);
+        Assert.AreEqual("/", configuration["ServerAddress"]);
         //#endif
         //#if (IsInsideProjectTemplate)
         /*

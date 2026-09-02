@@ -13,18 +13,18 @@ That means adding skills costs almost nothing in context until one is actually n
 
 ## Where the files live
 
-`.agents/skills/` is the tool-neutral location the Agent Skills standard converged on, and almost every tool reads it natively:
+The full instructions live once, in `.github/agents/`, and every other location is a thin pointer at them:
 
 | Path | Purpose |
 | --- | --- |
-| `.agents/skills/<name>/SKILL.md` | **The canonical file. Edit this one.** Read natively by GitHub Copilot (VS Code, Visual Studio, github.com coding agent, Copilot CLI, JetBrains agent mode), Cursor, OpenAI Codex, JetBrains Junie, Windsurf, Google Antigravity and Gemini CLI. |
-| `.claude/skills/<name>/SKILL.md` | Bridge stub for Claude Code, which only discovers skills under `.claude/skills/`. It mirrors the canonical frontmatter and delegates to the canonical file - keep only the frontmatter in sync. |
+| `.github/agents/<name>.agent.md` | **The canonical file with the actual body. Edit this one.** Listed directly in Visual Studio's agent picker and `@` menu (and as an `@<name>` agent in VS Code), which show agents but not skills. |
+| `.agents/skills/<name>/SKILL.md` | Discovery stub for the tool-neutral Agent Skills location, read natively by GitHub Copilot (VS Code, Visual Studio, github.com coding agent, Copilot CLI, JetBrains agent mode), Cursor, OpenAI Codex, JetBrains Junie, Windsurf, Google Antigravity and Gemini CLI. It mirrors the canonical frontmatter and delegates to the canonical file - keep only the frontmatter in sync. |
+| `.claude/skills/<name>/SKILL.md` | Bridge stub for Claude Code, which only discovers skills under `.claude/skills/`. Same delegation rule. |
 | `.gemini/commands/<name>.toml` | Command shim that guarantees `/<skill-name>` in Gemini CLI and Gemini Code Assist agent mode, where Agent Skills discovery may not be enabled yet. It injects the canonical file via `@{...}`. |
-| `.github/agents/<name>.agent.md` | Custom-agent stub for Visual Studio's agent picker and `@` menu, which list agents but not skills (Visual Studio discovers the skills too, yet only auto-invokes them and shows them in the chat tools panel). Each stub mirrors the canonical frontmatter and delegates to the canonical file. Also usable as `@<name>` agents in VS Code. |
 
 The instructions themselves follow the same single-source pattern: every tool that reads `AGENTS.md` natively (Copilot, Cursor, Codex, Junie, Windsurf, Antigravity) gets it directly, while `CLAUDE.md` and `GEMINI.md` are two-line entry points that inline it with an `@AGENTS.md` import for Claude Code and Gemini. Section 7 of `AGENTS.md` indexes the skills for anything that reads none of the skill locations.
 
-To add a new skill: create `.agents/skills/<your-skill>/SKILL.md`, add the matching `.claude` stub, `.gemini` shim and `.github/agents` agent stub, and add a row to the `AGENTS.md` section 7 index. The `description` is the most important field - write it as *"...Use when the user asks to X, Y, or says Z"*, because that sentence is the only thing the agent sees when deciding whether to load the skill.
+To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full instructions, add the matching `.agents` and `.claude` stubs and the `.gemini` shim, and add a row to the `AGENTS.md` section 7 index. The `description` is the most important field - write it as *"...Use when the user asks to X, Y, or says Z"*, because that sentence is the only thing the agent sees when deciding whether to load the skill.
 
 ---
 
@@ -32,7 +32,7 @@ To add a new skill: create `.agents/skills/<your-skill>/SKILL.md`, add the match
 
 ### 1. Scaffold Entity (`scaffold-entity`)
 
-**Canonical file**: `.agents/skills/scaffold-entity/SKILL.md`
+**Canonical file**: `.github/agents/scaffold-entity.agent.md`
 
 **What it does**: Generates a complete CRUD (Create, Read, Update, Delete) implementation for a new entity in your project, including all necessary layers from database to UI.
 
@@ -57,7 +57,7 @@ To add a new skill: create `.agents/skills/<your-skill>/SKILL.md`, add the match
 
 ### 2. Localize Strings (`localize-strings`)
 
-**Canonical file**: `.agents/skills/localize-strings/SKILL.md`
+**Canonical file**: `.github/agents/localize-strings.agent.md`
 
 **What it does**: Identifies hardcoded strings in your code and moves them to resource files (.resx) for proper localization support.
 
@@ -85,7 +85,7 @@ To add a new skill: create `.agents/skills/<your-skill>/SKILL.md`, add the match
 
 ### 3. Bitify UI (`bitify-ui`)
 
-**Canonical file**: `.agents/skills/bitify-ui/SKILL.md`
+**Canonical file**: `.github/agents/bitify-ui.agent.md`
 
 **What it does**: Modernizes your Blazor pages by replacing standard HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling.
 
@@ -109,7 +109,7 @@ To add a new skill: create `.agents/skills/<your-skill>/SKILL.md`, add the match
 
 ### 4. Code Reviewer (`code-reviewer`)
 
-**Canonical file**: `.agents/skills/code-reviewer/SKILL.md`
+**Canonical file**: `.github/agents/code-reviewer.agent.md`
 
 **What it does**: Reviews code changes against this project's conventions and reports findings. It never modifies code.
 
@@ -131,7 +131,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 
 ### 5. AI-DLC (`ai-dlc`)
 
-**Canonical file**: `.agents/skills/ai-dlc/SKILL.md`
+**Canonical file**: `.github/agents/ai-dlc.agent.md`
 
 **What it does**: Drives a feature end-to-end through the AI-Driven Development Lifecycle, with approval gates before any code is written.
 

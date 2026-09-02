@@ -26,14 +26,6 @@
     <File Path=".azure-devops/workflows/ci.yml" />
   </Folder>
 <!--#endif-->
-  <Folder Name="/.SolutionItems/.agents/" />
-  <Folder Name="/.SolutionItems/.agents/skills/">
-    <File Path=".agents/skills/ai-dlc/SKILL.md" />
-    <File Path=".agents/skills/bitify-ui/SKILL.md" />
-    <File Path=".agents/skills/code-reviewer/SKILL.md" />
-    <File Path=".agents/skills/localize-strings/SKILL.md" />
-    <File Path=".agents/skills/scaffold-entity/SKILL.md" />
-  </Folder>
   <Folder Name="/.SolutionItems/.github/" />
   <Folder Name="/.SolutionItems/.github/agents/">
     <File Path=".github/agents/ai-dlc.agent.md" />

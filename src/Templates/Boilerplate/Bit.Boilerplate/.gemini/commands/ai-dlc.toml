@@ -5,7 +5,7 @@ description = "Drive a feature end-to-end with the AI-Driven Development Lifecyc
 prompt = """
 Follow these instructions exactly:
 
-@{.agents/skills/ai-dlc/SKILL.md}
+@{.github/agents/ai-dlc.agent.md}
 
 Feature or task: {{args}}
 """

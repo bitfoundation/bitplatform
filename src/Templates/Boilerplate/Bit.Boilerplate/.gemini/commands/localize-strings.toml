@@ -5,7 +5,7 @@ description = "Move hardcoded user-facing strings into AppStrings.resx and rewri
 prompt = """
 Follow these instructions exactly:
 
-@{.agents/skills/localize-strings/SKILL.md}
+@{.github/agents/localize-strings.agent.md}
 
 Files or code to localize: {{args}}
 """
