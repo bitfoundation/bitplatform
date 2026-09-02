@@ -97,7 +97,7 @@ registering everything.
 
 | Service | What it wraps |
 | --- | --- |
-| `ElementReference` extensions | Attributes, scrolling, fullscreen, pointer capture, per-element events |
+| `ElementReference` extensions | Attributes (namespaced too), ARIA and `role`, classes, `data-*`, inline style, content insertion, scrolling, layout metrics, fullscreen, popovers, pointer capture, per-element events |
 | Animation extensions | The Web Animations API on any element |
 | `Keyboard` | App-wide keyboard shortcuts with modifier support |
 | `IntersectionObserver` | Element visibility inside the viewport or a scroll container |

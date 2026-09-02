@@ -99,7 +99,7 @@ public class ToolBehaviourTests : McpTestBase
         // types are enormous - the extension classes are sixty members with their remarks - and one
         // of them uncapped was 30,000 characters. The members are the answer, so the remarks are
         // what goes, and the reference says where they went.
-        foreach (var typeName in new[] { "ElementReferenceExtensions", "Window", "ButilKeyCodes", "Clipboard" })
+        foreach (var typeName in new[] { "ElementReferenceExtensions", "ElementReferenceAriaExtensions", "Window", "ButilKeyCodes", "Clipboard" })
         {
             var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName });
             var text = Text(await CallRawAsync("GetButilApiDetails", new { typeName }));
@@ -121,6 +121,42 @@ public class ToolBehaviourTests : McpTestBase
                 Assert.IsTrue(details.Members.All(member => member.Remarks is null) is false
                               || details.Remarks!.Contains("omitted", StringComparison.Ordinal),
                               $"{typeName} dropped the remarks without saying so.");
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task The_element_page_reaches_every_extension_class_its_members_live_on()
+    {
+        // The ElementReference surface is spread over several static classes rather than one, and
+        // nothing about a class makes an agent look for it: a member is only findable through the
+        // page that names the class it is on. A class added to the library and not to the docs nav
+        // is a member the tools cannot answer about, which no consistency check can notice - the
+        // page and the reflected assembly would each still be perfectly coherent on their own.
+        var expected = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["ElementReferenceExtensions"] = "Click",
+            ["ElementReferenceDomExtensions"] = "InsertAdjacentHtml",
+            ["ElementReferenceStateExtensions"] = "GetTitle",
+            ["ElementReferenceAriaExtensions"] = "SetAriaLabel",
+            ["ElementReferenceEventExtensions"] = "SubscribeEvent",
+            ["ElementReferenceMediaExtensions"] = "Play",
+        };
+
+        var page = (await DocsIndexAsync()).Single(row => row.Slug == "element");
+
+        using (Assert.Scope())
+        {
+            Assert.IsEmpty(expected.Keys.Except(page.Services, StringComparer.Ordinal),
+                "The Element docs page does not name every class its members live on.");
+
+            foreach (var (typeName, member) in expected)
+            {
+                var details = (await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName })).Details;
+
+                Assert.IsNotNull(details, $"{typeName} has no reference.");
+                Assert.Contains(member, details!.Members.Select(m => m.Name),
+                    $"{typeName} answers without {member}.");
             }
         }
     }
