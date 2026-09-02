@@ -378,6 +378,113 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         return style!.TrimEnd().EndsWith(';') ? $"{style} {extraStyle}" : $"{style};{extraStyle}";
     }
 
+    /// <summary>
+    /// Splices two class lists into the single list a class attribute holds.
+    /// </summary>
+    /// <remarks>
+    /// Two lists landing in the same class attribute are only two lists while a space stands between them.
+    /// </remarks>
+    private protected static string? JoinClasses(string? @class, string? extraClass)
+    {
+        if (@class.HasNoValue()) return extraClass;
+
+        if (extraClass.HasNoValue()) return @class;
+
+        return $"{@class} {extraClass}";
+    }
+
+    /// <summary>
+    /// The value of an attribute the page wrote as a plain HTML attribute rather than as a parameter of the component.
+    /// </summary>
+    /// <remarks>
+    /// HTML attribute names are case insensitive, and so is the deduplication the render tree does between a splatted
+    /// attribute and one the component writes itself, so a differently cased spelling has to be found here too. This is
+    /// what lets a component resolve its own value against the splatted one instead of writing a null over it - a null
+    /// written over a splatted attribute does not leave that attribute alone, it removes it.
+    /// </remarks>
+    private protected string? GetSplattedAttribute(string name)
+    {
+        if (HtmlAttributes.Count == 0) return null;
+
+        if (HtmlAttributes.TryGetValue(name, out var value)) return StringifyAttributeValue(value);
+
+        foreach (var attribute in HtmlAttributes)
+        {
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return StringifyAttributeValue(attribute.Value);
+        }
+
+        return null;
+    }
+
+    // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no
+    // value at all while it is true and left out altogether while it is false, which is what an attribute splatted
+    // onto a plain element does. So the two are resolved into the same thing here rather than into the "True" and
+    // "False" that ToString would give an attribute the component writes itself.
+    private static string? StringifyAttributeValue(object? value)
+    {
+        if (value is bool boolean) return boolean ? string.Empty : null;
+
+        return value?.ToString();
+    }
+
+    /// <summary>
+    /// Determines whether a tag name is one the renderer builds an element of.
+    /// </summary>
+    /// <remarks>
+    /// A tag name is only a tag name while both the markup it is written into reads it as one and the browser builds
+    /// an element of it. The HTML parser only begins a tag at all when a letter follows the "&lt;", and it ends the name
+    /// at the first whitespace and the tag at the first "&gt;", so a name carrying either of them would write markup of
+    /// its own rather than name an element. What the browser accepts is the narrower of the two and the engines do not
+    /// agree on it: the DOM standard now takes any name that begins with a letter and carries no whitespace, "/" or
+    /// "&gt;", while the rule it replaced - which WebKit still enforces - is the XML name, and a name refused by
+    /// document.createElement throws where the renderer builds the element, taking the whole render batch with it.
+    /// So the name is read as what a name is made of rather than as what it must not contain: the ASCII letters and
+    /// digits, the four characters that join them in every markup language that has tag names, and the letters and
+    /// digits of the other alphabets, which is all a custom element may be named in.
+    /// </remarks>
+    private protected static bool IsValidElement(string element)
+    {
+        if (element.Length == 0) return false;
+
+        if (char.IsAsciiLetter(element[0]) is false) return false;
+
+        foreach (var @char in element)
+        {
+            if (char.IsAsciiLetterOrDigit(@char)) continue;
+
+            if (@char is '-' or '_' or '.' or ':') continue;
+
+            // Everything outside ASCII that is a letter or a digit is a name of some alphabet; the rest of it - the
+            // separators, the punctuation, the C1 controls - is refused along with the ASCII symbols and whitespace.
+            if (char.IsAscii(@char) is false && char.IsLetterOrDigit(@char)) continue;
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether a tag name is one of the HTML void elements, which are defined to hold no content.
+    /// </summary>
+    /// <remarks>
+    /// A void element is defined to have no content at all, so a closing tag and any child content are invalid markup
+    /// in it. The static HTML renderer writes it self-closed and silently drops whatever follows, so a component that
+    /// renders a tag the page names asks this before it writes any content into it.
+    /// </remarks>
+    private protected static bool IsVoidElement(string element)
+    {
+        return _VoidElements.Contains(element);
+    }
+
+    // The obsolete four (basefont, bgsound, frame and keygen) are in the list the HTML parser itself treats as void,
+    // so a browser drops their content just the same and they belong here with the rest.
+    private static readonly HashSet<string> _VoidElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "area", "base", "basefont", "bgsound", "br", "col", "embed", "frame", "hr",
+        "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"
+    };
+
 
 
     /// <summary>

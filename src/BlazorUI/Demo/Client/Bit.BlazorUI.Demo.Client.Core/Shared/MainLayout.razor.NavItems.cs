@@ -153,7 +153,7 @@ public partial class MainLayout
                 new() { Text = "Separator", Url = "/components/separator" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
                 new() { Text = "SwipeTrap", Url = "/components/swipetrap" },
-                new() { Text = "Text", Url = "/components/text" },
+                new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase" },
             ],
         },
         new()

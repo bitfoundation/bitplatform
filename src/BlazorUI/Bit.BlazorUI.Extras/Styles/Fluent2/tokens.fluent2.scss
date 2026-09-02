@@ -139,6 +139,8 @@
     // Text optical size is the one meant for UI copy. fontFamilyBase, which still names plain Segoe
     // UI, is the fallback chain behind it.
     --bit-tpg-font-family: "Segoe UI Variable Text", "Segoe UI Variable Static Text", "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    // fontFamilyMonospace, which is Fluent 2's own: Consolas first, then the platform fallbacks.
+    --bit-tpg-font-family-mono: Consolas, "Cascadia Mono", "Courier New", Courier, monospace;
     // Fluent 2 sets its control labels semibold (Button medium and large are fontWeightSemibold).
     --bit-tpg-font-weight: 600;
     // The font-size ramp is Fluent 2's, end to end: fontSizeBase100..600 then Hero700..900. There is
