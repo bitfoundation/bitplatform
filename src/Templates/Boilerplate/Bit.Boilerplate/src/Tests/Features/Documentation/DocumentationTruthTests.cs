@@ -46,6 +46,7 @@ public class DocumentationTruthTests
         "GEMINI.md",
         ".grafana/README.md",
         ".github/copilot-instructions.md",
+        ".github/agents/*.md",
         ".agents/skills/*/SKILL.md",
         ".claude/skills/*/SKILL.md",
     ];

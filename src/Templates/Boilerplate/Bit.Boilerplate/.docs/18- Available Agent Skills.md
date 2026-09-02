@@ -20,10 +20,11 @@ That means adding skills costs almost nothing in context until one is actually n
 | `.agents/skills/<name>/SKILL.md` | **The canonical file. Edit this one.** Read natively by GitHub Copilot (VS Code, Visual Studio, github.com coding agent, Copilot CLI, JetBrains agent mode), Cursor, OpenAI Codex, JetBrains Junie, Windsurf, Google Antigravity and Gemini CLI. |
 | `.claude/skills/<name>/SKILL.md` | Bridge stub for Claude Code, which only discovers skills under `.claude/skills/`. It mirrors the canonical frontmatter and delegates to the canonical file - keep only the frontmatter in sync. |
 | `.gemini/commands/<name>.toml` | Command shim that guarantees `/<skill-name>` in Gemini CLI and Gemini Code Assist agent mode, where Agent Skills discovery may not be enabled yet. It injects the canonical file via `@{...}`. |
+| `.github/agents/<name>.agent.md` | Custom-agent stub for Visual Studio's agent picker and `@` menu, which list agents but not skills (Visual Studio discovers the skills too, yet only auto-invokes them and shows them in the chat tools panel). Each stub mirrors the canonical frontmatter and delegates to the canonical file. Also usable as `@<name>` agents in VS Code. |
 
 The instructions themselves follow the same single-source pattern: every tool that reads `AGENTS.md` natively (Copilot, Cursor, Codex, Junie, Windsurf, Antigravity) gets it directly, while `CLAUDE.md` and `GEMINI.md` are two-line entry points that inline it with an `@AGENTS.md` import for Claude Code and Gemini. Section 7 of `AGENTS.md` indexes the skills for anything that reads none of the skill locations.
 
-To add a new skill: create `.agents/skills/<your-skill>/SKILL.md`, add a matching stub and shim, and add a row to the `AGENTS.md` section 7 index. The `description` is the most important field - write it as *"...Use when the user asks to X, Y, or says Z"*, because that sentence is the only thing the agent sees when deciding whether to load the skill.
+To add a new skill: create `.agents/skills/<your-skill>/SKILL.md`, add the matching `.claude` stub, `.gemini` shim and `.github/agents` agent stub, and add a row to the `AGENTS.md` section 7 index. The `description` is the most important field - write it as *"...Use when the user asks to X, Y, or says Z"*, because that sentence is the only thing the agent sees when deciding whether to load the skill.
 
 ---
 

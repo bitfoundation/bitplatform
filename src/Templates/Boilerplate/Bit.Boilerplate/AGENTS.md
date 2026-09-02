@@ -131,4 +131,4 @@ This project ships reusable, tool-neutral [Agent Skills](https://agentskills.io)
 | `code-reviewer` | Reviewing a diff or PR against this project's conventions | `.agents/skills/code-reviewer/SKILL.md` |
 | `ai-dlc` | Driving a feature end-to-end through requirements, plan, design, implement, validate | `.agents/skills/ai-dlc/SKILL.md` |
 
-Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command. The files under `.claude/skills/` and `.gemini/commands/` are thin bridges for tools that look elsewhere - never edit them for content, only the canonical file above.
+Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command. The files under `.claude/skills/`, `.gemini/commands/` and `.github/agents/` are thin bridges for tools that look elsewhere or list agents instead of skills - never edit them for content, only the canonical file above.
