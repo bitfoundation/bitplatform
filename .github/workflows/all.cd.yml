@@ -1,0 +1,62 @@
+name: All CD
+
+# Runs every CD workflow in one run. Local `./` reusable workflows always run from the caller's
+# commit, so whatever branch is picked in the "Run workflow" dropdown is the branch they all build.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+
+  platform_website:
+    name: platform website
+    uses: ./.github/workflows/platform.website.cd.yml
+    secrets: inherit
+
+  sales_website:
+    name: sales website
+    uses: ./.github/workflows/sales.website.cd.yml
+    secrets: inherit
+
+  blazorui_demo:
+    name: blazorui demo
+    uses: ./.github/workflows/blazorui.demo.cd.yml
+    secrets: inherit
+
+  bmotion_demo:
+    name: bmotion demo
+    uses: ./.github/workflows/bmotion.demo.cd.yml
+    secrets: inherit
+
+  brouter_demo:
+    name: brouter demo
+    uses: ./.github/workflows/brouter.demo.cd.yml
+    secrets: inherit
+
+  bswup_demo:
+    name: bswup demo
+    uses: ./.github/workflows/bswup.demo.cd.yml
+    secrets: inherit
+
+  butil_demo:
+    name: butil demo
+    uses: ./.github/workflows/butil.demo.cd.yml
+    secrets: inherit
+
+  admin_sample:
+    name: admin sample
+    uses: ./.github/workflows/admin-sample.cd.yml
+    secrets: inherit
+
+  todo_sample:
+    name: todo sample
+    uses: ./.github/workflows/todo-sample.cd.yml
+    secrets: inherit
+
+  sales_module_demo:
+    name: sales module demo
+    uses: ./.github/workflows/sales-module-demo.cd.yml
+    secrets: inherit

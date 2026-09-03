@@ -3,11 +3,12 @@ name: Blazor UI Demo CD
 env:
   SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'bit-components'
-  R2_BUCKET: 'windows-components.bitplatform.dev'
+  R2_BUCKET: 'blazorui'
   APP_BUNDLE_ID: 'com.bitplatform.BlazorUI.Demo'
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read

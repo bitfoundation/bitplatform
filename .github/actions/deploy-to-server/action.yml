@@ -20,13 +20,11 @@ inputs:
     description: URL polled after the app pool restarts. The deployment fails if it never returns a success status.
     required: true
   cloudflare-zone-id:
-    description: Zone id for bitplatform.dev. Leave empty to skip the cache purge.
-    required: false
-    default: ''
+    description: Zone id for bitplatform.dev.
+    required: true
   cloudflare-token:
     description: Cloudflare API token carrying the Zone / Cache Purge permission.
-    required: false
-    default: ''
+    required: true
 
 runs:
   using: composite
@@ -129,7 +127,6 @@ runs:
 
     # After the health check, so the purge cannot re-warm the old build.
     - name: Purge Cloudflare cache
-      if: inputs.cloudflare-zone-id != '' && inputs.cloudflare-token != ''
       shell: pwsh
       env:
         CF_ZONE_ID: ${{ inputs.cloudflare-zone-id }}
