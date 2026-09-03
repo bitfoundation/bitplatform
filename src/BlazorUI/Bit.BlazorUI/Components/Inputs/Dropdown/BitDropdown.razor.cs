@@ -1829,6 +1829,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             {
                 await FocusTrigger();
             }
+
+            // A dropdown that starts out open ends up with the focus its search box would have taken on
+            // any other opening, which is also what AutoFocus means while the list is showing.
+            await FocusOnSearchBox();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -2656,6 +2660,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (toggle)
             {
                 await ToggleCallout();
+
+                // The internal open flows follow their own toggle with the focus work that opening the
+                // list means; an open pushed from the outside (a bound IsOpen, a programmatic Assign)
+                // has none, so a search-first dropdown hands the focus to its search box here instead.
+                // Only after the toggle: the callout is hidden until then, and a hidden input cannot
+                // take the focus.
+                await FocusOnSearchBox();
             }
 
             await (isOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
