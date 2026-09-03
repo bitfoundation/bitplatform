@@ -1,3 +1,31 @@
 ﻿.bit-stp {
     width: fit-content;
+
+    // A trapped axis is declared to the browser as a touch-action: without it a native scroll the browser
+    // has already started stops sending cancelable events, and trapping that axis becomes a race the trap
+    // can lose. Pinch-zoom is left to the browser throughout - it is a two-finger gesture the trap never
+    // takes, and taking it away would cost the page its zoom.
+    // With no orientation lock both axes belong to the trap, so neither is left to the browser.
+    touch-action: pinch-zoom;
+
+    // The locked axis is the trap's, the free axis stays the browser's.
+    &.bit-stp-hrz {
+        touch-action: pan-y pinch-zoom;
+    }
+
+    &.bit-stp-vrt {
+        touch-action: pan-x pinch-zoom;
+    }
+
+    // The Auto lock takes whichever axis the gesture picks first, so neither may be left to the browser.
+    &.bit-stp-lck {
+        touch-action: pinch-zoom;
+    }
+
+    // While a swipe is trapped: a mouse swipe would otherwise paint a text selection along the way.
+    // Also serves as a styling hook for the actively-swiping state.
+    &.bit-stp-swp {
+        user-select: none;
+        -webkit-user-select: none;
+    }
 }
