@@ -50,7 +50,8 @@ public class AttachmentReplacementTests
             Assert.AreEqual(2, await CountAttachments(server, userId),
                 "A re-upload must overwrite the existing rows, not add a second pair - the key is { Id, Kind } and the blob path is derived from it.");
 
-            Assert.AreNotSequenceEqual(first, await Download(httpClient, userId),
+            var second = await Download(httpClient, userId);
+            Assert.AreNotSequenceEqual(first, second,
                 "The served image must be the one just uploaded; an in-place overwrite that never wrote the new bytes would look identical here.");
         }
         finally
@@ -91,7 +92,8 @@ public class AttachmentReplacementTests
 
             Assert.AreEqual(HttpStatusCode.BadRequest, rejected.StatusCode);
 
-            Assert.AreSequenceEqual(before, await Download(httpClient, userId), "The refused upload must not have touched the stored blob.");
+            var after = await Download(httpClient, userId);
+            Assert.AreSequenceEqual(before, after, "The refused upload must not have touched the stored blob.");
 
             Assert.AreEqual(2, await CountAttachments(server, userId), "The refused upload must not have removed the existing rows.");
 
@@ -138,7 +140,8 @@ public class AttachmentReplacementTests
                 "An undecodable upload is the caller's fault: a 500 here means it reached the unknown-error handler " +
                 "and logged Critical from ordinary user input.");
 
-            Assert.AreSequenceEqual(before, await Download(httpClient, userId), "The refused upload must not have touched the stored blob.");
+            var after = await Download(httpClient, userId);
+            Assert.AreSequenceEqual(before, after, "The refused upload must not have touched the stored blob.");
 
             Assert.AreEqual(2, await CountAttachments(server, userId), "The refused upload must not have removed the existing rows.");
 
