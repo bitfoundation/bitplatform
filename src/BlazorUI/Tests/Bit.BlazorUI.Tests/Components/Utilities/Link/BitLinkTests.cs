@@ -1266,6 +1266,23 @@ public class BitLinkTests : BunitTestContext
         Assert.AreEqual(true, invocation.Arguments[1]);
     }
 
+    [TestMethod]
+    public void BitLinkShouldDecodeTheFragmentBeforeScrolling()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "#section%201");
+        });
+
+        component.Find(".bit-lnk").Click();
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.scrollElementIntoView"].Single();
+
+        // The browser matches a fragment against an id percent-decoded, so the interop is given the id the
+        // element actually carries rather than the escaped spelling of it, which would match nothing.
+        Assert.AreEqual("section 1", invocation.Arguments[0]);
+    }
+
     [TestMethod,
         DataRow("rel", "me"),
         DataRow("title", "the bit platform"),

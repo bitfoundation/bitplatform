@@ -393,7 +393,11 @@ public partial class BitLink : BitComponentBase
             // The scroll takes the focus with it: an in-page link that only scrolls leaves the keyboard where
             // it was, so the next Tab carries on from the link rather than from what it pointed at, and a
             // screen reader is never told the page moved at all.
-            await _js.BitUtilsScrollElementIntoView(Href![1..], true);
+            //
+            // The browser percent-decodes a fragment before matching it against an id, so an href of
+            // "#section%201" points at the element with the id "section 1"; the lookup is given the same
+            // decoded name rather than the escaped one, which would match nothing.
+            await _js.BitUtilsScrollElementIntoView(Uri.UnescapeDataString(Href![1..]), true);
         }
     }
 
