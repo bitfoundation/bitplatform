@@ -98,10 +98,12 @@
 
         <DemoExample Title="OrientationLock" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                OrientationLock restricts the trap to one axis. The locked axis is trapped (its default browser behavior, like scrolling,
-                is prevented via a matching touch-action) while the free axis is left to the browser: its movement is still reported,
-                zeroed on the locked axis, but it never triggers the trap. Auto instead locks to whichever axis the gesture moves along
-                first and keeps it for the rest of the gesture. Try swiping horizontally and vertically on each container:
+                OrientationLock restricts the trap to one axis. A Horizontal or Vertical lock is fixed for the whole gesture, whichever
+                direction it starts in: the locked axis is the only one trapped (its default browser behavior, like scrolling, is prevented
+                via a matching touch-action) and the only one reported, while the free axis is left to the browser and always reads zero.
+                So a gesture along the free axis scrolls the page without moving the trap, and one that turns onto the locked axis is
+                trapped from that moment on. Auto instead locks to whichever axis the gesture moves along first, trapping that one and
+                zeroing the other for the rest of the gesture. Try swiping horizontally, vertically and diagonally on each container:
             </div><br />
             <div class="lock-boxes">
                 <BitSwipeTrap OrientationLock="BitSwipeOrientation.Horizontal"

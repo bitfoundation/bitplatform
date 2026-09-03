@@ -48,7 +48,10 @@ public partial class BitSwipeTrap : BitComponentBase
 
     /// <summary>
     /// Specifies the orientation lock in which the swipe trap allows to trap the swipe actions.
-    /// The locked axis is trapped and the other axis keeps its default browser behavior (via a matching touch-action).
+    /// A Horizontal or Vertical lock is fixed for the whole gesture, whichever direction it starts in: the locked
+    /// axis is the only one trapped and the only one reported, while the other axis keeps its default browser
+    /// behavior (via a matching touch-action) and always reports zero.
+    /// Auto instead locks to the first axis the gesture moves along.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSwipeOrientation? OrientationLock { get; set; }

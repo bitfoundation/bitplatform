@@ -160,6 +160,8 @@ namespace BitBlazorUI {
                 const thresY = absY > threshold;
 
 
+                // Which axis the gesture moves along is what an Auto lock is resolved from; a fixed lock
+                // was told its axis and never asks.
                 if (orientation === BitSwipeOrientation.None) {
                     if (thresX && !thresY) {
                         orientation = BitSwipeOrientation.Horizontal;
@@ -173,19 +175,21 @@ namespace BitBlazorUI {
                     }
                 }
 
+                // A fixed lock is declared, not discovered: its axis is the trap's for the whole gesture and
+                // the free one is the browser's for the whole gesture, however the gesture started. So the
+                // locked axis is taken the moment it moves past the threshold - a swipe that begins as a
+                // scroll along the free axis and turns onto the locked one is still the trap's - and the free
+                // axis reads zero throughout. Deciding either of those from the axis the gesture picked first
+                // is what Auto does, and it is what left a fixed lock behaving like Auto.
                 if (orientationLock === BitSwipeOrientation.Horizontal) {
-                    if (orientation === BitSwipeOrientation.Horizontal) {
+                    diffY = 0;
+                    if (thresX) {
                         cancel();
-                        diffY = 0;
-                    } else {
-                        diffX = 0;
                     }
                 } else if (orientationLock === BitSwipeOrientation.Vertical) {
-                    if (orientation === BitSwipeOrientation.Vertical) {
+                    diffX = 0;
+                    if (thresY) {
                         cancel();
-                        diffX = 0;
-                    } else {
-                        diffY = 0;
                     }
                 } else if (orientationLock === BitSwipeOrientation.Auto) {
                     // Auto locks to whichever axis the gesture picks first: that axis is trapped and

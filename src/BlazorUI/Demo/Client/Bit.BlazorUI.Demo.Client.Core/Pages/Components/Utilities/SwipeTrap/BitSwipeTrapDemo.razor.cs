@@ -52,7 +52,7 @@ public partial class BitSwipeTrapDemo
             Name = "OrientationLock",
             Type = "BitSwipeOrientation?",
             DefaultValue = "null",
-            Description = "Specifies the orientation lock in which the swipe trap allows to trap the swipe actions. The locked axis is trapped and the other axis keeps its default browser behavior (via a matching touch-action).",
+            Description = "Specifies the orientation lock in which the swipe trap allows to trap the swipe actions. A Horizontal or Vertical lock is fixed for the whole gesture, whichever direction it starts in: the locked axis is the only one trapped and the only one reported, while the other axis keeps its default browser behavior (via a matching touch-action) and always reports zero. Auto instead locks to the first axis the gesture moves along.",
             LinkType = LinkType.Link,
             Href = "#swipe-orientation",
         },
