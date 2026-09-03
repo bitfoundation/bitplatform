@@ -1,0 +1,18 @@
+﻿@* Covers BitStickyParams: the cascaded values fill in the parameters the sticky did not set itself, and
+   never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitStickyParams[]
+                         {
+                             new()
+                             {
+                                 Class = "cascaded",
+                                 Element = "header",
+                                 Position = BitStickyPosition.Bottom,
+                                 Top = "1rem",
+                                 ZIndex = 4,
+                                 StuckClass = "cascaded-stuck"
+                             }
+                         })">
+    <BitSticky />
+    <BitSticky Element="footer" Position="BitStickyPosition.Start" ZIndex="9" />
+</BitParams>
