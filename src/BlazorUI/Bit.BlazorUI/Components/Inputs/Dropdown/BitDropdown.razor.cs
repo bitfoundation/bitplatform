@@ -54,6 +54,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private bool _openedOnFocus;
     private bool _inputSearchHasFocus;
     private bool _inputComboHasFocus;
+    private bool _pendingSearchBoxFocus;
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShownItems = [];
     private ICollection<TItem>? _lastItemsReference;
@@ -1800,6 +1801,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             await RefreshCalloutScrollOffset();
 
+            // An open pushed in from the outside left its focus work here: its hook runs while the
+            // parameters of the batch are still being applied, so a search box the same batch turns
+            // on only exists as of this render.
+            if (_pendingSearchBoxFocus)
+            {
+                _pendingSearchBoxFocus = false;
+
+                await FocusOnSearchBox();
+            }
+
             return;
         }
 
@@ -2483,6 +2494,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             // next toggle of the callout, so a click that comes long after the focus (and after the
             // callout was dismissed in between) opens the callout itself as it always did.
             _openedOnFocus = IsOpen && wasOpen is false;
+
+            // The rest of what opening the list means for a search-first dropdown. The click this
+            // focus may be the first half of does the same, but only a pointer open has a click after
+            // it: a dropdown reached with the keyboard would otherwise show its search box and leave
+            // the focus behind on the trigger.
+            await FocusOnSearchBox();
         }
 
         await OnFocusIn.InvokeAsync(e);
@@ -2663,10 +2680,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
                 // The internal open flows follow their own toggle with the focus work that opening the
                 // list means; an open pushed from the outside (a bound IsOpen, a programmatic Assign)
-                // has none, so a search-first dropdown hands the focus to its search box here instead.
-                // Only after the toggle: the callout is hidden until then, and a hidden input cannot
-                // take the focus.
-                await FocusOnSearchBox();
+                // has none, so a search-first dropdown hands the focus to its search box as well. The
+                // render answers it (see OnAfterRenderAsync) rather than this hook: the hook runs while
+                // the parameters of the batch are still being applied, so a search box the same batch
+                // turns on is not on the page yet, and an input that does not exist cannot take the
+                // focus. The callout is shown by the toggle above, from JS, so it is up by then either
+                // way.
+                if (IsDisposed is false)
+                {
+                    _pendingSearchBoxFocus = true;
+                    StateHasChanged();
+                }
             }
 
             await (isOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
@@ -2685,8 +2709,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (HasSearchBox is false) return;
         if (AutoFocusSearchBox is false) return;
         if (IsOpen is false) return;
+        // Reached from paths that are fired and forgotten (the IsOpen hook) or already detached from
+        // the request that started them (a render, a focus the dropdown moved itself), so a component
+        // that went away in between has to end here rather than throw out of a discarded task.
+        if (IsRendered is false || IsDisposed) return;
 
-        await _searchInputRef.FocusAsync();
+        try
+        {
+            await _searchInputRef.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (InvalidOperationException) { } // an input that is not on the page cannot take the focus
     }
 
     private async Task ClearComboBoxInput()

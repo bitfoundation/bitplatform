@@ -2346,6 +2346,61 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownOpenOnFocusShouldHonorAutoFocusSearchBox()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OpenOnFocus, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.AutoFocusSearchBox, true);
+        });
+
+        // Tabbing in is the fourth way of opening the callout, and the only one with no click behind it
+        // to do the focus work instead: without it the list shows and the focus stays on the trigger.
+        component.Find(".bit-drp-wrp").FocusIn();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(component.Instance.SearchInputElement!.Value.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitDropdownBoundOpenShouldHonorASearchBoxTurnedOnInTheSameBatch()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.AutoFocusSearchBox, true);
+        });
+
+        // The IsOpen hook runs while the rest of the batch is still being applied, so the search box
+        // this very batch turns on is not on the page yet - and an input that does not exist cannot take
+        // the focus. The focus waits for the render that puts it there instead of being dropped.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.AutoFocusSearchBox, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(component.Find(".bit-drp-sin"));
+    }
+
+    [TestMethod]
     public void BitDropdownComboInputShouldBeNamedAfterTheLabel()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
