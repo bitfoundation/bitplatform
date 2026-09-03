@@ -1,7 +1,7 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@if ((Matched ?? ChildContent ?? NotMatched) is not null)
+@if (_HasContent)
 {
     if (NoWrapper)
     {
@@ -12,7 +12,20 @@
            an element of its own: the content it would have wrapped goes with it. *@
         if (Visibility is not BitVisibility.Collapsed)
         {
-            @(_isMatched ? (Matched ?? ChildContent) : NotMatched)
+            @* One fragment for both states, so the content of a Template keeps its place in the
+               render tree across a flip of the query and is updated rather than built again. *@
+            if (Template is not null)
+            {
+                @Template(IsMatched)
+            }
+            else if (IsMatched)
+            {
+                @(Matched ?? ChildContent)
+            }
+            else
+            {
+                @NotMatched
+            }
         }
     }
     else
@@ -23,7 +36,11 @@
              style="@StyleBuilder.Value"
              class="@ClassBuilder.Value"
              dir="@Dir?.ToString().ToLower()">
-            @if (_isMatched)
+            @if (Template is not null)
+            {
+                @Template(IsMatched)
+            }
+            else if (IsMatched)
             {
                 @(Matched ?? ChildContent)
             }

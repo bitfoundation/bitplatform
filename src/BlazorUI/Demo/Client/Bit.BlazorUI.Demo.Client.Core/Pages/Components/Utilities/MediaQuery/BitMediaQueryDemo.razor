@@ -5,183 +5,276 @@
             Description="A component to render content based on CSS media queries, from the predefined bit BlazorUI screen queries to any custom query." />
 
 <DemoPage Name="MediaQuery"
-          Description="BitMediaQuery renders content based on CSS media queries, using the browser's matchMedia API. It offers the predefined bit BlazorUI screen queries, built from the live theme breakpoints so customized themes are honored, and also accepts any custom media query, including non-viewport features such as orientation or prefers-color-scheme."
+          Description="BitMediaQuery renders content by what the browser's matchMedia API reports, so a layout decision that CSS cannot express - rendering a different component, or none at all, rather than restyling one - is written once beside the markup it belongs to. It offers the predefined bit screen queries, built at runtime from the live theme breakpoints so a customized theme is honored, and accepts any custom media query, including the non-viewport features such as orientation, pointer or prefers-color-scheme."
           Parameters="componentParameters"
-          PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
           GitHubUrl="Utilities/MediaQuery/BitMediaQuery.razor"
           GitHubDemoUrl="Utilities/MediaQuery/BitMediaQueryDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>
-            The content of the component renders only while the screen matches the specified query.
-            Explore the predefined screen queries by resizing the window (you can try zoom in/out too).
+        <div class="example-desc">
+            The content of the component renders only while the screen matches the specified query. The predefined
+            screen queries come in four shapes: a single band (<b>Xs</b> to <b>Xxl</b>), everything below a breakpoint
+            (<b>Lt*</b>), everything above one (<b>Gt*</b>), and a span between two of them (<b>*To*</b>). The bands
+            never overlap and leave no width uncovered, so exactly one of the six is matched at any size. Resize the
+            window to explore them (zooming in and out works too).
         </div>
-        <br />
-        <div><b>Normal screen queries</b>:</div><br />
-        <BitMediaQuery ScreenQuery="BitScreenQuery.Xs">This is <b>Xs</b> (Extra Small).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.Sm">This is <b>Sm</b> (Small).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.Md">This is <b>Md</b> (Medium).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.Lg">This is <b>Lg</b> (Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.Xl">This is <b>Xl</b> (Extra Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.Xxl">This is <b>Xxl</b> (Extra Extra Large).</BitMediaQuery>
-        <br /><br /><br /><br />
-        <div><b>Range screen queries (less than)</b>:</div><br />
-        <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm">This is <b>LtSm</b> (Less Than Small).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd">This is <b>LtMd</b> (Less Than Medium).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.LtLg">This is <b>LtLg</b> (Less Than Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.LtXl">This is <b>LtXl</b> (Less Than Extra Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.LtXxl">This is <b>LtXxl</b> (Less Than Extra Extra Large).</BitMediaQuery>
-        <br /><br /><br /><br />
-        <div><b>Range screen queries (greater than)</b>:</div><br />
-        <BitMediaQuery ScreenQuery="BitScreenQuery.GtXs">This is <b>GtXs</b> (Greater Than Extra Small).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.GtSm">This is <b>GtSm</b> (Greater Than Small).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.GtMd">This is <b>GtMd</b> (Greater Than Medium).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.GtLg">This is <b>GtLg</b> (Greater Than Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.GtXl">This is <b>GtXl</b> (Greater Than Extra Large).</BitMediaQuery>
-        <br /><br /><br /><br />
-        <div><b>Range screen queries (between)</b>:</div><br />
-        <BitMediaQuery ScreenQuery="BitScreenQuery.SmToMd">This is <b>SmToMd</b> (Small through Medium).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.SmToLg">This is <b>SmToLg</b> (Small through Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.SmToXl">This is <b>SmToXl</b> (Small through Extra Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.MdToLg">This is <b>MdToLg</b> (Medium through Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.MdToXl">This is <b>MdToXl</b> (Medium through Extra Large).</BitMediaQuery>
-        <BitMediaQuery ScreenQuery="BitScreenQuery.LgToXl">This is <b>LgToXl</b> (Large through Extra Large).</BitMediaQuery>
+        <div class="example-content">
+            <div><b>Normal screen queries</b>:</div>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.Xs">This is <b>Xs</b> (Extra Small).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.Sm">This is <b>Sm</b> (Small).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.Md">This is <b>Md</b> (Medium).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.Lg">This is <b>Lg</b> (Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.Xl">This is <b>Xl</b> (Extra Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.Xxl">This is <b>Xxl</b> (Extra Extra Large).</BitMediaQuery>
+
+            <div><b>Range screen queries (less than)</b>:</div>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm">This is <b>LtSm</b> (Less Than Small).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd">This is <b>LtMd</b> (Less Than Medium).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.LtLg">This is <b>LtLg</b> (Less Than Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.LtXl">This is <b>LtXl</b> (Less Than Extra Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.LtXxl">This is <b>LtXxl</b> (Less Than Extra Extra Large).</BitMediaQuery>
+
+            <div><b>Range screen queries (greater than)</b>:</div>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.GtXs">This is <b>GtXs</b> (Greater Than Extra Small).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.GtSm">This is <b>GtSm</b> (Greater Than Small).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.GtMd">This is <b>GtMd</b> (Greater Than Medium).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.GtLg">This is <b>GtLg</b> (Greater Than Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.GtXl">This is <b>GtXl</b> (Greater Than Extra Large).</BitMediaQuery>
+
+            <div><b>Range screen queries (between)</b>:</div>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.SmToMd">This is <b>SmToMd</b> (Small through Medium).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.SmToLg">This is <b>SmToLg</b> (Small through Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.SmToXl">This is <b>SmToXl</b> (Small through Extra Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.MdToLg">This is <b>MdToLg</b> (Medium through Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.MdToXl">This is <b>MdToXl</b> (Medium through Extra Large).</BitMediaQuery>
+            <BitMediaQuery ScreenQuery="BitScreenQuery.LgToXl">This is <b>LgToXl</b> (Large through Extra Large).</BitMediaQuery>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Matched & NotMatched" RazorCode="@example2RazorCode" Id="example2">
-        <div>
-            The Matched and NotMatched parameters render different content for each state of the query, making an inline responsive if/else.
-            Matched is an alias for ChildContent and takes precedence over it when both are provided.
+        <div class="example-desc">
+            <b>Matched</b> and <b>NotMatched</b> render different content for each state of the query, making an inline
+            responsive if/else. <b>Matched</b> is an alias for <b>ChildContent</b> and takes precedence over it when
+            both are provided, and either side may be left out: with only <b>NotMatched</b> the component renders
+            nothing while the query matches, which is how a piece of markup is dropped above a breakpoint.
         </div>
-        <br />
-        <BitMediaQuery ScreenQuery="BitScreenQuery.Md">
-            <Matched>
-                This is <b>Matched</b> (BitScreenQuery.Md).
-            </Matched>
-            <NotMatched>
-                [BitScreenQuery.Md] <b>NotMatched!</b>.
-            </NotMatched>
-        </BitMediaQuery>
+        <div class="example-content">
+            <BitMediaQuery ScreenQuery="BitScreenQuery.Md">
+                <Matched>
+                    This is <b>Matched</b> (BitScreenQuery.Md).
+                </Matched>
+                <NotMatched>
+                    [BitScreenQuery.Md] <b>NotMatched!</b>.
+                </NotMatched>
+            </BitMediaQuery>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Theme breakpoints" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>
-            The predefined screen queries are not baked into the component; they resolve from the live theme breakpoint tokens
-            (the --bit-bp-* CSS variables). Overriding the breakpoints of a BitTheme, globally via BitThemeManager or scoped via
-            BitThemeProvider, changes the predefined queries accordingly.
-            Here the same Md screen query responds to a different width range inside a provider with customized breakpoints
-            (resize the window and watch them flip at different widths).
+    <DemoExample Title="Template" RazorCode="@example3RazorCode" Id="example3">
+        <div class="example-desc">
+            <b>Template</b> is the one fragment that spans both states, receiving the current matched state as its
+            context. It is for the common case where the two states are the same markup told apart by a value - a size,
+            a variant, a class, an attribute - and saves writing that markup twice.
+            <br />
+            Since it stays one fragment in one place of the render tree, the content is updated rather than torn down
+            and built again when the query flips, so whatever the components inside it hold - a half filled in form, a
+            scroll position - survives the change of the viewport. It takes precedence over
+            <b>Matched</b>, <b>ChildContent</b> and <b>NotMatched</b>.
         </div>
-        <br />
-        <div><b>Document breakpoints</b> (Md: 960px to 1279px):</div><br />
-        <BitMediaQuery ScreenQuery="BitScreenQuery.Md">
-            <Matched>Md is <b>matched</b>.</Matched>
-            <NotMatched>Md is <b>not matched</b>.</NotMatched>
-        </BitMediaQuery>
-        <br /><br />
-        <div><b>Customized breakpoints</b> (Md: 700px to 899px):</div><br />
-        <BitThemeProvider Theme="breakpointsTheme">
+        <div class="example-content">
+            <BitMediaQuery ScreenQuery="BitScreenQuery.GtSm">
+                <Template Context="matched">
+                    <BitButton Size="@(matched ? BitSize.Large : BitSize.Small)"
+                               Variant="@(matched ? BitVariant.Fill : BitVariant.Outline)"
+                               IconName="@(matched ? BitIconName.TVMonitor : BitIconName.CellPhone)">
+                        @(matched ? "A large filled button above Sm" : "A small outlined one below it")
+                    </BitButton>
+                </Template>
+            </BitMediaQuery>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Theme breakpoints" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div class="example-desc">
+            The predefined screen queries are not baked into the component: they resolve from the live theme
+            breakpoints, so overriding them - globally through BitThemeManager, or for one subtree through
+            BitThemeProvider - changes what the same <b>ScreenQuery</b> matches. Here the very same
+            <b>BitScreenQuery.Md</b> answers to a different width range inside a provider that re-values the Md and Lg
+            breakpoints. Resize the window and watch the two flip at different widths.
+        </div>
+        <div class="example-content">
+            <div><b>Document breakpoints</b> (Md: 960px to 1279.98px):</div>
             <BitMediaQuery ScreenQuery="BitScreenQuery.Md">
                 <Matched>Md is <b>matched</b>.</Matched>
                 <NotMatched>Md is <b>not matched</b>.</NotMatched>
             </BitMediaQuery>
-        </BitThemeProvider>
+
+            <div><b>Customized breakpoints</b> (Md: 700px to 899.98px):</div>
+            <BitThemeProvider Theme="breakpointsTheme">
+                <BitMediaQuery ScreenQuery="BitScreenQuery.Md">
+                    <Matched>Md is <b>matched</b>.</Matched>
+                    <NotMatched>Md is <b>not matched</b>.</NotMatched>
+                </BitMediaQuery>
+            </BitThemeProvider>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Custom query" RazorCode="@example4RazorCode" Id="example4">
-        <div>
-            You can provide any valid media query as a custom query using the Query parameter
+    <DemoExample Title="Custom query" RazorCode="@example5RazorCode" Id="example5">
+        <div class="example-desc">
+            <b>Query</b> takes any valid CSS media query verbatim
             (<BitLink Target="_blank"
                       Href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries">
                 more info
-            </BitLink>), including the modern range syntax such as (400px &lt;= width &lt;= 700px).
-            When both are provided, Query takes precedence over ScreenQuery.
+            </BitLink>), which is what covers the breakpoints that are not part of the theme scale, including the
+            modern range syntax such as (400px &lt;= width &lt;= 700px). It takes precedence over <b>ScreenQuery</b>
+            when both are set, and a query the browser cannot parse is reported as a warning in the developer console
+            rather than silently never matching.
         </div>
-        <br /><br />
-        <div>screen and (max-width: 999px):</div><br />
-        <BitMediaQuery Query="screen and (max-width: 999px)">
-            <Matched>
-                This is <b>screen and (max-width: 999px)</b>.
-            </Matched>
-            <NotMatched>
-                Not matched yet!
-            </NotMatched>
-        </BitMediaQuery>
-        <br /><br />
-        <div>(400px &lt;= width &lt;= 700px):</div><br />
-        <BitMediaQuery Query="(400px <= width <= 700px)">
-            <Matched>
-                The width is <b>between 400px and 700px</b> (range syntax).
-            </Matched>
-            <NotMatched>
-                The width is <b>outside</b> the 400px to 700px range.
-            </NotMatched>
-        </BitMediaQuery>
+        <div class="example-content">
+            <div>screen and (max-width: 999px):</div>
+            <BitMediaQuery Query="screen and (max-width: 999px)">
+                <Matched>
+                    This is <b>screen and (max-width: 999px)</b>.
+                </Matched>
+                <NotMatched>
+                    Not matched yet!
+                </NotMatched>
+            </BitMediaQuery>
+
+            <div>(400px &lt;= width &lt;= 700px):</div>
+            <BitMediaQuery Query="(400px <= width <= 700px)">
+                <Matched>
+                    The width is <b>between 400px and 700px</b> (range syntax).
+                </Matched>
+                <NotMatched>
+                    The width is <b>outside</b> the 400px to 700px range.
+                </NotMatched>
+            </BitMediaQuery>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Media features" RazorCode="@example5RazorCode" Id="example5">
-        <div>
-            Media queries are not only about the viewport width. Any media feature the browser understands works as a custom query,
-            such as the orientation of the screen, the preferred color scheme, the precision of the pointing device, or the reduced motion preference.
+    <DemoExample Title="Media features" RazorCode="@example6RazorCode" Id="example6">
+        <div class="example-desc">
+            Media queries are not only about the viewport width, and neither is this component. Any media feature the
+            browser understands works as a custom query and is watched the same way: the orientation of the screen, the
+            color scheme the system prefers, how precise the pointing device is, or whether reduced motion is asked for.
+            Each of these changes while the page is open, and the content follows it without a reload.
         </div>
-        <br />
-        <BitMediaQuery Query="(orientation: landscape)">
-            <Matched>The screen is in <b>landscape</b> orientation.</Matched>
-            <NotMatched>The screen is in <b>portrait</b> orientation.</NotMatched>
-        </BitMediaQuery>
-        <br />
-        <BitMediaQuery Query="(prefers-color-scheme: dark)">
-            <Matched>The system prefers a <b>dark</b> color scheme.</Matched>
-            <NotMatched>The system prefers a <b>light</b> color scheme.</NotMatched>
-        </BitMediaQuery>
-        <br />
-        <BitMediaQuery Query="(pointer: fine)">
-            <Matched>The primary pointing device is <b>precise</b> (e.g. a mouse).</Matched>
-            <NotMatched>The primary pointing device is <b>coarse</b> or absent (e.g. a touchscreen).</NotMatched>
-        </BitMediaQuery>
-        <br />
-        <BitMediaQuery Query="(prefers-reduced-motion: reduce)">
-            <Matched>Reduced motion is <b>requested</b> by the system.</Matched>
-            <NotMatched>Reduced motion is <b>not requested</b> by the system.</NotMatched>
-        </BitMediaQuery>
+        <div class="example-content">
+            <BitMediaQuery Query="(orientation: landscape)">
+                <Matched>The screen is in <b>landscape</b> orientation.</Matched>
+                <NotMatched>The screen is in <b>portrait</b> orientation.</NotMatched>
+            </BitMediaQuery>
+            <BitMediaQuery Query="(prefers-color-scheme: dark)">
+                <Matched>The system prefers a <b>dark</b> color scheme.</Matched>
+                <NotMatched>The system prefers a <b>light</b> color scheme.</NotMatched>
+            </BitMediaQuery>
+            <BitMediaQuery Query="(pointer: fine)">
+                <Matched>The primary pointing device is <b>precise</b> (e.g. a mouse).</Matched>
+                <NotMatched>The primary pointing device is <b>coarse</b> or absent (e.g. a touchscreen).</NotMatched>
+            </BitMediaQuery>
+            <BitMediaQuery Query="(prefers-reduced-motion: reduce)">
+                <Matched>Reduced motion is <b>requested</b> by the system.</Matched>
+                <NotMatched>Reduced motion is <b>not requested</b> by the system.</NotMatched>
+            </BitMediaQuery>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="NoWrapper" RazorCode="@example6RazorCode" Id="example6">
-        <div>
-            By default the active content renders inside a root div element. NoWrapper removes it and renders the content directly,
-            which is useful when the extra element would interfere with the surrounding layout (for example inside a flex or grid container).
-            You can inspect the rendered output below to see that no wrapping element exists around the content.
+    <DemoExample Title="NoWrapper" RazorCode="@example7RazorCode" Id="example7">
+        <div class="example-desc">
+            By default the active content renders inside a root div. <b>NoWrapper</b> removes it and renders the content
+            directly, which is what keeps the component out of the way where the extra element would change the layout -
+            a flex or grid container that lays out its own children, a table row, a list. Nothing that describes an
+            element (the class, the style, the id, the direction) applies then, since there is none; a scoped
+            BitThemeProvider is still honored, because the breakpoints are read from the cascading theme rather than
+            from the missing element. Inspect the output below to see that no wrapper is there.
         </div>
-        <br />
-        <BitMediaQuery NoWrapper ScreenQuery="BitScreenQuery.GtSm">
-            <Matched>This content renders <b>without</b> a wrapping element (BitScreenQuery.GtSm).</Matched>
-            <NotMatched>[BitScreenQuery.GtSm] <b>NotMatched!</b> (still no wrapping element)</NotMatched>
-        </BitMediaQuery>
+        <div class="example-content">
+            <BitMediaQuery NoWrapper ScreenQuery="BitScreenQuery.GtSm">
+                <Matched>This content renders <b>without</b> a wrapping element (BitScreenQuery.GtSm).</Matched>
+                <NotMatched>[BitScreenQuery.GtSm] <b>NotMatched!</b> (still no wrapping element)</NotMatched>
+            </BitMediaQuery>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="DefaultMatched" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            Until the browser evaluates the query for the first time, the component renders as not matched.
-            DefaultMatched flips that initial state so the Matched content renders first,
-            avoiding a flash of the wrong content during prerendering, where no JavaScript is available to evaluate the query yet.
-            As soon as the actual result arrives from the browser, it takes over.
+    <DemoExample Title="DefaultMatched" RazorCode="@example8RazorCode" Id="example8">
+        <div class="example-desc">
+            A media query can only be evaluated by the browser, so until the first answer arrives the component has to
+            render something: by default the not-matched side. <b>DefaultMatched</b> flips that first guess so the
+            matched content renders instead, which is what avoids a flash of the wrong content while a page is
+            prerendered on the server or before the JavaScript runtime is up. The real result takes over as soon as it
+            arrives, so pick the side the majority of the visitors will land on.
         </div>
-        <br />
-        <BitMediaQuery DefaultMatched ScreenQuery="BitScreenQuery.GtSm">
-            <Matched>This is <b>Matched</b> (BitScreenQuery.GtSm), also rendered before the query gets evaluated.</Matched>
-            <NotMatched>[BitScreenQuery.GtSm] <b>NotMatched!</b>.</NotMatched>
-        </BitMediaQuery>
+        <div class="example-content">
+            <BitMediaQuery DefaultMatched ScreenQuery="BitScreenQuery.GtSm">
+                <Matched>This is <b>Matched</b> (BitScreenQuery.GtSm), also rendered before the query gets evaluated.</Matched>
+                <NotMatched>[BitScreenQuery.GtSm] <b>NotMatched!</b>.</NotMatched>
+            </BitMediaQuery>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="OnChange" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>
-            The OnChange event notifies about each change of the matched state of the provided query,
-            including once with the initial result, right after the query gets evaluated by the browser for the first time.
-            The current state is also always available through the IsMatched property of the component.
+    <DemoExample Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div class="example-desc">
+            <b>IsMatched</b> is two-way bindable, which is the shortest way to hand the state of a query to the rest of
+            a page: a field kept in step by <b>@@bind-IsMatched</b> can drive anything, and the component itself needs
+            no content at all. It is an output rather than an input - the browser owns the state - so bind it rather
+            than setting it one way, and use <b>DefaultMatched</b> to seed the value before the first answer arrives.
         </div>
-        <br />
-        <BitMediaQuery @ref="mediaQueryRef" ScreenQuery="BitScreenQuery.Md" OnChange="v => isMatched = v" />
-        <div>[BitScreenQuery.Md] IsMatched?: <b>@isMatched</b></div>
-        <div>[BitScreenQuery.Md] via the IsMatched property: <b>@(mediaQueryRef?.IsMatched ?? false)</b></div>
+        <div class="example-content">
+            <BitMediaQuery @bind-IsMatched="isSmallScreen" ScreenQuery="BitScreenQuery.LtMd" />
+            <div>The screen is currently <b>@(isSmallScreen ? "small" : "wide")</b> (BitScreenQuery.LtMd).</div>
+            <BitButton FullWidth="isSmallScreen" Variant="@(isSmallScreen ? BitVariant.Fill : BitVariant.Outline)">
+                A button driven by the bound value
+            </BitButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="OnChange" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div class="example-desc">
+            <b>OnChange</b> reports every change of the matched state, and once more at the start with the initial
+            result, right after the browser evaluates the query for the first time - so a handler always sees the real
+            state and not only the changes after it. Use it where a change is an action to take (loading the data a
+            wide layout needs, closing a drawer) rather than a value to hold; where it is a value, bind
+            <b>IsMatched</b> instead, which is also readable at any time from a reference to the component.
+        </div>
+        <div class="example-content">
+            <BitMediaQuery @ref="mediaQueryRef" ScreenQuery="BitScreenQuery.Md" OnChange="HandleOnChange" />
+            <div>[BitScreenQuery.Md] IsMatched?: <b>@isMatched</b></div>
+            <div>[BitScreenQuery.Md] via the IsMatched property: <b>@(mediaQueryRef?.IsMatched ?? false)</b></div>
+            <div>OnChange call count: <b>@changeCount</b></div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+        <div class="example-desc">
+            <b>Style</b> and <b>Class</b> apply to the wrapping root element like they do on every other component of
+            the library, so the box a matched query renders can be styled without an extra element around it. They are
+            ignored while <b>NoWrapper</b> is set, since there is then no element of the component's own to carry them.
+        </div>
+        <div class="example-content">
+            <BitMediaQuery Style="color: tomato; font-weight: bold;" ScreenQuery="BitScreenQuery.GtXs">
+                <Matched>Styled through the Style parameter (GtXs).</Matched>
+                <NotMatched>Styled through the Style parameter, not matched (GtXs).</NotMatched>
+            </BitMediaQuery>
+            <BitMediaQuery Class="custom-class" ScreenQuery="BitScreenQuery.GtXs">
+                <Matched>Classed through the Class parameter (GtXs).</Matched>
+                <NotMatched>Classed through the Class parameter, not matched (GtXs).</NotMatched>
+            </BitMediaQuery>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+        <div class="example-desc">
+            <b>Dir</b> sets the text direction of the wrapping root element, writing the <code>dir</code> attribute and,
+            for right-to-left, the <code>bit-rtl</code> class the rest of the library reads. Like the other parameters
+            that describe an element, it has no effect while <b>NoWrapper</b> is set - the surrounding direction then
+            applies to the content as it stands.
+        </div>
+        <div class="example-content">
+            <BitMediaQuery Dir="BitDir.Rtl" ScreenQuery="BitScreenQuery.GtXs">
+                <Matched>این محتوا در صفحه‌های بزرگ‌تر از <b>Xs</b> نمایش داده می‌شود.</Matched>
+                <NotMatched>عرض صفحه کمتر از حد <b>GtXs</b> است.</NotMatched>
+            </BitMediaQuery>
+        </div>
     </DemoExample>
 </DemoPage>
