@@ -1,0 +1,152 @@
+name: Deploy to server
+description: Downloads a published server bundle and mirrors it into a site on the self-hosted runner, stopping and starting its app pool around the copy.
+
+# Files that live on the server only (real secrets, hand-maintained config) are never copied and never deleted.
+# Requires a runner whose service account is allowed to control the web server.
+
+inputs:
+  artifact-name:
+    description: Name of the artifact holding the published server bundle.
+    required: true
+  app-pool:
+    description: Name of the application pool to stop/start around the copy.
+    required: true
+  site-path:
+    description: Physical path of the site, e.g. C:\inetpub\AdminPanelApi.
+    required: true
+  sentinel-file:
+    description: File that must exist in the downloaded bundle, e.g. AdminPanel.Server.Api.dll. Guards against mirroring an empty bundle over a live site.
+    required: true
+  health-check-url:
+    description: URL polled after the app pool restarts. The deployment fails if it never returns a success status.
+    required: true
+  cloudflare-zone-id:
+    description: Zone id for bitplatform.dev. Leave empty to skip the cache purge.
+    required: false
+    default: ''
+  cloudflare-token:
+    description: Cloudflare API token carrying the Zone / Cache Purge permission.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Download server bundle
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ runner.temp }}\${{ inputs.artifact-name }}
+
+    - name: Verify bundle
+      shell: pwsh
+      run: |
+        $source = '${{ runner.temp }}\${{ inputs.artifact-name }}'
+        $sentinel = Join-Path $source '${{ inputs.sentinel-file }}'
+        if ((Test-Path -LiteralPath $sentinel) -eq $false) {
+          throw "Bundle at $source has no ${{ inputs.sentinel-file }} - refusing to mirror it over ${{ inputs.site-path }}."
+        }
+        Write-Host "Bundle verified: $((Get-ChildItem $source -Recurse -File).Count) files."
+
+    - name: Stop app pool
+      shell: pwsh
+      run: |
+        # appcmd and robocopy signal through exit codes, which this action reads itself.
+        $PSNativeCommandUseErrorActionPreference = $false
+        $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
+
+        $pools = & $appcmd list apppool /text:name
+        if ($pools -notcontains '${{ inputs.app-pool }}') {
+          throw "This runner has no app pool named '${{ inputs.app-pool }}'. Found: $($pools -join ', ')"
+        }
+
+        & $appcmd stop apppool /apppool.name:"${{ inputs.app-pool }}" | Out-Host
+
+        # appcmd returns before w3wp exits, and a live worker process keeps the dlls locked.
+        $deadline = (Get-Date).AddSeconds(90)
+        do {
+          $state = (& $appcmd list apppool "${{ inputs.app-pool }}" /text:state)
+          if ($state -eq 'Stopped') { break }
+          Start-Sleep -Seconds 2
+        } while ((Get-Date) -lt $deadline)
+
+        if ($state -ne 'Stopped') { throw "App pool ${{ inputs.app-pool }} is still '$state' after 90s." }
+        Start-Sleep -Seconds 3
+        Write-Host "App pool ${{ inputs.app-pool }} stopped."
+        exit 0
+
+    - name: Mirror bundle into site
+      shell: pwsh
+      run: |
+        $PSNativeCommandUseErrorActionPreference = $false
+        $source = '${{ runner.temp }}\${{ inputs.artifact-name }}'
+        $target = '${{ inputs.site-path }}'
+
+        # /XF and /XD apply to the destination scan too, so /MIR leaves excluded items alone
+        # instead of deleting them as "extra". appsettings*.json, the certificate/key pair, the Apple
+        # auth key and App_Data (Hangfire's SQLite db) are owned by the server, not by the build.
+        robocopy $source $target /MIR /R:5 /W:5 /NFL /NDL /NJH /NP `
+          /XF 'appsettings*.json' 'AppCertificate.*' 'AppleAuthKey.p8' '*.pfx' `
+          /XD 'App_Data' 'logs'
+        $code = $LASTEXITCODE
+
+        # robocopy: 0-7 are success codes (0 = no change, 1 = copied, 2 = extras, 4 = mismatches), 8+ are failures.
+        if ($code -ge 8) { throw "robocopy failed with exit code $code." }
+        Write-Host "Mirrored into $target (robocopy exit code $code)."
+
+        # The pwsh shell exits with $LASTEXITCODE, and robocopy's success codes are non-zero.
+        exit 0
+
+    - name: Start app pool
+      if: always()
+      shell: pwsh
+      run: |
+        # appcmd and robocopy signal through exit codes, which this action reads itself.
+        $PSNativeCommandUseErrorActionPreference = $false
+        $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
+        & $appcmd start apppool /apppool.name:"${{ inputs.app-pool }}" | Out-Host
+
+        $state = (& $appcmd list apppool "${{ inputs.app-pool }}" /text:state)
+        if ($state -ne 'Started') { throw "App pool ${{ inputs.app-pool }} is '$state' after start." }
+        Write-Host "App pool ${{ inputs.app-pool }} started."
+        exit 0
+
+    - name: Health check
+      shell: pwsh
+      run: |
+        $url = '${{ inputs.health-check-url }}'
+        for ($attempt = 1; $attempt -le 10; $attempt++) {
+          try {
+            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
+            Write-Host "$url returned $($response.StatusCode) on attempt $attempt."
+            exit 0
+          }
+          catch {
+            Write-Host "Attempt $attempt/10 failed: $($_.Exception.Message)"
+            Start-Sleep -Seconds 15
+          }
+        }
+        throw "$url never became healthy after the deployment."
+
+    # Runs only once the new build is confirmed serving, so the purge never re-warms the old one.
+    - name: Purge Cloudflare cache
+      if: inputs.cloudflare-zone-id != '' && inputs.cloudflare-token != ''
+      shell: pwsh
+      env:
+        CF_ZONE_ID: ${{ inputs.cloudflare-zone-id }}
+        CF_TOKEN: ${{ inputs.cloudflare-token }}
+      run: |
+        # Purging a single hostname is an Enterprise-only feature, so this drops the whole
+        # bitplatform.dev zone. The origin is this machine, so a cold cache costs little.
+        $result = Invoke-RestMethod -Method Post `
+          -Uri "https://api.cloudflare.com/client/v4/zones/$env:CF_ZONE_ID/purge_cache" `
+          -Headers @{ Authorization = "Bearer $env:CF_TOKEN" } `
+          -ContentType 'application/json' `
+          -Body '{"purge_everything":true}'
+
+        if (-not $result.success) {
+          throw "Cloudflare purge failed: $($result.errors | ConvertTo-Json -Compress)"
+        }
+        Write-Host "Cloudflare cache purged for the zone serving ${{ inputs.health-check-url }}."
