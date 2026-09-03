@@ -267,7 +267,7 @@
 
     <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Styles and Classes reach every part of the component - the strip, the indicator's disc and the glyph inside it - and each of those three carries its own release, refreshing and complete variant on top, so one state can be styled without restyling the rest. Pull far enough to see the release variant take over.</div>
-        <br /><br />
+        <br />
         <div class="example-content">
             <BitPullToRefresh OnRefresh="HandleOnRefreshStyle"
                               Styles="@(new() { Loading = "background-color: rgb(76, 255, 0, 0.1)", Spinner = "padding: 5px;border-radius: 50%;background-color: #4cff00;", SpinnerCanRelease = "background-color: #ffd800;" })">
@@ -294,14 +294,16 @@
     <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>A pull is a vertical gesture, so Dir leaves it exactly as it is; what the direction changes is the content of the anchor and of any custom template, and the loading strip, which is pinned to the start edge and so follows the writing direction across the anchor.</div>
         <br />
-        <BitPullToRefresh Dir="BitDir.Rtl" OnRefresh="HandleOnRefreshRtl">
-            <div class="anchor">
-                @foreach (var (idx, i) in rtlItems)
-                {
-                    <div @key="idx">@(idx.ToString().PadLeft(2, '0')) .مورد @i</div>
-                }
-            </div>
-        </BitPullToRefresh>
+        <div dir="rtl">
+            <BitPullToRefresh Dir="BitDir.Rtl" OnRefresh="HandleOnRefreshRtl">
+                <div class="anchor">
+                    @foreach (var (idx, i) in rtlItems)
+                    {
+                        <div @key="idx">@(idx.ToString().PadLeft(2, '0')) .مورد @i</div>
+                    }
+                </div>
+            </BitPullToRefresh>
+        </div>
     </DemoExample>
 
 </DemoPage>
