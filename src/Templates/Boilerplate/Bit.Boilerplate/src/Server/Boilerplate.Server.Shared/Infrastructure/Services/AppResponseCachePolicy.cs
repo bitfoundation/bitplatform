@@ -60,7 +60,12 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         // header (it only skips Request-Id, Content-Length and Age), so without this rule the first caller's
         // Access-Control-Allow-Origin would be replayed to every other origin and their browsers would reject it.
         context.CacheVaryByRules.HeaderNames = new[] { HeaderNames.Origin, "X-Origin" };
-        if (CultureInfoManager.InvariantGlobalization is false)
+
+        // Only a page's body is culture dependent - its text is translated and its direction flips. An api response
+        // carries data, and anything culture shaped in it is formatted by whoever renders it (See
+        // ProductDto.FormattedPrice), so varying the api by culture would split every entry eleven ways to store
+        // eleven identical bodies.
+        if (CultureInfoManager.InvariantGlobalization is false && context.HttpContext.IsBlazorPageContext())
         {
             context.CacheVaryByRules.VaryByValues.Add("Culture", FormattableString.Invariant($"{CultureInfo.CurrentCulture.Name}|{CultureInfo.CurrentUICulture.Name}"));
         }

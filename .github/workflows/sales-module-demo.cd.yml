@@ -49,7 +49,7 @@ jobs:
         files: 'SalesModule/**/appsettings*json'
       env:
         WebAppRender.PrerenderEnabled: true
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: '/'
         WebAppRender.BlazorMode: 'BlazorWebAssembly'
         AdsPushVapid.PublicKey: ${{ secrets.SALES_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
