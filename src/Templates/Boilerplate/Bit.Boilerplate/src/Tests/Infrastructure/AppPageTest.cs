@@ -16,8 +16,16 @@ public class AppPageTest : PageTest
         Context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
         Assertions.SetDefaultExpectTimeout((float)defaultTimeout.TotalMilliseconds);
 
-        await AnswerConsentBanner(Context);
+        if (AnswersConsentBanner)
+        {
+            await AnswerConsentBanner(Context);
+        }
     }
+
+    /// <summary>
+    /// Whether the banner is answered ahead of the app for this test. Off only where the banner itself is wanted.
+    /// </summary>
+    protected virtual bool AnswersConsentBanner => true;
 
     /// <summary>
     /// Answers the consent banner before the app gets to ask. It is a modeless panel over the bottom of the page, so

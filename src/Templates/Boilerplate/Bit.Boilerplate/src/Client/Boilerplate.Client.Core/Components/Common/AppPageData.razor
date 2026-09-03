@@ -1,1 +1,7 @@
 <PageTitle>@(PageTitle ?? Title)</PageTitle>
+
+@* App.razor carries the same two tags only when no page component renders at all, so a document never has two of either. *@
+<HeadContent>
+    <meta name="description" content="@(Description ?? localizer[nameof(AppStrings.DescriptionMetaTagValue)])" />
+    <link rel="canonical" href="@CanonicalUrl" />
+</HeadContent>
