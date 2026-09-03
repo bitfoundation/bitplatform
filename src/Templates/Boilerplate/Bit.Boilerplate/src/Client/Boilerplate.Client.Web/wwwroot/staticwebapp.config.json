@@ -9,12 +9,6 @@
       "/*.{css,js,mjs,json,xml,txt,map,br,gz,dat,wasm,pdb,webp,png,jpg,jpeg,gif,svg,ico,woff,woff2,ttf,webmanifest}"
     ]
   },
-  "responseOverrides": {
-    "404": {
-      "rewrite": "/index.html",
-      "statusCode": 404
-    }
-  },
   "globalHeaders": {
     "Strict-Transport-Security": "max-age=2592000",
     "X-Content-Type-Options": "nosniff",
