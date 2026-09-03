@@ -20,6 +20,7 @@
                 here, or the page itself - and the element only travels within its own parent, so a parent no
                 taller than the element gives it no room to stick in.
             </div>
+            <br />
             <div class="vertical-container">
                 <BitSticky Class="sticky">Basic Sticky</BitSticky>
                 <div>
@@ -59,8 +60,9 @@
                 whichever the scroll calls for - pinned at the bottom on the way down to it, at the top once
                 scrolled past it.
             </div>
+            <br />
             <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br /><br />
+            <br /><br />
             <div><b>Top</b>:</div>
             <div class="vertical-container">
                 <p>
@@ -195,8 +197,9 @@
                 <b>Start</b> is the left edge in LTR and the right one in RTL, <b>End</b> the opposite, and
                 <b>StartAndEnd</b> pins to whichever of the two the scroll calls for.
             </div>
+            <br />
             <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br /><br />
+            <br /><br />
             <div><b>Start</b>:</div>
             <div class="horizontal-container">
                 <p>
@@ -239,8 +242,9 @@
                 edges the offsets name, and both can be set at once for a TopAndBottom that keeps a margin
                 on each side.
             </div>
+            <br />
             <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br /><br />
+            <br /><br />
             <div><b>Top=20px</b>:</div>
             <div class="vertical-container">
                 <p>
@@ -378,8 +382,9 @@
                 sides, so they read the same in LTR and RTL - reach for the positions where the side should
                 follow the reading direction.
             </div>
+            <br />
             <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br /><br />
+            <br /><br />
             <div><b>Left=20px</b>:</div>
             <div class="horizontal-container">
                 <p>
@@ -429,6 +434,7 @@
                 change none of those can see - content moved around inside the container leaving every one of those
                 boxes the size it was.
             </div>
+            <br />
             <div>Currently stuck: <b>@isStuck</b></div>
             <br />
             <div><b>StuckClass</b> (a shadow only while stuck):</div>
@@ -494,6 +500,7 @@
                 from the edge the bar is pinned against without a single line of C#. The edges are physical, the way the
                 browser resolves them, so a <b>Start</b> sticky reports Left in an LTR container and Right in an RTL one.
             </div>
+            <br />
             <div>Currently pinned to: <b>@stuckEdges</b></div>
             <br />
             <div class="vertical-container">
@@ -535,8 +542,9 @@
                 engines still refuse to pin, so a frozen header is laid out with
                 <code>border-collapse: separate</code> and a zero <code>border-spacing</code>.
             </div>
+            <br />
             <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br /><br />
+            <br /><br />
             <div><b>A header and a footer</b>:</div>
             <div class="vertical-container">
                 <BitSticky Element="header" Class="sticky">A sticky header element</BitSticky>
@@ -585,8 +593,9 @@
                 raises the sticky element above it - in the first container below the sticky passes under
                 the positioned box, in the second one its <b>ZIndex</b> lifts it over.
             </div>
+            <br />
             <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br /><br />
+            <br /><br />
             <div><b>Default z-index</b> (passes under the positioned box):</div>
             <div class="vertical-container">
                 <BitSticky Class="sticky">Default z-index</BitSticky>
@@ -639,6 +648,7 @@
                 stuck detection (when it has any) is detached. It is what disabling stickiness conditionally
                 - below a breakpoint, behind a user preference - looks like without changing the markup.
             </div>
+            <br />
             <BitToggle @bind-Value="isStickyEnabled" Text="Sticky enabled" />
             <br />
             <div class="vertical-container">
@@ -673,8 +683,9 @@
                 pins with it. For a look that only appears while the element is pinned, use <b>StuckClass</b>
                 and <b>StuckStyle</b> instead.
             </div>
+            <br />
             <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br /><br />
+            <br /><br />
             <div><b>Style</b>:</div>
             <div class="vertical-container">
                 <BitSticky Style="color: darkred; padding: 0.5rem; background-color: goldenrod; border-radius: 0.5rem;">
@@ -719,28 +730,31 @@
                 <b>Dir</b> sets the direction of the component's own content and is also cascaded, so a
                 BitSticky inside an RTL container inherits it.
             </div>
+            <br />
             <div>Try scrolling the container to see the sticky component in action:</div>
-            <br /><br /><br />
-            <div><b>Start</b> (the right edge in RTL):</div>
-            <div dir="rtl" class="horizontal-container">
-                <p>
-                    روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
-                </p>
-                <BitSticky Dir="BitDir.Rtl" Class="sticky" Position="@BitStickyPosition.Start">چسبیده به آغاز</BitSticky>
-                <p>
-                    روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>End</b> (the left edge in RTL):</div>
-            <div dir="rtl" class="horizontal-container">
-                <p>
-                    روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
-                </p>
-                <BitSticky Dir="BitDir.Rtl" Class="sticky" Position="@BitStickyPosition.End">چسبیده به پایان</BitSticky>
-                <p>
-                    روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
-                </p>
+            <br /><br />
+            <div dir="rtl">
+                <div><b>Start</b> (the right edge in RTL):</div>
+                <div class="horizontal-container">
+                    <p>
+                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
+                    </p>
+                    <BitSticky Dir="BitDir.Rtl" Class="sticky" Position="@BitStickyPosition.Start">چسبیده به آغاز</BitSticky>
+                    <p>
+                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
+                    </p>
+                </div>
+                <br /><br />
+                <div><b>End</b> (the left edge in RTL):</div>
+                <div class="horizontal-container">
+                    <p>
+                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
+                    </p>
+                    <BitSticky Dir="BitDir.Rtl" Class="sticky" Position="@BitStickyPosition.End">چسبیده به پایان</BitSticky>
+                    <p>
+                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
+                    </p>
+                </div>
             </div>
         </DemoExample>
     </DemoPage>
