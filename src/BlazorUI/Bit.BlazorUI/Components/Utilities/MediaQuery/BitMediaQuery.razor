@@ -1,20 +1,53 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@if ((Matched ?? ChildContent ?? NotMatched) is not null)
+@if (_HasContent)
 {
-    <div @ref="RootElement" @attributes="HtmlAttributes"
-         id="@_Id"
-         style="@StyleBuilder.Value"
-         class="@ClassBuilder.Value"
-         dir="@Dir?.ToString().ToLower()">
-        @if (_isMatched)
+    if (NoWrapper)
+    {
+        @* No element is rendered any more, so the reference a previous render captured is stale. *@
+        RootElement = default;
+
+        @* A collapsed component is asked to be out of the DOM, which still means something without
+           an element of its own: the content it would have wrapped goes with it. *@
+        if (Visibility is not BitVisibility.Collapsed)
         {
-            @(Matched ?? ChildContent)
+            @* One fragment for both states, so the content of a Template keeps its place in the
+               render tree across a flip of the query and is updated rather than built again. *@
+            if (Template is not null)
+            {
+                @Template(IsMatched)
+            }
+            else if (IsMatched)
+            {
+                @(Matched ?? ChildContent)
+            }
+            else
+            {
+                @NotMatched
+            }
         }
-        else
-        {
-            @NotMatched
-        }
-    </div>
+    }
+    else
+    {
+        <div @ref="RootElement" @attributes="HtmlAttributes"
+             id="@_Id"
+             aria-label="@AriaLabel"
+             style="@StyleBuilder.Value"
+             class="@ClassBuilder.Value"
+             dir="@Dir?.ToString().ToLower()">
+            @if (Template is not null)
+            {
+                @Template(IsMatched)
+            }
+            else if (IsMatched)
+            {
+                @(Matched ?? ChildContent)
+            }
+            else
+            {
+                @NotMatched
+            }
+        </div>
+    }
 }

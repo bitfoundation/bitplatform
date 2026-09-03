@@ -1,0 +1,21 @@
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+// Every example is a stack of lines that appear and disappear as the viewport crosses a breakpoint, so the
+// container gives them a consistent gap instead of the <br /> runs the page would otherwise need - and keeps
+// the gap from collapsing to nothing when the queries of a group all fall out at once.
+.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+
+    // The class handed to a BitMediaQuery in the "Style & Class" example. It lands on a component, and the
+    // scope attribute of this stylesheet only lands on the plain elements written in this page, so it is
+    // reached through the container that carries it.
+    > ::deep .custom-class {
+        padding: 0.5rem;
+        border-radius: $bit-shape-radius-surface;
+        border: 0.0625rem dashed $bit-color-border-primary;
+        background-color: $bit-color-background-secondary;
+    }
+}
