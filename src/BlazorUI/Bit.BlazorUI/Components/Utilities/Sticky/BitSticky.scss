@@ -1,7 +1,12 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-stk {
-    z-index: 1;
+    // Enough to pass over the plain flowing content the element sticks above without covering the
+    // popups and overlays of the rest of the page, which sit far higher up the scale. Declared as a
+    // custom property so a stylesheet can raise it for a whole region at once, the way the ZIndex
+    // parameter raises it for one component.
+    --bit-stk-zin: 1;
+    z-index: var(--bit-stk-zin);
     position: sticky;
 
     // A disabled sticky steps back into the normal flow: a static position ignores every inset, so

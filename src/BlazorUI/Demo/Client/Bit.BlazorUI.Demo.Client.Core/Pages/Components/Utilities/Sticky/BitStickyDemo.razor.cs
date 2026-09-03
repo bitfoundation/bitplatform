@@ -4,6 +4,19 @@ public partial class BitStickyDemo
 {
     private bool isStuck;
     private bool isStickyEnabled = true;
+    private BitStickyEdges stuckEdges;
+
+    private readonly (string, string)[] tableRows =
+    [
+        ("Ada Lovelace", "Mathematician"),
+        ("Grace Hopper", "Rear Admiral"),
+        ("Alan Turing", "Cryptanalyst"),
+        ("Katherine Johnson", "Physicist"),
+        ("Barbara Liskov", "Computer Scientist"),
+        ("Donald Knuth", "Author"),
+        ("Edsger Dijkstra", "Computer Scientist"),
+        ("Margaret Hamilton", "Software Engineer"),
+    ];
 
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -23,6 +36,13 @@ public partial class BitStickyDemo
         },
         new()
         {
+            Name = "Element",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom html element used for the root node, which is a div by default - a header, a footer, a nav, an aside or a th is what names the sticky region for assistive technologies. A name that is not one a tag can have falls back to the default."
+        },
+        new()
+        {
             Name = "Left",
             Type = "string?",
             DefaultValue = "null",
@@ -33,7 +53,16 @@ public partial class BitStickyDemo
             Name = "OnStuckChanged",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "Callback for when the stuck state changes: true while the element is pinned to an edge of its scrolling container. Using it (or StuckClass/StuckStyle) attaches the stuck detection."
+            Description = "Callback for when the stuck state changes: true while the element is pinned to an edge of its scrolling container. Using it (or OnStuckEdgesChanged, StuckClass or StuckStyle) attaches the stuck detection."
+        },
+        new()
+        {
+            Name = "OnStuckEdgesChanged",
+            Type = "EventCallback<BitStickyEdges>",
+            DefaultValue = "",
+            Description = "Callback for when the set of edges the element is pinned to changes. Unlike OnStuckChanged it also reports the move from one edge of a pair to the other, which never flips the boolean.",
+            Href = "#sticky-edges-enum",
+            LinkType = LinkType.Link,
         },
         new()
         {
@@ -56,7 +85,7 @@ public partial class BitStickyDemo
             Name = "StuckClass",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS class applied to the root element only while the component is stuck - a shadow, an opaque background, a border once content passes underneath. The bit-stk-stc class accompanies it."
+            Description = "The CSS class applied to the root element only while the component is stuck - a shadow, an opaque background, a border once content passes underneath. The bit-stk-stc class and one naming each pinned edge accompany it."
         },
         new()
         {
@@ -77,7 +106,7 @@ public partial class BitStickyDemo
             Name = "ZIndex",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The z-index of the root element. When not set, the component keeps a z-index of 1 - enough to stay above the plain flowing content it sticks over without covering popups and overlays."
+            Description = "The z-index of the root element. When not set, the component keeps a z-index of 1 - enough to stay above the plain flowing content it sticks over without covering popups and overlays. That default is also the --bit-stk-zin custom property, for setting it from a stylesheet."
         }
     ];
 
@@ -88,7 +117,23 @@ public partial class BitStickyDemo
             Name = "IsStuck",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the component is currently stuck to an edge of its scrolling container. Always false unless OnStuckChanged, StuckClass or StuckStyle is used, since those are what attach the stuck detection."
+            Description = "Whether the component is currently stuck to an edge of its scrolling container. Always false unless one of OnStuckChanged, OnStuckEdgesChanged, StuckClass or StuckStyle is used, since those are what attach the stuck detection."
+        },
+        new()
+        {
+            Name = "StuckEdges",
+            Type = "BitStickyEdges",
+            DefaultValue = "BitStickyEdges.None",
+            Description = "The edges of the scrolling container the component is currently pinned to. This is IsStuck with the edges named, and it carries both of them while the element is pinned into a corner.",
+            Href = "#sticky-edges-enum",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "RefreshAsync",
+            Type = "ValueTask",
+            DefaultValue = "",
+            Description = "Reads the stuck state again, along with everything it is derived from. The state settles itself on every scroll and on every resize of the element, its parent, the container or the page, so this is only for a layout change none of those can see - content moved around inside the container without any of those boxes changing size."
         }
     ];
 
@@ -136,6 +181,45 @@ public partial class BitStickyDemo
                     Name = "StartAndEnd",
                     Value = "5",
                     Description = "Sticks to whichever horizontal edge the scroll carries it to, following the reading direction the way Start and End do."
+                }
+            ]
+        },
+        new()
+        {
+            Id = "sticky-edges-enum",
+            Name = "BitStickyEdges",
+            Description = "The edges of the scrolling container a BitSticky is currently pinned to. These are the physical edges the way the browser resolves them, so a Start sticky reports Left in an LTR container and Right in an RTL one, and more than one of them is set while the element is pinned into a corner.",
+            Items =
+            [
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                    Description = "The element is not pinned: it is travelling with the content of its scrolling container."
+                },
+                new()
+                {
+                    Name = "Top",
+                    Value = "1",
+                    Description = "The element is pinned to the top edge of its scrolling container."
+                },
+                new()
+                {
+                    Name = "Bottom",
+                    Value = "2",
+                    Description = "The element is pinned to the bottom edge of its scrolling container."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The element is pinned to the left edge of its scrolling container."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "8",
+                    Description = "The element is pinned to the right edge of its scrolling container."
                 }
             ]
         }
@@ -716,6 +800,127 @@ private bool isStuck;";
         border: 1px solid #777;
     }
 
+    /* The shadow falls away from whichever edge is holding the bar. */
+    .edge-shadow.bit-stk-stc-top {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .edge-shadow.bit-stk-stc-btm {
+        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.5);
+    }
+</style>
+
+
+<div>Currently pinned to: <b>@stuckEdges</b></div>
+
+<div class=""vertical-container"">
+
+    <p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+    </p>
+
+    <BitSticky Class=""sticky edge-shadow""
+               Position=""@BitStickyPosition.TopAndBottom""
+               OnStuckEdgesChanged=""v => stuckEdges = v"">
+        @(stuckEdges is BitStickyEdges.None ? ""Travelling with the content"" : $""Pinned to {stuckEdges}"")
+    </BitSticky>
+
+    <p>
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+        when possibilities are limitless, waiting for content to emerge.
+    </p>
+</div>";
+    private readonly string example7CsharpCode = @"
+private BitStickyEdges stuckEdges;";
+
+    private readonly string example8RazorCode = @"
+<style>
+    .vertical-container {
+        height: 16rem;
+        overflow: auto;
+        padding: 0.5rem;
+        max-width: 32rem;
+        border: 1px solid gray;
+    }
+
+    .sticky {
+        color: black;
+        padding: 0.5rem;
+        background-color: #AAA;
+        border: 1px solid #777;
+    }
+
+    .demo-table {
+        width: 100%;
+        border-spacing: 0;
+        border-collapse: separate;
+    }
+
+    .demo-table td {
+        padding: 0.5rem;
+    }
+
+    .table-head {
+        color: black;
+        text-align: start;
+        padding: 0.5rem;
+        background-color: #AAA;
+    }
+</style>
+
+
+<div class=""vertical-container"">
+
+    <BitSticky Element=""header"" Class=""sticky"">A sticky header element</BitSticky>
+
+    <p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+    </p>
+
+    <BitSticky Element=""footer"" Class=""sticky"" Position=""@BitStickyPosition.Bottom"">A sticky footer element</BitSticky>
+</div>
+
+
+<div class=""vertical-container"">
+    <table class=""demo-table"">
+        <thead>
+            <tr>
+                <BitSticky Element=""th"" Class=""table-head"">Name</BitSticky>
+                <BitSticky Element=""th"" Class=""table-head"">Role</BitSticky>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in tableRows)
+            {
+                <tr>
+                    <td>@row.Item1</td>
+                    <td>@row.Item2</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>";
+
+    private readonly string example9RazorCode = @"
+<style>
+    .vertical-container {
+        height: 16rem;
+        overflow: auto;
+        padding: 0.5rem;
+        max-width: 32rem;
+        border: 1px solid gray;
+    }
+
+    .sticky {
+        color: black;
+        padding: 0.5rem;
+        background-color: #AAA;
+        border: 1px solid #777;
+    }
+
     .positioned-box {
         z-index: 2;
         color: black;
@@ -775,7 +980,7 @@ private bool isStuck;";
     </p>
 </div>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .vertical-container {
         height: 16rem;
@@ -820,10 +1025,10 @@ private bool isStuck;";
         shaped into meaning, and the emotions ready to resonate with every reader.
     </p>
 </div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isStickyEnabled = true;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .vertical-container {
         height: 16rem;
@@ -880,7 +1085,7 @@ private bool isStickyEnabled = true;";
     </p>
 </div>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .horizontal-container {
         gap: 1rem;

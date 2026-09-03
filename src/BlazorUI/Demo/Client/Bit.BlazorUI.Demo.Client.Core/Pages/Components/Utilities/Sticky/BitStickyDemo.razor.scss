@@ -28,6 +28,16 @@
     background-color: cadetblue;
 }
 
+.demo-table {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: separate;
+
+    td {
+        padding: 0.5rem;
+    }
+}
+
 ::deep {
     .sticky {
         color: black;
@@ -39,6 +49,24 @@
     // Passed as the StuckClass, so it lands on markup the component itself writes and needs ::deep.
     .stuck-shadow {
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    // The stuck edge classes the component writes on itself: the shadow falls away from whichever of
+    // the two edges of a TopAndBottom sticky is holding the bar, with no C# deciding which.
+    .edge-shadow.bit-stk-stc-top {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .edge-shadow.bit-stk-stc-btm {
+        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    // The frozen table header of the Element example, which is a th the component renders itself.
+    .table-head {
+        color: black;
+        text-align: start;
+        padding: 0.5rem;
+        background-color: #AAA;
     }
 
     .custom-class {

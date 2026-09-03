@@ -2,15 +2,15 @@
 
 <PageOutlet Url="components/sticky"
             Title="Sticky"
-            Description="A wrapper over the browser's own position:sticky that pins its content to any edge of its scrolling container, with offsets, RTL-aware horizontal sticking, and a derived stuck-state event." />
+            Description="A wrapper over the browser's own position:sticky that pins its content to any edge of its scrolling container, with offsets, RTL-aware horizontal sticking, a semantic root tag, and a derived stuck-state event that names the edge." />
 
 <div>
     <DemoPage Name="Sticky"
-              Description="BitSticky is a thin wrapper over the browser's own position:sticky: the content stays in the normal flow - keeping the room it occupies, so nothing jumps when it pins - until the scroll carries it to an edge of its nearest scrolling container, where it stays while the rest of the content passes. Which edge is either a Position (Top, Bottom, or the direction-aware Start and End for horizontal scrolling) or an exact offset from any of the four sides. CSS has no event for the moment an element actually pins, so the component derives one: OnStuckChanged reports the flips, IsStuck holds the state, and StuckClass / StuckStyle restyle the element only while it is stuck."
+              Description="BitSticky is a thin wrapper over the browser's own position:sticky: the content stays in the normal flow - keeping the room it occupies, so nothing jumps when it pins - until the scroll carries it to an edge of its nearest scrolling container, where it stays while the rest of the content passes. Which edge is either a Position (Top, Bottom, or the direction-aware Start and End for horizontal scrolling) or an exact offset from any of the four sides, and Element renders the whole thing as the header, footer, nav, aside or th it really is. CSS has no event for the moment an element actually pins, so the component derives one: OnStuckChanged reports the flips, OnStuckEdgesChanged and StuckEdges name the edge holding it, and StuckClass / StuckStyle restyle the element only while it is stuck - an element that has not moved is never reported as pinned, however exactly it rests on an edge."
               Parameters="componentParameters"
               PublicMembers="componentPublicMembers"
               SubEnums="componentSubEnums"
-              GitHubUrl="Utilities/Sticky/BitSticky.razor"
+              GitHubUrl="Utilities/Sticky/BitSticky.cs"
               GitHubDemoUrl="Utilities/Sticky/BitStickyDemo.razor">
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div class="example-desc">
@@ -420,8 +420,14 @@
                 <b>OnStuckChanged</b> reports every flip of the state, the <b>IsStuck</b> property holds the
                 current value, and <b>StuckClass</b> / <b>StuckStyle</b> are applied to the root element only
                 while it is stuck (alongside the <code>bit-stk-stc</code> class) - which is what a bar that
-                casts a shadow only once content passes underneath it needs. The detection is attached only
-                when one of these three is used, so a sticky that does not ask for it stays pure CSS.
+                casts a shadow only once content passes underneath it needs. Pinned means carried away from
+                where the flow would have put it, so a bar that has never moved is not reported as stuck
+                however exactly it happens to rest on the edge: the shadow below appears on the first pixel of
+                scrolling, not before it. The detection is attached only when one of these is used, so a
+                sticky that does not ask for it stays pure CSS. It settles itself on every scroll and on every resize
+                of the element, its parent, the container or the page, and <b>RefreshAsync</b> is there for the layout
+                change none of those can see - content moved around inside the container leaving every one of those
+                boxes the size it was.
             </div>
             <div>Currently stuck: <b>@isStuck</b></div>
             <br />
@@ -478,7 +484,100 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="ZIndex" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Stuck edges" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div class="example-desc">
+                <b>OnStuckChanged</b> only says that the element is pinned, and a <b>TopAndBottom</b> sticky is pinned
+                nearly all the time - what it needs to know is to <i>which</i> edge. <b>OnStuckEdgesChanged</b> and the
+                <b>StuckEdges</b> property answer that with the <b>BitStickyEdges</b> flags, and the component carries
+                one class per edge holding it (<code>bit-stk-stc-top</code>, <code>bit-stk-stc-btm</code>,
+                <code>bit-stk-stc-lft</code>, <code>bit-stk-stc-rgt</code>), which is how the shadow below falls away
+                from the edge the bar is pinned against without a single line of C#. The edges are physical, the way the
+                browser resolves them, so a <b>Start</b> sticky reports Left in an LTR container and Right in an RTL one.
+            </div>
+            <div>Currently pinned to: <b>@stuckEdges</b></div>
+            <br />
+            <div class="vertical-container">
+                <p>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                    inspirations will be built.
+                </p>
+                <BitSticky Class="sticky edge-shadow"
+                           Position="@BitStickyPosition.TopAndBottom"
+                           OnStuckEdgesChanged="v => stuckEdges = v">
+                    @(stuckEdges is BitStickyEdges.None ? "Travelling with the content" : $"Pinned to {stuckEdges}")
+                </BitSticky>
+                <p>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+                    shaped into meaning, and the emotions ready to resonate with every reader.
+                </p>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Element" RazorCode="@example8RazorCode" Id="example8">
+            <div class="example-desc">
+                A sticky element is usually one HTML already has a name for, and <b>Element</b> is what renders it under
+                that name instead of the default <code>div</code>: the <code>header</code> of a pane, the
+                <code>footer</code> that keeps a toolbar in reach, the <code>nav</code> of a table of contents, the
+                <code>aside</code> of a sidebar, or the <code>th</code> of a frozen table header. The tag is what tells
+                assistive technologies which of them it is, and it decides nothing about the stickiness - every other
+                parameter works exactly the same whichever one is rendered. The one thing a tag can ask of the markup
+                around it is the table below: a collapsed table lends its cells no borders of their own, which some
+                engines still refuse to pin, so a frozen header is laid out with
+                <code>border-collapse: separate</code> and a zero <code>border-spacing</code>.
+            </div>
+            <div>Try scrolling the containers to see the sticky components in action:</div>
+            <br /><br /><br />
+            <div><b>A header and a footer</b>:</div>
+            <div class="vertical-container">
+                <BitSticky Element="header" Class="sticky">A sticky header element</BitSticky>
+                <p>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
+                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                    spark emotion, and resonate with those who encounter them.
+                    <br />
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                    vibrant narratives of tomorrow.
+                </p>
+                <BitSticky Element="footer" Class="sticky" Position="@BitStickyPosition.Bottom">A sticky footer element</BitSticky>
+            </div>
+            <br /><br /><br />
+            <div><b>A frozen table header</b>:</div>
+            <div class="vertical-container">
+                <table class="demo-table">
+                    <thead>
+                        <tr>
+                            <BitSticky Element="th" Class="table-head">Name</BitSticky>
+                            <BitSticky Element="th" Class="table-head">Role</BitSticky>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in tableRows)
+                        {
+                            <tr>
+                                <td>@row.Item1</td>
+                                <td>@row.Item2</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="ZIndex" RazorCode="@example9RazorCode" Id="example9">
             <div class="example-desc">
                 A sticky element keeps a z-index of 1, enough to pass over the plain flowing content it
                 sticks above without covering the popups and overlays of the rest of the page. Where
@@ -533,7 +632,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Disabled" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Disabled" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div class="example-desc">
                 <b>IsEnabled</b> is the switch that turns the stickiness itself off: a disabled sticky steps
                 back into the normal flow and scrolls away with its content like any other element, and its
@@ -567,7 +666,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
+        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
             <div class="example-desc">
                 <b>Style</b> and <b>Class</b> reach the root element, which is both the box that sticks and
                 the box the content sits in - so a background, a border or a shadow given here travels and
@@ -613,7 +712,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+        <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
             <div class="example-desc">
                 The Start and End positions follow the reading direction: in a right-to-left container,
                 Start is the right edge and End is the left one, with nothing about the markup changing.

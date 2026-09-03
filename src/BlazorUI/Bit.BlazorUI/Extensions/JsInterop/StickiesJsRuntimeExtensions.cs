@@ -7,6 +7,11 @@ internal static class StickiesJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Stickies.setup", id, obj);
     }
 
+    internal static ValueTask BitStickiesRefresh(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Stickies.refresh", id);
+    }
+
     internal static ValueTask BitStickiesDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Stickies.dispose", id);
