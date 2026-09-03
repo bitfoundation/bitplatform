@@ -5,18 +5,13 @@ namespace Boilerplate.Tests.E2E.Infrastructure;
 /// </summary>
 public static class TestCategories
 {
-    /// <summary>
-    /// Tests against the deployed web apps listed in <see cref="DeployedApps"/>.
-    /// </summary>
+    /// <summary>Tests against the deployed web apps listed in <see cref="DeployedApps"/>.</summary>
     public const string Web = "Web";
 
-    /// <summary>
-    /// Tests driving the installed Android apps' WebView over CDP. See <see cref="HybridAppConnector.LaunchAndroidApp"/>.
-    /// </summary>
+    /// <summary>Tests driving the installed apps' WebView over CDP; see <see cref="HybridAppConnector"/>.</summary>
     public const string Android = "Android";
-
-    /// <summary>
-    /// Tests driving the installed Windows apps' WebView2 over CDP. See <see cref="HybridAppConnector.LaunchWindowsApp"/>.
-    /// </summary>
     public const string Windows = "Windows";
+
+    /// <summary>Browserless tests calling the deployed APIs and their database through <see cref="TestHost"/>.</summary>
+    public const string Api = "Api";
 }

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <!-- End-to-end Playwright tests running against the already deployed demo apps (web, Android and Windows).
-         This project lives only inside the bitplatform repository; template.json excludes src/Internal/** from the packed template. -->
+    <!-- End-to-end Playwright tests against the already deployed demo apps (web, Android and Windows).
+         Repository-only: template.json excludes src/Internal/** from the packed template. -->
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -24,8 +24,14 @@
     <ItemGroup>
         <Using Include="System.Net" />
         <Using Include="System.Text.RegularExpressions" />
+        <Using Include="Boilerplate.Shared.Features.Identity" />
+        <Using Include="Boilerplate.Shared.Features.Identity.Dtos" />
+        <Using Include="Boilerplate.Server.Api.Infrastructure.Data" />
+        <Using Include="Boilerplate.Server.Api.Features.Identity.Models" />
         <Using Include="Boilerplate.Tests.Infrastructure" />
         <Using Include="Boilerplate.Tests.E2E.Infrastructure" />
+        <Using Include="Microsoft.EntityFrameworkCore" />
+        <Using Include="Microsoft.Extensions.Hosting" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
         <Using Include="Microsoft.Playwright" />
         <Using Include="Microsoft.Playwright.MSTest" />

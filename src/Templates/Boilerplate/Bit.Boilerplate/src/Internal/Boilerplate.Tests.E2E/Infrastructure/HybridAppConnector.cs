@@ -2,24 +2,17 @@ namespace Boilerplate.Tests.E2E.Infrastructure;
 
 /// <summary>
 /// Launches an installed Blazor Hybrid app and attaches Playwright to its WebView over the Chrome DevTools Protocol,
-/// so the Windows (WebView2) and Android (Android WebView) apps are driven exactly like a web page.
+/// so the Windows (WebView2) and Android apps are driven exactly like a web page. The attached browser already holds
+/// the app's context and page, so use the session's <c>Page</c> instead of creating one.
 /// <para>
-/// A machine running these tests is assumed to be prepared like this:
-/// the Windows apps are installed through their Velopack setup (see the setup urls in <see cref="DeployedApps"/>),
-/// which puts them at <c>%LocalAppData%\{appId}\current\{appId}.exe</c>, and exactly one Android device or emulator
-/// is connected through adb with both Android apps installed - or, when adb sees nothing, an AVD with them installed
-/// exists locally, and the first one is booted automatically.
-/// </para>
-/// <para>
-/// Unlike a launched browser, the attached browser already contains the app's context and page: use the session's
-/// <c>Page</c> instead of creating a new one.
+/// A test machine is assumed to have the Windows apps installed through their Velopack setup and exactly one Android
+/// device/emulator connected with both Android apps installed - or a local AVD, whose first entry is booted here.
 /// </para>
 /// </summary>
 public static class HybridAppConnector
 {
     /// <summary>
-    /// How long a freshly started app gets to bring up its WebView's CDP endpoint and first page. Generous because a
-    /// cold start includes the Velopack update check on Windows and process + WebView spin-up on Android.
+    /// Generous, because a cold start includes Velopack's update check on Windows and WebView spin-up on Android.
     /// </summary>
     private static readonly TimeSpan connectDeadline = TimeSpan.FromMinutes(1);
 
@@ -27,14 +20,9 @@ public static class HybridAppConnector
     {
         /// <summary>
         /// Starts the installed Client.Windows app identified by <paramref name="windowsAppId"/>
-        /// (e.g. <see cref="DeployedApps.TodoWindowsAppId"/>) and attaches to it.
-        /// <para>
-        /// Every Client.Windows app hard-codes <c>--remote-debugging-port=9222</c> (see Client.Windows/Program.cs), so
-        /// only one Windows app can be driven at a time, and a leftover instance of any of them would be the one
-        /// answering on the port - this session would silently drive the wrong window. Hence every Client.Windows
-        /// process still running is stopped first: on a test machine a fresh app per session is worth more than any
-        /// window someone left open.
-        /// </para>
+        /// (e.g. <see cref="DeployedApps.TodoWindowsAppId"/>) and attaches to it. Every Client.Windows app hard-codes
+        /// <c>--remote-debugging-port=9222</c>, so a leftover instance of any of them would be the one answering on
+        /// the port - hence every running Client.Windows process is killed first.
         /// </summary>
         public async Task<HybridAppSession> LaunchWindowsApp(string windowsAppId, int port = 9222)
         {
@@ -60,15 +48,13 @@ public static class HybridAppConnector
         /// (Re)starts the Client.Maui Android app identified by <paramref name="applicationId"/>
         /// (e.g. <see cref="DeployedApps.TodoAndroidAppId"/>) on the connected device/emulator and attaches to it.
         /// The WebView's CDP endpoint is an abstract socket on the device, so it is forwarded to
-        /// <paramref name="localPort"/> first - a port other than 9222 by default, so a Windows app session can exist
-        /// alongside an Android one.
+        /// <paramref name="localPort"/> first - not 9222, so an Android session can coexist with a Windows one.
         /// </summary>
         public async Task<HybridAppSession> LaunchAndroidApp(string applicationId, int localPort = 9223)
         {
             await EnsureAndroidDeviceOnline();
 
-            // Force-stopped first so each session drives a freshly started app rather than whatever state a previous
-            // run or a human left behind on the device.
+            // Force-stopped first so each session drives a freshly started app.
             await RunAdb($"shell am force-stop {applicationId}");
             await RunAdb($"shell monkey -p {applicationId} -c android.intent.category.LAUNCHER 1");
 
@@ -110,8 +96,8 @@ public static class HybridAppConnector
     }
 
     /// <summary>
-    /// The CDP endpoint appears some time after the app process does (and its page later still), so a single connect
-    /// attempt right after launch would routinely lose the race - this keeps trying until <see cref="connectDeadline"/>.
+    /// The CDP endpoint appears some time after the app process (and its page later still), so connecting is retried
+    /// until <see cref="connectDeadline"/>.
     /// </summary>
     private static async Task<IBrowser> ConnectWithRetry(IPlaywright playwright, string cdpUrl)
     {
@@ -146,8 +132,7 @@ public static class HybridAppConnector
     }
 
     /// <summary>
-    /// A connected device is the assumption, but when adb sees none, the first locally available AVD is booted
-    /// instead - and deliberately left running afterwards: booting costs minutes and the next session reuses it.
+    /// When adb sees no device, boots the first local AVD - and leaves it running, since the next session reuses it.
     /// </summary>
     private static async Task EnsureAndroidDeviceOnline()
     {
@@ -158,7 +143,7 @@ public static class HybridAppConnector
 
         var avdName = (await RunProcess(emulator, "-list-avds"))
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            // Newer emulators mix INFO/WARNING lines into -list-avds; actual AVD names never contain spaces.
+            // Newer emulators mix INFO/WARNING lines into -list-avds; real AVD names never contain spaces.
             .FirstOrDefault(line => line.Contains(' ') is false)
             ?? throw new InvalidOperationException($"No Android device/emulator is connected and '{emulator}' lists no AVD to start. Create one (with the apps installed) or connect a device.");
 
@@ -170,7 +155,7 @@ public static class HybridAppConnector
             CreateNoWindow = true
         })!;
 
-        // Drained but discarded: the emulator logs plenty, and an unread redirected pipe would eventually block it.
+        // Drained but discarded: an unread redirected pipe would eventually block the emulator.
         process.OutputDataReceived += delegate { };
         process.ErrorDataReceived += delegate { };
         process.BeginOutputReadLine();
@@ -200,16 +185,15 @@ public static class HybridAppConnector
     {
         var output = await RunAdb("devices", allowNonZeroExit: true);
 
-        // Skips the "List of devices attached" header; a usable row reads "<serial>\tdevice" ("offline" and
-        // "unauthorized" rows are not usable).
+        // Skips the "List of devices attached" header; only a "<serial>\tdevice" row is usable.
         return output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Skip(1)
             .Any(line => line.Split(['\t', ' '], StringSplitOptions.RemoveEmptyEntries) is [_, "device", ..]);
     }
 
     /// <summary>
-    /// The emulator does not have to be on PATH the way adb is, so this looks in the usual sdk roots - the ANDROID_HOME /
-    /// ANDROID_SDK_ROOT variables, the default install location, and the sdk adb itself runs from (its platform-tools' parent).
+    /// The emulator, unlike adb, need not be on PATH, so the usual sdk roots are searched: ANDROID_HOME,
+    /// ANDROID_SDK_ROOT, the default install location, and the sdk adb itself runs from.
     /// </summary>
     private static string FindEmulatorExecutable()
     {
@@ -239,7 +223,7 @@ public static class HybridAppConnector
             }
             catch (Exception)
             {
-                // A malformed PATH entry is not this method's problem; the next entry may still hold adb.
+                // A malformed PATH entry is not this method's problem.
             }
         }
 
@@ -275,17 +259,12 @@ public static class HybridAppConnector
     }
 }
 
-/// <summary>
-/// A running hybrid app with Playwright attached to its WebView. Disposing disconnects and stops the app, so the next
-/// session starts from a fresh app.
-/// </summary>
+/// <summary>A running hybrid app with Playwright attached to its WebView; disposing disconnects and stops the app.</summary>
 public sealed class HybridAppSession(IBrowser browser, Func<Task> stopApp) : IAsyncDisposable
 {
     public IBrowser Browser => browser;
 
-    /// <summary>
-    /// The page the app is showing. A hybrid app has exactly one - drive this instead of creating a new page.
-    /// </summary>
+    /// <summary>The page the app is showing; a hybrid app has exactly one - drive this instead of creating one.</summary>
     public IPage Page => browser.Contexts.SelectMany(c => c.Pages).FirstOrDefault()
         ?? throw new InvalidOperationException("The attached app exposes no page (anymore).");
 
