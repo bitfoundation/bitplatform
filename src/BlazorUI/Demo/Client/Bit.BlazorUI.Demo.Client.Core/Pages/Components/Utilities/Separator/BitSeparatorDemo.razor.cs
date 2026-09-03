@@ -18,14 +18,14 @@ public partial class BitSeparatorDemo
             Name = "AutoSize",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the separator with auto width or height, sizing it to its content instead of its container."
+            Description = "Renders the separator with auto width or height, sizing it to its content instead of its container or the flex row it stands in."
         },
         new()
         {
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of the content of the separator, which masks the line underneath it.",
+            Description = "The color kind of the background of the patch the content of the separator sits on. Defaults to transparent.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -43,7 +43,7 @@ public partial class BitSeparatorDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the Separator, it can be any custom tag or text. It sits on the line and also names the separator to assistive technologies."
+            Description = "The content of the Separator, it can be any custom tag or text. It sits between the two segments of the line and also names the separator to assistive technologies, so nothing focusable belongs in it."
         },
         new()
         {
@@ -68,7 +68,7 @@ public partial class BitSeparatorDemo
             Name = "ContentOffset",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The offset of the content from the edge of the line it is aligned to, as any CSS length. Only takes effect while AlignContent is Start or End."
+            Description = "The offset of the content from the edge of the line it is aligned to, as any CSS length, where a percentage measures against the length of the separator. Only takes effect while AlignContent is Start or End."
         },
         new()
         {
@@ -79,12 +79,28 @@ public partial class BitSeparatorDemo
         },
         new()
         {
+            Name = "Inset",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Holds the separator off both ends of its container by this length, as any CSS length."
+        },
+        new()
+        {
             Name = "LineStyle",
             Type = "BitSeparatorLineStyle?",
             DefaultValue = "null",
-            Description = "The style the line of the separator is drawn in: solid, dashed or dotted.",
+            Description = "The style the line of the separator is drawn in: solid, dashed, dotted or double.",
             LinkType = LinkType.Link,
             Href = "#separator-line-style-enum",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the line of the separator, out of the sizes of the theme. Thickness wins over it.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -100,14 +116,14 @@ public partial class BitSeparatorDemo
             Name = "Thickness",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The thickness of the line of the separator, as any CSS length. Defaults to the theme's divider hairline."
+            Description = "The thickness of the line of the separator, as any CSS length. Defaults to the weight of the current Size, which starts at the theme's divider hairline."
         },
         new()
         {
             Name = "Vertical",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the element is a vertical separator. A vertical separator takes its height from its container."
+            Description = "Whether the element is a vertical separator. A vertical separator stretches to the height of the flex row it stands in, and takes it from its container anywhere else."
         }
     ];
 
@@ -190,6 +206,39 @@ public partial class BitSeparatorDemo
                 {
                     Name = "Dotted",
                     Description = "A line of dots.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Double",
+                    Description = "Two parallel lines with a gap between them, which needs a line of at least three pixels to have room to be drawn.",
+                    Value = "3",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Small",
+                    Description = "The small size.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Medium",
+                    Description = "The medium size.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Large",
+                    Description = "The large size.",
                     Value = "2",
                 },
             ]

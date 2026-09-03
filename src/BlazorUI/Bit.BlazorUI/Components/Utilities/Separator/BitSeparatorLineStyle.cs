@@ -18,5 +18,11 @@ public enum BitSeparatorLineStyle
     /// <summary>
     /// A line of dots.
     /// </summary>
-    Dotted
+    Dotted,
+
+    /// <summary>
+    /// Two parallel lines with a gap between them, which needs a line of at least three pixels to
+    /// have room to be drawn.
+    /// </summary>
+    Double
 }

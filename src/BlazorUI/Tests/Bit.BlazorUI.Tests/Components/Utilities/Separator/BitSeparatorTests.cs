@@ -456,7 +456,7 @@ public class BitSeparatorTests : BunitTestContext
 
         if (autoSize)
         {
-            component.MarkupMatches(@"<div role=""separator"" aria-orientation=""vertical"" style=""height:auto"" class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
+            component.MarkupMatches(@"<div role=""separator"" aria-orientation=""vertical"" style=""height:auto;align-self:auto"" class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
         }
         else
         {
@@ -479,7 +479,7 @@ public class BitSeparatorTests : BunitTestContext
             parameters.Add(p => p.AutoSize, true);
         });
 
-        component.MarkupMatches(@"<div role=""separator"" aria-orientation=""vertical"" style=""height:auto"" class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
+        component.MarkupMatches(@"<div role=""separator"" aria-orientation=""vertical"" style=""height:auto;align-self:auto"" class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -635,7 +635,8 @@ public class BitSeparatorTests : BunitTestContext
         DataRow(null),
         DataRow(BitSeparatorLineStyle.Solid),
         DataRow(BitSeparatorLineStyle.Dashed),
-        DataRow(BitSeparatorLineStyle.Dotted)
+        DataRow(BitSeparatorLineStyle.Dotted),
+        DataRow(BitSeparatorLineStyle.Double)
     ]
     public void BitSeparatorShouldRespectLineStyle(BitSeparatorLineStyle? lineStyle)
     {
@@ -648,6 +649,7 @@ public class BitSeparatorTests : BunitTestContext
         {
             BitSeparatorLineStyle.Dashed => "bit-spr-dsh ",
             BitSeparatorLineStyle.Dotted => "bit-spr-dot ",
+            BitSeparatorLineStyle.Double => "bit-spr-dbl ",
             _ => null
         };
 
@@ -760,5 +762,219 @@ public class BitSeparatorTests : BunitTestContext
                                         Bit Blazor UI
                                       </div>
                                   </div>");
+    }
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitSize.Small),
+        DataRow(BitSize.Medium),
+        DataRow(BitSize.Large)
+    ]
+    public void BitSeparatorShouldRespectSize(BitSize? size)
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        var cssClass = size switch
+        {
+            BitSize.Small => "bit-spr-sm ",
+            BitSize.Medium => "bit-spr-md ",
+            BitSize.Large => "bit-spr-lg ",
+            _ => null
+        };
+
+        component.MarkupMatches(@$"<div role=""separator"" class=""{cssClass}bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRespectSizeChangingAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>();
+
+        component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Large);
+        });
+
+        component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-lg bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRenderThicknessAlongsideSize()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Large);
+            parameters.Add(p => p.Thickness, "5px");
+        });
+
+        // The size class only sets the custom property the line reads, so the inline Thickness
+        // always wins over it in the cascade.
+        component.MarkupMatches(@"<div role=""separator"" style=""--bit-spr-siz:5px"" class=""bit-spr bit-spr-lg bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow("2rem"),
+        DataRow("25%"),
+        DataRow(null)
+    ]
+    public void BitSeparatorShouldRespectInset(string inset)
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Inset, inset);
+        });
+
+        if (inset.HasValue())
+        {
+            component.MarkupMatches(@$"<div role=""separator"" style=""--bit-spr-ins:{inset}"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+        }
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRespectInsetChangingAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>();
+
+        component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Inset, "2rem");
+        });
+
+        component.MarkupMatches(@"<div role=""separator"" style=""--bit-spr-ins:2rem"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRenderEveryLengthCustomProperty()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.AutoSize, true);
+            parameters.Add(p => p.Thickness, "3px");
+            parameters.Add(p => p.ContentOffset, "2rem");
+            parameters.Add(p => p.Inset, "1rem");
+            parameters.Add(p => p.AlignContent, BitSeparatorAlignContent.Start);
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        var contentId = $"{component.Instance.UniqueId}-cnt";
+
+        component.MarkupMatches(@$"<div role=""separator"" aria-labelledby=""{contentId}"" style=""width:auto;--bit-spr-siz:3px;--bit-spr-ofs:2rem;--bit-spr-ins:1rem"" class=""bit-spr bit-spr-hrz bit-spr-srt"" id:ignore>
+                                      <div id=""{contentId}"" class=""bit-spr-cnt"">
+                                        Bit Blazor UI
+                                      </div>
+                                  </div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRenderContentWrapperInVertical()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Vertical, true);
+            parameters.Add(p => p.AlignContent, BitSeparatorAlignContent.End);
+            parameters.Add(p => p.ContentOffset, "25%");
+            parameters.AddChildContent("<span>Bit</span>");
+        });
+
+        var contentId = $"{component.Instance.UniqueId}-cnt";
+
+        component.MarkupMatches(@$"<div role=""separator"" aria-orientation=""vertical"" aria-labelledby=""{contentId}"" style=""--bit-spr-ofs:25%"" class=""bit-spr bit-spr-vrt bit-spr-end"" id:ignore>
+                                      <div id=""{contentId}"" class=""bit-spr-cnt"">
+                                        <span>Bit</span>
+                                      </div>
+                                  </div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRespectDecorativeChangingAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Vertical, true);
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        var contentId = $"{component.Instance.UniqueId}-cnt";
+
+        component.MarkupMatches(@$"<div role=""separator"" aria-orientation=""vertical"" aria-labelledby=""{contentId}"" class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore>
+                                      <div id=""{contentId}"" class=""bit-spr-cnt"">
+                                        Bit Blazor UI
+                                      </div>
+                                  </div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Decorative, true);
+        });
+
+        component.MarkupMatches(@$"<div role=""none"" class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore>
+                                      <div id=""{contentId}"" class=""bit-spr-cnt"">
+                                        Bit Blazor UI
+                                      </div>
+                                  </div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldDropAriaLabelledbyWhenChildContentIsRemoved()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        var contentId = $"{component.Instance.UniqueId}-cnt";
+
+        component.MarkupMatches(@$"<div role=""separator"" aria-labelledby=""{contentId}"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore>
+                                      <div id=""{contentId}"" class=""bit-spr-cnt"">
+                                        Bit Blazor UI
+                                      </div>
+                                  </div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ChildContent, (Microsoft.AspNetCore.Components.RenderFragment?)null);
+        });
+
+        component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldNameContentWrapperAfterTheId()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Id, "test-id");
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        component.MarkupMatches(@"<div role=""separator"" aria-labelledby=""test-id-cnt"" id=""test-id"" class=""bit-spr bit-spr-hrz bit-spr-ctr"">
+                                      <div id=""test-id-cnt"" class=""bit-spr-cnt"">
+                                        Bit Blazor UI
+                                      </div>
+                                  </div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRenderBothColorAndBorderClasses()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Border, BitColorKind.Tertiary);
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Background, BitColorKind.Secondary);
+        });
+
+        // Both tiers render their class; the stylesheet declares the Color tier last, so it wins.
+        component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-bsg bit-spr-btr bit-spr-err bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 }
