@@ -180,12 +180,6 @@ jobs:
           dotnet tool restore
           dotnet vpk pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: WinSalesModule
-        path: SalesModule\src\Client\SalesModule.Client.Windows\Releases
-
     # The update feed behind WindowsUpdate.FilesUrl.
     - name: Upload releases to R2
       run: |
