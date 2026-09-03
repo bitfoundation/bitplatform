@@ -19,6 +19,7 @@
                 segments of the line rather than laid over it, so the label reads on any surface underneath,
                 and it also names the separator to assistive technologies.
             </div>
+            <br />
             <div>
                 <div>Simple Separator</div>
                 <BitSeparator />
@@ -37,6 +38,7 @@
                 stretches to the height of the row on its own, so nothing needs measuring; anywhere else it
                 takes its height from its container, which then needs a height of its own.
             </div>
+            <br />
             <div>In a flex row of its own height:</div>
             <br />
             <div class="custom-auto-layout">
@@ -69,6 +71,7 @@
                 direction-aware on a horizontal separator - start and end follow the reading direction - and
                 on a vertical one it means the top, the middle or the bottom.
             </div>
+            <br />
             <div>Horizontal</div><br />
             <BitSeparator AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
             <br /><br />
@@ -92,6 +95,7 @@
                 while <b>AlignContent</b> is Start or End, since centered content has no edge to be offset
                 from, and it is direction-aware: in RTL, a start-aligned offset pushes from the right.
             </div>
+            <br />
             <div>Horizontal</div><br />
             <BitSeparator AlignContent="@BitSeparatorAlignContent.Start" ContentOffset="2rem">Start, 2rem</BitSeparator>
             <br /><br />
@@ -113,6 +117,7 @@
                 <code>align-items</code> wants. A vertical separator that gives up its stretch is then only
                 as tall as its own content, so an auto-sized one usually wants a container that stretches it.
             </div>
+            <br />
             <div>While using inside a flex container with align-items css style:</div>
             <br /><br />
             <div style="display:flex;flex-direction:column;align-items:center">
@@ -131,6 +136,7 @@
                 padding, so a percentage measures against the width of the container either way, which is
                 what CSS does with every percentage padding - a vertical separator wants a length.
             </div>
+            <br />
             <div>Horizontal</div><br />
             <BitSeparator>Default</BitSeparator>
             <br /><br />
@@ -154,6 +160,7 @@
                 hairline the theme draws every divider at; a heavier rule marks a stronger break in the
                 content, and it is what gives a dotted or a double line the room its pattern needs.
             </div>
+            <br />
             <div>
                 <BitSeparator>Default</BitSeparator>
                 <br /><br />
@@ -178,6 +185,7 @@
                 as a stronger one. Both the dots and the gap of a double line need room, so those two want a
                 <b>Thickness</b> heavier than a hairline.
             </div>
+            <br />
             <div>
                 <BitSeparator>Solid</BitSeparator>
                 <br /><br />
@@ -207,6 +215,7 @@
                 separator from the accessibility tree while keeping its looks. The two below are visually
                 identical; only what a screen reader hears differs.
             </div>
+            <br />
             <div>
                 <div>Announced (role="separator")</div>
                 <BitSeparator />
@@ -225,6 +234,7 @@
                 than behind it, so this is for content that should read as a chip of its own, and it is
                 transparent by default.
             </div>
+            <br />
             <div>Color:</div><br />
             <BitSeparator Color="BitColor.Primary">Primary</BitSeparator>
             <br />
@@ -268,6 +278,7 @@
                 is drawn at, and each step up multiplies it - so a preset that thins its hairline thins the
                 whole scale with it.
             </div>
+            <br />
             <div>Horizontal</div><br />
             <BitSeparator Size="BitSize.Small">Small</BitSeparator>
             <br /><br />
@@ -296,6 +307,7 @@
                 the segment before the content and the one after it - which the classed example below
                 restyles into one gradient running the length of the separator.
             </div>
+            <br />
             <div>
                 <div>Component's Style & Class:</div><br />
                 <BitSeparator Style="max-width: 20rem; margin: auto;">Styled</BitSeparator>
@@ -318,6 +330,7 @@
                 start and end flips: content aligned to the start of the line sits on the right. The
                 direction is also cascaded, so a separator inside an RTL container inherits it.
             </div>
+            <br />
             <div dir="rtl">
                 <BitSeparator Dir="BitDir.Rtl">جداکننده</BitSeparator>
                 <br /><br />
