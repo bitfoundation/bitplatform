@@ -9,8 +9,8 @@
 /// <see cref="BitThemeLayout.Breakpoints"/> when you customize them), not from fixed values baked
 /// into the component - so overriding the theme breakpoints changes these queries too. The pixel
 /// values shown on each member below are the built-in <em>defaults</em> (used when the matching
-/// <c>--bit-bp-*</c> variable is unset). Range members are half-open: the upper bound sits a
-/// hundredth of a pixel below the next breakpoint, which is close enough that no width falls
+/// <c>--bit-bp-*</c> variable is unset). Range members are half-open: the upper bound sits two
+/// hundredths of a pixel below the next breakpoint, which is close enough that no width falls
 /// between two neighboring members - a viewport is not always a whole number of CSS pixels, so a
 /// whole-pixel bound would leave 959.5px matching neither Sm nor Md. The <c>*To*</c> members span from the start of the first named
 /// breakpoint through the end of the second (both inclusive); a span starting at Xs or ending at

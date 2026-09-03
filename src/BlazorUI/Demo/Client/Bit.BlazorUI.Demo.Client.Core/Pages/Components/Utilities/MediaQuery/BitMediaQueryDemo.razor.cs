@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.MediaQuery;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.MediaQuery;
 
 public partial class BitMediaQueryDemo
 {
@@ -106,7 +106,8 @@ public partial class BitMediaQueryDemo
             Name = "BitScreenQuery",
             Description = "The predefined screen media queries in the bit BlazorUI. The actual query is built at runtime from the live theme breakpoints " +
                           "(the --bit-bp-* CSS variables), so customized theme breakpoints are honored; the pixel values below are the built-in defaults. " +
-                          "The upper bound of a range sits a hundredth of a pixel below the next breakpoint, so no width falls between two neighboring members.",
+                          "The upper bound of a range sits two hundredths of a pixel below the next breakpoint, which is close enough that no width falls between " +
+                          "two neighboring members in practice.",
             Items =
             [
                 new()
@@ -265,6 +266,10 @@ public partial class BitMediaQueryDemo
 
 
     private string example1RazorCode = @"
+<BitMediaQuery ScreenQuery=""BitScreenQuery.GtSm"">The screen is <b>wider</b> than the Sm band (GtSm).</BitMediaQuery>
+<BitMediaQuery ScreenQuery=""BitScreenQuery.LtMd"">The screen is <b>narrower</b> than the Md band (LtMd).</BitMediaQuery>";
+
+    private string example2RazorCode = @"
 <BitMediaQuery ScreenQuery=""BitScreenQuery.Xs"">This is <b>Xs</b> (Extra Small).</BitMediaQuery>
 <BitMediaQuery ScreenQuery=""BitScreenQuery.Sm"">This is <b>Sm</b> (Small).</BitMediaQuery>
 <BitMediaQuery ScreenQuery=""BitScreenQuery.Md"">This is <b>Md</b> (Medium).</BitMediaQuery>
@@ -291,7 +296,7 @@ public partial class BitMediaQueryDemo
 <BitMediaQuery ScreenQuery=""BitScreenQuery.MdToXl"">This is <b>MdToXl</b> (Medium through Extra Large).</BitMediaQuery>
 <BitMediaQuery ScreenQuery=""BitScreenQuery.LgToXl"">This is <b>LgToXl</b> (Large through Extra Large).</BitMediaQuery>";
 
-    private string example2RazorCode = @"
+    private string example3RazorCode = @"
 <BitMediaQuery ScreenQuery=""BitScreenQuery.Md"">
     <Matched>
         This is <b>Matched</b> (BitScreenQuery.Md).
@@ -301,7 +306,7 @@ public partial class BitMediaQueryDemo
     </NotMatched>
 </BitMediaQuery>";
 
-    private string example3RazorCode = @"
+    private string example4RazorCode = @"
 <BitMediaQuery ScreenQuery=""BitScreenQuery.GtSm"">
     <Template Context=""matched"">
         <BitButton Size=""@(matched ? BitSize.Large : BitSize.Small)""
@@ -312,7 +317,7 @@ public partial class BitMediaQueryDemo
     </Template>
 </BitMediaQuery>";
 
-    private string example4RazorCode = @"
+    private string example5RazorCode = @"
 <div><b>Document breakpoints</b> (Md: 960px to 1279.98px):</div>
 <BitMediaQuery ScreenQuery=""BitScreenQuery.Md"">
     <Matched>Md is <b>matched</b>.</Matched>
@@ -326,13 +331,13 @@ public partial class BitMediaQueryDemo
         <NotMatched>Md is <b>not matched</b>.</NotMatched>
     </BitMediaQuery>
 </BitThemeProvider>";
-    private string example4CsharpCode = @"
+    private string example5CsharpCode = @"
 private readonly BitTheme breakpointsTheme = new()
 {
     Layout = { Breakpoints = { Md = ""700px"", Lg = ""900px"" } }
 };";
 
-    private string example5RazorCode = @"
+    private string example6RazorCode = @"
 <BitMediaQuery Query=""screen and (max-width: 999px)"">
     <Matched>
         This is <b>screen and (max-width: 999px)</b>.
@@ -351,7 +356,7 @@ private readonly BitTheme breakpointsTheme = new()
     </NotMatched>
 </BitMediaQuery>";
 
-    private string example6RazorCode = @"
+    private string example7RazorCode = @"
 <BitMediaQuery Query=""(orientation: landscape)"">
     <Matched>The screen is in <b>landscape</b> orientation.</Matched>
     <NotMatched>The screen is in <b>portrait</b> orientation.</NotMatched>
@@ -372,33 +377,33 @@ private readonly BitTheme breakpointsTheme = new()
     <NotMatched>Reduced motion is <b>not requested</b> by the system.</NotMatched>
 </BitMediaQuery>";
 
-    private string example7RazorCode = @"
+    private string example8RazorCode = @"
 <BitMediaQuery NoWrapper ScreenQuery=""BitScreenQuery.GtSm"">
     <Matched>This content renders <b>without</b> a wrapping element (BitScreenQuery.GtSm).</Matched>
     <NotMatched>[BitScreenQuery.GtSm] <b>NotMatched!</b> (still no wrapping element)</NotMatched>
 </BitMediaQuery>";
 
-    private string example8RazorCode = @"
+    private string example9RazorCode = @"
 <BitMediaQuery DefaultMatched ScreenQuery=""BitScreenQuery.GtSm"">
     <Matched>This is <b>Matched</b> (BitScreenQuery.GtSm), also rendered before the query gets evaluated.</Matched>
     <NotMatched>[BitScreenQuery.GtSm] <b>NotMatched!</b>.</NotMatched>
 </BitMediaQuery>";
 
-    private string example9RazorCode = @"
+    private string example10RazorCode = @"
 <BitMediaQuery @bind-IsMatched=""isSmallScreen"" ScreenQuery=""BitScreenQuery.LtMd"" />
 <div>The screen is currently <b>@(isSmallScreen ? ""small"" : ""wide"")</b> (BitScreenQuery.LtMd).</div>
 <BitButton FullWidth=""isSmallScreen"" Variant=""@(isSmallScreen ? BitVariant.Fill : BitVariant.Outline)"">
     A button driven by the bound value
 </BitButton>";
-    private string example9CsharpCode = @"
+    private string example10CsharpCode = @"
 private bool isSmallScreen;";
 
-    private string example10RazorCode = @"
+    private string example11RazorCode = @"
 <BitMediaQuery @ref=""mediaQueryRef"" ScreenQuery=""BitScreenQuery.Md"" OnChange=""HandleOnChange"" />
 <div>[BitScreenQuery.Md] IsMatched?: <b>@isMatched</b></div>
 <div>[BitScreenQuery.Md] via the IsMatched property: <b>@(mediaQueryRef?.IsMatched ?? false)</b></div>
 <div>OnChange call count: <b>@changeCount</b></div>";
-    private string example10CsharpCode = @"
+    private string example11CsharpCode = @"
 private bool isMatched;
 private int changeCount;
 private BitMediaQuery? mediaQueryRef;
@@ -409,7 +414,7 @@ private void HandleOnChange(bool value)
     changeCount++;
 }";
 
-    private string example11RazorCode = @"
+    private string example12RazorCode = @"
 <BitMediaQuery Style=""color: tomato; font-weight: bold;"" ScreenQuery=""BitScreenQuery.GtXs"">
     <Matched>Styled through the Style parameter (GtXs).</Matched>
     <NotMatched>Styled through the Style parameter, not matched (GtXs).</NotMatched>
@@ -420,7 +425,7 @@ private void HandleOnChange(bool value)
     <NotMatched>Classed through the Class parameter, not matched (GtXs).</NotMatched>
 </BitMediaQuery>";
 
-    private string example12RazorCode = @"
+    private string example13RazorCode = @"
 <BitMediaQuery Dir=""BitDir.Rtl"" ScreenQuery=""BitScreenQuery.GtXs"">
     <Matched>این محتوا در صفحه‌های بزرگ‌تر از <b>Xs</b> نمایش داده می‌شود.</Matched>
     <NotMatched>عرض صفحه کمتر از حد <b>GtXs</b> است.</NotMatched>
