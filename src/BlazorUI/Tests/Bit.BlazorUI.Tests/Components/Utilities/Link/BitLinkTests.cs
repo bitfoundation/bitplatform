@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.Components;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
@@ -81,7 +82,10 @@ public class BitLinkTests : BunitTestContext
                 {
                     var relAttribute = target is "_blank" ? @"rel=""noopener""" : null;
 
-                    component.MarkupMatches(@$"<a target=""{target}"" {relAttribute} href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore></a>");
+                    // A new-tab link also says so, in text drawn nowhere but read out with the link.
+                    var hint = target is "_blank" ? @"<span class=""bit-lnk-hnt"">(opens in a new tab)</span>" : null;
+
+                    component.MarkupMatches(@$"<a target=""{target}"" {relAttribute} href=""{href}"" class=""bit-lnk bit-lnk-pri"" id:ignore>{hint}</a>");
                 }
                 else
                 {
@@ -977,6 +981,605 @@ public class BitLinkTests : BunitTestContext
     }
 
 
+
+    [TestMethod]
+    public void BitLinkShouldRenderTheIconBeforeTheContentByDefault()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IconName, "Link");
+            parameters.AddChildContent("bit");
+        });
+
+        // The glyph says nothing a reader has not already been told by the link text, so it is decoration.
+        component.MarkupMatches(@"<a href=""https://bitplatform.dev"" class=""bit-lnk bit-lnk-pri"" id:ignore>
+                                    <i class=""bit-lnk-icn bit-lnk-sic bit-icon bit-icon--Link"" aria-hidden=""true""></i>bit
+                                  </a>");
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRenderTheIconAfterTheContentAtTheEndPosition()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IconName, "Link");
+            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.AddChildContent("bit");
+        });
+
+        component.MarkupMatches(@"<a href=""https://bitplatform.dev"" class=""bit-lnk bit-lnk-pri"" id:ignore>
+                                    bit<i class=""bit-lnk-icn bit-lnk-eic bit-icon bit-icon--Link"" aria-hidden=""true""></i>
+                                  </a>");
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRenderTheIconOnTheButtonRenderModeToo()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Link");
+            parameters.AddChildContent("bit");
+        });
+
+        component.MarkupMatches(@"<button type=""button"" class=""bit-lnk bit-lnk-pri"" id:ignore>
+                                    <i class=""bit-lnk-icn bit-lnk-sic bit-icon bit-icon--Link"" aria-hidden=""true""></i>bit
+                                  </button>");
+    }
+
+    [TestMethod]
+    public void BitLinkIconShouldTakePrecedenceOverIconName()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IconName, "Link");
+            parameters.Add(p => p.Icon, BitIconInfo.Css("fa-solid fa-house"));
+        });
+
+        Assert.AreEqual("bit-lnk-icn bit-lnk-sic fa-solid fa-house", component.Find(".bit-lnk-icn").GetAttribute("class"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRenderNoIconElementWithoutAnIcon()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-lnk-icn").Count);
+    }
+
+    [TestMethod,
+        DataRow(null, ""),
+        DataRow(BitSize.Small, " bit-lnk-sm"),
+        DataRow(BitSize.Medium, " bit-lnk-md"),
+        DataRow(BitSize.Large, " bit-lnk-lg")
+    ]
+    public void BitLinkShouldRespectSize(BitSize? size, string expectedClass)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Size, size);
+        });
+
+        component.MarkupMatches(@$"<a href=""https://bitplatform.dev"" class=""bit-lnk bit-lnk-pri{expectedClass}"" id:ignore></a>");
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev"),
+        DataRow("#go-to-section")
+    ]
+    public void BitLinkShouldRespectTitle(string href)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.Title, "the bit platform");
+        });
+
+        Assert.AreEqual("the bit platform", component.Find(".bit-lnk").GetAttribute("title"));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public void BitLinkShouldRespectAutoFocus(string href)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-lnk").HasAttribute("autofocus"));
+
+        component.Render(parameters => parameters.Add(p => p.AutoFocus, false));
+
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldKeepTheHrefAndTheClickHandlerWithPreventDefault()
+    {
+        var currentCount = 0;
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.PreventDefault, true);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.OnClick, () => currentCount++);
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        // The suppressed navigation is the browser's to skip - what the component owes is the href that a
+        // middle click and "copy link address" still reach, and the handler that answers the plain click.
+        Assert.AreEqual("https://bitplatform.dev", anchor.GetAttribute("href"));
+
+        anchor.Click();
+
+        Assert.AreEqual(1, currentCount);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldAnnounceABlankTargetLinkAsOpeningANewTab()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.AddChildContent("bit");
+        });
+
+        Assert.AreEqual("(opens in a new tab)", component.Find(".bit-lnk-hnt").TextContent);
+    }
+
+    [TestMethod,
+        DataRow("_self"),
+        DataRow(""),
+        DataRow(null)
+    ]
+    public void BitLinkShouldNotAnnounceANewTabForAnyOtherTarget(string target)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, target);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-lnk-hnt").Count);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldNotAnnounceANewTabForAHashHrefOrADisabledLink()
+    {
+        // A hash link scrolls instead of navigating and a disabled one goes nowhere at all, so neither
+        // renders the target it was given - and neither says it opens a tab it will never open.
+        var hashLink = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Href, "#go-to-section");
+        });
+
+        Assert.AreEqual(0, hashLink.FindAll(".bit-lnk-hnt").Count);
+
+        var disabledLink = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        Assert.AreEqual(0, disabledLink.FindAll(".bit-lnk-hnt").Count);
+    }
+
+    [TestMethod,
+        DataRow("(opens in a new window)", "(opens in a new window)"),
+        DataRow("", null),
+        DataRow(null, "(opens in a new tab)")
+    ]
+    public void BitLinkShouldRespectNewTabHint(string newTabHint, string expected)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.NewTabHint, newTabHint);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        var hints = component.FindAll(".bit-lnk-hnt");
+
+        if (expected is null)
+        {
+            // An empty hint is the announcement being taken off, not an empty one being made.
+            Assert.AreEqual(0, hints.Count);
+        }
+        else
+        {
+            Assert.AreEqual(expected, hints[0].TextContent);
+        }
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRespectNoNewTabHint()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.NoNewTabHint, true);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-lnk-hnt").Count);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldAppendTheNewTabHintToTheAriaLabelInsteadOfTheContent()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.AriaLabel, "bit platform");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        // An aria-label replaces the content rather than adding to it, so hidden text beside the content
+        // would never be read out - the sentence has to be part of the name itself.
+        Assert.AreEqual(0, component.FindAll(".bit-lnk-hnt").Count);
+        Assert.AreEqual("bit platform (opens in a new tab)", component.Find(".bit-lnk").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitLinkNoUnderlineShouldWinOverUnderlined()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Underlined, true);
+            parameters.Add(p => p.NoUnderline, true);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        // Two parameters asking for opposite things are answered here rather than by whichever css rule
+        // happens to be declared last.
+        component.MarkupMatches(@"<a href=""https://bitplatform.dev"" class=""bit-lnk bit-lnk-nun bit-lnk-pri"" id:ignore></a>");
+    }
+
+    [TestMethod]
+    public void BitLinkShouldPassFocusToTheScrollIntoViewInterop()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "#go-to-section");
+        });
+
+        component.Find(".bit-lnk").Click();
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.scrollElementIntoView"].Single();
+
+        // The scroll takes the keyboard with it, so the next Tab carries on from the destination.
+        Assert.AreEqual("go-to-section", invocation.Arguments[0]);
+        Assert.AreEqual(true, invocation.Arguments[1]);
+    }
+
+    [TestMethod,
+        DataRow("rel", "me"),
+        DataRow("title", "the bit platform"),
+        DataRow("aria-label", "bit platform"),
+        DataRow("hreflang", "en"),
+        DataRow("referrerpolicy", "no-referrer")
+    ]
+    public void BitLinkShouldKeepSplattedAttributesTheParametersLeaveUnset(string name, string value)
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object> { [name] = value });
+        });
+
+        // An attribute the component writes after the splat wins over the splatted one, and a null takes it
+        // off the element - so every attribute a parameter can write has to read the splatted value back.
+        Assert.AreEqual(value, component.Find(".bit-lnk").GetAttribute(name));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldKeepASplattedTargetAndDownload()
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev/file.pdf");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object>
+            {
+                ["target"] = "_blank",
+                ["download"] = "file.pdf"
+            });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+        Assert.AreEqual("file.pdf", anchor.GetAttribute("download"));
+
+        // Everything the target decides follows the target actually on the element, however it arrived.
+        Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
+        Assert.AreEqual("(opens in a new tab)", component.Find(".bit-lnk-hnt").TextContent);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRenderABareSplattedDownloadAsTheBareAttribute()
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev/file.pdf");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object> { ["download"] = true });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        // A download written without a value is the browser being told to save the file under whatever name
+        // the server gives it, so the value it arrived as is handed back rather than stringified into one.
+        Assert.IsTrue(anchor.HasAttribute("download"));
+        Assert.AreEqual(string.Empty, anchor.GetAttribute("download"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldAddNoOpenerBesideASplattedRel()
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object> { ["rel"] = "nofollow" });
+        });
+
+        Assert.AreEqual("nofollow noopener", component.Find(".bit-lnk").GetAttribute("rel"));
+    }
+
+    [TestMethod,
+        DataRow("noopener"),
+        DataRow("noreferrer"),
+        DataRow("opener")
+    ]
+    public void BitLinkShouldNotAddNoOpenerBesideASplattedOpenerRel(string rel)
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object> { ["rel"] = rel });
+        });
+
+        // An author who has already said what the opener relationship should be has said it.
+        Assert.AreEqual(rel, component.Find(".bit-lnk").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldKeepTheRelOfADisabledLink()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Rel, BitLinkRels.License);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        // A rel is what the link is a link to rather than something it does, so being unfollowable now does
+        // not stop it from being the license - unlike the target and the download, which are both dropped.
+        var anchor = component.Find(".bit-lnk");
+
+        Assert.AreEqual("license", anchor.GetAttribute("rel"));
+        Assert.IsFalse(anchor.HasAttribute("target"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldDropTheTargetOfAHashHref()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Href, "#go-to-section");
+        });
+
+        // The click is answered by the component rather than by the browser, so the target names a context
+        // nothing is ever opened in.
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("target"));
+    }
+
+    [TestMethod,
+        DataRow(BitNavAriaCurrent.Page, "page"),
+        DataRow(BitNavAriaCurrent.Step, "step"),
+        DataRow(BitNavAriaCurrent.Location, "location"),
+        DataRow(BitNavAriaCurrent.Date, "date"),
+        DataRow(BitNavAriaCurrent.Time, "time"),
+        DataRow(BitNavAriaCurrent.True, "true"),
+        DataRow(null, null)
+    ]
+    public void BitLinkShouldRespectAriaCurrent(BitNavAriaCurrent? ariaCurrent, string expected)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.AriaCurrent, ariaCurrent);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        Assert.AreEqual(expected is not null, anchor.HasAttribute("aria-current"));
+
+        if (expected is not null)
+        {
+            Assert.AreEqual(expected, anchor.GetAttribute("aria-current"));
+        }
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRespectAriaCurrentOnTheButtonRenderModeToo()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.AriaCurrent, BitNavAriaCurrent.Step);
+        });
+
+        Assert.AreEqual("step", component.Find(".bit-lnk").GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldPointASplattedAriaLabelledByAtTheNewTabHintToo()
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object> { ["aria-labelledby"] = "heading" });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+        var hint = component.Find(".bit-lnk-hnt");
+
+        // An aria-labelledby names the link with other elements rather than with its own content, so the
+        // sentence is only read out once the list points at it as well.
+        Assert.AreEqual($"heading {hint.Id}", anchor.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("(opens in a new tab)", hint.TextContent);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldTakeTheCascadedParameterValuesItWasNotGiven()
+    {
+        var component = RenderComponent<BitLinkParamsTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Params, new BitLinkParams
+            {
+                Underlined = true,
+                Target = "_blank",
+                Size = BitSize.Large,
+                Color = BitColor.Error,
+                Rel = BitLinkRels.NoFollow,
+                NewTabHint = "(opens in a new window)"
+            });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        component.MarkupMatches(@"<a href=""https://bitplatform.dev"" target=""_blank"" rel=""nofollow noopener""
+                                     class=""bit-lnk bit-lnk-und bit-lnk-lg bit-lnk-err"" id:ignore>
+                                    bit<span class=""bit-lnk-hnt"">(opens in a new window)</span>
+                                  </a>");
+
+        Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+
+        // The rel string is built while the parameters are being set, before the cascade is applied, so a rel
+        // that arrives from the cascade has to send it round again.
+        Assert.AreEqual("nofollow noopener", anchor.GetAttribute("rel"));
+
+        // The sentence a new-tab link is announced with is the one an app most needs to say in its own
+        // language, and saying it once for the whole app is what the cascade is for.
+        Assert.AreEqual("(opens in a new window)", component.Find(".bit-lnk-hnt").TextContent);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldKeepTheParametersItWasGivenOverTheCascadedOnes()
+    {
+        var component = RenderComponent<BitLinkParamsTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Params, new BitLinkParams
+            {
+                Underlined = true,
+                Color = BitColor.Error,
+                NoNewTabHint = true
+            });
+            parameters.Add(p => p.Overrides, new Dictionary<string, object>
+            {
+                [nameof(BitLink.Color)] = BitColor.Success,
+                [nameof(BitLink.Target)] = "_blank",
+                [nameof(BitLink.NoNewTabHint)] = false
+            });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        // A cascade is a default rather than an override: it fills in only what the link left unsaid.
+        Assert.IsTrue(anchor.ClassList.Contains("bit-lnk-und"));
+        Assert.IsTrue(anchor.ClassList.Contains("bit-lnk-suc"));
+        Assert.IsFalse(anchor.ClassList.Contains("bit-lnk-err"));
+        Assert.AreEqual("(opens in a new tab)", component.Find(".bit-lnk-hnt").TextContent);
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev"),
+        DataRow("#go-to-section")
+    ]
+    public void BitLinkShouldRespectAriaDescription(string href)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AriaDescription, "PDF, 2.4 megabytes");
+            parameters.AddChildContent("bit");
+        });
+
+        var root = component.Find(".bit-lnk");
+        var description = component.Find(".bit-lnk-dsc");
+
+        // The description is read out after the name rather than as part of it, so it lives beside the link and
+        // is pointed at rather than written into it.
+        Assert.AreEqual(root.GetAttribute("aria-describedby"), description.Id);
+        Assert.AreEqual("PDF, 2.4 megabytes", description.TextContent);
+        Assert.AreEqual("bit", root.TextContent);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRenderNoDescriptionElementWithoutAnAriaDescription()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-lnk-dsc").Count);
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldKeepASplattedAriaDescribedByBesideItsOwnDescription()
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object>
+            {
+                ["aria-describedby"] = "note",
+                [nameof(BitLink.AriaDescription)] = "PDF, 2.4 megabytes"
+            });
+        });
+
+        var described = component.Find(".bit-lnk").GetAttribute("aria-describedby");
+
+        // Pointing the link at a description of its own is one more thing it is described by, never a
+        // replacement for what the app was already pointing it at.
+        Assert.AreEqual($"note {component.Find(".bit-lnk-dsc").Id}", described);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldSplatEventHandlersOntoTheRenderedElement()
+    {
+        var component = RenderComponent<BitLinkEventSplatTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        component.Find(".bit-lnk").DoubleClick();
+
+        // Everything an anchor accepts goes through the splatted attributes, event handlers included - which is
+        // what keeps the component from having to grow a parameter for every event the DOM already has.
+        Assert.AreEqual(1, component.Instance.DoubleClickCount);
+    }
 
     private void MatchSimpleMarkup(IRenderedComponent<BitLink> component, string href)
     {

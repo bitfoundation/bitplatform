@@ -1,0 +1,9 @@
+﻿@* A BitLink given a DOM event handler it has no parameter for, so that the splat reaching the rendered
+   element with the handler intact - rather than only with plain attributes - is something a test can see. *@
+<BitLink Href="@Href" @ondblclick="() => DoubleClickCount++">bit</BitLink>
+
+@code {
+    [Parameter] public string? Href { get; set; }
+
+    public int DoubleClickCount { get; set; }
+}
