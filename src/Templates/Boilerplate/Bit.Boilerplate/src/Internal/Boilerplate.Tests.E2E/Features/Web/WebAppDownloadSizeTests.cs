@@ -89,20 +89,26 @@ public partial class WebAppDownloadSizeTests : AppPageTest
         var consentBanner = Page.Locator(consentBannerSelector).First;
 
         var deadline = DateTimeOffset.UtcNow + measurementDeadline;
+        var measured = false;
 
         while (DateTimeOffset.UtcNow < deadline)
         {
             var lastActivity = new DateTimeOffset(Interlocked.Read(ref lastActivityTicks), TimeSpan.Zero);
 
             if (DateTimeOffset.UtcNow - lastActivity >= networkQuietPeriod && await consentBanner.IsVisibleAsync())
+            {
+                measured = true;
                 break;
+            }
 
             await Task.Delay(TimeSpan.FromMilliseconds(500), TestContext.CancellationToken);
         }
 
-        // Silence without a booted app means the measurement never saw the app start, so the total below would cover
-        // only a fraction of it.
-        await Expect(consentBanner).ToBeVisibleAsync(new() { Timeout = 5_000 });
+        // Running out of deadline is an incomplete measurement, not a size regression, so it fails as itself rather
+        // than letting a fraction of a first visit reach the assertions: silence alone is also what the gap before the
+        // precache looks like, and a booted app may still be precaching, which is why the loop waits for both.
+        if (measured is false)
+            Assert.Fail($"{url} reached no quiet network with a booted app within {measurementDeadline.TotalMinutes:F0} minutes (consent banner visible: {await consentBanner.IsVisibleAsync()}), so its download size was never fully measured.");
 
         long totalBytes = 0;
         var requestCount = 0;

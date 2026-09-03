@@ -9,9 +9,14 @@ public abstract class SmokeTestsBase : AppsTestBase
     /// <summary>
     /// Waits for AppShell.razor's shell, then opens the header's account menu (AppMenu.razor's BitDropMenu):
     /// prerendered html shows both without a .NET app behind them, but only a booted app handles the click.
+    /// <para>
+    /// Sales has a Windows build but no Android one, so its Android row reports inconclusive - see
+    /// <see cref="AppsTestBase.OpenApp"/>, which is what keeps such a gap visible as skipped.
+    /// </para>
     /// </summary>
     [TestMethod]
     [DataRow(App.Todo, DisplayName = nameof(App.Todo))]
+    [DataRow(App.Sales, DisplayName = nameof(App.Sales))]
     [DataRow(App.AdminPanel, DisplayName = nameof(App.AdminPanel))]
     public virtual async Task App_Should_BecomeInteractive(App app)
     {

@@ -55,16 +55,25 @@ public partial class ApiSmokeTests
         // The session the server just created is named by the access token it minted for it.
         var sessionId = IAuthTokenProvider.ParseAccessToken(signInResponse.AccessToken, validateExpiry: true).GetSessionId();
 
-        var session = await dbContext.UserSessions
-            .Include(userSession => userSession.User)
-            .SingleOrDefaultAsync(userSession => userSession.Id == sessionId, TestContext.CancellationToken);
+        int deleted;
 
-        Assert.IsNotNull(session, $"Session {sessionId} was created by {api} but is not in the database this host is connected to.");
-        Assert.AreEqual(storeUserEmail, session.User!.Email, "The session belongs to whoever signed in.");
+        try
+        {
+            var session = await dbContext.UserSessions
+                .Include(userSession => userSession.User)
+                .SingleOrDefaultAsync(userSession => userSession.Id == sessionId, TestContext.CancellationToken);
 
-        var deleted = await dbContext.UserSessions
-            .Where(userSession => userSession.Id == sessionId)
-            .ExecuteDeleteAsync(TestContext.CancellationToken);
+            Assert.IsNotNull(session, $"Session {sessionId} was created by {api} but is not in the database this host is connected to.");
+            Assert.AreEqual(storeUserEmail, session.User!.Email, "The session belongs to whoever signed in.");
+        }
+        finally
+        {
+            // Whatever the assertions above decided, the session must not stay signed in on a live deployment - and a
+            // canceled or timed out test cannot clean up with its own token.
+            deleted = await dbContext.UserSessions
+                .Where(userSession => userSession.Id == sessionId)
+                .ExecuteDeleteAsync(CancellationToken.None);
+        }
 
         Assert.AreEqual(1, deleted, "Exactly the one session signing in created.");
 
