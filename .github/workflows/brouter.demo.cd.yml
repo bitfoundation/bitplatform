@@ -37,7 +37,7 @@ jobs:
 
     # Server-owned; C:\inetpub keeps its own copies.
     - name: Strip server-owned files from bundle
-      run: rm -fv server/appsettings*.json server/AppCertificate.* server/AppleAuthKey.p8 server/*.pfx || true
+      run: rm -fv server/appsettings*.json server/AppCertificate.* server/AppleAuthKey.p8 server/*.pfx
 
     - name: Upload artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

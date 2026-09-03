@@ -5,6 +5,27 @@ name: All CD
 
 on:
   workflow_dispatch:
+    inputs:
+      server:
+        description: Server web + api
+        type: boolean
+        default: true
+      wasm:
+        description: Blazor WASM standalone
+        type: boolean
+        default: true
+      windows:
+        description: Windows apps
+        type: boolean
+        default: true
+      android:
+        description: Android apps
+        type: boolean
+        default: true
+      ios:
+        description: iOS apps
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -13,50 +34,76 @@ jobs:
 
   platform_website:
     name: platform website
+    if: inputs.server
     uses: ./.github/workflows/platform.website.cd.yml
     secrets: inherit
 
   sales_website:
     name: sales website
+    if: inputs.server
     uses: ./.github/workflows/sales.website.cd.yml
+    secrets: inherit
+
+  bmotion_demo:
+    name: bmotion demo
+    if: inputs.server
+    uses: ./.github/workflows/bmotion.demo.cd.yml
+    secrets: inherit
+
+  brouter_demo:
+    name: brouter demo
+    if: inputs.server
+    uses: ./.github/workflows/brouter.demo.cd.yml
+    secrets: inherit
+
+  bswup_demo:
+    name: bswup demo
+    if: inputs.server
+    uses: ./.github/workflows/bswup.demo.cd.yml
+    secrets: inherit
+
+  butil_demo:
+    name: butil demo
+    if: inputs.server
+    uses: ./.github/workflows/butil.demo.cd.yml
     secrets: inherit
 
   blazorui_demo:
     name: blazorui demo
     uses: ./.github/workflows/blazorui.demo.cd.yml
     secrets: inherit
-
-  bmotion_demo:
-    name: bmotion demo
-    uses: ./.github/workflows/bmotion.demo.cd.yml
-    secrets: inherit
-
-  brouter_demo:
-    name: brouter demo
-    uses: ./.github/workflows/brouter.demo.cd.yml
-    secrets: inherit
-
-  bswup_demo:
-    name: bswup demo
-    uses: ./.github/workflows/bswup.demo.cd.yml
-    secrets: inherit
-
-  butil_demo:
-    name: butil demo
-    uses: ./.github/workflows/butil.demo.cd.yml
-    secrets: inherit
-
-  admin_sample:
-    name: admin sample
-    uses: ./.github/workflows/admin-sample.cd.yml
-    secrets: inherit
-
-  todo_sample:
-    name: todo sample
-    uses: ./.github/workflows/todo-sample.cd.yml
-    secrets: inherit
+    with:
+      server: ${{ inputs.server }}
+      windows: ${{ inputs.windows }}
+      android: ${{ inputs.android }}
+      ios: ${{ inputs.ios }}
 
   sales_module_demo:
     name: sales module demo
     uses: ./.github/workflows/sales-module-demo.cd.yml
     secrets: inherit
+    with:
+      server: ${{ inputs.server }}
+      windows: ${{ inputs.windows }}
+
+  admin_sample:
+    name: admin sample
+    uses: ./.github/workflows/admin-sample.cd.yml
+    secrets: inherit
+    with:
+      server: ${{ inputs.server }}
+      wasm: ${{ inputs.wasm }}
+      windows: ${{ inputs.windows }}
+      android: ${{ inputs.android }}
+      ios: ${{ inputs.ios }}
+
+  todo_sample:
+    name: todo sample
+    uses: ./.github/workflows/todo-sample.cd.yml
+    secrets: inherit
+    with:
+      server: ${{ inputs.server }}
+      wasm: ${{ inputs.wasm }}
+      windows: ${{ inputs.windows }}
+      android: ${{ inputs.android }}
+      ios: ${{ inputs.ios }}

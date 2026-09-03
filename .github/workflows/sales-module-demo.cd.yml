@@ -11,7 +11,23 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      server:
+        description: Server web
+        type: boolean
+        default: true
+      windows:
+        description: Windows app
+        type: boolean
+        default: true
   workflow_call:
+    inputs:
+      server:
+        type: boolean
+        default: true
+      windows:
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -20,6 +36,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
+    if: inputs.server
     runs-on: windows-2025
 
     steps:
@@ -120,6 +137,7 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
+    if: inputs.windows
     runs-on: windows-2025
   
     steps:

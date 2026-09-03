@@ -8,7 +8,37 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      server:
+        description: Server web + api
+        type: boolean
+        default: true
+      windows:
+        description: Windows app
+        type: boolean
+        default: true
+      android:
+        description: Android app
+        type: boolean
+        default: true
+      ios:
+        description: iOS app
+        type: boolean
+        default: true
   workflow_call:
+    inputs:
+      server:
+        type: boolean
+        default: true
+      windows:
+        type: boolean
+        default: true
+      android:
+        type: boolean
+        default: true
+      ios:
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -17,6 +47,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
+    if: inputs.server
     runs-on: windows-2025
 
     steps:
@@ -98,6 +129,7 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
+    if: inputs.windows
     runs-on: windows-2025
   
     steps:
@@ -151,6 +183,7 @@ jobs:
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
+    if: inputs.android
     runs-on: ubuntu-24.04
   
     steps:
@@ -193,7 +226,7 @@ jobs:
       run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
   
     - name: Publish aab
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-android
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -215,6 +248,7 @@ jobs:
 
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
+    if: inputs.ios
     runs-on: macOS-26
   
     steps:
