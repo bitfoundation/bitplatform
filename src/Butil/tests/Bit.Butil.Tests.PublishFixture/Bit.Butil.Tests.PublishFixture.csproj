@@ -41,7 +41,8 @@
         <BitButilChunksDirectory>$(MSBuildThisFileDirectory)..\..\Bit.Butil\obj\butil-js\chunks\</BitButilChunksDirectory>
         <BitButilBuildTasksAssembly>$(MSBuildThisFileDirectory)..\..\Bit.Butil.Build\bin\$(Configuration)\netstandard2.0\Bit.Butil.Build.dll</BitButilBuildTasksAssembly>
         <!-- Not a WebAssembly project, so the trimming is off by default here; every scenario wants it on and
-             differs in what it is given to trim against. -->
+             differs in what it is given to trim against. On brings BitButilScriptScan=TypeReferences with
+             it, which is why the scenarios that isolate one of the other signals turn the scan off by name. -->
         <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == ''">true</BitButilTrimScripts>
     </PropertyGroup>
 

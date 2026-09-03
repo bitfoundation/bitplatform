@@ -29,9 +29,18 @@
                                          Publish only: a build - and everything development runs on top of
                                          it, dotnet run and dotnet watch included - is left untouched, so
                                          what a developer debugs is always the full, untrimmed JavaScript.
+                                         And head only: it takes effect in the project that publishes the
+                                         app's static web assets (StaticWebAssetProjectMode=Root, which the
+                                         Web SDK and the Blazor WebAssembly SDK set), never in a Razor class
+                                         library or a hybrid head that only contributes to one. See the gate
+                                         in _BitButilResolveScriptTrimming for why that is not the same as
+                                         "hangs off a publish target".
                                          Default: true in a Blazor WebAssembly project (the one case where
                                          the assembly that is trimmed is the assembly that calls the served
                                          JavaScript), false elsewhere.
+                                         On its own it is enough: turning it on turns BitButilScriptScan on
+                                         with it, so an app that wants the trimming asks for the trimming
+                                         and not for a scan mode as well.
                                  false   Publish the full bundle, whatever the signals below say.
 
                                          The switch decides *whether* to trim; the three below are *what it
@@ -43,13 +52,18 @@
                                          publish is trimmed, and it then supersedes BitButilScriptScan -
                                          the same question, better answered.
 
-      BitButilScriptScan         None    (default) Do not read the app's own assemblies.
-                       TypeReferences    Read them, and take every Bit.Butil type they reference - an
-                                         @inject Clipboard is a reference to Bit.Butil.Clipboard - through
-                                         to the modules that type needs. The signal for an app published
-                                         WITHOUT trimming, and the mode to use of the two: on this
-                                         repository's own trimming harness it produces the same module set
-                                         ILLink does, exactly.
+      BitButilScriptScan  TypeReferences Read the app's own assemblies, and take every Bit.Butil type they
+                                         reference - an @inject Clipboard is a reference to
+                                         Bit.Butil.Clipboard - through to the modules that type needs. The
+                                         signal for an app published WITHOUT trimming, and the precise mode
+                                         of the two: on this repository's own trimming harness it produces
+                                         the same module set ILLink does, exactly.
+                                         Default wherever BitButilTrimScripts is true, which is what makes
+                                         that switch enough on its own; None wherever it is false, since
+                                         there is nothing to answer for then.
+                                 None    Do not read the app's own assemblies. The way to publish the full
+                                         bundle from a project that keeps BitButilTrimScripts on for
+                                         somewhere else - or to silence a scan that cannot see the app.
                             TypeNames    The same idea without reading the metadata tables: match the
                                          library's type names against the names in each assembly's string
                                          heap. Cheaper to reason about, and coarser - an app with a class
@@ -73,6 +87,11 @@
                                          is the app; set it only if that is not where the code calling
                                          Bit.Butil lives.
 
+      BitButilUntrimmedAssembly          The untrimmed Bit.Butil.dll to read the class-to-module map from.
+                                         Defaults to whichever copy-local reference is Bit.Butil.dll, which
+                                         is right in every ordinary layout; set it for one where that lookup
+                                         comes back empty or ambiguous, rather than turning the feature off.
+
       BitButilIncludeScriptBundle / BitButilIncludeScriptModules
                                          Fine-grained overrides of which shape ends up in the app's static
                                          web assets. Default to the mode above; set both to true to keep
@@ -82,15 +101,28 @@
                                          asking for them by name outranks the trimming, which otherwise
                                          keeps only the ones the app can reach.
 
-    Which signal suits which app. A standalone Blazor WebAssembly app (or PWA) publishes trimmed by default
-    and is the one case where the assembly ILLink trims is the assembly that calls the served JavaScript, so
-    BitButilTrimScripts defaults to true there and needs nothing else. An app published untrimmed - a
-    WebAssembly app with PublishTrimmed off, a Blazor Server app, a server host that prerenders - has no
-    ILLink to ask, and BitButilScriptScan=TypeReferences is what replaces it. A server host that references
-    a WebAssembly client is the case to think about: scanning covers the host and the client alike, because
-    the client's assembly is one of the host's references, but ILLink's answer for such a host is about the
-    host's own code only - which is why trimming there wants the scan (or lazy scripts) rather than
-    PublishTrimmed.
+    Where these properties go. On the project you publish - the Blazor WebAssembly head, or the server
+    project of a Blazor Web App - and not in a shared Directory.Build.props: from there they also reach the
+    Razor class libraries and the hybrid heads that share the solution, and none of those publish the app's
+    static web assets. Such a project stands down with a message rather than trimming (see the gate in
+    _BitButilResolveScriptTrimming), so a shared props file is not a broken build - but it is not where the
+    answer comes from either, since a class library asked what "the app" calls would answer from its own
+    references, which are not the app's. BitButilTrimScripts alone is the exception worth sharing: it is only
+    a switch, and already defaults to true exactly where it applies.
+
+    Which signal suits which app, and none of it has to be chosen by hand. A standalone Blazor WebAssembly
+    app (or PWA) publishes trimmed by default and is the one case where the assembly ILLink trims is the
+    assembly that calls the served JavaScript, so BitButilTrimScripts defaults to true there and needs
+    nothing else. An app published untrimmed - a WebAssembly app with PublishTrimmed off, a Blazor Server
+    app, a server host that prerenders - has no ILLink to ask, and the scan is what replaces it; it comes on
+    with the switch, so <BitButilTrimScripts>true</BitButilTrimScripts> is the whole of what such an app
+    writes. A server host that references a WebAssembly client is the case to think about: scanning covers
+    the host and the client alike, because the client's assembly is one of the host's references, but
+    ILLink's answer for such a host is about the host's own code only - which is why trimming there wants the
+    scan (or lazy scripts) rather than PublishTrimmed. What is left to write by hand is the exceptions:
+    BitButilScriptModule for a module reached where no signal can follow, BitButilScriptScan=None to keep the
+    full bundle in one project without turning the switch off, and the two assembly overrides for a layout
+    where the defaults look in the wrong place.
     -->
 
     <!-- The package carries the same targets file under buildTransitive\ and build\, and tooling that
@@ -109,9 +141,22 @@
         <BitButilLazyScripts Condition="'$(BitButilLazyScripts)' == ''">false</BitButilLazyScripts>
         <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == '' and ('$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true')">true</BitButilTrimScripts>
         <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == ''">false</BitButilTrimScripts>
-        <!-- Off by default everywhere. Reading a publish's assemblies is a cost and a judgement about what
-             the app calls, and neither belongs in a default: an app gets the scan because its csproj asked
-             for it, having decided which of the two modes it wants. -->
+        <!-- On wherever the switch above is on, and off wherever it is off. BitButilTrimScripts=true says
+             "trim this app's JavaScript", and on a publish ILLink never touched the scan is the only thing
+             that can answer which JavaScript that is - so without it the switch would be on and the feature
+             inert, which is a silent dead end rather than a default. TypeReferences of the two modes: it
+             reads the metadata tables rather than matching bare type names, over-includes nothing, and on
+             this repository's own trimming harness produces exactly the module set ILLink does. The cost is
+             a read of the publish's own assemblies, paid only where the switch already asked for trimming -
+             a trimmed publish supersedes the scan, and a build never reaches it at all.
+             <BitButilScriptScan>None</BitButilScriptScan> is the way back to the full bundle for an app that
+             wants the trimming elsewhere, and TypeNames the way to the coarser mode. -->
+        <!-- Whether the consumer wrote the scan out, read while the property is still unset: an explicit
+             scan is worth a word when a trimmed publish makes it redundant, and worth failing the build over
+             when the assembly it needs cannot be read. A defaulted one is neither - nobody asked for it, so
+             it stands down quietly instead (see _BitButilAssembleTrimmedBundle). -->
+        <_BitButilScriptScanRequested Condition="'$(BitButilScriptScan)' != ''">true</_BitButilScriptScanRequested>
+        <BitButilScriptScan Condition="'$(BitButilScriptScan)' == '' and '$(BitButilTrimScripts)' == 'true'">TypeReferences</BitButilScriptScan>
         <BitButilScriptScan Condition="'$(BitButilScriptScan)' == ''">None</BitButilScriptScan>
         <BitButilIncludeScriptBundle Condition="'$(BitButilIncludeScriptBundle)' == '' and '$(BitButilLazyScripts)' == 'true'">false</BitButilIncludeScriptBundle>
         <BitButilIncludeScriptBundle Condition="'$(BitButilIncludeScriptBundle)' == ''">true</BitButilIncludeScriptBundle>
@@ -344,12 +389,41 @@
             <_BitButilHasSignal>false</_BitButilHasSignal>
             <_BitButilHasSignal Condition="'$(PublishTrimmed)' == 'true' or ('$(_BitButilScanMode)' != '' and '$(_BitButilScanMode)' != 'None') or '@(BitButilScriptModule)' != ''">true</_BitButilHasSignal>
 
-            <!-- Publish only, on three counts: every target these gate hangs off ResolvePublishStaticWebAssets,
-                 which no build reaches; the assemblies read here are a publish's; and a design-time build is
-                 excluded outright. A build, and so dotnet run and dotnet watch, keeps the JavaScript exactly
-                 as the package ships it - what a developer debugs is always the full, untrimmed set. -->
+            <!-- Only the project that publishes the app. ResolvePublishStaticWebAssets is not the
+                 publish-only stage it looks like: the SDK runs it on REFERENCED projects too, through
+                 ComputeReferencedStaticWebAssetsPublishManifest, and a head that packages its wwwroot at
+                 build time (a MAUI/Android hybrid head) reaches it during a plain build. A Razor class
+                 library asked for its publish assets that way would trim the bundle against its own
+                 references, which are not the app's - it cannot know what the app that consumes it calls -
+                 and hand the app a bundle short of the modules only the app names.
+
+                 StaticWebAssetProjectMode is the SDK's own answer to "is this the root of the asset graph
+                 or a library contributing to someone else's": the Web SDK and the Blazor WebAssembly SDK
+                 set Root, every class library and every hybrid head is left Default. Gating on Root keeps
+                 the trimming in the one project whose reference closure IS the app's, which is also the
+                 project whose publish the whole feature was written for. The referenced-project stage then
+                 hands its full bundle up and the root trims it there, which is where the answer is right.
+
+                 The remaining two counts are unchanged: the assemblies read here are a publish's, and a
+                 design-time build is excluded outright. A build, and so dotnet run and dotnet watch, keeps
+                 the JavaScript exactly as the package ships it - what a developer debugs is always the
+                 full, untrimmed set. -->
+            <_BitButilIsAssetRoot>false</_BitButilIsAssetRoot>
+            <_BitButilIsAssetRoot Condition="'$(StaticWebAssetProjectMode)' == 'Root'">true</_BitButilIsAssetRoot>
+
             <_BitButilPublishTrimming>false</_BitButilPublishTrimming>
-            <_BitButilPublishTrimming Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitButilPublishTrimming>
+            <_BitButilPublishTrimming Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(_BitButilIsAssetRoot)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitButilPublishTrimming>
+
+            <!-- Said out loud, because "I set the properties and nothing happened" is otherwise a silent
+                 dead end - and because the properties landing in a shared Directory.Build.props, where they
+                 reach every project in the solution rather than the head, is exactly how that happens.
+                 Only for the properties that describe THIS app, though: BitButilTrimScripts is the one worth
+                 sharing, and the scan it brings with it is on in every project the switch is on in, so
+                 saying it for those would mean a line per class library in a solution that has the switch
+                 shared and everything right. A scan written out by hand, or a module list, is the shape of
+                 the mistake this is here to catch. -->
+            <_BitButilTrimmingStoodDown>false</_BitButilTrimmingStoodDown>
+            <_BitButilTrimmingStoodDown Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(_BitButilIsAssetRoot)' != 'true' and '$(DesignTimeBuild)' != 'true' and ('$(_BitButilScriptScanRequested)' == 'true' or '@(BitButilScriptModule)' != '')">true</_BitButilTrimmingStoodDown>
 
             <!-- The bundle half: rebuild bit-butil.js from the modules the app can reach. Needs a bundle to
                  rebuild. -->
@@ -367,20 +441,23 @@
             <_BitButilTrimAnyEnabled Condition="'$(_BitButilTrimEnabled)' == 'true' or '$(_BitButilTrimModulesEnabled)' == 'true'">true</_BitButilTrimAnyEnabled>
         </PropertyGroup>
 
-        <Message Importance="normal" Condition="'$(PublishTrimmed)' == 'true' and '$(BitButilScriptScan)' != '' and '$(BitButilScriptScan)' != 'None'"
+        <!-- Only for a scan the csproj wrote out. The default one is on in every project the switch is on
+             in, so saying it there would be telling every trimmed publish about a property nobody set. -->
+        <Message Importance="normal" Condition="'$(PublishTrimmed)' == 'true' and '$(_BitButilScriptScanRequested)' == 'true' and '$(BitButilScriptScan)' != 'None'"
                  Text="Bit.Butil: this publish is trimmed, so &lt;BitButilScriptScan&gt;$(BitButilScriptScan)&lt;/BitButilScriptScan&gt; is not used - the trimmed assembly answers the same question more precisely." />
 
-        <!-- The app's own assemblies: this project's output and everything copied next to it. Overridable in
-             the csproj for the app whose Bit.Butil calls live somewhere this cannot see. Only gathered when
-             a scan is actually going to read them. -->
-        <ItemGroup Condition="'$(_BitButilScanMode)' != '' and '$(_BitButilScanMode)' != 'None' and '@(BitButilScriptScanAssembly)' == ''">
-            <BitButilScriptScanAssembly Include="@(IntermediateAssembly->'%(FullPath)')" />
-            <BitButilScriptScanAssembly Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
-        </ItemGroup>
+        <Message Importance="normal" Condition="'$(_BitButilTrimmingStoodDown)' == 'true'"
+                 Text="Bit.Butil: script trimming is configured here but this project does not publish the app's static web assets (StaticWebAssetProjectMode is '$(StaticWebAssetProjectMode)', not 'Root'), so it is left to the head that does. Set &lt;BitButilTrimScripts&gt;, &lt;BitButilScriptScan&gt; and &lt;BitButilScriptModule&gt; on the project you publish rather than in a shared Directory.Build.props." />
 
     </Target>
 
-    <Target Name="_BitButilAssembleTrimmedBundle" DependsOnTargets="_BitButilResolveScriptTrimming" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
+    <!-- ResolveReferences, because @(ReferenceCopyLocalPaths) is where both the assemblies to scan and the
+         untrimmed Bit.Butil.dll come from, and the stage this hangs off does NOT imply it has run: reached
+         through ComputeReferencedStaticWebAssetsPublishManifest, or through a MSBuild call carrying global
+         properties that fork a fresh project instance, only the requested target chain runs and the item is
+         empty. Named here rather than on _BitButilResolveScriptTrimming so it is paid for only when the
+         trimming is actually on - MSBuild skips a false-conditioned target's DependsOnTargets entirely. -->
+    <Target Name="_BitButilAssembleTrimmedBundle" DependsOnTargets="_BitButilResolveScriptTrimming;ResolveReferences" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
 
         <PropertyGroup>
             <!-- Only set when ILLink is in play: the task reads "a path was given but the file is not there"
@@ -391,10 +468,18 @@
             <_BitButilTrimmedBundle>$(_BitButilTrimmedBundleDir)bit-butil.js</_BitButilTrimmedBundle>
         </PropertyGroup>
 
+        <!-- The app's own assemblies: this project's output and everything copied next to it. Overridable in
+             the csproj for the app whose Bit.Butil calls live somewhere this cannot see. Only gathered when
+             a scan is actually going to read them, and only here, where ResolveReferences has run. -->
+        <ItemGroup Condition="'$(_BitButilScanMode)' != '' and '$(_BitButilScanMode)' != 'None' and '@(BitButilScriptScanAssembly)' == ''">
+            <BitButilScriptScanAssembly Include="@(IntermediateAssembly->'%(FullPath)')" />
+            <BitButilScriptScanAssembly Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
+        </ItemGroup>
+
         <!-- The untrimmed Bit.Butil.dll, which is what says which module each Bit.Butil class needs. Needed
              by a scan, and by a csproj that names classes rather than modules; the task says so itself if it
              turns out to be needed and missing. -->
-        <ItemGroup>
+        <ItemGroup Condition="'$(BitButilUntrimmedAssembly)' == ''">
             <_BitButilReferencedAssembly Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'Bit.Butil.dll'" />
         </ItemGroup>
 
@@ -403,6 +488,20 @@
             <!-- More than one, and there is no telling which is the Bit.Butil this app compiled against.
                  Empty is the honest answer: the task then says what it could not read, and why it needed to. -->
             <_BitButilUntrimmedAssembly Condition="'$(_BitButilUntrimmedAssembly)' != '' and $(_BitButilUntrimmedAssembly.Contains(';'))"></_BitButilUntrimmedAssembly>
+            <!-- The csproj outranks all of that: the escape hatch for a layout where the reference does not
+                 resolve to the Bit.Butil this app compiled against, or resolves to more than one. Without it
+                 the only way out of a failed lookup is turning the feature off. -->
+            <_BitButilUntrimmedAssembly Condition="'$(BitButilUntrimmedAssembly)' != ''">$(BitButilUntrimmedAssembly)</_BitButilUntrimmedAssembly>
+        </PropertyGroup>
+
+        <!-- A scan needs that assembly to know which module each Bit.Butil class uses, and the task fails the
+             build when it asked for one and could not read it - which is right for a csproj that wrote
+             <BitButilScriptScan> out, since there the answer is BitButilUntrimmedAssembly rather than
+             silence. For the scan the switch turned on by itself it is not: nobody asked for it, so a lookup
+             that comes back empty or ambiguous is the feature standing down, and the task then has nothing to
+             go on and keeps the full bundle. -->
+        <PropertyGroup Condition="'$(_BitButilScriptScanRequested)' != 'true' and '$(_BitButilUntrimmedAssembly)' == ''">
+            <_BitButilScanMode>None</_BitButilScanMode>
         </PropertyGroup>
 
         <ItemGroup Condition="'$(_BitButilTrimEnabled)' == 'true'">

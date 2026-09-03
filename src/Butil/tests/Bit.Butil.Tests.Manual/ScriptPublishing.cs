@@ -62,10 +62,18 @@ internal static class ScriptPublishing
     private static Scenario[] Scenarios =>
     [
         // Nothing to trim against. The one that has to keep working: a consumer who never asked for any of
-        // this must publish the whole bundle, not an empty one.
+        // this must publish the whole bundle, not an empty one. Reached here by turning the scan off, since
+        // the switch this fixture leaves on brings the scan with it - which is the next scenario.
         new("with no signal at all the full bundle is published",
-            [],
+            ["BitButilScriptScan=None"],
             FullBundle: true),
+
+        // The switch on its own, which is what an app actually writes: BitButilTrimScripts=true (set by this
+        // fixture's csproj, and the default in a WebAssembly project) has to be enough, with no scan mode
+        // named beside it - the same answer as the explicit TypeReferences below.
+        new("the trimming switch alone scans the app, with no scan mode set",
+            [],
+            Bundle: Scanned),
 
         // Option 2/3: the app's own assemblies, for a publish ILLink never touched.
         new("a scan of the app's own assemblies trims the bundle to what its classes need",
@@ -81,9 +89,10 @@ internal static class ScriptPublishing
             BundleIsMinimum: true),
 
         // Option 1 alone: no ILLink, no scan, just a csproj. The whole point of it being a signal in its own
-        // right rather than an addition to one.
+        // right rather than an addition to one - so the scan the switch defaults to is turned off to isolate
+        // it, and what comes out is the csproj's module and nothing else.
         new("a csproj module list is a signal on its own",
-            ["FixtureScriptModules=Cookie"],
+            ["BitButilScriptScan=None", "FixtureScriptModules=Cookie"],
             Bundle: ["butil", "cookie"]),
 
         // Option 1 on top of option 3 - the thing that has to be additive rather than either/or.
@@ -99,6 +108,15 @@ internal static class ScriptPublishing
         // Turning the feature off has to survive being given something to trim against.
         new("BitButilTrimScripts=false publishes the full bundle whatever else is set",
             ["BitButilTrimScripts=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
+            FullBundle: true),
+
+        // The properties in a shared Directory.Build.props reach every project in the solution, and the ones
+        // that do not publish the app's static web assets - a Razor class library, a MAUI/Blazor Hybrid head -
+        // must leave the JavaScript alone: their reference closure is not the app's, so trimming against it
+        // would hand the head a bundle short of the modules only the head names. StaticWebAssetProjectMode is
+        // what the gate reads, and forcing it here is the fixture standing in for such a project.
+        new("a project that does not publish the app's static web assets does not trim",
+            ["StaticWebAssetProjectMode=Default", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
             FullBundle: true),
 
         // MSBuild accepts a misspelled item without a word, so the build is the only thing that can say so.
@@ -149,7 +167,48 @@ internal static class ScriptPublishing
             CheckModules(checks, candidate, Path.Combine(output, ContentPath, "modules"), manifest);
         }
 
+        CheckReferencedPublishStage(checks, fixtureProject);
+
         return (checks.Passed, checks.Failed);
+    }
+
+    /// <summary>
+    /// The publish asset stage reached the way the SDK reaches it on a REFERENCED project, rather than the
+    /// way a publish of this project does.
+    /// </summary>
+    /// <remarks>
+    /// ResolvePublishStaticWebAssets is not the publish-only stage its name suggests. The SDK also runs it on
+    /// referenced projects, through ComputeReferencedStaticWebAssetsPublishManifest, and a head that packages
+    /// its wwwroot at build time reaches it during a plain build. Either way it can land in a project instance
+    /// where only that target chain has run - a MSBuild call carrying global properties of its own forks a
+    /// fresh instance - and ResolveReferences is not part of that chain. @(ReferenceCopyLocalPaths) is then
+    /// empty, and the trimming, which reads the untrimmed Bit.Butil.dll out of it to know which module each
+    /// class needs, used to fail the build with "'' could not be read" and no way out but switching the
+    /// feature off.
+    /// <br/>
+    /// Invoking the target by name is what puts the stage in that position; a `dotnet publish` cannot, because
+    /// by then ResolveReferences has long since run. Only the Bit.Butil error is asserted on, not the exit
+    /// code: driving one internal SDK target straight at a project whose Bit.Butil is a ProjectReference walks
+    /// the library's own asset pipeline down a path no consumer takes, and its noise is not this claim.
+    /// </remarks>
+    private static void CheckReferencedPublishStage(ScriptBundling.Checks checks, string fixtureProject)
+    {
+        const string Claim = "the publish asset stage resolves Bit.Butil.dll when a referencing project drives it";
+
+        string[] arguments =
+        [
+            "msbuild", fixtureProject, "-t:ComputeReferencedStaticWebAssetsPublishManifest",
+            "--nologo", "-v:quiet", "-tl:off", "-p:BitButilScriptScan=TypeReferences",
+        ];
+
+        if (Run(arguments, out var log, out _) is false)
+        {
+            checks.That(false, $"{Claim} was not checked", log);
+            return;
+        }
+
+        checks.That(log.Contains("could not be read", StringComparison.Ordinal) is false, Claim,
+            $"the untrimmed assembly did not resolve: {FirstError(log)}");
     }
 
     /// <summary>
@@ -216,9 +275,15 @@ internal static class ScriptPublishing
     /// </summary>
     private static string Guard(string module) => $"window.BitButil.{(module == "butil" ? "version" : module)}";
 
-    private static bool Publish(ScriptBundling.Checks checks, string project, string output, Scenario scenario, out string log)
+    /// <summary>
+    /// Runs <c>dotnet</c> with the arguments given. False when it could not be started or did not finish, and
+    /// <paramref name="log"/> then says which rather than carrying output; true with the combined output and
+    /// the exit code, whatever that was - a run that failed is an outcome for the caller to read, not an
+    /// error here.
+    /// </summary>
+    private static bool Run(string[] arguments, out string log, out int exitCode)
     {
-        log = string.Empty;
+        exitCode = 0;
 
         var process = new Process
         {
@@ -230,12 +295,7 @@ internal static class ScriptPublishing
             }
         };
 
-        foreach (var argument in new[] { "publish", project, "-c", "Debug", "--nologo", "-v", "quiet", "-tl:off", "-o", output })
-        {
-            process.StartInfo.ArgumentList.Add(argument);
-        }
-
-        foreach (var property in scenario.Properties) process.StartInfo.ArgumentList.Add($"-p:{property}");
+        foreach (var argument in arguments) process.StartInfo.ArgumentList.Add(argument);
 
         try
         {
@@ -243,7 +303,7 @@ internal static class ScriptPublishing
         }
         catch (Exception exception)
         {
-            checks.That(false, $"{scenario.Name} was not checked", $"dotnet could not be started ({exception.Message})");
+            log = $"dotnet could not be started ({exception.Message})";
             return false;
         }
 
@@ -255,12 +315,31 @@ internal static class ScriptPublishing
         if (process.WaitForExit((int)PublishTimeout.TotalMilliseconds) is false)
         {
             try { process.Kill(entireProcessTree: true); } catch { /* it is already gone, which is the outcome wanted */ }
-            checks.That(false, $"{scenario.Name} was not checked", $"the publish did not finish within {PublishTimeout.TotalMinutes:N0} minutes");
+            log = $"it did not finish within {PublishTimeout.TotalMinutes:N0} minutes";
             return false;
         }
 
         log = standardOutput.Result + standardError.Result;
-        var failed = process.ExitCode != 0;
+        exitCode = process.ExitCode;
+        return true;
+    }
+
+    private static bool Publish(ScriptBundling.Checks checks, string project, string output, Scenario scenario, out string log)
+    {
+        string[] arguments =
+        [
+            "publish", project, "-c", "Debug", "--nologo", "-v", "quiet", "-tl:off", "-o", output,
+            .. scenario.Properties.Select(property => $"-p:{property}"),
+        ];
+
+        if (Run(arguments, out log, out var exitCode) is false)
+        {
+            checks.That(false, $"{scenario.Name} was not checked", log);
+            log = string.Empty;
+            return false;
+        }
+
+        var failed = exitCode != 0;
 
         if (scenario.Error is not null)
         {

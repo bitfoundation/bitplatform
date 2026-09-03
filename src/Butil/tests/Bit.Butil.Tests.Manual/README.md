@@ -129,7 +129,8 @@ a checkout that can produce the artifacts under test can always run them.
 **Script scanning** ([`ScriptScanning.cs`](ScriptScanning.cs)). Everything above rests on ILLink having
 run. A consumer publishing untrimmed has no trimmed assembly, and an *untrimmed* `Bit.Butil.dll` names every
 module the library has - so the signal has to come from somewhere else: the Bit.Butil types the app's own
-assemblies reference (`BitButilScriptScan`), and the modules its csproj names outright
+assemblies reference (`BitButilScriptScan`, which the trimming switch turns on by itself), and the modules
+its csproj names outright
 (`BitButilScriptModule`). These check that the somewhere else arrives at the same place. Untrimmed runs only,
 since the map is a question about the library as shipped rather than about what one app's trimming left.
 
@@ -167,12 +168,15 @@ is allowed to use, that a csproj list is *added* to what the others found rather
 assets removed from the build list are also removed from the publish list, and that a name meaning nothing
 fails the build. So these publish a real consumer app - a two-class web app next door, published in seconds
 rather than the minutes a WebAssembly one takes - and read the JavaScript back out of its publish output.
-Nine `dotnet publish` runs, about fifteen seconds in total, untrimmed runs only:
+Ten `dotnet publish` runs, about fifteen seconds in total, untrimmed runs only:
 
 - with **no signal at all** the full bundle is published - the case that has to keep working for every
-  consumer who never asked for any of this;
+  consumer who never asked for any of this. Reached by setting `BitButilScriptScan=None`, since the switch
+  brings the scan with it;
+- the **switch on its own** - `BitButilTrimScripts=true` and no scan mode named beside it - scans the app and
+  reaches the same answer the explicit `TypeReferences` below does, which is what makes one property enough;
 - a **scan** trims the bundle to the modules the fixture's two classes need; `TypeNames` finds at least those;
-- a **csproj module list** trims it on its own, with no scan and no ILLink;
+- a **csproj module list** trims it on its own, with the scan turned off and no ILLink;
 - a csproj list **plus** a scan produces the union of the two, which is the whole meaning of "additive";
 - **lazy scripts** publish one file per reachable module and no bundle at all;
 - `BitButilTrimScripts=false` publishes the full bundle even when given a scan and a list to work from;
