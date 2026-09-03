@@ -9,7 +9,8 @@ public class BitSwipeTrapTriggerArgs(
     decimal diffY,
     decimal velocityX = 0,
     decimal velocityY = 0,
-    string? pointerType = null)
+    string? pointerType = null,
+    decimal duration = 0)
 {
     /// <summary>
     /// The swipe direction in which the action triggered.
@@ -40,4 +41,9 @@ public class BitSwipeTrapTriggerArgs(
     /// The type of the pointer that performed the swipe action: "mouse", "touch" or "pen".
     /// </summary>
     public string? PointerType { get; set; } = pointerType;
+
+    /// <summary>
+    /// The elapsed time of the swipe action in milliseconds, measured from the moment it started.
+    /// </summary>
+    public decimal Duration { get; set; } = duration;
 }

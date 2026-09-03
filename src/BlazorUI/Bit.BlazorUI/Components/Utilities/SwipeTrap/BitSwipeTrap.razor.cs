@@ -59,7 +59,8 @@ public partial class BitSwipeTrap : BitComponentBase
     [Parameter] public string? SkipSelector { get; set; }
 
     /// <summary>
-    /// The threshold in pixels of the swiping distance that starts the swipe process which stops the default behavior.
+    /// The distance in pixels a gesture must cover before the swipe trap takes it over and stops the
+    /// default behavior. It is also what resolves the axis a diagonal gesture is moving along (default is 0).
     /// </summary>
     [Parameter] public decimal? Threshold { get; set; }
 
@@ -95,26 +96,28 @@ public partial class BitSwipeTrap : BitComponentBase
     }
 
     [JSInvokable("OnMove")]
-    public async Task _OnMove(decimal startX, decimal startY, decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null)
+    public async Task _OnMove(decimal startX, decimal startY, decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null, decimal duration = 0)
     {
-        await OnMove.InvokeAsync(new(startX, startY, diffX, diffY, velocityX, velocityY, pointerType));
+        await OnMove.InvokeAsync(new(startX, startY, diffX, diffY, velocityX, velocityY, pointerType, false, duration));
     }
 
     [JSInvokable("OnEnd")]
-    public async Task _OnEnd(decimal startX, decimal startY, decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null, bool isCanceled = false)
+    public async Task _OnEnd(decimal startX, decimal startY, decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null, bool isCanceled = false, decimal duration = 0)
     {
-        await OnEnd.InvokeAsync(new(startX, startY, diffX, diffY, velocityX, velocityY, pointerType, isCanceled));
+        await OnEnd.InvokeAsync(new(startX, startY, diffX, diffY, velocityX, velocityY, pointerType, isCanceled, duration));
     }
 
     [JSInvokable("OnTrigger")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwipeTrapTriggerArgs))]
-    public async Task _OnTrigger(decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null)
+    public async Task _OnTrigger(decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null, decimal duration = 0)
     {
-        var direction = Math.Abs(diffX) > Math.Abs(diffY)
+        // A dead heat goes to the horizontal axis, the same way the JS side resolves the axis a gesture
+        // moves along: a perfect diagonal must not be reported as one axis here and locked to the other there.
+        var direction = Math.Abs(diffX) >= Math.Abs(diffY)
             ? diffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
             : diffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
 
-        await OnTrigger.InvokeAsync(new(direction, diffX, diffY, velocityX, velocityY, pointerType));
+        await OnTrigger.InvokeAsync(new(direction, diffX, diffY, velocityX, velocityY, pointerType, duration));
     }
 
 

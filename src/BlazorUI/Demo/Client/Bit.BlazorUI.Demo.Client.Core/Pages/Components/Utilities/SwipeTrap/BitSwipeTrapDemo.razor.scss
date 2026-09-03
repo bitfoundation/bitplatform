@@ -12,6 +12,11 @@
     border: 1px solid lightgray;
 }
 
+// bit-stp-swp is put on the trap for as long as a swipe is actually being trapped.
+.bit-stp-swp .basic-container {
+    cursor: grabbing;
+}
+
 .lock-boxes {
     gap: 1rem;
     display: flex;

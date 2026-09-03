@@ -68,7 +68,7 @@ public partial class BitSwipeTrapDemo
             Name = "Threshold",
             Type = "decimal?",
             DefaultValue = "null",
-            Description = "The threshold in pixels of the swiping distance that starts the swipe process which stops the default behavior."
+            Description = "The distance in pixels a gesture must cover before the swipe trap takes it over and stops the default behavior. It is also what resolves the axis a diagonal gesture is moving along (default is 0)."
         },
         new()
         {
@@ -165,6 +165,13 @@ public partial class BitSwipeTrapDemo
                     DefaultValue = "false",
                     Description = "Whether the swipe action ended by being canceled (e.g. the browser took the gesture over) instead of a normal release. Only meaningful in the OnEnd event."
                 },
+                new()
+                {
+                    Name = "Duration",
+                    Type = "decimal",
+                    DefaultValue = "0",
+                    Description = "The elapsed time of the swipe action in milliseconds, measured from the moment it started."
+                },
             ]
         },
         new()
@@ -218,6 +225,13 @@ public partial class BitSwipeTrapDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "The type of the pointer that performed the swipe action: \"mouse\", \"touch\" or \"pen\"."
+                },
+                new()
+                {
+                    Name = "Duration",
+                    Type = "decimal",
+                    DefaultValue = "0",
+                    Description = "The elapsed time of the swipe action in milliseconds, measured from the moment it started."
                 },
             ]
         }
@@ -324,6 +338,18 @@ public partial class BitSwipeTrapDemo
     }
 
 
+    private BitSwipeTrapTriggerArgs? triggerArgsFractional;
+    private BitSwipeTrapTriggerArgs? triggerArgsAbsolute;
+    private void HandleOnTriggerFractional(BitSwipeTrapTriggerArgs args)
+    {
+        triggerArgsFractional = args;
+    }
+    private void HandleOnTriggerAbsolute(BitSwipeTrapTriggerArgs args)
+    {
+        triggerArgsAbsolute = args;
+    }
+
+
     private decimal diffXHorizontalLock;
     private decimal diffYHorizontalLock;
     private decimal diffXVerticalLock;
@@ -359,6 +385,35 @@ public partial class BitSwipeTrapDemo
     {
         diffXAutoLock = 0;
         diffYAutoLock = 0;
+    }
+
+
+    private decimal diffXThreshold;
+    private decimal diffYThreshold;
+    private int moveCountThrottle;
+    private decimal diffXThrottle;
+    private decimal diffYThrottle;
+    private void HandleOnMoveThreshold(BitSwipeTrapEventArgs args)
+    {
+        diffXThreshold = args.DiffX;
+        diffYThreshold = args.DiffY;
+    }
+    private void HandleOnEndThreshold(BitSwipeTrapEventArgs args)
+    {
+        diffXThreshold = 0;
+        diffYThreshold = 0;
+    }
+    private void HandleOnMoveThrottle(BitSwipeTrapEventArgs args)
+    {
+        moveCountThrottle++;
+        diffXThrottle = args.DiffX;
+        diffYThrottle = args.DiffY;
+    }
+    private void HandleOnEndThrottle(BitSwipeTrapEventArgs args)
+    {
+        moveCountThrottle = 0;
+        diffXThrottle = 0;
+        diffYThrottle = 0;
     }
 
 
@@ -509,7 +564,7 @@ public partial class BitSwipeTrapDemo
 
         if (Math.Abs(args.DiffX) > 2 || Math.Abs(args.DiffY) > 2)
         {
-            direction = Math.Abs(args.DiffX) > Math.Abs(args.DiffY)
+            direction = Math.Abs(args.DiffX) >= Math.Abs(args.DiffY)
             ? args.DiffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
             : args.DiffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
         }

@@ -11,7 +11,8 @@ public class BitSwipeTrapEventArgs(
     decimal velocityX = 0,
     decimal velocityY = 0,
     string? pointerType = null,
-    bool isCanceled = false)
+    bool isCanceled = false,
+    decimal duration = 0)
 {
     /// <summary>
     /// The horizontal start point of the swipe action in pixels, relative to the viewport.
@@ -53,4 +54,9 @@ public class BitSwipeTrapEventArgs(
     /// instead of a normal release. Only meaningful in the OnEnd event.
     /// </summary>
     public bool IsCanceled { get; set; } = isCanceled;
+
+    /// <summary>
+    /// The elapsed time of the swipe action in milliseconds, measured from the moment it started.
+    /// </summary>
+    public decimal Duration { get; set; } = duration;
 }

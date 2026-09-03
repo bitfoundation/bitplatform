@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.SwipeTrap;
@@ -452,8 +453,10 @@ public class BitSwipeTrapTests : BunitTestContext
         DataRow(-5, 1, BitSwipeDirection.Left),
         DataRow(2, 9, BitSwipeDirection.Bottom),
         DataRow(3, -7, BitSwipeDirection.Top),
-        DataRow(5, 5, BitSwipeDirection.Bottom),
-        DataRow(-5, -5, BitSwipeDirection.Top)]
+        DataRow(5, 5, BitSwipeDirection.Right),
+        DataRow(-5, -5, BitSwipeDirection.Left),
+        DataRow(5, -5, BitSwipeDirection.Right),
+        DataRow(-5, 5, BitSwipeDirection.Left)]
     public async Task BitSwipeTrapShouldInvokeOnTrigger(int diffX, int diffY, BitSwipeDirection expectedDirection)
     {
         BitSwipeTrapTriggerArgs? triggerArgs = null;
@@ -463,7 +466,7 @@ public class BitSwipeTrapTests : BunitTestContext
             parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggerArgs = args);
         });
 
-        await component.Instance._OnTrigger(diffX, diffY, 0.4m, 0.3m, "pen");
+        await component.Instance._OnTrigger(diffX, diffY, 0.4m, 0.3m, "pen", 240);
 
         Assert.IsNotNull(triggerArgs);
         Assert.AreEqual(expectedDirection, triggerArgs!.Direction);
@@ -472,5 +475,145 @@ public class BitSwipeTrapTests : BunitTestContext
         Assert.AreEqual(0.4m, triggerArgs.VelocityX);
         Assert.AreEqual(0.3m, triggerArgs.VelocityY);
         Assert.AreEqual("pen", triggerArgs.PointerType);
+        Assert.AreEqual(240, triggerArgs.Duration);
+    }
+
+    [TestMethod]
+    public async Task BitSwipeTrapShouldReportDurationOnMoveAndEnd()
+    {
+        BitSwipeTrapEventArgs? moveArgs = null;
+        BitSwipeTrapEventArgs? endArgs = null;
+
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.OnMove, (BitSwipeTrapEventArgs args) => moveArgs = args);
+            parameters.Add(p => p.OnEnd, (BitSwipeTrapEventArgs args) => endArgs = args);
+        });
+
+        await component.Instance._OnMove(1, 2, 3, 4, 0, 0, "touch", 120);
+        await component.Instance._OnEnd(1, 2, 3, 4, 0, 0, "touch", false, 350);
+
+        Assert.IsNotNull(moveArgs);
+        Assert.AreEqual(120, moveArgs!.Duration);
+        Assert.IsFalse(moveArgs.IsCanceled);
+
+        Assert.IsNotNull(endArgs);
+        Assert.AreEqual(350, endArgs!.Duration);
+    }
+
+    [TestMethod]
+    public async Task BitSwipeTrapShouldReportZeroDurationOnStart()
+    {
+        BitSwipeTrapEventArgs? eventArgs = null;
+
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.OnStart, (BitSwipeTrapEventArgs args) => eventArgs = args);
+        });
+
+        await component.Instance._OnStart(10, 20, "mouse");
+
+        Assert.IsNotNull(eventArgs);
+        Assert.AreEqual(0, eventArgs!.Duration);
+    }
+
+    [TestMethod]
+    public async Task BitSwipeTrapShouldNotThrowWhenNoEventHandlerIsAttached()
+    {
+        // Every callback is optional: a trap used only for its OnTrigger must not fault the circuit
+        // when the JS side reports the moves and the release that led to it.
+        var component = RenderComponent<BitSwipeTrap>();
+
+        await component.Instance._OnStart(1, 2, "touch");
+        await component.Instance._OnMove(1, 2, 3, 4, 0, 0, "touch", 10);
+        await component.Instance._OnEnd(1, 2, 3, 4, 0, 0, "touch", false, 20);
+        await component.Instance._OnTrigger(3, 4, 0, 0, "touch", 20);
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldPassDotNetObjectReferenceToJsSetup()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.SwipeTrap.setup");
+
+        Assert.AreEqual(10, invocation.Arguments.Count);
+        Assert.AreEqual(component.Instance.UniqueId.ToString(), invocation.Arguments[0]);
+        Assert.IsInstanceOfType<DotNetObjectReference<BitSwipeTrap>>(invocation.Arguments[9]);
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldDisposeTheOldTrapWhenItIsSetUpAgain()
+    {
+        // A re-setup tears the previous one down first, and it names the trap it is tearing down: two
+        // live setups over one element would double every event the trap reports.
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.dispose");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Threshold, 10m);
+        });
+
+        var id = component.Instance.UniqueId.ToString();
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
+        var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.dispose").ToList();
+
+        Assert.AreEqual(2, setups.Count);
+        Assert.AreEqual(1, disposes.Count);
+        Assert.AreEqual(id, disposes[0].Arguments[0]);
+        Assert.IsTrue(setups.All(s => Equals(s.Arguments[0], id)));
+    }
+
+    [TestMethod]
+    public void BitSwipeTrapShouldReSetupJsOnThresholdAndThrottleChange()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.dispose");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Threshold, 12m);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Threshold, 12m);
+            parameters.Add(p => p.Throttle, 50);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Threshold, 12m);
+            parameters.Add(p => p.Throttle, 50);
+            parameters.Add(p => p.TriggerVelocity, 0.4m);
+        });
+
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
+        Assert.AreEqual(4, setups.Count);
+        Assert.AreEqual(12m, setups[1].Arguments[4]);
+        Assert.AreEqual(50, setups[2].Arguments[5]);
+        Assert.AreEqual(0.4m, setups[3].Arguments[3]);
+    }
+
+    [TestMethod]
+    public async Task BitSwipeTrapShouldDisposeJsInteropOnlyOnce()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.SwipeTrap.dispose");
+
+        var component = RenderComponent<BitSwipeTrap>();
+
+        await component.Instance.DisposeAsync();
+        await component.Instance.DisposeAsync();
+
+        var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.dispose").ToList();
+        Assert.AreEqual(1, disposes.Count);
     }
 }

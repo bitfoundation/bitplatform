@@ -14,13 +14,23 @@ namespace BitBlazorUI {
             skipSelector: string | null,
             dotnetObj: DotNetObject) {
 
+            // A setup for an id that is still registered would leave the previous listeners attached and
+            // its .NET reference undisposed, so the old trap is torn down before the new one takes over.
+            SwipeTrap.dispose(id);
+
             let diffX = 0;
             let diffY = 0;
-            let startX = -1;
-            let startY = -1;
+            let startX = 0;
+            let startY = 0;
+            let startTime = 0;
             let touchId = -1;
             let pointerId = -1;
+            // A gesture is identified by a flag rather than by a sentinel coordinate: a trap scrolled off
+            // the left edge of the viewport reports negative client coordinates that a sentinel would eat.
+            let active = false;
+            let trapped = false;
             let activeTouch = false;
+            let suppressNextClick = false;
             let pointerType = '';
             let samples: { t: number, x: number, y: number }[] = [];
             let orientation = BitSwipeOrientation.None;
@@ -29,7 +39,7 @@ namespace BitBlazorUI {
             // is registered would otherwise be weighed against a box it no longer has.
             let bcr = element.getBoundingClientRect();
             const hasTouch = Utils.isTouchDevice();
-            const throttledMove = Utils.throttle((sx: number, sy: number, dx: number, dy: number, vx: number, vy: number, pt: string) => dotnetObj.invokeMethodAsync('OnMove', sx, sy, dx, dy, vx, vy, pt), throttle);
+            const throttledMove = Utils.throttle((sx: number, sy: number, dx: number, dy: number, vx: number, vy: number, pt: string, dur: number) => dotnetObj.invokeMethodAsync('OnMove', sx, sy, dx, dy, vx, vy, pt, dur), throttle);
 
             const isTouchEvent = (e: TouchEvent | PointerEvent): e is TouchEvent => 'changedTouches' in e;
 
@@ -46,6 +56,10 @@ namespace BitBlazorUI {
             // rests and then flicks would otherwise be averaged down to a slow drag. Averaging a window of
             // samples rather than dividing the last two also keeps the touch jitter out of the number.
             const VELOCITY_WINDOW = 100; // ms
+
+            // How far a finger slides during what its owner meant as a tap. Below it a press is still a
+            // press: the gesture is watched and the default declined, but the click it produces is left alone.
+            const TAP_SLOP = 3; // px
 
             const pushSample = (t: number, x: number, y: number) => {
                 samples.push({ t, x, y });
@@ -68,8 +82,26 @@ namespace BitBlazorUI {
                 return [(last.x - first.x) / dt, (last.y - first.y) / dt];
             };
 
+            // Everything a gesture accumulates is cleared in one place, so an end, a cancel and a dispose
+            // cannot each forget a different part of it.
+            const reset = () => {
+                active = false;
+                trapped = false;
+                startX = startY = startTime = 0;
+                touchId = pointerId = -1;
+                diffX = diffY = 0;
+                pointerType = '';
+                samples = [];
+                orientation = BitSwipeOrientation.None;
+                element.classList.remove('bit-stp-swp');
+            };
+
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (startX !== -1 || startY !== -1) return; // a second finger must not restart an in-progress gesture
+                // A gesture that was trapped arms a click suppressor; a new press means the click it was
+                // waiting for never came, and the press's own click must not be the one that is swallowed.
+                suppressNextClick = false;
+
+                if (active) return; // a second finger must not restart an in-progress gesture
                 if (element.classList.contains('bit-dis')) return;
 
                 // A gesture that starts on an opted-out descendant (an input, a nested slider) is the
@@ -98,16 +130,18 @@ namespace BitBlazorUI {
 
                 startX = getX(e);
                 startY = getY(e);
+                startTime = e.timeStamp;
+                active = true;
 
                 bcr = element.getBoundingClientRect();
 
-                samples = [{ t: e.timeStamp, x: startX, y: startY }];
+                samples = [{ t: startTime, x: startX, y: startY }];
 
                 await dotnetObj.invokeMethodAsync('OnStart', startX, startY, pointerType);
             };
 
             const onMove = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (startX === -1 || startY === -1) return;
+                if (!active) return;
                 if (isTouchEvent(e) !== activeTouch) return; // the other input's echo of the tracked gesture
                 if (!isTouchEvent(e) && e.pointerId !== pointerId) return;
 
@@ -168,7 +202,7 @@ namespace BitBlazorUI {
                 }
 
                 const [velocityX, velocityY] = getVelocities(e.timeStamp);
-                throttledMove(startX, startY, diffX, diffY, velocityX, velocityY, pointerType);
+                throttledMove(startX, startY, diffX, diffY, velocityX, velocityY, pointerType, e.timeStamp - startTime);
 
                 function cancel() {
                     if (e.cancelable) {
@@ -180,6 +214,12 @@ namespace BitBlazorUI {
                     // the one default the events cannot prevent, so it is turned off by a class for the
                     // rest of the gesture - which also marks the trap as actively swiping for styling.
                     element.classList.add('bit-stp-swp');
+
+                    // A default threshold of zero makes the wobble of a tap enough to reach here, and a tap
+                    // is not a swipe: what follows only applies once the movement is past the tap slop.
+                    if (Math.abs(diffX) <= TAP_SLOP && Math.abs(diffY) <= TAP_SLOP) return;
+
+                    trapped = true;
 
                     // Once the movement is far enough to be trapped it is a swipe, not a click, so the
                     // pointer is captured: the gesture then survives leaving the element's box, and the
@@ -195,7 +235,7 @@ namespace BitBlazorUI {
             // starts while the .NET callbacks are in flight must not have its state clobbered, nor leak
             // its own diffs into the callbacks of the gesture that just ended.
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (startX == -1 || startY == -1) return;
+                if (!active) return;
                 if (isTouchEvent(e) !== activeTouch) return; // the other input's echo of the tracked gesture
                 if (isTouchEvent(e)) {
                     if (!getTouch(e)) return; // another finger lifted, not the tracked one
@@ -205,15 +245,14 @@ namespace BitBlazorUI {
                 const dX = diffX;
                 const dY = diffY;
                 const pT = pointerType;
+                const dur = e.timeStamp - startTime;
                 const [velocityX, velocityY] = getVelocities(e.timeStamp);
 
-                startX = startY = -1;
-                touchId = pointerId = -1;
-                diffX = diffY = 0;
-                pointerType = '';
-                samples = [];
-                orientation = BitSwipeOrientation.None;
-                element.classList.remove('bit-stp-swp');
+                // A release that ends a trapped swipe is not a click, however the click that follows it is
+                // retargeted: the one it would produce is swallowed rather than delivered as a stray tap.
+                suppressNextClick = trapped;
+
+                reset();
 
                 try {
                     // A locked axis is the only one that may trigger: the free axis kept its default
@@ -221,9 +260,11 @@ namespace BitBlazorUI {
                     const trigX = orientationLock !== BitSwipeOrientation.Vertical;
                     const trigY = orientationLock !== BitSwipeOrientation.Horizontal;
 
-                    // A fractional trigger weighs each axis against its own dimension of the box.
-                    const divX = ((Math.abs(trigger) < 1) ? bcr.width : 1);
-                    const divY = ((Math.abs(trigger) < 1) ? bcr.height : 1);
+                    // A fractional trigger weighs each axis against its own dimension of the box. A box with
+                    // no size on an axis cannot be crossed by a fraction of it, so it falls back to pixels.
+                    const fractional = Math.abs(trigger) < 1;
+                    const divX = fractional ? (bcr.width || 1) : 1;
+                    const divY = fractional ? (bcr.height || 1) : 1;
                     const compX = trigX ? Math.abs(dX) / divX : 0;
                     const compY = trigY ? Math.abs(dY) / divY : 0;
 
@@ -233,15 +274,15 @@ namespace BitBlazorUI {
                     const flickY = trigY && triggerVelocity > 0 && Math.abs(velocityY) > triggerVelocity && Math.abs(dY) > threshold;
 
                     if (compX > Math.abs(trigger) || compY > Math.abs(trigger) || flickX || flickY) {
-                        return await dotnetObj.invokeMethodAsync('OnTrigger', dX, dY, velocityX, velocityY, pT);
+                        return await dotnetObj.invokeMethodAsync('OnTrigger', dX, dY, velocityX, velocityY, pT, dur);
                     }
                 } finally {
-                    await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, dX, dY, velocityX, velocityY, pT, false);
+                    await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, dX, dY, velocityX, velocityY, pT, false, dur);
                 }
             };
 
             const onCancel = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (startX == -1 || startY == -1) return;
+                if (!active) return;
                 if (isTouchEvent(e) !== activeTouch) return; // the other input's echo of the tracked gesture
                 if (isTouchEvent(e)) {
                     if (!getTouch(e)) return; // another finger was canceled, not the tracked one
@@ -251,16 +292,13 @@ namespace BitBlazorUI {
                 const dX = diffX;
                 const dY = diffY;
                 const pT = pointerType;
+                const dur = e.timeStamp - startTime;
 
-                startX = startY = -1;
-                touchId = pointerId = -1;
-                diffX = diffY = 0;
-                pointerType = '';
-                samples = [];
-                orientation = BitSwipeOrientation.None;
-                element.classList.remove('bit-stp-swp');
+                suppressNextClick = trapped;
 
-                await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, dX, dY, 0, 0, pT, true);
+                reset();
+
+                await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, dX, dY, 0, 0, pT, true, dur);
             };
 
             const onLeave = async (e: PointerEvent): Promise<void> => {
@@ -270,6 +308,22 @@ namespace BitBlazorUI {
                 if (element.hasPointerCapture?.(e.pointerId)) return;
 
                 await onCancel(e);
+            };
+
+            // The browser's own drag-and-drop takes the gesture over when it starts on an image, a link or
+            // selected text, and the pointer stream stops mid-swipe - so while a gesture is being tracked
+            // the native drag is declined.
+            const onDragStart = (e: Event) => {
+                if (!active) return;
+                e.preventDefault();
+            };
+
+            const onClick = (e: MouseEvent) => {
+                if (!suppressNextClick) return;
+                if (e.detail === 0) return; // a keyboard-activated click is nobody's stray tap
+                suppressNextClick = false;
+                e.preventDefault();
+                e.stopPropagation();
             };
 
             if (hasTouch) {
@@ -288,6 +342,9 @@ namespace BitBlazorUI {
             element.addEventListener('pointerup', onEnd);
             element.addEventListener('pointercancel', onCancel);
             element.addEventListener('pointerleave', onLeave);
+            element.addEventListener('dragstart', onDragStart);
+            // The click is swallowed in the capture phase so it never reaches the child it was aimed at.
+            element.addEventListener('click', onClick, true);
 
             const swipeTrap = new BitSwipeTrap(id, element, trigger, dotnetObj);
 
@@ -304,8 +361,10 @@ namespace BitBlazorUI {
                 element.removeEventListener('pointerup', onEnd);
                 element.removeEventListener('pointercancel', onCancel);
                 element.removeEventListener('pointerleave', onLeave);
+                element.removeEventListener('dragstart', onDragStart);
+                element.removeEventListener('click', onClick, true);
 
-                element.classList.remove('bit-stp-swp'); // a dispose mid-gesture must not leave the class behind
+                reset(); // a dispose mid-gesture must not leave the swiping class behind
             });
             SwipeTrap._swipeTraps.push(swipeTrap);
         }
