@@ -36,7 +36,7 @@ jobs:
     - name: Publish
       run: dotnet publish src/Websites/Platform/src/Bit.Websites.Platform.Server/Bit.Websites.Platform.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
 
-    # appsettings*.json in C:\inetpub is hand-maintained, so the bundle must not carry a copy of it.
+    # Server-owned; C:\inetpub keeps its own copies.
     - name: Strip server-owned files from bundle
       shell: pwsh
       run: |

@@ -75,9 +75,7 @@ jobs:
     - name: Publish
       run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
 
-    # The live server owns these: appsettings*.json hold production secrets, and the certificate/key pair
-    # in the repo is a sample one that must never reach C:\inetpub. Stripping them here keeps them out of
-    # the published artifacts as well, which are downloadable by anyone with read access to the repo.
+    # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
     - name: Strip server-owned files from bundle
       shell: pwsh
       run: |
@@ -108,7 +106,6 @@ jobs:
           fetch-depth: 1
           sparse-checkout: .github/actions
 
-    # App_Data holds the live Hangfire SQLite database and is excluded from the mirror by the action.
     - name: Deploy
       uses: ./.github/actions/deploy-to-server
       with:
@@ -167,14 +164,13 @@ jobs:
     - name: Generate CSS/JS files
       run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
-    # Velopack needs the previous release locally to build a delta package against it.
-    # Expected to fail on the very first run, when the bucket is still empty.
+    # Needed for delta packages. Fails on the first run, when the bucket is empty.
     - name: Download previous releases from R2
       continue-on-error: true
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
           dotnet tool restore
-          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --region auto --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
     - name: Publish
       run: |
@@ -189,9 +185,8 @@ jobs:
         name: WinSalesModule
         path: SalesModule\src\Client\SalesModule.Client.Windows\Releases
 
-    # Publishes the installer, the full/delta packages and the releases index that
-    # WindowsUpdate.FilesUrl (https://windows-sales.bitplatform.dev) serves.
+    # The update feed behind WindowsUpdate.FilesUrl.
     - name: Upload releases to R2
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
-          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --region auto --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10

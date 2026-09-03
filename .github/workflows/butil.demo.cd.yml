@@ -34,7 +34,7 @@ jobs:
     - name: Publish
       run: dotnet publish src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
 
-    # appsettings*.json in C:\inetpub is hand-maintained, so the bundle must not carry a copy of it.
+    # Server-owned; C:\inetpub keeps its own copies.
     - name: Strip server-owned files from bundle
       run: rm -fv server/appsettings*.json server/AppCertificate.* server/AppleAuthKey.p8 server/*.pfx || true
 

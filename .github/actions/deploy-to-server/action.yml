@@ -1,8 +1,7 @@
 name: Deploy to server
 description: Downloads a published server bundle and mirrors it into a site on the self-hosted runner, stopping and starting its app pool around the copy.
 
-# Files that live on the server only (real secrets, hand-maintained config) are never copied and never deleted.
-# Requires a runner whose service account is allowed to control the web server.
+# Server-owned files are never copied or deleted.
 
 inputs:
   artifact-name:
@@ -53,7 +52,7 @@ runs:
     - name: Stop app pool
       shell: pwsh
       run: |
-        # appcmd and robocopy signal through exit codes, which this action reads itself.
+        # Exit codes are read below, not thrown on.
         $PSNativeCommandUseErrorActionPreference = $false
         $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
 
@@ -64,7 +63,7 @@ runs:
 
         & $appcmd stop apppool /apppool.name:"${{ inputs.app-pool }}" | Out-Host
 
-        # appcmd returns before w3wp exits, and a live worker process keeps the dlls locked.
+        # appcmd returns before w3wp releases the dll locks.
         $deadline = (Get-Date).AddSeconds(90)
         do {
           $state = (& $appcmd list apppool "${{ inputs.app-pool }}" /text:state)
@@ -84,26 +83,24 @@ runs:
         $source = '${{ runner.temp }}\${{ inputs.artifact-name }}'
         $target = '${{ inputs.site-path }}'
 
-        # /XF and /XD apply to the destination scan too, so /MIR leaves excluded items alone
-        # instead of deleting them as "extra". appsettings*.json, the certificate/key pair, the Apple
-        # auth key and App_Data (Hangfire's SQLite db) are owned by the server, not by the build.
+        # /XF and /XD also filter the destination scan, so /MIR keeps these instead of deleting them.
         robocopy $source $target /MIR /R:5 /W:5 /NFL /NDL /NJH /NP `
           /XF 'appsettings*.json' 'AppCertificate.*' 'AppleAuthKey.p8' '*.pfx' `
           /XD 'App_Data' 'logs'
         $code = $LASTEXITCODE
 
-        # robocopy: 0-7 are success codes (0 = no change, 1 = copied, 2 = extras, 4 = mismatches), 8+ are failures.
+        # robocopy: 0-7 succeed, 8+ fail.
         if ($code -ge 8) { throw "robocopy failed with exit code $code." }
         Write-Host "Mirrored into $target (robocopy exit code $code)."
 
-        # The pwsh shell exits with $LASTEXITCODE, and robocopy's success codes are non-zero.
+        # pwsh exits with $LASTEXITCODE, which robocopy leaves non-zero on success.
         exit 0
 
     - name: Start app pool
       if: always()
       shell: pwsh
       run: |
-        # appcmd and robocopy signal through exit codes, which this action reads itself.
+        # Exit codes are read below, not thrown on.
         $PSNativeCommandUseErrorActionPreference = $false
         $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
         & $appcmd start apppool /apppool.name:"${{ inputs.app-pool }}" | Out-Host
@@ -130,7 +127,7 @@ runs:
         }
         throw "$url never became healthy after the deployment."
 
-    # Runs only once the new build is confirmed serving, so the purge never re-warms the old one.
+    # After the health check, so the purge cannot re-warm the old build.
     - name: Purge Cloudflare cache
       if: inputs.cloudflare-zone-id != '' && inputs.cloudflare-token != ''
       shell: pwsh
@@ -138,8 +135,7 @@ runs:
         CF_ZONE_ID: ${{ inputs.cloudflare-zone-id }}
         CF_TOKEN: ${{ inputs.cloudflare-token }}
       run: |
-        # Purging a single hostname is an Enterprise-only feature, so this drops the whole
-        # bitplatform.dev zone. The origin is this machine, so a cold cache costs little.
+        # Per-hostname purge needs Enterprise, so the whole zone goes.
         $result = Invoke-RestMethod -Method Post `
           -Uri "https://api.cloudflare.com/client/v4/zones/$env:CF_ZONE_ID/purge_cache" `
           -Headers @{ Authorization = "Bearer $env:CF_TOKEN" } `
@@ -149,4 +145,4 @@ runs:
         if (-not $result.success) {
           throw "Cloudflare purge failed: $($result.errors | ConvertTo-Json -Compress)"
         }
-        Write-Host "Cloudflare cache purged for the zone serving ${{ inputs.health-check-url }}."
+        Write-Host "Cloudflare cache purged."

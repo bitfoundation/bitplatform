@@ -53,7 +53,7 @@ jobs:
     - name: Publish
       run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" -o server
 
-    # appsettings*.json in C:\inetpub is hand-maintained, so the bundle must not carry a copy of it.
+    # Server-owned; C:\inetpub keeps its own copies.
     - name: Strip server-owned files from bundle
       shell: pwsh
       run: |
@@ -126,14 +126,13 @@ jobs:
     - name: Generate CSS/JS files
       run: dotnet build src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
 
-    # Velopack needs the previous release locally to build a delta package against it.
-    # Expected to fail on the very first run, when the bucket is still empty.
+    # Needed for delta packages. Fails on the first run, when the bucket is empty.
     - name: Download previous releases from R2
       continue-on-error: true
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           dotnet tool restore
-          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --region auto --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
     - name: Publish
       run: |
@@ -148,12 +147,11 @@ jobs:
         name: WinBlazorUIDemo
         path: src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Releases
 
-    # Publishes the installer, the full/delta packages and the releases index that
-    # WindowsUpdateSettings.FilesUrl (https://windows-components.bitplatform.dev) serves.
+    # The update feed behind WindowsUpdateSettings.FilesUrl.
     - name: Upload releases to R2
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
-          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --region auto --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
 
 
   build_blazor_hybrid_android:
@@ -208,8 +206,7 @@ jobs:
         name: android-bundle
         path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.*
 
-    # versionCode comes from APP_VERSION via the Maui csproj (major*10000 + minor*100 + patch),
-    # so APP_VERSION has to be bumped before every run or Google Play rejects the bundle.
+    # versionCode derives from APP_VERSION; bump it or Play rejects the bundle.
     - name: Upload to Google Play (internal track)
       uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
       with:
@@ -285,7 +282,7 @@ jobs:
       id: ipa
       run: echo "path=$(ls src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
 
-    # Lands the build in TestFlight. Submitting it to App Store review stays a manual step in App Store Connect.
+    # App Store submission stays manual.
     - name: Upload to TestFlight
       uses: apple-actions/upload-testflight-build@5e75ff58276689011512ba87a381d93dc67dbcf8 # v5.3.0
       with:
