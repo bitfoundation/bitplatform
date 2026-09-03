@@ -2,8 +2,7 @@ namespace Boilerplate.Tests.E2E.Infrastructure;
 
 /// <summary>
 /// The always-on demo apps that .github/workflows/{admin-sample,todo-sample,sales-module-demo}.cd.yml build from this
-/// very template (dotnet new bit-bp) and deploy. Together they cover Client.Web, Server.Web, Client.Maui and
-/// Client.Windows, so tests in this project run against real production deployments instead of a locally started server.
+/// very template and deploy, so these tests run against real deployments instead of a locally started server.
 /// </summary>
 public static class DeployedApps
 {
@@ -28,19 +27,29 @@ public static class DeployedApps
     /// <summary>Sales module, prerendered PWA served by Server.Web with an integrated API (Azure Web App + Cloudflare CDN).</summary>
     public const string Sales = "https://sales.bitplatform.dev/";
 
-    /// <summary>Application id of the published Todo Android app, for <see cref="HybridAppConnector.LaunchAndroidApp"/>.</summary>
-    public const string TodoAndroidAppId = "com.bitplatform.Todo.Template";
+    /// <summary>Standalone API of both admin panel apps (Azure Web App).</summary>
+    public const string AdminPanelApi = "https://adminpanel-api.bitplatform.dev/";
 
-    /// <summary>Application id of the published AdminPanel Android app, for <see cref="HybridAppConnector.LaunchAndroidApp"/>.</summary>
+    /// <summary>Standalone API of every todo sample app (Azure Web App).</summary>
+    public const string TodoApi = "https://todo-api.bitplatform.dev/";
+
+    /// <summary>
+    /// The API an app talks to, for the tests that reach the backend directly through <see cref="TestHost"/>. The
+    /// admin and todo apps share one standalone API each, while Sales' API is integrated into the app itself.
+    /// </summary>
+    public static string ApiOf(App app) => app switch
+    {
+        App.AdminPanel or App.AdminPanelWasmStandalone => AdminPanelApi,
+        App.Todo or App.TodoAot or App.TodoSmall or App.TodoOffline => TodoApi,
+        App.Sales => Sales,
+        _ => throw new ArgumentOutOfRangeException(nameof(app), app, "Unknown app"),
+    };
+
+    public const string TodoAndroidAppId = "com.bitplatform.Todo.Template";
     public const string AdminPanelAndroidAppId = "com.bitplatform.AdminPanel.Template";
 
-    /// <summary>Velopack app id of the published Todo Windows app, for <see cref="HybridAppConnector.LaunchWindowsApp"/>.</summary>
+    /// <summary>Velopack app ids of the published Windows apps, used by <see cref="HybridAppConnector.LaunchWindowsApp"/>.</summary>
     public const string TodoWindowsAppId = "TodoSample.Client.Windows";
-
-    /// <summary>Velopack app id of the published AdminPanel Windows app, for <see cref="HybridAppConnector.LaunchWindowsApp"/>.</summary>
     public const string AdminPanelWindowsAppId = "AdminPanel.Client.Windows";
-
-    /// <summary>Velopack app id of the published Sales Windows app, for <see cref="HybridAppConnector.LaunchWindowsApp"/>.</summary>
     public const string SalesWindowsAppId = "SalesModule.Client.Windows";
-
 }

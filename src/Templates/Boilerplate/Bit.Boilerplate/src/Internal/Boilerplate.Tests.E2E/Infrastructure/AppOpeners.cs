@@ -1,9 +1,9 @@
 namespace Boilerplate.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// How a platform turns an <see cref="App"/> into a live page: the web opener navigates the test's own browser page,
-/// the hybrid ones launch the installed app and attach over CDP. Null means the app has no build on that platform,
-/// which <see cref="AppsTestBase.OpenApp"/> turns into an inconclusive test rather than a failure.
+/// Turns an <see cref="App"/> into a live page: the web opener navigates the test's own page, the hybrid ones launch
+/// the installed app and attach over CDP. Null means no build on that platform, which
+/// <see cref="AppsTestBase.OpenApp"/> reports as inconclusive rather than failed.
 /// </summary>
 public interface IAppOpener
 {
