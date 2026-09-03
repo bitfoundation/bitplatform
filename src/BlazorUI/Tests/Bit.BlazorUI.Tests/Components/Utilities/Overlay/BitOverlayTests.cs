@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -230,7 +231,7 @@ public class BitOverlayTests : BunitTestContext
 
         if (childContent is not null)
         {
-            component.MarkupMatches(@$"<div class=""bit-ovl"" id:ignore>{childContent}</div>");
+            component.MarkupMatches(@$"<div class=""bit-ovl"" id:ignore><div class=""bit-ovl-cnt"">{childContent}</div></div>");
         }
         else
         {
@@ -256,7 +257,7 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlayHtmlAttributesTest>();
 
-        component.MarkupMatches(@$"<div data-val-test=""bit"" class=""bit-ovl"" id:ignore>I'm an overlay</div>");
+        component.MarkupMatches(@$"<div data-val-test=""bit"" class=""bit-ovl"" id:ignore><div class=""bit-ovl-cnt"">I'm an overlay</div></div>");
     }
 
     [TestMethod,
@@ -342,6 +343,44 @@ public class BitOverlayTests : BunitTestContext
         }, TimeSpan.FromSeconds(5));
     }
 
+    // The element takes precedence over the selector, and it is the element the toggle is handed.
+    [TestMethod]
+    public void BitOverlayShouldPreferTheScrollerElementOverTheSelector()
+    {
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+            parameters.Add(p => p.ScrollerElement, new ElementReference("test-scroller"));
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+            Assert.IsInstanceOfType<ElementReference>(invocation.Arguments[1]);
+            Assert.AreEqual("test-scroller", ((ElementReference)invocation.Arguments[1]!).Id);
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    // Taking the scrollbar away narrows the scroller, which would shift everything behind the Overlay
+    // sideways in the frame it appears in; the room it took is asked to be given back as padding.
+    [TestMethod]
+    public void BitOverlayShouldAskForTheScrollbarRoomToBeCompensated()
+    {
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+            Assert.AreEqual(true, invocation.Arguments[3]);
+        }, TimeSpan.FromSeconds(5));
+    }
+
     // The decision and the scroller are snapshotted at open time, so the close hands the overflow back even
     // when AutoToggleScroll was turned off - and hands it back to the scroller it was taken from even when
     // the selector was changed - while the Overlay was open.
@@ -394,6 +433,122 @@ public class BitOverlayTests : BunitTestContext
         });
 
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.toggleOverflow");
+    }
+
+    // A fixed layer chains the wheel and the touch drag it catches to the document, which in a layout that
+    // scrolls a region of its own is not the thing that scrolls; the gestures are handed to that region
+    // for as long as an Overlay that leaves it scrolling is open.
+    [TestMethod]
+    public void BitOverlayShouldForwardTheGesturesToTheScrollerItLeavesScrolling()
+    {
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"][0];
+            Assert.AreEqual(component.Instance.UniqueId, invocation.Arguments[0]);
+            Assert.AreEqual(component.Instance.UniqueId, invocation.Arguments[1]);
+            Assert.AreEqual(".scroller", invocation.Arguments[2]);
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    // Only the Overlay holding nothing wants the forwarding, only the one anchored to the screen needs it,
+    // and only the one aimed at a scroller of its own can use it - the page is what the browser already
+    // chains to. A closed Overlay catches no gesture in the first place.
+    [TestMethod,
+        DataRow(false, false, false, false),
+        DataRow(true, false, false, true),
+        DataRow(false, true, false, true),
+        DataRow(false, false, true, true)
+    ]
+    public void BitOverlayShouldNotForwardTheGesturesItHasNoBusinessForwarding(bool autoToggleScroll,
+                                                                              bool absolutePosition,
+                                                                              bool noScroller,
+                                                                              bool isOpen)
+    {
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.AutoToggleScroll, autoToggleScroll);
+            parameters.Add(p => p.AbsolutePosition, absolutePosition);
+            parameters.Add(p => p.ScrollerSelector, noScroller ? null : ".scroller");
+        });
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.forwardScroll");
+    }
+
+    // The forwarding is registered against the scroller it was aimed at, so an Overlay pointed somewhere
+    // else while it is open takes it back and makes it again.
+    [TestMethod]
+    public void BitOverlayShouldRemakeTheForwardingWhenItIsAimedAtAnotherScroller()
+    {
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+        });
+
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, ".another-scroller");
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"];
+            Assert.HasCount(2, invocations);
+            Assert.AreEqual(".another-scroller", invocations[1].Arguments[2]);
+            Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.stopForwardScroll");
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitOverlayShouldStopForwardingTheGesturesWhenItCloses()
+    {
+        var isOpen = true;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+        });
+
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
+
+        isOpen = false;
+        component.Render(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+        });
+
+        component.WaitForAssertion(
+            () => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]),
+            TimeSpan.FromSeconds(5));
+    }
+
+    // The listeners live on a registry that lasts as long as the page does, so an Overlay taken off the
+    // page while it was forwarding would leave them behind for good.
+    [TestMethod]
+    public async Task BitOverlayShouldStopForwardingTheGesturesOnDispose()
+    {
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+        });
+
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
+
+        await Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]);
     }
 
     // An Overlay taken off the page while it was open would otherwise leave the scroller it held without
@@ -677,6 +832,169 @@ public class BitOverlayTests : BunitTestContext
         Assert.AreEqual(1, clickedValue);
 
         component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
+    }
+
+    // The layer is what a dismissal is aimed at: the content it hosts is the thing the user is reaching
+    // past the layer for, so a click on it must leave the Overlay up.
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitOverlayShouldNotCloseOnAClickOnItsContent(bool noAutoClose)
+    {
+        var isOpen = true;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.NoAutoClose, noAutoClose);
+            parameters.AddChildContent("<button>inside</button>");
+        });
+
+        component.Find("button").Click();
+
+        Assert.IsTrue(isOpen);
+        component.MarkupMatches(@"<div class=""bit-ovl bit-ovl-opn"" id:ignore><div class=""bit-ovl-cnt""><button>inside</button></div></div>");
+    }
+
+    // The click is still reported, which is what makes OnClick the one place a consumer closing the Overlay
+    // on terms of its own has to look.
+    [TestMethod]
+    public void BitOverlayShouldFireOnClickForAClickOnItsContent()
+    {
+        var clickedValue = 0;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.OnClick, () => clickedValue++);
+            parameters.AddChildContent("<button>inside</button>");
+        });
+
+        component.Find("button").Click();
+
+        Assert.AreEqual(1, clickedValue);
+    }
+
+    // A closed Overlay reports nothing, its content included: the click that reaches it in a test is one
+    // no user could have made in the browser.
+    [TestMethod]
+    public void BitOverlayShouldNotFireOnClickForAContentClickWhileClosed()
+    {
+        var clickedValue = 0;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => clickedValue++);
+            parameters.AddChildContent("<button>inside</button>");
+        });
+
+        component.Find("button").Click();
+
+        Assert.AreEqual(0, clickedValue);
+    }
+
+    // The last stretch of a selection dragged out of a box: the press began on the content and only reached
+    // the layer on the way back up, so the click the browser reports on the Overlay is not a dismissal.
+    [TestMethod]
+    public void BitOverlayShouldNotCloseWhenThePressBeganOnItsContent()
+    {
+        var isOpen = true;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.AddChildContent("<span>inside</span>");
+        });
+
+        component.Find("span").MouseDown();
+        component.Find(".bit-ovl").Click();
+
+        Assert.IsTrue(isOpen);
+
+        // The refusal lasts for that one click only: the next press on the layer dismisses as it always did.
+        component.Find(".bit-ovl").MouseDown();
+        component.Find(".bit-ovl").Click();
+
+        Assert.IsFalse(isOpen);
+    }
+
+    // A press that began on the layer is a dismissal wherever it ends.
+    [TestMethod]
+    public void BitOverlayShouldCloseWhenThePressBeganOnTheLayer()
+    {
+        var isOpen = true;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.AddChildContent("<span>inside</span>");
+        });
+
+        var overlay = component.Find(".bit-ovl");
+        overlay.MouseDown();
+        overlay.Click();
+
+        Assert.IsFalse(isOpen);
+    }
+
+    // The state change is reported however it was brought about, so a binding, the methods and a click on
+    // the layer all come through the same pair of callbacks.
+    [TestMethod]
+    public async Task BitOverlayShouldRespectOnOpenAndOnClose()
+    {
+        var opened = 0;
+        var closed = 0;
+        var isOpen = false;
+
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.OnOpen, () => opened++);
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        // A closed Overlay that was never opened has nothing to report.
+        Assert.AreEqual(0, opened);
+        Assert.AreEqual(0, closed);
+
+        isOpen = true;
+        component.Render(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
+            parameters.Add(p => p.OnOpen, () => opened++);
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, opened), TimeSpan.FromSeconds(5));
+        Assert.AreEqual(0, closed);
+
+        component.Find(".bit-ovl").Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, closed), TimeSpan.FromSeconds(5));
+        Assert.AreEqual(1, opened);
+
+        await component.InvokeAsync(() => component.Instance.Toggle());
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, opened), TimeSpan.FromSeconds(5));
+
+        await component.InvokeAsync(() => component.Instance.Close());
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, closed), TimeSpan.FromSeconds(5));
+    }
+
+    // One that starts open reports that opening, since the callback is about the state rather than about
+    // the gesture that would otherwise have caused it.
+    [TestMethod]
+    public void BitOverlayShouldReportTheOpeningOfAnOverlayThatStartsOpen()
+    {
+        var opened = 0;
+        var closed = 0;
+
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.DefaultIsOpen, true);
+            parameters.Add(p => p.OnOpen, () => opened++);
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, opened), TimeSpan.FromSeconds(5));
+        Assert.AreEqual(0, closed);
     }
 
     [TestMethod]

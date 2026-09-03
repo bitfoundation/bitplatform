@@ -18,7 +18,7 @@ public partial class BitOverlayDemo
             Name = "AutoToggleScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When true, the scroll behavior of the scroller element behind the overlay will be disabled while the Overlay is open and handed back once it closes. The scroller is named by ScrollerElement, then by ScrollerSelector; when neither is set it is the scroller of the BitAppShell the Overlay is inside of, and the page (body) when it is inside none.",
+            Description = "When true, the scroll behavior of the scroller element behind the overlay will be disabled while the Overlay is open and handed back once it closes, with the room the scrollbar took given back as padding so nothing shifts sideways. The scroller is named by ScrollerElement, then by ScrollerSelector; when neither is set it is the scroller of the BitAppShell the Overlay is inside of, and the page (body) when it is inside none.",
         },
         new()
         {
@@ -32,7 +32,7 @@ public partial class BitOverlayDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the Overlay.",
+            Description = "The content of the Overlay. A click on it never closes the Overlay - only a click on the layer around it does - so a surface hosted here keeps its own buttons, its own text selection and its own scrolling.",
         },
         new()
         {
@@ -60,13 +60,25 @@ public partial class BitOverlayDemo
             Name = "NoAutoClose",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When true, the Overlay will not be closed by clicking on it. The click is still reported through OnClick.",
+            Description = "When true, the Overlay will not be closed by clicking on the layer either. The click is still reported through OnClick.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback that is called when the overlay is clicked, including the clicks a NoAutoClose Overlay refuses to be closed by, and before the Overlay closes.",
+            Description = "Callback that is called when the overlay is clicked, including the clicks on its content and the ones a NoAutoClose Overlay refuses to be closed by, and before the Overlay closes.",
+        },
+        new()
+        {
+            Name = "OnClose",
+            Type = "EventCallback",
+            Description = "Callback that is called when the Overlay has closed, however it was closed - a click on the layer, the IsOpen binding, Close or Toggle - and after the scroller it was holding has been handed back.",
+        },
+        new()
+        {
+            Name = "OnOpen",
+            Type = "EventCallback",
+            Description = "Callback that is called when the Overlay has opened, however it was opened - the IsOpen binding, Open, Toggle, or the first render of one that starts open through DefaultIsOpen.",
         },
         new()
         {
@@ -80,7 +92,7 @@ public partial class BitOverlayDemo
             Name = "ScrollerSelector",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS selector of the scroller element whose scrolling is taken away while the Overlay is open, for AutoToggleScroll. An Overlay inside a BitAppShell holds the shell's scroller without being told to, since the shell cascades it; the page (body) is what is held when there is no shell and this is not set.",
+            Description = "The CSS selector of the scroller element whose scrolling is taken away while the Overlay is open, for AutoToggleScroll. An Overlay inside a BitAppShell holds the shell's scroller without being told to, since the shell cascades it; the page (body) is what is held when there is no shell and this is not set. The named scroller is also where an Overlay that is not holding it hands the wheel and the touch drag it catches, since a fixed layer would otherwise chain them to a document that never scrolls.",
         },
         new()
         {
@@ -117,6 +129,8 @@ public partial class BitOverlayDemo
 
     private bool BasicIsOpen;
     private bool ModeFullIsOpen;
+    private bool ContentIsOpen;
+    private int ContentClickCount;
     private bool AutoCloseIsOpen;
     private bool AbsoluteIsOpen;
     private bool AutoToggleIsOpen;
@@ -124,16 +138,12 @@ public partial class BitOverlayDemo
     private bool DisabledScrollerIsOpen;
     private bool EventsIsOpen;
     private int EventsClickCount;
+    private int EventsOpenCount;
+    private int EventsCloseCount;
     private BitOverlay overlayRef = default!;
     private bool StyledIsOpen;
     private bool ClassedIsOpen;
     private bool RtlIsOpen;
-
-    private void HandleEventsShow()
-    {
-        EventsClickCount = 0;
-        EventsIsOpen = true;
-    }
 
     private void HandleOverlayClick(MouseEventArgs e)
     {
@@ -143,6 +153,17 @@ public partial class BitOverlayDemo
         {
             EventsIsOpen = false;
         }
+    }
+
+    private void HandleOverlayOpen()
+    {
+        EventsClickCount = 0;
+        EventsOpenCount++;
+    }
+
+    private void HandleOverlayClose()
+    {
+        EventsCloseCount++;
     }
 
 
@@ -168,14 +189,62 @@ private bool ModeFullIsOpen;";
     private readonly string example3RazorCode = @"
 <style>
     .content {
-        width: 85%;
-        height: 250px;
+        width: 87%;
         display: flex;
         padding: 15px;
         overflow: auto;
+        max-width: 960px;
+        max-height: 288px;
         border-radius: 3px;
+        position: relative;
         background-color: white;
         flex-flow: column nowrap;
+        border: dodgerblue solid 1.6px;
+    }
+
+    .btn-container {
+        gap: 1rem;
+        display: flex;
+        flex-flow: row wrap;
+    }
+</style>
+
+
+<BitButton OnClick=""() => ContentIsOpen = true"">Show Overlay</BitButton>
+
+<BitOverlay @bind-IsOpen=""ContentIsOpen"" Center ModeFull>
+    <div class=""content"">
+        <h3>Short story</h3>
+        <div>
+            Try it: select this text and let go of the button outside the box, or press one of the
+            buttons below. The Overlay stays where it is. Clicking the dimmed layer around the box
+            closes it.
+        </div>
+        <br />
+        <div class=""btn-container"">
+            <BitButton OnClick=""() => ContentClickCount++"">Clicked @ContentClickCount time(s)</BitButton>
+            <BitButton Variant=""BitVariant.Outline"" OnClick=""() => ContentIsOpen = false"">Close</BitButton>
+        </div>
+    </div>
+</BitOverlay>";
+    private readonly string example3CsharpCode = @"
+private bool ContentIsOpen;
+private int ContentClickCount;";
+
+    private readonly string example4RazorCode = @"
+<style>
+    .content {
+        width: 87%;
+        display: flex;
+        padding: 15px;
+        overflow: auto;
+        max-width: 960px;
+        max-height: 288px;
+        border-radius: 3px;
+        position: relative;
+        background-color: white;
+        flex-flow: column nowrap;
+        border: dodgerblue solid 1.6px;
     }
 
     .close-button {
@@ -199,10 +268,10 @@ private bool ModeFullIsOpen;";
         </div>
     </div>
 </BitOverlay>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool AutoCloseIsOpen;";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .container {
         display: flex;
@@ -237,10 +306,10 @@ private bool AutoCloseIsOpen;";
 
     <h3>This is Container</h3>
 </div>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool AbsoluteIsOpen;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitButton OnClick=""() => AutoToggleIsOpen = true"">Show Overlay</BitButton>
 
 <BitOverlay @bind-IsOpen=""AutoToggleIsOpen"" Center ModeFull AutoToggleScroll>
@@ -249,16 +318,17 @@ private bool AbsoluteIsOpen;";
         <BitProgress Indeterminate Thickness=""10"" Style=""width: 19rem;"" />
     </BitStack>
 </BitOverlay>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool AutoToggleIsOpen;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .content {
         width: 87%;
         display: flex;
         padding: 15px;
         overflow: auto;
+        max-width: 960px;
         max-height: 288px;
         border-radius: 3px;
         position: relative;
@@ -349,42 +419,49 @@ private bool AutoToggleIsOpen;";
         starting point. The possibilities are endless, and the journey begins now.
     </div>
 </div>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool EnabledScrollerIsOpen;
 private bool DisabledScrollerIsOpen;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .content {
-        width: 85%;
-        height: 250px;
+        width: 87%;
         display: flex;
         padding: 15px;
         overflow: auto;
+        max-width: 960px;
+        max-height: 288px;
         border-radius: 3px;
+        position: relative;
         background-color: white;
         flex-flow: column nowrap;
+        border: dodgerblue solid 1.6px;
     }
 </style>
 
 
-<BitButton OnClick=""HandleEventsShow"">Show Overlay</BitButton>
+<BitButton OnClick=""() => EventsIsOpen = true"">Show Overlay</BitButton>
 
-<BitOverlay @bind-IsOpen=""EventsIsOpen"" Center ModeFull OnClick=""HandleOverlayClick"" NoAutoClose>
+<BitOverlay @bind-IsOpen=""EventsIsOpen""
+            Center
+            ModeFull
+            NoAutoClose
+            OnClick=""HandleOverlayClick""
+            OnOpen=""HandleOverlayOpen""
+            OnClose=""HandleOverlayClose"">
     <div class=""content"">
-        <h3>Click anywhere on the overlay</h3>
+        <h3>Click anywhere on the dimmed layer</h3>
         <div>The overlay has been clicked @EventsClickCount time(s). It closes on the third click.</div>
     </div>
-</BitOverlay>";
-    private readonly string example7CsharpCode = @"
+</BitOverlay>
+
+<div>Opened @EventsOpenCount time(s), closed @EventsCloseCount time(s).</div>";
+    private readonly string example8CsharpCode = @"
 private bool EventsIsOpen;
 private int EventsClickCount;
-
-private void HandleEventsShow()
-{
-    EventsClickCount = 0;
-    EventsIsOpen = true;
-}
+private int EventsOpenCount;
+private int EventsCloseCount;
 
 private void HandleOverlayClick(MouseEventArgs e)
 {
@@ -394,19 +471,33 @@ private void HandleOverlayClick(MouseEventArgs e)
     {
         EventsIsOpen = false;
     }
+}
+
+private void HandleOverlayOpen()
+{
+    EventsClickCount = 0;
+    EventsOpenCount++;
+}
+
+private void HandleOverlayClose()
+{
+    EventsCloseCount++;
 }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .content {
-        width: 85%;
-        height: 250px;
+        width: 87%;
         display: flex;
         padding: 15px;
         overflow: auto;
+        max-width: 960px;
+        max-height: 288px;
         border-radius: 3px;
+        position: relative;
         background-color: white;
         flex-flow: column nowrap;
+        border: dodgerblue solid 1.6px;
     }
 </style>
 
@@ -416,13 +507,13 @@ private void HandleOverlayClick(MouseEventArgs e)
 <BitOverlay @ref=""overlayRef"" Center ModeFull>
     <div class=""content"">
         <h3>Driven by methods</h3>
-        <div>This Overlay has no IsOpen binding of its own: it is opened through the reference to it, and a click anywhere on it still closes it.</div>
+        <div>This Overlay has no IsOpen binding of its own: it is opened through the reference to it, and a click on the layer around this box still closes it.</div>
     </div>
 </BitOverlay>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private BitOverlay overlayRef = default!;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-overlay {
         backdrop-filter: blur(10px);
@@ -443,21 +534,24 @@ private BitOverlay overlayRef = default!;";
 <BitOverlay @bind-IsOpen=""ClassedIsOpen"" Center Class=""custom-overlay"">
     <BitProgress Circular Indeterminate Thickness=""10"" />
 </BitOverlay>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool StyledIsOpen;
 private bool ClassedIsOpen;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .content {
-        width: 85%;
-        height: 250px;
+        width: 87%;
         display: flex;
         padding: 15px;
         overflow: auto;
+        max-width: 960px;
+        max-height: 288px;
         border-radius: 3px;
+        position: relative;
         background-color: white;
         flex-flow: column nowrap;
+        border: dodgerblue solid 1.6px;
     }
 </style>
 
@@ -475,6 +569,6 @@ private bool ClassedIsOpen;";
         </div>
     </div>
 </BitOverlay>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool RtlIsOpen;";
 }

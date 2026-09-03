@@ -22,6 +22,13 @@
     transition: opacity $mot-duration-short $mot-easing-decelerate, visibility 0s linear 0s;
 }
 
+// The box the content is given so that its clicks are told apart from the layer's. display:contents takes
+// it out of the box tree altogether, so what the consumer wrote is still laid out by the Overlay's own
+// flex container - the box is there for the events, and for nothing else.
+.bit-ovl-cnt {
+    display: contents;
+}
+
 // Centered content, for the loaders and the messages; the content stretches over the whole layer
 // otherwise, which is the layout a surface of the consumer's own wants.
 .bit-ovl-ctr {
