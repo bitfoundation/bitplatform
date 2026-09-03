@@ -21,8 +21,8 @@ public partial class HostPageRenderTests
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Chrome-Lighthouse";
 
     /// <summary>
-    /// PageSpeed Insights, which is both: it carries <c>Chrome-Lighthouse</c> AND <c>Google Page Speed Insights</c>, so
-    /// it satisfies both predicates. Kept as its own constant so the two cases stay distinguishable.
+    /// PageSpeed Insights: a Lighthouse run that also names Google. A benchmark rather than a crawler, so
+    /// <c>IsLightHouseRequest()</c> is what classifies it; every call site OR's the two, so it is treated the same.
     /// </summary>
     private const string PageSpeedInsightsUserAgent =
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko; Google Page Speed Insights) Chrome/75.0.3777.100 Safari/537.36 Chrome-Lighthouse";
@@ -30,6 +30,23 @@ public partial class HostPageRenderTests
     /// <summary>An ordinary browser - the control for every assertion below.</summary>
     private const string BrowserUserAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+
+    /// <summary>
+    /// A browser that appends a vendor's name to an ordinary Chrome user agent. Written from DuckDuckGo's documented
+    /// format rather than captured from a live request, so it stands for the SHAPE to guard against - which is the
+    /// point of it: whether or not a shipping build sends exactly this, a predicate matching "duckduck" would serve
+    /// whoever does send it a script-less page.
+    /// </summary>
+    private const string DuckDuckGoBrowserUserAgent =
+        "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile DuckDuckGo/5 Safari/537.36";
+
+    /// <summary>The same shape on iOS, where the token carries a different version.</summary>
+    private const string DuckDuckGoIosBrowserUserAgent =
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 DuckDuckGo/7 Safari/604.1";
+
+    /// <summary>DuckDuckGo's actual crawler, so the negative controls above cannot pass by matching nothing at all.</summary>
+    private const string DuckDuckBotUserAgent =
+        "Mozilla/5.0 (compatible; DuckDuckBot-Https/1.1; https://duckduckgo.com/duckduckbot)";
 
     private const string BlazorBootScript = "_framework/bit.blazor.web.es2019.js";
 
@@ -52,11 +69,30 @@ public partial class HostPageRenderTests
         Assert.IsTrue(RequestWith(GooglebotUserAgent).IsCrawlerClient());
         Assert.IsFalse(RequestWith(GooglebotUserAgent).IsLightHouseRequest());
 
-        Assert.IsTrue(RequestWith(PageSpeedInsightsUserAgent).IsCrawlerClient());
         Assert.IsTrue(RequestWith(PageSpeedInsightsUserAgent).IsLightHouseRequest());
+        Assert.IsFalse(RequestWith(PageSpeedInsightsUserAgent).IsCrawlerClient());
 
         Assert.IsFalse(RequestWith(BrowserUserAgent).IsCrawlerClient());
         Assert.IsFalse(RequestWith(BrowserUserAgent).IsLightHouseRequest());
+    }
+
+    /// <summary>
+    /// A browser carrying a search engine's name is a real user. Matching a vendor's bare name would strip its
+    /// scripts, and would do so invisibly: those responses are kept out of every shared cache (See
+    /// <c>AppResponseCachePolicy</c>), and the telemetry that would report it ships in the removed scripts.
+    /// </summary>
+    [TestMethod]
+    public void ABrowserCarryingAVendorName_Should_NotBeTreatedAsACrawler()
+    {
+        foreach (var userAgent in new[] { DuckDuckGoBrowserUserAgent, DuckDuckGoIosBrowserUserAgent })
+        {
+            Assert.IsFalse(RequestWith(userAgent).IsCrawlerClient(),
+                $"'{userAgent}' is a person's browser; classifying it as a crawler serves it a page that can never boot.");
+            Assert.IsFalse(RequestWith(userAgent).IsLightHouseRequest());
+        }
+
+        // Or a predicate that simply stopped recognizing DuckDuckGo would satisfy the assertions above.
+        Assert.IsTrue(RequestWith(DuckDuckBotUserAgent).IsCrawlerClient());
     }
 
     /// <summary>

@@ -3,23 +3,27 @@
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
-<AppPageData ShowGoBackButton="true" Title="@product?.Name" />
+<AppPageData ShowGoBackButton="true"
+             Title="@product?.Name"
+             Description="@product?.DescriptionText" />
 
 <HeadContent>
-    <meta name="title" content="@product?.Name" />
-    <meta name="description" content="@product?.DescriptionText" />
-
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="product" />
     <meta property="og:site_name" content="Boilerplate" />
     <meta property="og:title" content="@product?.Name" />
     <meta property="og:description" content="@product?.DescriptionText" />
-    <meta property="og:image" content="@GetProductImageUrl(product)" />
-    <meta property="og:url" content="@NavigationManager.Uri" />
+    <meta property="og:image" content="@ShareImageUrl" />
+    <meta property="og:url" content="@CanonicalUrl" />
 
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="@product?.Name" />
     <meta name="twitter:description" content="@product?.DescriptionText" />
-    <meta name="twitter:image" content="@GetProductImageUrl(product)" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="@ShareImageUrl" />
+
+    @if (product is not null)
+    {
+        <script type="application/ld+json">@((MarkupString)BuildProductJsonLd())</script>
+    }
 </HeadContent>
 
 <section>

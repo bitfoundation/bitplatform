@@ -114,6 +114,12 @@ public static partial class UriExtensions
             return $"{uri.GetLeftPart(UriPartial.Path)}?{string.Join("&", qsCollection.Keys.Select(key => $"{Uri.EscapeDataString(key)}=***"))}";
         }
 
+        /// <summary>
+        /// The absolute url without query or fragment. The culture segment is KEPT: each culture is a document of
+        /// its own, declared to the others through hreflang (See Server.Web's <c>App.razor</c>).
+        /// </summary>
+        public string GetCanonicalUrl() => uri.GetLeftPart(UriPartial.Path);
+
         public string GetPath()
         {
             var uriBuilder = new UriBuilder(uri.GetUrlWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };

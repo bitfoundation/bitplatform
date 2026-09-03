@@ -4,6 +4,11 @@ public abstract partial class AppPageBase : AppComponentBase
 {
     [Parameter] public string? culture { get; set; }
 
+    /// <summary>
+    /// <inheritdoc cref="UriExtensions.GetCanonicalUrl"/>
+    /// </summary>
+    protected string CanonicalUrl => new Uri(NavigationManager.Uri).GetCanonicalUrl();
+
     protected BitDataGridStrings DataGridStrings { get; private set; } = default!;
 
     protected override async Task OnInitAsync()

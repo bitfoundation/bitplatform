@@ -5,11 +5,24 @@ public partial class AppPageData
     private string? _lastPublishedMessage;
 
     [AutoInject] private PubSubService pubSubService = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
     [Parameter] public string? PageTitle { get; set; }
     [Parameter] public string? Title { get; set; }
     [Parameter] public string? SubTitle { get; set; }
     [Parameter] public bool ShowGoBackButton { get; set; }
+
+    /// <summary>
+    /// This page's own meta description. Left unset, the app-wide one is used as a fallback.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Without it, <c>?utm_source=x</c> is a page of its own to a search engine: <c>AppResponseCachePolicy</c>'s
+    /// <c>QueryKeys = "*"</c> gives every query variant its own cache entry and its own crawlable url.
+    /// </summary>
+    private string CanonicalUrl => new Uri(navigationManager.Uri).GetCanonicalUrl();
 
     protected override void OnParametersSet()
     {
