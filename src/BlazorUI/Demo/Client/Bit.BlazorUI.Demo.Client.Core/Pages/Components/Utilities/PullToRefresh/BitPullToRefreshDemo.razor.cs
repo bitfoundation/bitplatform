@@ -29,6 +29,15 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the pull indicator. It colors the glyph inside the indicator's disc, which the pull, the refresh and the complete states all draw.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "Complete",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -50,17 +59,31 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Name = "CustomColor",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom css color of the pull indicator. It only applies while Color is left unset.",
+        },
+        new()
+        {
             Name = "Factor",
             Type = "decimal",
             DefaultValue = "1.5",
-            Description = "The factor to balance the pull height out. The pull-down distance gets divided by it, so higher values make the pull feel heavier.",
+            Description = "The factor to balance the pull height out. The pull-down distance gets divided by it, so higher values make the pull feel heavier. Values below 0.1 are treated as 0.1.",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the component takes the whole width of its container instead of shrink-wrapping its anchor.",
         },
         new()
         {
             Name = "Loading",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom loading template to replace the default loading svg.",
+            Description = "The custom loading template to replace the default loading svg. It is what the indicator shows while the pull is under way and while the refresh is running, so it covers every state that Release and Complete do not take over.",
         },
         new()
         {
@@ -68,6 +91,13 @@ public partial class BitPullToRefreshDemo
             Type = "int",
             DefaultValue = "30",
             Description = "The value in pixel to add to the top of pull element as a margin for the pull height.",
+        },
+        new()
+        {
+            Name = "MaxPull",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The furthest the pull can travel, in pixels, past which it stops following the finger; 0 stops it at Trigger. The indicator holds its full size over that stretch, and only the strip keeps growing. It is measured on the same damped scale as Trigger.",
         },
         new()
         {
@@ -90,7 +120,7 @@ public partial class BitPullToRefreshDemo
             Name = "OnPullMove",
             Type = "EventCallback<decimal>",
             DefaultValue = "",
-            Description = "The callback for when the pull-down is in progress.",
+            Description = "The callback for when the pull-down is in progress, reporting the pull height in pixels, which is capped at Trigger - or at MaxPull where the pull is allowed past it. The reports are coalesced to at most one per frame and never repeat a whole pixel.",
         },
         new()
         {
@@ -115,6 +145,20 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Name = "Release",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to replace the default svg while the pull has passed the trigger and releasing starts the refresh.",
+        },
+        new()
+        {
+            Name = "ReleaseLabel",
+            Type = "string",
+            DefaultValue = "Release to refresh",
+            Description = "The text that gets announced to screen readers while the pull has passed the trigger and releasing starts the refresh. An empty string leaves the release state unannounced.",
+        },
+        new()
+        {
             Name = "ScrollerElement",
             Type = "ElementReference?",
             DefaultValue = "null",
@@ -125,7 +169,7 @@ public partial class BitPullToRefreshDemo
             Name = "ScrollerSelector",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS selector of the element that is the scroller in the anchor to control the behavior of the pull to refresh.",
+            Description = "The CSS selector of the element that is the scroller in the anchor to control the behavior of the pull to refresh. It is looked up inside the anchor first and in the document afterwards; left unset, the first element of the anchor is taken as the scroller.",
         },
         new()
         {
@@ -148,7 +192,7 @@ public partial class BitPullToRefreshDemo
             Name = "Trigger",
             Type = "int",
             DefaultValue = "80",
-            Description = "The pulling height in pixel that triggers the refresh.",
+            Description = "The pulling height in pixel that triggers the refresh. It is also the distance the indicator grows to its full size over. Values below 1 are treated as 1.",
         }
     ];
 
@@ -156,10 +200,139 @@ public partial class BitPullToRefreshDemo
     [
         new()
         {
+            Name = "IsRefreshing",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether a refresh is currently running - the pull was released past the trigger, or RefreshAsync was called, and the OnRefresh callback has not returned yet.",
+        },
+        new()
+        {
+            Name = "PullProgress",
+            Type = "decimal",
+            DefaultValue = "0",
+            Description = "How far the current pull has come as a fraction of Trigger: 0 while nothing is being pulled, and 1 once releasing would start a refresh. It reads 1 for the whole of a refresh.",
+        },
+        new()
+        {
             Name = "RefreshAsync",
             Type = "Task",
             Description = "Starts the refresh process programmatically, showing the loading indicator and invoking the OnRefresh callback. It has no effect while the component is disabled, a refresh is already in progress or the complete state is visible.",
         },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Info Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        }
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -325,6 +498,7 @@ public partial class BitPullToRefreshDemo
     private double factor = 1.5;
     private double margin = 30;
     private double threshold = 0;
+    private double maxPull = 0;
     private (int, int)[] behaviorItems = GenerateRandomNumbers(1, 51);
     private async Task HandleOnRefreshBehavior()
     {
@@ -400,11 +574,43 @@ public partial class BitPullToRefreshDemo
         _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
+    private (int, int)[] releaseItems = GenerateRandomNumbers(1, 51);
+    private async Task HandleOnRefreshRelease()
+    {
+        await Task.Delay(2000);
+        releaseItems = GenerateRandomNumbers(1, 51);
+        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+    }
+
+    private (int, int)[] colorItems = GenerateRandomNumbers(1, 51);
+    private async Task HandleOnRefreshColor()
+    {
+        await Task.Delay(2000);
+        colorItems = GenerateRandomNumbers(1, 51);
+        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+    }
+
+    private (int, int)[] customColorItems = GenerateRandomNumbers(51, 101);
+    private async Task HandleOnRefreshCustomColor()
+    {
+        await Task.Delay(2000);
+        customColorItems = GenerateRandomNumbers(51, 101);
+        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+    }
+
     private (int, int)[] classItems = GenerateRandomNumbers(51, 101);
     private async Task HandleOnRefreshClass()
     {
         await Task.Delay(2000);
         classItems = GenerateRandomNumbers(51, 101);
+        _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+    }
+
+    private (int, int)[] rtlItems = GenerateRandomNumbers(1, 51);
+    private async Task HandleOnRefreshRtl()
+    {
+        await Task.Delay(2000);
+        rtlItems = GenerateRandomNumbers(1, 51);
         _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 

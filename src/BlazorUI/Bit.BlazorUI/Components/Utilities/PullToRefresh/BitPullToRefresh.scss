@@ -3,12 +3,21 @@
 .bit-ptr {
     width: fit-content;
     position: relative;
+
+    // The color of the glyph inside the indicator, which the Color and CustomColor parameters write over.
+    --bit-ptr-color: #{$clr-fg-pri};
+}
+
+// An anchor that fills a page or a layout region needs the component around it to fill it too, which the
+// shrink-wrapping default never does on its own.
+.bit-ptr-flw {
+    width: 100%;
 }
 
 .bit-ptr-lod {
     top: 0;
-    left: 0;
     height: 0;
+    inset-inline-start: 0;
     z-index: 1;
     display: flex;
     overflow: hidden;
@@ -37,9 +46,9 @@
 
 .bit-ptr-spn {
     display: flex;
-    color: $clr-fg-pri;
     align-items: center;
     justify-content: center;
+    color: var(--bit-ptr-color);
 }
 
 .bit-ptr-spin {

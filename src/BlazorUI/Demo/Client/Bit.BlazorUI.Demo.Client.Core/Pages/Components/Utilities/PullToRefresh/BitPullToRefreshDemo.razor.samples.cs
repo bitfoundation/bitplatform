@@ -188,7 +188,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
                 </BitCard>
             </Header>
             <Main>
-                <BitPullToRefresh OnRefresh=""HandleOnRefreshAdvanced"" ScrollerSelector="".advanced-anchor"" Style=""width:100%"">
+                <BitPullToRefresh OnRefresh=""HandleOnRefreshAdvanced"" ScrollerSelector="".advanced-anchor"" FullWidth>
                     <div class=""advanced-anchor"">
                         @foreach (var (idx, i) in advancedItems)
                         {
@@ -272,7 +272,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
                       Trigger=""(int)trigger""
                       Factor=""(decimal)factor""
                       Margin=""(int)margin""
-                      Threshold=""(int)threshold"">
+                      Threshold=""(int)threshold""
+                      MaxPull=""(int)maxPull"">
         <div class=""anchor"">
             @foreach (var (idx, i) in behaviorItems)
             {
@@ -289,6 +290,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         <BitSlider Label=""Margin"" Min=""0"" Max=""60"" @bind-Value=""margin"" />
         <br />
         <BitSlider Label=""Threshold"" Min=""0"" Max=""60"" @bind-Value=""threshold"" />
+        <br />
+        <BitSlider Label=""MaxPull"" Min=""0"" Max=""200"" @bind-Value=""maxPull"" />
     </div>
 </div>";
     private readonly string example6CsharpCode = @"
@@ -296,6 +299,7 @@ private double trigger = 80;
 private double factor = 1.5;
 private double margin = 30;
 private double threshold = 0;
+private double maxPull = 0;
 private (int, int)[] behaviorItems = GenerateRandomNumbers(1, 51);
 private async Task HandleOnRefreshBehavior()
 {
@@ -494,6 +498,104 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         user-select: none;
         border: 1px gray solid;
     }
+</style>
+
+<BitPullToRefresh OnRefresh=""HandleOnRefreshRelease"" ReleaseLabel=""Let go to refresh the list"">
+    <Anchor>
+        <div class=""anchor"">
+            @foreach (var (idx, i) in releaseItems)
+            {
+                <div @key=""idx"">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+            }
+        </div>
+    </Anchor>
+    <Release>
+        <svg viewBox=""0 0 24 24"" fill=""currentColor"" width=""100%"" height=""100%"">
+            <path d=""M12 3a1 1 0 0 1 1 1v11.59l4.3-4.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-1.4 0l-6-6a1 1 0 1 1 1.4-1.42l4.3 4.3V4a1 1 0 0 1 1-1z"" />
+        </svg>
+    </Release>
+</BitPullToRefresh>";
+    private readonly string example10CsharpCode = @"
+private (int, int)[] releaseItems = GenerateRandomNumbers(1, 51);
+private async Task HandleOnRefreshRelease()
+{
+    await Task.Delay(2000);
+    releaseItems = GenerateRandomNumbers(1, 51);
+    _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+}
+
+private static (int, int)[] GenerateRandomNumbers(int min, int max)
+{
+    var random = new Random();
+    return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
+}";
+
+    private readonly string example11RazorCode = @"
+<style>
+    .anchor {
+        width: 150px;
+        padding: 4px;
+        cursor: grab;
+        height: 300px;
+        overflow: auto;
+        user-select: none;
+        border: 1px gray solid;
+    }
+</style>
+
+<div style=""display:flex; gap:1rem;"">
+    <BitPullToRefresh OnRefresh=""HandleOnRefreshColor"" Color=""BitColor.Info"">
+        <div class=""anchor"">
+            @foreach (var (idx, i) in colorItems)
+            {
+                <div @key=""idx"">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+
+    <BitPullToRefresh OnRefresh=""HandleOnRefreshCustomColor"" CustomColor=""#b400ff"">
+        <div class=""anchor"">
+            @foreach (var (idx, i) in customColorItems)
+            {
+                <div @key=""idx"">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+            }
+        </div>
+    </BitPullToRefresh>
+</div>";
+    private readonly string example11CsharpCode = @"
+private (int, int)[] colorItems = GenerateRandomNumbers(1, 51);
+private async Task HandleOnRefreshColor()
+{
+    await Task.Delay(2000);
+    colorItems = GenerateRandomNumbers(1, 51);
+    _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+}
+
+private (int, int)[] customColorItems = GenerateRandomNumbers(51, 101);
+private async Task HandleOnRefreshCustomColor()
+{
+    await Task.Delay(2000);
+    customColorItems = GenerateRandomNumbers(51, 101);
+    _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+}
+
+private static (int, int)[] GenerateRandomNumbers(int min, int max)
+{
+    var random = new Random();
+    return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
+}";
+
+    private readonly string example12RazorCode = @"
+<style>
+    .anchor {
+        width: 150px;
+        padding: 4px;
+        cursor: grab;
+        height: 300px;
+        overflow: auto;
+        user-select: none;
+        border: 1px gray solid;
+    }
 
     .custom-loading {
         background-color: rgb(255, 106, 0, 0.1);
@@ -531,7 +633,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         </div>
     </BitPullToRefresh>
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private (int, int)[] styleItems = GenerateRandomNumbers(1, 51);
 private async Task HandleOnRefreshStyle()
 {
@@ -545,6 +647,43 @@ private async Task HandleOnRefreshClass()
 {
     await Task.Delay(2000);
     classItems = GenerateRandomNumbers(51, 101);
+    _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
+}
+
+private static (int, int)[] GenerateRandomNumbers(int min, int max)
+{
+    var random = new Random();
+    return Enumerable.Range(min, max - min).Select(i => (i, random.Next(min, max))).ToArray();
+}";
+
+
+    private readonly string example13RazorCode = @"
+<style>
+    .anchor {
+        width: 150px;
+        padding: 4px;
+        cursor: grab;
+        height: 300px;
+        overflow: auto;
+        user-select: none;
+        border: 1px gray solid;
+    }
+</style>
+
+<BitPullToRefresh Dir=""BitDir.Rtl"" OnRefresh=""HandleOnRefreshRtl"">
+    <div class=""anchor"">
+        @foreach (var (idx, i) in rtlItems)
+        {
+            <div @key=""idx"">@(idx.ToString().PadLeft(2, '0')) .مورد @i</div>
+        }
+    </div>
+</BitPullToRefresh>";
+    private readonly string example13CsharpCode = @"
+private (int, int)[] rtlItems = GenerateRandomNumbers(1, 51);
+private async Task HandleOnRefreshRtl()
+{
+    await Task.Delay(2000);
+    rtlItems = GenerateRandomNumbers(1, 51);
     _ = Task.Delay(1000).ContinueWith(_ => InvokeAsync(StateHasChanged));
 }
 
