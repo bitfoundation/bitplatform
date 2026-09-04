@@ -1011,6 +1011,16 @@ svg {
     color: var(--colorNeutralForeground3);
 }
 
+/* The words the query matched, inside that one line. Fluent has no highlight token, and a filled
+   swatch behind two words in a list of ten rows is noise; weight and the brand hue say the same
+   thing without repainting the row. The default <mark> background has to go with it - it is a
+   yellow the dark theme has no answer for. */
+.header-search-result-summary mark {
+    background-color: transparent;
+    color: var(--colorBrandForeground1);
+    font-weight: var(--fontWeightSemibold);
+}
+
 .header-search-result-group {
     flex: none;
     font-size: var(--fontSizeBase100);

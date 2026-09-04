@@ -5,6 +5,13 @@ on:
   push:
     branches: [ "test" ]
 
+# `environment:` gates approval but does NOT serialize runs, so without this two pushes in quick
+# succession can finish out of order and leave the OLDER commit deployed. Queue instead of cancelling:
+# a deploy that has already started must not be killed halfway.
+concurrency:
+  group: cd-${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   build_and_deploy_test:
     name: build and deploy to test

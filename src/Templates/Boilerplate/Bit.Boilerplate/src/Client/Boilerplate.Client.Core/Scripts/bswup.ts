@@ -6,31 +6,24 @@ import { App } from './App';
     const bswup = (window as any).BitBswup; // https://bitplatform.dev/bswup
     if (!bswup) return;
 
-    bswup.skipWaiting(); // Use new service worker if available.
+    bswup.skipWaiting(); // If update is downloaded, activate it now while the app is not started yet.
 
-    // Detects if the app was in the background for over 2 minutes. Since setInterval usually pauses in the background on modern browsers and runs immediately upon resuming,
-    // a lastTimeAppWasInForeground older than 2 minutes indicates the app was likely not focused.
-    let counter = 0;
-    let lastTimeAppWasInForeground = new Date().getTime();
+    let hiddenAt: number | null = null;
 
-    setInterval(() => {
-        const now = new Date().getTime();
-        const isVisible = document.visibilityState === 'visible';
-
-        // Only a tick that can see the page counts as a resume. Without that conjunct the condition stays true for
-        // every subsequent tick of a long background period, turning a once-per-resume update check into a
-        // once-per-second one on a device whose screen is off - and it also skips the reload path (autoReload) that
-        // resuming exists to trigger, because the page is not there to reload.
-        const resuming = isVisible && now - lastTimeAppWasInForeground > 60 * 2 * 1000;
-
-        counter++;
-        if (counter % 60 === 0 /*Every 60 seconds*/ || resuming) {
-            counter = 0;
-            App.tryUpdatePwa(resuming);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            hiddenAt = Date.now();
+            return;
         }
 
-        if (isVisible) {
-            lastTimeAppWasInForeground = now;
-        }
-    }, 1000);
+        const awayFor = hiddenAt === null ? 0 : Date.now() - hiddenAt;
+        hiddenAt = null;
+
+        // Short switches away - another tab for a moment, a notification - are not "away". Reloading on those is the
+        // interruption this whole policy exists to avoid.
+        if (awayFor < 2 * 60 * 1000) return;
+
+        // autoReload: the user has been gone long enough that reloading costs them nothing they were looking at.
+        App.tryUpdatePwa(true);
+    });
 }());

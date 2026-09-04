@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -965,9 +965,6 @@
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>كود التحقق:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>أدخل كود التحقق</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>التحقق</value>
   </data>
@@ -1170,9 +1167,6 @@
     <value>النص البديل</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>صفحة</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>من</value>
   </data>
@@ -1182,9 +1176,6 @@
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>لوحة الإدارة</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} عناصر</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>عدد المنتجات في آخر 30 يومًا</value>
@@ -1222,9 +1213,6 @@
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>الفئات مع عدد المنتجات</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>البحث حسب الاسم</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>مخطط عدد المنتجات لكل فئة</value>
   </data>
@@ -1254,9 +1242,6 @@
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>حذف المنتج</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>مختار اللون الافتراضي</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>تعديل المنتج {0}</value>
@@ -1344,9 +1329,6 @@
   <data name="Send" xml:space="preserve">
     <value>إرسال</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>تطبيق لون التمييز {0}</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>ملغى</value>
   </data>
@@ -1364,7 +1346,7 @@
     <value>الإملاء</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>تم حظر الوصول إلى الميكروفون. اسمح به لهذا الموقع لكي تتمكن من الإملاء.</value>
+    <value>تم حظر الوصول إلى الميكروفون. اسمح به من الإعدادات لكي تتمكن من الإملاء.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>توقف الإملاء: {0}</value>
@@ -1414,19 +1396,15 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>كيف يمكنني تثبيت إصدار PWA من التطبيق؟</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>اكتب رسالة...</value>
   </data>
@@ -1463,9 +1441,6 @@
     <value>أواجه مشكلة في مشاهدة الإعلانات داخل التطبيق.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>يرجى الانتظار</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>إدارة</value>
   </data>
@@ -1524,11 +1499,14 @@
   <data name="DisableNotifications" xml:space="preserve">
     <value>تعطيل الإشعارات</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>إشعار اختبار 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>تم تفعيل الإشعارات</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>إشعار اختبار 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>أرسلنا هذا الإشعار لتتأكد من وصول الإشعارات إلى هذا الجهاز. اضغط عليه لقراءة سياسة الخصوصية.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>اتصالك المباشر بالخادم يعمل؛ وصلت هذه الرسالة عبره، وستظهر التغييرات التالية بالطريقة نفسها لحظة حدوثها.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1642,6 +1620,9 @@
   <data name="ImageTooSmall" xml:space="preserve">
     <value>الصورة صغيرة جدًا. الأبعاد المطلوبة الدنيا هي {0}×{1}، لكن الأبعاد الحالية هي {2}×{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>الملف المرفوع ليس صورة مدعومة.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>الصورة المقدمة لا تحتوي على سيارة.</value>
   </data>
@@ -1753,9 +1734,6 @@
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>هل أنت متأكد أنك تريد مغادرة المستأجر {0}؟</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>لقد غادرت المستأجر بنجاح.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>تبديل المستأجر</value>
   </data>
@@ -1831,8 +1809,100 @@
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>رفض الدعوة إلى {0}؟ لا يمكن التراجع عن هذا الإجراء - ستحتاج إلى دعوة جديدة للانضمام.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>تم رفض الدعوة.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>المنطقة الزمنية</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>اختر المنطقة الزمنية</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>ابحث عن منطقة زمنية</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>لا توجد منطقة زمنية تطابق بحثك.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>الإشعارات الفورية</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>تشغيل الإشعارات الفورية</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>إيقاف الإشعارات الفورية</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>الإشعارات الفورية محظورة لهذا التطبيق. اسمح بالإشعارات في إعدادات المتصفح أو نظام التشغيل ثم حاول مرة أخرى.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>الخصوصية</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>تنزيل نسخة من بياناتك</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>خيارات الخصوصية الخاصة بك</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>تسجيل الدخول وتذكّر لغتك والإبلاغ عن الأخطاء ليست ضمن هذه القائمة: لا يمكن للتطبيق العمل بدون الأولين، وتقارير الأخطاء لا تحمل أي معرّف لجهازك.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>تحليلات الاستخدام</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>تتيح لنا التعرّف على جهازك بين الزيارات لنرى الصفحات المستخدمة والوقت الذي تستغرقه. إيقاف هذا الخيار لا يوقف تقارير الأخطاء.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>الإعلانات</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>يحمّل نص الإعلانات البرمجي الذي يضع معرّفات خاصة به. لا يتم تحميل أي شيء حتى تُفعّل هذا الخيار.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>خصوصيتك</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>نودّ تخزين بعض المعلومات على جهازك لا يحتاجها التطبيق للعمل. أما تسجيل دخولك وتذكّر لغتك والإبلاغ عن الأخطاء فتحدث في كل الأحوال.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>إعدادات الخصوصية</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>إعدادات الحساب</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>تنزيل بياناتك</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>احصل على نسخة من كل ما يحتفظ به هذا التطبيق عنك: حسابك، والأجهزة التي سجّلت الدخول منها، وصورة ملفك الشخصي، والمحتوى الذي أنشأته. تصل على هيئة ملف zip يحتوي على data.json وملفاتك.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>يوضّح كل جزء من الملف أيضًا سبب الاحتفاظ به، ومدته، ومن يتلقاه غيرنا، وما إذا كان حذف حسابك يزيله.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>تنزيل بياناتي</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>لحذف بياناتك بدلًا من ذلك، احذف حسابك من</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>تصدير البيانات</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>للردّ على طلب بيانات لم يصل عبر التطبيق.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>مشاهدة إعلان تُحمّل نص إعلانات Google البرمجي الذي يضع معرّفات خاصة به على جهازك. لا يتم تحميل أي شيء حتى توافق.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>أوافق وأتابع</value>
+  </data>
 </root>

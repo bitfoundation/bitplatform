@@ -39,7 +39,9 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
         var webAppOrigin = clientMauiSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress();
 
-        var staticFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories);
+        string[] staticFiles = Directory.Exists(AppContext.BaseDirectory)
+            ? Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories)
+            : [];
 
         async Task GoBackToApp()
         {
@@ -115,7 +117,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 try
                 {
                     var error = ctx.Request.QueryString["error"];
-                    if (string.IsNullOrEmpty(error) is false)
+                    if (string.IsNullOrWhiteSpace(error) is false)
                     {
                         // TrySetException/TrySetResult: a replayed POST must be a no-op, not an InvalidOperationException.
                         WebAuthnService.GetWebAuthnCredentialTcs.TrySetException(new UnknownException(error));
@@ -145,7 +147,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 try
                 {
                     var error = ctx.Request.QueryString["error"];
-                    if (string.IsNullOrEmpty(error) is false)
+                    if (string.IsNullOrWhiteSpace(error) is false)
                     {
                         WebAuthnService.CreateWebAuthnCredentialTcs.TrySetException(new UnknownException(error));
                     }

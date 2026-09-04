@@ -4,12 +4,12 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public partial class PromptService
 {
-    [AutoInject] private BitProModalService modalService = default!;
+    [AutoInject] private BitModalService modalService = default!;
 
     public async Task<string?> Show(string message, string title = "", bool otpInput = false)
     {
         TaskCompletionSource<string?> tcs = new();
-        BitProModalReference? modalReference = null;
+        BitModalReference? modalReference = null;
         Dictionary<string, object> promptParameters = new()
         {
             { nameof(Prompt.Title), title },
@@ -18,7 +18,7 @@ public partial class PromptService
             { nameof(Prompt.OnCancel), () => { tcs.TrySetResult(null); modalReference?.Close(); } },
             { nameof(Prompt.OnOk), (string value) => { tcs.TrySetResult(value); modalReference?.Close(); } }
         };
-        var modalParameters = new BitProModalParameters()
+        var modalParameters = new BitModalParameters()
         {
             Draggable = true,
             DragElementSelector = ".header-stack",

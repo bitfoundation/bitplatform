@@ -66,6 +66,9 @@
             "id": "brouter"
         },
         {
+            "id": "theme"
+        },
+        {
             "id": "apiServerUrl",
             "isVisible": false
         },

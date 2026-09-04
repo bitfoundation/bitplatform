@@ -52,7 +52,7 @@ public partial class AuthManagerTokenPersistenceTests
         // A real refresh against the real endpoint, which is what re-enters StoreTokens with no rememberMe argument.
         var refreshedAccessToken = await authManager.RefreshToken(requestedBy: nameof(BothTokens_Should_KeepTheRememberMeTheUserChose_AcrossARefresh));
 
-        Assert.IsFalse(string.IsNullOrEmpty(refreshedAccessToken),
+        Assert.IsFalse(string.IsNullOrWhiteSpace(refreshedAccessToken),
             "The refresh did not succeed, so the assertions below would be about a session that never got a second pair of tokens.");
 
         await AssertPersistence("after a refresh");

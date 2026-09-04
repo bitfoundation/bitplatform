@@ -65,7 +65,7 @@ public partial class AppJwtSecureDataFormat
     {
         try
         {
-            if (string.IsNullOrEmpty(protectedText))
+            if (string.IsNullOrWhiteSpace(protectedText))
             {
                 return Anonymous();
             }

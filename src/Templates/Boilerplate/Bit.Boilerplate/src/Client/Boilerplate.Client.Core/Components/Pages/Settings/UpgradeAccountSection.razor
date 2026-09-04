@@ -7,6 +7,20 @@
         {
             <BitRollingSquareLoading />
         }
+        else if (adInitResult is AdInitResult.ConsentRequired)
+        {
+            @* Not a failure - an unanswered question, asked here too because this is where it is specific. *@
+            <BitMessage Color="BitColor.Info" Multiline>
+                <Content>
+                    @Localizer[nameof(AppStrings.AdsConsentMessage)]
+                </Content>
+                <Actions>
+                    <BitButton Size="BitSize.Small" AutoLoading OnClick="WrapHandled(GrantAdvertisingConsent)">
+                        @Localizer[nameof(AppStrings.AdsConsentAgree)]
+                    </BitButton>
+                </Actions>
+            </BitMessage>
+        }
         else if (adInitResult is not AdInitResult.Ready)
         {
             <BitMessage Color="BitColor.Warning">@Localizer[nameof(AppStrings.UpgradeAdNotAvailableMessage)]</BitMessage>

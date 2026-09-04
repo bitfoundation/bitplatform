@@ -291,7 +291,7 @@ public partial class AppAiChatPanel
         greetingMessage = new()
         {
             Role = AiChatMessageRole.Assistant,
-            Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrEmpty(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
+            Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrWhiteSpace(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
         };
         chatMessages = [greetingMessage];
     }
@@ -340,11 +340,13 @@ public partial class AppAiChatPanel
     {
         try
         {
+            var timeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id;
+
             await foreach (var response in hubConnection.StreamAsync<string>(SharedAppMessages.StartChat,
                                                                              new StartChatRequest()
                                                                              {
                                                                                  CultureId = CultureInfo.CurrentCulture.LCID,
-                                                                                 TimeZoneId = TimeZoneInfo.Local.Id,
+                                                                                 TimeZoneId = timeZoneId,
                                                                                  DeviceInfo = TelemetryContext.Platform,
                                                                                  ChatMessagesHistory = chatMessages
                                                                              },

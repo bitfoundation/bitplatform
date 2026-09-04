@@ -37,7 +37,11 @@ You will be working with the following key technologies:
 
 The solution is organized into the following projects. Understand their roles to locate and modify the correct files.
 
+<!--#if (signalR == true)-->
 *   **Boilerplate.Server.Api**: Houses API controllers, mappers, the `DbContext`, EF Core migrations, email templates, action filters, SignalR hubs, and server-specific configuration.
+<!--#else-->
+*   **Boilerplate.Server.Api**: Houses API controllers, mappers, the `DbContext`, EF Core migrations, email templates, action filters, and server-specific configuration.
+<!--#endif-->
 *   **Boilerplate.Server.Web**: The application's default startup project and entry point. It hosts `App.razor` and configures Blazor Server and server-side rendering (SSR).
 *   **Boilerplate.Server.Shared**: (Also known as Aspire's ServiceDefaults) Contains common code shared between the `Boilerplate.Server.Api` and `Boilerplate.Server.Web` projects.
 <!--#if (aspire == true)-->
@@ -56,15 +60,16 @@ Before implementing any changes, you **MUST** complete the following:
 *   If the user provides a **URL**, you **MUST** use the `fetch`, `WebFetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   Only if the user **explicitly** asks about their uncommitted/current changes (e.g. "review my current changes", "what did I just change") you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands.
-*   Every bit platform library this project builds on has its own MCP tools, each with a tool to get started, tools to find out which features the library actually offers, and tools that hand you working examples. You **MUST** reach for them before writing code against one of these libraries, rather than relying on what you already know about it:
-    *   `bit BlazorUI` for UI elements, icons, styling, layout and theming.
-    *   `bit Bmotion` for motions, animations and transitions.
-    *   `bit Butil` for browser features such as clipboard, geolocation, storage, media, keyboard, screen and network.
-    *   `bit Bswup` for PWA, offline support and service workers.
+*   Every bit platform library this project builds on has its own MCP tools: a `Search<Library>` tool that finds the right feature from a plain description of what it must **do**, a `Get<Library>SetupGuide` tool for wiring, plus tools that return an API's full reference and its working examples. You **MUST** reach for them before writing code against one of these libraries, rather than relying on what you already know about it - and you **MUST** start with the `Search` one, because the name a task suggests is rarely the name the library chose:
+    *   `bit BlazorUI` for UI elements, icons, styling, layout and theming: `SearchBitBlazorUI`, then `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, `GetBitBlazorUIType`, `GetBitBlazorUIThemingGuide` and `FindBitBlazorUIIcons`.
+    *   `bit Bmotion` for motions, animations and transitions: `SearchBmotion`, then `GetBmotionApiDetails`, `GetBmotionRecipe` and `ReviewBmotionCode`.
+    *   `bit Butil` for browser features such as clipboard, geolocation, storage, media, keyboard, screen and network: `SearchButil`, then `PlanButilFeature` and `GetButilApiDetails`.
+    *   `bit Bswup` for PWA, offline support and service workers: `SearchBswup`, then `GetBswupScriptOptions` and `InspectBswupServiceWorker`.
 <!--#if (brouter == true)-->
-    *   `bit Brouter` for routing.
+    *   `bit Brouter` for routing: `SearchBrouter`, then `GetBrouterApi` and `InspectBrouterRouteTemplates`.
 <!--#endif-->
-*   For the third party libraries this project builds on, you **MUST** use the `ask_question` tool, which answers from a library's own source code. Its description names the repository to ask for each of them.
+*   For the third-party libraries this project builds on, you **MUST** use the `ask_question` tool, which answers from a library's own source code. Its description names the repository to ask for each of them.
+*   For .NET, ASP.NET Core and Azure documentation, use `microsoft_docs_search`, `microsoft_docs_fetch` and `microsoft_code_sample_search`.
 
 ## 4. Critical Command Reference
 
@@ -77,10 +82,13 @@ Before implementing any changes, you **MUST** complete the following:
 -   **Run the project**: Run `dotnet watch` in src/Server/Boilerplate.Server.Web project directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
 -   **Expose the running app to remote devices**: `localhost` is unreachable from other devices, so create a dev tunnel with the `devtunnel` CLI (`devtunnel host -p 5030 --allow-anonymous`) and use the printed public `*.devtunnels.ms` URL instead of a `localhost` URL.
 <!--#endif-->
+-   **Control the running native (Blazor Hybrid) apps**: every hybrid head renders inside a WebView with remote debugging enabled, so the Android, iOS, Windows and macOS apps can be inspected and driven from the outside just like the web app:
+    -   **Windows** (`Boilerplate.Client.Windows`): The app starts WebView2 with `--remote-debugging-port=9222`, exposing the **Chrome DevTools Protocol (CDP)** at `http://localhost:9222`. Attach Playwright to it via a custom `playwright-core` script (`chromium.connectOverCDP('http://localhost:9222')` and use the existing page.
+    -   **Android**: the WebView is debuggable, and its CDP endpoint is a local abstract socket on the device. Expose it with `adb shell pidof <applicationId>` then `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` (pick another local port if the Windows app already holds 9222), and attach with Playwright exactly like Windows.
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
--   **Run tests**: Run `dotnet test` in src/Tests/Boilerplate.Tests project directory.
+-   **Run tests**: Run `dotnet test` in the src/Tests directory.
 -   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
--   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in src/Shared/Boilerplate.Shared project directory.
+-   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
 
 ## 5. Coding Conventions & Best Practices
 
@@ -109,5 +117,18 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 
 ## 6. Behavioral Directives
 
--   You **MUST** verify that you have access to the `ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message: **❌ CRITICAL ERROR: ask_question Tool Not Available**
 -   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.
+
+## 7. Available Agent Skills
+
+This project ships reusable [Agent Skills](https://agentskills.io), canonical in `.github/agents/`. Most agents preload only each skill's `description` and load the body on demand, so **do not read these files unless the trigger below matches the current task** - and when one does match, read the skill in full and follow it instead of improvising.
+
+| Skill | Read it when | Canonical file |
+| --- | --- | --- |
+| `scaffold-entity` | Adding a new entity or a new feature that needs full CRUD | `.github/agents/scaffold-entity.agent.md` |
+| `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx` | `.github/agents/localize-strings.agent.md` |
+| `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
+| `code-reviewer` | Reviewing a diff or PR against this project's conventions | `.github/agents/code-reviewer.agent.md` |
+| `ai-dlc` | Driving a feature end-to-end through requirements, plan, design, implement, validate | `.github/agents/ai-dlc.agent.md` |
+
+Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command, and Visual Studio lists the canonical files themselves in its agent picker as `@<name>`. The files under `.agents/skills/`, `.claude/skills/` and `.gemini/commands/` are thin bridges that delegate to the canonical file - never edit them for content, only the canonical file above.

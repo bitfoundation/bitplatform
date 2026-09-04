@@ -45,7 +45,7 @@ public partial class UserDto : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
+        if (string.IsNullOrWhiteSpace(Email) && string.IsNullOrWhiteSpace(PhoneNumber))
             yield return new ValidationResult(
                 errorMessage: nameof(AppStrings.EitherProvideEmailOrPhoneNumber),
                 memberNames: [nameof(Email), nameof(PhoneNumber)]

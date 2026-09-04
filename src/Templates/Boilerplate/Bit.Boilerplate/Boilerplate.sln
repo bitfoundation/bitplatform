@@ -49,19 +49,14 @@ EndProject
 #endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{3E577755-186F-4E63-8153-B8DE890015C9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C2D}"
     ProjectSection(SolutionItems) = preProject
-		.github\agents\code-reviewer.agent.md = .github\agents\code-reviewer.agent.md
         .github\agents\ai-dlc.agent.md = .github\agents\ai-dlc.agent.md
+        .github\agents\bitify-ui.agent.md = .github\agents\bitify-ui.agent.md
+        .github\agents\code-reviewer.agent.md = .github\agents\code-reviewer.agent.md
+        .github\agents\localize-strings.agent.md = .github\agents\localize-strings.agent.md
+        .github\agents\scaffold-entity.agent.md = .github\agents\scaffold-entity.agent.md
     EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C1D}"
-    ProjectSection(SolutionItems) = preProject
-        .github\prompts\bitify.prompt.md = .github\prompts\bitify.prompt.md
-        .github\prompts\resx.prompt.md = .github\prompts\resx.prompt.md
-        .github\prompts\scaffold.prompt.md = .github\prompts\scaffold.prompt.md
-    EndProjectSection
-EndProjectSection
 EndProject
 #if (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989}"
@@ -105,20 +100,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docs", ".docs", "{8A72BF22
         .docs\15- Logging, OpenTelemetry and Health Checks.md = .docs\15- Logging, OpenTelemetry and Health Checks.md
         .docs\16- CI-CD Pipeline and Environments.md = .docs\16- CI-CD Pipeline and Environments.md
         .docs\17- Automated Testing (Unitigration Tests).md = .docs\17- Automated Testing (Unitigration Tests).md
-        .docs\18- Other Available Prompt Templates.md = .docs\18- Other Available Prompt Templates.md
+        .docs\18- Available Agent Skills.md = .docs\18- Available Agent Skills.md
         .docs\19- Project Miscellaneous Files.md = .docs\19- Project Miscellaneous Files.md
         .docs\20- .NET Aspire.md = .docs\20- .NET Aspire.md
         .docs\21- .NET MAUI - Blazor Hybrid.md = .docs\21- .NET MAUI - Blazor Hybrid.md
         .docs\22- Messaging.md = .docs\22- Messaging.md
         .docs\23- Diagnostic Modal.md = .docs\23- Diagnostic Modal.md
         .docs\24- WebAuthn and Passwordless Authentication (Advanced).md = .docs\24- WebAuthn and Passwordless Authentication (Advanced).md
+#if ((database == "PostgreSQL" || database == "SqlServer") && (module == "Admin" || module == "Sales"))
         .docs\25- RAG - Semantic Search with Vector Embeddings (Advanced).md = .docs\25- RAG - Semantic Search with Vector Embeddings (Advanced).md
+#endif
     EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".grafana", ".grafana", "{422B745D-CAE0-B458-8AF0-74AC40E4AE0D}"
 	ProjectSection(SolutionItems) = preProject
 		.grafana\dashboard.json = .grafana\dashboard.json
-		.grafana\README.MD = .grafana\README.MD
+		.grafana\README.md = .grafana\README.md
 	EndProjectSection
 EndProject
 Global
@@ -186,10 +183,10 @@ Global
 #if (pipeline == "Azure")
         {AEE266C3-9E0B-4C41-A491-54D339708C06} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
         {28C56D1E-528C-4C7F-8A14-A540B6FCB20F} = {AEE266C3-9E0B-4C41-A491-54D339708C06}
-#elif (pipeline == "GitHub")
+#endif
         {3E577755-186F-4E63-8153-B8DE890015C9} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
-        {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D} = {3E577755-186F-4E63-8153-B8DE890015C9}
-		{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C1D} = {3E577755-186F-4E63-8153-B8DE890015C9}
+        {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C2D} = {3E577755-186F-4E63-8153-B8DE890015C9}
+#if (pipeline == "GitHub")
         {2347E3B2-FDDE-427E-A0AE-E4DCD47C2989} = {3E577755-186F-4E63-8153-B8DE890015C9}
 #endif
         {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F} = {248D8229-BABD-4F0A-A9C6-0417B464507B}

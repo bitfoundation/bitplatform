@@ -90,7 +90,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     [AllowAnonymous]
     [HttpGet("{attachmentId}/{kind}")]
-    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true, SkipOutputCache = true)]
     public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken = default)
     {
         // If the backend is hosted behind a CDN (which is recommended for production), the GetAttachment method's returned stream will be cached on CDN edge servers.
@@ -111,7 +111,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             AttachmentKind.AiChatImage => "image/webp",
             //#endif
             AttachmentKind.UserProfileImageSmall => "image/webp",
-            _ => "application/octet-stream" // The *Original kinds keep the uploaded bytes verbatim.
+            _ => "application/octet-stream" // The *Original kinds keep the uploaded format, whatever it was.
         };
 
         return File(await blobStorage.OpenRead(filePath, cancellationToken), mimeType, enableRangeProcessing: true);
@@ -224,7 +224,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
         string? altText = null; // AI-generated alt text, when the analysis agent is configured.
 
-        var preparedUploads = new List<(Attachment Attachment, byte[]? ResizedBytes)>();
+        var preparedUploads = new List<(Attachment Attachment, byte[] Bytes)>();
 
         foreach (var kind in kinds)
         {
@@ -233,6 +233,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 Id = attachmentId,
                 Kind = kind,
                 Path = GetFilePath(attachmentId, kind),
+                CreatedOn = TimeProvider.GetUtcNow(),
             };
 
             // ShrinkOnly makes the size a ceiling instead of a floor: the picture is only scaled down to it, and one
@@ -251,27 +252,44 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 _ => (false, 0, 0, false)
             };
 
-            if (imageResizeContext.NeedsResize is false)
-            {
-                preparedUploads.Add((attachment, null));
-                continue;
-            }
-
             Stopwatch stopwatch = Stopwatch.StartNew();
 
+            // Every kind is decoded, including the ones that are not resized: stripping the metadata means re-encoding,
+            // so the *Original kinds keep the uploaded FORMAT rather than the uploaded bytes.
             // Process-wide ImageMagick ResourceLimits are configured at startup (Program.Services.cs), so what a
             // decode of an untrusted upload can cost is bounded, and anything Magick.NET cannot decode throws here.
             // OpenReadStream hands out a NEW stream per call and MagickImage does not take ownership of it.
             using var sourceStream = file.OpenReadStream();
-            using MagickImage sourceImage = new(sourceStream);
+            MagickImage? decodedImage;
+            try
+            {
+                decodedImage = new(sourceStream);
+            }
+            catch (MagickException)
+            {
+                // An undecodable upload is bad input, not a server fault - a 400 like the endpoint's other rejections,
+                // instead of a 500 with a Critical log per attempt. Only the decode is caught: a failure in the resize
+                // or encode below would be a server problem and stays loud.
+                return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+            }
+            using MagickImage sourceImage = decodedImage;
 
-            if (imageResizeContext.ShrinkOnly is false &&
-                (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height))
-                return BadRequest(Localizer[nameof(AppStrings.ImageTooSmall), imageResizeContext.Width, imageResizeContext.Height, sourceImage.Width, sourceImage.Height].ToString());
+            if (imageResizeContext.NeedsResize)
+            {
+                if (imageResizeContext.ShrinkOnly is false &&
+                    (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height))
+                    return BadRequest(Localizer[nameof(AppStrings.ImageTooSmall), imageResizeContext.Width, imageResizeContext.Height, sourceImage.Width, sourceImage.Height].ToString());
 
-            sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height) { Greater = imageResizeContext.ShrinkOnly });
+                sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height) { Greater = imageResizeContext.ShrinkOnly });
+            }
 
-            var resizedBytes = sourceImage.ToByteArray(MagickFormat.WebP);
+            // Drops EXIF - GPS coordinates, capture time, camera serial - along with XMP, IPTC, comments and the ICC
+            // profile. A phone photo carries all of it, and the WebP re-encode below does NOT drop it on its own.
+            sourceImage.Strip();
+
+            var storedBytes = imageResizeContext.NeedsResize
+                ? sourceImage.ToByteArray(MagickFormat.WebP)
+                : sourceImage.ToByteArray();
 
             updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
 
@@ -297,7 +315,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                             new ChatMessage(ChatRole.User,
                                 "Analyze this product image for our car catalog. Is this a valid car product image that meets our quality and content standards?")
                             {
-                                Contents = [new DataContent(resizedBytes, "image/webp")]
+                                Contents = [new DataContent(storedBytes, "image/webp")]
                             }
                         ],
                         cancellationToken: cancellationToken,
@@ -328,7 +346,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             }
             //#endif
 
-            preparedUploads.Add((attachment, resizedBytes));
+            preparedUploads.Add((attachment, storedBytes));
         }
 
         //  ---------------------------------------------------------------------------------------------
@@ -358,17 +376,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             await DbContext.SaveChangesAsync(cancellationToken);
         }
 
-        foreach (var (attachment, resizedBytes) in preparedUploads)
+        foreach (var (attachment, storedBytes) in preparedUploads)
         {
-            if (resizedBytes is not null)
-            {
-                await blobStorage.SetBytes(attachment.Path, resizedBytes, cancellationToken: cancellationToken);
-            }
-            else
-            {
-                using var originalStream = file.OpenReadStream();
-                await blobStorage.SetObject(attachment.Path, originalStream, cancellationToken: cancellationToken);
-            }
+            await blobStorage.SetBytes(attachment.Path, storedBytes, cancellationToken: cancellationToken);
         }
 
         //#if (module == "Sales" || module == "Admin")

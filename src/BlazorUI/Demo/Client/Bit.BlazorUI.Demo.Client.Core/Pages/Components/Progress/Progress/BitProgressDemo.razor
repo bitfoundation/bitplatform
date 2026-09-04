@@ -6,182 +6,665 @@
 
 <PageOutlet Url="components/progress"
             Title="Progress"
-            Description="BitProgress is used to show the completion status of an operation." />
+            Description="A bar, a ring or a gauge that reports how far along an operation is - or that it is still running when nobody can say how far." />
 
 <DemoPage Name="Progress"
           SecondaryNames="@(["ProgressIndicator", "ProgressBar", "Spinner"])"
-          Description="BitProgress is used to show the completion status of an operation."
+          Description="A bar or a ring that reports how far along an operation is - an upload, an import, a page of results being fetched - or, in its indeterminate form, that something is still running when nobody can say how far. It draws that as a horizontal or vertical bar, a closed ring or a gauge with a gap cut out of it, with a label and a description, a percentage readout that can sit beside the bar, above it or on it, a buffered second value behind the main one, optional segments, and the usual look-and-feel set of color, size, thickness, rounded ends and stripes. It tells assistive technology what it is worth - as a percentage, or in the unit the operation is actually counted in - reports itself as a meter where the number is a measurement rather than progress, and can announce its own advance as it happens."
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           Parameters="componentParameters"
           GitHubUrl="Progress/Progress/BitProgress.razor"
           GitHubDemoUrl="Progress/Progress/BitProgressDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <BitProgress Label="Basic Progress"
-                     Description="Example description"
-                     Percent="42" />
-    </DemoExample>
-
-    <DemoExample Title="Circular" RazorCode="@example2RazorCode" Id="example2">
-        <BitProgress Circular
-                     Label="Basic Circular Progress"
-                     Description="Example description"
-                     Percent="42" />
-    </DemoExample>
-
-    <DemoExample Title="ShowPercentNumber" RazorCode="@example3RazorCode" Id="example3">
-        <BitProgress Label="Show Percent Number"
-                     Percent="85.69"
-                     ShowPercentNumber />
-        <br />
-        <BitProgress Label="Percent Number Format"
-                     Percent="85.69"
-                     PercentNumberFormat="{0:F2} %"
-                     ShowPercentNumber />
-        <br /><br />
-        <BitProgress Circular
-                     Label="Show Percent Number"
-                     Percent="85.69"
-                     ShowPercentNumber />
-        <br />
-        <BitProgress Circular
-                     Label="Percent Number Format"
-                     Percent="85.69"
-                     PercentNumberFormat="{0:F2} %"
-                     ShowPercentNumber />
-    </DemoExample>
-
-    <DemoExample Title="Thickness" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <BitSlider @bind-Value="barThickness" Max="50" />
-        <br /><br />
-        <BitProgress ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
-        <br />
-        <BitProgress Circular ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
-    </DemoExample>
-
-    <DemoExample Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
-        <BitProgress Indeterminate />
-        <br />
-        <BitProgress Circular Indeterminate />
-    </DemoExample>
-
-    <DemoExample Title="Color" RazorCode="@example6RazorCode" Id="example6">
-        <div class="example-box">
-            <BitProgress Color="BitColor.Primary" Percent="69" />
-            <BitProgress Color="BitColor.Secondary" Percent="69" />
-            <BitProgress Color="BitColor.Tertiary" Percent="69" />
-            <BitProgress Color="BitColor.Info" Percent="69" />
-            <BitProgress Color="BitColor.Success" Percent="69" />
-            <BitProgress Color="BitColor.Warning" Percent="69" />
-            <BitProgress Color="BitColor.SevereWarning" Percent="69" />
-            <BitProgress Color="BitColor.Error" Percent="69" />
-        </div>
-        <br />
-        <div class="circular-box">
-            <BitProgress Color="BitColor.Primary" Circular Percent="69" />
-            <BitProgress Color="BitColor.Secondary" Circular Percent="69" />
-            <BitProgress Color="BitColor.Tertiary" Circular Percent="69" />
-            <BitProgress Color="BitColor.Info" Circular Percent="69" />
-            <BitProgress Color="BitColor.Success" Circular Percent="69" />
-            <BitProgress Color="BitColor.Warning" Circular Percent="69" />
-            <BitProgress Color="BitColor.SevereWarning" Circular Percent="69" />
-            <BitProgress Color="BitColor.Error" Circular Percent="69" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Size" RazorCode="@example9RazorCode" Id="example9">
-        <BitProgress Size="BitSize.Small" Label="Small" Percent="69" ShowPercentNumber />
-        <br />
-        <BitProgress Size="BitSize.Medium" Label="Medium" Percent="69" ShowPercentNumber />
-        <br />
-        <BitProgress Size="BitSize.Large" Label="Large" Percent="69" ShowPercentNumber />
-        <br /><br />
-        <div class="circular-box">
-            <BitProgress Size="BitSize.Small" Circular Percent="69" ShowPercentNumber />
-            <BitProgress Size="BitSize.Medium" Circular Percent="69" ShowPercentNumber />
-            <BitProgress Size="BitSize.Large" Circular Percent="69" ShowPercentNumber />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Spinner" RazorCode="@example10RazorCode" Id="example10">
-        <div class="circular-box">
-            <BitProgress Circular Indeterminate Size="BitSize.Small" />
-            <BitProgress Circular Indeterminate Size="BitSize.Medium" />
-            <BitProgress Circular Indeterminate Size="BitSize.Large" />
-        </div>
-        <br />
-        <div class="circular-box">
-            <BitProgress Circular Indeterminate Color="BitColor.Success" />
-            <BitProgress Circular Indeterminate Color="BitColor.Warning" />
-            <BitProgress Circular Indeterminate Color="BitColor.Error" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            <div>Component's Style & Class:</div>
-            <br />
-            <BitProgress Indeterminate Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Thickness="10" />
-            <br />
-            <BitProgress Class="custom-class"
-                         Percent="69"
-                         Thickness="10" />
+    <NotesTemplate>
+        <BitText>
+            A progress indicator is announced as a <BitTag Color="BitColor.SecondaryBackground">progressbar</BitTag>,
+            and that role <b>requires a name</b>. Give it a <b>Label</b> where one belongs on the page - the label is
+            referenced by the bar rather than repeated into it - or an <b>AriaLabel</b> where the surrounding text
+            already says what is loading and a visible label would only duplicate it.
             <br /><br />
-            <BitProgress Circular Indeterminate Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Thickness="10" />
+            Prefer a determinate bar wherever a number is available: it is the difference between "this is working"
+            and "this is stuck". Reach for <b>Indeterminate</b> only while the total is genuinely unknown, and keep
+            it short - a sweep that never ends reads as a hang.
+            <br /><br />
+            <b>Percent</b> is a percentage, which is the right unit when that is what the reader sees. When the
+            operation is counted in something else - files, rows, megabytes - use <b>Value</b> with <b>Min</b> and
+            <b>Max</b> instead: the bar is drawn the same way, but the screen reader is handed the real numbers, and
+            <b>AriaValueText</b> can spell them out ("3 of 10 files").
+            <br /><br />
+            Progress only moves forward and it ends. A number that can go either way and is never finished - a disk
+            that is 60 % full, a temperature, a score - is a measurement, not progress: set <b>Meter</b> and it is
+            reported as a <BitTag Color="BitColor.SecondaryBackground">meter</BitTag>, which is what the ARIA
+            practices ask for.
+            <br /><br />
+            A screen reader is not told that a bar moved unless something says so. <b>AnnounceProgress</b> adds a
+            polite live region that reports it, once per <b>AnnounceStep</b> crossed rather than on every change -
+            a bar that speaks on every percent is a bar nobody can listen to.
+            <br /><br />
+            Progress is not a control: it reports, it is never operated. Nothing here takes focus or handles a key,
+            so a cancel button - if the operation has one - belongs beside the bar, not in it. And a readout placed
+            <b>Inside</b> the bar is decoration on top of the value, not the value itself: the children of a
+            progressbar are presentational, so what is announced is still what <b>AriaValueText</b> and the value
+            say.
+            <br /><br />
+            The indeterminate sweep and the travelling stripes are decoration, and both collapse under
+            <BitTag Color="BitColor.SecondaryBackground">prefers-reduced-motion</BitTag>. Turn them back on with
+            <b>ForceAnimation</b> only where the movement is the message.
+        </BitText>
+    </NotesTemplate>
+
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                A Progress needs nothing but a <b>Percent</b>. <b>Label</b> names what is running and is what the
+                screen reader reads as the name of the bar; <b>Description</b> adds the supporting line underneath -
+                the file name, the step, the count - and is referenced as the bar's description. Both have a
+                <b>Template</b> twin (<b>LabelTemplate</b>, <b>DescriptionTemplate</b>) for markup instead of text.
+            </div>
+            <br />
+            <BitProgress Label="Basic Progress"
+                         Description="Example description"
+                         Percent="42" />
+        </DemoExample>
+
+        <DemoExample Title="Circular" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>Circular</b> draws the same progress as a ring instead of a bar. It is the shape for a compact
+                spot - inside a button, in a card corner, beside a row - where a full-width bar has nowhere to go.
+                Everything else works the same way: label, description, percentage and color are unchanged.
+            </div>
             <br />
             <BitProgress Circular
-                         Class="custom-class"
-                         Percent="69"
-                         Thickness="10" />
-            <br /><br /><br />
-            <div>Styles & Classes:</div>
+                         Label="Basic Circular Progress"
+                         Description="Example description"
+                         Percent="42" />
+        </DemoExample>
+
+        <DemoExample Title="Value & Max" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>Percent</b> is a percentage, which is right when a percentage is what the operation produces.
+                When it is counted in something else, set <b>Value</b> with <b>Min</b> and <b>Max</b>: the bar is
+                filled from the same ratio, but the assistive technology is handed the real range and the real
+                number rather than a percentage derived from it. <b>AriaValueText</b> spells that out in words where
+                the bare numbers would not be understood on their own.
+            </div>
             <br />
-            <BitProgress Indeterminate
-                         Thickness="10"
-                         Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);",
-                                           Track = "background-color: green;" })" />
+            <BitProgress Label="Uploading files"
+                         Description="3 of 10 files"
+                         AriaValueText="3 of 10 files"
+                         Value="3"
+                         Max="10" />
             <br />
-            <BitProgress Classes="@(new() { Bar = "custom-bar",
-                                            Track = "custom-tracker"})"
-                         Percent="69"
-                         Thickness="10" />
+            <BitProgress Label="Re-indexing rows"
+                         Description="Row 3,200 of the 1,000 to 5,000 range"
+                         AriaValueText="row 3,200 of 5,000"
+                         Min="1000"
+                         Max="5000"
+                         Value="3200"
+                         ShowPercentNumber />
             <br /><br />
-            <BitProgress Circular Indeterminate
-                         Thickness="10"
-                         Styles="@(new() { Bar = "stroke: greenyellow;",
-                                           Track = "stroke: green;" })" />
+            <BitProgress Circular
+                         Label="Steps"
+                         Value="7"
+                         Max="12"
+                         ShowPercentNumber />
+        </DemoExample>
+
+        <DemoExample Title="Percent number" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                <b>ShowPercentNumber</b> writes the percentage beside the bar, or in the middle of the ring.
+                <b>PercentNumberFormat</b> is a standard composite format string ("{0:F0} %" by default) applied to
+                the percentage, and <b>PercentNumberTemplate</b> replaces the text altogether with markup, receiving
+                the same percentage as its context. <b>PercentNumberPosition</b> moves it under the bar to the
+                <b>Start</b>, the <b>Center</b> or the <b>End</b> (the default), up onto the label's row with
+                <b>Top</b> - the "Uploading ... 42 %" layout, which costs no extra line - or onto the bar itself
+                with <b>Inside</b>, which keeps the whole indicator to one line but needs a <b>Thickness</b> the
+                text fits in and shows nothing until the bar is wide enough to hold it. The readout is hidden while
+                the progress is indeterminate, since there is no number to show.
+            </div>
+            <br />
+            <BitProgress Label="Show Percent Number"
+                         Percent="85.69"
+                         ShowPercentNumber />
+            <br />
+            <BitProgress Label="Percent Number Format"
+                         Percent="85.69"
+                         PercentNumberFormat="{0:F2} %"
+                         ShowPercentNumber />
+            <br />
+            <BitProgress Label="Percent Number Template" Percent="85.69">
+                <PercentNumberTemplate Context="percent">
+                    <BitText Color="BitColor.Success">@($"{percent:F0}% done")</BitText>
+                </PercentNumberTemplate>
+            </BitProgress>
+            <br />
+            <BitProgress Label="Start" Percent="42" ShowPercentNumber
+                         PercentNumberPosition="BitProgressPercentPosition.Start" />
+            <br />
+            <BitProgress Label="Center" Percent="42" ShowPercentNumber
+                         PercentNumberPosition="BitProgressPercentPosition.Center" />
+            <br />
+            <BitProgress Label="Top" Percent="42" ShowPercentNumber
+                         PercentNumberPosition="BitProgressPercentPosition.Top" />
+            <br />
+            <BitProgress Percent="42" ShowPercentNumber AriaLabel="Progress without a label"
+                         PercentNumberPosition="BitProgressPercentPosition.Top" />
+            <br />
+            <BitProgress Label="Inside" Percent="42" Thickness="20" Rounded ShowPercentNumber
+                         PercentNumberPosition="BitProgressPercentPosition.Inside" />
+            <br /><br />
+            <BitProgress Circular
+                         Label="Show Percent Number"
+                         Percent="85.69"
+                         ShowPercentNumber />
             <br />
             <BitProgress Circular
+                         Label="Percent Number Format"
+                         Percent="85.69"
+                         PercentNumberFormat="{0:F2} %"
+                         ShowPercentNumber />
+        </DemoExample>
+
+        <DemoExample Title="Thickness" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Thickness</b> overrides the height of the bar - the stroke width of the ring - in pixels. Leave it
+                unset and the thickness follows the <b>Size</b>, which is what keeps a page of progress bars in step
+                with each other and with the theme.
+            </div>
+            <br />
+            <BitSlider @bind-Value="barThickness" Max="50" />
+            <br /><br />
+            <BitProgress AriaLabel="Thickness example" ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
+            <br />
+            <BitProgress Circular AriaLabel="Circular thickness example" ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
+        </DemoExample>
+
+        <DemoExample Title="Diameter" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                <b>Diameter</b> sets the exact width and height of the ring in pixels, which is the direct way to
+                size a circular progress. Left unset, the ring takes the diameter of its <b>Size</b> and grows past
+                it only when <b>Thickness</b> multiplied by <b>Radius</b> asks for more room.
+            </div>
+            <br />
+            <div class="circular-box">
+                <BitProgress Circular AriaLabel="24 pixel ring" Percent="69" Diameter="24" />
+                <BitProgress Circular AriaLabel="48 pixel ring" Percent="69" Diameter="48" />
+                <BitProgress Circular AriaLabel="96 pixel ring" Percent="69" Diameter="96" ShowPercentNumber />
+                <BitProgress Circular Indeterminate AriaLabel="128 pixel spinner" Diameter="128" Thickness="6" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Indeterminate" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                <b>Indeterminate</b> is for an operation whose end is not known yet: the bar sweeps and the ring
+                spins instead of filling. No value is reported to assistive technology in this mode - which is what
+                tells a screen reader the progress is indeterminate - and the percentage readout is hidden.
+                Switch to a determinate value as soon as one exists.
+            </div>
+            <br />
+            <BitProgress Indeterminate Label="Preparing your export" />
+            <br />
+            <BitProgress Circular Indeterminate AriaLabel="Preparing your export" />
+        </DemoExample>
+
+        <DemoExample Title="Spinner" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                A circular indeterminate progress is what most libraries call a spinner - the plain "working on it"
+                indicator. It takes the same <b>Size</b> and <b>Color</b> as everything else, and an
+                <b>AriaLabel</b> is worth adding where no visible text says what is being waited for.
+            </div>
+            <br />
+            <div class="circular-box">
+                <BitProgress Circular Indeterminate Size="BitSize.Small" AriaLabel="Loading" />
+                <BitProgress Circular Indeterminate Size="BitSize.Medium" AriaLabel="Loading" />
+                <BitProgress Circular Indeterminate Size="BitSize.Large" AriaLabel="Loading" />
+            </div>
+            <br />
+            <div class="circular-box">
+                <BitProgress Circular Indeterminate Color="BitColor.Success" AriaLabel="Loading" />
+                <BitProgress Circular Indeterminate Color="BitColor.Warning" AriaLabel="Loading" />
+                <BitProgress Circular Indeterminate Color="BitColor.Error" AriaLabel="Loading" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Buffer" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>Buffer</b> draws a second, fainter bar behind the first one: how far the operation has loaded
+                ahead of what it has actually finished - the buffered part of a video, the downloaded part of a file
+                still being processed. It is read on the same scale as the progress itself, so it is a percentage
+                beside <b>Percent</b> and a value between <b>Min</b> and <b>Max</b> beside <b>Value</b>, and it is
+                ignored while the progress is indeterminate.
+            </div>
+            <br />
+            <BitProgress Label="Playing" Percent="35" Buffer="62" ShowPercentNumber />
+            <br />
+            <BitProgress Label="Processing" Value="4" Max="10" Buffer="8" />
+            <br /><br />
+            <BitProgress Circular AriaLabel="Playing" Percent="35" Buffer="62" Thickness="6" ShowPercentNumber />
+            <br /><br />
+            <BitSlider Label="Progress" @bind-Value="bufferPercent" Max="100" />
+            <br />
+            <BitProgress AriaLabel="Playing" Percent="bufferPercent" Buffer="Math.Min(100, bufferPercent + 25)" Thickness="8" Rounded />
+        </DemoExample>
+
+        <DemoExample Title="Rounded" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                <b>Rounded</b> gives the bar pill-shaped ends and the ring a round stroke cap. The track is rounded
+                with the bar, so an empty bar does not sit square inside a round one. It is a purely visual choice -
+                nothing about the value or the announcement changes.
+            </div>
+            <br />
+            <BitProgress Rounded AriaLabel="Rounded bar" Percent="42" Thickness="10" />
+            <br />
+            <BitProgress Rounded Indeterminate AriaLabel="Rounded indeterminate bar" Thickness="10" />
+            <br /><br />
+            <div class="circular-box">
+                <BitProgress Circular Rounded AriaLabel="Rounded ring" Percent="42" Thickness="8" />
+                <BitProgress Circular Rounded Indeterminate AriaLabel="Rounded spinner" Thickness="8" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Striped" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                <b>Striped</b> paints diagonal stripes over a determinate bar, and <b>StripedAnimation</b> makes them
+                travel: the conventional way of saying that the operation behind a bar that is not moving much is
+                still running. Stripes apply to the linear bar only, and not while it is indeterminate - the sweep
+                already carries that meaning. The travelling stripes stop under reduced motion.
+            </div>
+            <br />
+            <BitProgress Striped AriaLabel="Striped bar" Percent="42" Thickness="12" />
+            <br />
+            <BitProgress Striped StripedAnimation AriaLabel="Striped bar with travelling stripes" Percent="42" Thickness="12" />
+            <br />
+            <BitProgress Striped StripedAnimation Rounded AriaLabel="Rounded striped bar" Percent="72" Thickness="12" Color="BitColor.Success" />
+        </DemoExample>
+
+        <DemoExample Title="Reversed" RazorCode="@example12RazorCode" Id="example12">
+            <div>
+                <b>Reversed</b> fills the bar from the end of its container towards the start, and turns the ring
+                counter-clockwise. An indeterminate bar sweeps the other way instead - the shape other libraries call
+                a query indicator, for the moment before a request has anything to report. The direction is logical,
+                so it follows <b>Dir</b>: reversed in an RTL context runs left to right.
+            </div>
+            <br />
+            <BitProgress Reversed AriaLabel="Reversed bar" Percent="42" Thickness="10" ShowPercentNumber />
+            <br />
+            <BitProgress Reversed Indeterminate AriaLabel="Reversed indeterminate bar" Thickness="10" />
+            <br /><br />
+            <div class="circular-box">
+                <BitProgress Circular Reversed AriaLabel="Reversed ring" Percent="42" Thickness="6" />
+                <BitProgress Circular Reversed Indeterminate AriaLabel="Reversed spinner" Thickness="6" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Gauge" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                <b>GapDegree</b> cuts a gap out of the bottom of the ring, which turns it from a loop into a gauge -
+                the shape for a reading taken against a scale rather than an operation running to an end. It is a
+                number of degrees between 0 (a closed ring, the default) and 295, so 180 leaves a half circle and 90
+                leaves the three-quarter dial. <b>GapPosition</b> moves the opening to the <b>Top</b>, the
+                <b>Start</b> or the <b>End</b> instead. It pairs naturally with <b>Value</b>, <b>Min</b> and
+                <b>Max</b>, which is what lets the ring read a real quantity, and with <b>Rounded</b> for a softer
+                arc. A gauge that reads a measurement rather than progress - the third one here - should also be a
+                <b>Meter</b>, which is the next section.
+            </div>
+            <br />
+            <BitSlider @bind-Value="gaugeValue" Max="100" />
+            <br /><br />
+            <div class="circular-box">
+                <BitProgress Circular Rounded ShowPercentNumber AriaLabel="Gauge with a 90 degree gap"
+                             GapDegree="90"
+                             Diameter="120"
+                             Thickness="10"
+                             Percent="gaugeValue" />
+                <BitProgress Circular Rounded ShowPercentNumber AriaLabel="Gauge with a 180 degree gap"
+                             GapDegree="180"
+                             Diameter="120"
+                             Thickness="10"
+                             Color="BitColor.Success"
+                             Percent="gaugeValue" />
+                <BitProgress Circular Rounded Meter AriaLabel="Temperature"
+                             GapDegree="120"
+                             Diameter="120"
+                             Thickness="14"
+                             Color="BitColor.Warning"
+                             Min="20"
+                             Max="40"
+                             Value="20 + gaugeValue / 5"
+                             Buffer="38"
+                             AriaValueText="@($"{20 + gaugeValue / 5:F0} degrees")" />
+            </div>
+            <br />
+            <div class="circular-box">
+                <BitProgress Circular Rounded AriaLabel="Gauge with the gap at the top" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
+                             GapPosition="BitProgressGapPosition.Top" />
+                <BitProgress Circular Rounded AriaLabel="Gauge with the gap at the start" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
+                             GapPosition="BitProgressGapPosition.Start" />
+                <BitProgress Circular Rounded AriaLabel="Gauge with the gap at the end" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
+                             GapPosition="BitProgressGapPosition.End" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Meter" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                A progress bar says how far along a task is: it only moves forward, and it ends. A <b>Meter</b> is a
+                reading taken inside a known range - a disk that is 60 % full, a temperature, a score - which can move
+                either way and is never "finished". They look identical, but they are announced differently, and the
+                ARIA practices are explicit that a measurement should not be reported as progress. Set <b>Meter</b>
+                and the indicator is exposed as a <BitTag Color="BitColor.SecondaryBackground">meter</BitTag> instead;
+                everything else - the shape, the <b>Value</b> range, <b>AriaValueText</b>, the gauge - is unchanged.
+                An indeterminate indicator stays a progress bar, since a meter always has a value.
+            </div>
+            <br />
+            <BitSlider @bind-Value="meterValue" Min="0" Max="100" />
+            <br /><br />
+            <BitProgress Meter
+                         Label="Disk usage"
+                         Description="@($"{meterValue:F0} GB of 100 GB used")"
+                         AriaValueText="@($"{meterValue:F0} of 100 gigabytes used")"
+                         Value="meterValue"
+                         Max="100"
+                         Thickness="10"
+                         Rounded
+                         ShowPercentNumber
+                         Color="@(meterValue > 90 ? BitColor.Error : meterValue > 70 ? BitColor.Warning : BitColor.Success)" />
+            <br /><br />
+            <div class="circular-box">
+                <BitProgress Meter Circular Rounded ShowPercentNumber
+                             GapDegree="120"
+                             Diameter="120"
+                             Thickness="10"
+                             Label="Signal"
+                             Percent="meterValue" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Vertical" RazorCode="@example15RazorCode" Id="example15">
+            <div>
+                <b>Vertical</b> stands the linear bar on its end, filling it from the bottom up - or from the top
+                down when it is also <b>Reversed</b>. A vertical bar has no width to take from its container, so
+                <b>Length</b> is what says how long it is (any CSS length; it defaults to 10rem). Everything else
+                carries over: thickness, color, buffer, stripes, rounded ends and segments all work along the other
+                axis. The circular progress ignores it.
+            </div>
+            <br />
+            <div class="circular-box">
+                <BitProgress Vertical AriaLabel="Vertical bar" Percent="42" Thickness="12" Rounded />
+                <BitProgress Vertical AriaLabel="Vertical bar with a set length" Percent="42" Thickness="12" Length="6rem" Color="BitColor.Success" />
+                <BitProgress Vertical Reversed AriaLabel="Reversed vertical bar" Percent="42" Thickness="12" Color="BitColor.Warning" />
+                <BitProgress Vertical AriaLabel="Vertical bar with a buffer" Percent="42" Buffer="75" Thickness="16" Rounded Color="BitColor.Info" />
+                <BitProgress Vertical Striped StripedAnimation AriaLabel="Striped vertical bar" Percent="60" Thickness="16" />
+                <BitProgress Vertical AriaLabel="Segmented vertical bar" Segments="4" Percent="60" Thickness="16" />
+                <BitProgress Vertical Indeterminate AriaLabel="Vertical indeterminate bar" Thickness="12" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Segments" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                <b>Segments</b> cuts the linear bar into that many equal pieces, for an operation made of a known
+                number of discrete steps - a wizard, a batch of jobs, an import in phases. <b>SegmentGap</b> is how
+                far apart they are drawn, in pixels. The value still fills the bar continuously and is still reported
+                as it is, so a bar caught between two segments shows a part-filled piece rather than rounding.
+                Segments apply to the linear bar only.
+            </div>
+            <br />
+            <BitSlider @bind-Value="segmentedPercent" Max="100" />
+            <br /><br />
+            <BitProgress AriaLabel="Five segments" Segments="5" Percent="segmentedPercent" Thickness="12" ShowPercentNumber />
+            <br />
+            <BitProgress AriaLabel="Ten segments" Segments="10" SegmentGap="2" Percent="segmentedPercent" Thickness="8" Color="BitColor.Success" />
+            <br />
+            <BitProgress AriaLabel="Four rounded segments" Segments="4" SegmentGap="8" Rounded Percent="segmentedPercent" Thickness="14" Buffer="100" />
+        </DemoExample>
+
+        <DemoExample Title="Announcements" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                A screen reader is not told that a progress bar moved unless something says so.
+                <b>AnnounceProgress</b> adds a polite live region that reports the progress as it advances, and
+                <b>AnnounceStep</b> is how far it has to move first - 25 percentage points by default, so a long
+                operation speaks four times instead of a hundred. A zero or negative step is treated as 25.
+                Completion is always announced. What is said is
+                <b>AriaValueText</b> when it is set, otherwise the percentage in the <b>PercentNumberFormat</b>,
+                prefixed by the <b>Label</b>. Nothing is announced while the progress is indeterminate, and the very
+                first value - including 100% - is recorded without announcement, as the starting point rather than
+                as an advance.
+            </div>
+            <br />
+            <BitSlider @bind-Value="announcedPercent" Max="100" />
+            <br /><br />
+            <BitProgress AnnounceProgress
+                         Label="Importing rows"
+                         Percent="announcedPercent"
+                         ShowPercentNumber />
+            <br />
+            <BitProgress AnnounceProgress
+                         AnnounceStep="10"
+                         Label="Uploading"
+                         Percent="announcedPercent"
+                         Thickness="8" />
+        </DemoExample>
+
+        <DemoExample Title="Status" RazorCode="@example18RazorCode" Id="example18">
+            <div>
+                An operation that finished, or failed, is still a progress indicator - what changes is what it says.
+                There is no <b>Status</b> parameter here on purpose: a status is a <b>Color</b>, a word and a glyph,
+                and each of those is already a parameter of its own. Pick the <b>Color</b> for the state, put the
+                state in words in the <b>Description</b>, and put the glyph in the
+                <b>PercentNumberTemplate</b>, which replaces the readout with whatever markup you give it. Colour is
+                never the whole message - the words are what a screen reader reads, and what anyone who cannot tell
+                the two hues apart is left with.
+            </div>
+            <br />
+            <BitProgress Label="Uploading report.pdf"
+                         Description="Uploading - 4.2 MB of 6.0 MB"
+                         Percent="70"
+                         Thickness="8"
+                         Rounded
+                         ShowPercentNumber />
+            <br />
+            <BitProgress Label="Uploading report.pdf"
+                         Description="Upload complete"
+                         Color="BitColor.Success"
+                         Percent="100"
+                         Thickness="8"
+                         Rounded>
+                <PercentNumberTemplate>
+                    <BitIcon IconName="@BitIconName.CompletedSolid" Color="BitColor.Success" />
+                </PercentNumberTemplate>
+            </BitProgress>
+            <br />
+            <BitProgress Label="Uploading report.pdf"
+                         Description="Upload failed - the connection was lost"
+                         Color="BitColor.Error"
+                         Percent="70"
+                         Thickness="8"
+                         Rounded>
+                <PercentNumberTemplate>
+                    <BitIcon IconName="@BitIconName.StatusCircleErrorX" Color="BitColor.Error" />
+                </PercentNumberTemplate>
+            </BitProgress>
+            <br /><br />
+            <div class="circular-box">
+                <BitProgress Circular Rounded Thickness="6" Diameter="64" Color="BitColor.Success" Percent="100"
+                             AriaLabel="Upload complete">
+                    <PercentNumberTemplate>
+                        <BitIcon IconName="@BitIconName.CompletedSolid" Color="BitColor.Success" />
+                    </PercentNumberTemplate>
+                </BitProgress>
+                <BitProgress Circular Rounded Thickness="6" Diameter="64" Color="BitColor.Error" Percent="70"
+                             AriaLabel="Upload failed">
+                    <PercentNumberTemplate>
+                        <BitIcon IconName="@BitIconName.StatusCircleErrorX" Color="BitColor.Error" />
+                    </PercentNumberTemplate>
+                </BitProgress>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Custom colors" RazorCode="@example19RazorCode" Id="example19">
+            <div>
+                <b>BarColor</b> and <b>TrackColor</b> take any CSS color and step outside the theme palette, for the
+                one indicator that has to carry a color of its own - a brand shade, a per-category legend, a value
+                that changes color as it climbs. <b>BarColor</b> replaces what the <b>Color</b> role would have given
+                and everything derived from it follows: the stroke of the ring, the faint tint of the <b>Buffer</b>,
+                the fill under the stripes. <b>TrackColor</b> paints the unfilled part - the track, the ring behind
+                the stroke, and the two ends the indeterminate sweep fades into. Prefer <b>Color</b> wherever the
+                theme has a role that fits: what is written here does not re-skin with the design system, and it is
+                on you to keep it readable in both schemes.
+            </div>
+            <br />
+            <BitProgress Label="Brand" BarColor="#8b5cf6" TrackColor="#e9d5ff" Percent="62" Thickness="10" Rounded ShowPercentNumber />
+            <br />
+            <BitProgress Label="Buffered" BarColor="darkcyan" TrackColor="#e0f2f1" Percent="45" Buffer="78" Thickness="10" Rounded />
+            <br />
+            <BitProgress Label="Striped" BarColor="tomato" Striped StripedAnimation Percent="72" Thickness="14" Rounded />
+            <br />
+            <BitProgress Label="Sweeping" BarColor="#8b5cf6" TrackColor="#e9d5ff" Indeterminate Thickness="10" Rounded />
+            <br /><br />
+            <div class="circular-box">
+                <BitProgress Circular Rounded AriaLabel="Brand ring" ShowPercentNumber BarColor="#8b5cf6" TrackColor="#e9d5ff" Percent="62" Diameter="80" Thickness="8" />
+                <BitProgress Circular Rounded AriaLabel="Sweeping ring" BarColor="tomato" TrackColor="#ffe0d6" Indeterminate Diameter="80" Thickness="8" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20">
+            <div>
+                <b>Color</b> picks the palette of the bar from the theme's general colors, so the whole set re-skins
+                with the design system rather than being hard-coded. The track and the buffer follow it. Color alone
+                never carries the meaning - a failed operation still needs the words for it in the label or the
+                description.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitProgress AriaLabel="Primary" Color="BitColor.Primary" Percent="69" />
+                <br />
+                <BitProgress AriaLabel="Secondary" Color="BitColor.Secondary" Percent="69" />
+                <br />
+                <BitProgress AriaLabel="Tertiary" Color="BitColor.Tertiary" Percent="69" />
+                <br />
+                <BitProgress AriaLabel="Info" Color="BitColor.Info" Percent="69" />
+                <br />
+                <BitProgress AriaLabel="Success" Color="BitColor.Success" Percent="69" />
+                <br />
+                <BitProgress AriaLabel="Warning" Color="BitColor.Warning" Percent="69" />
+                <br />
+                <BitProgress AriaLabel="Severe warning" Color="BitColor.SevereWarning" Percent="69" />
+                <br />
+                <BitProgress AriaLabel="Error" Color="BitColor.Error" Percent="69" />
+            </div>
+            <br />
+            <div class="circular-box">
+                <BitProgress AriaLabel="Primary ring" Color="BitColor.Primary" Circular Percent="69" />
+                <BitProgress AriaLabel="Secondary ring" Color="BitColor.Secondary" Circular Percent="69" />
+                <BitProgress AriaLabel="Tertiary ring" Color="BitColor.Tertiary" Circular Percent="69" />
+                <BitProgress AriaLabel="Info ring" Color="BitColor.Info" Circular Percent="69" />
+                <BitProgress AriaLabel="Success ring" Color="BitColor.Success" Circular Percent="69" />
+                <BitProgress AriaLabel="Warning ring" Color="BitColor.Warning" Circular Percent="69" />
+                <BitProgress AriaLabel="Severe warning ring" Color="BitColor.SevereWarning" Circular Percent="69" />
+                <BitProgress AriaLabel="Error ring" Color="BitColor.Error" Circular Percent="69" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21">
+            <div>
+                <b>Size</b> scales the whole indicator from the theme: the thickness of the bar, the diameter of the
+                ring and the type size of the label and the readout. Set <b>Thickness</b> or <b>Diameter</b> only
+                where a specific measurement is needed - the sizes are what keep a page consistent.
+            </div>
+            <br />
+            <BitProgress Size="BitSize.Small" Label="Small" Percent="69" ShowPercentNumber />
+            <br />
+            <BitProgress Size="BitSize.Medium" Label="Medium" Percent="69" ShowPercentNumber />
+            <br />
+            <BitProgress Size="BitSize.Large" Label="Large" Percent="69" ShowPercentNumber />
+            <br /><br />
+            <div class="circular-box">
+                <BitProgress Size="BitSize.Small" AriaLabel="Small ring" Circular Percent="69" ShowPercentNumber />
+                <BitProgress Size="BitSize.Medium" AriaLabel="Medium ring" Circular Percent="69" ShowPercentNumber />
+                <BitProgress Size="BitSize.Large" AriaLabel="Large ring" Circular Percent="69" ShowPercentNumber />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" Id="example22">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root element, while <b>Styles</b> and <b>Classes</b> reach
+                the parts by name - <b>Root</b>, <b>Label</b>, <b>BarContainer</b>, <b>Track</b>, <b>Buffer</b>,
+                <b>Bar</b>, <b>PercentNumber</b> and <b>Description</b>. What is written there comes after the
+                geometry the component computes, so a custom background, gradient or stroke wins over the default.
+            </div>
+            <br />
+            <div>
+                <div>Component's Style & Class:</div>
+                <br />
+                <BitProgress Indeterminate AriaLabel="Bar with a custom style" Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Thickness="10" />
+                <br />
+                <BitProgress Class="custom-class" AriaLabel="Bar with a custom class"
+                             Percent="69"
+                             Thickness="10" />
+                <br /><br />
+                <BitProgress Circular Indeterminate AriaLabel="Ring with a custom style" Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Thickness="10" />
+                <br />
+                <BitProgress Circular AriaLabel="Ring with a custom class"
+                             Class="custom-class"
+                             Percent="69"
+                             Thickness="10" />
+                <br /><br /><br />
+                <div>Styles & Classes:</div>
+                <br />
+                <BitProgress Indeterminate AriaLabel="Bar with styled parts"
+                             Thickness="10"
+                             Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);",
+                                               Track = "background-color: green;" })" />
+                <br />
+                <BitProgress Classes="@(new() { Bar = "custom-bar",
+                                                Track = "custom-track",
+                                                Buffer = "custom-buffer" })" AriaLabel="Bar with classed parts"
+                             Percent="45"
+                             Buffer="80"
+                             Thickness="10" />
+                <br /><br />
+                <BitProgress Circular Indeterminate AriaLabel="Ring with styled parts"
+                             Thickness="10"
+                             Styles="@(new() { Bar = "stroke: greenyellow;",
+                                               Track = "stroke: green;" })" />
+                <br />
+                <BitProgress Circular AriaLabel="Ring with classed parts"
+                             Percent="69"
+                             Thickness="10"
+                             Classes="@(new() { Bar = "custom-circle-bar",
+                                                Track = "custom-circle-track" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example23RazorCode" Id="example23">
+            <div>
+                Set <b>Dir</b> to <b>BitDir.Rtl</b> to lay the indicator out right to left: the bar fills from the
+                right, the label and the description align to it, and the percentage readout moves to the other end -
+                while the number inside it stays in its own direction, so "85 %" never turns into "% 85".
+            </div>
+            <br />
+            <BitProgress Dir="BitDir.Rtl" AriaLabel="در حال بارگذاری"
+                         Thickness="10"
+                         Indeterminate />
+            <br />
+            <BitProgress Label="لیبل تست"
+                         Description="توضیحات تست"
+                         Dir="BitDir.Rtl"
                          Percent="69"
                          Thickness="10"
-                         Classes="@(new() { Bar = "custom-circle-bar",
-                                            Track = "custom-circle-tracker"})" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
-        <BitProgress Dir="BitDir.Rtl"
-                     Thickness="10"
-                     Indeterminate />
-        <br />
-        <BitProgress Label="لیبل تست"
-                     Description="توضیحات تست"
-                     Dir="BitDir.Rtl"
-                     Percent="69"
-                     Thickness="10"
-                     ShowPercentNumber />
-        <br /><br />
-        <BitProgress Circular
-                     Dir="BitDir.Rtl"
-                     Thickness="10"
-                     Indeterminate />
-        <br />
-        <BitProgress Circular
-                     Label="لیبل تست"
-                     Description="توضیحات تست"
-                     Dir="BitDir.Rtl"
-                     Percent="69"
-                     Thickness="10"
-                     ShowPercentNumber />
-    </DemoExample>
+                         ShowPercentNumber />
+            <br /><br />
+            <BitProgress Circular AriaLabel="در حال بارگذاری"
+                         Dir="BitDir.Rtl"
+                         Thickness="10"
+                         Indeterminate />
+            <br />
+            <BitProgress Circular
+                         Label="لیبل تست"
+                         Description="توضیحات تست"
+                         Dir="BitDir.Rtl"
+                         Percent="69"
+                         Thickness="10"
+                         ShowPercentNumber />
+        </DemoExample>
+    </Examples>
 </DemoPage>

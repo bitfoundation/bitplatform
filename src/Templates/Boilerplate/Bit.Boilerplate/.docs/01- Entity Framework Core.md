@@ -472,9 +472,12 @@ For comprehensive information about the client-side offline database, including:
 - Downloading the database file for inspection
 
 **See:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Data/README.md`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/README.md)
+<!--#endif-->
 
 ---
 
-Ask your question [here](https://wiki.bitplatform.dev)
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

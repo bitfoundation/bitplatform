@@ -34,7 +34,10 @@ public partial class AppleAppSiteAssociationTests
         Assert.AreEqual(200, (int)response.StatusCode, "The apple-app-site-association file must be served by the host.");
 
         // Apple only accepts the association file when it is delivered as application/json (no other media type works).
-        Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
+        var contentType = response.Content.Headers.ContentType;
+
+        Assert.IsNotNull(contentType);
+        Assert.AreEqual("application/json", contentType.MediaType);
 
         // The payload must be well-formed JSON describing the app's associated domains.
         var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);

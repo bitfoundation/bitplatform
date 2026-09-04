@@ -3,7 +3,193 @@
 .bit-spl {
     height: 100%;
     display: flex;
+    // The line a lazy drag moves is placed against the splitter itself rather than against whatever
+    // happens to be positioned above it.
+    position: relative;
+    box-sizing: border-box;
     --gutter-size: #{spacing(1.25)};
+    // The smallest strip a pointer has to land in to take hold of the gutter. It is a floor rather than a
+    // size: it is the drawn gutter that takes room in the layout, and this only widens what answers a press
+    // when the drawn one is thinner than a pointer can be expected to hit.
+    --gutter-hit-size: #{spacing(3)};
+}
+
+/*
+ * Both panels start as equal halves of the splitter - a flex basis of zero with the same growth - so a
+ * split with no sizes on it is a split down the middle whatever the two sides happen to hold. Giving a
+ * panel a size takes it off that: the size becomes its flex basis and the -grow variable beside it drops
+ * to zero, which is what pins it while the other one takes up the rest.
+ *
+ * The basis is the same property on both axes, so one pair of variables carries the width of a splitter
+ * laid out in a row and the height of one laid out in a column, and a size given as a percentage keeps
+ * its proportions while the container is resized.
+ */
+.bit-spl-pnl {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    flex-shrink: 1;
+    // The flex basis of a panel is the size the drag measured off the element, and the two of them are only
+    // the same number while the padding and the border of the panel are counted inside it.
+    box-sizing: border-box;
+}
+
+.bit-spl-fpn {
+    flex-grow: var(--first-panel-grow, 1);
+    flex-basis: var(--first-panel, 0);
+    max-width: var(--first-panel-max, none);
+    min-width: var(--first-panel-min, 0);
+}
+
+.bit-spl-spn {
+    flex-grow: var(--second-panel-grow, 1);
+    flex-basis: var(--second-panel, 0);
+    max-width: var(--second-panel-max, none);
+    min-width: var(--second-panel-min, 0);
+}
+
+.bit-spl-gtr {
+    display: flex;
+    flex-shrink: 0;
+    position: relative;
+    box-sizing: border-box;
+    cursor: col-resize;
+    touch-action: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--gutter-size);
+    background-color: $clr-brd-sec;
+    transition: background-color $mot-duration-short $mot-easing;
+    // Over both panels rather than only the one it is painted after, so that the strip answering a press
+    // reaches equally far into each of them - and so that the focus ring is not cut in half by whichever
+    // panel paints last.
+    z-index: 1;
+
+    &:hover {
+        background-color: $clr-brd-pri;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+/*
+ * A gutter is only a few pixels wide, which is well under the target size a pointer - a finger above all -
+ * can be expected to hit. The strip that answers the press is widened past what is drawn, evenly on both
+ * sides, up to the floor the splitter carries - and no further, so a gutter already thick enough to aim at
+ * is left exactly as it is. Nothing in the layout moves either way: the strip is out of the flow.
+ */
+.bit-spl-gtr::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline: min(0px, calc((var(--gutter-size) - var(--gutter-hit-size)) / 2));
+    // The strip answers the press, so the browser must not take the same touch for a scroll of the page
+    // behind it - the gutter says as much for itself, and touch-action is not inherited.
+    touch-action: none;
+}
+
+.bit-spl-gti {
+    width: spacing(0.25);
+    height: spacing(2);
+    border-radius: $shp-radius-full;
+    background-color: $clr-brd-pri;
+}
+
+/*
+ * The pointer's way to fold the panel away. It is drawn on the gutter and allowed to overflow it, so a
+ * gutter of any thickness can carry one without the panels giving up any room for it, and it is centred
+ * with physical properties rather than logical ones because a shape centred on a line is the same shape
+ * whichever way the page is written.
+ *
+ * The keyboard reaches the same fold through the separator underneath it, with Enter and with Ctrl and an
+ * arrow key, so this is a second way to one thing rather than a control of its own: the markup keeps it out
+ * of the tab order and out of the accessibility tree, and what is left here is only how it looks.
+ */
+.bit-spl-cbt {
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    display: flex;
+    cursor: pointer;
+    position: absolute;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    color: $clr-fg-sec;
+    width: spacing(1.75);
+    height: spacing(4.5);
+    border-radius: $shp-radius-full;
+    border: $siz-divider solid $clr-brd-pri;
+    background-color: $clr-bg-pri;
+    transform: translate(-50%, -50%);
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+
+    &:hover {
+        color: $clr-pri-text;
+        border-color: $clr-pri;
+        background-color: $clr-pri;
+    }
+}
+
+.bit-spl-cbi {
+    font-size: $tg-fs-2xs;
+    // The glyph carries the direction, and the classes that turn it are transforms of their own - so the
+    // line height is pinned here rather than left to a stray descender pushing the arrow off centre.
+    line-height: 1;
+}
+
+// Along the splitter rather than across it: a bar lying on its side carries a control lying on its side.
+.bit-spl-vrt .bit-spl-cbt {
+    width: spacing(4.5);
+    height: spacing(1.75);
+}
+
+/*
+ * The line a lazy drag moves in place of the panels. It is out of the layout in both senses - taken out of
+ * the flex row by being positioned, and taken out of the page altogether until a drag shows it - so a
+ * splitter that never drags lazily is exactly the splitter it was without it.
+ */
+.bit-spl-prv {
+    display: none;
+    position: absolute;
+    z-index: 2;
+    inset-block: 0;
+    width: var(--gutter-size);
+    background-color: $clr-pri;
+    // The pointer is captured by the gutter for the whole drag, and the line must not be in its way when
+    // the drag is over either.
+    pointer-events: none;
+}
+
+.bit-spl-prv-on {
+    display: block;
+}
+
+.bit-spl-vrt > .bit-spl-prv {
+    inset-block: auto;
+    inset-inline: 0;
+    width: auto;
+    height: var(--gutter-size);
+}
+
+.bit-spl-gic {
+    font-size: $tg-fs-xs;
+    color: $clr-fg-sec;
+}
+
+// While a drag is running the pointer spends most of its time off the gutter, so the resize cursor and the
+// suppressed text selection belong to the whole splitter rather than to the strip that started it.
+.bit-spl-drg {
+    user-select: none;
+    cursor: col-resize;
+    -webkit-user-select: none;
+    overscroll-behavior: none;
+
+    .bit-spl-gtr {
+        background-color: $clr-brd-pri;
+    }
 }
 
 .bit-spl-vrt {
@@ -15,8 +201,13 @@
 
     .bit-spl-gtr {
         width: 100%;
-        cursor: row-resize;
         height: var(--gutter-size);
+        cursor: row-resize;
+
+        &::before {
+            inset-inline: 0;
+            inset-block: min(0px, calc((var(--gutter-size) - var(--gutter-hit-size)) / 2));
+        }
     }
 
     .bit-spl-gti {
@@ -24,66 +215,152 @@
         height: spacing(0.25);
     }
 
+    // The constraints swap axes with the layout: what was a width on a row is a height on a column, and the
+    // width the panel is no longer measured on has to be let go of, or it would keep clamping the panel
+    // across the splitter instead of along it.
     .bit-spl-pnl {
-        width: unset;
-        min-width: unset;
-        max-width: unset;
+        max-width: none;
+        min-width: 0;
     }
 
     .bit-spl-fpn {
-        height: var(--first-panel);
-        max-height: var(--first-panel-max);
-        min-height: var(--first-panel-min);
+        max-height: var(--first-panel-max, none);
+        min-height: var(--first-panel-min, 0);
     }
 
     .bit-spl-spn {
-        height: var(--second-panel);
-        max-height: var(--second-panel-max);
-        min-height: var(--second-panel-min);
+        max-height: var(--second-panel-max, none);
+        min-height: var(--second-panel-min, 0);
     }
 }
 
-.bit-spl-drg {
-    user-select: none;
+/*
+ * A collapsed panel is folded down to the size it was told to keep, past the minimum it holds while it is
+ * open - the minimum is what a panel in use is worth reading, and a closed one is not in use. The panel
+ * left standing takes the whole splitter for as long as that lasts, and drops its own maximum to do it: a
+ * size the reader agreed to while there were two panels is not one to leave a gap for when there is one.
+ */
+.bit-spl-col:not(.bit-spl-cse) > .bit-spl-fpn,
+.bit-spl-col.bit-spl-cse > .bit-spl-spn {
+    flex-grow: 0;
+    overflow: hidden;
+    max-width: none;
+    min-width: 0;
+    flex-basis: var(--collapsed-size, 0px);
+}
+
+/*
+ * And the panel left standing takes the room the folded one gave up, whatever it was pinned or capped at
+ * while there were two of them: a panel held to 150px beside a folded one would otherwise leave the rest
+ * of the splitter empty.
+ */
+.bit-spl-col:not(.bit-spl-cse) > .bit-spl-spn,
+.bit-spl-col.bit-spl-cse > .bit-spl-fpn {
+    flex-grow: 1;
+    max-width: none;
+    min-width: 0;
+}
+
+.bit-spl-col.bit-spl-vrt > .bit-spl-fpn,
+.bit-spl-col.bit-spl-vrt > .bit-spl-spn {
+    max-height: none;
+    min-height: 0;
+}
+
+// A folded panel has no size to drag, so the gutter offers the only thing a press on it can still do: open
+// the panel again, where the reader is allowed to, and nothing at all where they are not.
+.bit-spl-col > .bit-spl-gtr {
+    cursor: default;
+}
+
+// And only where they are allowed to: a read-only or disabled splitter does not open the panel either, so
+// its gutter must not offer to be pressed. The exclusion is written here rather than left to the rule below,
+// which a class less than this one carries and would lose to whatever the source order made of it.
+.bit-spl-col.bit-spl-cpb:not(.bit-spl-rdo):not(.bit-dis) > .bit-spl-gtr {
+    cursor: pointer;
+}
+
+// Neither a disabled nor a read-only splitter is up for resizing, so the gutter stops offering to be
+// dragged in either case.
+.bit-spl-rdo,
+.bit-spl.bit-dis {
+    .bit-spl-gtr {
+        cursor: default;
+
+        &:hover {
+            background-color: $clr-brd-sec;
+        }
+    }
+}
+
+// And that is where the two part company: a read-only splitter is a split that is simply not up for
+// negotiation, so it looks exactly like any other, while a disabled one is out of use altogether and is
+// dimmed as a whole - the panels with it, since what a splitter nobody may touch is holding is not in use
+// either. Nothing else here dims it, so without this the two would be drawn the same way.
+.bit-spl.bit-dis {
+    opacity: $opa-dis;
+}
+
+// While a drag is running the pointer is captured by the gutter, so it goes on being reported wherever it
+// travels - with one exception the capture cannot cross. An iframe is a document of its own, and the
+// pointer entering one is the pointer leaving this one, so they are taken out of the way for as long as
+// the drag lasts. The cursor and the suppressed selection ride along with it, on the whole page rather
+// than on the splitter the pointer left behind long ago.
+body.bit-spl-drg-bdy {
     cursor: col-resize;
+    user-select: none;
     -webkit-user-select: none;
     overscroll-behavior: none;
+
+    &.bit-spl-drg-vrt {
+        cursor: row-resize;
+    }
+
+    iframe {
+        pointer-events: none;
+    }
 }
 
-.bit-spl-pnl {
-    flex-grow: 1;
-    overflow: auto;
-    height: unset;
-    max-height: unset;
-    min-height: unset;
+// A finger is a far coarser instrument than a mouse: where the pointer is the only one available, the
+// strip that answers a press is widened again, still without moving anything in the layout.
+@media (pointer: coarse) {
+    .bit-spl {
+        --gutter-hit-size: #{spacing(5.5)};
+    }
 }
 
-.bit-spl-fpn {
-    width: var(--first-panel);
-    max-width: var(--first-panel-max);
-    min-width: var(--first-panel-min);
-}
+// Forced colors replaces every background with the canvas, which would leave the gutter the same color as
+// the panels on either side of it and the grip the same color as the gutter.
+@media (forced-colors: active) {
+    // Every state of the gutter is painted the same way here: the hover, the drag and the two that take the
+    // resize away are all more specific than the plain selector, so a rule for that one alone would be given
+    // up again the moment the pointer reached the gutter.
+    .bit-spl-gtr,
+    .bit-spl-gtr:hover,
+    .bit-spl-drg .bit-spl-gtr,
+    .bit-spl-rdo .bit-spl-gtr:hover,
+    .bit-spl.bit-dis .bit-spl-gtr:hover {
+        background-color: CanvasText;
+    }
 
-.bit-spl-spn {
-    width: var(--second-panel);
-    max-width: var(--second-panel-max);
-    min-width: var(--second-panel-min);
-}
+    .bit-spl-gti {
+        background-color: Canvas;
+    }
 
-.bit-spl-gtr {
-    height: unset;
-    display: flex;
-    flex-shrink: 0;
-    cursor: col-resize;
-    touch-action: none;
-    align-items: center;
-    width: var(--gutter-size);
-    justify-content: center;
-    background-color: $clr-brd-sec;
-}
+    .bit-spl-gic {
+        color: Canvas;
+    }
 
-.bit-spl-gti {
-    height: spacing(2);
-    width: spacing(0.25);
-    background-color: $clr-brd-pri;
+    .bit-spl-prv {
+        background-color: Highlight;
+    }
+
+    // The control is drawn on top of a gutter that has just become the canvas text colour, so it has to
+    // paint its own ground back in or it would disappear into the line it sits on.
+    .bit-spl-cbt,
+    .bit-spl-cbt:hover {
+        color: CanvasText;
+        border-color: CanvasText;
+        background-color: Canvas;
+    }
 }

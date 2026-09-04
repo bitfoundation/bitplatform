@@ -21,6 +21,13 @@ public static class ComponentCatalog
     /// <summary>The same components grouped the way the nav groups them.</summary>
     public static IReadOnlyList<ComponentCatalogCategory> Categories { get; }
 
+    /// <summary>
+    /// The distinct NuGet packages the catalog spans, in the order the categories introduce them.
+    /// Counted rather than written out, so the figure the index quotes cannot drift from the
+    /// packages the nav actually reaches.
+    /// </summary>
+    public static IReadOnlyList<string> Packages { get; }
+
     private static readonly Dictionary<string, int> _indexByUrl;
 
 
@@ -37,6 +44,7 @@ public static class ComponentCatalog
 
         Categories = categories;
         Items = [.. categories.SelectMany(c => c.Items)];
+        Packages = [.. categories.Select(c => c.Package).Distinct(StringComparer.Ordinal)];
 
         // Position rather than the item itself, because the pager needs the neighbours too. Last
         // one wins is fine: no two nav entries share a Url, and a hypothetical duplicate would only
@@ -58,6 +66,34 @@ public static class ComponentCatalog
         if (string.IsNullOrWhiteSpace(url)) return null;
 
         return IndexOf(url) is int index ? Items[index] : null;
+    }
+
+    /// <summary>
+    /// The components a term matches, the closest match first: by name, then by the names the
+    /// component is also known by, then by the words that only describe it (see
+    /// <see cref="ComponentCatalogItem.Relevance"/>). Ties are broken towards the shorter name -
+    /// between two components whose names start the same way, the term covers more of the shorter
+    /// one - and then towards nav order, so the result of a term never depends on anything else.
+    /// </summary>
+    /// <param name="term">What the reader typed. A blank term matches everything, in nav order.</param>
+    /// <param name="take">How many to return at most; zero or less returns all of them.</param>
+    public static IReadOnlyList<ComponentCatalogItem> Search(string? term, int take = 0)
+    {
+        if (string.IsNullOrWhiteSpace(term))
+        {
+            return take > 0 ? [.. Items.Take(take)] : Items;
+        }
+
+        var key = term.Trim().ToLowerInvariant();
+
+        var ranked = Items.Select((item, index) => (item, index, score: item.Relevance(key)))
+                          .Where(entry => entry.score != ComponentCatalogItem.NoMatch)
+                          .OrderBy(entry => entry.score)
+                          .ThenBy(entry => entry.item.Name.Length)
+                          .ThenBy(entry => entry.index)
+                          .Select(entry => entry.item);
+
+        return [.. take > 0 ? ranked.Take(take) : ranked];
     }
 
     /// <summary>
@@ -86,6 +122,11 @@ public static class ComponentCatalog
         var items = new List<ComponentCatalogItem>();
         var nested = new List<BitNavItem>();
 
+        // Read before the loop rather than after it: the category's glyph is what a component with
+        // no entry of its own in _icons falls back to, so an item cannot be built without it.
+        var (categoryIcon, blurb) = _categoryMeta.GetValueOrDefault(name, (BitIconName.Puzzle, string.Empty));
+        var package = PackageOf(name);
+
         foreach (var navItem in navItems)
         {
             // A group nested inside a group - "Pickers" under "Inputs" - is a category in its own
@@ -112,7 +153,10 @@ public static class ComponentCatalog
                 Url = navItem.Url!,
                 Category = name,
                 Aliases = navItem.Description,
+                Keywords = navItem.Data?.ToString(),
                 Summary = summary,
+                IconName = _icons.GetValueOrDefault(itemName, categoryIcon),
+                Package = package,
                 // Built once here rather than on every keystroke of the gallery's search box: the
                 // catalog is ~110 items and the box filters on every character.
                 SearchText = $"{itemName} {name} {navItem.Description} {navItem.Data} {summary}".ToLowerInvariant()
@@ -121,13 +165,12 @@ public static class ComponentCatalog
 
         if (items.Count > 0)
         {
-            var (icon, blurb) = _categoryMeta.GetValueOrDefault(name, (BitIconName.Puzzle, string.Empty));
-
             categories.Add(new ComponentCatalogCategory
             {
                 Name = name,
-                IconName = icon,
+                IconName = categoryIcon,
                 Summary = blurb,
+                Package = package,
                 Items = items
             });
         }
@@ -158,6 +201,20 @@ public static class ComponentCatalog
     }
 
 
+    /// <summary>
+    /// Which project a category's components are compiled into. Derived from the category rather
+    /// than listed per component, because the split is exactly the nav's own grouping: the Extras
+    /// group and the two theming switchers are the Extras package, the Legacy group is the Legacy
+    /// package, and everything else is the one assembly the core stylesheet styles.
+    /// </summary>
+    private static string PackageOf(string category) => category switch
+    {
+        "Extras" or "Theming" => "Bit.BlazorUI.Extras",
+        "Legacy" => "Bit.BlazorUI.Legacy",
+        _ => "Bit.BlazorUI"
+    };
+
+
     private static readonly Dictionary<string, (string Icon, string Summary)> _categoryMeta = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Buttons"] = (BitIconName.ButtonControl, "Trigger actions, open menus, and hold a pressed state."),
@@ -174,6 +231,143 @@ public static class ComponentCatalog
         ["Legacy"] = (BitIconName.History, "Previous implementations, kept unchanged for backward compatibility."),
         ["Theming"] = (BitIconName.Color, "Ready-made chrome for switching design system, scheme, and accent."),
     };
+
+    // One glyph per component, so the gallery can be scanned rather than read. Chosen to say what
+    // the component looks like on screen where a glyph can - a Checkbox is a checkbox, a Slider a
+    // slider - and what it is for where none can. A component missing from here falls back to its
+    // category's glyph, so the map may lag the nav without leaving a card blank.
+    //
+    // Two deliberate repeats: a Legacy component carries the same glyph as the component that
+    // replaced it, because it IS that component's earlier implementation and the "Legacy" badge on
+    // the card is what separates them.
+    private static readonly Dictionary<string, string> _icons = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // Buttons
+        ["ActionButton"] = BitIconName.LightningBolt,
+        ["Button"] = BitIconName.ButtonControl,
+        ["ButtonGroup"] = BitIconName.Group,
+        ["MenuButton"] = BitIconName.ContextMenu,
+        ["ToggleButton"] = BitIconName.PowerButton,
+
+        // Inputs
+        ["Calendar"] = BitIconName.Calendar,
+        ["Checkbox"] = BitIconName.Checkbox,
+        ["ChoiceGroup"] = BitIconName.RadioBtnOn,
+        ["Dropdown"] = BitIconName.Combobox,
+        ["FileInput"] = BitIconName.OpenFile,
+        ["FileUpload"] = BitIconName.Upload,
+        ["NumberField"] = BitIconName.NumberField,
+        ["OtpInput"] = BitIconName.PasswordField,
+        ["Rating"] = BitIconName.FavoriteStar,
+        ["SearchBox"] = BitIconName.Search,
+        ["Slider"] = BitIconName.Slider,
+        ["TagsInput"] = BitIconName.TagGroup,
+        ["TextField"] = BitIconName.TextField,
+        ["Toggle"] = BitIconName.ToggleRight,
+
+        // Pickers
+        ["CircularTimePicker"] = BitIconName.Clock,
+        ["ColorPicker"] = BitIconName.Eyedropper,
+        ["DatePicker"] = BitIconName.CalendarDay,
+        ["DateRangePicker"] = BitIconName.CalendarWeek,
+        ["TimePicker"] = BitIconName.Timer,
+
+        // Layouts
+        ["Footer"] = BitIconName.Footer,
+        ["Grid"] = BitIconName.GridViewMedium,
+        ["Header"] = BitIconName.Header,
+        ["Layout"] = BitIconName.WebTemplate,
+        ["Spacer"] = BitIconName.Spacer,
+        ["Stack"] = BitIconName.Stack,
+
+        // Lists
+        ["BasicList"] = BitIconName.BulletedList,
+        ["Carousel"] = BitIconName.Slideshow,
+        ["Swiper"] = BitIconName.TouchPointer,
+        ["Timeline"] = BitIconName.Timeline,
+
+        // Navs
+        ["Breadcrumb"] = BitIconName.Breadcrumb,
+        ["DropMenu"] = BitIconName.ExpandMenu,
+        ["Nav"] = BitIconName.BulletedTreeList,
+        ["NavBar"] = BitIconName.SecondaryNav,
+        ["Pagination"] = BitIconName.Page,
+        ["Pivot"] = BitIconName.BrowserTab,
+
+        // Notifications
+        ["Badge"] = BitIconName.Badge,
+        ["Message"] = BitIconName.Message,
+        ["Persona"] = BitIconName.Contact,
+        ["SnackBar"] = BitIconName.Feedback,
+        ["Tag"] = BitIconName.Tag,
+
+        // Progress
+        ["Loading"] = BitIconName.ProgressRingDots,
+        ["Progress"] = BitIconName.ProgressLoopOuter,
+        ["Shimmer"] = BitIconName.Glimmer,
+
+        // Surfaces
+        ["Accordion"] = BitIconName.CollapseContent,
+        ["Callout"] = BitIconName.TextCallout,
+        ["Card"] = BitIconName.Section,
+        ["Collapse"] = BitIconName.CollapseContentSingle,
+        ["Dialog"] = BitIconName.Questionnaire,
+        ["Modal"] = BitIconName.FullScreen,
+        ["ModalService"] = BitIconName.Code,
+        ["Panel"] = BitIconName.SidePanel,
+        ["ScrollablePane"] = BitIconName.ScrollUpDown,
+        ["Splitter"] = BitIconName.Split,
+        ["Tooltip"] = BitIconName.Info,
+
+        // Utilities
+        ["CascadingValueProvider"] = BitIconName.Share,
+        ["Element"] = BitIconName.WebComponents,
+        ["Icon"] = BitIconName.AppIconDefault,
+        ["Image"] = BitIconName.FileImage,
+        ["Label"] = BitIconName.Label,
+        ["Link"] = BitIconName.Link,
+        ["MediaQuery"] = BitIconName.Devices3,
+        ["Overlay"] = BitIconName.HalfAlpha,
+        ["Params"] = BitIconName.Settings,
+        ["PullToRefresh"] = BitIconName.Refresh,
+        ["Separator"] = BitIconName.Separator,
+        ["Sticky"] = BitIconName.Pinned,
+        ["SwipeTrap"] = BitIconName.Touch,
+        ["Text"] = BitIconName.Font,
+
+        // Extras
+        ["AccordionList"] = BitIconName.CollapseAll,
+        ["AppShell"] = BitIconName.Devices4,
+        ["Chart"] = BitIconName.BarChartVertical,
+        ["DataGrid"] = BitIconName.Table,
+        ["ErrorBoundary"] = BitIconName.ErrorBadge,
+        ["Flag"] = BitIconName.Flag,
+        ["FullCalendar"] = BitIconName.CalendarAgenda,
+        ["InfiniteScrolling"] = BitIconName.DoubleChevronDown,
+        ["Map"] = BitIconName.MapPin,
+        ["MarkdownEditor"] = BitIconName.MarkDownLanguage,
+        ["MarkdownViewer"] = BitIconName.Preview,
+        ["MessageBox"] = BitIconName.MessageFill,
+        ["NavPanel"] = BitIconName.DockLeft,
+        ["PdfViewer"] = BitIconName.PDF,
+        ["PhoneInput"] = BitIconName.Phone,
+        ["RichTextEditor"] = BitIconName.EditNote,
+        ["TextShimmer"] = BitIconName.ChatBot,
+        ["Virtualize"] = BitIconName.RowsGroup,
+
+        // Legacy - the glyph of the component that replaced it, with the badge telling them apart.
+        ["ChartLegacy"] = BitIconName.BarChartVertical,
+        ["DataGridLegacy"] = BitIconName.Table,
+        ["MarkdownEditorLegacy"] = BitIconName.MarkDownLanguage,
+        ["MarkdownViewerLegacy"] = BitIconName.Preview,
+        ["PdfReaderLegacy"] = BitIconName.PDF,
+        ["RichTextEditorLegacy"] = BitIconName.EditNote,
+
+        // Theming
+        ["AccentColorSwitcher"] = BitIconName.Color,
+        ["ThemeSwitcher"] = BitIconName.CircleHalfFull,
+    };
+
 
     // One line per component: what it is for, not what it can do. The demo page's own Description
     // carries the full paragraph; this is the version that has to fit on a card next to a hundred
@@ -240,20 +434,20 @@ public static class ComponentCatalog
         ["Tag"] = "A compact chip for an attribute, a person or an asset - dismissible, selectable or clickable.",
 
         // Progress
-        ["Loading"] = "A set of ready-made loading visuals for any waiting scenario.",
+        ["Loading"] = "Eighteen ready-made loading animations with one shared API.",
         ["Progress"] = "The completion status of an operation, determinate or indeterminate.",
         ["Shimmer"] = "A placeholder that stands in for content while it is being fetched.",
 
         // Surfaces
         ["Accordion"] = "Shows and hides one section of related content at a time.",
         ["Callout"] = "An anchored tip that teaches or guides without blocking the app.",
-        ["Card"] = "A container that wraps a piece of content into a surface of its own.",
+        ["Card"] = "A surface that wraps one subject, with a cover, a header, a body and a footer of its own.",
         ["Collapse"] = "Animates a block of content open and shut.",
         ["Dialog"] = "A temporary pop-up that takes focus and asks for a decision.",
         ["Modal"] = "A full overlay for content that has to be dealt with before anything else.",
         ["ModalService"] = "Opens modals from anywhere in the app, with any content.",
-        ["Panel"] = "A sheet that slides in from an edge for supplementary content.",
-        ["ScrollablePane"] = "A scrolling region with themed scrollbars and scroll helpers.",
+        ["Panel"] = "A sheet that slides in from an edge, with an optional header and footer.",
+        ["ScrollablePane"] = "A scrolling box with themed scrollbars, faded edges and a scrolling API.",
         ["Splitter"] = "Divides a container into two sections the reader can resize.",
         ["Tooltip"] = "A short description that appears on hover or focus.",
 
@@ -261,11 +455,11 @@ public static class ComponentCatalog
         ["CascadingValueProvider"] = "Cascades several values to child components without nesting providers.",
         ["Element"] = "Renders any HTML tag with the library's own styling parameters.",
         ["Icon"] = "Renders a Fabric glyph, or an icon from any other set you point it at.",
-        ["Image"] = "An image with cover modes, loading states and a fallback.",
+        ["Image"] = "An image with fit, shape and responsive sources, loading states and a fallback.",
         ["Label"] = "Gives a name to a control or a group of controls.",
         ["Link"] = "Navigates elsewhere, inside the app or out of it.",
         ["MediaQuery"] = "Reports the library's breakpoints to your component as a parameter.",
-        ["Overlay"] = "Dims everything behind a piece of UI to put the emphasis on it.",
+        ["Overlay"] = "Covers the page or a container, catching its clicks to put the emphasis on what it hosts.",
         ["Params"] = "Cascades shared parameter objects so components inherit common defaults.",
         ["PullToRefresh"] = "Adds pull-down-to-refresh to a page or a scrolling element.",
         ["Separator"] = "Visually divides content into groups, with an optional label.",
@@ -289,9 +483,6 @@ public static class ComponentCatalog
         ["NavPanel"] = "A vertical navigation panel with search, grouping and a collapsed rail.",
         ["PdfViewer"] = "A pure-C# PDF viewer: no pdf.js, works in every render mode.",
         ["PhoneInput"] = "A phone number field with a searchable country selector and flags.",
-        ["ProModal"] = "The modal, extended: draggable, resizable, stackable, with a header slot.",
-        ["ProModalService"] = "Opens ProModals from anywhere in the app, with any content.",
-        ["ProPanel"] = "The panel, extended: modeless, full-screen, and scroll-aware modes.",
         ["RichTextEditor"] = "A native WYSIWYG editor written in C#, with a configurable toolbar.",
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",
         ["Virtualize"] = "Renders only the rows currently in view, for very long lists.",

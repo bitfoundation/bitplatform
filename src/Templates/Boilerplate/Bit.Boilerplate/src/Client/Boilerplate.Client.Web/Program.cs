@@ -57,13 +57,7 @@ public static partial class Program
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {
-            var cultureCookie = await host.Services.GetRequiredService<Cookie>().GetValue(".AspNetCore.Culture");
-
-            if (cultureCookie is not null)
-            {
-                cultureCookie = Uri.UnescapeDataString(cultureCookie);
-                cultureCookie = cultureCookie[(cultureCookie.IndexOf("|uic=") + 5)..];
-            }
+            var cultureCookie = CultureService.ExtractUiCulture(await host.Services.GetRequiredService<Cookie>().GetValue(CultureService.CultureCookieName));
 
             var navigationManager = host.Services.GetRequiredService<NavigationManager>();
 

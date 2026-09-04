@@ -45,13 +45,15 @@ public static class IBitBlazorUIServiceCollectionExtensions
 
         services.TryAddScoped<BitPageVisibility>();
 
+        // The logger factory is optional: it is what turns "the modal never showed up" into a line naming the
+        // missing container, and an app that registers none still gets a working service.
         if (trySingleton)
         {
-            services.TryAddSingleton<BitModalService>();
+            services.TryAddSingleton(sp => new BitModalService(sp.GetService<ILoggerFactory>()));
         }
         else
         {
-            services.TryAddScoped<BitModalService>();
+            services.TryAddScoped(sp => new BitModalService(sp.GetService<ILoggerFactory>()));
         }
 
         return services;

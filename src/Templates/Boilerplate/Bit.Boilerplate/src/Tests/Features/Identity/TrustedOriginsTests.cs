@@ -120,14 +120,17 @@ public class TrustedOriginsTests
 #if Development
     [DataRow("https://mytunnel.devtunnels.ms", true)]
     [DataRow("https://myspace.github.dev", true)]
+    [DataRow("https://match-zero-believe-reel.trycloudflare.com", true)]
 #endif
     //+:cnd:noEmit
     // ...but a domain that merely ends with the trusted text must not be...
     [DataRow("https://evildevtunnels.ms", false)]
     [DataRow("https://attacker-github.dev", false)]
+    [DataRow("https://eviltrycloudflare.com", false)]
     // ...nor may a path be able to carry the trusted text out of the authority...
     [DataRow("https://evil.com/.devtunnels.ms", false)]
     [DataRow("https://evil.com/x/.github.dev", false)]
+    [DataRow("https://evil.com/x/.trycloudflare.com", false)]
     // ...nor may the loopback names be used as a prefix of someone else's domain.
     [DataRow("https://localhost.evil.com", false)]
     [DataRow("http://127.0.0.1.evil.com", false)]

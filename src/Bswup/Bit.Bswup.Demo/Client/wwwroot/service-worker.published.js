@@ -1,4 +1,4 @@
-// bit version: 10.6.0-pre-02
+// bit version: 10.6.0-pre-04
 
 // Published service worker of the Bswup docs site. Keep in sync with service-worker.js (the
 // development copy) - the two differ only in the commented-out resiliency knobs below.

@@ -2,7 +2,7 @@
 // [mirror] push notification and notificationclick handlers - keep in sync with:
 // - src/Client/Boilerplate.Client.Web/wwwroot/service-worker.js
 
-// bit version: 10.6.0-pre-02
+// bit version: 10.6.0-pre-04
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -11,13 +11,13 @@ self.addEventListener('push', function (event) {
 
     const eventData = event.data.json();
 
-    self.registration.showNotification(eventData.title, {
+    event.waitUntil(self.registration.showNotification(eventData.title, {
 
         data: eventData.data,
         body: eventData.message,
         icon: '/images/icons/bit-icon-512.png'
 
-    });
+    }));
 
 });
 

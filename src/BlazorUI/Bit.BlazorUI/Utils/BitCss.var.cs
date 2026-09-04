@@ -681,6 +681,7 @@ public static partial class BitCss
 
             public const string SpinnerStroke = "--bit-siz-spinner-stroke";
             public const string PopupMaxHeight = "--bit-siz-popup-max-height";
+            public const string DialogMaxWidth = "--bit-siz-dialog-max-width";
         }
 
         public static class Opacity
@@ -704,6 +705,7 @@ public static partial class BitCss
         public static class Typography
         {
             public const string FontFamily = "--bit-tpg-font-family";
+            public const string MonoFontFamily = "--bit-tpg-font-family-mono";
             public const string FontWeight = "--bit-tpg-font-weight";
             public const string LineHeight = "--bit-tpg-line-height";
             public const string GutterSize = "--bit-tpg-gutter-size";

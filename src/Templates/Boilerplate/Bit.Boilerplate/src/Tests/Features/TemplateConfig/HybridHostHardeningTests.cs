@@ -4,15 +4,19 @@ using System.Text.RegularExpressions;
 namespace Boilerplate.Tests.Features.TemplateConfig;
 
 /// <summary>
-/// Guards three decisions in the two blazor hybrid heads that are one line each, invisible at runtime, and expensive
-/// to get wrong. None of them can be caught by building or by running the app: an over-broad permission grant, a
-/// committed signing key and an unrepresentable version all behave exactly like the correct thing right up until
-/// they don't.
+/// Guards a handful of decisions in the blazor hybrid heads that are one line each, invisible at runtime, and
+/// expensive to get wrong. None of them can be caught by building or by running the app: an over-broad permission
+/// grant, a committed signing key, an unrepresentable version, an unvalidated deep link and a push subscription with
+/// no channel all behave exactly like the correct thing right up until they don't.
 /// <para>
 /// Source scans, not rendering or integration tests, on purpose. Each property being defended is a property of the
-/// source text and holds for all 22 template configurations - none of these files carries a template conditional and
-/// none is excluded by <c>template.json</c> - while a rendering test would prove one configuration on one platform, and the
-/// platforms that matter here (android, ios, the WinUI head) are not ones this suite can drive at all.
+/// source text and holds for all 22 template configurations, while a rendering test would prove one configuration on
+/// one platform, and the platforms that matter here (android, ios, the WinUI head) are not ones this suite can drive
+/// at all. The scanned files carry no template conditional, and the only ones <c>template.json</c> excludes are the
+/// three <c>IPushNotificationService</c> implementations, dropped under <c>notification != true</c>; that costs the
+/// scan nothing, because <see cref="GetTemplateRoot"/> anchors on <c>.template.config/template.json</c>, which is
+/// itself excluded from the output, so these paths always resolve inside the template's own complete tree - or the
+/// whole class goes inconclusive because there is no such anchor above the binaries.
 /// </para>
 /// <para>
 /// <b>Deliberately not guarded: web view developer tools.</b> <c>AddBlazorWebViewDeveloperTools()</c> is
@@ -27,6 +31,19 @@ namespace Boilerplate.Tests.Features.TemplateConfig;
 /// <c>if (AppEnvironment.IsDevelopment())</c> in <c>MauiProgram.Services.cs</c> and
 /// <c>Client.Windows/Program.Services.cs</c>, and no literal <c>true</c> passed to
 /// <c>SetWebContentsDebuggingEnabled</c> or <c>Inspectable</c> in <c>MauiProgram.cs</c>.
+/// </para>
+/// <para>
+/// <b>Deliberately not guarded: the MSIX identity version, and the two <c>.well-known</c> files.</b> Guard tests for
+/// both were written and control-run, then removed when the maintainer reverted the changes they defended. The MAUI
+/// windows head takes <c>$(ApplicationVersion)</c> - an android versionCode - as the fourth component of its MSIX
+/// <c>&lt;Identity Version&gt;</c>, so the default ships as <c>1.0.0.10000</c> and any <c>Version</c> from
+/// <c>6.56.0</c> up exceeds the 65535 per-component cap in <c>AppxManifestTypes.xsd</c>; and
+/// <c>wwwroot/.well-known/assetlinks.json</c> and <c>apple-app-site-association</c> ship bitplatform's own store
+/// package names, apple team id and release signing fingerprint rather than placeholders, so a generated app's
+/// <c>AutoVerify</c> app links do not verify until the developer replaces them by hand. Both are the maintainer's
+/// call. If either is revisited, the assertions were: a <c>$(TargetFramework.Contains('-windows'))</c> PropertyGroup
+/// setting <c>&lt;ApplicationVersion&gt;0&lt;/ApplicationVersion&gt;</c> in the MAUI csproj, and no
+/// <c>com.bitplatform.</c> substring or real <c>AA:BB:..</c> SHA-256 fingerprint in either <c>.well-known</c> file.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("UnitTest")]
@@ -72,7 +89,7 @@ public class HybridHostHardeningTests
         // then allowing everything anyway would satisfy the assertion above while changing nothing, so what is
         // required is the early-out between the two: every kind that is not on the allow list leaves the handler
         // before Handled/Allow are ever set, which is what preserves WebView2's own prompt for it.
-        Assert.IsTrue(preceding[kindCheck..].Contains("return"),
+        Assert.Contains("return", preceding[kindCheck..],
             $"{relativePath} inspects args.PermissionKind before granting, but nothing returns between the check and " +
             "CoreWebView2PermissionState.Allow - so the check does not gate the grant and every kind is still allowed. " +
             "Use an allow list that returns early for everything else, leaving those requests at Default.");
@@ -93,7 +110,7 @@ public class HybridHostHardeningTests
     {
         var gitIgnore = ReadTemplateFile(".gitignore");
 
-        Assert.IsTrue(gitIgnore.Split('\n').Any(line => line.Trim() == pattern),
+        Assert.Contains(line => line.Trim() == pattern, gitIgnore.Split('\n'),
             $".gitignore has no '{pattern}' rule. cd-template.yml and .azure-devops/workflows/cd.yml both materialise " +
             "Boilerplate.keystore into a tracked source directory, and the documented local workflow puts a real one " +
             "at the same path.");
@@ -166,6 +183,81 @@ public class HybridHostHardeningTests
                 ? $"Version '{version}' is a shape the versionCode represents exactly, but the build refuses it."
                 : $"Version '{version}' is accepted by the build, yet the versionCode cannot represent it - the extra " +
                   "component is discarded and the app ships with a versionCode another build has already used.");
+    }
+
+    /// <summary>
+    /// <c>Routes.OpenUniversalLink</c> is the sink every url that arrives from outside the app flows into: an android
+    /// deep-link intent, an apple universal link, and the push-notification tap handlers on every hybrid head. None of
+    /// those callers can vouch for what they were handed - android's <c>MainActivity</c> is exported, so any app on
+    /// the device can send it an explicit intent - and the url ends up in <c>NavigationManager.NavigateTo</c>.
+    /// <para>
+    /// The specific escape is that a network-path reference survives every "it's relative" intuition:
+    /// <c>new java.net.URL("https://x//evil.example/p").getFile()</c> returns <c>//evil.example/p</c>, which
+    /// <c>NavigateTo</c> resolves protocol-relative to <c>https://evil.example/p</c> and BlazorWebView then opens in
+    /// the system browser. <c>Uri.IsAppRelativeUrl</c> exists precisely to reject that shape and is applied at every
+    /// other <c>NavigateTo</c> sink in the repo; this one was the remainder.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public void UniversalLinkNavigation_Should_BeGuardedByAnAppRelativeUrlCheck()
+    {
+        var source = ReadTemplateFile("src/Client/Boilerplate.Client.Core/Components/Routes.razor.cs");
+
+        var navigate = source.IndexOf("navigationManager.NavigateTo(", StringComparison.Ordinal);
+
+        Assert.AreNotEqual(-1, navigate,
+            "Routes.razor.cs no longer calls NavigationManager.NavigateTo. If OpenUniversalLink was rewritten, point " +
+            "this test at the new sink rather than deleting it - the callers are still untrusted.");
+
+        // Presence anywhere in the file is not enough: the check has to run BEFORE the navigation, or the escape has
+        // already happened by the time it is evaluated.
+        var preceding = source[..navigate];
+
+        Assert.IsTrue(preceding.Contains("IsAppRelativeUrl", StringComparison.Ordinal),
+            "Routes.OpenUniversalLink navigates to its url without calling Uri.IsAppRelativeUrl first. Every caller " +
+            "of this method is an untrusted external channel - an exported android activity's intent data and the " +
+            "push-notification pageUrl payload on three platforms - and a network-path reference such as " +
+            "'//evil.example/p' is a well-formed RELATIVE url that NavigateTo resolves off this app's origin.");
+    }
+
+    /// <summary>
+    /// All three <c>IPushNotificationService</c> implementations carry a <c>[mirror]</c> header naming the other two,
+    /// and the apple pair drifted from it: after the 15-second token wait times out they log and then <b>fall
+    /// through</b> to return a <c>PushNotificationSubscriptionDto</c> whose <c>PushChannel</c> is null, where android
+    /// returns null and lets <c>Subscribe</c> exit quietly.
+    /// <para>
+    /// The server rejects that body with a <c>BadRequestException</c> (its own guard, added earlier in this review),
+    /// which the client renders as an <i>Interrupting</i> dialog and which aborts <c>PropagateAuthState</c> before it
+    /// records the propagated user - so it recurs. Nothing about it is visible on a machine that gets its APNS token,
+    /// which is every developer machine.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    [DataRow("src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs")]
+    [DataRow("src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Services/MacCatalystPushNotificationService.cs")]
+    [DataRow("src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/AndroidPushNotificationService.cs")]
+    public void PushSubscription_Should_NotBeReturnedWhenTheTokenNeverArrived(string relativePath)
+    {
+        var source = ReadTemplateFile(relativePath);
+
+        var catchBlock = source.IndexOf("catch (Exception exp)", StringComparison.Ordinal);
+
+        Assert.AreNotEqual(-1, catchBlock,
+            $"{relativePath} no longer catches the token-wait timeout in GetSubscription. If the wait was replaced " +
+            "with something that cannot time out, rewrite this test against it rather than deleting it.");
+
+        // The DTO is constructed after the catch in every one of the three files, so "does the catch return before
+        // reaching it" is exactly the property that separates the android behaviour from the apple one.
+        var dto = source.IndexOf("new PushNotificationSubscriptionDto", StringComparison.Ordinal);
+
+        Assert.AreNotEqual(-1, dto, $"{relativePath} no longer builds a PushNotificationSubscriptionDto.");
+        Assert.IsLessThan(dto, catchBlock, $"{relativePath} builds the subscription before the token wait, which this test cannot reason about.");
+
+        Assert.IsTrue(source[catchBlock..dto].Contains("return null", StringComparison.Ordinal),
+            $"{relativePath} falls through its token-wait catch into the PushNotificationSubscriptionDto, so a device " +
+            "that never received a push token posts a subscription whose PushChannel is null. The server rejects that " +
+            "with a 400, which reaches the user as a blocking dialog and aborts the auth-state propagation that asked " +
+            "for it. Return null instead, as the [mirror] siblings do.");
     }
 
     private static string ReadTemplateFile(string relativePath)

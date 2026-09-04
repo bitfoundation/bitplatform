@@ -23,6 +23,18 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     // on disposal - no static state, no cross-circuit leak.
     private readonly DomEventsInterop _events = new();
 
+    /// <summary>
+    /// Adds a listener for one document-level event. <typeparamref name="T"/> is the event-args
+    /// type the event maps to - <see cref="ButilMouseEventArgs"/>, <see cref="ButilKeyboardEventArgs"/>
+    /// and friends - and the payload is projected to that shape on the JavaScript side.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener">EventTarget.addEventListener()</see>
+    /// </summary>
+    /// <param name="domEvent">The event name, e.g. a <see cref="ButilEvents"/> constant.</param>
+    /// <param name="listener">Called when the event fires. Removing it later matches on this delegate's identity.</param>
+    /// <param name="useCapture">Listen during the capture phase rather than the bubble phase.</param>
+    /// <param name="preventDefault">Suppress the browser's own action for the event.</param>
+    /// <param name="stopPropagation">Stop the event travelling any further.</param>
     public async Task AddEventListener<T>(
         string domEvent,
         Action<T> listener,
@@ -432,12 +444,17 @@ public class Document(IJSRuntime js) : IAsyncDisposable
         return SubscribeEvent(ButilEvents.DomContentLoaded, bridge);
     }
 
+    /// <summary>Removes every listener this instance registered on the document and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// The disposal body. <paramref name="disposing"/> is false only on a finalizer path, where
+    /// reaching back into JavaScript is not safe, so nothing is torn down then.
+    /// </summary>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false) return;

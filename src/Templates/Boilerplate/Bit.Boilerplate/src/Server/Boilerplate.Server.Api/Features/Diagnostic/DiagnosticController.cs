@@ -41,7 +41,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         result.AppendLine($"IsAuthenticated: {isAuthenticated.ToString().ToLowerInvariant()}");
 
         //#if (notification == true)
-        if (string.IsNullOrEmpty(pushNotificationSubscriptionDeviceId) is false)
+        if (string.IsNullOrWhiteSpace(pushNotificationSubscriptionDeviceId) is false)
         {
             var subscription = await DbContext.PushNotificationSubscriptions
                 .FirstOrDefaultAsync(d => d.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
@@ -63,7 +63,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         //#endif
 
         //#if (signalR == true)
-        if (string.IsNullOrEmpty(signalRConnectionId) is false)
+        if (string.IsNullOrWhiteSpace(signalRConnectionId) is false)
         {
             var connectionOwnerUserSessionId = await DbContext.UserSessions
                 .Where(us => us.SignalRConnectionId == signalRConnectionId)

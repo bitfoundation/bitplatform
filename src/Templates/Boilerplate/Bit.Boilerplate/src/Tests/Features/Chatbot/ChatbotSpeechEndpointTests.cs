@@ -62,13 +62,14 @@ public class ChatbotSpeechEndpointTests
             scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<TranscribeSpeechResponseDto>(),
             TestContext.CancellationToken);
 
-        Assert.AreEqual("what is bit platform?", transcription?.Text);
+        Assert.IsNotNull(transcription);
+        Assert.AreEqual("what is bit platform?", transcription.Text);
 
         Assert.IsTrue(speechToTextClient.WasSeekable,
             "The provider identifies the audio format by peeking at the leading bytes, which it only does on a seekable stream.");
         Assert.AreEqual(0, speechToTextClient.PositionOnArrival,
             "A stream that arrives past its start hides the container's magic bytes, so the provider falls back to guessing an extension.");
-        CollectionAssert.AreEqual(recording, speechToTextClient.Received,
+        Assert.AreSequenceEqual(recording, speechToTextClient.Received,
             "The recording must reach the provider byte for byte.");
     }
 
@@ -89,10 +90,14 @@ public class ChatbotSpeechEndpointTests
 
         using var response = await PostSynthesizeSpeech(scope, httpClient, "bit platform is a set of dotnet libraries.");
 
-        Assert.AreEqual("audio/mpeg", response.Content.Headers.ContentType?.MediaType,
+        var contentType = response.Content.Headers.ContentType;
+
+        Assert.IsNotNull(contentType);
+        Assert.AreEqual("audio/mpeg", contentType.MediaType,
             "The browser decodes what it is told it was handed, so the provider's own container has to be reported rather than assumed.");
 
-        CollectionAssert.AreEqual(spoken, await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
+        var served = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
+        Assert.AreSequenceEqual(spoken, served);
     }
 
     /// <summary>
@@ -205,9 +210,10 @@ public class ChatbotSpeechEndpointTests
 
         // The double answers with the number of the request it was, so the body says which pieces arrived and in
         // what order rather than only how many bytes there were.
-        CollectionAssert.AreEqual(Enumerable.Range(1, textToSpeechClient.ReceivedAll.Count).Select(n => (byte)n).ToArray(),
-                                  await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken),
-                                  "The pieces have to be joined in the order they were spoken.");
+        var joined = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
+        Assert.AreSequenceEqual(Enumerable.Range(1, textToSpeechClient.ReceivedAll.Count).Select(n => (byte)n).ToArray(),
+                                joined,
+                                "The pieces have to be joined in the order they were spoken.");
     }
 
     /// <summary>

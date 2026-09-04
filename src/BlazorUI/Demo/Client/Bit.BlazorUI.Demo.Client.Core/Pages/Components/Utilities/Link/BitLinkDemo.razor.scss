@@ -5,3 +5,10 @@
     border: 1px solid red;
     max-width: max-content;
 }
+
+.clickable-container {
+    padding: 1rem;
+    cursor: pointer;
+    max-width: max-content;
+    border: 1px dashed gray;
+}

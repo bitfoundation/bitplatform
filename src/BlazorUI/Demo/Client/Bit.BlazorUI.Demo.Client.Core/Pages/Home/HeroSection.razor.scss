@@ -58,6 +58,43 @@
         margin-top: rem2(32px);
     }
 
+    // The finder and the install line are the two things on this side of the hero a reader types
+    // into or copies out of, so they share one column width and sit directly under the buttons.
+    .hero-search {
+        width: 100%;
+        max-width: rem2(400px);
+        margin-top: rem2(32px);
+    }
+
+    // Both are components - BitSearchBox and BitText - so the scope attribute never lands on their
+    // roots; ::deep is what reaches them. (The kbd inside the hint is written here, so it does carry
+    // the attribute, but it is reached through the hint anyway.)
+    ::deep .hero-search-box {
+        width: 100%;
+    }
+
+    ::deep .hero-search-hint {
+        margin-top: rem2(8px);
+
+        @include lt-lg {
+            text-align: center;
+        }
+
+        // The one key the hint names, drawn as a key rather than described as one.
+        kbd {
+            padding: 0 rem2(5px);
+            font-size: 0.9em;
+            line-height: rem2(18px);
+            display: inline-block;
+            min-width: rem2(18px);
+            text-align: center;
+            color: $bit-color-foreground-secondary;
+            border-radius: $bit-shape-radius-sm;
+            background-color: $bit-color-background-secondary;
+            border: rem2(1px) solid $bit-color-border-secondary;
+        }
+    }
+
     .hero-install {
         width: 100%;
         max-width: rem2(400px);

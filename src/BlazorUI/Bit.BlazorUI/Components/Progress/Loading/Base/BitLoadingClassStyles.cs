@@ -21,4 +21,10 @@ public class BitLoadingClassStyles
     /// Custom CSS classes/styles for the label of the BitLoading components.
     /// </summary>
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the visually hidden text a labelless BitLoading component
+    /// announces to assistive technology.
+    /// </summary>
+    public string? ScreenReaderText { get; set; }
 }

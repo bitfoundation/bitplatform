@@ -4,12 +4,30 @@ name: Sales module demo CD
 
 env:
   SERVER_ADDRESS: 'https://sales.bitplatform.dev'
+  R2_BUCKET: 'sales'
   OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
   OpenAI__Endpoint: ${{ secrets.OpenAI__Endpoint }}
   OPENAI__MODEL: ${{ secrets.OPENAI__MODEL }}
 
 on:
   workflow_dispatch:
+    inputs:
+      server:
+        description: Server web
+        type: boolean
+        default: true
+      windows:
+        description: Windows app
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      server:
+        type: boolean
+        default: true
+      windows:
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -18,6 +36,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
+    if: inputs.server
     runs-on: windows-2025
 
     steps:
@@ -49,7 +68,7 @@ jobs:
         files: 'SalesModule/**/appsettings*json'
       env:
         WebAppRender.PrerenderEnabled: true
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: '/'
         WebAppRender.BlazorMode: 'BlazorWebAssembly'
         AdsPushVapid.PublicKey: ${{ secrets.SALES_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
@@ -68,11 +87,18 @@ jobs:
 
     - name: Generate CSS/JS files
       run: |
-          dotnet build SalesModule/src/Client/SalesModule.Client.Core/SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
-          dotnet build SalesModule/src/Client/SalesModule.Client.Web/SalesModule.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
+          dotnet build SalesModule/src/Client/SalesModule.Client.Core/SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
+          dotnet build SalesModule/src/Client/SalesModule.Client.Web/SalesModule.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"  -p:InvariantGlobalization=true
+      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
+
+    # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
+    - name: Strip server-owned files from bundle
+      shell: pwsh
+      run: |
+        Get-ChildItem server -File -Include 'appsettings*.json', 'AppCertificate.*', 'AppleAuthKey.p8', '*.pfx' -Recurse |
+          ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
 
     - name: Upload server artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -81,8 +107,37 @@ jobs:
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
+  deploy_server_web:
+    name: deploy server web
+    needs: build_api_blazor
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://sales.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: SalesModule
+        app-pool: SalesModule
+        site-path: C:\inetpub\SalesModule
+        sentinel-file: SalesModule.Server.Web.dll
+        health-check-url: 'https://sales.bitplatform.dev/health'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
+
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
+    if: inputs.windows
     runs-on: windows-2025
   
     steps:
@@ -115,7 +170,7 @@ jobs:
       env:
         WebAppUrl: ${{ env.SERVER_ADDRESS }}
         ServerAddress: ${{ env.SERVER_ADDRESS }}
-        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
+        Logging.Sentry.Dsn: ${{ secrets.SALES_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-sales.bitplatform.dev
 
@@ -128,15 +183,23 @@ jobs:
     - name: Generate CSS/JS files
       run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
+    # Needed for delta packages. Fails on the first run, when the bucket is empty.
+    - name: Download previous releases from R2
+      continue-on-error: true
+      run: |
+          cd SalesModule\src\Client\SalesModule.Client.Windows\
+          dotnet tool restore
+          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+
     - name: Publish
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
           dotnet publish SalesModule.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APP_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
           dotnet tool restore
           dotnet vpk pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
-  
-    - name: Upload artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: WinSalesModule
-        path: SalesModule\src\Client\SalesModule.Client.Windows\Releases
+
+    # The update feed behind WindowsUpdate.FilesUrl.
+    - name: Upload releases to R2
+      run: |
+          cd SalesModule\src\Client\SalesModule.Client.Windows\
+          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10

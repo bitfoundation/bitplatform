@@ -124,7 +124,7 @@ public partial class PrivilegedSessionTenantSwitchTests
         var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
 
         var refreshToken = await storageService.GetItem("refresh_token");
-        Assert.IsFalse(string.IsNullOrEmpty(refreshToken), "The scope has to be signed in before it can switch tenant.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(refreshToken), "The scope has to be signed in before it can switch tenant.");
 
         var tokens = await scope.ServiceProvider.GetRequiredService<IIdentityController>()
             .Refresh(new() { RefreshToken = refreshToken, RequestedTenantId = tenantId }, cancellationToken);
@@ -133,7 +133,10 @@ public partial class PrivilegedSessionTenantSwitchTests
 
         var principal = IAuthTokenProvider.ParseAccessToken(tokens.AccessToken!, validateExpiry: false);
 
-        Assert.AreEqual(tenantId.ToString(), principal.FindFirst(AppClaimTypes.TENANT_ID)?.Value,
+        var tenantClaim = principal.FindFirst(AppClaimTypes.TENANT_ID);
+
+        Assert.IsNotNull(tenantClaim);
+        Assert.AreEqual(tenantId.ToString(), tenantClaim.Value,
             "The switch has to actually land in the requested tenant, otherwise every assertion after it is reading the wrong session state.");
 
         return tokens.AccessToken!;
@@ -172,7 +175,7 @@ public partial class PrivilegedSessionTenantSwitchTests
 
     private static string? ReadPrivilegedClaim(string? accessToken)
     {
-        Assert.IsFalse(string.IsNullOrEmpty(accessToken), "Every step here has to produce an access token to read the claim from.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Every step here has to produce an access token to read the claim from.");
 
         return IAuthTokenProvider.ParseAccessToken(accessToken!, validateExpiry: false)
                                 .FindFirst(AppClaimTypes.PRIVILEGED_SESSION)?.Value;

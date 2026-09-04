@@ -5,9 +5,12 @@
 /// </summary>
 /// <remarks>
 /// These tokens drive the predefined <see cref="BitScreenQuery"/> values: <see cref="BitMediaQuery"/>
-/// resolves the live <c>--bit-bp-*</c> variables at runtime and builds its <c>matchMedia</c> query
-/// from them, so overriding a breakpoint here changes the corresponding <see cref="BitScreenQuery"/>
-/// behavior. They are also available to any consumer CSS/JS that reads <c>--bit-bp-*</c> directly.
+/// resolves them at runtime and builds its <c>matchMedia</c> query from them, so overriding a
+/// breakpoint here changes the corresponding <see cref="BitScreenQuery"/> behavior. The values are
+/// read from the theme cascaded by an enclosing <see cref="BitThemeProvider"/> where there is one -
+/// which is what keeps them reachable even when the component renders no element of its own - and
+/// otherwise from the live <c>--bit-bp-*</c> variables of the component's own themed scope.
+/// They are also available to any consumer CSS/JS that reads <c>--bit-bp-*</c> directly.
 /// Note that the packaged Sass <c>@media</c> rules still compile against fixed breakpoints - a CSS
 /// <c>@media</c> query cannot read a custom property - so those specific stylesheet rules are not
 /// affected by overrides set here.

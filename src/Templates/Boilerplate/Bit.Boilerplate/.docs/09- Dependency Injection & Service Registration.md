@@ -16,7 +16,7 @@ The project follows a **modular service registration pattern** where services ar
 
 Service registration is organized through `*ServiceCollectionExtensions.cs` and `*.Services.cs` files throughout the solution:
 
-1. **`ISharedServiceCollectionExtensions.cs`** ([`src/Shared/Extensions/`](/src/Shared/Extensions/ISharedServiceCollectionExtensions.cs))
+1. **`ISharedServiceCollectionExtensions.cs`** ([`src/Shared/Infrastructure/Extensions/`](/src/Shared/Infrastructure/Extensions/ISharedServiceCollectionExtensions.cs))
    - Registers services used by **both server and client** projects
    - Core services like localization, authorization, configuration, and date/time providers
    - Contains the crucial `ConfigureAuthorizationCore()` method that defines authorization policies
@@ -33,7 +33,7 @@ Service registration is organized through `*ServiceCollectionExtensions.cs` and 
    services.AddSingleton<IMemoryCache, AppMemoryCache>();
    ```
 
-2. **`IClientCoreServiceCollectionExtensions.cs`** ([`src/Client/Boilerplate.Client.Core/Extensions/`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs))
+2. **`IClientCoreServiceCollectionExtensions.cs`** ([`src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs))
    - Registers services for **all client platforms** (Web, MAUI, Windows)
    - Services available during pre-rendering, Blazor Server, and Blazor WebAssembly
    - This is where most client-side infrastructure services are registered
@@ -145,7 +145,7 @@ Some services must be **unique per user session / client app**, but the definiti
 
 ### AddSessioned Implementation
 
-Located in [`IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs):
+Located in [`IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs):
 
 ```csharp
 internal static IServiceCollection AddSessioned<TService, TImplementation>(this IServiceCollection services)
@@ -195,7 +195,7 @@ Let's say you want to add a `FeedbackService` that works on all client platforms
 ### Step 1: Create the Service
 
 ```csharp
-// src/Client/Boilerplate.Client.Core/Services/FeedbackService.cs
+// src/Client/Boilerplate.Client.Core/Infrastructure/Services/FeedbackService.cs
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public partial class FeedbackService
@@ -217,7 +217,7 @@ public partial class FeedbackService
 ### Step 2: Register the Service
 
 ```csharp
-// src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs
+// src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs
 public static IServiceCollection AddClientCoreProjectServices(this IServiceCollection services, IConfiguration configuration)
 {
     // ... existing services ...
@@ -300,8 +300,8 @@ protected override async ValueTask DisposeAsync(bool disposing)
 ```
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

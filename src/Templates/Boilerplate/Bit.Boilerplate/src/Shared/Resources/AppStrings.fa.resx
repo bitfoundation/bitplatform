@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!-- 
@@ -965,9 +965,6 @@
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>کد تایید:</value>
   </data>
-    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>لطفا کد تایید را وارد کنید.</value>
-  </data>
     <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>تأیید</value>
   </data>
@@ -1170,9 +1167,6 @@
     <value>متن جایگزین</value>
   </data>
     <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>برگه</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>از</value>
   </data>
@@ -1182,9 +1176,6 @@
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
-  </data>
-    <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} آیتم</value>
   </data>
     <data name="Last30DaysProductCount" xml:space="preserve">
     <value>تعداد محصولات ۳۰ روز گذشته</value>
@@ -1222,9 +1213,6 @@
     <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>تعداد دسته های دارای محصول</value>
   </data>
-    <data name="SearchOnName" xml:space="preserve">
-    <value>جستجو در نام</value>
-  </data>
     <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>چارت تعداد محصولات در هر دسته</value>
   </data>
@@ -1254,9 +1242,6 @@
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>حذف محصول</value>
-  </data>
-    <data name="DefaultColorPicker" xml:space="preserve">
-    <value>انتخاب کننده رنگ پیش فرض</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
     <value>ویرایش محصول {0}</value>
@@ -1344,9 +1329,6 @@
     <data name="Send" xml:space="preserve">
     <value>ارسال</value>
   </data>
-    <data name="AccentColorApply" xml:space="preserve">
-    <value>اعمال رنگ تأکیدی {0}</value>
-  </data>
     <data name="Canceled" xml:space="preserve">
     <value>لغو شده</value>
   </data>
@@ -1364,7 +1346,7 @@
     <value>تبدیل گفتار به متن</value>
   </data>
     <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>دسترسی به میکروفن مسدود است. برای این سایت اجازه دهید تا بتوانید گفتار خود را وارد کنید.</value>
+    <value>دسترسی به میکروفن مسدود است. در تنظیمات اجازه دهید تا بتوانید گفتار خود را وارد کنید.</value>
   </data>
     <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>تبدیل گفتار به متن متوقف شد: {0}</value>
@@ -1414,19 +1396,15 @@
     <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>چگونه میتوانم نسخه PWA برنامه رو نصب کنم؟</value>
   </data>
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <!--#if (module == "Admin") -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>کجا میتونم گزارشات محصولات رو ببینم؟</value>
-  </data>
     <!--#elif (module == "Sales") -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>دنبال ماشین SUV مرسدس بنز با ۷۰هزار دلار بودجه میگردم!</value>
-  </data>
     <!--#else -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>یه سری فیدبک دارم که بگم!</value>
-  </data>
     <!--#endif -->
+  </data>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>پیامی را وارد کنید...</value>
   </data>
@@ -1463,9 +1441,6 @@
     <value>من تو تماشای تبلیغات درون برنامه‌ای مشکل دارم</value>
   </data>
     <!--#endif -->
-    <data name="PleaseWait" xml:space="preserve">
-    <value>لطفا صبر کنید</value>
-  </data>
     <data name="Management" xml:space="preserve">
     <value>مدیریت</value>
   </data>
@@ -1524,11 +1499,14 @@
     <data name="DisableNotifications" xml:space="preserve">
     <value>غیرفعال‌سازی اعلان‌ها</value>
   </data>
-    <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>پیام تستی ۱</value>
+    <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>اعلان‌ها فعال شد</value>
   </data>
-    <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>پیام تستی ۲</value>
+    <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>این اعلان را فرستادیم تا مطمئن شوید اعلان‌ها به این دستگاه می‌رسند. برای مطالعه سیاست حریم خصوصی، روی آن بزنید.</value>
+  </data>
+    <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>اتصال زنده شما به سرور فعال است؛ این پیام هم از همان راه رسید و تغییرات بعدی هم به همین شکل در لحظه نمایش داده می‌شوند.</value>
   </data>
     <!--#endif -->
     <data name="UsersPageTitle" xml:space="preserve">
@@ -1642,6 +1620,9 @@
     <data name="ImageTooSmall" xml:space="preserve">
     <value>تصویر خیلی کوچک است. حداقل ابعاد مورد نیاز {0}x{1} است، اما ابعاد فعلی {2}x{3} است.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>فایل بارگذاری‌شده یک تصویر پشتیبانی‌شده نیست.</value>
+  </data>
     <data name="ImageNotCarError" xml:space="preserve">
     <value>تصویر ارائه شده حاوی ماشین نیست.</value>
   </data>
@@ -1753,9 +1734,6 @@
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>آیا مطمئن هستید که می خواهید مستأجر {0} را ترک کنید؟</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>شما با موفقیت مستأجر را ترک کردید.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>تغییر مستأجر</value>
   </data>
@@ -1831,8 +1809,100 @@
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>دعوت به {0} رد شود؟ این کار قابل بازگشت نیست - برای پیوستن به دعوت تازه‌ای نیاز خواهید داشت.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>دعوت رد شد.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>منطقه زمانی</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>انتخاب منطقه زمانی</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>جستجوی منطقه زمانی</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>هیچ منطقه زمانی با جستجوی شما مطابقت ندارد.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>اعلان‌های پوش</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>روشن کردن اعلان‌های پوش</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>خاموش کردن اعلان‌های پوش</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>اعلان‌های پوش برای این برنامه مسدود شده‌اند. در تنظیمات مرورگر یا سیستم‌عامل، اعلان‌ها را مجاز کنید و دوباره تلاش کنید.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>حریم خصوصی</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>دریافت یک نسخه از اطلاعات شما</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>انتخاب‌های حریم خصوصی شما</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>ورود به حساب، به خاطر سپردن زبان و گزارش خطاها در این فهرست نیستند: برنامه بدون دو مورد اول کار نمی‌کند و گزارش‌های خطا هیچ شناسه‌ای از دستگاه شما ندارند.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>تحلیل استفاده</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>به ما اجازه می‌دهد دستگاه شما را بین بازدیدها بشناسیم تا ببینیم کدام صفحه‌ها استفاده می‌شوند و چقدر زمان می‌برند. خاموش کردن این گزینه جلوی گزارش خطاها را نمی‌گیرد.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>تبلیغات</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>اسکریپت تبلیغات را بارگذاری می‌کند که شناسه‌های خودش را تنظیم می‌کند. تا وقتی این گزینه را روشن نکنید چیزی بارگذاری نمی‌شود.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>حریم خصوصی شما</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>می‌خواهیم اطلاعاتی روی دستگاه شما ذخیره کنیم که برنامه برای کار کردن به آن نیازی ندارد. ورود به حساب، به خاطر سپردن زبان و گزارش خطاها در هر صورت انجام می‌شوند.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>پذیرفتن</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>رد کردن</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>تنظیمات حریم خصوصی</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>تنظیمات حساب کاربری</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>دریافت اطلاعات شما</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>یک نسخه از هر چیزی که این برنامه دربارهٔ شما نگه می‌دارد بگیرید: حساب کاربری، دستگاه‌هایی که با آن‌ها وارد شده‌اید، تصویر پروفایل و محتوایی که ساخته‌اید. خروجی یک فایل zip شامل data.json و فایل‌های شماست.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>هر بخش از این فایل می‌گوید چرا نگهداری می‌شود، تا چه مدت، چه کسان دیگری آن را دریافت می‌کنند و آیا حذف حساب کاربری آن را پاک می‌کند یا نه.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>دریافت اطلاعات من</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>اگر می‌خواهید اطلاعاتتان حذف شود، حساب کاربری خود را از اینجا حذف کنید:</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>خروجی اطلاعات</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>پاسخ به درخواست اطلاعاتی که از داخل برنامه ارسال نشده است.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>تماشای تبلیغ، اسکریپت تبلیغاتی گوگل را بارگذاری می‌کند که شناسه‌های خودش را روی دستگاه شما تنظیم می‌کند. تا وقتی موافقت نکنید چیزی بارگذاری نمی‌شود.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>موافقم، ادامه بده</value>
+  </data>
 </root>

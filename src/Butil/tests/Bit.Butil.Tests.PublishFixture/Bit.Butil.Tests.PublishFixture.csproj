@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <!--
+    A consumer app that exists to be published, over and over, with different Bit.Butil settings - see
+    ScriptPublishing.cs in Bit.Butil.Tests.Manual, which is the only thing that ever builds it.
+
+    Everything the script trimming does happens inside `dotnet publish`, in MSBuild, over the SDK's static
+    web asset lists. None of that is reachable from a test that calls into Bit.Butil.Build: the task is one
+    step of it, and the gating, the ordering, the asset surgery and the publish output are the rest. So the
+    checks that cover it publish a real app and read what came out, and this is that app.
+
+    Deliberately a plain web app rather than a Blazor WebAssembly one: it publishes in seconds rather than
+    minutes, and it is the shape the scanning exists for - a publish ILLink never touches, where without a
+    scan or an explicit list there is nothing to trim against.
+
+    Not in the solution, and not a test project. It is a fixture: building it on its own proves nothing, and
+    a `dotnet test` that picked it up would find nothing to run.
+    -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <!-- Its own name, so the Bit.Butil.Console type below cannot shadow System.Console. -->
+        <RootNamespace>ButilTests.PublishFixture</RootNamespace>
+        <!-- One less thing to differ between runs, and nothing here is ever run. -->
+        <InvariantGlobalization>true</InvariantGlobalization>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Butil\Bit.Butil.csproj" />
+    </ItemGroup>
+
+    <!--
+    Butil reaches this app as a ProjectReference, so the consumer-side logic a NuGet package would import is
+    imported by hand and pointed at the source tree - the same arrangement Samples.Web uses, and the one that
+    makes this fixture test the targets in this working copy rather than the ones in some published package.
+    -->
+    <PropertyGroup>
+        <BitButilChunksDirectory>$(MSBuildThisFileDirectory)..\..\Bit.Butil\obj\butil-js\chunks\</BitButilChunksDirectory>
+        <BitButilBuildTasksAssembly>$(MSBuildThisFileDirectory)..\..\Bit.Butil.Build\bin\$(Configuration)\netstandard2.0\Bit.Butil.Build.dll</BitButilBuildTasksAssembly>
+        <!-- Not a WebAssembly project, so the trimming is off by default here; every scenario wants it on and
+             differs in what it is given to trim against. On brings BitButilScriptScan=TypeReferences with
+             it, which is why the scenarios that isolate one of the other signals turn the scan off by name. -->
+        <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == ''">true</BitButilTrimScripts>
+    </PropertyGroup>
+
+    <!-- The <BitButilScriptModule> items of a scenario, passed in as a property because that is what a
+         command line can set; a real csproj writes the ItemGroup out directly.
+
+         Pipe-separated, and turned back into a list here, because neither a semicolon nor a comma survives the
+         trip: an MSBuild command line reads both as the separator between one property and the next, and an
+         escaped semicolon (%3B) arrives as a literal one inside a single item rather than as a separator.
+         Unescape is what makes the swapped-in semicolons separators again - the result of a property function
+         is escaped, so without it the Include is one item whose name happens to contain a semicolon. -->
+    <ItemGroup Condition="'$(FixtureScriptModules)' != ''">
+        <BitButilScriptModule Include="$([MSBuild]::Unescape($(FixtureScriptModules.Replace('|', ';'))))" />
+    </ItemGroup>
+
+    <Import Project="..\..\Bit.Butil\buildTransitive\Bit.Butil.targets" />
+
+</Project>

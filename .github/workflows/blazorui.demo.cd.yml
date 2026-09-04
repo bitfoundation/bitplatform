@@ -3,9 +3,42 @@ name: Blazor UI Demo CD
 env:
   SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'bit-components'
+  R2_BUCKET: 'blazorui'
+  APP_BUNDLE_ID: 'com.bitplatform.BlazorUI.Demo'
 
 on:
   workflow_dispatch:
+    inputs:
+      server:
+        description: Server web + api
+        type: boolean
+        default: true
+      windows:
+        description: Windows app
+        type: boolean
+        default: true
+      android:
+        description: Android app
+        type: boolean
+        default: true
+      ios:
+        description: iOS app
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      server:
+        type: boolean
+        default: true
+      windows:
+        type: boolean
+        default: true
+      android:
+        type: boolean
+        default: true
+      ios:
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -14,6 +47,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
+    if: inputs.server
     runs-on: windows-2025
 
     steps:
@@ -51,6 +85,13 @@ jobs:
     - name: Publish
       run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" -o server
 
+    # Server-owned; C:\inetpub keeps its own copies.
+    - name: Strip server-owned files from bundle
+      shell: pwsh
+      run: |
+        Get-ChildItem server -File -Include 'appsettings*.json', 'AppCertificate.*', 'AppleAuthKey.p8', '*.pfx' -Recurse |
+          ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
+
     - name: Upload server artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
@@ -58,8 +99,37 @@ jobs:
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
+  deploy_server:
+    name: deploy
+    needs: build_api_blazor
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://blazorui.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: BlazorUIDemo
+        app-pool: BlazorUIDemo
+        site-path: C:\inetpub\BlazorUIDemo
+        sentinel-file: Bit.BlazorUI.Demo.Server.dll
+        health-check-url: 'https://blazorui.bitplatform.dev/'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
+
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
+    if: inputs.windows
     runs-on: windows-2025
   
     steps:
@@ -89,21 +159,31 @@ jobs:
     - name: Generate CSS/JS files
       run: dotnet build src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
 
+    # Needed for delta packages. Fails on the first run, when the bucket is empty.
+    - name: Download previous releases from R2
+      continue-on-error: true
+      run: |
+          cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
+          dotnet tool restore
+          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+
     - name: Publish
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}" -p:CompressionEnabled=false -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
           dotnet tool restore
           dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
-  
-    - name: Upload artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: WinBlazorUIDemo
-        path: src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Releases
-  
+
+    # The update feed behind WindowsUpdateSettings.FilesUrl.
+    - name: Upload releases to R2
+      run: |
+          cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
+          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+
+
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
+    if: inputs.android
     runs-on: ubuntu-24.04
   
     steps:
@@ -123,7 +203,7 @@ jobs:
         node-version: 24
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
       with:
           fileDir: './src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/'
           fileName: 'BitBlazorUIDemo.keystore'
@@ -146,16 +226,29 @@ jobs:
       run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APP_VERSION}}" -c Release
   
     - name: Publish aab
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-android
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: android-bundle
-        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.*
-        
+        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
+
+    # versionCode derives from APP_VERSION; bump it or Play rejects the bundle.
+    - name: Upload to Google Play (internal track)
+      uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        packageName: ${{ env.APP_BUNDLE_ID }}
+        releaseFiles: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.aab
+        releaseName: ${{ vars.APP_VERSION }}
+        track: internal
+        status: completed
+
+
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
+    if: inputs.ios
     runs-on: macOS-26
   
     steps:
@@ -197,7 +290,7 @@ jobs:
     - name: Download Apple Provisioning Profiles
       uses: Apple-Actions/download-provisioning-profiles@2126b5f86a0e2863cbf4d2d312112b22b943a594 # v6.1.0
       with:
-        bundle-id: 'com.bitplatform.BlazorUI.Demo'
+        bundle-id: ${{ env.APP_BUNDLE_ID }}
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
@@ -208,8 +301,17 @@ jobs:
     - name: Build ipa
       run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-ios
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+    - name: Locate ipa
+      id: ipa
+      run: echo "path=$(ls src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+
+    # App Store submission stays manual.
+    - name: Upload to TestFlight
+      uses: apple-actions/upload-testflight-build@5e75ff58276689011512ba87a381d93dc67dbcf8 # v5.3.0
       with:
-        name: ios-bundle
-        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa
+        app-path: ${{ steps.ipa.outputs.path }}
+        app-type: ios
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+        uses-non-exempt-encryption: 'false'

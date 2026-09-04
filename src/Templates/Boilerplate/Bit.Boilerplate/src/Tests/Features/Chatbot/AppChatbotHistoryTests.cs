@@ -79,13 +79,13 @@ public partial class AppChatbotHistoryTests
 
         var secondConversation = chatClient.ReceivedConversations[1];
 
-        Assert.IsFalse(secondConversation.Any(message => message.Role == ChatRole.Assistant),
+        Assert.DoesNotContain(message => message.Role == ChatRole.Assistant, secondConversation,
             $"The interrupted answer was replayed to the model as a finished assistant turn. Conversation: {Describe(secondConversation)}");
 
-        Assert.IsFalse(secondConversation.Any(message => message.Text?.Contains("interrupted", StringComparison.OrdinalIgnoreCase) is true),
+        Assert.DoesNotContain(message => message.Text?.Contains("interrupted", StringComparison.OrdinalIgnoreCase) is true, secondConversation,
             $"A truncated turn was kept and tagged with a marker string. AiChatMessageResponse.Successful already carries that signal typed, and the client already renders it. Conversation: {Describe(secondConversation)}");
 
-        Assert.IsTrue(secondConversation.Any(message => message.Role == ChatRole.User && message.Text == "what is bit platform?"),
+        Assert.Contains(message => message.Role == ChatRole.User && message.Text == "what is bit platform?", secondConversation,
             $"The interrupted USER turn must survive - the user asked it and never got an answer, so the model still owes one. Conversation: {Describe(secondConversation)}");
     }
 
@@ -173,10 +173,10 @@ public partial class AppChatbotHistoryTests
 
         var conversation = chatClient.ReceivedConversations[0];
 
-        Assert.IsFalse(conversation.Any(message => message.Text?.Contains("bit platform is", StringComparison.Ordinal) is true),
+        Assert.DoesNotContain(message => message.Text?.Contains("bit platform is", StringComparison.Ordinal) is true, conversation,
             $"The canceled answer the client resent was replayed to the model. Conversation: {Describe(conversation)}");
 
-        Assert.IsFalse(conversation.Any(message => string.IsNullOrWhiteSpace(message.Text)),
+        Assert.DoesNotContain(message => string.IsNullOrWhiteSpace(message.Text), conversation,
             $"The panel's empty placeholder for the in-flight answer was replayed to the model as a blank assistant turn. Conversation: {Describe(conversation)}");
 
         // The greeting, the two earlier questions and the new one - plus the '### Variables:' system message.
@@ -224,7 +224,7 @@ public partial class AppChatbotHistoryTests
 
         Assert.AreEqual("the newest question", conversation[^1].Text, "Trimming must drop the OLDEST turns, never the newest.");
 
-        Assert.IsFalse(conversation.Any(message => message.Text == "message 0"),
+        Assert.DoesNotContain(message => message.Text == "message 0", conversation,
             $"The oldest turn survived a trim that was supposed to remove it. Conversation: {Describe(conversation)}");
     }
 
@@ -264,7 +264,7 @@ public partial class AppChatbotHistoryTests
         var image = withAttachment.Contents.OfType<DataContent>().SingleOrDefault();
 
         Assert.IsNotNull(image, $"The attached image never reached the model. Contents: {Describe([withAttachment])}");
-        CollectionAssert.AreEqual(picture, image.Data.ToArray(),
+        Assert.AreSequenceEqual(picture, image.Data.ToArray(),
             "The model must be given the bytes held for the attachment the client named.");
         Assert.AreEqual("what is in this picture?", withAttachment.Text,
             "The message's text must survive alongside the image rather than being replaced by it.");
@@ -312,15 +312,15 @@ public partial class AppChatbotHistoryTests
                                    .Select(picture => picture.Data.ToArray()[0])
                                    .ToArray();
 
-        CollectionAssert.AreEqual(new byte[] { 3, 4, 5 }, pictures,
+        Assert.AreSequenceEqual(new byte[] { 3, 4, 5 }, pictures,
             $"The model must be handed the newest pictures and only those. Got the ones from turns [{string.Join(", ", pictures)}].");
 
-        Assert.IsTrue(conversation.Any(message => message.Text?.Contains("picture 2", StringComparison.Ordinal) is true),
+        Assert.Contains(message => message.Text?.Contains("picture 2", StringComparison.Ordinal) is true, conversation,
             $"A turn keeps its text when its picture is dropped - the model still owes an answer about it. Conversation: {Describe(conversation)}");
 
         // The turn that was nothing but a picture would otherwise be left with no content at all, which not every
         // provider accepts.
-        Assert.IsFalse(conversation.Where(message => message.Role == ChatRole.User).Any(message => message.Contents.Count == 0),
+        Assert.DoesNotContain(message => message.Contents.Count == 0, conversation.Where(message => message.Role == ChatRole.User),
             $"A message was left with no content once its picture was dropped. Conversation: {Describe(conversation)}");
     }
 
@@ -364,13 +364,13 @@ public partial class AppChatbotHistoryTests
                                    .Select(picture => picture.Data.ToArray()[0])
                                    .ToArray();
 
-        CollectionAssert.AreEqual(new byte[] { 3, 4, 5 }, pictures,
+        Assert.AreSequenceEqual(new byte[] { 3, 4, 5 }, pictures,
             $"A replayed conversation must reach the model with the newest pictures and only those. Got the ones from turns [{string.Join(", ", pictures)}].");
 
-        Assert.IsTrue(conversation.Any(message => message.Text?.Contains("picture 2", StringComparison.Ordinal) is true),
+        Assert.Contains(message => message.Text?.Contains("picture 2", StringComparison.Ordinal) is true, conversation,
             $"A turn keeps its text when its picture is dropped. Conversation: {Describe(conversation)}");
 
-        Assert.IsFalse(conversation.Where(message => message.Role == ChatRole.User).Any(message => message.Contents.Count == 0),
+        Assert.DoesNotContain(message => message.Contents.Count == 0, conversation.Where(message => message.Role == ChatRole.User),
             $"A message was left with no content once its picture was dropped. Conversation: {Describe(conversation)}");
     }
 

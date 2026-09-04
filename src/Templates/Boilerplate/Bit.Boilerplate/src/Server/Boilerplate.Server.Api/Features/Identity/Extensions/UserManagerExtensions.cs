@@ -15,17 +15,17 @@ public static partial class UserManagerExtensions
             if (userName is null && email is null && phoneNumber is null)
                 throw new InvalidOperationException();
 
-            if (string.IsNullOrEmpty(userName) is false)
+            if (string.IsNullOrWhiteSpace(userName) is false)
             {
                 user = await userManager.FindByNameAsync(userName!);
             }
 
-            if (user is null && string.IsNullOrEmpty(email) is false)
+            if (user is null && string.IsNullOrWhiteSpace(email) is false)
             {
                 user = await userManager.FindByEmailAsync(email!);
             }
 
-            if (user is null && string.IsNullOrEmpty(phoneNumber) is false)
+            if (user is null && string.IsNullOrWhiteSpace(phoneNumber) is false)
             {
                 user = await userManager.FindByPhoneNumber(phoneNumber);
             }
@@ -43,7 +43,7 @@ public static partial class UserManagerExtensions
             // Auto-provisioning needs an identifier the confirmation can be delivered to. A userName-only request
             // would otherwise commit a row that can never be confirmed or contacted, while permanently taking that
             // user name - which also blocks the later auto-create for whoever owns that email or phone number.
-            if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.PhoneNumber))
+            if (string.IsNullOrWhiteSpace(request.Email) && string.IsNullOrWhiteSpace(request.PhoneNumber))
                 throw new ResourceNotFoundException(nameof(AppStrings.UserNotFound));
 
             return await userManager.CreateUserWithDemoRole(new User
@@ -61,10 +61,12 @@ public static partial class UserManagerExtensions
                 password = Guid.CreateVersion7().ToString("N"); // Users can reset their password later.
             }
 
-            if (string.IsNullOrEmpty(userToAdd.UserName))
+            if (string.IsNullOrWhiteSpace(userToAdd.UserName))
             {
                 userToAdd.UserName = userToAdd.Email ?? userToAdd.PhoneNumber ?? Guid.CreateVersion7().ToString("N");
             }
+
+            userToAdd.CreatedOn = userManager.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow();
 
             var result = await userManager.CreateAsync(userToAdd, password);
 

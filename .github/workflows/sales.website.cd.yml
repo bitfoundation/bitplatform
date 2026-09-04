@@ -5,6 +5,7 @@ env:
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -36,9 +37,44 @@ jobs:
     - name: Publish
       run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
 
+    # Server-owned; C:\inetpub keeps its own copies.
+    - name: Strip server-owned files from bundle
+      shell: pwsh
+      run: |
+        Get-ChildItem server -File -Include 'appsettings*.json', 'AppCertificate.*', 'AppleAuthKey.p8', '*.pfx' -Recurse |
+          ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
+
     - name: Upload server artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: BitServices
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
+
+  deploy_server:
+    name: deploy
+    needs: build_api_blazor
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://services.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: BitServices
+        app-pool: BitServices
+        site-path: C:\inetpub\BitServices
+        sentinel-file: Bit.Websites.Sales.Server.dll
+        health-check-url: 'https://services.bitplatform.dev/'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}

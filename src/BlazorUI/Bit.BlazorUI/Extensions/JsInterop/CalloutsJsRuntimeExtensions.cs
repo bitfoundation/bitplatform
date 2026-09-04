@@ -26,7 +26,35 @@ internal static class CalloutsJsRuntimeExtensions
         // An optional cap on the scrollable content of the callout, in pixels. It is applied on top of
         // the space the viewport leaves, so it can only ever make the list shorter; zero means the
         // viewport alone decides, which is what the components that do not offer a cap pass.
-        int maxHeight = 0) where T : class
+        int maxHeight = 0,
+        // The id of the arrow (beak) element that points at the anchor of the callout, or an empty string
+        // for the callouts that show none, which is what every component without an arrow passes.
+        string arrowId = "",
+        // Extra distance in pixels between the anchor and the callout, on top of the 1px the placement
+        // always leaves; zero keeps the callout tucked against its anchor.
+        int gap = 0,
+        // Keeps a scroll or a resize of the page from dismissing the callout: it is re-anchored to its
+        // anchor instead. Another callout opening still takes over from it.
+        bool noDismiss = false,
+        // The side of the anchor the callout is preferably placed on ("top", "bottom", "start" or "end"),
+        // or an empty string to leave the placement entirely to the drop direction.
+        string preferredSide = "",
+        // How the callout is lined up with the anchor across the side it is placed on ("center" or "end"),
+        // or an empty string for the start-edge alignment every component without the choice gets.
+        string alignment = "",
+        // Keeps the callout on the preferred side even when it does not fit there, instead of flipping it
+        // to the opposite one. It has nothing to hold in place without a preferred side.
+        bool noFlip = false,
+        // The distance in pixels the callout keeps from the edges of the screen, taken off the room every
+        // side is measured against; zero lets the callout go right up to them.
+        int collisionPadding = 0,
+        // The distance in pixels the callout is slid along the axis it is aligned on, inwards from the edge
+        // of the component the alignment lined it up with; zero keeps it on that edge, and a centered
+        // callout has no edge for it to run from.
+        int alignmentOffset = 0,
+        // The distance in pixels the arrow is kept away from the corners of the callout, so that it never
+        // lands on a rounded one; zero takes the default the placement keeps on its own.
+        int arrowPadding = 0) where T : class
     {
         return jsRuntime.Invoke<bool>(
             "BitBlazorUI.Callouts.toggle",
@@ -47,7 +75,16 @@ internal static class CalloutsJsRuntimeExtensions
             setCalloutWidth,
             fixedCalloutWidth,
             maxWindowWidth,
-            maxHeight);
+            maxHeight,
+            arrowId,
+            gap,
+            noDismiss,
+            preferredSide,
+            alignment,
+            noFlip,
+            collisionPadding,
+            alignmentOffset,
+            arrowPadding);
     }
 
     // Re-applies the space the scrollable content of the open callout cannot use, for the parts above
@@ -55,6 +92,15 @@ internal static class CalloutsJsRuntimeExtensions
     internal static ValueTask BitCalloutUpdateScrollOffset(this IJSRuntime jsRuntime, string calloutId, int scrollOffset)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.updateScrollOffset", calloutId, scrollOffset);
+    }
+
+    // Lays every open callout out again against what it is placed on, with the inputs it was opened with.
+    // It is what a callout that is still open and has only moved needs - a context menu brought along to a
+    // second right-click, a content that has changed size - since going through the toggle would replay the
+    // entry animation of a callout that never went anywhere.
+    internal static ValueTask BitCalloutReposition(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.reposition");
     }
 
     internal static ValueTask BitCalloutClearCallout(this IJSRuntime jsRuntime, string calloutId)

@@ -27,6 +27,8 @@ public partial class UsersPage
     private List<UserSessionDto> filteredUserSessions = [];
 
 
+    [AutoInject] HttpClient httpClient = default!;
+    [AutoInject] FileSaveService fileSaveService = default!;
     [AutoInject] IUserManagementController userManagementController = default!;
     //#if (signalR == true)
     [AutoInject] HubConnection hubConnection = default!;
@@ -105,6 +107,24 @@ public partial class UsersPage
         await userManagementController.Delete(Guid.Parse(selectedUserItem.Key!), CurrentCancellationToken);
 
         await LoadAllUsers();
+    }
+
+    /// <summary>
+    /// The same zip the user can download for themselves (See <c>PrivacySection</c>), for a request that arrived by
+    /// e-mail, through a representative, or from somebody who can no longer sign in.
+    /// </summary>
+    private async Task ExportUserPersonalData()
+    {
+        if (selectedUserItem is null) return;
+
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
+        using var response = await httpClient.GetAsync($"{IUserManagementController.ExportPersonalDataUri}/{selectedUserItem.Key}", CurrentCancellationToken);
+
+        var fileName = response.Content.Headers.ContentDisposition?.FileName?.Trim('"') ?? "personal-data.zip";
+        var content = await response.Content.ReadAsByteArrayAsync(CurrentCancellationToken);
+
+        await fileSaveService.Save(fileName, "application/zip", content);
     }
 
     private async Task HandleOnSelectUser(BitNavItem? item)
@@ -200,7 +220,7 @@ public partial class UsersPage
         if (string.IsNullOrWhiteSpace(sessionSearchText) is false)
         {
             var t = sessionSearchText.Trim();
-            filteredUserSessions = [.. allUserSessions.Where(us => string.Join('|', us.IP, us.Address, us.DeviceInfo, us.RenewedOnDateTimeOffset.ToLocalTime(), us.Id).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
+            filteredUserSessions = [.. allUserSessions.Where(us => string.Join('|', us.IP, us.Address, us.DeviceInfo, TimeZoneService.ToLocalTime(us.RenewedOnDateTimeOffset), us.Id).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
     }
 

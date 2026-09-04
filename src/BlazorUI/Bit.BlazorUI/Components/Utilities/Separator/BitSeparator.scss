@@ -1,99 +1,212 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
+/*
+ * The rule is drawn by the two pseudo elements of the root, laid out as flex items beside the content:
+ * a separator with content flanks it with two segments rather than running one line behind it and
+ * masking the middle with an opaque patch. That is what keeps a labeled separator right on a gradient,
+ * a picture or a surface tier other than the one it was configured for, and what lets the offset of a
+ * start- or end-aligned label be a percentage of the length of the line whichever way it runs.
+ */
 .bit-spr {
+    display: flex;
     position: relative;
-    --bit-spr-bg: #{$clr-bg-pri};
+    // The inset is padding, and a separator is sized against its container, so the two have to add up
+    // rather than stack: an inset horizontal separator is still exactly as wide as what it separates.
+    box-sizing: border-box;
+    --bit-spr-stl: solid;
+    --bit-spr-siz: #{$siz-divider};
+    --bit-spr-bg: transparent;
     --bit-spr-brd: #{$clr-brd-sec};
+
+    &::before,
+    &::after {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0;
+        align-self: center;
+    }
+
+    &::before {
+        content: "";
+    }
+
+    // The trailing segment only exists to flank content: without any, the leading segment is the whole
+    // rule, so a dashed or a dotted stroke keeps its rhythm across the middle instead of restarting there.
+    &:has(> .bit-spr-cnt)::after {
+        content: "";
+    }
+
+    // The offset is the length of the short segment before the content, so it measures along the line -
+    // a percentage resolves against the length of a vertical separator as readily as a horizontal one.
+    &:has(> .bit-spr-cnt) {
+        &.bit-spr-srt::before,
+        &.bit-spr-end::after {
+            flex-grow: 0;
+            flex-shrink: 0;
+            flex-basis: var(--bit-spr-ofs, 0);
+        }
+    }
 }
 
 .bit-spr-cnt {
-    position: relative;
     color: $clr-fg-pri;
-    display: inline-block;
     background: var(--bit-spr-bg);
 }
 
 .bit-spr-hrz {
     width: 100%;
-    display: block;
-    padding: spacing(0.5) 0;
+    align-items: center;
+    flex-direction: row;
+    padding: spacing(0.5) var(--bit-spr-ins, 0);
 
-    &::before {
-        content: "";
-        display: block;
-        inset: 50% 0 0;
-        position: absolute;
-        height: $siz-divider;
-        background-color: var(--bit-spr-brd);
+    &::before,
+    &::after {
+        border-top: var(--bit-spr-siz) var(--bit-spr-stl) var(--bit-spr-brd);
     }
 
-    .bit-spr-cnt {
+    > .bit-spr-cnt {
         padding: 0 spacing(1.5);
-    }
-
-    &.bit-spr-ctr {
-        text-align: center;
-    }
-
-    &.bit-spr-srt {
-        text-align: start;
-    }
-
-    &.bit-spr-end {
-        text-align: end;
     }
 }
 
 .bit-spr-vrt {
-    z-index: 1;
     height: inherit;
-    display: table-cell;
-    padding: 0 spacing(0.5);
+    align-self: stretch;
+    align-items: center;
+    display: inline-flex;
+    flex-direction: column;
+    // An inline-level box sits on the baseline of the line it is in, which would push a separator as
+    // tall as its container past the bottom of it; centering it on the line keeps it where it belongs
+    // both on its own and between runs of text. In a flex row the box is blockified and this is moot.
+    vertical-align: middle;
+    padding: var(--bit-spr-ins, 0) spacing(0.5);
 
+    &::before,
     &::after {
-        content: "";
-        z-index: -1;
-        display: block;
-        inset: 0 0 0 50%;
-        position: absolute;
-        width: $siz-divider;
-        background-color: var(--bit-spr-brd);
+        border-left: var(--bit-spr-siz) var(--bit-spr-stl) var(--bit-spr-brd);
     }
 
-    .bit-spr-cnt {
+    > .bit-spr-cnt {
         padding: spacing(1.5) 0;
-    }
-
-    &.bit-spr-ctr {
-        vertical-align: middle;
-    }
-
-    &.bit-spr-srt {
-        vertical-align: top;
-    }
-
-    &.bit-spr-end {
-        vertical-align: bottom;
     }
 }
 
 
-.bit-spr-pbg {
+.bit-spr-dsh {
+    --bit-spr-stl: dashed;
+}
+
+.bit-spr-dot {
+    --bit-spr-stl: dotted;
+}
+
+.bit-spr-dbl {
+    --bit-spr-stl: double;
+}
+
+
+.bit-spr-sm {
+    --bit-spr-siz: #{$siz-divider};
+}
+
+.bit-spr-md {
+    --bit-spr-siz: calc(#{$siz-divider} * 2);
+}
+
+.bit-spr-lg {
+    --bit-spr-siz: calc(#{$siz-divider} * 3);
+}
+
+
+.bit-spr-bpg {
     --bit-spr-bg: #{$clr-bg-pri};
 }
 
-.bit-spr-sbg {
+.bit-spr-bsg {
     --bit-spr-bg: #{$clr-bg-sec};
 }
 
-.bit-spr-tbg {
+.bit-spr-btg {
     --bit-spr-bg: #{$clr-bg-ter};
 }
 
-.bit-spr-rbg {
+.bit-spr-brg {
     --bit-spr-bg: transparent;
 }
 
+
+.bit-spr-bpr {
+    --bit-spr-brd: #{$clr-brd-pri};
+}
+
+.bit-spr-bsr {
+    --bit-spr-brd: #{$clr-brd-sec};
+}
+
+.bit-spr-btr {
+    --bit-spr-brd: #{$clr-brd-ter};
+}
+
+.bit-spr-brr {
+    --bit-spr-brd: transparent;
+}
+
+
+.bit-spr-pri {
+    --bit-spr-brd: #{$clr-pri};
+}
+
+.bit-spr-sec {
+    --bit-spr-brd: #{$clr-sec};
+}
+
+.bit-spr-ter {
+    --bit-spr-brd: #{$clr-ter};
+}
+
+.bit-spr-inf {
+    --bit-spr-brd: #{$clr-inf};
+}
+
+.bit-spr-suc {
+    --bit-spr-brd: #{$clr-suc};
+}
+
+.bit-spr-wrn {
+    --bit-spr-brd: #{$clr-wrn};
+}
+
+.bit-spr-swr {
+    --bit-spr-brd: #{$clr-swr};
+}
+
+.bit-spr-err {
+    --bit-spr-brd: #{$clr-err};
+}
+
+.bit-spr-pbg {
+    --bit-spr-brd: #{$clr-bg-pri};
+}
+
+.bit-spr-sbg {
+    --bit-spr-brd: #{$clr-bg-sec};
+}
+
+.bit-spr-tbg {
+    --bit-spr-brd: #{$clr-bg-ter};
+}
+
+.bit-spr-pfg {
+    --bit-spr-brd: #{$clr-fg-pri};
+}
+
+.bit-spr-sfg {
+    --bit-spr-brd: #{$clr-fg-sec};
+}
+
+.bit-spr-tfg {
+    --bit-spr-brd: #{$clr-fg-ter};
+}
 
 .bit-spr-pbr {
     --bit-spr-brd: #{$clr-brd-pri};
@@ -105,8 +218,4 @@
 
 .bit-spr-tbr {
     --bit-spr-brd: #{$clr-brd-ter};
-}
-
-.bit-spr-rbr {
-    --bit-spr-brd: transparent;
 }

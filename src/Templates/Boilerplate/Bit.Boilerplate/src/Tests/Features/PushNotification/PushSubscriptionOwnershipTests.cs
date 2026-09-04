@@ -33,7 +33,7 @@ public partial class PushSubscriptionOwnershipTests
     /// <para>
     /// The previous user's <c>UserSession</c> is deliberately left alive here (nobody signs out), because that is the
     /// state an ownership check would trip over: sign out is not guaranteed to happen, and until
-    /// <c>UserSessionsCleanupJobRunner</c> removes it the row still points at a session nobody is using.
+    /// <c>UserSessionsRetentionJobRunner</c> removes it the row still points at a session nobody is using.
     /// </para>
     /// </summary>
     [TestMethod]
@@ -106,7 +106,7 @@ public partial class PushSubscriptionOwnershipTests
     /// <para>
     /// Clearing the tokens tells the server nothing, so the previous <c>UserSession</c> row is still there and the
     /// device's subscription is still pointing at it - for up to <c>Identity:RefreshTokenExpiration</c>, until
-    /// <c>UserSessionsCleanupJobRunner</c> removes it. Both the anonymous propagation that runs first and the
+    /// <c>UserSessionsRetentionJobRunner</c> removes it. Both the anonymous propagation that runs first and the
     /// authenticated one that follows therefore present a DeviceId whose row belongs to a session neither of them owns.
     /// Any ownership check refuses both and leaves that device without push for good, which is why the rule is simply
     /// that whoever presents the DeviceId gets the row (See <c>PushNotificationService.Subscribe</c>).
@@ -429,7 +429,8 @@ public partial class PushSubscriptionOwnershipTests
             var secondRow = await ReadSubscription(server, secondDeviceId, TestContext.CancellationToken);
             var firstRowAfterwards = await ReadSubscription(server, firstDeviceId, TestContext.CancellationToken);
 
-            Assert.AreEqual(firstRow.UserSessionId, secondRow?.UserSessionId,
+            Assert.IsNotNull(secondRow);
+            Assert.AreEqual(firstRow.UserSessionId, secondRow.UserSessionId,
                 "The device the session now reports must end up owning it.");
 
             Assert.IsNull(firstRowAfterwards?.UserSessionId,
@@ -444,6 +445,68 @@ public partial class PushSubscriptionOwnershipTests
             await dbContext.PushNotificationSubscriptions
                 .Where(s => s.DeviceId == firstDeviceId || s.DeviceId == secondDeviceId)
                 .ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// The user-facing half of the AppMenu push notifications toggle: turning it off calls <c>Unsubscribe</c>, which
+    /// removes the device's row so the server stops addressing it - and it has to work for an anonymous caller, because
+    /// the toggle is offered whether the user is signed in or not. Same "DeviceId is the credential" model as
+    /// <c>Subscribe</c>: no ownership check, idempotent for a device that has no row, and turning the toggle back on
+    /// simply subscribes again.
+    /// </summary>
+    [TestMethod]
+    public async Task AnonymousUnsubscribe_Should_RemoveTheDeviceRow_AndStayIdempotent()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        var deviceId = $"push-unsub-{Guid.NewGuid():N}";
+
+        try
+        {
+            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+
+            // A JSON body rather than a bare route value, because AutoCsrfProtectionFilter only lets an anonymous
+            // (no Authorization header) unsafe request through when it is JSON - which is also why the shipped
+            // endpoint takes the dto.
+            async Task<HttpResponseMessage> Unsubscribe() =>
+                await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Unsubscribe",
+                    new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-off" },
+                    TestContext.CancellationToken);
+
+            // Unsubscribing a device that never subscribed is what a fresh install's toggle-off produces; it must not fail.
+            (await Unsubscribe()).EnsureSuccessStatusCode();
+
+            var subscribeResponse = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
+                new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-on" },
+                TestContext.CancellationToken);
+            subscribeResponse.EnsureSuccessStatusCode();
+
+            Assert.IsNotNull(await ReadSubscription(server, deviceId, TestContext.CancellationToken),
+                "The subscribe that precedes the toggle-off must have stored a row, otherwise the removal below proves nothing.");
+
+            (await Unsubscribe()).EnsureSuccessStatusCode();
+
+            Assert.IsNull(await ReadSubscription(server, deviceId, TestContext.CancellationToken),
+                "Turning push notifications off must remove the device's subscription row; a surviving row keeps receiving pushes the user just declined.");
+
+            // Toggling back on is a plain re-subscribe and must work after the row was deleted.
+            var resubscribeResponse = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
+                new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-on-again" },
+                TestContext.CancellationToken);
+            resubscribeResponse.EnsureSuccessStatusCode();
+
+            var afterResubscribe = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+            Assert.IsNotNull(afterResubscribe);
+            Assert.AreEqual("channel-on-again", afterResubscribe.PushChannel, "Toggling back on must store a fresh, deliverable subscription.");
+        }
+        finally
+        {
+            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
+            var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
     }
 

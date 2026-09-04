@@ -87,10 +87,12 @@ public partial class ProductResponseCacheTests
             // actually returned.
             using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
 
-            // The same page, requested four ways. Each of them gets its own output cache entry - the path is part of the
-            // key, the entry varies by culture, and QueryKeys = "*" gives every query string its own entry - yet they all
-            // carry the one tag AppResponseCachePolicy derives from the bare, culture-less path. So the single purge that
-            // the admin's edit triggers in step 2 has to clear all four at once.
+            // The same page, requested four ways. The bare url no longer has an entry of its own - UseCultureUrlRedirection
+            // 302s it onto its culture-prefixed form, so requesting it exercises the redirect and lands on the en-US entry -
+            // while the rest each get their own: the (culture-prefixed) path is part of the key, the entry varies by
+            // culture, and QueryKeys = "*" gives every query string its own entry. They all carry the one tag
+            // AppResponseCachePolicy derives from the bare, culture-less path. So the single purge that the admin's edit
+            // triggers in step 2 has to clear all of them at once.
             string[] pageUrls =
             [
                 $"{PageUrls.Product}/{productShortId}",
@@ -268,54 +270,65 @@ public partial class ProductResponseCacheTests
     }
 
     /// <summary>
-    /// A response body can depend on <b>both</b> cultures - text comes from <c>CurrentUICulture</c> while prices, dates
-    /// and numbers come from <c>CurrentCulture</c> (See <c>ProductDto.FormatPrice</c>) - and the
-    /// <c>.AspNetCore.Culture</c> cookie can set the two apart as <c>c=&lt;culture&gt;|uic=&lt;uiCulture&gt;</c>. So a
-    /// cache key that recorded only the UI culture would let this request's German price formatting be stored under the
-    /// en-US entry and replayed to every en-US visitor, including one that sends no culture cookie at all.
+    /// The whole point of keeping the culture in a page's url (See <c>UseCultureUrlRedirection</c>): a pre-rendered
+    /// page becomes CDN edge cacheable, because the url alone now identifies its language variant. Before that, pages
+    /// had their edge (and client) caching unconditionally switched off on multilingual builds - the language lived in
+    /// the culture cookie and <c>Accept-Language</c>, dimensions an edge cache cannot key on. The Persian and English
+    /// urls must also carry the <b>same</b> <c>Cache-Tag</c>, or one of them would survive the product's purge on the
+    /// edge until it expired on its own.
     /// </summary>
     [TestMethod]
-    public async Task OutputCache_Should_NotServe_ABodyFormattedInAnotherCulture()
+    public async Task EdgeCaching_Should_BeEnabled_ForCulturePrefixedPrerenderedPages()
     {
         if (CultureInfoManager.InvariantGlobalization)
         {
-            Assert.Inconclusive("There is no culture dimension in the cache key when globalization is invariant.");
+            Assert.Inconclusive("Culture-prefixed page urls do not exist on an invariant globalization build.");
         }
 
         await using var server = new AppTestServer();
 
         await server.Build(
             configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
-            .Start(TestContext.CancellationToken);
+            configureTestConfigurations: configuration =>
+            {
+                configuration["WebAppRender:PrerenderEnabled"] = "true";
+                configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
+            }).Start(TestContext.CancellationToken);
 
         var marker = Guid.NewGuid().ToString("N");
-        var (productId, productShortId) = await CreateProduct(server, $"culture-product-{marker}", $"description-{marker}");
+        var (productId, productShortId) = await CreateProduct(server, $"edge-cached-product-{marker}", $"description-{marker}");
 
         try
         {
+            // A bare HttpClient, so the headers asserted below are the ones the server actually wrote.
             using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
 
-            var requestPath = $"/api/v1/ProductView/Get/{productShortId}";
+            string? enCacheTag = null;
 
-            // The two halves deliberately disagree: format like Germany, translate like the default culture.
-            using var poisoningRequest = new HttpRequestMessage(HttpMethod.Get, requestPath);
-            poisoningRequest.Headers.Add("Cookie", $"{CookieRequestCultureProvider.DefaultCookieName}=c%3Dde-DE%7Cuic%3Den-US");
-            using var poisoningResponse = await visitorHttpClient.SendAsync(poisoningRequest, TestContext.CancellationToken);
-            poisoningResponse.EnsureSuccessStatusCode();
+            foreach (var culturePrefix in new[] { "/en-US", "/fa-IR" })
+            {
+                var pageUrl = $"{culturePrefix}{PageUrls.Product}/{productShortId}";
 
-            var poisoningBody = await poisoningResponse.Content.ReadAsStringAsync(TestContext.CancellationToken);
+                using var response = await visitorHttpClient.GetAsync(pageUrl, TestContext.CancellationToken);
+                response.EnsureSuccessStatusCode();
 
-            // Non-vacuity: the requested formatting culture has to actually reach the body, or the assertion below cannot fail.
-            Assert.Contains("€", poisoningBody, "The formatting culture the cookie asked for never reached the response body.");
+                Assert.IsTrue(response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse));
+                Assert.DoesNotContain("Edge:-1", string.Concat(appCacheResponse!),
+                    $"Edge caching should be active for the culture-prefixed pre-rendered page at '{pageUrl}'.");
 
-            using var victimResponse = await visitorHttpClient.GetAsync(requestPath, TestContext.CancellationToken);
-            victimResponse.EnsureSuccessStatusCode();
+                // Cache-Control itself cannot be asserted here: the test server runs as Development, where a
+                // Program.Middlewares OnStarting callback overwrites every response with `no-store` on purpose.
+                // App-Cache-Response and Cache-Tag are the policy's own report of the edge decision.
+                Assert.IsTrue(response.Headers.TryGetValues(AppResponseCachePolicy.CacheTagHeaderName, out var cacheTag),
+                    $"An edge cacheable page must tell the CDN which tag to store it under, otherwise it could never be purged.");
 
-            var victimBody = await victimResponse.Content.ReadAsStringAsync(TestContext.CancellationToken);
+                enCacheTag ??= string.Concat(cacheTag!);
+                Assert.AreEqual(enCacheTag, string.Concat(cacheTag!),
+                    "Every culture of the page must carry the same tag, or a purge of the bare path would leave some cultures stranded on the edge.");
+            }
 
-            Assert.DoesNotContain("€", victimBody,
-                "A visitor sending no culture cookie was served the cache entry of a request that asked for a different formatting culture.");
+            Assert.AreEqual(AppResponseCachePolicy.CreateCacheTag($"{PageUrls.Product}/{productShortId}"), enCacheTag,
+                "The tag on the page must be the bare, culture-less path ResponseCacheService purges it by.");
         }
         finally
         {
@@ -378,7 +391,7 @@ public partial class ProductResponseCacheTests
             await using var tenantUserScope = server.WebApp.Services.CreateAsyncScope();
             await SignIn(tenantUserScope, TenantUserEmail);
             var accessToken = await tenantUserScope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
-            Assert.IsFalse(string.IsNullOrEmpty(accessToken), "Signing in did not store an access token, so the read below would not be authenticated.");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Signing in did not store an access token, so the read below would not be authenticated.");
 
             using var tenantMemberRequest = new HttpRequestMessage(HttpMethod.Get, requestPath);
             tenantMemberRequest.Headers.Authorization = new("Bearer", accessToken);
@@ -400,6 +413,50 @@ public partial class ProductResponseCacheTests
     /// to resolve and would otherwise throw (See <c>TenantProvider.GetCurrentTenantId</c>). The insert assigns the
     /// tenant explicitly for the same reason (See <c>AppDbContext.OnSavingChanges</c>).
     /// </summary>
+    /// <summary>
+    /// A page has ONE HeadOutlet, and when more than one HeadContent renders into it only the last one rendered is
+    /// shown. AppPageData contributes a HeadContent to every page (description, canonical) and ProductPage contributes
+    /// its own (the sharing card and the Product schema) - so the pre-rendered product page has to carry BOTH, or one
+    /// of them has silently replaced the other. This is exactly what happened on the live sales site: canonical and
+    /// description present, og:* and JSON-LD gone.
+    /// </summary>
+    [TestMethod]
+    public async Task PrerenderedProductPage_Should_CarryBothThePagesAndTheProductsHeadContent()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            .Start(TestContext.CancellationToken);
+
+        var marker = Guid.NewGuid().ToString("N");
+        var productName = $"head-product-{marker}";
+        var (productId, productShortId) = await CreateProduct(server, productName, $"description-{marker}");
+
+        try
+        {
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+
+            var html = await GetProductPage(visitorHttpClient, $"/en-US{PageUrls.Product}/{productShortId}");
+
+            // AppPageData's HeadContent.
+            Assert.Contains($"<title>{productName}", html, "The document title comes from AppPageData's PageTitle.");
+            Assert.Contains("rel=\"canonical\"", html, "The canonical comes from AppPageData's HeadContent.");
+            Assert.Contains($"name=\"description\" content=\"description-{marker}\"", html, "The description comes from AppPageData's HeadContent.");
+
+            // ProductPage's HeadContent - the part that is lost when AppPageData's replaces it.
+            Assert.Contains($"property=\"og:title\" content=\"{productName}\"", html,
+                "ProductPage's HeadContent did not reach the document: a second HeadContent on the page replaced it.");
+            Assert.Contains("type=\"application/ld+json\"", html, "The Product schema is emitted by ProductPage's HeadContent.");
+            Assert.Contains($"\"name\":\"{productName}\"", html, "The Product schema names the product.");
+        }
+        finally
+        {
+            await DeleteProduct(server, productId);
+        }
+    }
+
     private async Task<(Guid Id, int ShortId)> CreateProduct(AppTestServer server, string name, string description)
     {
         await using var scope = server.WebApp.Services.CreateAsyncScope();

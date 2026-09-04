@@ -118,7 +118,7 @@ When a user wants to **enable passwordless authentication**, here's what happens
 
 **4. Platform-Specific Credential Creation**
 
-   **Web Platform** (`src/Client/Boilerplate.Client.Core/Infrastructure/Services/WebAuthnService.cs`):
+   **Web Platform** (`src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebAuthnService.cs`):
    - Directly calls browser's WebAuthn API via Bit.Butil
    - Browser shows native biometric prompt
    
@@ -436,5 +436,11 @@ services.AddScoped(sp =>
 - `MakeNewCredentialAsync()` - Validates attestation response
 - `GetAssertionOptions()` - Generates assertion options
 - `MakeAssertionAsync()` - Validates assertion response
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

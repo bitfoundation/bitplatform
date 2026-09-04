@@ -1,4 +1,8 @@
 //+:cnd:noEmit
+// [mirror] the WebView2 permission allow-list - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/MauiProgram.cs (HandlePermissionRequested, inside the Windows target)
+// Only that handler mirrors: the culture bootstrap, LogException and the PAGE_DATA_CHANGED subscription below
+// deliberately differ from their MAUI counterparts, because the APIs available to each host differ.
 using Velopack;
 
 using System.Diagnostics.CodeAnalysis;
@@ -19,6 +23,8 @@ public partial class Program
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HeadOutlet))]
     public static void Main(string[] args)
     {
+        VelopackApp.Build().Run();
+
         Application.ThreadException += (_, e) => LogException(e.Exception, reportedBy: nameof(Application.ThreadException));
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject, reportedBy: nameof(AppDomain.UnhandledException));
         TaskScheduler.UnobservedTaskException += (_, e) => { LogException(e.Exception, reportedBy: nameof(TaskScheduler.UnobservedTaskException)); e.SetObserved(); };
@@ -63,10 +69,6 @@ public partial class Program
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
         };
         var pubSubService = Services.GetRequiredService<PubSubService>();
-        _ = pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, async culture =>
-        {
-            Application.Restart();
-        });
         pubSubHandlerReferenceToKeepAlive = pubSubService.Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async args =>
         {
             var (title, _, __) = ((string? title, string?, bool))args!;
@@ -76,8 +78,6 @@ public partial class Program
             });
         });
 
-        // https://github.com/velopack/velopack
-        VelopackApp.Build().Run();
         _ = Task.Run(async () =>
         {
             try
@@ -90,12 +90,7 @@ public partial class Program
             }
         });
 
-        var webViewArgs = "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications";
-        if (AppEnvironment.IsDevelopment())
-        {
-            webViewArgs += " --remote-debugging-port=9222";
-        }
-        Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", webViewArgs);
+        Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications --remote-debugging-port=9222");
 
         var blazorWebView = new BlazorWebView
         {
@@ -149,8 +144,15 @@ public partial class Program
         else
         {
             var errorMessage = error?.ToString() ?? "Unknown error";
-            Clipboard.SetText(errorMessage);
+            // The dialog first: this branch runs before the DI container exists, so it is the only report a WinForms
+            // process launched from Explorer can make. Clipboard.SetText throws when another process is holding the
+            // clipboard (and off an STA thread), which would otherwise swallow the dialog with it.
             System.Windows.Forms.MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            try
+            {
+                Clipboard.SetText(errorMessage); // so the user can paste it into a bug report
+            }
+            catch { }
         }
     }
 

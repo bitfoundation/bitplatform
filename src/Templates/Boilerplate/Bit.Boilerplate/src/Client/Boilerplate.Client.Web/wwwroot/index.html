@@ -9,7 +9,8 @@
      - src/Client/Boilerplate.Client.Web/Components/AppBswupProgressBar.razor
 -->
 
-<html bit-theme-system bit-theme-persist bit-theme-view-transition>
+<html bit-theme-system bit-theme-persist bit-theme-view-transition
+      bit-theme-light="fluent2-light" bit-theme-dark="fluent2-dark">
 <head>
     <base href="/">
     <meta charset="utf-8">
@@ -18,8 +19,9 @@
          The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags on every theme change, so a
          theme pinned against the OS wins as well. Keep in sync with: src/Client/Boilerplate.Client.Core/Styles/ThemeColors.cs -->
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Boilerplate</title>
     <meta name="description" content="The Boilerplate is built with ASP.NET Core, Identity, Web API, EF Core and Blazor.">
 
     <script>
@@ -42,7 +44,12 @@
             crossOrigin: "anonymous",
             cfg: {
                 instrumentationKey: "00000000-0000-0000-0000-000000000000",
-                disableTelemetry: true
+                disableTelemetry: true,
+                autoTrackPageVisitTime: false,
+                enableAutoRouteTracking: false,
+                isStorageUseDisabled: true,
+                disableCookiesUsage: true,
+                disablePageUnloadEvents: ["unload"]
             }
         });
     </script>
@@ -60,6 +67,15 @@
     <link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" />
     <link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" />
     <link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" />
+    <!--#if (theme == "Cupertino")-->
+    <link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" rel="stylesheet" />
+    <!--#endif-->
+    <!--#if (theme == "Material")-->
+    <link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" rel="stylesheet" />
+    <!--#endif-->
+    <!--#if (theme == "Fluent2")-->
+    <link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" rel="stylesheet" />
+    <!--#endif-->
     <link href="_content/Boilerplate.Client.Core/styles/app.css" rel="stylesheet" />
     <link href="Boilerplate.Client.Web.styles.css" rel="stylesheet" />
     <style>
@@ -222,7 +238,7 @@
 
     <!-- If you don't plan to support older browsers and prefer to use the original `blazor.webassembly.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737 -->
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
-    <script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.webassembly.js"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.webassembly.js" updateInterval="60" updateOnVisibility="true"></script>
     <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
     <script>
         // Boilerplate.Client.Core/Scripts/bswup.ts would apply latest version when user is not activly using the app,

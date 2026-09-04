@@ -65,7 +65,7 @@
         //#endif
         {
             "name": "Profile",
-            "url": "/profile"
+            "url": "/settings/profile"
         }
     ]
 }

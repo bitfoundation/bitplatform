@@ -9,6 +9,7 @@ namespace Bit.Butil;
 /// </summary>
 public class FetchRequest
 {
+    /// <summary>The URL to request. A relative URL resolves against the current document.</summary>
     public string Url { get; set; } = string.Empty;
 
     /// <summary>HTTP verb. Defaults to GET.</summary>

@@ -4,6 +4,7 @@
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
                  OnDismiss="OnDropMenuDismiss"
+                 OnOpen="WrapHandled(OnDropMenuOpen)"
                  AriaLabel="@AccountMenuLabel"
                  Classes="@(new() { Callout = "app-menu-callout" })">
         <Template>
@@ -102,6 +103,33 @@
                         </AuthorizeView>
                         @*#endif*@
 
+                        <BitActionButton IconName="@BitIconName.WorldClock" FullWidth OnClick="WrapHandled(ShowTimeZones)">
+                            <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
+                                @Localizer[nameof(AppStrings.TimeZone)]
+                                <BitSpacer />
+                                <BitIcon Size="BitSize.Small"
+                                         Color="BitColor.SecondaryForeground"
+                                         IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
+                            </BitStack>
+                        </BitActionButton>
+
+                        @*#if (notification == true)*@
+                        @if (AppPlatform.IsWindows is false)
+                        {
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                                <BitActionButton Style="flex-grow:1"
+                                                 OnClick="WrapHandled(TogglePushNotifications)"
+                                                 IconName="@(pushNotificationsEnabled ? BitIconName.Ringer : BitIconName.RingerOff)">
+                                    @Localizer[nameof(AppStrings.PushNotifications)]
+                                </BitActionButton>
+                                @* One-way bound on purpose: the preference lives in the push notification service, so the switch only reports the click. *@
+                                <BitToggle AriaLabel="@PushNotificationsToggleLabel"
+                                           OnChange="WrapHandled(TogglePushNotifications)"
+                                           Value="pushNotificationsEnabled" />
+                            </BitStack>
+                        }
+                        @*#endif*@
+
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitActionButton Style="flex-grow:1"
                                              OnClick="WrapHandled(ToggleTheme)"
@@ -151,6 +179,47 @@
                                 </BitStack>
                             </ItemTemplate>
                         </BitChoiceGroup>
+                    </BitStack>
+                }
+                else if (showTimeZones)
+                {
+                    <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
+                        <BitActionButton FullWidth
+                                         Style="align-items:flex-end"
+                                         OnClick="WrapHandled(() => showTimeZones = false)"
+                                         IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
+                            @Localizer[nameof(AppStrings.SelectTimeZone)]
+                        </BitActionButton>
+
+                        <BitSearchBox @bind-Value="timeZoneSearchText" Immediate DebounceTime="250"
+                                      FullWidth FixedIcon
+                                      Placeholder="@Localizer[nameof(AppStrings.FindTimeZone)]"
+                                      AriaLabel="@Localizer[nameof(AppStrings.FindTimeZone)]" />
+
+                        <BitSeparator />
+
+                        <BitBasicList Virtualize
+                                      ItemSize="44"
+                                      Role="radiogroup"
+                                      Class="time-zone-list"
+                                      Items="FilteredTimeZones"
+                                      AriaLabel="@Localizer[nameof(AppStrings.SelectTimeZone)]">
+                            <RowTemplate Context="timeZone">
+                                <BitActionButton FullWidth
+                                                 role="radio"
+                                                 Class="time-zone-item"
+                                                 aria-checked="@(IsCurrentTimeZone(timeZone) ? "true" : "false")"
+                                                 OnClick="WrapHandled(() => OnTimeZoneChanged(timeZone.Id))"
+                                                 Classes="@(new() { Content = IsCurrentTimeZone(timeZone) ? "time-zone-item-text selected" : "time-zone-item-text" })">
+                                    @timeZone.Text
+                                </BitActionButton>
+                            </RowTemplate>
+                            <EmptyContent>
+                                <BitText Class="time-zone-empty" Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">
+                                    @Localizer[nameof(AppStrings.NoTimeZoneMatchesSearchMessage)]
+                                </BitText>
+                            </EmptyContent>
+                        </BitBasicList>
                     </BitStack>
                 }
                 @*#if (multitenant == true)*@

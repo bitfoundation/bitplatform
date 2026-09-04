@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <div>
-    <BitProModal @bind-IsOpen="isOpen"
+    <BitModal @bind-IsOpen="isOpen"
               FullSize
               Class="modal"
               OnDismiss="() => searchText = null"
@@ -142,8 +142,8 @@
                           Items="indexedFilteredLogs">
                 <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
-                    <BitStack @key="logIndex.item.CreatedOn.ToLocalTime()" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
-                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToLocalTime().ToString("HH:mm:ss")}]")</BitText>
+                    <BitStack @key="TimeZoneService.ToLocalTime(logIndex.item.CreatedOn)" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{TimeZoneService.ToLocalTime(logIndex.item.CreatedOn).ToString("HH:mm:ss")}]")</BitText>
                         <BitButton IconOnly
                                    Title="Copy"
                                    Color="BitColor.Info"
@@ -171,7 +171,7 @@
                    Variant="BitVariant.Text"
                    OnClick="WrapHandled(GoTop)"
                    IconName="@BitIconName.Up" />
-    </BitProModal>
+    </BitModal>
 
     <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen"
                         OnNav="WrapHandled((bool isNext) => NavLog(isNext))"

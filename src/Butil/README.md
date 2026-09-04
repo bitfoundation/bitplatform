@@ -97,7 +97,7 @@ registering everything.
 
 | Service | What it wraps |
 | --- | --- |
-| `ElementReference` extensions | Attributes, scrolling, fullscreen, pointer capture, per-element events |
+| `ElementReference` extensions | Attributes (namespaced too), ARIA and `role`, classes, `data-*`, inline style, content insertion, scrolling, layout metrics, fullscreen, popovers, pointer capture, per-element events |
 | Animation extensions | The Web Animations API on any element |
 | `Keyboard` | App-wide keyboard shortcuts with modifier support |
 | `IntersectionObserver` | Element visibility inside the viewport or a scroll container |
@@ -279,14 +279,92 @@ both shapes - only the modules the trimmed assembly can still name are published
 module is gone from the assembly with it. `<BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>`
 in the csproj publishes every module regardless, for an app that reaches them from outside its own interop
 calls. All of this happens in `dotnet publish` only: a build - and `dotnet run` and `dotnet watch` on top of
-it - keeps the full bundle and every module, so what you debug is never the trimmed JavaScript. Opt out with
-`false`, or opt in elsewhere with `true`:
+it - keeps the full bundle and every module, so what you debug is never the trimmed JavaScript. And it
+happens in the project that publishes the app's static web assets only - see
+[where these properties go](#where-these-properties-go). Opt out with `false`, or opt in elsewhere with
+`true`:
 
 ```xml
 <PropertyGroup>
   <BitButilTrimScripts>false</BitButilTrimScripts>
 </PropertyGroup>
 ```
+
+**Publishing without trimming?** `BitButilTrimScripts` decides *whether* to trim the JavaScript; what it
+trims against is a separate question, and a publish with `PublishTrimmed` off has no trimmed assembly to
+read. `BitButilScriptScan` answers it from the app's own assemblies instead, and it **defaults to
+`TypeReferences` wherever `BitButilTrimScripts` is `true`** - so turning the trimming on is all an app
+writes, and the switch is never on with nothing behind it. An `@inject Clipboard` is a reference to
+`Bit.Butil.Clipboard`, and the package's build logic reads `Bit.Butil.dll` to know which JavaScript module
+answering that class takes - through base classes and internal interop helpers, so `LocalStorage` correctly
+pulls in `storage` and `Window` pulls in `events` as well as `window`. On this repository's own trimming
+harness it reaches exactly the module set ILLink does. It works in every hosting model - a WebAssembly app
+with `PublishTrimmed` off, Blazor Server, a server host that prerenders - and it costs the publish one pass
+over the app's assemblies, tens of milliseconds; a build is untouched either way. It reads the app's own
+assembly and its copy-local references by default - override with `BitButilScriptScanAssembly` if the code
+calling Bit.Butil lives elsewhere, and with `BitButilUntrimmedAssembly` in the rare layout where the
+reference to `Bit.Butil.dll` itself cannot be resolved from those.
+
+```xml
+<!-- The whole of it for an app published untrimmed: the scan comes with the switch -->
+<PropertyGroup>
+  <BitButilTrimScripts>true</BitButilTrimScripts>
+</PropertyGroup>
+```
+
+`TypeNames` is the other mode: it matches the library's type names against the names in each assembly, with
+no metadata tables read at all. It is coarser - an app with a class of its own called `Window`, `Console` or
+`Storage` pulls in that module too - and it over-includes rather than missing anything, so the default stays
+`TypeReferences`. Either is ignored when `PublishTrimmed` is `true`: the trimmed assembly answers the same
+question more precisely. `None` is the third value, and the way to publish the full bundle from one project
+while `BitButilTrimScripts` stays `true` for the rest.
+
+**Keeping a module none of that can see.** `BitButilScriptModule` names modules, or the Bit.Butil classes
+behind them, that must survive whatever the scan or the trimmer concluded - for an API reached by reflection,
+or from your own JavaScript. It is always *added* to what they found, never used instead of it, and a name
+that is neither a module nor a Bit.Butil class fails the build rather than being quietly ignored:
+
+```xml
+<ItemGroup>
+  <BitButilScriptModule Include="Clipboard;geolocation" />
+</ItemGroup>
+```
+
+With none of the three in play - no `PublishTrimmed`, `BitButilScriptScan` set to `None`, no
+`BitButilScriptModule` - there is nothing to trim against, and the full bundle is published.
+
+<a id="where-these-properties-go"></a>
+**Where these properties go.** On the project you publish - the Blazor WebAssembly head, or the server
+project of a Blazor Web App - and **not** in a shared `Directory.Build.props`. From there they also reach
+every Razor class library and every MAUI/Blazor Hybrid head in the solution, and none of those publish the
+app's static web assets: a class library asked what JavaScript "the app" uses would answer from its own
+references, which are not the app's, and hand the head a bundle short of the modules only the head names.
+
+The trimming knows this and stands down in those projects rather than trimming against the wrong reference
+closure - what it decides on is the SDK the project loaded, which is the Web SDK or the Blazor WebAssembly
+SDK for every project that publishes an app and neither of those for a class library or a hybrid head.
+Where what reached such a project describes what the app calls - a `BitButilScriptScan` written out by hand, or a
+`BitButilScriptModule` list - it says so in the build output. So a shared props file is no longer a broken
+build, but it is still not where the answer comes from. Put the
+properties on the head, one per app you publish:
+
+```xml
+<!-- Boilerplate.Server.Web.csproj - the project that publishes the Blazor Web App -->
+<PropertyGroup>
+  <BitButilTrimScripts>true</BitButilTrimScripts>
+</PropertyGroup>
+
+<ItemGroup>
+  <BitButilScriptModule Include="WebAuthn" />
+</ItemGroup>
+```
+
+`BitButilTrimScripts` on its own is the exception worth keeping shared, since it is only a switch and
+already defaults to `true` exactly where it applies. The scan comes with it wherever it lands, but only the
+project that publishes the app ever acts on one, so sharing the switch is still just sharing a switch.
+
+The demo site has a page of its own for all of this - **JavaScript trimming**, under Overview - including a
+live check that reads back which modules the app you are looking at actually downloaded.
 
 **Lazy scripts.** No script tag at all: the first call into an API `import()`s that API's module
 (`_content/Bit.Butil/modules/clipboard.js` for `Clipboard`), so only the JavaScript for the APIs the

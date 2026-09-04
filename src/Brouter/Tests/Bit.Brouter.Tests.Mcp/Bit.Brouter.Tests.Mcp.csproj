@@ -18,7 +18,7 @@
         <PackageReference Include="MSTest" Version="4.3.3" />
         <!-- Boots the demo server's real Program.cs in memory, so the MCP server under test is the
              one the app actually maps at /mcp rather than a re-registration of its pieces. -->
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />
         <!-- The MCP client half of the SDK: the tests speak the protocol over the wire, the way a
              real client does, instead of calling the tool methods directly. -->
         <PackageReference Include="ModelContextProtocol" Version="2.2.0" />

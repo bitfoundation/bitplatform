@@ -63,14 +63,8 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
         <AndroidLinkTool>r8</AndroidLinkTool>
         <AndroidUseAapt2>True</AndroidUseAapt2>
-        <RunAOTCompilation>True</RunAOTCompilation>
-        <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
-        <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
-        <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
-        <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
 
-        <EnableLLVM>false</EnableLLVM>
-        <!-- https://github.com/dotnet/runtime/issues/95406#issuecomment-1983736335 -->
+        <UseMonoRuntime>false</UseMonoRuntime>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
@@ -191,13 +185,6 @@
 
     <Target Name="BuildCssFiles">
         <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass Components:Components --style compressed --silence-deprecation=import --update --color" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
-    </Target>
-
-    <!-- https://github.com/dotnet/runtime/issues/104599  -->
-    <Target Name="_FixAndroidAotInputs" DependsOnTargets="_AndroidAotInputs" BeforeTargets="_AndroidAotCompilation">
-        <ItemGroup Condition="$(EnableLLVM)">
-            <_AndroidAotInputs Remove="$(IntermediateLinkDir)**\System.Net.Sockets.dll" />
-        </ItemGroup>
     </Target>
 
 </Project>

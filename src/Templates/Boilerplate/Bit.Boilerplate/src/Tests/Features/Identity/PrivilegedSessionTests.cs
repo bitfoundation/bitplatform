@@ -75,7 +75,10 @@ public partial class PrivilegedSessionTests : AppPageTest
         Assert.IsNotNull(accessToken, "The newly signed-in session should have persisted its access token to localStorage.");
 
         var sessionClaims = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false);
-        Assert.AreEqual("false", sessionClaims.FindFirst(AppClaimTypes.PRIVILEGED_SESSION)?.Value,
+        var privilegedSessionClaim = sessionClaims.FindFirst(AppClaimTypes.PRIVILEGED_SESSION);
+
+        Assert.IsNotNull(privilegedSessionClaim);
+        Assert.AreEqual("false", privilegedSessionClaim.Value,
             "The session that exceeded the privileged-sessions limit must carry the privileged-session claim as false.");
     }
 }

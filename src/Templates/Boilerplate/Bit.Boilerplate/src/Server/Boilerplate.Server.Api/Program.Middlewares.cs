@@ -3,6 +3,12 @@
 using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
 using Boilerplate.Server.Api.Features.Identity;
+//#if (signalR == true)
+using Boilerplate.Server.Api.Features.Attachments;
+//#endif
+//#if (notification == true)
+using Boilerplate.Server.Api.Features.PushNotification;
+//#endif
 
 namespace Boilerplate.Server.Api;
 
@@ -92,10 +98,27 @@ public static partial class Program
     /// </summary>
     public static WebApplication ScheduleAppRecurringJobs(this WebApplication app)
     {
-        app.Services.GetRequiredService<IRecurringJobManager>()
-           .AddOrUpdate<UserSessionsCleanupJobRunner>(UserSessionsCleanupJobRunner.RecurringJobId,
-                                                      runner => runner.CleanupExpiredSessions(CancellationToken.None),
-                                                      Cron.Daily);
+        var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+
+        recurringJobManager.AddOrUpdate<UserSessionsRetentionJobRunner>(UserSessionsRetentionJobRunner.RecurringJobId,
+                                                                       runner => runner.EnforceRetention(CancellationToken.None),
+                                                                       Cron.Daily);
+
+        recurringJobManager.AddOrUpdate<UnconfirmedUsersRetentionJobRunner>(UnconfirmedUsersRetentionJobRunner.RecurringJobId,
+                                                                           runner => runner.EnforceRetention(CancellationToken.None),
+                                                                           Cron.Daily);
+
+        //#if (notification == true)
+        recurringJobManager.AddOrUpdate<PushSubscriptionsRetentionJobRunner>(PushSubscriptionsRetentionJobRunner.RecurringJobId,
+                                                                            runner => runner.EnforceRetention(CancellationToken.None),
+                                                                            Cron.Daily);
+        //#endif
+
+        //#if (signalR == true)
+        recurringJobManager.AddOrUpdate<AiChatImagesRetentionJobRunner>(AiChatImagesRetentionJobRunner.RecurringJobId,
+                                                                       runner => runner.EnforceRetention(CancellationToken.None),
+                                                                       Cron.Hourly);
+        //#endif
 
         return app;
     }

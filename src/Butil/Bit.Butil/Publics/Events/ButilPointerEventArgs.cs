@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Bit.Butil;
 
@@ -15,23 +15,58 @@ public class ButilPointerEventArgs : EventArgs
         "pointerId", "width", "height", "pressure", "tangentialPressure",
         "tiltX", "tiltY", "twist", "pointerType", "isPrimary"];
 
+    /// <summary>True when Alt was down as the event fired.</summary>
     public bool AltKey { get; set; }
+
+    /// <summary>The button that changed state, when one did: 0 primary, 1 middle, 2 secondary.</summary>
     public int Button { get; set; }
+
+    /// <summary>A bitmask of every button held at that moment: 1 primary, 2 secondary, 4 middle.</summary>
     public int Buttons { get; set; }
+
+    /// <summary>The X coordinate in viewport coordinates.</summary>
     public double ClientX { get; set; }
+
+    /// <summary>The Y coordinate in viewport coordinates.</summary>
     public double ClientY { get; set; }
+
+    /// <summary>True when Ctrl was down as the event fired.</summary>
     public bool CtrlKey { get; set; }
+
+    /// <summary>True when the Meta key (Command on macOS, the Windows key elsewhere) was down as the event fired.</summary>
     public bool MetaKey { get; set; }
+
+    /// <summary>The X distance moved since the previous event of the same kind.</summary>
     public double MovementX { get; set; }
+
+    /// <summary>The Y distance moved since the previous event of the same kind.</summary>
     public double MovementY { get; set; }
+
+    /// <summary>The X coordinate relative to the target's padding edge.</summary>
     public double OffsetX { get; set; }
+
+    /// <summary>The Y coordinate relative to the target's padding edge.</summary>
     public double OffsetY { get; set; }
+
+    /// <summary>The X coordinate relative to the whole document, so it includes the page scroll.</summary>
     public double PageX { get; set; }
+
+    /// <summary>The Y coordinate relative to the whole document, so it includes the page scroll.</summary>
     public double PageY { get; set; }
+
+    /// <summary>The X coordinate in screen coordinates.</summary>
     public double ScreenX { get; set; }
+
+    /// <summary>The Y coordinate in screen coordinates.</summary>
     public double ScreenY { get; set; }
+
+    /// <summary>True when Shift was down as the event fired.</summary>
     public bool ShiftKey { get; set; }
+
+    /// <summary>Alias for <see cref="ClientX"/>.</summary>
     public double X { get; set; }
+    
+    /// <summary>Alias for <see cref="ClientY"/>.</summary>
     public double Y { get; set; }
 
     /// <summary>Identifier for the pointer that produced the event (see PointerEvent.pointerId).</summary>

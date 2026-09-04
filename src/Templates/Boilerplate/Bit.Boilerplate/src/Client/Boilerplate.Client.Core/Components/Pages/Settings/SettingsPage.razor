@@ -27,6 +27,10 @@
                 <SessionsSection />
             </BitAccordionListOption>
 
+            <BitAccordionListOption Key="@PageUrls.SettingsSections.Privacy" Title="@Localizer[nameof(AppStrings.PrivacyTitle)]" Description="@Localizer[nameof(AppStrings.PrivacySubtitle)]">
+                <PrivacySection />
+            </BitAccordionListOption>
+
             @*#if (ads == true)*@
             <BitAccordionListOption Key="@PageUrls.SettingsSections.UpgradeAccount" Title="@Localizer[nameof(AppStrings.UpgradeTitle)]" Description="@Localizer[nameof(AppStrings.UpgradeSubtitle)]">
                 <UpgradeAccountSection />

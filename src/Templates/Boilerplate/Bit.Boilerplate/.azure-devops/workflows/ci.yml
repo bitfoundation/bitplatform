@@ -1,6 +1,11 @@
 trigger:
 - develop
 
+#if (IsInsideProjectTemplate == true)
+# [mirror] .github/workflows/ci.yml
+# Only one of the two pipeline directories ships to a generated project, so this note is template-only.
+#endif
+
 # https://bitplatform.dev/templates/devops
 
 jobs:
@@ -23,6 +28,12 @@ jobs:
     displayName: 'Install Node.js'
 
   - task: Bash@3
+    displayName: 'Verify formatting'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet format whitespace --folder . --verify-no-changes'
+
+  - task: Bash@3
     displayName: 'Workload restore'
     inputs:
       targetType: 'inline'
@@ -42,6 +53,7 @@ jobs:
 
   - task: Bash@3
     displayName: 'Trust dotnet cert'
+    continueOnError: true # Fails on hosted linux images where the OS trust store is not writable.
     inputs:
       targetType: 'inline'
       script: 'dotnet dev-certs https --trust' # Necessary for aspire related resources
@@ -56,7 +68,6 @@ jobs:
   - task: PublishPipelineArtifact@1
     displayName: 'Upload Tests Artifact'
     condition: failed()
-    dependsOn: test
     inputs:
       targetPath: 'src/Tests/TestResults'
       artifactName: 'tests-artifact'

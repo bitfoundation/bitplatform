@@ -24,7 +24,7 @@ Welcome to **Stage 2** of the Boilerplate project tutorial! In this stage, you'l
 Let's look at a real DTO from the project: [`CategoryDto`](/src/Shared/Features/Categories/CategoryDto.cs)
 
 ```csharp
-namespace Boilerplate.Shared.Dtos.Categories;
+namespace Boilerplate.Shared.Features.Categories;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class CategoryDto
@@ -76,7 +76,7 @@ public partial class UserDto : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
+        if (string.IsNullOrWhiteSpace(Email) && string.IsNullOrWhiteSpace(PhoneNumber))
             yield return new ValidationResult(
                 errorMessage: nameof(AppStrings.EitherProvideEmailOrPhoneNumber),
                 memberNames: [nameof(Email), nameof(PhoneNumber)]
@@ -364,5 +364,11 @@ private async Task SaveProfile()
     (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(CurrentUser);
 }
 ```
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

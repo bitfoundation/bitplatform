@@ -84,6 +84,7 @@ public class IdleDetector(IJSRuntime js) : IAsyncDisposable
         });
     }
 
+    /// <summary>Stops every detector started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

@@ -47,7 +47,7 @@ public class RoleQuotaClaimLifecycleTests
 
         var values = await ReadQuotaValues(server, roleId);
 
-        Assert.AreEqual(1, values.Count,
+        Assert.HasCount(1, values,
             $"A single-valued claim must not accumulate rows - every reader (and the roles page) treats mx-p-s as one number, so a second row makes the effective quota depend on row order. Found: [{string.Join(", ", values)}].");
 
         Assert.AreEqual("5", values[0],
@@ -71,12 +71,12 @@ public class RoleQuotaClaimLifecycleTests
 
         await roleManagementController.AddClaims(roleId, [Quota("3")], TestContext.CancellationToken);
 
-        Assert.AreEqual(1, (await ReadQuotaValues(server, roleId)).Count,
+        Assert.HasCount(1, await ReadQuotaValues(server, roleId),
             "Arrange check: the quota has to be there before removing it proves anything.");
 
         await roleManagementController.DeleteClaims(roleId, [Quota("3")], TestContext.CancellationToken);
 
-        Assert.AreEqual(0, (await ReadQuotaValues(server, roleId)).Count,
+        Assert.IsEmpty(await ReadQuotaValues(server, roleId),
             "With the claim gone the role falls back to AppSettings.Identity.MaxPrivilegedSessionsCount. Without this path a quota can be set on a role and never taken off it again from the UI.");
     }
 

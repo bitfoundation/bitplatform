@@ -24,6 +24,7 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
     [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
+    [AutoInject] private UserErasureService userErasureService = default!;
 
     //#if (notification == true)
     [AutoInject] private PushNotificationService pushNotificationService = default!;
@@ -339,45 +340,9 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpDelete, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task Delete(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
-
-        var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException();
-
-        var currentSessionId = User.GetSessionId();
-
-        //#if (signalR == true)
-        var userSessionConnectionIds = await DbContext.UserSessions
-            .Where(us => us.UserId == userId && us.Id != currentSessionId && us.SignalRConnectionId != null)
-            .Select(us => us.SignalRConnectionId!)
-            .ToArrayAsync(cancellationToken);
-        //#endif
-
-        await DbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
-        {
-            await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
-
-            await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
-
-            // Re-read inside the delegate: on a retry the instance from the failed attempt is still tracked, already
-            // marked Deleted and carrying the concurrency stamp it was loaded with, so deleting it again would either
-            // fault or run against a stale stamp.
-            var userToDelete = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
-
-            var result = await userManager.DeleteAsync(userToDelete);
-
-            if (result.Succeeded is false)
-                throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
-
-            await transaction.CommitAsync(cancellationToken);
-        });
+        await userErasureService.Erase(User.GetUserId(), exceptSessionId: User.GetSessionId(), cancellationToken);
 
         await signInManager.SignOutAsync();
-
-        //#if (signalR == true)
-        // Check out AppHub's comments for more info.
-        await appHubContext.Clients.Clients(userSessionConnectionIds).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
-        //#endif
 
         if (IsWebPlatformRequest() is false)
             return;
@@ -410,7 +375,7 @@ public partial class UserController : AppControllerBase, IUserController
         {
             if (request.ResetSharedKey)
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaResetSharedKeyError)]);
-            else if (string.IsNullOrEmpty(request.TwoFactorCode))
+            else if (string.IsNullOrWhiteSpace(request.TwoFactorCode))
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaEmptyCodeError)]);
             else if (await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.TwoFactorCode) is false)
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaInvalidCodeError)]);
@@ -440,7 +405,7 @@ public partial class UserController : AppControllerBase, IUserController
         //}
 
         var unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
-        if (string.IsNullOrEmpty(unformattedKey))
+        if (string.IsNullOrWhiteSpace(unformattedKey))
         {
             IUserAuthenticatorKeyStore<User> userAuthenticatorKeyStore = (IUserAuthenticatorKeyStore<User>)userStore;
             await userAuthenticatorKeyStore.SetAuthenticatorKeyAsync(user,
@@ -448,7 +413,7 @@ public partial class UserController : AppControllerBase, IUserController
             await userStore.UpdateAsync(user, cancellationToken);
             unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
 
-            if (string.IsNullOrEmpty(unformattedKey))
+            if (string.IsNullOrWhiteSpace(unformattedKey))
             {
                 throw new NotSupportedException("The user manager must produce an authenticator key after reset.");
             }
@@ -545,37 +510,47 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     //#if (signalR == true || notification == true)
-    [HttpPost("{userSessionId}")]
-    public async Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken)
+    [HttpPost("{userSessionId}/{enabled}")]
+    public async Task<UserSessionNotificationStatus> SetNotificationEnabled(Guid userSessionId, bool enabled, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
         var userSession = await DbContext.UserSessions
             .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
-        userSession.NotificationStatus = userSession.NotificationStatus is UserSessionNotificationStatus.NotConfigured ? UserSessionNotificationStatus.Allowed :
-            userSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? UserSessionNotificationStatus.Muted : UserSessionNotificationStatus.Allowed;
+        // NotConfigured is the server's own "never asked" state, so it is only ever left behind, never stored.
+        var status = enabled ? UserSessionNotificationStatus.Allowed : UserSessionNotificationStatus.Muted;
+
+        // The test notification below follows the change, not the call: AppMenu's toggle stores the state the switch
+        // ends up on, and re-storing Allowed is not worth another push.
+        if (userSession.NotificationStatus == status)
+            return status;
+
+        userSession.NotificationStatus = status;
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        if (userSession.NotificationStatus is UserSessionNotificationStatus.Allowed)
+        if (enabled)
         {
             //#if (notification == true)
+            // The same welcome push PushNotificationController.TestPushNotificationSetup sends to signed out visitors.
             await pushNotificationService.RequestPush(new()
             {
-                Message = Localizer[nameof(AppStrings.TestNotificationMessage1)],
+                Title = Localizer[nameof(AppStrings.TestPushNotificationTitle)],
+                Message = Localizer[nameof(AppStrings.TestPushNotificationMessage)],
+                PageUrl = PageUrls.PrivacyPolicy,
                 UserRelatedPush = true
             }, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
             //#endif
             //#if (signalR == true)
             if (userSession.SignalRConnectionId != null)
             {
-                await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SharedAppMessages.SHOW_MESSAGE, (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], null, cancellationToken);
+                await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SharedAppMessages.SHOW_MESSAGE, (string)Localizer[nameof(AppStrings.TestRealtimeConnectionMessage)], null, cancellationToken);
             }
             //#endif
         }
 
-        return userSession.NotificationStatus;
+        return status;
     }
     //#endif
 

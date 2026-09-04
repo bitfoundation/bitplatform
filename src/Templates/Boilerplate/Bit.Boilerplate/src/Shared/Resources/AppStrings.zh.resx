@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -965,9 +965,6 @@
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>验证码：</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>输入验证码。</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>验证</value>
   </data>
@@ -1170,9 +1167,6 @@
     <value>替代文本</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>页</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>共</value>
   </data>
@@ -1182,9 +1176,6 @@
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>管理面板</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} 项</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>过去 30 天产品数量</value>
@@ -1222,9 +1213,6 @@
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>带产品数量的类别</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>按名称搜索</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>每个类别的产品数量图表</value>
   </data>
@@ -1254,9 +1242,6 @@
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>删除产品</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>默认颜色选择器</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>编辑产品 {0}</value>
@@ -1344,9 +1329,6 @@
   <data name="Send" xml:space="preserve">
     <value>发送</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>应用 {0} 强调色</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>已取消</value>
   </data>
@@ -1364,7 +1346,7 @@
     <value>语音输入</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>麦克风访问已被阻止。请为本站点允许访问后再使用语音输入。</value>
+    <value>麦克风访问已被阻止。请在设置中允许访问后再使用语音输入。</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>语音输入已停止：{0}</value>
@@ -1414,19 +1396,15 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>如何安装应用的 PWA 版本？</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>我有一些反馈想分享！</value>
-  </data>
+  <value>我有一些反馈想分享！</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>我有一些反馈想分享！</value>
-  </data>
+  <value>我有一些反馈想分享！</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>我有一些反馈想分享！</value>
-  </data>
+  <value>我有一些反馈想分享！</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>写消息...</value>
   </data>
@@ -1463,9 +1441,6 @@
     <value>我在应用内观看广告有问题。</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>请稍候</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>管理</value>
   </data>
@@ -1524,11 +1499,14 @@
   <data name="DisableNotifications" xml:space="preserve">
     <value>禁用通知</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>测试通知 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>推送通知已开启</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>测试通知 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>我们发送了这条通知，方便你确认通知能送达此设备。点按可查看我们的隐私政策。</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>你与服务器的实时连接已建立。这条消息就是通过它送达的，之后的变化也会以同样的方式即时显示。</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1642,6 +1620,9 @@
   <data name="ImageTooSmall" xml:space="preserve">
     <value>图像太小。最小要求尺寸为 {0}x{1}，当前尺寸为 {2}x{3}。</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>上传的文件不是受支持的图像。</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>提供的图像不包含汽车。</value>
   </data>
@@ -1753,9 +1734,6 @@
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>您确定要离开 {0} 租户吗？</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>您已成功离开该租户。</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>切换租户</value>
   </data>
@@ -1831,8 +1809,100 @@
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>拒绝加入 {0} 的邀请？此操作无法撤销 - 您需要新的邀请才能加入。</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>邀请已拒绝。</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>时区</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>选择时区</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>查找时区</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>没有与您的搜索匹配的时区。</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>推送通知</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>开启推送通知</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>关闭推送通知</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>此应用的推送通知已被阻止。请在浏览器或操作系统设置中允许通知，然后重试。</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>隐私</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>下载您的数据副本</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>您的隐私选择</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>让您保持登录、记住您的语言以及报告错误不在此列表中：没有前两项应用无法运行，而错误报告不包含您设备的任何标识符。</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>使用情况分析</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>使我们能够在多次访问之间识别您的设备，以了解哪些页面被使用以及所需时间。关闭此项不会停止错误报告。</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>广告</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>加载广告脚本，该脚本会设置自己的标识符。在您开启之前不会加载任何内容。</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>您的隐私</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>我们希望在您的设备上存储一些本应用运行并不需要的信息。让您保持登录、记住您的语言以及报告错误无论如何都会进行。</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>接受</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>隐私设置</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>账户设置</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>下载您的数据</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>获取本应用保存的与您有关的全部内容副本：您的账户、您已登录的设备、您的头像以及您创建的内容。它以包含 data.json 和您文件的 zip 压缩包形式提供。</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>文件的每个部分还会说明为何保留、保留多久、还有谁会收到，以及删除您的账户是否会将其移除。</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>下载我的数据</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>如果您希望删除数据，请从以下位置删除您的账户</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>导出数据</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>用于回应并非通过应用提交的数据请求。</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>观看广告会加载 Google 的广告脚本，该脚本会在您的设备上设置自己的标识符。在您同意之前不会加载任何内容。</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>同意并继续</value>
+  </data>
 </root>

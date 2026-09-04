@@ -3,6 +3,17 @@ using System.Net;
 using System.Net.Mail;
 using ImageMagick;
 using Boilerplate.Server.Api.Features.Identity;
+using Boilerplate.Server.Api.Features.Attachments;
+using Boilerplate.Server.Api.Features.PersonalData;
+//#if (notification == true)
+using Boilerplate.Server.Api.Features.PushNotification;
+//#endif
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
+//#if (sample == true || offlineDb == true)
+using Boilerplate.Server.Api.Features.Todo;
+//#endif
 //#if (signalR == true)
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -80,8 +91,13 @@ public static partial class Program
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
-        services.AddScoped<UserSessionsCleanupJobRunner>();
+        services.AddScoped<UserErasureService>();
+        services.AddScoped<UserSessionsRetentionJobRunner>();
+        services.AddScoped<UnconfirmedUsersRetentionJobRunner>();
+
+        services.AddPersonalDataServices();
         //#if (signalR == true)
+        services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         // Add MCP server with chatbot tools
         services.AddMcpServer()
             .WithHttpTransport()
@@ -146,23 +162,23 @@ public static partial class Program
         {
             var adsPushSenderBuilder = new AdsPushSenderBuilder();
 
-            if (string.IsNullOrEmpty(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
+            if (string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
             {
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, sp.GetRequiredService<IHttpClientFactory>().CreateClient("APNS"));
             }
 
-            if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
+            if (string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false)
             {
                 appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase.PrivateKey.Replace(@"\n", string.Empty);
 
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureFirebase(appSettings.AdsPushFirebase, AdsPushTarget.Android);
             }
 
-            if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
+            if (string.IsNullOrWhiteSpace(appSettings.AdsPushVapid?.PrivateKey) is false)
             {
-                if (string.IsNullOrEmpty(appSettings.AdsPushVapid.PublicKey))
+                if (string.IsNullOrWhiteSpace(appSettings.AdsPushVapid.PublicKey))
                     throw new InvalidOperationException("VAPID public key is required");
-                if (string.IsNullOrEmpty(appSettings.AdsPushVapid.Subject))
+                if (string.IsNullOrWhiteSpace(appSettings.AdsPushVapid.Subject))
                     throw new InvalidOperationException("VAPID subject is required"); // While it would work on Android, Windows, Linux, Apple requires subject, so we enforce it for all platforms to avoid confusion and potential issues.
 
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vapid"));
@@ -173,6 +189,7 @@ public static partial class Program
         });
         services.AddScoped<PushNotificationService>();
         services.AddScoped<PushNotificationJobRunner>();
+        services.AddScoped<PushSubscriptionsRetentionJobRunner>();
         //#endif
 
         // Register distributed lock factory
@@ -269,6 +286,8 @@ public static partial class Program
         {
             options.ReportApiVersions = true;
             options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.DefaultApiVersion = new ApiVersion(1);
         })
         .AddMvc() // For API Controllers
         .AddApiExplorer(options =>
@@ -284,7 +303,7 @@ public static partial class Program
             configuration.GetRequiredSection("HubOptions").Bind(options);
         }).AddJsonProtocol(options => options.PayloadSerializerOptions.ApplyDefaultOptions());
 
-        if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false)
         {
             signalRBuilder.AddAzureSignalR(options =>
             {
@@ -528,7 +547,7 @@ public static partial class Program
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
         services.AddHttpClient("AI");
 
-        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.ChatApiKey) is false)
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
             services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
@@ -546,7 +565,7 @@ public static partial class Program
             //#endif
         }
 
-        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
         {
             services.AddEmbeddingGenerator(sp => new OpenAI.Embeddings.EmbeddingClient(model: appSettings.AI.OpenAI.EmbeddingModel, credential: new(appSettings.AI.OpenAI.EmbeddingApiKey), options: new()
             {
@@ -557,7 +576,7 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
         }
-        else if (string.IsNullOrEmpty(appSettings.AI?.HuggingFace?.EmbeddingEndpoint) is false)
+        else if (string.IsNullOrWhiteSpace(appSettings.AI?.HuggingFace?.EmbeddingEndpoint) is false)
         {
             services.AddEmbeddingGenerator(sp => new Microsoft.SemanticKernel.Connectors.HuggingFace.HuggingFaceEmbeddingGenerator(
                   new Uri(appSettings.AI.HuggingFace.EmbeddingEndpoint),
@@ -574,7 +593,7 @@ public static partial class Program
         // view, a home-screen pwa and the MAUI app all behave the same - Web Speech is missing or crippled in most
         // of them. Each one is optional on its own: with no key the corresponding button is never offered.
 #pragma warning disable MEAI001 // ISpeechToTextClient and ITextToSpeechClient are still experimental.
-        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.SpeechToTextApiKey) is false)
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.SpeechToTextApiKey) is false)
         {
             services.AddSpeechToTextClient(sp => new OpenAI.Audio.AudioClient(model: appSettings.AI.OpenAI.SpeechToTextModel, credential: new(appSettings.AI.OpenAI.SpeechToTextApiKey), options: new()
             {
@@ -585,7 +604,7 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
         }
 
-        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.TextToSpeechApiKey) is false)
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.TextToSpeechApiKey) is false)
         {
             services.AddTextToSpeechClient(sp => new OpenAI.Audio.AudioClient(model: appSettings.AI.OpenAI.TextToSpeechModel, credential: new(appSettings.AI.OpenAI.TextToSpeechApiKey), options: new()
             {
@@ -599,10 +618,12 @@ public static partial class Program
         //#endif
         //#endif
 
+        var hangfireOptions = appSettings.Hangfire ?? throw new InvalidOperationException($"The {nameof(ServerApiSettings.Hangfire)} configuration section is required.");
+
         // Configure Hangfire to use Redis for persistent background job storage
         services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            if (appSettings.Hangfire?.UseIsolatedStorage is not true)
+            if (hangfireOptions.UseIsolatedStorage is not true)
             {
                 //#if (redis == true)
                 //#if (IsInsideProjectTemplate == true)
@@ -612,7 +633,7 @@ public static partial class Program
                 {
                     Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
-                });
+                }).WithJobExpirationTimeout(hangfireOptions.JobExpiration);
                 //#if (IsInsideProjectTemplate == true)
                 */
                 //#endif
@@ -621,7 +642,7 @@ public static partial class Program
                 {
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
-                });
+                }).WithJobExpirationTimeout(hangfireOptions.JobExpiration);
                 //#endif
             }
             else
@@ -637,7 +658,8 @@ public static partial class Program
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
                 })
-                .UseDatabaseCreator();
+                .UseDatabaseCreator()
+                .WithJobExpirationTimeout(hangfireOptions.JobExpiration);
             }
 
             hangfireConfiguration.UseRecommendedSerializerSettings();
@@ -679,7 +701,7 @@ public static partial class Program
                     var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
                     return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
                 },
-                options => options.Duration = TimeSpan.FromHours(1));
+                options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));
             return result;
         }
 
@@ -737,7 +759,7 @@ public static partial class Program
 
         services.AddAuthorization();
 
-        if (string.IsNullOrEmpty(configuration["Authentication:Google:ClientId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false)
         {
             authenticationBuilder.AddGoogle(options =>
             {
@@ -747,7 +769,7 @@ public static partial class Program
             });
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:GitHub:ClientId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false)
         {
             authenticationBuilder.AddGitHub(options =>
             {
@@ -756,7 +778,7 @@ public static partial class Program
             });
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:Twitter:ConsumerKey"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false)
         {
             authenticationBuilder.AddTwitter(options =>
             {
@@ -766,7 +788,7 @@ public static partial class Program
             });
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:Apple:ClientId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false)
         {
             authenticationBuilder.AddApple(options =>
             {
@@ -778,7 +800,7 @@ public static partial class Program
             });
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:AzureAD:ClientId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false)
         {
             authenticationBuilder.AddMicrosoftIdentityWebApp(options =>
             {
@@ -796,7 +818,7 @@ public static partial class Program
             }, openIdConnectScheme: "AzureAD");
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:Facebook:AppId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false)
         {
             authenticationBuilder.AddFacebook(options =>
             {
@@ -808,7 +830,7 @@ public static partial class Program
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]
             ?? configuration["Authentication:Keycloak:KeycloakUrl"];
 
-        if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
+        if (string.IsNullOrWhiteSpace(keycloakBaseUrl) is false)
         {
             // In order to have better understanding of Keycloak integration, checkout .docs/07- ASP.NET Core Identity - Authentication & Authorization.md
             authenticationBuilder.AddOpenIdConnect("Keycloak", options =>
@@ -863,6 +885,30 @@ public static partial class Program
         return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
     }
 
+    /// <summary>
+    /// A feature that holds personal data registers its source here: what is missing from this list is missing from
+    /// every export and every erasure. See <see cref="Features.PersonalData.IPersonalDataSource"/>.
+    /// </summary>
+    private static IServiceCollection AddPersonalDataServices(this IServiceCollection services)
+    {
+        services.AddScoped<PersonalDataExportService>();
+
+        services.AddScoped<IPersonalDataSource, IdentityPersonalDataSource>();
+        services.AddScoped<IPersonalDataSource, UserSessionsPersonalDataSource>();
+        services.AddScoped<IPersonalDataSource, AttachmentsPersonalDataSource>();
+        //#if (notification == true)
+        services.AddScoped<IPersonalDataSource, PushNotificationsPersonalDataSource>();
+        //#endif
+        //#if (multitenant == true)
+        services.AddScoped<IPersonalDataSource, TenantsPersonalDataSource>();
+        //#endif
+        //#if (sample == true || offlineDb == true)
+        services.AddScoped<IPersonalDataSource, TodoItemsPersonalDataSource>();
+        //#endif
+
+        return services;
+    }
+
     private static WebApplicationBuilder AddServerApiHealthChecks(this WebApplicationBuilder builder)
     {
         var configuration = builder.Configuration;
@@ -898,7 +944,7 @@ public static partial class Program
         //#endif
 
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
-        if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
+        if (string.IsNullOrWhiteSpace(keycloakBaseUrl) is false)
         {
             var realm = configuration["Authentication:Keycloak:Realm"] ?? "dev";
             healthChecksBuilder.AddUrlGroup(

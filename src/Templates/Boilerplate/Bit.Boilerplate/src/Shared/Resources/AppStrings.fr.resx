@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -965,9 +965,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Code de vérification :</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Saisir le code de vérification.</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Vérifier</value>
   </data>
@@ -1170,9 +1167,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Texte alternatif</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Page</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>sur</value>
   </data>
@@ -1182,9 +1176,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Panneau d'administration</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} éléments</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Nombre de produits des 30 derniers jours</value>
@@ -1222,9 +1213,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Catégories avec nombre de produits</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>Rechercher par nom</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Graphique du nombre de produits par catégorie</value>
   </data>
@@ -1254,9 +1242,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>Supprimer le produit</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Sélecteur de couleur par défaut</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>Modifier le produit {0}</value>
@@ -1344,9 +1329,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="Send" xml:space="preserve">
     <value>Envoyer</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>Appliquer la couleur d'accentuation {0}</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>Annulé</value>
   </data>
@@ -1364,7 +1346,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Dictée</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>L'accès au microphone est bloqué. Autorisez-le pour ce site afin de pouvoir dicter.</value>
+    <value>L'accès au microphone est bloqué. Autorisez-le dans vos paramètres afin de pouvoir dicter.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>Dictée interrompue : {0}</value>
@@ -1414,19 +1396,15 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>Comment installer la version PWA de l'application ?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Écrivez un message...</value>
   </data>
@@ -1463,9 +1441,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>J'ai des problèmes pour regarder les pubs dans l'application.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>Veuillez patienter</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>Gestion</value>
   </data>
@@ -1524,11 +1499,14 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DisableNotifications" xml:space="preserve">
     <value>Désactiver les notifications</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Notification de test 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Les notifications sont activées</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Notification de test 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>Nous l'avons envoyée pour que vous puissiez vérifier que les notifications arrivent sur cet appareil. Touchez-la pour lire notre politique de confidentialité.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Votre connexion en direct au serveur est active. Ce message est arrivé par ce biais, et les prochains changements s'afficheront de la même façon, dès qu'ils se produisent.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1642,6 +1620,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="ImageTooSmall" xml:space="preserve">
     <value>L'image est trop petite. Dimensions minimales requises : {0}x{1}, mais les dimensions actuelles sont {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>Le fichier téléversé n'est pas une image prise en charge.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>L'image fournie ne contient pas de voiture.</value>
   </data>
@@ -1753,9 +1734,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir quitter le locataire {0} ?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Vous avez quitté le locataire avec succès.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Changer de locataire</value>
   </data>
@@ -1831,8 +1809,100 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>Refuser l'invitation à {0} ? Cette action est irréversible - vous aurez besoin d'une nouvelle invitation pour rejoindre.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Invitation refusée.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Fuseau horaire</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Sélectionner le fuseau horaire</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Rechercher un fuseau horaire</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Aucun fuseau horaire ne correspond à votre recherche.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Notifications push</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Activer les notifications push</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Désactiver les notifications push</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Les notifications push sont bloquées pour cette application. Autorisez les notifications dans les paramètres de votre navigateur ou de votre système d&apos;exploitation, puis réessayez.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Confidentialité</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Téléchargez une copie de vos données</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Vos choix de confidentialité</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Votre connexion, la mémorisation de votre langue et le signalement des erreurs ne figurent pas dans cette liste : l'application ne peut pas fonctionner sans les deux premiers, et les rapports d'erreur ne contiennent aucun identifiant de votre appareil.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Analyse d'utilisation</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Nous permet de reconnaître votre appareil d'une visite à l'autre afin de voir quelles pages sont utilisées et combien de temps elles prennent. Le désactiver n'arrête pas les rapports d'erreur.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Publicité</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Charge le script publicitaire, qui définit ses propres identifiants. Rien n'est chargé tant que vous ne l'activez pas.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Votre vie privée</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>Nous souhaitons stocker sur votre appareil des informations dont cette application n'a pas besoin pour fonctionner. Votre connexion, la mémorisation de votre langue et le signalement des erreurs ont lieu dans tous les cas.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Paramètres de confidentialité</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Paramètres du compte</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Téléchargez vos données</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Obtenez une copie de tout ce que cette application conserve à votre sujet : votre compte, les appareils sur lesquels vous êtes connecté, votre photo de profil et le contenu que vous avez créé. Le tout arrive sous forme de fichier zip contenant data.json et vos fichiers.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Chaque partie du fichier indique aussi pourquoi elle est conservée, pendant combien de temps, qui d'autre la reçoit et si la suppression de votre compte l'efface.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Télécharger mes données</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Pour faire supprimer vos données à la place, supprimez votre compte depuis</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Exporter les données</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Répond à une demande de données qui n'est pas arrivée via l'application.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Regarder une publicité charge le script publicitaire de Google, qui définit ses propres identifiants sur votre appareil. Rien n'est chargé tant que vous n'avez pas accepté.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Accepter et continuer</value>
+  </data>
 </root>

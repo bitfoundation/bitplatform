@@ -50,7 +50,10 @@ public partial class AccessTokenParsingTests
         var user = IAuthTokenProvider.ParseAccessToken(BuildToken(expiresOn: DateTimeOffset.UtcNow.AddMinutes(5)), validateExpiry: true);
 
         Assert.IsTrue(user.IsAuthenticated());
-        Assert.AreEqual("the-user", user.FindFirst("name")?.Value);
+        var name = user.FindFirst("name");
+
+        Assert.IsNotNull(name);
+        Assert.AreEqual("the-user", name.Value);
     }
 
     /// <summary>

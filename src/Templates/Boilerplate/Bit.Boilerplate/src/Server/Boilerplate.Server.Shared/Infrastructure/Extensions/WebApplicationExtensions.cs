@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using System.Net;
 using Boilerplate.Server.Shared;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Http;
@@ -66,6 +67,13 @@ public static class WebApplicationExtensions
 
             var forwardedHeadersOptions = forwardedHeadersConfig.DynamicBind<ForwardedHeadersOptions>();
             forwardedHeadersOptions.AllowedHosts = [.. (forwardedHeadersOptions.AllowedHosts ?? []).Union(settings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost))];
+
+            // IPAddress/IPNetwork don't bind from config, so DynamicBind drops KnownProxies/KnownIPNetworks values;
+            // parse them here. Loopback (::1, 127.0.0.0/8) is trusted by default, so a localhost proxy needs none.
+            foreach (var proxy in forwardedHeadersConfig.GetSection("KnownProxies").Get<string[]>() ?? [])
+                forwardedHeadersOptions.KnownProxies.Add(IPAddress.Parse(proxy));
+            foreach (var network in forwardedHeadersConfig.GetSection("KnownIPNetworks").Get<string[]>() ?? [])
+                forwardedHeadersOptions.KnownIPNetworks.Add(IPNetwork.Parse(network));
 
             if (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any())
             {

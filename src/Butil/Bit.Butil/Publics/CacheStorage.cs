@@ -85,6 +85,7 @@ public class CacheStorage(IJSRuntime js)
     public ValueTask<CachedResponse> MatchAny(string url)
         => js.Invoke<CachedResponse>("BitButil.cacheStorage.matchAny", url);
 
+    /// <summary>Looks one URL up in a single named cache. Faster than <see cref="MatchAny"/>, which has to search them all.</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CachedResponse))]
     public ValueTask<CachedResponse> Match(string cacheName, string url)
         => js.Invoke<CachedResponse>("BitButil.cacheStorage.match", cacheName, url);

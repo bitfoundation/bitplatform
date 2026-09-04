@@ -9,7 +9,7 @@ namespace Boilerplate.Tests.Features.Identity;
 /// SignInPanel keeps the credentials it is going to submit in a single <see cref="SignInRequestDto"/> that
 /// outlives any one attempt, and its identifier fields are seeded from the query string by a magic link. The
 /// server then picks WHICH credential it is looking at from those fields alone - <c>isOtpSignIn</c> is just
-/// <c>string.IsNullOrEmpty(request.Otp) is false</c>, and <c>UserManagerExtensions.FindUser</c> resolves a user
+/// <c>string.IsNullOrWhiteSpace(request.Otp) is false</c>, and <c>UserManagerExtensions.FindUser</c> resolves a user
 /// name ahead of an e-mail - so a field left behind from an earlier attempt, or planted in the url, silently
 /// changes the meaning of the next submit.
 ///

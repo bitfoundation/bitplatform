@@ -105,7 +105,7 @@ public partial class AppChatbot
         StringBuilder assistantResponse = new();
         try
         {
-            if (string.IsNullOrEmpty(variablesDefault))
+            if (string.IsNullOrWhiteSpace(variablesDefault))
                 throw new InvalidOperationException($"Chat session must be started before processing messages. Call {nameof(StartChat)} method first.");
 
             supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
@@ -329,7 +329,7 @@ public partial class AppChatbot
         // If the AIFunction tool is getting called by an external MCP client, then the signalRConnectionId won't be set,
         // so we need to query the database to get the active SignalR connection id for the current user session, assuming that the external MCP client is using authentication headers.
 
-        if (string.IsNullOrEmpty(signalRConnectionId) is false)
+        if (string.IsNullOrWhiteSpace(signalRConnectionId) is false)
             return;
 
         await using var scope = serviceProvider.CreateAsyncScope();

@@ -1,14 +1,24 @@
 trigger:
 - main
 
+#if (IsInsideProjectTemplate == true)
+# [mirror] .github/workflows/cd-template.yml
+#endif
+
 # https://bitplatform.dev/templates/devops
 
+# APP_VERSION, APP_ID and APP_TITLE are deliberately NOT defined here: a variable in this block cannot be
+# overridden from the pipeline settings ui or at queue time (yaml wins), which would freeze the version.
+# Define them in Pipelines -> Edit -> Variables, or in a variable group.
 variables:
-  APP_SERVICE_NAME: 'app-service-bp-test'
-  AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
+  APP_SERVICE_NAME: 'use-your-app-service-name-here'
+  AZURE_SUBSCRIPTION: 'use-your-azure-service-connection-name-here' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ServerAddress: 'https://use-your-api-server-url-here.com/'
   WindowsUpdate.FilesUrl: 'https://use-your-api-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
   WebAppRender.BlazorMode: 'BlazorWebAssembly'
+#if (notification == true)
+  AdsPushVapid.PublicKey: 'use-your-vapid-public-key-here'
+#endif
 
 jobs:
 
@@ -34,25 +44,27 @@ jobs:
     displayName: 'Install wasm'
     inputs:
       targetType: 'inline'
-      script: |
-          'cd src && dotnet workload install wasm-tools'
+      script: cd src && dotnet workload install wasm-tools
 
   - script: |
       dotnet tool install --global Bit.ResxTranslator
       bit-resx-translate
+    env:
+      OpenAI__ApiKey: $(OPENAI_APIKEY)
+      OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
     displayName: Use Bit.ResxTranslator
 
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
-      fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/**/appsettings*json'
+      enableXmlTransform: false
+      jsonTargetFiles: 'src/**/appsettings*json'
 
   - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION}}"
-      dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION}}"
+      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
+      dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
     failOnStderr: true
     displayName: Generate CSS/JS files
 
@@ -60,7 +72,7 @@ jobs:
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION}}"'
+      script: 'dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="$(APP_VERSION)"'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload server artifact
@@ -78,6 +90,10 @@ jobs:
 
   steps:
 
+  # This job only consumes the published artifact, so skip the implicit `self` checkout that would
+  # otherwise put the whole source tree (and .git) next to the bundle that `packageForLinux: '.'` deploys.
+  - checkout: none
+
   - task: DownloadPipelineArtifact@2
     displayName: Retrieve server bundle
     inputs:
@@ -87,9 +103,9 @@ jobs:
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
-      fileType: 'json'
       folderPath: './'
-      targetFiles: 'appsettings.json'
+      enableXmlTransform: false
+      jsonTargetFiles: 'appsettings.json'
 
   - task: AzureRmWebAppDeployment@4
     displayName: 'Deploy to App Service'
@@ -99,6 +115,18 @@ jobs:
       appType: 'webAppLinux'
       WebAppName: '$(APP_SERVICE_NAME)'
       packageForLinux: '.'
+
+#if (cloudflare == true)
+  - task: Bash@3
+    displayName: 'Purge Cloudflare cache'
+    inputs:
+      targetType: 'inline'
+      script: |
+        curl --fail --silent --show-error -X POST "https://api.cloudflare.com/client/v4/zones/$(CLOUDFLARE_ZONE)/purge_cache" \
+          -H "Authorization: Bearer $(CLOUDFLARE_TOKEN)" \
+          -H "Content-Type: application/json" \
+          --data '{"purge_everything":true}'
+#endif
 
 - job: build_blazor_hybrid_windows
   displayName: 'build blazor hybrid (windows)'
@@ -121,36 +149,39 @@ jobs:
   - script: |
       dotnet tool install --global Bit.ResxTranslator
       bit-resx-translate
+    env:
+      OpenAI__ApiKey: $(OPENAI_APIKEY)
+      OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
     displayName: Use Bit.ResxTranslator
 
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
-      fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/**/appsettings*json'
+      enableXmlTransform: false
+      jsonTargetFiles: 'src/**/appsettings*json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION}}"'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"'
 
   - task: Bash@3
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
       script: |
-        cd src\Client\Boilerplate.Client.Windows\
-        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}" --self-contained
-          dotnet tool restore
-          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
+        cd src/Client/Boilerplate.Client.Windows
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish-result -r win-x86 -p:Version="$(APP_VERSION)" --self-contained
+        dotnet tool restore
+        dotnet vpk pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
     inputs:
-      targetPath: 'src\Client\Boilerplate.Client.Windows\Releases'
+      targetPath: 'src/Client/Boilerplate.Client.Windows/Releases'
       artifact: 'win-exe-bundle'
       publishLocation: 'pipeline'
 
@@ -198,19 +229,22 @@ jobs:
   - script: |
       dotnet tool install --global Bit.ResxTranslator
       bit-resx-translate
+    env:
+      OpenAI__ApiKey: $(OPENAI_APIKEY)
+      OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
     displayName: Use Bit.ResxTranslator
 
   - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
-      fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/**/appsettings*json'
+      enableXmlTransform: false
+      jsonTargetFiles: 'src/**/appsettings*json'
   
   - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION}}"
-      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION}}"
+      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
+      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
     failOnStderr: true
     displayName: Generate CSS/JS files
 
@@ -218,7 +252,7 @@ jobs:
     displayName: 'Publish aab'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -p:Version="${{ vars.APP_VERSION}}" -f net10.0-android'
+      script: 'dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -p:Version="$(APP_VERSION)" -f net10.0-android'
 
   - script: |
       mkdir drop

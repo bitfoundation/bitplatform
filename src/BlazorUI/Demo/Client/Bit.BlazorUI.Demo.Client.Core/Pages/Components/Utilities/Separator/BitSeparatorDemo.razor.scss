@@ -1,7 +1,40 @@
-﻿.custom-horizontal-layout {
+.custom-auto-layout {
+    gap: 1rem;
+    display: flex;
+    padding: 1rem 0;
+    white-space: nowrap;
+}
+
+.custom-horizontal-layout {
     gap: 1rem;
     height: 3rem;
     display: flex;
     white-space: nowrap;
     align-items: center;
+}
+
+// The classes below are passed to the component as parameters and land on markup the component itself
+// writes, so they need ::deep to escape this stylesheet's scope. The line is the two pseudo elements of
+// the root, so restyling it means restyling both of them.
+::deep {
+    .custom-class::before,
+    .custom-class::after {
+        border: none;
+        height: 3px;
+    }
+
+    .custom-class::before {
+        background: linear-gradient(to right, transparent, dodgerblue);
+    }
+
+    .custom-class::after {
+        background: linear-gradient(to right, dodgerblue, transparent);
+    }
+
+    .custom-content {
+        color: white;
+        padding: 0.25rem 1rem;
+        border-radius: 1rem;
+        background: linear-gradient(90deg, mediumorchid, dodgerblue);
+    }
 }

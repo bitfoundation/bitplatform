@@ -47,6 +47,12 @@ public interface IUserController : IAppController
     [HttpDelete]
     Task Delete(CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Articles 15 and 20 - downloads a zip, so it is called with the HttpClient directly rather than through the
+    /// generated proxy, which speaks json only. Requires <c>ELEVATED_ACCESS</c>, like <see cref="Delete"/>.
+    /// </summary>
+    public const string ExportPersonalDataUri = "api/v1/User/ExportPersonalData";
+
     [HttpPost]
     [Route("~/api/v1/[controller]/2fa")]
     Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken) => default!;
@@ -64,8 +70,13 @@ public interface IUserController : IAppController
     Task DeleteWebAuthnCredential(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 
     //#if (signalR == true || notification == true)
-    [HttpPost("{userSessionId}")]
-    Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken);
+    /// <summary>
+    /// Takes the state the caller wants rather than flipping whatever the server holds, so the two callers that
+    /// already know it - AppMenu's push notifications toggle and the sessions list in Settings - cannot land on the
+    /// opposite one by acting on a status that has since changed. Returns the resulting status.
+    /// </summary>
+    [HttpPost("{userSessionId}/{enabled}")]
+    Task<UserSessionNotificationStatus> SetNotificationEnabled(Guid userSessionId, bool enabled, CancellationToken cancellationToken);
     //#endif
 
     //#if (multitenant == true)

@@ -12,6 +12,8 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     decimal factor,
                                                                     int margin,
                                                                     int threshold,
+                                                                    int maxPull,
+                                                                    bool enabled,
                                                                     DotNetObjectReference<BitPullToRefresh> dotnetObjectReference)
     {
         // Deliberately not on the FastInvoke path, for the same reason as the dispose call below:
@@ -19,7 +21,26 @@ internal static class BitPullToRefreshJsRuntimeExtensions
         // setup. A failed setup means JS never registered the refresher and so never took ownership of the
         // DotNetObjectReference, and the JS dispose then silently no-ops for an unknown id - so the failure
         // has to surface for BitPullToRefresh to release the reference itself instead of leaking it.
-        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, dotnetObjectReference);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, dotnetObjectReference);
+    }
+
+    internal static ValueTask BitPullToRefreshUpdate(this IJSRuntime jsRuntime,
+                                                                    string id,
+                                                                    ElementReference? scrollerElement,
+                                                                    string? scrollerSelector,
+                                                                    int trigger,
+                                                                    decimal factor,
+                                                                    int margin,
+                                                                    int threshold,
+                                                                    int maxPull,
+                                                                    bool enabled)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.update", id, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled);
+    }
+
+    internal static ValueTask BitPullToRefreshRefresh(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.refresh", id);
     }
 
     // Deliberately not on the FastInvoke path: FastInvokeVoid swallows JSException on the in-process (WASM)

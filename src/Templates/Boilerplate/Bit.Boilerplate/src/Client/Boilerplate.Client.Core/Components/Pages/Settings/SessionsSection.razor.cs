@@ -94,7 +94,7 @@ public partial class SessionsSection
 
     private static string GetImageUrl(string? deviceInfo)
     {
-        if (string.IsNullOrEmpty(deviceInfo)) return "unknown.png";
+        if (string.IsNullOrWhiteSpace(deviceInfo)) return "unknown.png";
 
         var d = deviceInfo.ToLowerInvariant();
 
@@ -118,13 +118,15 @@ public partial class SessionsSection
     {
         return TimeProvider.GetUtcNow() - renewedOn < TimeSpan.FromMinutes(5) ? Localizer[nameof(AppStrings.Online)]
                     : TimeProvider.GetUtcNow() - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
-                    : renewedOn.ToLocalTime().ToString("g");
+                    : TimeZoneService.ToLocalTime(renewedOn).ToString("g");
     }
 
     //#if (signalR == true || notification == true)
     private async Task ToggleNotification(UserSessionDto userSession)
     {
-        if (userSession.NotificationStatus is not UserSessionNotificationStatus.Allowed)
+        var enabled = userSession.NotificationStatus is not UserSessionNotificationStatus.Allowed;
+
+        if (enabled)
         {
             // User is going to allow notifications so it's an opportune time to request permission.
             // The permission might have already been requested (if userSession.NotificationStatus is UserSessionNotificationStatus.Muted), but there's no harm in asking for permission again.
@@ -143,7 +145,7 @@ public partial class SessionsSection
             //#endif
         }
 
-        userSession.NotificationStatus = await userController.ToggleNotification(userSession.Id, CurrentCancellationToken);
+        userSession.NotificationStatus = await userController.SetNotificationEnabled(userSession.Id, enabled, CurrentCancellationToken);
     }
     //#endif
 }

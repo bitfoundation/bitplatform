@@ -54,9 +54,7 @@ public partial class SharedAppMessages
 ```csharp
 public partial class ClientAppMessages // : SharedAppMessages, when signalR is enabled
 {    
-    // Theme and culture
     public const string THEME_CHANGED = nameof(THEME_CHANGED);
-    public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
     
     // Diagnostics
     public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
@@ -475,7 +473,8 @@ await pushNotificationService.RequestPush(
 When the user clicks this notification:
 - **Web**: The app opens and navigates to `/products/123`
 - **Mobile (Android/iOS)**: The native app opens and navigates to `/products/123`
-- **Desktop (Windows/macOS)**: The browser opens and navigates to `/products/123`
+- **Desktop (macOS)**: The Mac Catalyst app opens and navigates in-app to `/products/123`, the same as the mobile heads
+- **Desktop (Windows)**: push notifications are not implemented - both `WindowsPushNotificationService` heads throw `NotImplementedException`, and `IsAvailable` returns false, so nothing is ever subscribed
 
 This is **extremely useful for**:
 - **Marketing campaigns**: "Flash sale on electronics - 50% off!" → Opens sale page
@@ -524,7 +523,7 @@ Each platform has its own implementation:
 
 The project uses **Bit.Butil.Notification** to access the browser's native Notification API.
 
-**Extension Helper**: [`src/Client/Boilerplate.Client.Core/Extensions/NotificationExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/NotificationExtensions.cs)
+**Extension Helper**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/NotificationExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/NotificationExtensions.cs)
 
 ```csharp
 public static async Task<bool> IsNotificationAvailable(this Notification notification)
@@ -599,6 +598,8 @@ When testing push notifications, it's critical to understand that there are **fo
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

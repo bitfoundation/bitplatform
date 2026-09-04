@@ -41,7 +41,7 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
 
         try
         {
-            while (string.IsNullOrEmpty(Token))
+            while (string.IsNullOrWhiteSpace(Token))
             {
                 // After the NotificationsSupported Task completes with a result of true,
                 // we use UNUserNotificationCenter.Current.Delegate.
@@ -52,6 +52,7 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
         catch (Exception exp)
         {
             Logger.LogError(exp, "Unable to resolve token for APNS.");
+            return null;
         }
 
         var subscription = new PushNotificationSubscriptionDto

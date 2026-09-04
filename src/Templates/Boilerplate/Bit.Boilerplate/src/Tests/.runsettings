@@ -5,30 +5,20 @@
     <RunConfiguration>
         <CollectSourceInformation>true</CollectSourceInformation>
         <EnvironmentVariables>
-            
+
             <!-- https://playwright.dev/docs/debug -->
             <!--<HEADED>1</HEADED>-->
             <!--<PWDEBUG>1</PWDEBUG>-->
             <!--<BROWSER>firefox</BROWSER>-->
+
+            <!--<PLAYWRIGHT_SERVER_ENDPOINT>ws://192.168.178.24:4444/</PLAYWRIGHT_SERVER_ENDPOINT>-->
+            <!-- Runs the selected BROWSER on another computer (e.g. webkit on the mac on the local network), after
+                 starting the following command on it: -->
+            <COMMAND_TO_RUN_IN_REMOTE_MACHINE>npx playwright@1.62.0 install; npx playwright@1.62.0 run-server --port 4444 --host 0.0.0.0</COMMAND_TO_RUN_IN_REMOTE_MACHINE>
 
             <!-- You can override the configuration from appsettings.json for tests here. -->
             <DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>false</DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>
         </EnvironmentVariables>
     </RunConfiguration>
 
-    <!-- https://learn.microsoft.com/en-us/visualstudio/test/configure-unit-tests-by-using-a-dot-runsettings-file -->
-    <LoggerRunSettings>
-        <Loggers>
-            <Logger friendlyName="html" enabled="True">
-                <Configuration>
-                    <LogFileName>TestResults.html</LogFileName>
-                </Configuration>
-            </Logger>
-            <Logger friendlyName="trx" enabled="True">
-                <Configuration>
-                    <LogFileName>TestResults.trx</LogFileName>
-                </Configuration>
-            </Logger>
-        </Loggers>
-    </LoggerRunSettings>
 </RunSettings>

@@ -9,20 +9,24 @@ public partial class ThemeService
 
     public async Task<AppThemeType> GetCurrentTheme()
     {
-        var theme = await bitThemeManager.GetCurrentThemeAsync();
-        return theme == "dark" ? AppThemeType.Dark : AppThemeType.Light;
+        return ToAppTheme(await bitThemeManager.GetCurrentThemeAsync());
     }
 
     public async Task<AppThemeType> ToggleTheme()
     {
-        var newThemeName = await bitThemeManager.ToggleDarkLightAsync();
+        var theme = ToAppTheme(await bitThemeManager.ToggleDarkLightAsync());
 
-        var isDark = newThemeName == "dark";
-        await bitDeviceCoordinator.ApplyTheme(isDark);
+        await bitDeviceCoordinator.ApplyTheme(theme is AppThemeType.Dark);
 
-        var theme = isDark ? AppThemeType.Dark : AppThemeType.Light;
         pubSubService.Publish(ClientAppMessages.THEME_CHANGED, theme);
 
         return theme;
+    }
+
+    private static AppThemeType ToAppTheme(string? themeName)
+    {
+        return themeName?.EndsWith("dark", StringComparison.OrdinalIgnoreCase) is true
+            ? AppThemeType.Dark
+            : AppThemeType.Light;
     }
 }

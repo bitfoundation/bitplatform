@@ -5,19 +5,40 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }
 
+@* The root is the live region: a spinning shape says nothing on its own, so the label - or, when
+   there is none, the visually hidden fallback below - is what a screen reader announces. The
+   attribute splat comes first, which means every attribute written after it wins outright - and one
+   written as null takes the splat's own value off the element - so the role, the politeness, the
+   direction and the accessible name each resolve a passed-through attribute of their own. *@
 <div @ref="This!.RootElement" @attributes="This?.HtmlAttributes"
      id="@This?._Id"
      style="@This?.StyleBuilder.Value"
-     class="@This?.ClassBuilder.Value">
-    @if (This?.LabelTemplate is not null)
+     class="@This?.ClassBuilder.Value"
+     dir="@This?._Dir"
+     role="@This?._Role"
+     aria-live="@This?._AriaLive"
+     aria-label="@This?._AriaLabel">
+    @* Only the content waits out the Delay window, so a loader can never flash up for work that turned
+       out to be quick, while the root above stays in the document: text landing in a live region that
+       is already there is announced reliably, where a region that appears with its text already inside
+       may be missed. See BitLoadingBase.Delay. *@
+    @if (This is null || This.IsDelayed is false)
     {
-        @This?.LabelTemplate
+        @if (This?.LabelTemplate is not null)
+        {
+            @This?.LabelTemplate
+        }
+        else if (This?.Label is not null)
+        {
+            <label style="@This?.Styles?.Label" class="bit-ldn-lbl @This?.Classes?.Label">
+                @This?.Label
+            </label>
+        }
+        else if (This?._ScreenReaderText is not null)
+        {
+            @* Out of the flow, so the flex gap of the root still only counts the drawing and the label. *@
+            <span style="@This?.Styles?.ScreenReaderText" class="bit-ldn-srt @This?.Classes?.ScreenReaderText">@This?._ScreenReaderText</span>
+        }
+        @ChildContent
     }
-    else if (This?.Label is not null)
-    {
-        <label style="@This?.Styles?.Label" class="bit-ldn-lbl @This?.Classes?.Label">
-            @This?.Label
-        </label>
-    }
-    @ChildContent
 </div>

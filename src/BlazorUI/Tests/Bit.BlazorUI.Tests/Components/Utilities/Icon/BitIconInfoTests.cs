@@ -423,4 +423,174 @@ public class BitIconInfoTests
         Assert.AreEqual("fa-solid fa-home", iconInfo.Name);
         Assert.AreEqual("fa-solid fa-home", iconInfo.GetCssClasses());
     }
+
+    // Material Icons / Material Symbols (ligature-based sets)
+
+    [TestMethod]
+    public void MiShouldPutTheLigatureOnContentAndTheFamilyOnTheClass()
+    {
+        var iconInfo = BitIconInfo.Mi("home");
+
+        Assert.AreEqual("home", iconInfo.Content);
+        Assert.AreEqual("material-icons", iconInfo.BaseClass);
+        Assert.IsNull(iconInfo.Name);
+        Assert.AreEqual("material-icons", iconInfo.GetCssClasses());
+    }
+
+    [TestMethod]
+    public void MiShouldRespectTheStyle()
+    {
+        var iconInfo = BitIconInfo.Mi("home", "outlined");
+
+        Assert.AreEqual("home", iconInfo.Content);
+        Assert.AreEqual("material-icons-outlined", iconInfo.GetCssClasses());
+    }
+
+    [TestMethod]
+    public void MsShouldDefaultToTheOutlinedStyle()
+    {
+        var iconInfo = BitIconInfo.Ms("home");
+
+        Assert.AreEqual("home", iconInfo.Content);
+        Assert.AreEqual("material-symbols-outlined", iconInfo.GetCssClasses());
+    }
+
+    [TestMethod,
+        DataRow("outlined", "material-symbols-outlined"),
+        DataRow("rounded", "material-symbols-rounded"),
+        DataRow("sharp", "material-symbols-sharp")
+    ]
+    public void MsShouldRespectTheStyle(string style, string expected)
+    {
+        var iconInfo = BitIconInfo.Ms("home", style);
+
+        Assert.AreEqual(expected, iconInfo.GetCssClasses());
+    }
+
+    // IsEmpty
+
+    [TestMethod]
+    public void IsEmptyShouldBeTrueForAnInstanceThatNamesNothing()
+    {
+        Assert.IsTrue(new BitIconInfo().IsEmpty);
+        Assert.IsTrue(new BitIconInfo("").IsEmpty);
+        Assert.IsTrue(new BitIconInfo("", "", "").IsEmpty);
+    }
+
+    [TestMethod]
+    public void IsEmptyShouldBeFalseWhenAnythingNamesAGlyph()
+    {
+        Assert.IsFalse(new BitIconInfo("home").IsEmpty);
+        Assert.IsFalse(BitIconInfo.Bit("Add").IsEmpty);
+        Assert.IsFalse(BitIconInfo.Ms("home").IsEmpty);
+        Assert.IsFalse(new BitIconInfo { Content = "home" }.IsEmpty);
+    }
+
+    [TestMethod]
+    public void FromShouldFallBackToIconNameWhenTheIconNamesNothing()
+    {
+        var result = BitIconInfo.From(new BitIconInfo(), "Add");
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("bit-icon bit-icon--Add", result.GetCssClasses());
+    }
+
+    // Equality
+
+    [TestMethod]
+    public void TwoDescriptionsOfTheSameGlyphShouldBeEqual()
+    {
+        Assert.AreEqual(BitIconInfo.Bit("Add"), BitIconInfo.Bit("Add"));
+        Assert.AreEqual(BitIconInfo.Fa("solid house"), BitIconInfo.Fa("fa-solid fa-house"));
+        Assert.AreEqual(BitIconInfo.Ms("home"), BitIconInfo.Ms("home"));
+        Assert.AreEqual(BitIconInfo.Bit("Add").GetHashCode(), BitIconInfo.Bit("Add").GetHashCode());
+    }
+
+    [TestMethod]
+    public void TwoDescriptionsOfDifferentGlyphsShouldNotBeEqual()
+    {
+        Assert.AreNotEqual(BitIconInfo.Bit("Add"), BitIconInfo.Bit("Remove"));
+        Assert.AreNotEqual(BitIconInfo.Bit("Add"), BitIconInfo.Bi("add"));
+        Assert.AreNotEqual(BitIconInfo.Ms("home"), BitIconInfo.Ms("house"));
+        Assert.AreNotEqual<BitIconInfo?>(BitIconInfo.Bit("Add"), null);
+    }
+
+    [TestMethod]
+    public void EqualityShouldSeeThroughTheImplicitConversionFromString()
+    {
+        BitIconInfo a = "fa-solid fa-house";
+        BitIconInfo b = "fa-solid fa-house";
+
+        Assert.AreEqual(a, b);
+    }
+
+    [TestMethod]
+    public void ToStringShouldReturnTheCssClasses()
+    {
+        Assert.AreEqual("bit-icon bit-icon--Add", BitIconInfo.Bit("Add").ToString());
+        Assert.AreEqual("bi bi-house", BitIconInfo.Bi("house").ToString());
+    }
+
+    // A base class with no name behind it still has a class to give: that is what a ligature set is.
+
+    [TestMethod]
+    public void GetCssClassesWithOnlyABaseClassShouldReturnThatBaseClass()
+    {
+        var iconInfo = new BitIconInfo { BaseClass = "material-icons" };
+
+        Assert.AreEqual("material-icons", iconInfo.GetCssClasses());
+    }
+
+    [TestMethod]
+    public void EqualityShouldTellTwoLigaturesOfOneFamilyApart()
+    {
+        // Same classes, different glyph: the ligature is the only thing naming it.
+        Assert.AreNotEqual(BitIconInfo.Ms("home"), BitIconInfo.Ms("search"));
+        Assert.AreNotEqual(BitIconInfo.Ms("home").GetHashCode(), BitIconInfo.Ms("search").GetHashCode());
+    }
+
+    [TestMethod]
+    public void EqualityShouldBeFalseForSomethingThatIsNotAnIcon()
+    {
+        Assert.IsFalse(BitIconInfo.Bit("Add").Equals("bit-icon bit-icon--Add"));
+        Assert.IsFalse(BitIconInfo.Bit("Add").Equals((object?)null));
+    }
+
+    [TestMethod]
+    public void EqualityShouldBeTrueForTheSameInstance()
+    {
+        var icon = BitIconInfo.Bit("Add");
+
+        Assert.IsTrue(icon.Equals(icon));
+    }
+
+    [TestMethod]
+    public void MsShouldFallBackToTheOutlinedStyleForAnEmptyStyle()
+    {
+        Assert.AreEqual("material-symbols-outlined", BitIconInfo.Ms("home", "").GetCssClasses());
+    }
+
+    [TestMethod]
+    public void MiShouldFallBackToTheFilledFamilyForAnEmptyStyle()
+    {
+        Assert.AreEqual("material-icons", BitIconInfo.Mi("home", "").GetCssClasses());
+    }
+
+    [TestMethod]
+    public void FaShouldNameNoGlyphForAnEmptyList()
+    {
+        Assert.IsTrue(BitIconInfo.Fa("").IsEmpty);
+        Assert.IsTrue(BitIconInfo.Fa("   ").IsEmpty);
+    }
+
+    [TestMethod]
+    public void FromShouldReturnTheEmptyIconWhenThereIsNoNameToFallBackTo()
+    {
+        var empty = new BitIconInfo();
+
+        // Nothing names a glyph, so nothing is invented: the instance the caller passed comes back and
+        // the component draws no glyph at all.
+        Assert.AreSame(empty, BitIconInfo.From(empty, null));
+        Assert.AreSame(empty, BitIconInfo.From(empty, ""));
+    }
 }

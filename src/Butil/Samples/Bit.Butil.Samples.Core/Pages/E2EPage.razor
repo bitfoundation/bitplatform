@@ -1,4 +1,4 @@
-@page "/e2e"
+﻿@page "/e2e"
 @inject Bit.Butil.LocalStorage localStorage
 @inject Bit.Butil.SessionStorage sessionStorage
 @inject Bit.Butil.Cookie cookie
@@ -81,12 +81,54 @@
     <button id="window-matchmedia" @onclick="WindowMatchMedia">matchMedia</button>
 </section>
 
+<section>
+    <h3>Element</h3>
+    @* The element extensions run against elements this harness renders once and never re-renders,
+       so a Blazor diff cannot undo what the interop writes between the click and the assertion. *@
+    <div @ref="_elementBox" id="el-box" class="el-target" data-demo="butil" style="height:6rem;overflow:auto;">
+        <p>Element extension target.</p>
+        <ul><li>one</li><li>two</li><li>three</li></ul>
+        <div style="height:20rem;">scroll space</div>
+    </div>
+    <div @ref="_elementHidden" id="el-hidden" style="display:none;">hidden</div>
+    <div @ref="_elementContent" id="el-content-box">original</div>
+    <div @ref="_elementPopover" id="el-popover-box">popover body</div>
+    <button @ref="_elementButton" id="el-synthetic" @onclick="() => _syntheticClicks++">synthetic target</button>
+    <input @ref="_elementInput" id="el-input" />
+    <button id="el-click" @onclick="ElementClick">Click</button>
+    <button id="el-focus" @onclick="ElementFocus">Focus + Matches(:focus)</button>
+    <button id="el-visibility" @onclick="ElementVisibility">CheckVisibility</button>
+    <button id="el-closest" @onclick="ElementClosest">Closest</button>
+    <button id="el-classes" @onclick="ElementClasses">classList</button>
+    <button id="el-data" @onclick="ElementData">dataset</button>
+    <button id="el-style" @onclick="ElementStyle">inline style</button>
+    <button id="el-content" @onclick="ElementContent">content insertion</button>
+    <button id="el-aria" @onclick="ElementAria">ARIA + role</button>
+    <button id="el-ns" @onclick="ElementNamespacedAttributes">namespaced attributes</button>
+    <button id="el-query" @onclick="ElementQueries">query helpers</button>
+    <button id="el-scroll" @onclick="ElementScrollOffsets">scroll offsets</button>
+    <button id="el-rects" @onclick="ElementClientRects">getClientRects</button>
+    <button id="el-popover" @onclick="ElementPopoverState">popover</button>
+    <button id="el-identity" @onclick="ElementIdentity">identity + tree facts</button>
+</section>
+
 @code {
     private const string TestCookieName = "butil_e2e";
     private const string TestCookieValue = "v=1; b=hello world & again";
     private string _status = "ready";
 
     private void Set(string value) { _status = value; StateHasChanged(); }
+
+    private ElementReference _elementBox;
+    private ElementReference _elementContent;
+    private ElementReference _elementHidden;
+    private ElementReference _elementPopover;
+    private ElementReference _elementButton;
+    private ElementReference _elementInput;
+    private int _syntheticClicks;
+
+    /// <summary>The namespace SVG's href lives in - the usual reason for the *NS attribute overloads.</summary>
+    private const string XlinkNamespace = "http://www.w3.org/1999/xlink";
 
     // ─── Storage ────────────────────────────────────────────────────────────────
     private async Task LocalStorageSet()
@@ -290,6 +332,132 @@
         var value = await history.GetScrollRestoration();
         await history.SetScrollRestoration(ScrollRestoration.Auto);
         Set($"history:scroll:{value}");
+    }
+
+    // ─── Element extensions ─────────────────────────────────────────────────────
+    private async Task ElementClick()
+    {
+        var before = _syntheticClicks;
+        await _elementButton.Click();
+        // The button's own @onclick ran, which is the whole point: a synthetic click is a real
+        // click as far as the page is concerned, gesture-gated APIs aside.
+        Set($"el:click:{_syntheticClicks - before}");
+    }
+    private async Task ElementFocus()
+    {
+        await _elementInput.Focus(new FocusOptions { PreventScroll = true });
+        var focused = await _elementInput.Matches(":focus");
+        Set($"el:focus:{focused}");
+    }
+    private async Task ElementVisibility()
+    {
+        var options = new CheckVisibilityOptions { OpacityProperty = true, VisibilityProperty = true };
+        var shown = await _elementBox.CheckVisibility(options);
+        var hidden = await _elementHidden.CheckVisibility(options);
+        Set($"el:vis:{shown}/{hidden}");
+    }
+    private async Task ElementClosest()
+    {
+        var inSection = await _elementBox.Closest("section");
+        var inTable = await _elementBox.Closest("table");
+        Set($"el:closest:{inSection}/{inTable}");
+    }
+    private async Task ElementClasses()
+    {
+        await _elementBox.AddClass("alpha", "beta");
+        var has = await _elementBox.ContainsClass("alpha");
+        var swapped = await _elementBox.ReplaceClass("beta", "gamma");
+        var toggled = await _elementBox.ToggleClass("alpha");
+        var list = await _elementBox.GetClassList();
+        await _elementBox.RemoveClass("gamma");
+        Set($"el:class:{has}/{swapped}/{toggled}/{list.Length}");
+    }
+    private async Task ElementData()
+    {
+        await _elementBox.SetData("userId", "42");
+        var value = await _elementBox.GetData("userId");
+        var names = await _elementBox.GetDataNames();
+        await _elementBox.RemoveData("userId");
+        var afterRemoval = await _elementBox.GetData("userId");
+        Set($"el:data:{value}/{names.Contains("userId")}/{string.IsNullOrEmpty(afterRemoval)}");
+    }
+    private async Task ElementStyle()
+    {
+        await _elementBox.SetStyleProperty("--butil-accent", "#123456");
+        var custom = await _elementBox.GetStyleProperty("--butil-accent");
+        await _elementBox.SetStyleProperty("outline-width", "3px", important: true);
+        var removed = await _elementBox.RemoveStyleProperty("outline-width");
+        Set($"el:style:{custom.Trim()}/{removed}");
+    }
+    private async Task ElementContent()
+    {
+        await _elementContent.ReplaceChildren("base");
+        await _elementContent.Append("+append");
+        await _elementContent.Prepend("prepend+");
+        await _elementContent.InsertAdjacentText(InsertPosition.BeforeEnd, "!");
+        var html = await _elementContent.GetHtml();
+        Set($"el:content:{html}");
+    }
+    private async Task ElementAria()
+    {
+        await _elementBox.SetRole("region");
+        await _elementBox.SetAriaLabel("butil-e2e");
+        await _elementBox.SetAriaExpanded("true");
+        var role = await _elementBox.GetRole();
+        var label = await _elementBox.GetAriaLabel();
+        var expanded = await _elementBox.GetAriaExpanded();
+        Set($"el:aria:{role}/{label}/{expanded}");
+    }
+    private async Task ElementNamespacedAttributes()
+    {
+        await _elementBox.SetAttributeNS(XlinkNamespace, "xlink:href", "#star");
+        var value = await _elementBox.GetAttributeNS(XlinkNamespace, "href");
+        var present = await _elementBox.HasAttributeNS(XlinkNamespace, "href");
+        await _elementBox.RemoveAttributeNS(XlinkNamespace, "href");
+        var afterRemoval = await _elementBox.HasAttributeNS(XlinkNamespace, "href");
+        Set($"el:ns:{value}/{present}/{afterRemoval}");
+    }
+    private async Task ElementQueries()
+    {
+        var matches = await _elementBox.QuerySelectorMatches("li");
+        var count = await _elementBox.QuerySelectorAllCount("li");
+        var none = await _elementBox.QuerySelectorAllCount("table");
+        Set($"el:query:{matches}/{count}/{none}");
+    }
+    private async Task ElementScrollOffsets()
+    {
+        await _elementBox.SetScrollTop(60);
+        var top = await _elementBox.GetScrollTop();
+        var max = await _elementBox.GetScrollTopMax();
+        await _elementBox.SetScrollTop(0);
+        Set($"el:scroll:{top > 0}/{max > 0}");
+    }
+    private async Task ElementClientRects()
+    {
+        var rects = await _elementBox.GetClientRects();
+        Set($"el:rects:{rects.Length > 0}/{rects.Length > 0 && rects[0].Width > 0}");
+    }
+    private async Task ElementPopoverState()
+    {
+        await _elementPopover.SetPopover(ElementPopover.Manual);
+        var kind = await _elementPopover.GetPopover();
+        var showing = await _elementPopover.TogglePopover();
+        await _elementPopover.HidePopover();
+        await _elementPopover.SetPopover(ElementPopover.NotSet);
+        Set($"el:popover:{kind}/{showing}");
+    }
+    private async Task ElementIdentity()
+    {
+        await _elementBox.SetTitle("butil-e2e-title");
+        await _elementBox.SetLang("fa-IR");
+        await _elementBox.SetDraggable(true);
+        var title = await _elementBox.GetTitle();
+        var lang = await _elementBox.GetLang();
+        var draggable = await _elementBox.GetDraggable();
+        var localName = await _elementBox.GetLocalName();
+        var children = await _elementBox.GetChildElementCount();
+        var zoom = await _elementBox.GetCurrentCssZoom();
+        Set($"el:identity:{title}/{lang}/{draggable}/{localName}/{children}/{zoom > 0}");
     }
 
     public class SamplePayload(int number, string label)

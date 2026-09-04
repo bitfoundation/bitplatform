@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class BitThemeMapper
 {
@@ -451,6 +451,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
 
         addCssVar(BitCss.Var.Typography.FontFamily, bitTheme.Typography.FontFamily);
+        addCssVar(BitCss.Var.Typography.MonoFontFamily, bitTheme.Typography.MonoFontFamily);
         addCssVar(BitCss.Var.Typography.FontWeight, bitTheme.Typography.FontWeight);
         addCssVar(BitCss.Var.Typography.LineHeight, bitTheme.Typography.LineHeight);
         addCssVar(BitCss.Var.Typography.GutterSize, bitTheme.Typography.GutterSize);
@@ -632,6 +633,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.SliderThumb.Lg, bitTheme.Size.SliderThumb.Lg);
         addCssVar(BitCss.Var.Size.SpinnerStroke, bitTheme.Size.SpinnerStroke);
         addCssVar(BitCss.Var.Size.PopupMaxHeight, bitTheme.Size.PopupMaxHeight);
+        addCssVar(BitCss.Var.Size.DialogMaxWidth, bitTheme.Size.DialogMaxWidth);
 
         addCssVar(BitCss.Var.Opacity.Disabled, bitTheme.Opacity.Disabled);
 
@@ -777,6 +779,7 @@ internal static class BitThemeMapper
         return new BitThemeTypography
         {
             FontFamily = src.FontFamily,
+            MonoFontFamily = src.MonoFontFamily,
             FontWeight = src.FontWeight,
             LineHeight = src.LineHeight,
             GutterSize = src.GutterSize,
@@ -838,6 +841,7 @@ internal static class BitThemeMapper
             SliderThumb = src.SliderThumb ?? new(),
             SpinnerStroke = src.SpinnerStroke,
             PopupMaxHeight = src.PopupMaxHeight,
+            DialogMaxWidth = src.DialogMaxWidth,
         };
     }
 
@@ -1217,6 +1221,7 @@ internal static class BitThemeMapper
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;
 
         result.Typography.FontFamily = bitTheme.Typography.FontFamily ?? other.Typography.FontFamily;
+        result.Typography.MonoFontFamily = bitTheme.Typography.MonoFontFamily ?? other.Typography.MonoFontFamily;
         result.Typography.FontWeight = bitTheme.Typography.FontWeight ?? other.Typography.FontWeight;
         result.Typography.LineHeight = bitTheme.Typography.LineHeight ?? other.Typography.LineHeight;
         result.Typography.GutterSize = bitTheme.Typography.GutterSize ?? other.Typography.GutterSize;
@@ -1397,6 +1402,7 @@ internal static class BitThemeMapper
         result.Size.SliderThumb.Lg = bitTheme.Size.SliderThumb.Lg ?? other.Size.SliderThumb.Lg;
         result.Size.SpinnerStroke = bitTheme.Size.SpinnerStroke ?? other.Size.SpinnerStroke;
         result.Size.PopupMaxHeight = bitTheme.Size.PopupMaxHeight ?? other.Size.PopupMaxHeight;
+        result.Size.DialogMaxWidth = bitTheme.Size.DialogMaxWidth ?? other.Size.DialogMaxWidth;
 
         result.Opacity.Disabled = bitTheme.Opacity.Disabled ?? other.Opacity.Disabled;
 

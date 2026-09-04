@@ -1,16 +1,17 @@
 //+:cnd:noEmit
 using Microsoft.AspNetCore.OutputCaching;
+using Boilerplate.Shared.Features.Attachments;
 using Boilerplate.Server.Shared.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
 
 /// <summary>
-/// 
+///
 /// The default Boilerplate project template includes:
 /// 1. `Static` file caching on browsers and CDN edge servers.
 /// 2. Caching JSON and dynamic files responses on CDN edge servers and ASP.NET Core's Output Cache by using `AppResponseCache` attribute in controllers like `StatisticsController`, `AttachmentController` and minimal apis.
 /// 3. Caching pre-rendered HTML results of Blazor pages on CDN edge servers and ASP.NET Core's Output by using `AppResponseCache` attribute in pages like HomePage.razor
-/// 
+///
 /// - Note: Both the output cache and the CDN edge cache are purged by tag, and the tag is the request path alone
 ///   (See <see cref="AppResponseCachePolicy.CreateCacheTag(string)"/>). So the path passed to <see cref="PurgeCache(string[])"/>
 ///   must match the request path exactly, while its query string is irrelevant: every variant of the path is purged at once.
@@ -52,10 +53,20 @@ public partial class ResponseCacheService
         //#endif
     }
 
+    public async Task PurgeUserProfileImagesCache(Guid userId)
+    {
+        await PurgeCache($"/api/v1/Attachment/GetAttachment/{userId}/{AttachmentKind.UserProfileImageSmall}",
+                         $"/api/v1/Attachment/GetAttachment/{userId}/{AttachmentKind.UserProfileImageOriginal}");
+    }
+
     //#if (module == "Sales" || module == "Admin")
     public async Task PurgeProductCache(int shortId)
     {
         await PurgeCache("/", $"/product/{shortId}", $"/api/v1/ProductView/Get/{shortId}");
+    }
+    public async Task PurgeHomePage()
+    {
+        await PurgeCache("/");
     }
     //#endif
 

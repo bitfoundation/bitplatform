@@ -1,9 +1,14 @@
+@*+:cnd:noEmit*@
 @attribute [Route(PageUrls.Terms)]
 @attribute [Route("{culture?}" + PageUrls.Terms)]
 @attribute [Route(PageUrls.PrivacyPolicy)]
 @attribute [Route("{culture?}" + PageUrls.PrivacyPolicy)]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
 @inherits AppPageBase
+
+@* Deliberately not localized: a privacy notice and a licence are legal instruments, and a machine translation of one
+   is a different document with different meaning. Translate them with a lawyer, per market, or link out to a
+   translated copy. Only AppPageData below is localized, because that is chrome rather than the instrument. *@
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Terms)]"
              PageTitle="@Localizer[nameof(AppStrings.TermsPageTitle)]" />
@@ -12,113 +17,271 @@
     <article>
         <BitStack>
             <BitCard FullSize>
-                <BitText Typography="BitTypography.H3">Boilerplate Terms and Privacy Policy</BitText>
-                <BitText>
-                    This EULA and Privacy Policy are written for individuals who use the Boilerplate Demo Version through the
-                    <BitLink Href="https://use-your-web-app-url-here.com" Target="_blank">https://use-your-web-app-url-here.com</BitLink> website, or the
-                    published version of this app on the bit platform's Google Play, Apple Store, and Microsoft Store accounts.
-                    <br />
-                    If you want to build your own project based on this Project Template, please refer to the
-                    <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE" Target="_blank">License</BitLink>
-                    and create your own project, publish it with the relevant EULA and Privacy Policy for your business.
+
+                @* Ships as-is to the app stores for the bit Boilerplate demo, so it names bit platform. Before you
+                   ship your own: replace the entity, address, phone and e-mail, state the log retention left open
+                   below, and keep "Who else receives your data" in step with what you switch on. *@
+
+                <BitText Typography="BitTypography.H3">Privacy Notice and Terms of Use</BitText>
+                <BitText Typography="BitTypography.Body2">Last updated: 31 August 2026</BitText>
+
+                <BitText Typography="BitTypography.H5">Who is responsible for your data</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    The controller of the personal data described here is bit platform, Sixmastraat 15, 8932 PA
+                    Leeuwarden, Netherlands, reachable at
+                    <BitLink Href="mailto:info@bitplatform.dev">info@bitplatform.dev</BitLink> or
+                    <BitLink Href="tel:+31684207362">+31684207362</BitLink>.
+                    If you have a question or a concern about how we handle your data, contact us and we will look into
+                    it. You also have the right to lodge a complaint with your data protection supervisory authority.
                 </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">Privacy Policy</BitText>
+
+                <BitText Typography="BitTypography.H5">What we hold, why, and for how long</BitText>
                 <ul>
-                    <li><BitText>bit platform is committed to protecting the privacy of the user data.</BitText></li>
-                    <li><BitText>We will only use the data collected from the user for the purposes of the Boilerplate Demo Version and will delete this data upon user request, using one of the contact methods provided above.</BitText></li>
-                    <li><BitText>We do not share the user data with any third parties and do not allow users to share data with anyone in any way.</BitText></li>
-                    <li><BitText>We do not collect any information on user's usage in the Boilerplate Demo Version.</BitText></li>
-                    <li><BitText>We do not display any Third-Party content, advertisements, or any purchases in the Boilerplate Demo Version.</BitText></li>
-                    <li><BitText>This Privacy Policy is effective from the date of publication and is subject to change without notice.</BitText></li>
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Your account</b> - the e-mail address or phone number you sign in with. Everything else
+                            on your profile is optional and entirely up to you: a display name, a picture, and if you
+                            want them, your gender and date of birth. You can add, change or clear any of it at any
+                            time, and the app works the same without it. If you set a password, turn on two-factor
+                            authentication or register a passkey, we hold what is needed to check it. We hold all of
+                            this to give you the service you asked for (performance of a contract). It lives as long as
+                            your account does; an account that is never confirmed is deleted automatically after
+                            48 hours.
+                        </BitText>
+                    </li>
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Your sessions</b> - for each device you sign in on: the IP address,
+                            @*#if (cloudflare == true)*@
+                            the country and city our CDN reports for it,
+                            @*#endif*@
+                            a description of the device and browser, your language, the app version, and the times you
+                            signed in and were last active. We hold this to keep you signed in, to
+                            <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Sessions}")">show you where your account is in use and let you sign a device out remotely</BitLink>,
+                            and to investigate abuse (legitimate interests). Each session is deleted 14 days after it
+                            was last used, and immediately when you sign that device out.
+                        </BitText>
+                    </li>
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Your profile picture</b>, if you upload one. Location data and other metadata are
+                            stripped from the image on upload. It is served from an address derived from your account
+                            identifier and may be held briefly by our CDN. Kept for as long as your account (contract).
+                        </BitText>
+                    </li>
+                    @*#if (multitenant == true)*@
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Your organisation memberships</b> - which organisations you belong to or have been
+                            invited to, and whether you accepted (contract). Kept while the membership exists.
+                        </BitText>
+                    </li>
+                    @*#endif*@
+                    @*#if (sample == true || offlineDb == true)*@
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Content you create</b> in the app (contract). Kept until you delete it or delete your
+                            account. Where the app syncs offline, a deleted item keeps a marker so your other devices
+                            learn about the deletion.
+                        </BitText>
+                    </li>
+                    @*#endif*@
+                    @*#if (notification == true)*@
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Push notification registrations</b> - a device identifier and the address your device's
+                            push service delivers to, so we can notify you (consent, given by enabling notifications).
+                            A registration expires one month after it was last renewed.
+                        </BitText>
+                    </li>
+                    @*#endif*@
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Messages we send you</b> - sign-in codes, confirmation links and similar. While a message
+                            is queued for delivery, its recipient address and its content sit in our job queue
+                            (contract). The entry is deleted within a day of the message being sent, and within a day
+                            of us giving up on one that could not be sent.
+                        </BitText>
+                    </li>
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Technical logs</b> - records of errors and requests, which carry your account identifier,
+                            your session identifier, the IP address, the page you were on, and your device, time zone,
+                            language and app version. We hold these to keep the service working and secure (legitimate
+                            interests). We keep them only as long as they are useful for diagnosing problems and
+                            keeping the service secure, and they are not used to build a profile of you.
+                        </BitText>
+                    </li>
+                    @*#if (signalR == true)*@
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>Your conversations with the AI assistant</b>, including anything you type or attach to
+                            them, which are sent to the AI provider named below to produce a reply (legitimate
+                            interests in offering the feature). Do not put anything in a chat that you would not want
+                            leaving our systems. What that provider keeps, and for how long, is governed by its own
+                            terms.
+                        </BitText>
+                    </li>
+                    @*#endif*@
                 </ul>
-                <br />
-                <BitText Typography="BitTypography.H5">End-User License Agreement (EULA) for Boilerplate Demo Version</BitText>
-                <BitText>
-                    This End-User License Agreement (EULA) is a legal agreement between you (the "user") and bit platform, located at
-                    Sixmastraat 15, 8932 PA Leeuwarden, Netherlands, with phone number <BitLink Href="tel:+31684207362">+31684207362</BitLink>,
-                    for the use of Boilerplate Demo Version (the "Software").
-                    <br />
-                    By using the Software, you agree to be bound by the terms and conditions of this agreement.
+                <BitText Typography="BitTypography.Body1">
+                    We do not sell your personal data, and we do not use it to make automated decisions that have legal
+                    or similarly significant effects on you.
                 </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">License Grant</BitText>
-                <BitText>
-                    bit platform hereby grants the user a non-exclusive, non-transferable license to use the Software, solely for
-                    the purpose of evaluating and testing the features of the Boilerplate Demo Version during the term of this EULA.
+
+                <BitText Typography="BitTypography.H5">Who else receives your data</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    Running this service means other companies process parts of your data on our behalf. Each of them is
+                    bound by a contract that limits what they may do with it. Some are based outside the EEA, in which
+                    case the transfer relies on the safeguards permitted by Chapter V of the GDPR.
                 </BitText>
-                <br />
+                <ul>
+                    @*#if (cloudflare == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Cloudflare</b> - sits in front of this service, so every request passes through it. It also tells us the approximate country and city of your IP address, and caches some responses at its edge.</BitText></li>
+                    @*#endif*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Our e-mail provider</b> - delivers the messages we send you.</BitText></li>
+                    <li><BitText Typography="BitTypography.Body1"><b>Our SMS provider</b> - delivers text messages, where you gave us a phone number.</BitText></li>
+                    <li><BitText Typography="BitTypography.Body1"><b>Our hosting and storage providers</b> - run the servers and store the files.</BitText></li>
+                    @*#if (notification == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Firebase Cloud Messaging (Google) and Apple Push Notification service</b> - carry push notifications to your device.</BitText></li>
+                    @*#endif*@
+                    @*#if (signalR == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>The AI provider configured for this deployment</b> - receives the content of your conversations with the assistant, and any audio or images you send it.</BitText></li>
+                    @*#endif*@
+                    @*#if (sentry == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Sentry</b> - receives error and crash reports.</BitText></li>
+                    @*#endif*@
+                    @*#if (appInsights == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Azure Application Insights (Microsoft)</b> - receives error reports and, only if you agree to usage analytics, telemetry about how the app is used.</BitText></li>
+                    @*#endif*@
+                    @*#if (captcha == "reCaptcha")*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Google reCAPTCHA</b> - checks that sign-ups come from a person rather than a script.</BitText></li>
+                    @*#endif*@
+                    @*#if (ads == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Google advertising</b> - serves ads, and only after you have agreed to advertising.</BitText></li>
+                    @*#endif*@
+                </ul>
+
+                <BitText Typography="BitTypography.H5">Cookies and what we store on your device</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    Some of what we store on your device is required for the app to work at all, and needs no
+                    permission. Everything else waits until you agree to it.
+                </BitText>
+                <ul>
+                    <li><BitText Typography="BitTypography.Body1"><b>Sign-in</b> - keeps you signed in. Strictly necessary; cleared when you sign out.</BitText></li>
+                    <li><BitText Typography="BitTypography.Body1"><b>Language and appearance</b> - remembers the language, theme and accent colour you chose, so the app looks the same next time. Strictly necessary for the preference you asked us to remember.</BitText></li>
+                    @*#if (appInsights == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Usage analytics</b> - lets us recognise your device between visits so we can see which pages are used. Only after you agree, and you can withdraw at any time. Error reporting does not depend on it and does not identify your device.</BitText></li>
+                    @*#endif*@
+                    @*#if (ads == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Advertising</b> - identifiers set by the advertising script. Nothing is loaded and nothing is stored until you agree, and you can withdraw at any time.</BitText></li>
+                    @*#endif*@
+                </ul>
+                @*#if (ads == true || appInsights == true)*@
+                <BitText Typography="BitTypography.Body1">
+                    You can change these choices whenever you like under
+                    <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">Privacy settings</BitLink>.
+                    Withdrawing is as easy as agreeing was, and it does not affect anything we did while your agreement
+                    was in place.
+                </BitText>
+                @*#endif*@
+
+                <BitText Typography="BitTypography.H5">Your rights</BitText>
+                <ul>
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            Get a copy of your data. Download everything we hold about you as a file, from
+                            <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">Privacy settings</BitLink>.
+                            It is machine-readable, so you can take it elsewhere.
+                        </BitText>
+                    </li>
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            Correct it. Your profile, e-mail address and phone number are editable in
+                            <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}")">Profile</BitLink>
+                            and <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>.
+                        </BitText>
+                    </li>
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            Delete it. Deleting your account from
+                            <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>
+                            removes your account and everything held under it. Two things survive it for a while:
+                            messages already queued for delivery, and technical logs, both of which age out on the
+                            schedules above.
+                        </BitText>
+                    </li>
+                    <li><BitText Typography="BitTypography.Body1">Object, or ask us to restrict what we do with data we hold on the basis of legitimate interests. Write to us and we will answer.</BitText></li>
+                    <li><BitText Typography="BitTypography.Body1">Withdraw consent at any time, for anything you agreed to.</BitText></li>
+                </ul>
+                <BitText Typography="BitTypography.Body1">
+                    We answer requests within one month. If a request reaches us by e-mail rather than through the app,
+                    we may need to establish that it really is your account before we act on it.
+                </BitText>
+
+                <BitText Typography="BitTypography.H5">Changes to this notice</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    When this notice changes we update the date at the top. If a change matters to you - a new recipient
+                    of your data, a new purpose, a longer retention - we tell you before it takes effect rather than
+                    leaving you to notice.
+                </BitText>
+
+                <BitText Typography="BitTypography.H3">End-User License Agreement</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    This agreement is between you (the "user") and bit platform, Sixmastraat 15, 8932 PA Leeuwarden,
+                    Netherlands, phone <BitLink Href="tel:+31684207362">+31684207362</BitLink>, for the use of this
+                    application (the "Software"). By using the Software you agree to it.
+                </BitText>
+
+                <BitText Typography="BitTypography.H5">License grant</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    You are granted a non-exclusive, non-transferable licence to use the Software for the term of this
+                    agreement.
+                </BitText>
+
                 <BitText Typography="BitTypography.H5">Ownership</BitText>
-                <BitText>
-                    bit platform retains all rights, title, and interest in and to the Software, including any and all intellectual property rights.
+                <BitText Typography="BitTypography.Body1">
+                    bit platform retains all rights, title and interest in the Software, including all intellectual
+                    property rights in it.
                 </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">User Data</BitText>
-                <BitText>
-                    bit platform may collect user data, including name, surname, photo, date of birth, gender, IP address, device operating system name and its version.
-                    Providing certain information is optional, and bit platform will only use it for the purposes of the Boilerplate Demo Version.
-                    If the user requests, bit platform will delete this data within one day, using one of the contact methods provided at the end of this EULA.
-                    In addition, the user is required to provide an email address for account verification purposes, but bit platform will not use this email for any other purposes.
-                    For more information on data collection and usage by AppInsights and Sentry, please refer to their documents:
-                    <br />
-                    <BitLink Href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights overview</BitLink>
-                    <br />
-                    <BitLink Href="https://sentry.io/trust/privacy/">Sentry documentation</BitLink>
-                    <br />
-                    bit platform also provides a feature in the settings page for users to delete their accounts and their data completely
-                    (<BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>).
-                </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">Push Notification</BitText>
-                <BitText>
-                    The Software includes push notifications for updates and alerts. to enable this feature the app uses the device id
-                    generated by the native features available in the operating system. Users can opt-out of these notifications through the Software's settings.
-                </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">Analytics and Cookies</BitText>
-                <BitText>
-                    bit platform uses AppInsights and Sentry to collect data on app performance and user interactions. these data consists of the
-                    User id (generated by the app), User-Session id (an id generated by the app), App-Session id (an id generated by the app),
-                    Operating System name and version, and App version. bit platform will not use these data for any purposes other than analytics
-                    and in-app features (such as showing all active sessions of the user in the settings page).
-                    The Software also uses necessary cookies for authentication/authorization to ensure proper functionality of the app.
-                </BitText>
-                <br />
+
                 <BitText Typography="BitTypography.H5">Restrictions</BitText>
-                <BitText>
-                    User may not: (a) copy the Software, except as necessary for testing purposes; (b) distribute, rent, loan, lease, sell, sublicense,
-                    or otherwise transfer the Software or any portion thereof; (c) reverse engineer, decompile, disassemble, modify, translate, make any
-                    attempt to discover the source code of the Software, or create derivative works based on the Software; or (d) remove any proprietary
-                    notices or labels on the Software.
+                <BitText Typography="BitTypography.Body1">
+                    You may not: (a) copy the Software, except as necessary to use it as intended; (b) distribute, rent,
+                    loan, lease, sell, sublicense or otherwise transfer the Software or any part of it; (c) reverse
+                    engineer, decompile, disassemble, modify, translate or attempt to discover the source code of the
+                    Software, or create derivative works from it; or (d) remove any proprietary notices or labels.
                 </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">No Warranty</BitText>
-                <BitText>
-                    The Software is provided "AS IS" and without warranty of any kind, express or implied, including but not limited to the warranties
-                    of merchantability, fitness for a particular purpose, and non-infringement. bit platform does not warrant that the Software will be
-                    error-free or that its use will be uninterrupted.
+
+                <BitText Typography="BitTypography.H5">No warranty</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    The Software is provided "AS IS", without warranty of any kind, express or implied, including the
+                    warranties of merchantability, fitness for a particular purpose and non-infringement. We do not
+                    warrant that the Software will be error-free or that its use will be uninterrupted.
                 </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">Limitation of Liability</BitText>
-                <BitText>
-                    bit platform shall not be liable for any damages whatsoever arising out of the use of or inability to use the Software, including
-                    but not limited to direct, indirect, incidental, special, or consequential damages, even if bit platform has been advised of the
-                    possibility of such damages.
+
+                <BitText Typography="BitTypography.H5">Limitation of liability</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    We are not liable for any damages arising out of the use of, or inability to use, the Software,
+                    including direct, indirect, incidental, special or consequential damages, even if we were advised of
+                    the possibility of them. Nothing here limits liability that cannot be limited by law.
                 </BitText>
-                <br />
+
                 <BitText Typography="BitTypography.H5">Termination</BitText>
-                <BitText>
-                    This EULA remains in effect until terminated. bit platform reserves the right to terminate this EULA at any time without notice.
-                    Upon termination, the user shall immediately cease all use of the Software and destroy all copies of the Software in its possession.
+                <BitText Typography="BitTypography.Body1">
+                    This agreement remains in effect until terminated. Upon termination you must stop using the Software
+                    and destroy any copies in your possession. Your rights over your personal data survive termination.
                 </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">Contact Information</BitText>
-                <BitText>
-                    If you have any questions or concerns regarding this EULA or the Privacy Policy, or if you would like to contact bit platform for any reason,
-                    please email <BitLink Href="mailto:info@bitplatform.dev">info@bitplatform.dev</BitLink>
-                    or call <BitLink Href="tel:+31684207362">+31684207362</BitLink>, or visit our website at
-                    <BitLink Href="https://bitplatform.dev/contact-us" Target="_blank">our website</BitLink> or visit us at Sixmastraat 15, 8932 PA Leeuwarden, Netherlands.
+
+                <BitText Typography="BitTypography.H5">Contact</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    Questions about this notice, this agreement, or your data:
+                    <BitLink Href="mailto:info@bitplatform.dev">info@bitplatform.dev</BitLink>,
+                    <BitLink Href="tel:+31684207362">+31684207362</BitLink>,
+                    <BitLink Href="https://bitplatform.dev/contact-us" Target="_blank">bitplatform.dev/contact-us</BitLink>,
+                    or write to bit platform, Sixmastraat 15, 8932 PA Leeuwarden, Netherlands.
                 </BitText>
+
             </BitCard>
         </BitStack>
     </article>

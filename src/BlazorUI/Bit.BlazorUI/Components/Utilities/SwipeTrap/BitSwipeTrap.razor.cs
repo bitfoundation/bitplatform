@@ -7,6 +7,13 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitSwipeTrap : BitComponentBase
 {
+    private decimal _appliedTrigger;
+    private decimal _appliedTriggerVelocity;
+    private decimal _appliedThreshold;
+    private int _appliedThrottle;
+    private BitSwipeOrientation _appliedOrientationLock;
+    private bool _appliedTouchOnly;
+    private string? _appliedSkipSelector;
     private DotNetObjectReference<BitSwipeTrap>? _dotnetObj;
 
 
@@ -36,79 +43,173 @@ public partial class BitSwipeTrap : BitComponentBase
     [Parameter] public EventCallback<BitSwipeTrapEventArgs> OnEnd { get; set; }
 
     /// <summary>
-    /// The event callback for when the swipe action triggers based on the Trigger constraint.
+    /// The event callback for when the swipe action triggers based on the Trigger or TriggerVelocity constraints.
     /// </summary>
     [Parameter] public EventCallback<BitSwipeTrapTriggerArgs> OnTrigger { get; set; }
 
     /// <summary>
     /// Specifies the orientation lock in which the swipe trap allows to trap the swipe actions.
+    /// A Horizontal or Vertical lock is fixed for the whole gesture, whichever direction it starts in: the locked
+    /// axis is the only one trapped and the only one reported, while the other axis keeps its default browser
+    /// behavior (via a matching touch-action) and always reports zero.
+    /// Auto instead locks to the first axis the gesture moves along.
     /// </summary>
-    [Parameter] public BitSwipeOrientation? OrientationLock { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitSwipeOrientation? OrientationLock { get; set; }
 
     /// <summary>
-    /// The threshold in pixel for swiping distance that starts the swipe process process which stops the default behavior.
+    /// A CSS selector of descendant elements on which starting a swipe is ignored (e.g. inputs or nested interactive elements).
+    /// </summary>
+    [Parameter] public string? SkipSelector { get; set; }
+
+    /// <summary>
+    /// The distance in pixels a gesture must cover before the swipe trap takes it over and stops the
+    /// default behavior. It is also what resolves the axis a diagonal gesture is moving along (default is 0).
     /// </summary>
     [Parameter] public decimal? Threshold { get; set; }
 
     /// <summary>
-    /// The throttle time in milliseconds to apply a delay between periodic calls to raise the events (default is 10).
+    /// The throttle time in milliseconds to apply a delay between periodic calls to raise the OnMove event (default is 0, meaning no throttling).
     /// </summary>
     [Parameter] public int? Throttle { get; set; }
 
     /// <summary>
-    /// The swiping point (fraction of element's width or an absolute value) to trigger and call the OnTrigger event (default is 0.25m).
+    /// Ignores mouse swipes, trapping only touch (and pen) gestures.
+    /// </summary>
+    [Parameter] public bool TouchOnly { get; set; }
+
+    /// <summary>
+    /// The swiping point to trigger and call the OnTrigger event: either a fraction of the element's width/height
+    /// (values less than 1) or an absolute value in pixels (default is 0.25m).
     /// </summary>
     [Parameter] public decimal? Trigger { get; set; }
+
+    /// <summary>
+    /// The swiping velocity in pixels per millisecond that triggers and calls the OnTrigger event on release (a flick),
+    /// even if the swiping distance has not reached the Trigger point (default is 0, meaning disabled).
+    /// </summary>
+    [Parameter] public decimal? TriggerVelocity { get; set; }
 
 
 
     [JSInvokable("OnStart")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwipeTrapEventArgs))]
-    public async Task _OnStart(decimal startX, decimal startY)
+    public async Task _OnStart(decimal startX, decimal startY, string? pointerType = null)
     {
-        await OnStart.InvokeAsync(new(startX, startY, 0, 0));
+        await OnStart.InvokeAsync(new(startX, startY, 0, 0, 0, 0, pointerType));
     }
 
     [JSInvokable("OnMove")]
-    public async Task _OnMove(decimal startX, decimal startY, decimal diffX, decimal diffY)
+    public async Task _OnMove(decimal startX, decimal startY, decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null, decimal duration = 0)
     {
-        await OnMove.InvokeAsync(new(startX, startY, diffX, diffY));
+        await OnMove.InvokeAsync(new(startX, startY, diffX, diffY, velocityX, velocityY, pointerType, false, duration));
     }
 
     [JSInvokable("OnEnd")]
-    public async Task _OnEnd(decimal startX, decimal startY, decimal diffX, decimal diffY)
+    public async Task _OnEnd(decimal startX, decimal startY, decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null, bool isCanceled = false, decimal duration = 0)
     {
-        await OnEnd.InvokeAsync(new(startX, startY, diffX, diffY));
+        await OnEnd.InvokeAsync(new(startX, startY, diffX, diffY, velocityX, velocityY, pointerType, isCanceled, duration));
     }
 
     [JSInvokable("OnTrigger")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwipeTrapTriggerArgs))]
-    public async Task _OnTrigger(decimal diffX, decimal diffY)
+    public async Task _OnTrigger(decimal diffX, decimal diffY, decimal velocityX, decimal velocityY, string? pointerType = null, decimal duration = 0)
     {
-        var direction = Math.Abs(diffX) > Math.Abs(diffY)
+        // A dead heat goes to the horizontal axis, the same way the JS side resolves the axis a gesture
+        // moves along: a perfect diagonal must not be reported as one axis here and locked to the other there.
+        var direction = Math.Abs(diffX) >= Math.Abs(diffY)
             ? diffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
             : diffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
 
-        await OnTrigger.InvokeAsync(new(direction, diffX, diffY));
+        await OnTrigger.InvokeAsync(new(direction, diffX, diffY, velocityX, velocityY, pointerType, duration));
     }
 
 
 
     protected override string RootElementClass => "bit-stp";
 
+    protected override void RegisterCssClasses()
+    {
+        // The orientation lock also declares itself to the browser as a touch-action: without it, a
+        // scroll the browser has already started stops sending cancelable events, and trapping the
+        // locked axis becomes a race the trap can lose.
+        ClassBuilder.Register(() => OrientationLock switch
+        {
+            BitSwipeOrientation.Horizontal => "bit-stp-hrz",
+            BitSwipeOrientation.Vertical => "bit-stp-vrt",
+            BitSwipeOrientation.Auto => "bit-stp-lck",
+            _ => string.Empty
+        });
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        var trigger = Trigger ?? 0.25m;
+        var triggerVelocity = TriggerVelocity ?? 0;
+        var threshold = Threshold ?? 0;
+        var throttle = Throttle ?? 0;
+        var orientationLock = OrientationLock ?? BitSwipeOrientation.None;
+        var touchOnly = TouchOnly;
+        var skipSelector = SkipSelector;
+
+        if (firstRender ||
+            _appliedTrigger != trigger ||
+            _appliedTriggerVelocity != triggerVelocity ||
+            _appliedThreshold != threshold ||
+            _appliedThrottle != throttle ||
+            _appliedOrientationLock != orientationLock ||
+            _appliedTouchOnly != touchOnly ||
+            _appliedSkipSelector != skipSelector)
         {
-            _dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipeTrapSetup(
-                UniqueId, 
-                RootElement, 
-                Trigger ?? 0.25m, 
-                Threshold ?? 0, 
-                Throttle ?? 0, 
-                OrientationLock ?? BitSwipeOrientation.None, 
-                _dotnetObj);
+            try
+            {
+                if (firstRender is false)
+                {
+                    // The JS dispose owns the reference handed to the previous setup, so it is let go of
+                    // here rather than disposed a second time on this side.
+                    await _js.BitSwipeTrapDispose(UniqueId);
+
+                    _dotnetObj = null;
+                }
+
+                // The JS side disposes the .NET reference it is handed when the trap is disposed or
+                // re-setup, so each setup gets a fresh one instead of a field kept for the component's life.
+                // Until the setup call has actually handed it over, disposing it is still this side's job,
+                // and it is held on to afterwards so that a dispose which cannot reach the browser - a
+                // circuit that is already gone - can still release it rather than leak it.
+                _dotnetObj = DotNetObjectReference.Create(this);
+                try
+                {
+                    await _js.BitSwipeTrapSetup(
+                        UniqueId,
+                        RootElement,
+                        trigger,
+                        triggerVelocity,
+                        threshold,
+                        throttle,
+                        orientationLock,
+                        touchOnly,
+                        skipSelector,
+                        _dotnetObj);
+                }
+                catch
+                {
+                    _dotnetObj.Dispose();
+                    _dotnetObj = null;
+                    throw;
+                }
+
+                // What is remembered is what the trap was actually set up with, so a setup that failed
+                // leaves the previous values in place and the next render tries again.
+                _appliedTrigger = trigger;
+                _appliedTriggerVelocity = triggerVelocity;
+                _appliedThreshold = threshold;
+                _appliedThrottle = throttle;
+                _appliedOrientationLock = orientationLock;
+                _appliedTouchOnly = touchOnly;
+                _appliedSkipSelector = skipSelector;
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         await base.OnAfterRenderAsync(firstRender);

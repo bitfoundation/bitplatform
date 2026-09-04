@@ -1,0 +1,9 @@
+description = "Replace raw HTML elements and hardcoded CSS in a Blazor page with Bit.BlazorUI components and theme-aware SCSS variables."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/bitify-ui.agent.md}
+
+Page to modernize: {{args}}
+"""

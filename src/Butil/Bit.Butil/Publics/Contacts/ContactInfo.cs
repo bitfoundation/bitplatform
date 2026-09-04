@@ -6,8 +6,13 @@ namespace Bit.Butil;
 /// </summary>
 public class ContactInfo
 {
+    /// <summary>The contact's names. Empty unless <c>"name"</c> was among the requested properties.</summary>
     public string[] Name { get; set; } = [];
+
+    /// <summary>The contact's email addresses. Empty unless <c>"email"</c> was among the requested properties.</summary>
     public string[] Email { get; set; } = [];
+    
+    /// <summary>The contact's phone numbers. Empty unless <c>"tel"</c> was among the requested properties.</summary>
     public string[] Tel { get; set; } = [];
 
     /// <summary>Postal addresses serialized as plain strings.</summary>

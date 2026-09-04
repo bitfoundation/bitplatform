@@ -15,6 +15,32 @@ public class AppPageTest : PageTest
     {
         Context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
         Assertions.SetDefaultExpectTimeout((float)defaultTimeout.TotalMilliseconds);
+
+        if (AnswersConsentBanner)
+        {
+            await AnswerConsentBanner(Context);
+        }
+    }
+
+    /// <summary>
+    /// Whether the banner is answered ahead of the app for this test. Off only where the banner itself is wanted.
+    /// </summary>
+    protected virtual bool AnswersConsentBanner => true;
+
+    /// <summary>
+    /// Answers the consent banner before the app gets to ask. It is a modeless panel over the bottom of the page, so
+    /// for as long as it is unanswered it takes the clicks meant for whatever is under it - the sign in button on a
+    /// short page, the chat launcher - and every test that goes near one fails on an element that is plainly visible.
+    /// <para>
+    /// Refused rather than granted: a test has no use for anything the banner asks about, and granting would let the
+    /// ad script load from the actual ad network.
+    /// </para>
+    /// </summary>
+    private static async Task AnswerConsentBanner(IBrowserContext context)
+    {
+        var refusals = string.Join(';', ConsentService.AskableCategories.Select(category => $"{category}=0"));
+
+        await context.AddInitScriptAsync($"localStorage.setItem('{ConsentService.StorageKey}', '{refusals}');");
     }
 
     /// <summary>
@@ -34,6 +60,8 @@ public class AppPageTest : PageTest
 
         await SetBlazorWebAssemblyServerAddress(serverAddress, context);
 
+        await AnswerConsentBanner(context);
+
         return context;
     }
 
@@ -49,6 +77,19 @@ public class AppPageTest : PageTest
     }
 
     /// <summary>
+    /// Runs the selected <c>BROWSER</c> on another computer when <c>PLAYWRIGHT_SERVER_ENDPOINT</c> (see .runsettings)
+    /// points at a Playwright server there - most usefully a mac, where webkit runs against the actual Apple frameworks
+    /// and is as close to Safari as automation gets, but chromium and firefox connect the same way.
+    /// </summary>
+    public override async Task<(string, BrowserTypeConnectOptions?)?> ConnectOptionsAsync()
+    {
+        if (Environment.GetEnvironmentVariable("PLAYWRIGHT_SERVER_ENDPOINT") is { Length: > 0 } playwrightServerEndpoint)
+            return (playwrightServerEndpoint, new());
+
+        return await base.ConnectOptionsAsync();
+    }
+
+    /// <summary>
     /// Runs the headless tests on <c>chromium-headless-shell</c> - the small headless-only build that plain
     /// <c>Headless = true</c> used to mean before Playwright 1.49 made the <c>chromium</c> channel launch the real Chrome
     /// browser in its new headless mode. The shell is what the suite actually needs and is markedly cheaper.
@@ -60,13 +101,21 @@ public class AppPageTest : PageTest
         // The shell has no UI at all, so a debugging run must keep the full browser. .runsettings documents both switches.
         var isHeadedRun = options.Headless is false
             || Environment.GetEnvironmentVariable("HEADED") is "1"
-            || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PWDEBUG")) is false;
+            || string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PWDEBUG")) is false;
 
         // The channel names a chromium build, so it must not be handed to a firefox / webkit run (See .runsettings' BROWSER).
         // Qualified because the inherited BrowserType property (an IBrowserType) shadows the type of the same name.
         if (isHeadedRun is false && PlaywrightSettingsProvider.BrowserName is Microsoft.Playwright.BrowserType.Chromium)
         {
             options.Channel = "chromium-headless-shell";
+        }
+
+        if (PlaywrightSettingsProvider.BrowserName is Microsoft.Playwright.BrowserType.Firefox)
+        {
+            // An automated firefox neither grants nor refuses a notification permission: no doorhanger is ever shown
+            // and Notification.requestPermission() simply stays pending, which hangs whatever awaited it. 2 is deny,
+            // so the answer comes back right away - the same "denied" chromium reports here without being told to.
+            options.FirefoxUserPrefs = new Dictionary<string, object> { ["permissions.default.desktop-notification"] = 2 };
         }
 
         return options;

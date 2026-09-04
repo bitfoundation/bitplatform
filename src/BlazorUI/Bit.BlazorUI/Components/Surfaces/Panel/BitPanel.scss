@@ -6,47 +6,103 @@
     z-index: $zindex-modal;
     font-family: $tg-font-family;
     --bit-pnl-transform-factor: 1;
+    // How much of the screen a panel that is not FullSize is allowed to take along the axis it slides on.
+    // It is read from the root so that a consumer can move the cap through the Root member of Styles.
+    --bit-pnl-max: 85%;
 
     &.bit-rtl {
         --bit-pnl-transform-factor: -1;
     }
 }
 
+// A panel laid out against a container of the page rather than against the screen. The root takes the size
+// of that container so its own children have something to be placed against, which also makes it the
+// stacking context the overlay and the panel are layered inside of - so a contained panel never lifts itself
+// over the chrome of the page the way a screen-level one is meant to. The root itself must stay out of the
+// way of the clicks that container keeps while the panel is closed, so the pointer is handed back to the two
+// parts that are meant to take it.
+.bit-pnl-abs {
+    inset: 0;
+    position: absolute;
+    pointer-events: none;
+
+    > .bit-pnl-ovl,
+    > .bit-pnl-cnt {
+        position: absolute;
+        pointer-events: auto;
+    }
+}
+
+// The overlay stays in the page while the panel is closed so that it fades out with the panel rather than
+// vanishing under it in one frame. It is hidden rather than removed, and a hidden element takes neither the
+// clicks of the page nor a place in the accessibility tree, so a closed panel leaves the page untouched.
 .bit-pnl-ovl {
     inset: 0;
+    opacity: 0;
     width: 100%;
     height: 100%;
     position: fixed;
-    z-index: $zindex-overlay;
+    visibility: hidden;
+    // The two layers are read from the root, where the ZIndex parameter writes them, so that a panel opened
+    // from inside another one can be lifted over it as a pair. Unset, they fall back to the layer the whole
+    // library shares.
+    z-index: var(--bit-pnl-zin-ovl, #{$zindex-overlay});
+    transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
 }
 
+// ModeFull: the overlay dims what it covers instead of only catching the clicks meant for it. It is a
+// transparent catcher of clicks otherwise, so that a panel shown beside the work rather than instead of it
+// does not darken the page it is meant to be read against.
+.bit-pnl-ovl-mfl {
+    background-color: $clr-bg-overlay;
+}
+
+.bit-pnl-ovl-opn {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity $mot-duration $mot-easing-decelerate, visibility 0s linear 0s;
+}
+
+// The panel itself. It is hidden while it is closed, which is what keeps a content that is only translated
+// off the screen out of the tab order and out of the accessibility tree; the visibility is switched at the
+// end of the exit transition so that the panel is still seen sliding away.
 .bit-pnl-cnt {
     opacity: 0;
     position: fixed;
+    overflow: auto;
+    visibility: hidden;
+    outline: transparent;
     box-sizing: border-box;
-    z-index: $zindex-callout;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-sheet;
-    transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-accelerate;
+    z-index: var(--bit-pnl-zin-cnt, #{$zindex-callout});
+    // The panel is capped to the screen it slides over, so a content taller than the cap has to be reachable
+    // from inside the panel: left to overflow it runs off the screen with nothing to scroll it back. The
+    // scrolling stops at the panel rather than carrying on into the page underneath, which would otherwise
+    // take the page out from under an open panel at the very moment the reader hits the end of it.
+    overscroll-behavior: contain;
+    transition: transform $mot-duration $mot-easing-decelerate,
+                opacity $mot-duration-short $mot-easing-accelerate,
+                visibility 0s linear $mot-duration;
 }
 
 .bit-pnl-start {
     height: 100%;
-    max-width: 85%;
     inset-block: 0;
     max-height: 100%;
     width: fit-content;
     inset-inline-start: 0;
+    max-width: var(--bit-pnl-max, 85%);
     transform: translateX(calc(var(--bit-pnl-transform-factor) * -100%));
 }
 
 .bit-pnl-end {
     height: 100%;
-    max-width: 85%;
     inset-block: 0;
     max-height: 100%;
     width: fit-content;
     inset-inline-end: 0;
+    max-width: var(--bit-pnl-max, 85%);
     transform: translateX(calc(var(--bit-pnl-transform-factor) * 100%));
 }
 
@@ -54,9 +110,9 @@
     top: 0;
     width: 100%;
     max-width: 100%;
-    max-height: 85%;
     inset-inline: 0;
     height: fit-content;
+    max-height: var(--bit-pnl-max, 85%);
     transform: translateY(-100%);
 }
 
@@ -65,8 +121,101 @@
     top: unset;
     width: 100%;
     max-width: 100%;
-    max-height: 85%;
     inset-inline: 0;
     height: fit-content;
+    max-height: var(--bit-pnl-max, 85%);
     transform: translateY(100%);
+}
+
+// The full-size panel takes the whole of the screen along both axes, which also lifts the cap that otherwise
+// leaves a strip of the page showing beside it. It follows the four edges so that it still slides in from the
+// one it belongs to.
+.bit-pnl-fsz {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+// A panel that was given a header, a footer or a close button lays them out around a body of its own. The
+// scrolling moves from the panel to that body, which is what keeps the parts around it put while the
+// content between them moves.
+.bit-pnl-sec {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+// The header row: the title of the panel beside the close button, at the edge the panel slid in from.
+.bit-pnl-hcn {
+    display: flex;
+    color: $clr-fg-pri;
+    overflow-wrap: anywhere;
+    font-weight: $tg-fw-semibold;
+    background-color: $clr-bg-pri;
+    padding: spacing(2) spacing(2) 0;
+}
+
+.bit-pnl-hdr {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    font-size: $tg-fs-xl;
+}
+
+.bit-pnl-cls {
+    display: flex;
+    cursor: pointer;
+    width: spacing(5);
+    height: spacing(5);
+    align-items: center;
+    justify-content: center;
+    font-size: $tg-fs-sm;
+    border-radius: $shp-radius-button;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active {
+        color: $clr-fg-pri-active;
+        background-color: $clr-bg-pri-active;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
+        background-color: transparent;
+    }
+}
+
+// The part that gives way when the panel is capped to the screen it slides over: it takes the scrolling the
+// panel itself gave up, so the header and the footer stay where they are however far it is scrolled.
+.bit-pnl-bdy {
+    flex-grow: 1;
+    overflow: hidden auto;
+    padding: spacing(2);
+    // The scrolling stops at the body rather than carrying on into the page underneath, which the panel
+    // itself no longer does for it now that it is the body that scrolls.
+    overscroll-behavior: contain;
+}
+
+.bit-pnl-ftr {
+    background-color: $clr-bg-pri;
+    padding: 0 spacing(2) spacing(2);
+}
+
+// The open state, declared after the four edges so that it takes the panel back off the transform each of
+// them parks it at.
+.bit-pnl-opn {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
+    transition: transform $mot-duration $mot-easing-decelerate,
+                opacity $mot-duration-short $mot-easing-accelerate,
+                visibility 0s linear 0s;
 }

@@ -199,6 +199,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
         await RemoveFromJs(ids);
     }
 
+    /// <summary>Removes every orientation-change handler registered through this instance.</summary>
     public async ValueTask RemoveAllChanges()
     {
         if (_handlers.Count == 0) return;
@@ -215,6 +216,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
         await js.InvokeVoid("BitButil.screenOrientation.removeChange", ids);
     }
 
+    /// <summary>Removes every orientation-change handler this instance registered and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
@@ -222,6 +224,10 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// The disposal body. <paramref name="disposing"/> is false only on a finalizer path, where
+    /// reaching back into JavaScript is not safe, so nothing is torn down then.
+    /// </summary>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false) return;

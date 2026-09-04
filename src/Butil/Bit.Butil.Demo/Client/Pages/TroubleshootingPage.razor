@@ -115,11 +115,32 @@ if (await crypto.IsSupported() is false) { /* SubtleCrypto is https-only */ }
 """) />
 
     <DemoSection Title="One API stops working after publish, the rest are fine"
-                 Description="A published WebAssembly app rebuilds bit-butil.js from the modules its trimmed assembly still calls, so the JavaScript for an API the trimmer decided was unreachable is genuinely not in the bundle - and the symptom is the missing-bridge error above, for that one API. It is almost always correct: the API really is only reached from code that was trimmed away, or only through reflection, which the trimmer cannot follow. Inject the service somewhere the trimmer can see, or set BitButilTrimScripts to false to publish the whole bundle and confirm that is the cause."
+                 Description="A published app rebuilds bit-butil.js from the modules it can still reach, so the JavaScript for an API that neither the trimmer nor BitButilScriptScan could see is genuinely not in the bundle - and the symptom is the missing-bridge error above, for that one API. It is almost always correct: the API really is only reached from code that was trimmed away, or only through reflection, which neither can follow. Name the module - or the Bit.Butil class behind it - in BitButilScriptModule, which is added to whatever they concluded; or set BitButilTrimScripts to false to publish the whole bundle and confirm that is the cause first."
                  Code=@("""
+<!-- Keep this one whatever the publish concluded -->
+<ItemGroup>
+  <BitButilScriptModule Include="Clipboard" />
+</ItemGroup>
+
+<!-- Or rule trimming out as the cause entirely -->
 <PropertyGroup>
   <BitButilTrimScripts>false</BitButilTrimScripts>
 </PropertyGroup>
+""")
+                 Language="xml" />
+
+    <DemoSection Title="I set the trimming properties and the bundle is still the full one"
+                 Description="Start with which project BitButilTrimScripts is on in. It only ever trims in the one that publishes the app's static web assets - the WebAssembly head, or a Blazor Web App's server project - and a shared Directory.Build.props hands it to every Razor class library and every MAUI/Blazor Hybrid head as well, none of which publish anything. That is harmless: the switch is fine to share, and the scan it brings with it is read per project, so only the head acts on it. What is not harmless is the switch being nowhere near the head - it defaults to on in a WebAssembly project and off everywhere else, so a Blazor Server app or a Web App's server project has to turn it on. If it is on in the right project, look for a Bit.Butil message in the build output saying the trimming stood down, which means a scan or a BitButilScriptModule list was written out somewhere that is not the head. Two other explanations: BitButilScriptScan is set to None, which leaves the switch on with nothing to trim against on an untrimmed publish - or you are looking at a build. A build always keeps the full bundle, dotnet run and dotnet watch included, so the comparison to make is between two publishes."
+                 Code=@("""
+<!-- src/Directory.Build.props - the switch is fine to share, and brings the scan with it -->
+<PropertyGroup>
+  <BitButilTrimScripts>true</BitButilTrimScripts>
+</PropertyGroup>
+
+<!-- MyApp.Server.csproj - but what the app CALLS belongs to the head that publishes it -->
+<ItemGroup>
+  <BitButilScriptModule Include="WebAuthn" />
+</ItemGroup>
 """)
                  Language="xml" />
 
@@ -133,6 +154,12 @@ public class MyPayload
 }
 """) />
 </div>
+
+<Callout Type="info" Title="Anything to do with a published bundle">
+    The three sections above about trimming are the symptoms; <a href="javascript-trimming">JavaScript
+    trimming</a> is the feature they come from - the switch, the three signals it works from, where the
+    properties go, and a live check that reads back which modules the app you are looking at downloaded.
+</Callout>
 
 <Callout Type="info" Title="Narrowing it down quickly">
     Most reports resolve to one of three questions. Is the bridge loaded - does

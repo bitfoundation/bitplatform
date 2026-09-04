@@ -21,14 +21,13 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private Notification notification = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private HubConnection hubConnection = default!;
-    [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
     //#endif
+    [AutoInject] private CultureService cultureService = default!;
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
     //#endif
     [AutoInject] private UserAgent userAgent = default!;
-    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
@@ -80,9 +79,9 @@ public partial class AppClientCoordinator : AppComponentBase
             {
                 var userAgentData = await userAgent.Extract();
                 TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+                await cultureService.PersistCurrentCulture();
             }
-            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+            await TimeZoneService.ApplyPreferredTimeZone();
             TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
 
             //#if (appInsights == true)
@@ -92,9 +91,13 @@ public partial class AppClientCoordinator : AppComponentBase
                 {
                     ["ai.application.ver"] = TelemetryContext.AppVersion,
                     ["ai.session.id"] = TelemetryContext.AppSessionId,
-                    ["ai.device.locale"] = TelemetryContext.Culture
+                    ["ai.device.locale"] = CultureInfo.CurrentUICulture.Name
                 }
             });
+
+            // Nothing to apply at startup: UpdateCfg reads the decision itself. This only says it changed, since
+            // consent is withdrawable. The empty config asks for nothing - the switches are filled in there.
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ => await appInsights.UpdateCfg(new())));
             //#endif
 
             await accentColorService.InitializeAsync();
@@ -132,7 +135,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
         var remainingQuery = parsedQuery.ToString();
 
-        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrEmpty(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
+        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
@@ -161,8 +164,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
             //#if (brouter == true)
             // KeepAlive routes are hidden rather than disposed, so a retained page would otherwise hand the next
-            // principal the previous one's search text and grid filters. This is what makes a full page reload
-            // unnecessary after a tenant switch (see NavigationManagerExtensions.RefreshCurrentPage).
+            // principal the previous one's search text and grid filters.
             brouter.ClearKeepAlive();
             //#endif
 

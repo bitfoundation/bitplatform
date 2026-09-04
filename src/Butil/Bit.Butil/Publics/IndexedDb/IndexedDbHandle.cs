@@ -392,6 +392,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
         _ => null
     };
 
+    /// <summary>Closes the database connection and releases the interop reference behind its callbacks. Calling it again does nothing.</summary>
     public async ValueTask DisposeAsync()
     {
         if (_disposed) return;

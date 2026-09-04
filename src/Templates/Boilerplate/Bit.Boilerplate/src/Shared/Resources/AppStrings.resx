@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
     <!-- 
@@ -965,9 +965,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verification Code:</value>
   </data>
-    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Enter verification code.</value>
-  </data>
     <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verify</value>
   </data>
@@ -1170,9 +1167,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Alt text</value>
   </data>
     <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Page</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>of</value>
   </data>
@@ -1182,9 +1176,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
-  </data>
-    <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} items</value>
   </data>
     <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Last 30 days product count</value>
@@ -1222,9 +1213,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Categories with product count</value>
   </data>
-    <data name="SearchOnName" xml:space="preserve">
-    <value>Search on name</value>
-  </data>
     <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Products count per category chart</value>
   </data>
@@ -1254,9 +1242,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>Delete product</value>
-  </data>
-    <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Default color picker</value>
   </data>
     <data name="EditProduct" xml:space="preserve">
     <value>Edit product {0}</value>
@@ -1344,9 +1329,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Send" xml:space="preserve">
     <value>Send</value>
   </data>
-    <data name="AccentColorApply" xml:space="preserve">
-    <value>Apply the {0} accent color</value>
-  </data>
     <data name="Canceled" xml:space="preserve">
     <value>Canceled</value>
   </data>
@@ -1364,7 +1346,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Dictation</value>
   </data>
     <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>Microphone access is blocked. Allow it for this site to dictate.</value>
+    <value>Microphone access is blocked. Allow it in your settings to dictate.</value>
   </data>
     <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>Dictation stopped: {0}</value>
@@ -1414,19 +1396,15 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>How can I install the PWA version of the app?</value>
   </data>
+    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <!--#if (module == "Admin") -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>Where can I find reports about products?</value>
-  </data>
     <!--#elif (module == "Sales") -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>I'm searching for a Benz SUV electric car with a 75K budget!</value>
-  </data>
     <!--#else -->
-    <data name="AiChatPanelPrompt3" xml:space="preserve">
     <value>I have some feedback I'd like to share!</value>
-  </data>
     <!--#endif -->
+  </data>
     <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Write a message...</value>
   </data>
@@ -1463,9 +1441,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>I'm having trouble watching in app ads.</value>
   </data>
     <!--#endif -->
-    <data name="PleaseWait" xml:space="preserve">
-    <value>Please wait</value>
-  </data>
     <data name="Management" xml:space="preserve">
     <value>Management</value>
   </data>
@@ -1524,11 +1499,14 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DisableNotifications" xml:space="preserve">
     <value>Disable notifications</value>
   </data>
-    <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Test notification 1</value>
+    <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Push notifications are on</value>
   </data>
-    <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Test notification 2</value>
+    <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>We sent this one so you can check that notifications reach this device. Tap to read our privacy policy.</value>
+  </data>
+    <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Your live connection to the server is up. This message came through it, and changes from now on will appear the moment they happen.</value>
   </data>
     <!--#endif -->
     <data name="UsersPageTitle" xml:space="preserve">
@@ -1642,6 +1620,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ImageTooSmall" xml:space="preserve">
     <value>Image's too small. Minimum required dimensions are {0}x{1}, but the current dimensions are {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>The uploaded file is not a supported image.</value>
+  </data>
     <data name="ImageNotCarError" xml:space="preserve">
     <value>The provided image does not contain a car.</value>
   </data>
@@ -1753,9 +1734,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Are you sure you want to leave the {0} tenant?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>You have left the tenant successfully.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Switch tenant</value>
   </data>
@@ -1831,8 +1809,100 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>Decline the invitation to {0}? This can't be undone - you'll need a new invitation to join.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Invitation declined.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Select time zone</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Find a time zone</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>No time zone matches your search.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>Push notifications</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>Turn push notifications on</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>Turn push notifications off</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Push notifications are blocked for this app. Allow notifications in your browser or OS settings and try again.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Download a copy of your data</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Your privacy choices</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Signing you in, remembering your language and reporting errors are not on this list: the app cannot work without the first two, and error reports carry no identifier of your device.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Usage analytics</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Lets us recognise your device between visits so we can see which pages are used and how long they take. Turning this off does not stop error reports.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Advertising</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Loads the advertising script, which sets identifiers of its own. Nothing is loaded until you turn this on.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Your privacy</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>We would like to store some information on your device that this app does not need in order to work. Signing you in, remembering your language and reporting errors happen either way.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Privacy settings</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Account settings</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Download your data</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Get a copy of everything this app holds about you: your account, the devices you are signed in on, your profile picture and the content you created. It arrives as a zip file containing data.json and your files.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Each part of the file also says why it is kept, for how long, who else receives it, and whether deleting your account removes it.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Download my data</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>To have your data removed instead, delete your account from</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Export data</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Answers a data request that did not arrive through the app.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Watching an ad loads Google's advertising script, which sets identifiers of its own on your device. Nothing is loaded until you agree.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Agree and continue</value>
+  </data>
 </root>

@@ -1,37 +1,91 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    @* The percentage readout is the same markup in four places - header, circular, inside and
+       outside - and only the wrapper class changes. *@
+    RenderFragment PercentReadout(string wrapperClass) =>
+        @<div style="@Styles?.PercentNumber" class="@wrapperClass @Classes?.PercentNumber">
+            @if (PercentNumberTemplate is not null)
+            {
+                @PercentNumberTemplate(_Percent)
+            }
+            else
+            {
+                <bdi class="bit-prb-pnm">@FormatPercent(_Percent)</bdi>
+            }
+        </div>;
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     style="@StyleBuilder.Value"
+     style="@_RootStyle"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @if (LabelTemplate is not null)
+    @* The label is a plain block rather than a <label>: nothing here is a form control, so there is
+       nothing for a label to be "for". It is referenced by aria-labelledby instead, which is what
+       gives the progressbar the accessible name its role requires. It always sits in a row of its own,
+       so a readout placed on that row is laid out against the label rather than against the root -
+       which is what keeps it at the end of the label's line instead of at the end of the bar's. *@
+    @if (_HasHeader)
     {
-        <label id="@_labelId">
-            @LabelTemplate
-        </label>
-    }
-    else if (Label.HasValue())
-    {
-        <label style="@Styles?.Label" class="bit-prb-lbl @Classes?.Label" id="@_labelId">
-            @Label
-        </label>
+        <div class="bit-prb-hdr">
+            @if (_HasLabel)
+            {
+                <div style="@Styles?.Label" class="bit-prb-lbl @Classes?.Label" id="@_labelId">
+                    @if (LabelTemplate is not null)
+                    {
+                        @LabelTemplate
+                    }
+                    else
+                    {
+                        @Label
+                    }
+                </div>
+            }
+
+            @if (_IsPercentNumberTop)
+            {
+                @PercentReadout(_PercentNumberClass)
+            }
+        </div>
     }
 
-    <div style="min-height: @(Circular ? $"{GetThickness()}px" : GetThicknessStyleValue()); @Styles?.BarContainer" class="@(Circular ? "bit-prb-crp" : "bit-prb-bcn") @Classes?.BarContainer">
+    @* The container holds nothing but the bar itself, because the segment mask that clips it is set
+       here: anything else inside would be cut into pieces along with it. *@
+    <div style="@_BarContainerStyle"
+         class="@(Circular ? "bit-prb-crp" : "bit-prb-bcn") @Classes?.BarContainer">
         @if (Circular)
         {
-            <svg style="@Styles?.BarContainer"
-                 class="bit-prb-cir @Classes?.BarContainer"
-                 height="@(GetThickness() * Radius)px"
-                 width="@(GetThickness() * Radius)px">
-                <circle style="stroke-width: @(GetThickness())px; @Styles?.Track"
+            @* The role sits on the svg itself, so the percentage rendered beside it stays outside an
+               element whose children a screen reader treats as presentational. *@
+            <svg class="bit-prb-cir"
+                 style="@GetCircleStyle()"
+                 height="@(GetDiameter())px"
+                 width="@(GetDiameter())px"
+                 role="@_Role"
+                 aria-label="@AriaLabel"
+                 aria-labelledby="@_AriaLabelledBy"
+                 aria-describedby="@_AriaDescribedBy"
+                 aria-valuetext="@AriaValueText"
+                 aria-valuemin="@_AriaValueMin"
+                 aria-valuemax="@_AriaValueMax"
+                 aria-valuenow="@_AriaValueNow">
+                <circle style="@GetTrackStyle()"
                         class="bit-prb-crt @Classes?.Track"
                         r="40%"
                         cx="50%"
                         cy="50%">
                 </circle>
+                @if (_HasBuffer)
+                {
+                    <circle style="@GetBufferStyle()"
+                            class="bit-prb-cbf @Classes?.Buffer"
+                            r="40%"
+                            cx="50%"
+                            cy="50%">
+                    </circle>
+                }
                 <circle style="@GetProgressStyle()"
                         class="@(Indeterminate ? "bit-prb-cri" : "bit-prb-cbr") @Classes?.Bar"
                         r="40%"
@@ -39,40 +93,69 @@
                         cy="50%">
                 </circle>
             </svg>
+
+            @if (_ShowsPercentNumber)
+            {
+                @PercentReadout("bit-prb-ctx")
+            }
         }
         else
         {
-            <div style="height: @GetThicknessStyleValue(); @Styles?.Track" class="bit-prb-trc @Classes?.Track"></div>
-            <div class="bit-prb-bar @(Indeterminate ? "bit-prb-ind" : null) @Classes?.Bar"
-                 role="progressbar"
-                 aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+            <div style="@GetTrackStyle()" class="bit-prb-trc @Classes?.Track"></div>
+            @if (_HasBuffer)
+            {
+                <div style="@GetBufferStyle()" class="bit-prb-buf @Classes?.Buffer"></div>
+            }
+            <div class="@_BarClass @Classes?.Bar"
+                 role="@_Role"
+                 aria-label="@AriaLabel"
+                 aria-labelledby="@_AriaLabelledBy"
                  aria-valuetext="@AriaValueText"
-                 aria-describedby="@(Description.HasValue() ? _descriptionId : null)"
-                 aria-valuemin="@(Indeterminate ? null : 0)"
-                 aria-valuemax="@(Indeterminate ? null : 100)"
-                 aria-valuenow="@(Indeterminate ? null : Normalize(Percent))"
+                 aria-describedby="@_AriaDescribedBy"
+                 aria-valuemin="@_AriaValueMin"
+                 aria-valuemax="@_AriaValueMax"
+                 aria-valuenow="@_AriaValueNow"
                  style="@GetProgressStyle()">
-            </div>
-        }
-
-        @if (ShowPercentNumber && Indeterminate is false)
-        {
-            <div style="@(Circular ? null : $"margin-top: {GetThicknessStyleValue()};") @Styles?.PercentNumber" class="@(Circular ? "bit-prb-ctx" : "bit-prb-pct") @Classes?.PercentNumber">
-                <bdi class="bit-prb-pnm">@string.Format(PercentNumberFormat, Normalize(Percent))</bdi>
+                @* A readout asked to sit on the bar is rendered inside the filled part, so it travels
+                   with it and is clipped by it - the whole indicator then holds to one line. The value
+                   is on aria-valuenow either way, which is what the role publishes; the children of a
+                   progressbar are presentational. *@
+                @if (_ShowsPercentNumber && _IsPercentNumberInside)
+                {
+                    @PercentReadout(_PercentNumberClass)
+                }
             </div>
         }
     </div>
 
-    @if (DescriptionTemplate is not null)
+    @if (Circular is false && _ShowsPercentNumber && _IsPercentNumberInside is false && _IsPercentNumberTop is false)
     {
-        <div id="@_descriptionId">
-            @DescriptionTemplate
-        </div>
+        @PercentReadout(_PercentNumberClass)
     }
-    else if (Description.HasValue())
+
+    @if (_HasDescription)
     {
         <div style="@Styles?.Description" class="bit-prb-des @Classes?.Description" id="@_descriptionId">
-            @Description
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
+
+    @* A live region only announces what changes inside one the screen reader is already watching, so
+       it is here from the first render and empty until there is a milestone to report. *@
+    @if (AnnounceProgress)
+    {
+        <div class="bit-prb-lvr" aria-live="polite" aria-atomic="true">
+            @if (_announcement.HasValue())
+            {
+                <span @key="_announcementGeneration">@_announcement</span>
+            }
         </div>
     }
 </div>

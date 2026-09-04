@@ -8,6 +8,11 @@ using static Bit.Butil.LinkerFlags;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// The synchronous fast path over <see cref="IJSRuntime"/>, used when <see cref="BitButil.UseFastInvoke"/>
+/// is on. It only applies under Blazor WebAssembly, where the runtime is in-process; everywhere else
+/// these fall through to the ordinary async calls.
+/// </summary>
 public static class JSRuntimeExtensions
 {
     /// <summary>

@@ -133,7 +133,7 @@ public partial class TenantInvitationUITests : AppPageTest
 
         // Inviting also needs elevated access, but she is still elevated from creating the tenant, so no new prompt shows.
         // The success snackbar confirms the server processed the invitation; then let its e-mail background job drain.
-        await Expect(page.GetByText(AppStrings.UserInvitedSuccessfullyMessage)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(page, AppStrings.UserInvitedSuccessfullyMessage)).ToBeVisibleAsync();
         await server.WaitForBackgroundJobsToComplete(TestContext.CancellationToken);
     }
 

@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Boilerplate.Shared;
 
@@ -22,10 +21,4 @@ public partial class SharedSettings : IValidatableObject
 
         return validationResults;
     }
-}
-
-//#if (appInsights == true)
-public class ApplicationInsightsOptions
-{
-    public string? ConnectionString { get; set; }
 }

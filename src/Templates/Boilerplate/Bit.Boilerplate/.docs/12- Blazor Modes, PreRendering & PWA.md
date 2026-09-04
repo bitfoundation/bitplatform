@@ -41,7 +41,7 @@ When you modify the structure, scripts, stylesheets, or metadata in `App.razor`,
 ```html
 <meta charset="utf-8" />
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 ```
 
@@ -397,5 +397,11 @@ self.addEventListener('notificationclick', function (event) {
 2. Service worker receives push event (even if app closed)
 3. Shows notification with title, message, and icon
 4. When user clicks notification, app opens to specified `pageUrl` (If applicable)
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

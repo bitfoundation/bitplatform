@@ -565,6 +565,9 @@
     max-height: $siz-popup-max-height;
 }
 
+// A row is at least one list-item tall, but it is a minimum rather than a fixed height: a
+// SuggestItemTemplate is free to render two lines (a name over its category, say), and a fixed
+// height paired with the overflow:hidden below would clip the second one instead of growing.
 .bit-srb-itm {
     width: 100%;
     display: flex;
@@ -576,9 +579,9 @@
     position: relative;
     white-space: nowrap;
     align-items: center;
-    height: spacing(4.5);
+    min-height: $siz-item-md;
     outline: transparent;
-    padding: 0 spacing(1);
+    padding: spacing(0.5) spacing(1);
     text-decoration: none;
     box-sizing: border-box;
     text-overflow: ellipsis;

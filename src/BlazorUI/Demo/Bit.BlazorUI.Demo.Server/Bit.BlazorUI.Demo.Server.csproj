@@ -25,16 +25,16 @@
 
     <ItemGroup>
 		<PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />
-		<PackageReference Include="Bit.BlazorES2019" Version="10.6.0-pre-02" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0-pre-02">
+		<PackageReference Include="Bit.BlazorES2019" Version="10.6.0-pre-04" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0-pre-04">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.5.0" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.9.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
@@ -73,6 +73,17 @@
         <EmbeddedResource Update="**\*.resx">
             <Generator>PublicResXFileCodeGenerator</Generator>
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <!-- The demo pages the MCP server reads to answer with each component's examples: their titles,
+         their explanatory prose and which code field each one shows. The parameter tables and the
+         code samples themselves are reflected off the compiled page types; only the markup that
+         orders and names them lives here, and only in this assembly - embedding them in the client
+         would add four megabytes to what a WebAssembly visitor downloads. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\Client\Bit.BlazorUI.Demo.Client.Core\Pages\**\*.razor">
+            <LogicalName>BitBlazorUIDemoSource/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
     </ItemGroup>
 

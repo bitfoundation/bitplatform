@@ -6,7 +6,7 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
     /// <summary>
     /// An anonymous visitor flips the dark/light theme from the home page and the choice sticks across a refresh:
     /// <list type="number">
-    /// <item>Open the public home page - no sign-in needed - and read the active theme from the <c>bit-theme</c> attribute that Bit.BlazorUI keeps on the <c>html</c> element (server-rendered as "dark"; See <c>App.razor</c> and Client.Web's <c>index.html</c>).</item>
+    /// <item>Open the public home page - no sign-in needed - and read the active theme from the <c>bit-theme</c> attribute that Bit.BlazorUI keeps on the <c>html</c> element. The element also declares the two theme names it toggles between as <c>bit-theme-dark</c> / <c>bit-theme-light</c> (See <c>App.razor</c> and Client.Web's <c>index.html</c>), so the test reads those rather than assuming literals.</item>
     /// <item>Open the header user menu by its chevron opener and flip the theme with the <c>BitToggle</c> switch inside the <c>.app-menu-callout</c> (See <c>AppMenu.ToggleTheme</c> -> <c>ThemeService.ToggleTheme</c> -> <c>BitThemeManager.ToggleDarkLightAsync</c>). The toggle lives outside any <c>AuthorizeView</c>, so a signed-out user can reach it. Assert the <c>html[bit-theme]</c> attribute flips to the opposite value, and that the choice is written to <c>localStorage</c> under the <c>bit-current-theme</c> key.</item>
     /// <item>Reload the whole page and assert the flipped theme survived the refresh (persistence).</item>
     /// <item>Toggle once more and assert the theme reverts to its original value.</item>
@@ -26,14 +26,24 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
 
         var htmlElement = Page.Locator("html");
 
-        // Bit.BlazorUI tracks the active theme via the `bit-theme` attribute on <html> (server-rendered as "dark").
-        // Read it dynamically instead of assuming a literal, so the test stays robust if the default ever changes.
+        // Bit.BlazorUI tracks the active theme via the `bit-theme` attribute on <html>, and the element declares the
+        // two theme NAMES it toggles between as `bit-theme-dark` / `bit-theme-light` (e.g. fluent2-dark). All three
+        // are read dynamically instead of assuming literals, so the test survives a theme-preset change.
         var initialTheme = await htmlElement.GetAttributeAsync("bit-theme");
-        Assert.IsFalse(string.IsNullOrEmpty(initialTheme), "The <html> element should carry a bit-theme attribute.");
-        var toggledTheme = initialTheme == "dark" ? "light" : "dark";
+        Assert.IsFalse(string.IsNullOrWhiteSpace(initialTheme), "The <html> element should carry a bit-theme attribute.");
+        var darkTheme = await htmlElement.GetAttributeAsync("bit-theme-dark");
+        var lightTheme = await htmlElement.GetAttributeAsync("bit-theme-light");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(darkTheme) || string.IsNullOrWhiteSpace(lightTheme),
+            "The <html> element should declare its dark and light theme names (bit-theme-dark / bit-theme-light).");
+        // Without these two, a preset whose dark and light names coincide - or an active theme that is neither -
+        // makes toggledTheme equal initialTheme, and every assertion below passes on a theme that never changed.
+        Assert.AreNotEqual(darkTheme, lightTheme, "The dark and light theme names must differ, or toggling is unobservable.");
+        Assert.IsTrue(initialTheme == darkTheme || initialTheme == lightTheme,
+            $"The active theme ({initialTheme}) must be one of the two declared themes ({darkTheme} / {lightTheme}).");
+        var toggledTheme = (initialTheme == darkTheme ? lightTheme : darkTheme)!;
 
         // Flip the theme from the anonymous user menu, then confirm the DOM signal changed.
-        await ToggleThemeFromUserMenu();
+        await ToggleThemeFromUserMenu(initialTheme!, toggledTheme, darkTheme!);
         await Expect(htmlElement).ToHaveAttributeAsync("bit-theme", toggledTheme);
 
         // The switch persists the choice in localStorage under the `bit-current-theme` key.
@@ -44,8 +54,9 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
         await Page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
         await Expect(htmlElement).ToHaveAttributeAsync("bit-theme", toggledTheme);
 
-        // Toggling again reverts to the original theme.
-        await ToggleThemeFromUserMenu();
+        // Toggling again reverts to the original theme. Opening the menu here also checks that the theme the app
+        // READ back at startup survived the reload above, not just the one written onto the html element.
+        await ToggleThemeFromUserMenu(toggledTheme, initialTheme!, darkTheme!);
         await Expect(htmlElement).ToHaveAttributeAsync("bit-theme", initialTheme!);
     }
 
@@ -53,9 +64,11 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
     /// Opens the header user menu - available to anonymous users - by clicking its chevron opener, then flips the
     /// dark/light theme using the BitToggle switch (role="switch") inside the app menu callout. The BitToggle is
     /// used instead of the theme action button because that button's label reflects the current theme and therefore
-    /// is not a stable target across toggles.
+    /// is not a stable target across toggles. The accessible name is matched by the word "theme", because the menu
+    /// carries more than one switch (push notifications) and the theme switch's exact label flips with the theme
+    /// ("Switch to the dark theme" / "Switch to the light theme").
     /// </summary>
-    private async Task ToggleThemeFromUserMenu()
+    private async Task ToggleThemeFromUserMenu(string themeBefore, string themeAfter, string darkTheme)
     {
         // The user menu (AppMenu) is a BitDropMenu; clicking its chevron opens the callout.
         await Page.Locator(".menu-chevron").ClickAsync();
@@ -63,6 +76,23 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
         var callout = Page.Locator(".app-menu-callout");
         await Expect(callout).ToBeVisibleAsync();
 
-        await callout.GetByRole(AriaRole.Switch).ClickAsync();
+        await ExpectMenuToReportTheme(callout, themeBefore, darkTheme);
+
+        await callout.GetByRole(AriaRole.Switch, new() { NameRegex = new("theme", System.Text.RegularExpressions.RegexOptions.IgnoreCase) }).ClickAsync();
+
+        await ExpectMenuToReportTheme(callout, themeAfter, darkTheme);
+    }
+
+    /// <summary>
+    /// Asserts the name the MENU gives the active theme, on top of the <c>bit-theme</c> attribute the rest of this
+    /// test reads. They are separate signals and used to disagree: the attribute flipped correctly while
+    /// <c>ThemeService</c> compared the name against the literal <c>"dark"</c>, which neither configured name IS
+    /// (<c>fluent2-light</c> / <c>fluent2-dark</c>), so everything reading the cascaded theme was told "light".
+    /// </summary>
+    private async Task ExpectMenuToReportTheme(ILocator callout, string activeTheme, string darkTheme)
+    {
+        var expectedLabel = activeTheme == darkTheme ? AppStrings.Dark : AppStrings.Light;
+
+        await Expect(callout.GetByRole(AriaRole.Button, new() { Name = expectedLabel, Exact = true })).ToBeVisibleAsync();
     }
 }

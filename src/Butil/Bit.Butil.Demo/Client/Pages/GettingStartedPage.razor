@@ -68,15 +68,37 @@ var secure = await window.IsSecureContext();
 </DemoSection>
 
 <DemoSection Title="Optional: tree-shake the JavaScript"
-             Api="BitButilTrimScripts"
-             Description="The bundle behind step 2 covers every API on this site, and a published app can shed the parts it never calls - the JavaScript half of the trimming the C# side already gets. There is nothing to add for it: in a Blazor WebAssembly project a trimmed publish rebuilds bit-butil.js from only the modules the trimmed Bit.Butil.dll still calls, so an app injecting Clipboard, LocalStorage and Window ships around 8 KB of JavaScript instead of 110 KB. It is on by default only there, because that is the one shape where the assembly being trimmed is the assembly calling the served JavaScript. A server that hosts a WebAssembly client keeps its own full copy of the bundle and wants lazy scripts below instead."
+             Api="BitButilTrimScripts / BitButilScriptScan / BitButilScriptModule"
+             Description="The bundle behind step 2 covers every API on this site, and a published app can shed the parts it never calls. One property turns it on, and in a Blazor WebAssembly project it is already on: a trimmed publish rebuilds bit-butil.js from only the modules the trimmed Bit.Butil.dll still calls, so an app injecting Clipboard, LocalStorage and Window ships around 8 KB of JavaScript instead of 110 KB. Publishing without trimming - a WebAssembly app with PublishTrimmed off, Blazor Server, a server host that prerenders - has no trimmed assembly to read, and BitButilScriptScan answers the same question from the app's own assemblies instead. It defaults to TypeReferences wherever the switch is on, so there too the switch is the whole of what you write; None turns it off again and TypeNames is a coarser name-matching mode. BitButilScriptModule adds modules or Bit.Butil class names on top of whatever either concluded, for an API reached by reflection or from your own JavaScript. It is publish-only, so a build - dotnet run and dotnet watch included - always keeps the full bundle, and it takes effect only in the project that publishes the app's static web assets."
              Code=@("""
-<!-- Nothing to add: it is the default in a WebAssembly project. To opt out: -->
+<!-- In a Blazor WebAssembly project there is nothing to add. Anywhere else: -->
+<PropertyGroup>
+  <BitButilTrimScripts>true</BitButilTrimScripts>
+
+  <!-- Implied by the switch above; write it out to pick a different value.
+       TypeNames is the coarser mode, None publishes the full bundle. -->
+  <BitButilScriptScan>TypeReferences</BitButilScriptScan>
+</PropertyGroup>
+
+<!-- Always kept, whatever the above concluded: -->
+<ItemGroup>
+  <BitButilScriptModule Include="Clipboard;geolocation" />
+</ItemGroup>
+
+<!-- ...and to opt out entirely, wherever it is on: -->
 <PropertyGroup>
   <BitButilTrimScripts>false</BitButilTrimScripts>
 </PropertyGroup>
 """)
              Language="xml" />
+
+<Callout Type="info" Title="The full story is one page away">
+    <a href="javascript-trimming">JavaScript trimming</a> covers the rest of it: the three signals the
+    trimming works from and which one suits which hosting model, why these properties belong in the project
+    you publish rather than in a shared <code>Directory.Build.props</code>, the two overrides for a layout
+    where the defaults look in the wrong place, the build warnings it can produce - and a live check that
+    reads back which modules the app you are looking at actually downloaded.
+</Callout>
 
 <DemoSection Title="Optional: lazy scripts"
              Api="BitButil.UseLazyScripts"
@@ -122,7 +144,9 @@ BitButil.UseNormalInvoke();
 
 <Callout Type="info" Title="Where to next?">
     <a href="render-modes">Render modes</a> covers how Butil behaves under WebAssembly, Server, Hybrid and
-    prerendering - worth ten minutes before you write much. Otherwise, start with the most used APIs:
+    prerendering - worth ten minutes before you write much, and
+    <a href="javascript-trimming">JavaScript trimming</a> is worth another ten before you publish.
+    Otherwise, start with the most used APIs:
     <a href="storage">LocalStorage</a>, <a href="clipboard">Clipboard</a>, <a href="keyboard">Keyboard</a>,
     <a href="crypto">Crypto</a> and <a href="web-authn">WebAuthn</a>.
 </Callout>

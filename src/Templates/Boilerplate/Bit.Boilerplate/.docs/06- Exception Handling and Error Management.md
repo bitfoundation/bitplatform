@@ -428,7 +428,7 @@ For **critical errors** that require user acknowledgment, a **message box** is d
 └─────────────────────────────────────┘
 ```
 
-**Handled by:** `BitMessageBoxService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
+**Handled by:** `BitMessageBoxService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientExceptionHandlerBase.cs)
 
 ---
 
@@ -443,7 +443,7 @@ For **less critical errors** that don't require immediate action, a **snack bar*
 └─────────────────────────────────────────┘
 ```
 
-**Handled by:** `SnackBarService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
+**Handled by:** `SnackBarService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientExceptionHandlerBase.cs)
 
 ---
 
@@ -478,11 +478,12 @@ The Error Boundary displays:
 
 ## Exception Handlers in the Project
 
-The project includes multiple exception handlers for different platforms, all inheriting from `SharedExceptionHandler`.
+The project includes multiple exception handlers for different platforms. All of them derive from
+`SharedExceptionHandler`, though the client-side ones do so through `ClientExceptionHandlerBase`.
 
-### 1. ServerExceptionHandler
+### 1. ApiServerExceptionHandler
 
-**Location:** [`src/Server/Boilerplate.Server.Api/Infrastructure/Services/ServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/ServerExceptionHandler.cs)
+**Location:** [`src/Server/Boilerplate.Server.Api/Infrastructure/Services/ApiServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/ApiServerExceptionHandler.cs)
 
 **Purpose:** Handles exceptions on the **server-side** (API controllers).
 
@@ -530,7 +531,7 @@ A value attached with `WithData("Email", …)` would **not** appear here - it go
 
 ### 3. ClientExceptionHandlerBase
 
-**Location:** [`src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
+**Location:** [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientExceptionHandlerBase.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientExceptionHandlerBase.cs)
 
 **Purpose:** Base class for **client-side exception handlers**.
 
@@ -546,7 +547,7 @@ A value attached with `WithData("Email", …)` would **not** appear here - it go
 
 ### 4. WebClientExceptionHandler
 
-**Location:** [`src/Client/Boilerplate.Client.Web/Services/WebClientExceptionHandler.cs`](/src/Client/Boilerplate.Client.Web/Services/WebClientExceptionHandler.cs)
+**Location:** [`src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebClientExceptionHandler.cs`](/src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebClientExceptionHandler.cs)
 
 **Purpose:** Exception handler for **Blazor WebAssembly** (browser).
 
@@ -558,7 +559,7 @@ A value attached with `WithData("Email", …)` would **not** appear here - it go
 
 ### 5. MauiExceptionHandler
 
-**Location:** [`src/Client/Boilerplate.Client.Maui/Services/MauiExceptionHandler.cs`](/src/Client/Boilerplate.Client.Maui/Services/MauiExceptionHandler.cs)
+**Location:** [`src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiExceptionHandler.cs`](/src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiExceptionHandler.cs)
 
 **Purpose:** Exception handler for **.NET MAUI** (Android, iOS, macOS).
 
@@ -580,7 +581,7 @@ A value attached with `WithData("Email", …)` would **not** appear here - it go
 
 ### 6. WindowsExceptionHandler
 
-**Location:** [`src/Client/Boilerplate.Client.Windows/Services/WindowsExceptionHandler.cs`](/src/Client/Boilerplate.Client.Windows/Services/WindowsExceptionHandler.cs)
+**Location:** [`src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsExceptionHandler.cs`](/src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsExceptionHandler.cs)
 
 **Purpose:** Exception handler for **Windows Forms Blazor Hybrid** app.
 
@@ -589,8 +590,28 @@ A value attached with `WithData("Email", …)` would **not** appear here - it go
 
 ---
 
-### AI Wiki: Answered Questions
+### 7. WebServerExceptionHandler
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+**Location:** [`src/Server/Boilerplate.Server.Web/Infrastructure/Services/WebServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Web/Infrastructure/Services/WebServerExceptionHandler.cs)
+
+**Purpose:** Handles exceptions raised by components running **on the server** - Blazor Server circuits and
+server-side pre-rendering. Note that it derives from `ClientExceptionHandlerBase`, **not** from
+`SharedExceptionHandler` directly: from the component's point of view it is a client-side handler that happens
+to be executing inside the web host.
+
+**Key Responsibilities:**
+- Sets the HTTP status code from a `RestException` when the response has not started yet, so a faulted
+  non-streaming pre-render is not stored by the response cache (see `AppResponseCachePolicy.cs`)
+- Then defers to `ClientExceptionHandlerBase`, so the message box / snack bar behaviour described above applies
+  unchanged
+
+If you customise client-side exception display, remember this handler is on the same path for Blazor Server
+and pre-rendering.
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

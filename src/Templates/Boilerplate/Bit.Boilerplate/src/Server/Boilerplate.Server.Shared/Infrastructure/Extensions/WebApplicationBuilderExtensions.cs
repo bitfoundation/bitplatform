@@ -50,7 +50,7 @@ public static class WebApplicationBuilderExtensions
                     var policyBuilder = policy.AddPolicy<AppResponseCachePolicy>();
                 }, excludeDefaultPolicy: true);
             });
-            if (settings.ResponseCaching?.EnableCdnEdgeCaching is true)
+            if (settings.ResponseCaching?.EnableCdnEdgeCaching is not false || settings.ResponseCaching?.EnableOutputCaching is not false)
             {
                 services.AddSingleton<AspNetCore.Antiforgery.IAntiforgery, SharedResponseCacheCompatibleAntiforgery>();
             }
@@ -250,7 +250,7 @@ public static class WebApplicationBuilderExtensions
         private TBuilder AddOpenTelemetryExporters()
         {
             var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
-                || string.IsNullOrEmpty(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
+                || string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
 
             if (useOtlpExporter)
             {
@@ -281,7 +281,7 @@ public static class WebApplicationBuilderExtensions
                 build: static policy => policy.Expire(TimeSpan.FromSeconds(10)).SetVaryByQuery([])));
 
             return builder.Services.AddHealthChecks()
-                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024), name: "binStorage", tags: ["live"]);
+                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 2 * 1024), name: "binStorage", tags: ["live"]);
         }
     }
 }

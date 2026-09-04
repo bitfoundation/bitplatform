@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -879,7 +879,7 @@
     <value>अलग उपयोगकर्ता के रूप में साइन इन करें</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>आप {0} के रूप में साइन इन हैं</value>
+    <value>आप साइन इन हैं</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
     <value>पासवर्ड भूल गए?</value>
@@ -964,9 +964,6 @@
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>सत्यापन कोड:</value>
-  </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>सत्यापन कोड दर्ज करें।</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>सत्यापित करें</value>
@@ -1170,9 +1167,6 @@
     <value>वैकल्पिक पाठ</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>पृष्ठ</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>में से</value>
   </data>
@@ -1182,9 +1176,6 @@
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>प्रशासक पैनल</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} आइटम</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>पिछले 30 दिनों में उत्पादों की संख्या</value>
@@ -1222,9 +1213,6 @@
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>उत्पाद संख्या के साथ श्रेणियां</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>नाम पर खोजें</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>प्रति श्रेणी उत्पाद गणना चार्ट</value>
   </data>
@@ -1254,9 +1242,6 @@
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>उत्पाद हटाएं</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>डिफ़ॉल्ट रंग पिकर</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>उत्पाद {0} संपादित करें</value>
@@ -1344,9 +1329,6 @@
   <data name="Send" xml:space="preserve">
     <value>भेजें</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>{0} एक्सेंट रंग लागू करें</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>रद्द</value>
   </data>
@@ -1364,7 +1346,7 @@
     <value>श्रुतलेख</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>माइक्रोफ़ोन का उपयोग अवरुद्ध है। बोलकर लिखने के लिए इस साइट को अनुमति दें।</value>
+    <value>माइक्रोफ़ोन का उपयोग अवरुद्ध है। बोलकर लिखने के लिए सेटिंग में अनुमति दें।</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>श्रुतलेख रुक गया: {0}</value>
@@ -1414,19 +1396,15 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>मैं ऐप का PWA संस्करण कैसे स्थापित कर सकता हूं?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>एक संदेश लिखें...</value>
   </data>
@@ -1463,9 +1441,6 @@
     <value>मुझे ऐप में विज्ञापन देखने में समस्या हो रही है।</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>कृपया प्रतीक्षा करें</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>प्रबंधन</value>
   </data>
@@ -1524,11 +1499,14 @@
   <data name="DisableNotifications" xml:space="preserve">
     <value>सूचनाएं अक्षम करें</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>टेस्ट सूचना 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>सूचनाएँ चालू हैं</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>टेस्ट सूचना 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>हमने यह भेजा ताकि आप देख सकें कि सूचनाएँ इस डिवाइस तक पहुँचती हैं। हमारी गोपनीयता नीति पढ़ने के लिए इस पर टैप करें।</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>सर्वर से आपका लाइव कनेक्शन चालू है। यह संदेश उसी से आया है, और आगे के बदलाव भी इसी तरह उसी पल दिखेंगे।</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1642,6 +1620,9 @@
   <data name="ImageTooSmall" xml:space="preserve">
     <value>छवि बहुत छोटी है। न्यूनतम आवश्यक आयाम {0}x{1} हैं, लेकिन वर्तमान आयाम {2}x{3} हैं।</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>अपलोड की गई फ़ाइल एक समर्थित छवि नहीं है।</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>प्रदान की गई छवि में कार नहीं है।</value>
   </data>
@@ -1753,9 +1734,6 @@
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>क्या आप वाकई {0} टेनेंट छोड़ना चाहते हैं?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>आपने टेनेंट सफलतापूर्वक छोड़ दिया है।</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>टेनेंट बदलें</value>
   </data>
@@ -1831,8 +1809,100 @@
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>{0} का निमंत्रण अस्वीकार करें? इसे पूर्ववत नहीं किया जा सकता - शामिल होने के लिए आपको नए निमंत्रण की आवश्यकता होगी।</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>निमंत्रण अस्वीकार कर दिया गया।</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>समय क्षेत्र</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>समय क्षेत्र चुनें</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>समय क्षेत्र खोजें</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>आपकी खोज से मेल खाने वाला कोई समय क्षेत्र नहीं है।</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotifications" xml:space="preserve">
+    <value>पुश सूचनाएँ</value>
+  </data>
+    <data name="TurnPushNotificationsOn" xml:space="preserve">
+    <value>पुश सूचनाएँ चालू करें</value>
+  </data>
+    <data name="TurnPushNotificationsOff" xml:space="preserve">
+    <value>पुश सूचनाएँ बंद करें</value>
+  </data>
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>इस ऐप के लिए पुश सूचनाएँ अवरुद्ध हैं। अपने ब्राउज़र या ऑपरेटिंग सिस्टम की सेटिंग में सूचनाओं की अनुमति दें और फिर से प्रयास करें।</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>गोपनीयता</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>अपने डेटा की एक प्रति डाउनलोड करें</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>आपके गोपनीयता विकल्प</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>आपको साइन इन रखना, आपकी भाषा याद रखना और त्रुटियों की रिपोर्ट करना इस सूची में नहीं हैं: पहले दो के बिना ऐप काम नहीं कर सकता, और त्रुटि रिपोर्ट में आपके डिवाइस का कोई पहचानकर्ता नहीं होता।</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>उपयोग विश्लेषण</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>इससे हम आपके डिवाइस को विज़िट के बीच पहचान पाते हैं ताकि देख सकें कि कौन से पेज उपयोग होते हैं और उनमें कितना समय लगता है। इसे बंद करने से त्रुटि रिपोर्ट बंद नहीं होतीं।</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>विज्ञापन</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>विज्ञापन स्क्रिप्ट लोड करता है, जो अपने पहचानकर्ता सेट करती है। जब तक आप इसे चालू नहीं करते, कुछ भी लोड नहीं होता।</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>आपकी गोपनीयता</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>हम आपके डिवाइस पर कुछ जानकारी संग्रहीत करना चाहते हैं जिसकी इस ऐप को काम करने के लिए आवश्यकता नहीं है। आपको साइन इन रखना, आपकी भाषा याद रखना और त्रुटियों की रिपोर्ट करना किसी भी स्थिति में होता है।</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>स्वीकार करें</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>अस्वीकार करें</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>गोपनीयता सेटिंग्स</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>खाता सेटिंग्स</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>अपना डेटा डाउनलोड करें</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>इस ऐप के पास आपके बारे में जो कुछ है उसकी एक प्रति प्राप्त करें: आपका खाता, वे डिवाइस जिन पर आप साइन इन हैं, आपकी प्रोफ़ाइल तस्वीर और आपके बनाए गए कंटेंट। यह data.json और आपकी फ़ाइलों वाली एक zip फ़ाइल के रूप में मिलती है।</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>फ़ाइल का हर हिस्सा यह भी बताता है कि उसे क्यों रखा जाता है, कितने समय तक, और कौन उसे प्राप्त करता है, तथा क्या आपका खाता हटाने पर वह हट जाता है।</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>मेरा डेटा डाउनलोड करें</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>इसके बजाय अपना डेटा हटवाना चाहते हैं, तो अपना खाता यहाँ से हटाएँ</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>डेटा निर्यात करें</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>ऐसे डेटा अनुरोध का उत्तर देता है जो ऐप के माध्यम से नहीं आया।</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>विज्ञापन देखने पर Google की विज्ञापन स्क्रिप्ट लोड होती है, जो आपके डिवाइस पर अपने पहचानकर्ता सेट करती है। जब तक आप सहमत नहीं होते, कुछ भी लोड नहीं होता।</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>सहमत हूँ और जारी रखें</value>
+  </data>
 </root>
