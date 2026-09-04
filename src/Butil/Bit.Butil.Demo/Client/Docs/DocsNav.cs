@@ -15,6 +15,7 @@ public static class DocsNav
         [
             new("Getting started", "getting-started", "Install the package, add the script, register the services.", typeof(GettingStartedPage), ApiSupport.Guide),
             new("Render modes", "render-modes", "How Butil behaves under WebAssembly, Server, Hybrid and prerendering.", typeof(RenderModesPage), ApiSupport.Guide),
+            new("JavaScript trimming", "javascript-trimming", "Ship only the JavaScript your app calls: the switch, the three signals behind it, and what none of them can see.", typeof(JavaScriptTrimmingPage), ApiSupport.Guide),
             new("Browser support", "browser-support", "Which APIs need a secure context, a permission or a specific engine.", typeof(BrowserSupportPage), ApiSupport.Guide),
             new("Troubleshooting", "troubleshooting", "The errors people hit first, and what each one actually means.", typeof(TroubleshootingPage), ApiSupport.Guide),
             new("MCP server", "mcp-server", "This site as tools an AI agent can call - and a live client to try them in.", typeof(McpServerPage), ApiSupport.Guide),

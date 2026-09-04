@@ -459,7 +459,7 @@ public static class ComponentCatalog
         ["Label"] = "Gives a name to a control or a group of controls.",
         ["Link"] = "Navigates elsewhere, inside the app or out of it.",
         ["MediaQuery"] = "Reports the library's breakpoints to your component as a parameter.",
-        ["Overlay"] = "Dims everything behind a piece of UI to put the emphasis on it.",
+        ["Overlay"] = "Covers the page or a container, catching its clicks to put the emphasis on what it hosts.",
         ["Params"] = "Cascades shared parameter objects so components inherit common defaults.",
         ["PullToRefresh"] = "Adds pull-down-to-refresh to a page or a scrolling element.",
         ["Separator"] = "Visually divides content into groups, with an optional label.",

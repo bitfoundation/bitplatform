@@ -5,26 +5,26 @@
 
 <AppPageData ShowGoBackButton="true"
              Title="@product?.Name"
-             Description="@product?.DescriptionText" />
+             Description="@product?.DescriptionText">
+    <Head>
+        <meta property="og:type" content="product" />
+        <meta property="og:site_name" content="Boilerplate" />
+        <meta property="og:title" content="@product?.Name" />
+        <meta property="og:description" content="@product?.DescriptionText" />
+        <meta property="og:image" content="@ShareImageUrl" />
+        <meta property="og:url" content="@CanonicalUrl" />
 
-<HeadContent>
-    <meta property="og:type" content="product" />
-    <meta property="og:site_name" content="Boilerplate" />
-    <meta property="og:title" content="@product?.Name" />
-    <meta property="og:description" content="@product?.DescriptionText" />
-    <meta property="og:image" content="@ShareImageUrl" />
-    <meta property="og:url" content="@CanonicalUrl" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="@product?.Name" />
+        <meta name="twitter:description" content="@product?.DescriptionText" />
+        <meta name="twitter:image" content="@ShareImageUrl" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="@product?.Name" />
-    <meta name="twitter:description" content="@product?.DescriptionText" />
-    <meta name="twitter:image" content="@ShareImageUrl" />
-
-    @if (product is not null)
-    {
-        <script type="application/ld+json">@((MarkupString)BuildProductJsonLd())</script>
-    }
-</HeadContent>
+        @if (product is not null)
+        {
+            <script type="application/ld+json">@((MarkupString)BuildProductJsonLd())</script>
+        }
+    </Head>
+</AppPageData>
 
 <section>
     <BitStack Gap="2rem" Class="root-stack">

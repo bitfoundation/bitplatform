@@ -281,13 +281,16 @@ internal static class UtilsJsRuntimeExtensions
     // The key is the component holding the scroller, so that the hold is counted alongside every other
     // popup holding the same one: a component letting go of a scroller another one is still holding would
     // otherwise hand back a page that is meant to stay held.
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, string scrollerSelector, bool isHidden)
+    // The compensation is opt-in so that the callers that have always let the page shift by the width of
+    // the scrollbar it took away carry on doing exactly that; the ones that ask for it get the room back
+    // as padding, the way the counted lock above gives it back.
+    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, string scrollerSelector, bool isHidden, bool compensate = false)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerSelector, isHidden);
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerSelector, isHidden, compensate);
     }
 
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, ElementReference scrollerElement, bool isHidden)
+    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, ElementReference scrollerElement, bool isHidden, bool compensate = false)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerElement, isHidden);
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerElement, isHidden, compensate);
     }
 }

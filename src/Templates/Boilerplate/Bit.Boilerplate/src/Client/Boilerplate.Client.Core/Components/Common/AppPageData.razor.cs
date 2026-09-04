@@ -19,6 +19,13 @@ public partial class AppPageData
     [Parameter] public string? Description { get; set; }
 
     /// <summary>
+    /// Whatever else this page wants in the document head - a sharing card, a schema. It renders INSIDE this
+    /// component's one HeadContent rather than as a HeadContent of the page's own, because a page has a single
+    /// HeadOutlet and only the last HeadContent rendered into it survives.
+    /// </summary>
+    [Parameter] public RenderFragment? Head { get; set; }
+
+    /// <summary>
     /// Without it, <c>?utm_source=x</c> is a page of its own to a search engine: <c>AppResponseCachePolicy</c>'s
     /// <c>QueryKeys = "*"</c> gives every query variant its own cache entry and its own crawlable url.
     /// </summary>

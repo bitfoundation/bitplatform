@@ -140,7 +140,7 @@ public sealed class TrimButilScripts : Task
                 var map = Types();
                 if (map is null)
                 {
-                    Log.LogError($"Bit.Butil: <BitButilScriptScan>{ScanMode}</BitButilScriptScan> needs to read the untrimmed Bit.Butil.dll to know which module each class uses, and '{ButilAssembly}' could not be read. Set <BitButilScriptScan>None</BitButilScriptScan> to publish the full bundle instead.");
+                    Log.LogError($"Bit.Butil: <BitButilScriptScan>{ScanMode}</BitButilScriptScan> needs to read the untrimmed Bit.Butil.dll to know which module each class uses, and '{ButilAssembly}' could not be read. Set <BitButilUntrimmedAssembly> to that assembly, or <BitButilScriptScan>None</BitButilScriptScan> to publish the full bundle instead.");
                     return false;
                 }
 
@@ -150,7 +150,7 @@ public sealed class TrimButilScripts : Task
                     // Every app that can call into Bit.Butil references it, so finding nothing means the list
                     // of assemblies was not the app's. Trimming on that would drop every module.
                     Log.LogWarning(null, "BUTIL002", null, null, 0, 0, 0, 0,
-                        $"Bit.Butil: none of the {ScanAssemblies.Length} assemblies scanned references Bit.Butil, so there is nothing to work out which JavaScript this app uses from; keeping the full bit-butil.js. Set <BitButilScriptScanAssemblies> to the app's own assemblies, or <BitButilScriptScan>None</BitButilScriptScan> to silence this.");
+                        $"Bit.Butil: none of the {ScanAssemblies.Length} assemblies scanned references Bit.Butil, so there is nothing to work out which JavaScript this app uses from; keeping the full bit-butil.js. Add a <BitButilScriptScanAssembly> item for each of the app's own assemblies, or set <BitButilScriptScan>None</BitButilScriptScan> to silence this.");
                     Skipped = true;
                     return true;
                 }
