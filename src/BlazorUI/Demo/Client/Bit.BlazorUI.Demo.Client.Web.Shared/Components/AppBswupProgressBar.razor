@@ -22,24 +22,38 @@
        it lines up with. The offset is derived from the same two variables the header's own height is
        built from - the docs shell's header height and the safe-area inset BitAppShell pads the top
        with - so the line tracks the header instead of guessing at it. Both carry a fallback: this
-       element paints during the very first load, when a stylesheet may not have arrived yet. */
+       element paints during the very first load, when a stylesheet may not have arrived yet.
+
+       The header's box is --demo-header-height PLUS its own one-pixel border-bottom, and it is that
+       border the track stands in for - so the 3px track starts two pixels above the variable to end
+       flush with the bottom of the border rather than where the border begins.
+
+       The horizontal insets are the same safe-area gutters BitAppShell holds the header itself
+       inside (.bit-ash-left / .bit-ash-right). Without them the track would paint across a notched
+       device's gutters in landscape and overhang the very header it is lining up with, and the
+       failure card below would hang its edge in the same gutter. Applying them to the container
+       rather than to each child means everything inside measures from the safe edge for free -
+       including the card's `margin-inline-end`, which needs no direction-aware inset of its own. */
     #bit-bswup {
-        left: 0;
-        right: 0;
         display: none;
         position: fixed;
         pointer-events: none;
         z-index: 999999999;
-        top: calc(var(--demo-header-height, 65px) + var(--bit-env-inset-top, 0px) - 3px);
+        left: var(--bit-env-inset-left, 0px);
+        right: var(--bit-env-inset-right, 0px);
+        top: calc(var(--demo-header-height, 65px) + var(--bit-env-inset-top, 0px) - 2px);
     }
 
         /* The track is the header's border-bottom color at the header's border thickness plus two
            pixels, so it reads as that border thickening for the duration of the download rather
-           than as a new element arriving. */
+           than as a new element arriving.
+
+           Deliberately NOT overflow:hidden: the bar's width never exceeds this box, so clipping
+           would buy nothing except the loss of the glow below, which spreads outside a 3px track by
+           definition and is the whole reason the line does not read as a border. */
         #bit-bswup .bswup-track {
             width: 100%;
             height: 3px;
-            overflow: hidden;
             background-color: var(--bit-clr-brd-sec, rgba(128, 128, 128, 0.3));
         }
 
@@ -83,9 +97,9 @@
         pointer-events: auto;
         width: fit-content;
         padding: 10px 12px;
-        /* 3px puts the card back at the header's bottom edge - the container starts that far above
+        /* 2px puts the card back at the header's bottom edge - the container starts that far above
            it, under the track - and the rest is air. */
-        margin-block-start: 11px;
+        margin-block-start: 10px;
         margin-inline-start: auto;
         margin-inline-end: 12px;
         max-width: min(360px, calc(100% - 24px));
@@ -95,6 +109,19 @@
         border: 1px solid var(--bit-clr-brd-sec, rgba(128, 128, 128, 0.3));
         box-shadow: var(--bit-shd-popup, 0 4px 12px rgba(0, 0, 0, 0.15));
         animation: bswup-error-in var(--bit-mot-duration, 200ms) var(--bit-mot-easing-decelerate, cubic-bezier(0.1, 0.9, 0.2, 1));
+    }
+
+    /* Under 75rem the "on this page" rail collapses into a fixed round button that SideRail pins at
+       exactly the corner this card wants: top `--demo-header-height` + 8px, 34px tall, 3rem in from
+       the inline end. The card is pointer-events:auto and outranks it by nine orders of z-index, so
+       an overlapping card would swallow every click meant for that button. Rather than dodging
+       inward - the card is up to 360px wide and would still cross it - it drops below the button:
+       8px + 34px of button, then the same 8px of air the desktop card has. The breakpoint is
+       SideRail's own; the two have to be changed together. */
+    @@media screen and (max-width: 75rem) {
+        #bit-bswup .bswup-error {
+            margin-block-start: 52px;
+        }
     }
 
     @@keyframes bswup-error-in {
@@ -151,6 +178,40 @@
         }
 
         #bit-bswup .bswup-error-retry:focus-visible {
+            outline: 2px solid var(--bit-clr-pri, #1b6ec2);
+            border-radius: var(--bit-shp-radius-button, 2px);
+            outline-offset: 2px;
+        }
+
+    /* Nothing else ever takes this card away: the script has no "recovered" message to hide it on,
+       and the failure it reports is terminal for the session. So the card carries its own way out,
+       or it stays on top of the page - and of the FAB above - until the next navigation. Quieter
+       than the retry beside it, in the detail color: dismissing is what a reader does when they
+       have decided the news does not concern them, which is most of them.
+
+       The click handler is an inline attribute because App.razor renders this markup statically,
+       outside the Blazor root, so there is no interactive renderer for a Blazor event to bind to.
+       It hides the whole container rather than the card, taking the (already hidden) track with
+       it, and the demo server's CSP declares no script-src, so an inline handler runs. */
+    #bit-bswup .bswup-error-dismiss {
+        border: 0;
+        line-height: 1;
+        flex-shrink: 0;
+        cursor: pointer;
+        padding: 2px 4px;
+        background: none;
+        align-self: center;
+        font-family: inherit;
+        margin-inline-end: -4px;
+        font-size: var(--bit-tpg-fs-xs, 12px);
+        color: var(--bit-clr-fg-ter, #a19f9d);
+    }
+
+        #bit-bswup .bswup-error-dismiss:hover {
+            color: var(--bit-clr-fg-pri, #323130);
+        }
+
+        #bit-bswup .bswup-error-dismiss:focus-visible {
             outline: 2px solid var(--bit-clr-pri, #1b6ec2);
             border-radius: var(--bit-shp-radius-button, 2px);
             outline-offset: 2px;
@@ -245,6 +306,12 @@
                 <span class="bswup-error-dot" aria-hidden="true"></span>
                 <span id="bit-bswup-error-message" class="bswup-error-message"></span>
                 <button id="bit-bswup-error-retry" class="bswup-error-retry" type="button">Retry</button>
+                @* No id: the script knows nothing about this button, and does not need to - hiding
+                   the container is the whole behavior. *@
+                <button class="bswup-error-dismiss"
+                        type="button"
+                        aria-label="Dismiss"
+                        onclick="document.getElementById('bit-bswup').style.display='none'">&times;</button>
             </div>
             <details class="bswup-error-more">
                 <summary>Details</summary>
