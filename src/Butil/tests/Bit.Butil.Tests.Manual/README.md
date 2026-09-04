@@ -168,7 +168,7 @@ is allowed to use, that a csproj list is *added* to what the others found rather
 assets removed from the build list are also removed from the publish list, and that a name meaning nothing
 fails the build. So these publish a real consumer app - a two-class web app next door, published in seconds
 rather than the minutes a WebAssembly one takes - and read the JavaScript back out of its publish output.
-Ten `dotnet publish` runs, about fifteen seconds in total, untrimmed runs only:
+Eleven `dotnet publish` runs and one `dotnet msbuild`, about fifteen seconds in total, untrimmed runs only:
 
 - with **no signal at all** the full bundle is published - the case that has to keep working for every
   consumer who never asked for any of this. Reached by setting `BitButilScriptScan=None`, since the switch
@@ -180,8 +180,18 @@ Ten `dotnet publish` runs, about fifteen seconds in total, untrimmed runs only:
 - a csproj list **plus** a scan produces the union of the two, which is the whole meaning of "additive";
 - **lazy scripts** publish one file per reachable module and no bundle at all;
 - `BitButilTrimScripts=false` publishes the full bundle even when given a scan and a list to work from;
+- a project that **does not publish an app's static web assets** - a Razor class library, a hybrid head, the
+  shape a shared `Directory.Build.props` reaches by accident - leaves the JavaScript alone, because its
+  reference closure is not the app's. The fixture stands in for one by unsetting the two things the SDK sets
+  on a project that does publish an app;
 - a **misspelled module name**, and a **scan mode that is not one of the three**, each fail the publish with
   the error naming what was wrong.
+
+The `dotnet msbuild` run is the twelfth, and it is not a publish: it drives the two trimming targets by name
+so they land in a project instance where nothing else has run, which is the position the SDK puts them in on
+a referenced project. The untrimmed `Bit.Butil.dll` has to resolve there too - `@(ReferenceCopyLocalPaths)`
+is only populated because the target names `ResolveReferences` itself - and the scan reporting what it read
+is the assertion.
 
 Every bundle assertion reads the published file and asks which chunk guards are in it - the same thing the
 browser would find - rather than comparing byte counts. Each scenario also asserts the per-module files:

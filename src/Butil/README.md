@@ -341,9 +341,9 @@ app's static web assets: a class library asked what JavaScript "the app" uses wo
 references, which are not the app's, and hand the head a bundle short of the modules only the head names.
 
 The trimming knows this and stands down in those projects rather than trimming against the wrong reference
-closure - the question it decides on is `StaticWebAssetProjectMode`, which the Web SDK and the Blazor
-WebAssembly SDK set to `Root` and every class library and hybrid head leaves at `Default`. Where what
-reached such a project describes what the app calls - a `BitButilScriptScan` written out by hand, or a
+closure - what it decides on is the SDK the project loaded, which is the Web SDK or the Blazor WebAssembly
+SDK for every project that publishes an app and neither of those for a class library or a hybrid head.
+Where what reached such a project describes what the app calls - a `BitButilScriptScan` written out by hand, or a
 `BitButilScriptModule` list - it says so in the build output. So a shared props file is no longer a broken
 build, but it is still not where the answer comes from. Put the
 properties on the head, one per app you publish:

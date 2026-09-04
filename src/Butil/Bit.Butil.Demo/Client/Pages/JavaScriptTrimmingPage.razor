@@ -1,4 +1,4 @@
-@page "/javascript-trimming"
+﻿@page "/javascript-trimming"
 @inject Bit.Butil.Fetch fetch
 @inject NavigationManager navManager
 
@@ -164,9 +164,9 @@ for (var at = script.IndexOf(anchor); at >= 0; at = script.IndexOf(anchor, at + 
     obvious home and is the one place they should not go - from there they also reach every Razor class
     library and every MAUI/Blazor Hybrid head in the solution, and a class library asked what "the app"
     calls would answer from its own references, which are not the app's. Butil settles this rather than
-    trusting it: trimming runs only where the SDK set <code>StaticWebAssetProjectMode</code> to
-    <code>Root</code> - the Web SDK and the Blazor WebAssembly SDK do, every class library and hybrid head
-    is left at <code>Default</code> - and anywhere else it stands down, saying so in the build output when
+    trusting it: trimming runs only in a project loaded by the Web SDK or the Blazor WebAssembly SDK -
+    which is every project that publishes an app, and neither a Razor class library nor a hybrid head -
+    and anywhere else it stands down, saying so in the build output when
     what reached that project describes what the app calls rather than being only the switch. So a shared
     props file costs you a message rather than a wrong bundle. <code>BitButilTrimScripts</code> is the
     exception worth sharing: it is only a switch, it already defaults to on exactly where it applies, and

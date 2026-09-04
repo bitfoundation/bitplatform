@@ -113,10 +113,15 @@ internal static class ScriptPublishing
         // The properties in a shared Directory.Build.props reach every project in the solution, and the ones
         // that do not publish the app's static web assets - a Razor class library, a MAUI/Blazor Hybrid head -
         // must leave the JavaScript alone: their reference closure is not the app's, so trimming against it
-        // would hand the head a bundle short of the modules only the head names. StaticWebAssetProjectMode is
-        // what the gate reads, and forcing it here is the fixture standing in for such a project.
+        // would hand the head a bundle short of the modules only the head names.
+        //
+        // The gate reads both halves of what the SDK says about a project, so both are forced here: Root is
+        // the .NET 10 Web SDK's StaticWebAssetProjectMode (the .NET 8 and 9 Web SDKs leave a head at
+        // 'Default', which is why the marker below is read as well), and UsingMicrosoftNETSdkWeb is what
+        // says a Web SDK was loaded at all. A class library sets neither, and this fixture - a Web SDK app -
+        // stands in for one by unsetting both.
         new("a project that does not publish the app's static web assets does not trim",
-            ["StaticWebAssetProjectMode=Default", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
+            ["StaticWebAssetProjectMode=Default", "UsingMicrosoftNETSdkWeb=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
             FullBundle: true),
 
         // MSBuild accepts a misspelled item without a word, so the build is the only thing that can say so.
@@ -173,8 +178,8 @@ internal static class ScriptPublishing
     }
 
     /// <summary>
-    /// The publish asset stage reached the way the SDK reaches it on a REFERENCED project, rather than the
-    /// way a publish of this project does.
+    /// The trimming stage reached from a project instance where only its own target chain has run, rather
+    /// than the way a publish of this project reaches it.
     /// </summary>
     /// <remarks>
     /// ResolvePublishStaticWebAssets is not the publish-only stage its name suggests. The SDK also runs it on
@@ -184,31 +189,41 @@ internal static class ScriptPublishing
     /// fresh instance - and ResolveReferences is not part of that chain. @(ReferenceCopyLocalPaths) is then
     /// empty, and the trimming, which reads the untrimmed Bit.Butil.dll out of it to know which module each
     /// class needs, used to fail the build with "'' could not be read" and no way out but switching the
-    /// feature off.
+    /// feature off. _BitButilAssembleTrimmedBundle naming ResolveReferences in its DependsOnTargets is the
+    /// fix, and this is what holds it there.
     /// <br/>
-    /// Invoking the target by name is what puts the stage in that position; a `dotnet publish` cannot, because
-    /// by then ResolveReferences has long since run. Only the Bit.Butil error is asserted on, not the exit
-    /// code: driving one internal SDK target straight at a project whose Bit.Butil is a ProjectReference walks
-    /// the library's own asset pipeline down a path no consumer takes, and its noise is not this claim.
+    /// The two Butil targets are driven by name, in order, which is what puts them in that position - a
+    /// `dotnet publish` cannot, because by then ResolveReferences has long since run. In order because
+    /// MSBuild evaluates a target's own Condition before building its DependsOnTargets, so the gate
+    /// _BitButilResolveScriptTrimming sets has to be set by a previous entry in the target list rather than
+    /// by a dependency. Driving the SDK's own ComputeReferencedStaticWebAssetsPublishManifest instead would
+    /// walk Bit.Butil's asset pipeline down a path no consumer takes and die there, before any of this runs.
+    /// <br/>
+    /// Lazy scripts, because in an instance this bare there is no @(StaticWebAsset) to find a bundle among,
+    /// and the per-module half of the trimming is the half that still has work to do without one. The claim
+    /// is asserted positively - the scan's own line, which it only ever writes having read that assembly -
+    /// so that a stage that stood down, or never ran, fails rather than passing by saying nothing.
     /// </remarks>
     private static void CheckReferencedPublishStage(ScriptBundling.Checks checks, string fixtureProject)
     {
-        const string Claim = "the publish asset stage resolves Bit.Butil.dll when a referencing project drives it";
+        const string Claim = "the trimming stage resolves Bit.Butil.dll when only its own targets have run";
 
         string[] arguments =
         [
-            "msbuild", fixtureProject, "-t:ComputeReferencedStaticWebAssetsPublishManifest",
-            "--nologo", "-v:quiet", "-tl:off", "-p:BitButilScriptScan=TypeReferences",
+            "msbuild", fixtureProject, "-t:_BitButilResolveScriptTrimming", "-t:_BitButilAssembleTrimmedBundle",
+            "--nologo", "-v:normal", "-tl:off", "-p:BitButilScriptScan=TypeReferences", "-p:BitButilLazyScripts=true",
         ];
 
-        if (Run(arguments, out var log, out _) is false)
+        if (Run(arguments, out var log, out var exitCode) is false)
         {
             checks.That(false, $"{Claim} was not checked", log);
             return;
         }
 
-        checks.That(log.Contains("could not be read", StringComparison.Ordinal) is false, Claim,
-            $"the untrimmed assembly did not resolve: {FirstError(log)}");
+        checks.That(exitCode == 0 && log.Contains("referencing Bit.Butil and found", StringComparison.Ordinal), Claim,
+            exitCode == 0
+                ? "the stage ran but the scan never reported reading the app's assemblies, so the untrimmed Bit.Butil.dll did not resolve"
+                : $"the stage failed: {FirstError(log)}");
     }
 
     /// <summary>

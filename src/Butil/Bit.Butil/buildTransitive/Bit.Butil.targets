@@ -398,18 +398,28 @@
                  and hand the app a bundle short of the modules only the app names.
 
                  StaticWebAssetProjectMode is the SDK's own answer to "is this the root of the asset graph
-                 or a library contributing to someone else's": the Web SDK and the Blazor WebAssembly SDK
-                 set Root, every class library and every hybrid head is left Default. Gating on Root keeps
-                 the trimming in the one project whose reference closure IS the app's, which is also the
-                 project whose publish the whole feature was written for. The referenced-project stage then
-                 hands its full bundle up and the root trims it there, which is where the answer is right.
+                 or a library contributing to someone else's", and Root is the answer this wants. It is not
+                 enough on its own, though: only the .NET 10 Web SDK sets it (Sdk.Server.props), while the
+                 .NET 8 and .NET 9 Web SDKs leave a Blazor Server app or a Blazor Web App host on the
+                 'Default' that ResolveStaticWebAssetsConfiguration fills in for everything. Gating on Root
+                 alone would stand the whole feature down on exactly the hosts the scan was written for, on
+                 two of the three frameworks this package targets. So the SDK a project loaded is read
+                 alongside it: UsingMicrosoftNETSdkWeb and the two WebAssembly markers are set identically
+                 on 8, 9 and 10, and between them they name every project shape that publishes an app
+                 rather than contributing to one. A Razor class library (Sdk.Razor) and a hybrid head (the
+                 plain SDK plus UseMaui) match none of them, which is the point.
+
+                 Either way the trimming stays in the one project whose reference closure IS the app's,
+                 which is also the project whose publish the whole feature was written for. The
+                 referenced-project stage then hands its full bundle up and the root trims it there, which
+                 is where the answer is right.
 
                  The remaining two counts are unchanged: the assemblies read here are a publish's, and a
                  design-time build is excluded outright. A build, and so dotnet run and dotnet watch, keeps
                  the JavaScript exactly as the package ships it - what a developer debugs is always the
                  full, untrimmed set. -->
             <_BitButilIsAssetRoot>false</_BitButilIsAssetRoot>
-            <_BitButilIsAssetRoot Condition="'$(StaticWebAssetProjectMode)' == 'Root'">true</_BitButilIsAssetRoot>
+            <_BitButilIsAssetRoot Condition="'$(StaticWebAssetProjectMode)' == 'Root' or '$(UsingMicrosoftNETSdkWeb)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">true</_BitButilIsAssetRoot>
 
             <_BitButilPublishTrimming>false</_BitButilPublishTrimming>
             <_BitButilPublishTrimming Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(_BitButilIsAssetRoot)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitButilPublishTrimming>
@@ -447,7 +457,7 @@
                  Text="Bit.Butil: this publish is trimmed, so &lt;BitButilScriptScan&gt;$(BitButilScriptScan)&lt;/BitButilScriptScan&gt; is not used - the trimmed assembly answers the same question more precisely." />
 
         <Message Importance="normal" Condition="'$(_BitButilTrimmingStoodDown)' == 'true'"
-                 Text="Bit.Butil: script trimming is configured here but this project does not publish the app's static web assets (StaticWebAssetProjectMode is '$(StaticWebAssetProjectMode)', not 'Root'), so it is left to the head that does. Set &lt;BitButilTrimScripts&gt;, &lt;BitButilScriptScan&gt; and &lt;BitButilScriptModule&gt; on the project you publish rather than in a shared Directory.Build.props." />
+                 Text="Bit.Butil: script trimming is configured here but this project does not publish an app's static web assets - it is a class library or a hybrid head contributing to someone else's, so the trimming is left to the head that does publish one. Set &lt;BitButilScriptScan&gt; and &lt;BitButilScriptModule&gt; on the project you publish rather than in a shared Directory.Build.props." />
 
     </Target>
 
