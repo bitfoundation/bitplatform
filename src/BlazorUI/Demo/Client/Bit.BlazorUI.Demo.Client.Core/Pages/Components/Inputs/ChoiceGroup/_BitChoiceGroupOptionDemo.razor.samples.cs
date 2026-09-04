@@ -128,28 +128,28 @@ public partial class _BitChoiceGroupOptionDemo
 </BitChoiceGroup>";
 
     private readonly string example5RazorCode = @"
-<BitChoiceGroup Label=""End (default)"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.End"" Horizontal>
+<BitChoiceGroup Label=""End (default)"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.End"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Start"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" Horizontal>
+<BitChoiceGroup Label=""Start"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.Start"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Top"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Top"" Horizontal>
+<BitChoiceGroup Label=""Top"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.Top"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Bottom"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Bottom"" Horizontal>
+<BitChoiceGroup Label=""Bottom"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.Bottom"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
@@ -520,7 +520,7 @@ private void ReverseDynamicOptions()
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (options at the far edge)"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" FullWidth TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (options at the far edge)"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.Start"" FullWidth TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
@@ -529,7 +529,7 @@ private void ReverseDynamicOptions()
 
 <BitChoiceGroup Label=""FullWidth + LabelPosition.Start + stretched option label (settings list)""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitLabelPosition.Start"" FullWidth
+                LabelPosition=""BitSide.Start"" FullWidth
                 Styles=""@(new() { ItemLabel = ""width: 100%; justify-content: space-between;"" })""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />

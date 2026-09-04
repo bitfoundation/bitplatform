@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -171,7 +171,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public bool Pageable { get; set; }
     [Parameter] public int PageSize { get; set; } = 20;
     [Parameter] public int[] PageSizeOptions { get; set; } = { 10, 20, 50, 100 };
-    [Parameter] public BitDataGridPagerPosition PagerPosition { get; set; } = BitDataGridPagerPosition.Bottom;
+    /// <summary>
+    /// Where the pager is rendered relative to the grid (default is under it).
+    /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom and TopAndBottom are meaningful here; any other side leaves the pager under the grid.
+    /// </remarks>
+    [Parameter] public BitSide PagerPosition { get; set; } = BitSide.Bottom;
 
     // --------------------------------------------------------- Virtualization
     /// <summary>

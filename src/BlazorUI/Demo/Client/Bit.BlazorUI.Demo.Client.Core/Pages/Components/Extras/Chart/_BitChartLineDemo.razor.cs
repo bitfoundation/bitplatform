@@ -4,7 +4,7 @@ public partial class _BitChartLineDemo
 {
     private readonly BitChartOptions _legendBottom = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
     };
 
     private readonly BitChartOptions _logOptions = new()
@@ -91,7 +91,7 @@ public partial class _BitChartLineDemo
     private readonly string filledCsharpCode = @"
 private readonly BitChartOptions _legendBottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Filled() => new()
@@ -108,7 +108,7 @@ private BitChartData Filled() => new()
     private readonly string straightCsharpCode = @"
 private readonly BitChartOptions _legendBottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData MonthlySales() => new()
@@ -127,7 +127,7 @@ private BitChartData MonthlySales() => new()
     private readonly string steppedCsharpCode = @"
 private readonly BitChartOptions _legendBottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Stepped() => new()
@@ -144,7 +144,7 @@ private BitChartData Stepped() => new()
     private readonly string dashedCsharpCode = @"
 private readonly BitChartOptions _legendBottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Dashed() => new()
@@ -179,7 +179,7 @@ private BitChartData Log() => new()
     private readonly string segmentedCsharpCode = @"
 private readonly BitChartOptions _legendBottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Segmented() => new()
@@ -206,7 +206,7 @@ private BitChartData Segmented() => new()
     private readonly string monotoneCsharpCode = @"
 private readonly BitChartOptions _legendBottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Monotone() => new()

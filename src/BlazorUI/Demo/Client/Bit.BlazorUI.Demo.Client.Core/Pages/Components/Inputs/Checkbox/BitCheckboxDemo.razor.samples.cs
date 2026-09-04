@@ -22,10 +22,10 @@ public partial class BitCheckboxDemo
 <BitCheckbox Label=""Reversed - Disable Checked"" Reversed IsEnabled=""false"" Value=""true"" />";
 
     private readonly string example4RazorCode = @"
-<BitCheckbox Label=""End"" LabelPosition=""BitLabelPosition.End"" />
-<BitCheckbox Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
-<BitCheckbox Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
-<BitCheckbox Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />";
+<BitCheckbox Label=""End"" LabelPosition=""BitSide.End"" />
+<BitCheckbox Label=""Start"" LabelPosition=""BitSide.Start"" />
+<BitCheckbox Label=""Top"" LabelPosition=""BitSide.Top"" />
+<BitCheckbox Label=""Bottom"" LabelPosition=""BitSide.Bottom"" />";
 
     private readonly string example5RazorCode = @"
 <BitCheckbox>

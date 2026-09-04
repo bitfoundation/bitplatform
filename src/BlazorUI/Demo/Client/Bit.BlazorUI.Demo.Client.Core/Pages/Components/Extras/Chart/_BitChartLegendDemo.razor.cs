@@ -2,7 +2,7 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class _BitChartLegendDemo
 {
-    private BitChartPosition _position = BitChartPosition.Top;
+    private BitSide _position = BitSide.Top;
     private BitChartAlign _align = BitChartAlign.Center;
     private bool _usePointStyle;
     private bool _reverse;
@@ -11,7 +11,7 @@ public partial class _BitChartLegendDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Title = "Product lines" }
+            Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Title = "Product lines" }
         }
     };
 
@@ -19,7 +19,7 @@ public partial class _BitChartLegendDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+            Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
         }
     };
 
@@ -65,7 +65,7 @@ public partial class _BitChartLegendDemo
 
 <BitChart Type=""BitChartType.Line"" Data=""MultiSeries()"" Options=""Live()"" />";
     private readonly string liveCsharpCode = @"
-private BitChartPosition _position = BitChartPosition.Top;
+private BitSide _position = BitSide.Top;
 private BitChartAlign _align = BitChartAlign.Center;
 private bool _usePointStyle;
 private bool _reverse;
@@ -99,7 +99,7 @@ private readonly BitChartOptions _titled = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Title = ""Product lines"" }
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Title = ""Product lines"" }
     }
 };
 // Revenue(): 3 datasets (Product A/B/C) over Jan..Jul";
@@ -110,7 +110,7 @@ private readonly BitChartOptions _pointStyle = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
     }
 };
 

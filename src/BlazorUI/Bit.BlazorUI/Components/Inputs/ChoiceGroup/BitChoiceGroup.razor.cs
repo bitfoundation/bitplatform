@@ -132,18 +132,21 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     /// <summary>
     /// The position of the content of each item relative to its radio circle. The default is
-    /// <see cref="BitLabelPosition.End"/>, which renders the circle first and the content after it.
+    /// <see cref="BitSide.End"/>, which renders the circle first and the content after it.
     /// Items rendered as image or icon tiles lay their own content out and ignore this parameter.
     /// </summary>
     /// <remarks>
     /// Replaces the removed Reversed parameter, which only offered the two horizontal positions.
     /// Migrate an existing <c>Reversed="true"</c> (in either layout) to
-    /// <c>LabelPosition="BitLabelPosition.Start"</c>; <c>Reversed="false"</c> was the default and needs
+    /// <c>LabelPosition="BitSide.Start"</c>; <c>Reversed="false"</c> was the default and needs
     /// no replacement. A binding of the form <c>Reversed="@flag"</c> becomes
-    /// <c>LabelPosition="@(flag ? BitLabelPosition.Start : BitLabelPosition.End)"</c>.
+    /// <c>LabelPosition="@(flag ? BitSide.Start : BitSide.End)"</c>.
+    /// <br />
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitSide? LabelPosition { get; set; }
 
     /// <summary>
     /// Custom RenderFragment for the label of the ChoiceGroup.
@@ -368,10 +371,10 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitLabelPosition.Top => "bit-chg-ltp",
-            BitLabelPosition.Bottom => "bit-chg-lbm",
-            BitLabelPosition.Start => "bit-chg-lst",
-            BitLabelPosition.End => "bit-chg-led",
+            BitSide.Top => "bit-chg-ltp",
+            BitSide.Bottom => "bit-chg-lbm",
+            BitSide.Start => "bit-chg-lst",
+            BitSide.End => "bit-chg-led",
             _ => "bit-chg-led"
         });
 

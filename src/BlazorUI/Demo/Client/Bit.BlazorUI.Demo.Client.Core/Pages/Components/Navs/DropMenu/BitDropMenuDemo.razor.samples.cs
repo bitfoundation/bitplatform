@@ -137,7 +137,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
 </BitDropMenu>";
 
     private readonly string example5RazorCode = @"
-<BitDropMenu Text=""End PanelPosition"" Responsive ScrollContainerId=""sc-con1"" PanelPosition=""BitPanelPosition.End"">
+<BitDropMenu Text=""End PanelPosition"" Responsive ScrollContainerId=""sc-con1"" PanelPosition=""BitSide.End"">
     <div style=""max-width:200px;overflow:auto"" id=""sc-con1"">
         <BitStack FitWidth Gap=""0.5rem"" Style=""padding:0.5rem"">
             <BitText Typography=""BitTypography.Subtitle1"" NoWrap>A list that scrolls inside the panel</BitText>
@@ -150,7 +150,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     </div>
 </BitDropMenu>
 
-<BitDropMenu Text=""Start PanelPosition"" Responsive ScrollContainerId=""sc-con2"" PanelPosition=""BitPanelPosition.Start"">
+<BitDropMenu Text=""Start PanelPosition"" Responsive ScrollContainerId=""sc-con2"" PanelPosition=""BitSide.Start"">
     <div style=""max-width:200px;overflow:auto"" id=""sc-con2"">
         <BitStack FitWidth Gap=""0.5rem"" Style=""padding:0.5rem"">
             <BitText Typography=""BitTypography.Subtitle1"" NoWrap>A list that scrolls inside the panel</BitText>
@@ -163,7 +163,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     </div>
 </BitDropMenu>
 
-<BitDropMenu Text=""Top PanelPosition"" Responsive PanelPosition=""BitPanelPosition.Top"">
+<BitDropMenu Text=""Top PanelPosition"" Responsive PanelPosition=""BitSide.Top"">
     <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">Swipe up to dismiss it</BitText>
         <BitSeparator />
@@ -173,7 +173,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
     </BitStack>
 </BitDropMenu>
 
-<BitDropMenu Text=""Bottom PanelPosition"" Responsive PanelPosition=""BitPanelPosition.Bottom"">
+<BitDropMenu Text=""Bottom PanelPosition"" Responsive PanelPosition=""BitSide.Bottom"">
     <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">Swipe down to dismiss it</BitText>
         <BitSeparator />
@@ -641,7 +641,7 @@ private BitColor color = BitColor.Primary;";
     </div>
 </BitDropMenu>
 
-<BitDropMenu Text=""ریسپانسیو منو در ابتدا"" Dir=""BitDir.Rtl"" Responsive ScrollContainerId=""sc-con-rtl2"" PanelPosition=""BitPanelPosition.Start"">
+<BitDropMenu Text=""ریسپانسیو منو در ابتدا"" Dir=""BitDir.Rtl"" Responsive ScrollContainerId=""sc-con-rtl2"" PanelPosition=""BitSide.Start"">
     <div style=""max-width:200px;overflow:auto"" id=""sc-con-rtl2"">
         <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
             <BitText Typography=""BitTypography.Subtitle1"" NoWrap>لیستی که داخل پنل اسکرول می شود</BitText>

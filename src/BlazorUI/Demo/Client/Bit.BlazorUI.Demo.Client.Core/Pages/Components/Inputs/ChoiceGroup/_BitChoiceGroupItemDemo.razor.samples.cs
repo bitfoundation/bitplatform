@@ -148,13 +148,13 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 ];";
 
     private readonly string example5RazorCode = @"
-<BitChoiceGroup Label=""End (default)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.End"" Horizontal />
+<BitChoiceGroup Label=""End (default)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.End"" Horizontal />
 
-<BitChoiceGroup Label=""Start"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" Horizontal />
+<BitChoiceGroup Label=""Start"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.Start"" Horizontal />
 
-<BitChoiceGroup Label=""Top"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Top"" Horizontal />
+<BitChoiceGroup Label=""Top"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.Top"" Horizontal />
 
-<BitChoiceGroup Label=""Bottom"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Bottom"" Horizontal />";
+<BitChoiceGroup Label=""Bottom"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.Bottom"" Horizontal />";
     private readonly string example5CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
@@ -558,12 +558,12 @@ private readonly List<BitChoiceGroupItem<string>> deploymentItems =
 
 <BitChoiceGroup Label=""FullWidth (horizontal, equal columns)"" Items=""basicItems"" DefaultValue=""@(""A"")"" Horizontal FullWidth />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (items at the far edge)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" FullWidth />
+<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (items at the far edge)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitSide.Start"" FullWidth />
 
 <BitChoiceGroup Label=""FullWidth + LabelPosition.Start + stretched item label (settings list)""
                 Items=""basicItems""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitLabelPosition.Start""
+                LabelPosition=""BitSide.Start""
                 FullWidth
                 Styles=""@(new() { ItemLabel = ""width: 100%; justify-content: space-between;"" })"" />";
     private readonly string example17CsharpCode = @"

@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 public sealed class BitChartLegendModel
 {
     public List<BitChartLegendItemModel> Items { get; set; } = new();
-    public BitChartPosition Position { get; set; } = BitChartPosition.Top;
+    public BitSide Position { get; set; } = BitSide.Top;
     public BitChartAlign Align { get; set; } = BitChartAlign.Center;
     public BitChartLegendLabelOptions Labels { get; set; } = new();
     public string? Title { get; set; }

@@ -98,7 +98,7 @@
     <DemoExample Title="Icon" RazorCode="@example5RazorCode" Id="example5">
         <div>
             Customize the icon of the BitTimePicker using the <code>IconName</code> parameter,
-            and place it on either side of the input using the <code>IconLocation</code> parameter.
+            and place it on either side of the input using the <code>IconPosition</code> parameter.
             The icons inside the callout are customizable as well: <code>IncreaseHourIconName</code>,
             <code>DecreaseHourIconName</code> and their minute and second counterparts replace the arrows of the
             spin buttons, and <code>CloseButtonIconName</code> replaces the icon of the close button. Each of them
@@ -110,7 +110,7 @@
             <BitTimePicker IconName="@BitIconName.HourGlass" Placeholder="Select a time..." />
             <br />
             <BitTimePicker IconName="@BitIconName.HourGlass"
-                           IconLocation="BitIconLocation.Left"
+                           IconPosition="BitIconPosition.Start"
                            Placeholder="Select a time..." />
             <br />
             <BitTimePicker Label="Custom spin & close icons"
@@ -620,7 +620,7 @@
             <br />
             <BitTimePicker Icon="@BitIconInfo.Css("fa-solid fa-hourglass-half")"
                            Placeholder="Select a time..."
-                           IconLocation="BitIconLocation.Left" />
+                           IconPosition="BitIconPosition.Start" />
             <br />
             <BitTimePicker Icon="@BitIconInfo.Fa("solid stopwatch")"
                            Placeholder="Select a time..." />
@@ -637,7 +637,7 @@
             <br />
             <BitTimePicker Icon="@BitIconInfo.Css("bi bi-alarm-fill")"
                            Placeholder="Select a time..."
-                           IconLocation="BitIconLocation.Left" />
+                           IconPosition="BitIconPosition.Start" />
             <br />
             <BitTimePicker Icon="@BitIconInfo.Bi("stopwatch-fill")"
                            Placeholder="Select a time..." />

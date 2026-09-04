@@ -171,7 +171,7 @@
             <BitPanel Size="customPanelSize"
                       @bind-IsOpen="isOpenInPositionStart"
                       AriaLabel="A panel at the start of the screen"
-                      Position="BitPanelPosition.Start">
+                      Position="BitSide.Start">
                 <div class="panel-body">
                     BitPanel with Start position and custom Size.
                     <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
@@ -181,7 +181,7 @@
             <BitPanel Size="customPanelSize"
                       @bind-IsOpen="isOpenPositionEnd"
                       AriaLabel="A panel at the end of the screen"
-                      Position="BitPanelPosition.End">
+                      Position="BitSide.End">
                 <div class="panel-body">
                     BitPanel with End position and custom Size.
                     <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
@@ -191,7 +191,7 @@
             <BitPanel Size="customPanelSize"
                       @bind-IsOpen="isOpenInPositionTop"
                       AriaLabel="A panel at the top of the screen"
-                      Position="BitPanelPosition.Top">
+                      Position="BitSide.Top">
                 <div class="panel-body">
                     BitPanel with Top position and custom Size.
                     <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
@@ -201,7 +201,7 @@
             <BitPanel Size="customPanelSize"
                       @bind-IsOpen="isOpenInPositionBottom"
                       AriaLabel="A panel at the bottom of the screen"
-                      Position="BitPanelPosition.Bottom">
+                      Position="BitSide.Bottom">
                 <div class="panel-body">
                     BitPanel with Bottom position and custom Size.
                     <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
@@ -574,7 +574,7 @@
                               ModeFull
                               ZIndex="1310"
                               AriaLabel="The inner panel"
-                              Position="BitPanelPosition.Start">
+                              Position="BitSide.Start">
                         <div class="panel-body">
                             <h3>Inner</h3>
                             <div>Lifted over the panel it was opened from, so its own overlay covers it.</div>
@@ -784,7 +784,7 @@
                 <BitPanel @bind-IsOpen="isRtlPanelOpenStart"
                           Dir="BitDir.Rtl"
                           AriaLabel="پنل آغاز"
-                          Position="BitPanelPosition.Start">
+                          Position="BitSide.Start">
                     <div class="panel-body">
                         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
@@ -795,7 +795,7 @@
                 <BitPanel @bind-IsOpen="isRtlPanelOpenEnd"
                           Dir="BitDir.Rtl"
                           AriaLabel="پنل پایان"
-                          Position="BitPanelPosition.End">
+                          Position="BitSide.End">
                     <div class="panel-body">
                         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.

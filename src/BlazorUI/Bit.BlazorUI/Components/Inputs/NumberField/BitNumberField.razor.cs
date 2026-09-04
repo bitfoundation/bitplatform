@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -294,8 +294,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// The position of the label in regards to the field (Top by default).
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitSide? LabelPosition { get; set; }
 
     /// <summary>
     /// Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.
@@ -629,9 +633,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitLabelPosition.Bottom => "bit-nfl-lbt",
-            BitLabelPosition.Start => "bit-nfl-lst",
-            BitLabelPosition.End => "bit-nfl-led",
+            BitSide.Bottom => "bit-nfl-lbt",
+            BitSide.Start => "bit-nfl-lst",
+            BitSide.End => "bit-nfl-led",
             _ => "bit-nfl-ltp"
         });
 

@@ -48,7 +48,7 @@ public partial class BitCallout : BitComponentBase
     /// The alignment is applied before the callout is kept within the screen, so a callout that would hang
     /// off an edge is still slid back onto it, and the arrow keeps pointing at the anchor either way.
     /// </remarks>
-    [Parameter] public BitCalloutAlignment? Alignment { get; set; }
+    [Parameter] public BitSideAlignment? Alignment { get; set; }
 
     /// <summary>
     /// The distance in pixels the callout is slid along the axis it is aligned on, off the edge of the
@@ -356,7 +356,11 @@ public partial class BitCallout : BitComponentBase
     /// The edge of the screen the responsive panel slides in from, for a <see cref="ResponsiveMode"/> of
     /// Panel. It defaults to End.
     /// </summary>
-    [Parameter] public BitPanelPosition? PanelPosition { get; set; }
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitSide? PanelPosition { get; set; }
 
     /// <summary>
     /// Configures the responsive mode of the callout for the small screens.
@@ -399,7 +403,11 @@ public partial class BitCallout : BitComponentBase
     /// every side it allows. Leaving it unset leaves the choice to Direction alone, and
     /// <see cref="NoFlip"/> turns the preference into a demand.
     /// </summary>
-    [Parameter] public BitCalloutSide? Side { get; set; }
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the choice to Direction, exactly as leaving this unset does.
+    /// </remarks>
+    [Parameter] public BitSide? Side { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the callout.
@@ -991,16 +999,16 @@ public partial class BitCallout : BitComponentBase
                 noDismiss: NoDismissOnOutsideClick,
                 preferredSide: Side switch
                 {
-                    BitCalloutSide.Top => "top",
-                    BitCalloutSide.Bottom => "bottom",
-                    BitCalloutSide.Start => "start",
-                    BitCalloutSide.End => "end",
+                    BitSide.Top => "top",
+                    BitSide.Bottom => "bottom",
+                    BitSide.Start => "start",
+                    BitSide.End => "end",
                     _ => ""
                 },
                 alignment: Alignment switch
                 {
-                    BitCalloutAlignment.Center => "center",
-                    BitCalloutAlignment.End => "end",
+                    BitSideAlignment.Center => "center",
+                    BitSideAlignment.End => "end",
                     _ => ""
                 },
                 noFlip: NoFlip,
@@ -1304,12 +1312,18 @@ public partial class BitCallout : BitComponentBase
     }
 
     // The edge a responsive callout slides in from, which is the panel position for the Panel mode and
-    // the mode itself for the two that name an edge of their own.
-    private BitPanelPosition ResponsivePosition => ResponsiveMode switch
+    // the mode itself for the two that name an edge of their own. BitSide carries sides a panel has no styles
+    // for - the physical pair and the two combined values - so they are resolved to the default here, which
+    // keeps the class the callout draws and the value the swipe is registered with from disagreeing.
+    private BitSide ResponsivePosition => ResponsiveMode switch
     {
-        BitResponsiveMode.Top => BitPanelPosition.Top,
-        BitResponsiveMode.Bottom => BitPanelPosition.Bottom,
-        _ => PanelPosition ?? BitPanelPosition.End
+        BitResponsiveMode.Top => BitSide.Top,
+        BitResponsiveMode.Bottom => BitSide.Bottom,
+        _ => PanelPosition switch
+        {
+            BitSide.Start or BitSide.Top or BitSide.Bottom => PanelPosition.Value,
+            _ => BitSide.End
+        }
     };
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.
@@ -1338,7 +1352,7 @@ public partial class BitCallout : BitComponentBase
                 // The axis the panel is swiped away along is the one it slid in on, and the lock is what
                 // takes that axis from the page: a top or bottom panel dragged with the wrong lock follows
                 // the finger while the page scrolls out from under it at the same time.
-                orientationLock: ResponsivePosition is BitPanelPosition.Top or BitPanelPosition.Bottom
+                orientationLock: ResponsivePosition is BitSide.Top or BitSide.Bottom
                                     ? BitSwipeOrientation.Vertical
                                     : BitSwipeOrientation.Horizontal,
                 dotnetObj: _swipesDotnetObj,
@@ -1496,9 +1510,9 @@ public partial class BitCallout : BitComponentBase
 
             classes.Add(ResponsivePosition switch
             {
-                BitPanelPosition.Start => "bit-clo-sta",
-                BitPanelPosition.Top => "bit-clo-top",
-                BitPanelPosition.Bottom => "bit-clo-btm",
+                BitSide.Start => "bit-clo-sta",
+                BitSide.Top => "bit-clo-top",
+                BitSide.Bottom => "bit-clo-btm",
                 _ => "bit-clo-end"
             });
         }

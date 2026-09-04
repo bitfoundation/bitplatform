@@ -293,11 +293,14 @@
         }
     }
 
+    // Mirrors BitSide on the C# side, which is handed over as its numeric value. The members that a swipe can
+    // never be set up for - the physical pair and the two combined values - are left out: the C# side resolves
+    // its side to one of these four before the call.
     enum BitSwipePosition {
-        Start = 0,
-        End = 1,
-        Top = 2,
-        Bottom = 3,
+        Top = 0,
+        Bottom = 1,
+        Start = 2,
+        End = 3,
     }
 
     enum BitSwipeOrientation {

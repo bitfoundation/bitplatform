@@ -531,13 +531,13 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top, "bit-chb-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-chb-lbt"),
-        DataRow(BitLabelPosition.Start, "bit-chb-lst"),
-        DataRow(BitLabelPosition.End, "bit-chb-lnd"),
+        DataRow(BitSide.Top, "bit-chb-ltp"),
+        DataRow(BitSide.Bottom, "bit-chb-lbt"),
+        DataRow(BitSide.Start, "bit-chb-lst"),
+        DataRow(BitSide.End, "bit-chb-lnd"),
         DataRow(null, null)
     ]
-    public void BitCheckboxLabelPositionTest(BitLabelPosition? labelPosition, string expectedClass)
+    public void BitCheckboxLabelPositionTest(BitSide? labelPosition, string expectedClass)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {

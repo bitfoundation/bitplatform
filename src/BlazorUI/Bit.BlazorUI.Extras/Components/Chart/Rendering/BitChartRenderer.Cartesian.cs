@@ -32,7 +32,7 @@ public sealed partial class BitChartRenderer
             valueScales[id] = scale;
             if (so.Type != BitChartScaleType.Category) scene.ZoomableAxes.Add(id);
             if (!so.Display) continue;
-            if ((so.Position ?? BitChartPosition.Left) == BitChartPosition.Right) rightAxes.Add(scale);
+            if ((so.Position ?? BitSide.Left) == BitSide.Right) rightAxes.Add(scale);
             else leftAxes.Add(scale);
         }
 
@@ -65,7 +65,7 @@ public sealed partial class BitChartRenderer
             if (id == "x") indexScale = xs;
             if (so.Display)
             {
-                if ((so.Position ?? BitChartPosition.Bottom) == BitChartPosition.Top) topXAxes.Add(xs);
+                if ((so.Position ?? BitSide.Bottom) == BitSide.Top) topXAxes.Add(xs);
                 else bottomXAxes.Add(xs);
             }
         }

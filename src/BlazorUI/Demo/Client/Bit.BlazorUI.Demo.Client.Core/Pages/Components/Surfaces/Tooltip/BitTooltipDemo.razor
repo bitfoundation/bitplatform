@@ -1,4 +1,4 @@
-@page "/components/tooltip"
+﻿@page "/components/tooltip"
 
 <PageOutlet Url="components/tooltip"
             Title="Tooltip"
@@ -41,19 +41,22 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Position" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Side &amp; alignment" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            <b>Position</b> is the place the tooltip takes around its anchor: one of the four sides, each
-            of them also available lined up with either end of the anchor rather than centred on it. The
-            arrow follows the tooltip and keeps pointing back at the anchor from wherever it lands. All
-            twelve are shown open here at once; they are the same tooltip in every other respect.
+            The place a tooltip takes around its anchor is two parameters rather than one. <b>Side</b> is
+            which of the four sides of the anchor it sits on, and <b>Alignment</b> is where along that side
+            it lines up - centred on the anchor by default, or pulled to either end of it. Both follow the
+            reading order: Start is the left of an LTR anchor and the right of an RTL one. The arrow follows
+            the tooltip and keeps pointing back at the anchor from wherever it lands. All twelve combinations
+            are shown open here at once; they are the same tooltip in every other respect.
         </div>
         <br />
         <div class="position-grid" style="padding-inline:5rem">
-            @foreach (var position in tooltipPositionList)
+            @foreach (var placement in tooltipPlacements)
             {
-                <BitTooltip DefaultIsShown="true" Text="@position.Text" Position="position.Value">
-                    <BitButton Variant="BitVariant.Outline" Style="width: 100%;">@position.Text</BitButton>
+                <BitTooltip DefaultIsShown="true" Text="@placement.Text"
+                            Side="placement.Side" Alignment="placement.Alignment">
+                    <BitButton Variant="BitVariant.Outline" Style="width: 100%;">@placement.Text</BitButton>
                 </BitTooltip>
             }
         </div>
@@ -198,12 +201,12 @@
         </div>
         <br />
         <div class="tooltips-container row" style="padding:5rem">
-            <BitTooltip Interactive HideDelay="200" Position="BitTooltipPosition.Bottom"
+            <BitTooltip Interactive HideDelay="200" Side="BitSide.Bottom"
                         Text="Move onto me and I will stay. Select this text.">
                 <BitButton Variant="BitVariant.Outline">Interactive</BitButton>
             </BitTooltip>
 
-            <BitTooltip HideDelay="200" Position="BitTooltipPosition.Bottom"
+            <BitTooltip HideDelay="200" Side="BitSide.Bottom"
                         Text="Move onto me and I am gone.">
                 <BitButton Variant="BitVariant.Outline">Not interactive</BitButton>
             </BitTooltip>
@@ -241,12 +244,12 @@
         </div>
         <br />
         <div class="tooltips-container row spaced" style="padding-inline:5rem">
-            <BitTooltip DefaultIsShown="true" Position="BitTooltipPosition.Bottom" MaxWidth="10rem"
+            <BitTooltip DefaultIsShown="true" Side="BitSide.Bottom" MaxWidth="10rem"
                         Text="A narrow tooltip wraps its text sooner.">
                 <BitButton Variant="BitVariant.Outline">10rem</BitButton>
             </BitTooltip>
 
-            <BitTooltip DefaultIsShown="true" Position="BitTooltipPosition.Bottom"
+            <BitTooltip DefaultIsShown="true" Side="BitSide.Bottom"
                         Text="The default cap keeps a long line from running on across the whole screen.">
                 <BitButton Variant="BitVariant.Outline">Default</BitButton>
             </BitTooltip>
@@ -318,7 +321,7 @@
         </div>
         <br />
         <div class="tooltips-container row" style="padding:5rem">
-            <BitTooltip LazyRender Position="BitTooltipPosition.Bottom">
+            <BitTooltip LazyRender Side="BitSide.Bottom">
                 <Template>
                     <TooltipRenderStamp />
                 </Template>
@@ -327,7 +330,7 @@
                 </Anchor>
             </BitTooltip>
 
-            <BitTooltip Position="BitTooltipPosition.Bottom">
+            <BitTooltip Side="BitSide.Bottom">
                 <Template>
                     <TooltipRenderStamp />
                 </Template>
@@ -350,11 +353,11 @@
         <div class="tooltips-container" style="padding:5rem">
             <BitToggle @bind-Value="isShown" Label="IsShown" />
             <div class="tooltips-container row">
-                <BitTooltip DefaultIsShown="true" Text="Shown to begin with" Position="BitTooltipPosition.Bottom">
+                <BitTooltip DefaultIsShown="true" Text="Shown to begin with" Side="BitSide.Bottom">
                     <BitButton Variant="BitVariant.Outline">DefaultIsShown</BitButton>
                 </BitTooltip>
 
-                <BitTooltip @bind-IsShown="isShown" Text="Bound to the toggle" Position="BitTooltipPosition.Bottom">
+                <BitTooltip @bind-IsShown="isShown" Text="Bound to the toggle" Side="BitSide.Bottom">
                     <BitButton Variant="BitVariant.Outline">@("@bind-IsShown")</BitButton>
                 </BitTooltip>
             </div>
@@ -376,7 +379,7 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="@(() => tooltipRef?.Toggle())">Toggle</BitButton>
             </div>
             <div class="tooltips-container row" style="padding:5rem">
-                <BitTooltip @ref="tooltipRef" Text="Driven from the buttons above" Position="BitTooltipPosition.Bottom">
+                <BitTooltip @ref="tooltipRef" Text="Driven from the buttons above" Side="BitSide.Bottom">
                     <BitButton Variant="BitVariant.Outline">Anchor</BitButton>
                 </BitTooltip>
             </div>
@@ -424,11 +427,14 @@
                             ShowOnHover="showOnHover"
                             ShowOnFocus="showOnFocus"
                             HideOnClick="hideOnClick"
-                            Position="tooltipPosition">
+                            Side="tooltipSide"
+                            Alignment="tooltipAlignment">
                     <BitButton Variant="BitVariant.Outline" Style="width: 8rem;">Anchor</BitButton>
                 </BitTooltip>
                 <br /><br />
-                <BitDropdown Label="Tooltip positions" Items="tooltipPositionList" @bind-Value="tooltipPosition" Style="width: 8rem;" />
+                <BitDropdown Label="Tooltip side" Items="tooltipSideList" @bind-Value="tooltipSide" Style="width: 8rem;" />
+                <br />
+                <BitDropdown Label="Tooltip alignment" Items="tooltipAlignmentList" @bind-Value="tooltipAlignment" Style="width: 8rem;" />
                 <br />
                 <BitNumberField Label="Show delay" @bind-Value="showDelay" Mode="BitSpinButtonMode.Inline" Style="width: 8rem;" />
                 <br />
@@ -465,7 +471,7 @@
         <div class="color-grid">
             @foreach (var color in Enum.GetValues<BitColor>())
             {
-                <BitTooltip DefaultIsShown="true" Color="color" Text="@color.ToString()" Position="BitTooltipPosition.Bottom">
+                <BitTooltip DefaultIsShown="true" Color="color" Text="@color.ToString()" Side="BitSide.Bottom">
                     <BitButton Variant="BitVariant.Outline" Style="width: 100%;">@color</BitButton>
                 </BitTooltip>
             }
@@ -481,15 +487,15 @@
         </div>
         <br />
         <div class="tooltips-container row spaced">
-            <BitTooltip DefaultIsShown="true" Size="BitSize.Small" Text="Small" Position="BitTooltipPosition.Bottom">
+            <BitTooltip DefaultIsShown="true" Size="BitSize.Small" Text="Small" Side="BitSide.Bottom">
                 <BitButton Variant="BitVariant.Outline">Small</BitButton>
             </BitTooltip>
 
-            <BitTooltip DefaultIsShown="true" Size="BitSize.Medium" Text="Medium" Position="BitTooltipPosition.Bottom">
+            <BitTooltip DefaultIsShown="true" Size="BitSize.Medium" Text="Medium" Side="BitSide.Bottom">
                 <BitButton Variant="BitVariant.Outline">Medium</BitButton>
             </BitTooltip>
 
-            <BitTooltip DefaultIsShown="true" Size="BitSize.Large" Text="Large" Position="BitTooltipPosition.Bottom">
+            <BitTooltip DefaultIsShown="true" Size="BitSize.Large" Text="Large" Side="BitSide.Bottom">
                 <BitButton Variant="BitVariant.Outline">Large</BitButton>
             </BitTooltip>
         </div>
@@ -544,11 +550,13 @@
 
     <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>
-            Set <b>Dir</b> to Rtl to lay the content of the tooltip out right-to-left. The positions are
-            named for the sides of the screen rather than for the reading order, so Left is the left of
-            the anchor in either direction. <b>MirrorInRtl</b> swaps the two sides while the direction is
-            right-to-left, so that a tooltip meant to follow the text - a hint beside a field, say - lands
-            on the side the reader starts at; leave it off for one that has to stay where it is put.
+            Set <b>Dir</b> to Rtl to lay the content of the tooltip out right-to-left. <b>Side</b> carries
+            both vocabularies: Start and End are named for the reading order, so a tooltip meant to follow
+            the text - a hint beside a field, say - lands on the side the reader starts at in either
+            direction; Left and Right are named for the screen and stay where they are put, which is what a
+            tooltip aimed at the edge of a fixed layout wants. <b>Alignment</b> is always logical, so a
+            tooltip above or below its anchor turns around with the text while one beside it reads top to
+            bottom in both.
         </div>
         <br />
         <div class="tooltips-container">
@@ -565,14 +573,14 @@
             </BitTooltip>
         </div>
         <div class="tooltips-container row spaced" style="padding-inline:7rem">
-            <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Position="BitTooltipPosition.Left"
+            <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Side="BitSide.Left"
                         Text="سمت چپ لنگر">
                 <BitButton Variant="BitVariant.Outline">Left</BitButton>
             </BitTooltip>
 
-            <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Position="BitTooltipPosition.Left" MirrorInRtl
-                        Text="آینه‌شده به سمت راست">
-                <BitButton Variant="BitVariant.Outline">Left + MirrorInRtl</BitButton>
+            <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Side="BitSide.Start"
+                        Text="سمت شروعِ لنگر">
+                <BitButton Variant="BitVariant.Outline">Start</BitButton>
             </BitTooltip>
         </div>
     </DemoExample>

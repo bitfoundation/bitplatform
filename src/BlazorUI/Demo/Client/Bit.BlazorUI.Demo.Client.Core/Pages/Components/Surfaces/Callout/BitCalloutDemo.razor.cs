@@ -7,11 +7,11 @@ public partial class BitCalloutDemo
         new()
         {
             Name = "Alignment",
-            Type = "BitCalloutAlignment?",
+            Type = "BitSideAlignment?",
             DefaultValue = "null",
             Description = "How the callout is lined up with its anchor along the axis it is not placed on. It defaults to Start.",
             LinkType = LinkType.Link,
-            Href = "#callout-alignment-enum"
+            Href = "#side-alignment-enum"
         },
         new()
         {
@@ -304,11 +304,11 @@ public partial class BitCalloutDemo
         new()
         {
             Name = "PanelPosition",
-            Type = "BitPanelPosition?",
+            Type = "BitSide?",
             DefaultValue = "null",
             Description = "The edge of the screen the responsive panel slides in from, for a ResponsiveMode of Panel. It defaults to End.",
             LinkType = LinkType.Link,
-            Href = "#panel-position-enum"
+            Href = "#side-enum"
         },
         new()
         {
@@ -357,11 +357,11 @@ public partial class BitCalloutDemo
         new()
         {
             Name = "Side",
-            Type = "BitCalloutSide?",
+            Type = "BitSide?",
             DefaultValue = "null",
             Description = "The side of the anchor the callout is placed on when there is room for it there. It wins over Direction, falls back to the opposite side, and then to Direction.",
             LinkType = LinkType.Link,
-            Href = "#callout-side-enum"
+            Href = "#side-enum"
         },
         new()
         {
@@ -521,40 +521,86 @@ public partial class BitCalloutDemo
         },
         new()
         {
-            Id = "callout-side-enum",
-            Name = "BitCalloutSide",
+            Id = "side-enum",
+            Name = "BitSide",
             Description = "",
             Items =
             [
-                new() { Name = "Top", Value = "0", Description = "Above the anchor." },
-                new() { Name = "Bottom", Value = "1", Description = "Below the anchor." },
-                new() { Name = "Start", Value = "2", Description = "Beside the anchor, on the side the content starts from - the left in a left-to-right layout." },
-                new() { Name = "End", Value = "3", Description = "Beside the anchor, on the side the content ends at - the right in a left-to-right layout." },
+                new()
+                {
+                    Name = "Top",
+                    Value = "0",
+                    Description = "The top edge."
+                },
+                new()
+                {
+                    Name = "Bottom",
+                    Value = "1",
+                    Description = "The bottom edge."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "6",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "7",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()
         {
-            Id = "callout-alignment-enum",
-            Name = "BitCalloutAlignment",
+            Id = "side-alignment-enum",
+            Name = "BitSideAlignment",
             Description = "",
             Items =
             [
-                new() { Name = "Start", Value = "0", Description = "Lined up with the edge the anchor starts at - its left edge in a left-to-right layout for a callout above or below it, and its top edge for a callout beside it." },
-                new() { Name = "Center", Value = "1", Description = "Centered on the anchor." },
-                new() { Name = "End", Value = "2", Description = "Lined up with the edge the anchor ends at - its right edge in a left-to-right layout for a callout above or below it, and its bottom edge for a callout beside it." },
-            ]
-        },
-        new()
-        {
-            Id = "panel-position-enum",
-            Name = "BitPanelPosition",
-            Description = "",
-            Items =
-            [
-                new() { Name = "Start", Value = "0", Description = "The panel slides in from the start edge of the screen." },
-                new() { Name = "End", Value = "1", Description = "The panel slides in from the end edge of the screen." },
-                new() { Name = "Top", Value = "2", Description = "The panel slides in from the top edge of the screen." },
-                new() { Name = "Bottom", Value = "3", Description = "The panel slides in from the bottom edge of the screen." },
+                new()
+                {
+                    Name = "Start",
+                    Value = "0",
+                    Description = "Lined up with the start of the side: the left edge in LTR (the right in RTL) for a surface above or below its anchor, the top edge for one beside it."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "1",
+                    Description = "Centered along the side."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "2",
+                    Description = "Lined up with the end of the side: the right edge in LTR (the left in RTL) for a surface above or below its anchor, the bottom edge for one beside it."
+                }
             ]
         },
         new()
@@ -850,7 +896,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Side=""BitCalloutSide.Top"" ShowArrow Gap=""8"">
+<BitCallout Side=""BitSide.Top"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Side: Top</BitButton>
     </Anchor>
@@ -861,7 +907,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Side=""BitCalloutSide.End"" ShowArrow Gap=""8"">
+<BitCallout Side=""BitSide.End"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Side: End</BitButton>
     </Anchor>
@@ -872,7 +918,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Side=""BitCalloutSide.Top"" NoFlip ShowArrow Gap=""8"">
+<BitCallout Side=""BitSide.Top"" NoFlip ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Side: Top, NoFlip</BitButton>
     </Anchor>
@@ -886,7 +932,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Alignment=""BitCalloutAlignment.Center"" ShowArrow Gap=""8"">
+<BitCallout Alignment=""BitSideAlignment.Center"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">A wide anchor, centered alignment</BitButton>
     </Anchor>
@@ -895,7 +941,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Alignment=""BitCalloutAlignment.End"" ShowArrow Gap=""8"">
+<BitCallout Alignment=""BitSideAlignment.End"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">A wide anchor, end alignment</BitButton>
     </Anchor>
@@ -904,7 +950,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Side=""BitCalloutSide.End"" Alignment=""BitCalloutAlignment.Center"" ShowArrow Gap=""8"">
+<BitCallout Side=""BitSide.End"" Alignment=""BitSideAlignment.Center"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">Beside, centered</BitButton>
     </Anchor>
@@ -929,7 +975,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Alignment=""BitCalloutAlignment.End"" AlignmentOffset=""32"" ShowArrow Gap=""8"">
+<BitCallout Alignment=""BitSideAlignment.End"" AlignmentOffset=""32"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">End alignment, offset of 32px</BitButton>
     </Anchor>
@@ -951,7 +997,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout @ref=""callout4"" Side=""BitCalloutSide.Top"" ShowArrow Gap=""8"" MinWidth=""14rem"">
+<BitCallout @ref=""callout4"" Side=""BitSide.Top"" ShowArrow Gap=""8"" MinWidth=""14rem"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Reposition</BitButton>
     </Anchor>
@@ -1126,7 +1172,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 </BitCallout>";
 
     private readonly string example10RazorCode = @"
-<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitPanelPosition.End"">
+<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitSide.End"">
     <Anchor>
         <BitButton>End panel</BitButton>
     </Anchor>
@@ -1142,7 +1188,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
     </Content>
 </BitCallout>
 
-<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitPanelPosition.Start"">
+<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitSide.Start"">
     <Anchor>
         <BitButton>Start panel</BitButton>
     </Anchor>
@@ -1320,7 +1366,7 @@ private string autoCloseAction = ""none"";";
                 <BitCheckbox Label=""Active"" />
                 <BitCheckbox Label=""Archived"" />
 
-                <BitCallout ShowArrow Gap=""8"" Side=""BitCalloutSide.End"">
+                <BitCallout ShowArrow Gap=""8"" Side=""BitSide.End"">
                     <Anchor>
                         <BitButton Variant=""BitVariant.Outline"">More options</BitButton>
                     </Anchor>
@@ -1329,7 +1375,7 @@ private string autoCloseAction = ""none"";";
                             <BitStack Gap=""0.25rem"">
                                 <BitText>The panel behind is still open.</BitText>
 
-                                <BitCallout ShowArrow Gap=""8"" AutoClose Side=""BitCalloutSide.End"">
+                                <BitCallout ShowArrow Gap=""8"" AutoClose Side=""BitSide.End"">
                                     <Anchor>
                                         <BitButton Variant=""BitVariant.Text"">One more level</BitButton>
                                     </Anchor>

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -195,7 +195,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The position of the loading Label in regards to the spinner icon.
     /// </summary>
-    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitSide LoadingLabelPosition { get; set; } = BitSide.End;
 
     /// <summary>
     /// The custom template used to replace the default loading text inside the button in the loading state.
@@ -443,10 +447,10 @@ public partial class BitButton : BitComponentBase
     private string GetLabelPositionClass()
         => LoadingLabelPosition switch
         {
-            BitLabelPosition.Top => "bit-btn-top",
-            BitLabelPosition.Start => "bit-btn-srt",
-            BitLabelPosition.End => "bit-btn-end",
-            BitLabelPosition.Bottom => "bit-btn-btm",
+            BitSide.Top => "bit-btn-top",
+            BitSide.Start => "bit-btn-srt",
+            BitSide.End => "bit-btn-end",
+            BitSide.Bottom => "bit-btn-btm",
             _ => "bit-btn-end"
         };
 

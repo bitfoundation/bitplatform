@@ -58,10 +58,10 @@
     <div>Places the content of each item on any of the four sides of its radio circle. End is the default and renders the circle first; Start renders the content first and additionally aligns the items to the end of the group, so the circles line up in one column once the group is wider than its items (which is what the FullWidth section combines it with). Top and Bottom stack the content above or below the circle. Items rendered as image or icon tiles lay their own content out and are not affected.</div>
     <br />
     <div class="example-content column">
-        <BitChoiceGroup Label="End (default)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.End" Horizontal />
-        <BitChoiceGroup Label="Start" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" Horizontal />
-        <BitChoiceGroup Label="Top" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Top" Horizontal />
-        <BitChoiceGroup Label="Bottom" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Bottom" Horizontal />
+        <BitChoiceGroup Label="End (default)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitSide.End" Horizontal />
+        <BitChoiceGroup Label="Start" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitSide.Start" Horizontal />
+        <BitChoiceGroup Label="Top" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitSide.Top" Horizontal />
+        <BitChoiceGroup Label="Bottom" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitSide.Bottom" Horizontal />
     </div>
 </DemoExample>
 
@@ -273,13 +273,13 @@
             <BitChoiceGroup Label="FullWidth (horizontal, equal columns)" Items="basicItems" DefaultValue="@("A")" Horizontal FullWidth />
         </div>
         <div class="example-box">
-            <BitChoiceGroup Label="FullWidth + LabelPosition.Start (items at the far edge)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" FullWidth />
+            <BitChoiceGroup Label="FullWidth + LabelPosition.Start (items at the far edge)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitSide.Start" FullWidth />
         </div>
         <div class="example-box">
             <BitChoiceGroup Label="FullWidth + LabelPosition.Start + stretched item label (settings list)"
                             Items="basicItems"
                             DefaultValue="@("A")"
-                            LabelPosition="BitLabelPosition.Start"
+                            LabelPosition="BitSide.Start"
                             FullWidth
                             Styles="@(new() { ItemLabel = "width: 100%; justify-content: space-between;" })" />
         </div>

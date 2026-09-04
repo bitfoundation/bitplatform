@@ -167,7 +167,7 @@ private Task AutoLoadingReclick(bool isLoading)
            LoadingLabel=""End...""
            Style=""min-width: 6.5rem;""
            Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.End"">
+           LoadingLabelPosition=""BitSide.End"">
     End
 </BitButton>
 
@@ -175,7 +175,7 @@ private Task AutoLoadingReclick(bool isLoading)
            LoadingLabel=""Start...""
            Style=""min-width: 6.5rem;""
            Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Start"">
+           LoadingLabelPosition=""BitSide.Start"">
     Start
 </BitButton>
 
@@ -183,7 +183,7 @@ private Task AutoLoadingReclick(bool isLoading)
            LoadingLabel=""Bottom...""
            Style=""min-width: 6.5rem;""
            Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Bottom"">
+           LoadingLabelPosition=""BitSide.Bottom"">
     Bottom
 </BitButton>
 
@@ -191,7 +191,7 @@ private Task AutoLoadingReclick(bool isLoading)
            LoadingLabel=""Top...""
            Style=""min-width: 6.5rem;""
            Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Top"">
+           LoadingLabelPosition=""BitSide.Top"">
     Top
 </BitButton>";
 

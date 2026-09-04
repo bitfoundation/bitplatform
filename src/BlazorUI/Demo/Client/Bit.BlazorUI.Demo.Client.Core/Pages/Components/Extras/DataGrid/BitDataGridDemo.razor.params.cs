@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
 public partial class BitDataGridDemo
 {
@@ -52,7 +52,7 @@ public partial class BitDataGridDemo
         new() { Name = "Pageable", Type = "bool", DefaultValue = "false", Description = "Enables paging with a pager UI." },
         new() { Name = "PageSize", Type = "int", DefaultValue = "20", Description = "The number of rows per page." },
         new() { Name = "PageSizeOptions", Type = "int[]", DefaultValue = "{ 10, 20, 50, 100 }", Description = "The page-size options offered in the pager dropdown." },
-        new() { Name = "PagerPosition", Type = "BitDataGridPagerPosition", DefaultValue = "BitDataGridPagerPosition.Bottom", Description = "Where the pager renders relative to the grid.", LinkType = LinkType.Link, Href = "#BitDataGridPagerPosition" },
+        new() { Name = "PagerPosition", Type = "BitSide", DefaultValue = "BitSide.Bottom", Description = "Where the pager renders relative to the grid.", LinkType = LinkType.Link, Href = "#BitSide" },
         new() { Name = "Virtualize", Type = "bool", DefaultValue = "false", Description = "Renders only the visible rows for large datasets. Requires a fixed Height and RowHeight. In server mode (OnRead) with paging off, row windows are fetched on demand as the user scrolls; with OnLoadMore, the accumulated batches are virtualized so the DOM stays bounded." },
         new() { Name = "RowHeight", Type = "float", DefaultValue = "36", Description = "Uniform row height in pixels (required when virtualizing)." },
         new() { Name = "RowHeightSelector", Type = "Func<TItem, float>?", DefaultValue = "null", Description = "Optional per-row height selector (ignored while virtualizing)." },
@@ -370,14 +370,59 @@ public partial class BitDataGridDemo
         },
         new()
         {
-            Id = "BitDataGridPagerPosition",
-            Name = "BitDataGridPagerPosition",
+            Id = "BitSide",
+            Name = "BitSide",
             Description = "Where the pager is rendered relative to the grid.",
             Items =
             [
-                new() { Name = "Bottom", Value = "0" },
-                new() { Name = "Top", Value = "1" },
-                new() { Name = "TopAndBottom", Value = "2" },
+                new()
+                {
+                    Name = "Top",
+                    Value = "0",
+                    Description = "The top edge."
+                },
+                new()
+                {
+                    Name = "Bottom",
+                    Value = "1",
+                    Description = "The bottom edge."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "6",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "7",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()

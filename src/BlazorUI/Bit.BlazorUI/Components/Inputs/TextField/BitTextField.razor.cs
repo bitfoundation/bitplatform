@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -272,8 +272,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes
     /// with: above the input in the default one, and next to it in the <see cref="Underlined"/> one.
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitSide? LabelPosition { get; set; }
 
     /// <summary>
     /// Shows the custom label for text field.
@@ -662,10 +666,10 @@ public partial class BitTextField : BitTextInputBase<string?>
         // with instead of every field suddenly being laid out by the same rule.
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitLabelPosition.Top => "bit-tfl-ltp",
-            BitLabelPosition.Bottom => "bit-tfl-lbt",
-            BitLabelPosition.Start => "bit-tfl-lst",
-            BitLabelPosition.End => "bit-tfl-led",
+            BitSide.Top => "bit-tfl-ltp",
+            BitSide.Bottom => "bit-tfl-lbt",
+            BitSide.Start => "bit-tfl-lst",
+            BitSide.End => "bit-tfl-led",
             _ => string.Empty
         });
 

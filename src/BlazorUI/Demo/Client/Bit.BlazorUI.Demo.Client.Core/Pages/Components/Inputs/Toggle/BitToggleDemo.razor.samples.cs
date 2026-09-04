@@ -55,10 +55,10 @@ public partial class BitToggleDemo
 </BitToggle>";
 
     private readonly string example6RazorCode = @"
-<BitToggle Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
-<BitToggle Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
-<BitToggle Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
-<BitToggle Label=""End"" LabelPosition=""BitLabelPosition.End"" />";
+<BitToggle Label=""Top"" LabelPosition=""BitSide.Top"" />
+<BitToggle Label=""Bottom"" LabelPosition=""BitSide.Bottom"" />
+<BitToggle Label=""Start"" LabelPosition=""BitSide.Start"" />
+<BitToggle Label=""End"" LabelPosition=""BitSide.End"" />";
 
     private readonly string example7RazorCode = @"
 <BitToggle Label=""This is a reversed label"" Reversed />

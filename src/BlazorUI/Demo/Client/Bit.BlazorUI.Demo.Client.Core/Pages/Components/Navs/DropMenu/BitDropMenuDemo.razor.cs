@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
 
 public partial class BitDropMenuDemo
 {
@@ -242,7 +242,7 @@ public partial class BitDropMenuDemo
         new()
         {
             Name = "PanelPosition",
-            Type = "BitPanelPosition?",
+            Type = "BitSide?",
             DefaultValue = "null",
             Description = "The position of the responsive panel to show on the screen.",
             LinkType = LinkType.Link,
@@ -544,14 +544,58 @@ public partial class BitDropMenuDemo
         new()
         {
             Id = "panel-position-enum",
-            Name = "BitPanelPosition",
+            Name = "BitSide",
             Description = "Determines the edge the responsive panel slides in from.",
             Items =
             [
-                new() { Name = "Start", Description = "The panel is positioned at the start edge (left in LTR).", Value = "0" },
-                new() { Name = "End", Description = "The panel is positioned at the end edge (right in LTR).", Value = "1" },
-                new() { Name = "Top", Description = "The panel is positioned at the top edge.", Value = "2" },
-                new() { Name = "Bottom", Description = "The panel is positioned at the bottom edge.", Value = "3" },
+                new()
+                {
+                    Name = "Top",
+                    Value = "0",
+                    Description = "The top edge."
+                },
+                new()
+                {
+                    Name = "Bottom",
+                    Value = "1",
+                    Description = "The bottom edge."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "6",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "7",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()

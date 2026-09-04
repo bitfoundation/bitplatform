@@ -2099,12 +2099,12 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top, "bit-tfl-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-tfl-lbt"),
-        DataRow(BitLabelPosition.Start, "bit-tfl-lst"),
-        DataRow(BitLabelPosition.End, "bit-tfl-led"),
+        DataRow(BitSide.Top, "bit-tfl-ltp"),
+        DataRow(BitSide.Bottom, "bit-tfl-lbt"),
+        DataRow(BitSide.Start, "bit-tfl-lst"),
+        DataRow(BitSide.End, "bit-tfl-led"),
     ]
-    public void BitTextFieldLabelPositionTest(BitLabelPosition labelPosition, string expectedClass)
+    public void BitTextFieldLabelPositionTest(BitSide labelPosition, string expectedClass)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
@@ -2138,14 +2138,14 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Label, "a label");
-            parameters.Add(p => p.LabelPosition, BitLabelPosition.Top);
+            parameters.Add(p => p.LabelPosition, BitSide.Top);
         });
 
         Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-ltp"));
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, BitLabelPosition.Start);
+            parameters.Add(p => p.LabelPosition, BitSide.Start);
         });
 
         var bitTextField = component.Find(".bit-tfl");

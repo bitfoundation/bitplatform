@@ -318,13 +318,13 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top),
-        DataRow(BitLabelPosition.End),
-        DataRow(BitLabelPosition.Bottom),
-        DataRow(BitLabelPosition.Start),
+        DataRow(BitSide.Top),
+        DataRow(BitSide.End),
+        DataRow(BitSide.Bottom),
+        DataRow(BitSide.Start),
         DataRow(null),
     ]
-    public void BitButtonLoaderTest(BitLabelPosition? labelPosition)
+    public void BitButtonLoaderTest(BitSide? labelPosition)
     {
         const string loadingLabel = "I'm Loading Label";
 
@@ -340,10 +340,10 @@ public class BitButtonTests : BunitTestContext
 
         var labelPositionClass = labelPosition switch
         {
-            BitLabelPosition.Top => "bit-btn-top",
-            BitLabelPosition.End => "bit-btn-end",
-            BitLabelPosition.Bottom => "bit-btn-btm",
-            BitLabelPosition.Start => "bit-btn-srt",
+            BitSide.Top => "bit-btn-top",
+            BitSide.End => "bit-btn-end",
+            BitSide.Bottom => "bit-btn-btm",
+            BitSide.Start => "bit-btn-srt",
             _ => "bit-btn-end"
         };
 

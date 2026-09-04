@@ -16,7 +16,7 @@ public partial class ProductsPercentageWidget
         {
             Plugins = new BitChartPluginOptions
             {
-                Legend = new BitChartLegendOptions { Position = BitChartPosition.Right }
+                Legend = new BitChartLegendOptions { Position = BitSide.Right }
             }
         }
     };

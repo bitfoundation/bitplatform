@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A scale/axis definition, mirroring Chart.js cartesian and radial scale options.
@@ -8,7 +8,15 @@ public sealed class BitChartScaleOptions
     public string Id { get; set; } = "";
     public BitChartScaleType Type { get; set; } = BitChartScaleType.Linear;
     public bool Display { get; set; } = true;
-    public BitChartPosition? Position { get; set; }
+    /// <summary>
+    /// Which edge of the chart the axis is drawn against. Unset leaves an x axis at the bottom and a y axis
+    /// at the left.
+    /// </summary>
+    /// <remarks>
+    /// A chart is laid out physically, so only Top, Bottom, Left and Right are meaningful here; any other side
+    /// is read as the default for the axis.
+    /// </remarks>
+    public BitSide? Position { get; set; }
 
     public double? Min { get; set; }
     public double? Max { get; set; }

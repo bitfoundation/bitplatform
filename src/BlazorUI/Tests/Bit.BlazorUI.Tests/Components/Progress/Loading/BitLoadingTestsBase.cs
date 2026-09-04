@@ -149,11 +149,11 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
     [TestMethod,
         DataRow(null, "bit-ldn-ltp"),
-        DataRow(BitLabelPosition.Top, "bit-ldn-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-ldn-lbm"),
-        DataRow(BitLabelPosition.Start, "bit-ldn-lst"),
-        DataRow(BitLabelPosition.End, "bit-ldn-led")]
-    public void ShouldRespectLabelPosition(BitLabelPosition? position, string expectedClass)
+        DataRow(BitSide.Top, "bit-ldn-ltp"),
+        DataRow(BitSide.Bottom, "bit-ldn-lbm"),
+        DataRow(BitSide.Start, "bit-ldn-lst"),
+        DataRow(BitSide.End, "bit-ldn-led")]
+    public void ShouldRespectLabelPosition(BitSide? position, string expectedClass)
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
@@ -784,7 +784,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         {
             parameters.Add(p => p.Color, BitColor.Success);
             parameters.Add(p => p.Size, BitSize.Large);
-            parameters.Add(p => p.LabelPosition, BitLabelPosition.End);
+            parameters.Add(p => p.LabelPosition, BitSide.End);
         });
 
         StringAssert.Contains(StyleOf(component), "--bit-ldn-color: var(--bit-clr-suc)");

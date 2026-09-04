@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.SnackBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.SnackBar;
 
 public partial class BitSnackBarDemo
 {
@@ -216,7 +216,7 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "Position",
-            Type = "BitSnackBarPosition?",
+            Type = "BitPosition?",
             DefaultValue = "null",
             Description = "The position of the snack bars to show (default is bottom right).",
             LinkType = LinkType.Link,
@@ -321,46 +321,100 @@ public partial class BitSnackBarDemo
         new()
         {
             Id = "snackbar-position-enum",
-            Name = "BitSnackBarPosition",
+            Name = "BitPosition",
             Description = "Determines the corner or edge of the screen the snack bars are stacked at. The start/end naming follows the text direction.",
             Items =
             [
                 new()
                 {
-                    Name = "TopStart",
-                    Description = "Top of the screen, at the inline start.",
+                    Name = "TopLeft",
                     Value = "0",
+                    Description = "The top left corner, in both reading directions."
                 },
                 new()
                 {
                     Name = "TopCenter",
-                    Description = "Top of the screen, centered.",
                     Value = "1",
+                    Description = "The top edge, centered horizontally."
+                },
+                new()
+                {
+                    Name = "TopRight",
+                    Value = "2",
+                    Description = "The top right corner, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopStart",
+                    Value = "3",
+                    Description = "The top edge, on the side the reading direction starts from."
                 },
                 new()
                 {
                     Name = "TopEnd",
-                    Description = "Top of the screen, at the inline end.",
-                    Value = "2",
+                    Value = "4",
+                    Description = "The top edge, on the side the reading direction ends at."
                 },
                 new()
                 {
-                    Name = "BottomStart",
-                    Description = "Bottom of the screen, at the inline start.",
-                    Value = "3",
+                    Name = "CenterLeft",
+                    Value = "5",
+                    Description = "The left edge, centered vertically, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "6",
+                    Description = "Centered both ways."
+                },
+                new()
+                {
+                    Name = "CenterRight",
+                    Value = "7",
+                    Description = "The right edge, centered vertically, in both reading directions."
+                },
+                new()
+                {
+                    Name = "CenterStart",
+                    Value = "8",
+                    Description = "Centered vertically, on the side the reading direction starts from."
+                },
+                new()
+                {
+                    Name = "CenterEnd",
+                    Value = "9",
+                    Description = "Centered vertically, on the side the reading direction ends at."
+                },
+                new()
+                {
+                    Name = "BottomLeft",
+                    Value = "10",
+                    Description = "The bottom left corner, in both reading directions."
                 },
                 new()
                 {
                     Name = "BottomCenter",
-                    Description = "Bottom of the screen, centered.",
-                    Value = "4",
+                    Value = "11",
+                    Description = "The bottom edge, centered horizontally."
+                },
+                new()
+                {
+                    Name = "BottomRight",
+                    Value = "12",
+                    Description = "The bottom right corner, in both reading directions."
+                },
+                new()
+                {
+                    Name = "BottomStart",
+                    Value = "13",
+                    Description = "The bottom edge, on the side the reading direction starts from."
                 },
                 new()
                 {
                     Name = "BottomEnd",
-                    Description = "Bottom of the screen, at the inline end (the default).",
-                    Value = "5",
-                },
+                    Value = "14",
+                    Description = "The bottom edge, on the side the reading direction ends at."
+                }
             ]
         },
         new()
@@ -1020,7 +1074,7 @@ public partial class BitSnackBarDemo
 
     private string offset = "8px";
     private BitSnackBar positionRef = default!;
-    private BitSnackBarPosition position = BitSnackBarPosition.BottomEnd;
+    private BitPosition position = BitPosition.BottomEnd;
     private async Task OpenPositionSnackBar()
     {
         await positionRef.Info($"{position}", $"Pinned to the selected position, {offset} from the edges.");
@@ -1345,7 +1399,7 @@ public partial class BitSnackBarDemo
     private string basicSnackBarBody = "This is body";
     private string basicSnackBarTitle = "This is title";
     private BitColor basicSnackBarColor = BitColor.Info;
-    private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
+    private BitPosition basicSnackBarPosition = BitPosition.BottomEnd;
 
     private async Task OpenCustomizationSnackBar()
     {

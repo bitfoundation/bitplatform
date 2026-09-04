@@ -39,7 +39,7 @@ public partial class BitTimePickerDemo
 <BitTimePicker IconName=""@BitIconName.HourGlass"" Placeholder=""Select a time..."" />
 
 <BitTimePicker IconName=""@BitIconName.HourGlass""
-               IconLocation=""BitIconLocation.Left""
+               IconPosition=""BitIconPosition.Start""
                Placeholder=""Select a time..."" />
 
 <BitTimePicker Label=""Custom spin & close icons""
@@ -360,7 +360,7 @@ private async Task OpenCallout()
 
 <BitTimePicker Icon=""@BitIconInfo.Css(""fa-solid fa-hourglass-half"")""
                Placeholder=""Select a time...""
-               IconLocation=""BitIconLocation.Left"" />
+               IconPosition=""BitIconPosition.Start"" />
 
 <BitTimePicker Icon=""@BitIconInfo.Fa(""solid stopwatch"")""
                Placeholder=""Select a time..."" />
@@ -372,7 +372,7 @@ private async Task OpenCallout()
 
 <BitTimePicker Icon=""@BitIconInfo.Css(""bi bi-alarm-fill"")""
                Placeholder=""Select a time...""
-               IconLocation=""BitIconLocation.Left"" />
+               IconPosition=""BitIconPosition.Start"" />
 
 <BitTimePicker Icon=""@BitIconInfo.Bi(""stopwatch-fill"")""
                Placeholder=""Select a time..."" />";

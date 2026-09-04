@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
 
 public partial class BitButtonDemo
 {
@@ -203,8 +203,8 @@ public partial class BitButtonDemo
         new()
         {
             Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.End",
+            Type = "BitSide",
+            DefaultValue = "BitSide.End",
             Description = "The position of the loading Label in regards to the spinner icon.",
             LinkType = LinkType.Link,
             Href = "#label-position-enum"
@@ -619,48 +619,72 @@ public partial class BitButtonDemo
                 new()
                 {
                     Name = "Start",
-                    Description = "Icon renders before the content (default).",
                     Value = "0",
+                    Description = "The icon renders before the content."
                 },
                 new()
                 {
                     Name = "End",
-                    Description = "Icon renders after the content.",
                     Value = "1",
+                    Description = "The icon renders after the content."
                 }
             ]
         },
         new()
         {
             Id = "label-position-enum",
-            Name = "BitLabelPosition",
+            Name = "BitSide",
             Description = "",
             Items =
             [
                 new()
                 {
-                    Name= "Top",
-                    Description="The label shows on the top of the button.",
-                    Value="0",
+                    Name = "Top",
+                    Value = "0",
+                    Description = "The top edge."
                 },
                 new()
                 {
-                    Name= "End",
-                    Description="The label shows on the end of the button.",
-                    Value="1",
+                    Name = "Bottom",
+                    Value = "1",
+                    Description = "The bottom edge."
                 },
                 new()
                 {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the button.",
-                    Value="2",
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
                 },
                 new()
                 {
-                    Name= "Start",
-                    Description="The label shows on the start of the button.",
-                    Value="3",
+                    Name = "End",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
                 },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "6",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "7",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()
@@ -796,77 +820,92 @@ public partial class BitButtonDemo
                 new()
                 {
                     Name = "TopLeft",
-                    Value = "0"
+                    Value = "0",
+                    Description = "The top left corner, in both reading directions."
                 },
                 new()
                 {
                     Name = "TopCenter",
-                    Value = "1"
+                    Value = "1",
+                    Description = "The top edge, centered horizontally."
                 },
                 new()
                 {
                     Name = "TopRight",
-                    Value = "2"
+                    Value = "2",
+                    Description = "The top right corner, in both reading directions."
                 },
                 new()
                 {
                     Name = "TopStart",
-                    Value = "3"
+                    Value = "3",
+                    Description = "The top edge, on the side the reading direction starts from."
                 },
                 new()
                 {
                     Name = "TopEnd",
-                    Value = "4"
+                    Value = "4",
+                    Description = "The top edge, on the side the reading direction ends at."
                 },
                 new()
                 {
                     Name = "CenterLeft",
-                    Value = "5"
+                    Value = "5",
+                    Description = "The left edge, centered vertically, in both reading directions."
                 },
                 new()
                 {
                     Name = "Center",
-                    Value = "6"
+                    Value = "6",
+                    Description = "Centered both ways."
                 },
                 new()
                 {
                     Name = "CenterRight",
-                    Value = "7"
+                    Value = "7",
+                    Description = "The right edge, centered vertically, in both reading directions."
                 },
                 new()
                 {
                     Name = "CenterStart",
-                    Value = "8"
+                    Value = "8",
+                    Description = "Centered vertically, on the side the reading direction starts from."
                 },
                 new()
                 {
                     Name = "CenterEnd",
-                    Value = "9"
+                    Value = "9",
+                    Description = "Centered vertically, on the side the reading direction ends at."
                 },
                 new()
                 {
                     Name = "BottomLeft",
-                    Value = "10"
+                    Value = "10",
+                    Description = "The bottom left corner, in both reading directions."
                 },
                 new()
                 {
                     Name = "BottomCenter",
-                    Value = "11"
+                    Value = "11",
+                    Description = "The bottom edge, centered horizontally."
                 },
                 new()
                 {
                     Name = "BottomRight",
-                    Value = "12"
+                    Value = "12",
+                    Description = "The bottom right corner, in both reading directions."
                 },
                 new()
                 {
                     Name = "BottomStart",
-                    Value = "13"
+                    Value = "13",
+                    Description = "The bottom edge, on the side the reading direction starts from."
                 },
                 new()
                 {
                     Name = "BottomEnd",
-                    Value = "14"
+                    Value = "14",
+                    Description = "The bottom edge, on the side the reading direction ends at."
                 }
             ]
         },

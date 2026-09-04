@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The Pivot control and related tabs pattern are used for navigating frequently accessed, distinct content categories. Pivots allow for navigation between two or more content views and rely on text headers to articulate the different sections of content.
@@ -286,8 +286,12 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Position of the pivot header.
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitPivotPosition? Position { get; set; }
+    public BitSide? Position { get; set; }
 
     /// <summary>
     /// The aria-label of the previous button in the Slide overflow behavior (default: Previous).
@@ -371,7 +375,7 @@ public partial class BitPivot : BitComponentBase
 
     protected override string RootElementClass => "bit-pvt";
 
-    private bool _isVertical => Position is BitPivotPosition.Start or BitPivotPosition.End;
+    private bool _isVertical => Position is BitSide.Start or BitSide.End;
 
     private string _MenuId => $"{_Id}-mnu";
 
@@ -445,10 +449,10 @@ public partial class BitPivot : BitComponentBase
 
         ClassBuilder.Register(() => Position switch
         {
-            BitPivotPosition.Top => "bit-pvt-top",
-            BitPivotPosition.Bottom => "bit-pvt-btm",
-            BitPivotPosition.Start => "bit-pvt-sta",
-            BitPivotPosition.End => "bit-pvt-end",
+            BitSide.Top => "bit-pvt-top",
+            BitSide.Bottom => "bit-pvt-btm",
+            BitSide.Start => "bit-pvt-sta",
+            BitSide.End => "bit-pvt-end",
             _ => "bit-pvt-top"
         });
 
@@ -528,7 +532,7 @@ public partial class BitPivot : BitComponentBase
         var reorderable = Reorderable || _allItems.Exists(i => i.Reorderable is true);
         var needsJs = behavior is BitPivotOverflowBehavior.Menu or BitPivotOverflowBehavior.Slide || reorderable;
         var rtl = Dir is BitDir.Rtl;
-        var vertical = Position is BitPivotPosition.Start or BitPivotPosition.End;
+        var vertical = Position is BitSide.Start or BitSide.End;
 
         if (_jsSetupRunning is false && (_setupBehavior != behavior
                                       || _setupReorderable != reorderable

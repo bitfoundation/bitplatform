@@ -4,13 +4,13 @@ public partial class _BitChartPieDemo
 {
     private readonly BitChartOptions _right = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Right } }
     };
 
     private readonly BitChartOptions _doughnut = new()
     {
         CutoutPercentage = 60,
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Right } }
     };
 
     private readonly BitChartOptions _gauge = new()
@@ -18,7 +18,7 @@ public partial class _BitChartPieDemo
         CutoutPercentage = 65,
         CircumferenceDegrees = 180,
         RotationDegrees = -90,
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
     };
 
     private readonly BitChartOptions _centerText = new()
@@ -26,7 +26,7 @@ public partial class _BitChartPieDemo
         CutoutPercentage = 68,
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Right },
+            Legend = new BitChartLegendOptions { Position = BitSide.Right },
             Custom = { new BitChartCenterTextPlugin("1,340", "sessions") }
         }
     };
@@ -55,7 +55,7 @@ public partial class _BitChartPieDemo
     private readonly string pieCsharpCode = @"
 private readonly BitChartOptions _right = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Right } }
 };
 
 private BitChartData Traffic() => new()
@@ -72,7 +72,7 @@ private BitChartData Traffic() => new()
 private readonly BitChartOptions _doughnut = new()
 {
     CutoutPercentage = 60,
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Right } }
 };
 // Traffic(): Direct/Organic/Referral/Social/Email = 300/500/180/240/120";
 
@@ -83,7 +83,7 @@ private readonly BitChartOptions _gauge = new()
     CutoutPercentage = 65,
     CircumferenceDegrees = 180,
     RotationDegrees = -90,
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Gauge() => new()
@@ -99,7 +99,7 @@ private BitChartData Gauge() => new()
     private readonly string multiRingCsharpCode = @"
 private readonly BitChartOptions _right = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Right } }
 };
 
 private BitChartData MultiRing() => new()
@@ -119,7 +119,7 @@ private readonly BitChartOptions _centerText = new()
     CutoutPercentage = 68,
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Right },
+        Legend = new BitChartLegendOptions { Position = BitSide.Right },
         Custom = { new BitChartCenterTextPlugin(""1,340"", ""sessions"") }
     }
 };

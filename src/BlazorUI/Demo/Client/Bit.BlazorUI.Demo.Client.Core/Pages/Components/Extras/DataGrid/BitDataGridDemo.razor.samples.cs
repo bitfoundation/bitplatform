@@ -190,7 +190,7 @@ private List<Product> products = SampleData.Generate(50);" + ProductModelCode + 
     private readonly string example2RazorCode = @"
 <BitDataGrid Items=""@products"" Height=""430px""
              Filterable=""true"" Pageable=""true"" PageSize=""10""
-             PagerPosition=""BitDataGridPagerPosition.Bottom""
+             PagerPosition=""BitSide.Bottom""
              ShowToolbar=""true"" ShowCsvExport=""true"">
     <BitDataGridColumn Field=""Id"" Title=""ID"" Filterable=""false"" />
     <BitDataGridColumn Field=""Name"" />

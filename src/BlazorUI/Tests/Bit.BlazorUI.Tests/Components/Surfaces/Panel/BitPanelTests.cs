@@ -161,13 +161,13 @@ public class BitPanelTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitPanelPosition.End),
-        DataRow(BitPanelPosition.Start),
-        DataRow(BitPanelPosition.Top),
-        DataRow(BitPanelPosition.Bottom),
+        DataRow(BitSide.End),
+        DataRow(BitSide.Start),
+        DataRow(BitSide.Top),
+        DataRow(BitSide.Bottom),
         DataRow(null)
     ]
-    public void BitPanelPositionTest(BitPanelPosition? position)
+    public void BitPanelPositionTest(BitSide? position)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
@@ -180,10 +180,10 @@ public class BitPanelTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitPanelPosition.End => "bit-pnl-end",
-            BitPanelPosition.Start => "bit-pnl-start",
-            BitPanelPosition.Top => "bit-pnl-top",
-            BitPanelPosition.Bottom => "bit-pnl-bottom",
+            BitSide.End => "bit-pnl-end",
+            BitSide.Start => "bit-pnl-start",
+            BitSide.Top => "bit-pnl-top",
+            BitSide.Bottom => "bit-pnl-bottom",
             _ => "bit-pnl-end",
         };
 
@@ -191,12 +191,12 @@ public class BitPanelTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitPanelPosition.Start, "width"),
-        DataRow(BitPanelPosition.End, "width"),
-        DataRow(BitPanelPosition.Top, "height"),
-        DataRow(BitPanelPosition.Bottom, "height")
+        DataRow(BitSide.Start, "width"),
+        DataRow(BitSide.End, "width"),
+        DataRow(BitSide.Top, "height"),
+        DataRow(BitSide.Bottom, "height")
     ]
-    public void BitPanelSizeShouldFollowTheAxisThePanelSlidesOn(BitPanelPosition position, string property)
+    public void BitPanelSizeShouldFollowTheAxisThePanelSlidesOn(BitSide position, string property)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
@@ -809,7 +809,7 @@ public class BitPanelTests : BunitTestContext
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.Position, BitPanelPosition.Bottom);
+            parameters.Add(p => p.Position, BitSide.Bottom);
             parameters.Add(p => p.SwipeTrigger, 0.5m);
         });
 
@@ -818,7 +818,7 @@ public class BitPanelTests : BunitTestContext
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments;
 
         Assert.AreEqual(0.5m, arguments[1]);
-        Assert.AreEqual(BitPanelPosition.Bottom, arguments[2]);
+        Assert.AreEqual(BitSide.Bottom, arguments[2]);
         Assert.AreEqual(false, arguments[3]);
         Assert.AreEqual(BitSwipeOrientation.Vertical, arguments[4]);
     }
@@ -829,12 +829,12 @@ public class BitPanelTests : BunitTestContext
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.Position, BitPanelPosition.End);
+            parameters.Add(p => p.Position, BitSide.End);
         });
 
         com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
 
-        com.Render(p => p.Add(x => x.Position, BitPanelPosition.Top));
+        com.Render(p => p.Add(x => x.Position, BitSide.Top));
 
         com.WaitForAssertion(() =>
         {
@@ -844,7 +844,7 @@ public class BitPanelTests : BunitTestContext
 
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments;
 
-        Assert.AreEqual(BitPanelPosition.Top, arguments[2]);
+        Assert.AreEqual(BitSide.Top, arguments[2]);
         Assert.AreEqual(BitSwipeOrientation.Vertical, arguments[4]);
     }
 

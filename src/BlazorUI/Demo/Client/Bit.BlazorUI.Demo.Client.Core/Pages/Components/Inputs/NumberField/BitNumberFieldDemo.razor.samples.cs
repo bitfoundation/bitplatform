@@ -16,11 +16,11 @@ public partial class BitNumberFieldDemo
     private readonly string example2RazorCode = @"
 <BitNumberField Label=""Top (default)"" TValue=""int"" />
 
-<BitNumberField Label=""Start"" LabelPosition=""BitLabelPosition.Start"" TValue=""int"" />
+<BitNumberField Label=""Start"" LabelPosition=""BitSide.Start"" TValue=""int"" />
 
-<BitNumberField Label=""End"" LabelPosition=""BitLabelPosition.End"" TValue=""int"" />
+<BitNumberField Label=""End"" LabelPosition=""BitSide.End"" TValue=""int"" />
 
-<BitNumberField Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" TValue=""int"" />
+<BitNumberField Label=""Bottom"" LabelPosition=""BitSide.Bottom"" TValue=""int"" />
 
 <BitNumberField TValue=""int"">
     <LabelTemplate>
@@ -45,7 +45,7 @@ public partial class BitNumberFieldDemo
 </BitNumberField>
 
 <BitNumberField Label=""Label on the side"" TValue=""int""
-                LabelPosition=""BitLabelPosition.Start""
+                LabelPosition=""BitSide.Start""
                 Description=""The hint wraps onto a line of its own."" />";
 
     private readonly string example4RazorCode = @"
@@ -649,7 +649,7 @@ private RangeModel rangeModel = new();";
 
     <BitNumberField Label=""برچسب در بالا"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />
 
-    <BitNumberField Label=""برچسب در کنار"" TValue=""int"" LabelPosition=""BitLabelPosition.Start"" />
+    <BitNumberField Label=""برچسب در کنار"" TValue=""int"" LabelPosition=""BitSide.Start"" />
 
     <BitNumberField TValue=""int"" Required />
 

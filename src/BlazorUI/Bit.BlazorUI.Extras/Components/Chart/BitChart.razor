@@ -7,22 +7,22 @@
         @((MarkupString)ReducedMotionStyles)
     }
 
-    @if (_scene.Title is { Position: not BitChartPosition.Bottom } title)
+    @if (_scene.Title is { Position: not BitSide.Bottom } title)
     {
         @RenderTitle(title, "bc-title")
     }
-    @if (_scene.Subtitle is { Position: not BitChartPosition.Bottom } sub)
+    @if (_scene.Subtitle is { Position: not BitSide.Bottom } sub)
     {
         @RenderTitle(sub, "bc-subtitle")
     }
 
-    @if (_scene.Legend is { Position: BitChartPosition.Top })
+    @if (_scene.Legend is { Position: BitSide.Top })
     {
         @RenderLegend(_scene.Legend)
     }
 
     <div class="bc-mid">
-        @if (_scene.Legend is { Position: BitChartPosition.Left })
+        @if (_scene.Legend is { Position: BitSide.Left })
         {
             @RenderLegend(_scene.Legend)
         }
@@ -167,22 +167,22 @@
             }
         </div>
 
-        @if (_scene.Legend is { Position: BitChartPosition.Right })
+        @if (_scene.Legend is { Position: BitSide.Right })
         {
             @RenderLegend(_scene.Legend)
         }
     </div>
 
-    @if (_scene.Legend is { Position: BitChartPosition.Bottom })
+    @if (_scene.Legend is { Position: BitSide.Bottom })
     {
         @RenderLegend(_scene.Legend)
     }
 
-    @if (_scene.Subtitle is { Position: BitChartPosition.Bottom } subBottom)
+    @if (_scene.Subtitle is { Position: BitSide.Bottom } subBottom)
     {
         @RenderTitle(subBottom, "bc-subtitle")
     }
-    @if (_scene.Title is { Position: BitChartPosition.Bottom } titleBottom)
+    @if (_scene.Title is { Position: BitSide.Bottom } titleBottom)
     {
         @RenderTitle(titleBottom, "bc-title")
     }
@@ -251,7 +251,7 @@
 
     private RenderFragment RenderLegend(BitChartLegendModel legend) => __builder =>
     {
-        bool vertical = legend.Position is BitChartPosition.Left or BitChartPosition.Right;
+        bool vertical = legend.Position is BitSide.Left or BitSide.Right;
         <div class="bc-legend @(vertical ? "bc-legend-v" : "bc-legend-h")"
              style="justify-content:@AlignToFlex(legend.Align)">
             @if (!string.IsNullOrEmpty(legend.Title))

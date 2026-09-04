@@ -6,7 +6,7 @@ public partial class _BitChartTooltipsDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+            Legend = new BitChartLegendOptions { Position = BitSide.Bottom },
             Tooltip = new BitChartTooltipOptions
             {
                 Mode = BitChartInteractionMode.Index,
@@ -23,7 +23,7 @@ public partial class _BitChartTooltipsDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+            Legend = new BitChartLegendOptions { Position = BitSide.Bottom },
             Tooltip = new BitChartTooltipOptions
             {
                 Mode = BitChartInteractionMode.Index,
@@ -39,7 +39,7 @@ public partial class _BitChartTooltipsDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+            Legend = new BitChartLegendOptions { Position = BitSide.Bottom },
             Tooltip = new BitChartTooltipOptions
             {
                 Mode = BitChartInteractionMode.Index,
@@ -60,7 +60,7 @@ public partial class _BitChartTooltipsDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+            Legend = new BitChartLegendOptions { Position = BitSide.Bottom },
             Tooltip = new BitChartTooltipOptions
             {
                 Mode = BitChartInteractionMode.Index,
@@ -93,7 +93,7 @@ public partial class _BitChartTooltipsDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } },
+            Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } },
             Tooltip = new BitChartTooltipOptions { Mode = BitChartInteractionMode.Index, UsePointStyle = true }
         }
     };
@@ -117,7 +117,7 @@ private readonly BitChartOptions _footer = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom },
         Tooltip = new BitChartTooltipOptions
         {
             Mode = BitChartInteractionMode.Index,
@@ -137,7 +137,7 @@ private readonly BitChartOptions _currency = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom },
         Tooltip = new BitChartTooltipOptions
         {
             Mode = BitChartInteractionMode.Index,
@@ -165,7 +165,7 @@ private readonly BitChartOptions _afterBody = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom },
         Tooltip = new BitChartTooltipOptions
         {
             Mode = BitChartInteractionMode.Index,
@@ -189,7 +189,7 @@ private readonly BitChartOptions _styled = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom },
         Tooltip = new BitChartTooltipOptions
         {
             Mode = BitChartInteractionMode.Index,
@@ -212,7 +212,7 @@ private readonly BitChartOptions _pointStyle = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } },
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } },
         Tooltip = new BitChartTooltipOptions { Mode = BitChartInteractionMode.Index, UsePointStyle = true }
     }
 };

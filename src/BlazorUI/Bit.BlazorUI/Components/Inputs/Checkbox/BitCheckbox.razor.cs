@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -119,8 +119,12 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// The position of the label in regards to the checkbox box.
     /// Takes precedence over <see cref="Reversed"/> when both are set.
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitSide? LabelPosition { get; set; }
 
     /// <summary>
     /// Used to customize the label for the checkbox.
@@ -260,10 +264,10 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitLabelPosition.Top => "bit-chb-ltp",
-            BitLabelPosition.Bottom => "bit-chb-lbt",
-            BitLabelPosition.Start => "bit-chb-lst",
-            BitLabelPosition.End => "bit-chb-lnd",
+            BitSide.Top => "bit-chb-ltp",
+            BitSide.Bottom => "bit-chb-lbt",
+            BitSide.Start => "bit-chb-lst",
+            BitSide.End => "bit-chb-lnd",
             _ => string.Empty
         });
 

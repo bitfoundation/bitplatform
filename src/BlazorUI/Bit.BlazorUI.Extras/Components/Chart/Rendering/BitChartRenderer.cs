@@ -182,14 +182,14 @@ public sealed partial class BitChartRenderer
         // Cartesian: ensure x and y exist with sensible defaults.
         var x = _options.GetOrAddScale("x", _config.Type is BitChartType.Scatter or BitChartType.Bubble
             ? BitChartScaleType.Linear : BitChartScaleType.Category);
-        x.Position ??= BitChartPosition.Bottom;
+        x.Position ??= BitSide.Bottom;
 
         // Additional x axes referenced by datasets (default linear, bottom).
         foreach (var id in _data.Datasets.Select(d => d.XAxisID).Distinct())
         {
             if (id == "x" || string.IsNullOrEmpty(id)) continue;
             var x2 = _options.GetOrAddScale(id, BitChartScaleType.Linear);
-            x2.Position ??= BitChartPosition.Bottom;
+            x2.Position ??= BitSide.Bottom;
         }
 
         // Gather y axis ids referenced by datasets.
@@ -197,12 +197,12 @@ public sealed partial class BitChartRenderer
         foreach (var id in yIds)
         {
             var y = _options.GetOrAddScale(id, BitChartScaleType.Linear);
-            y.Position ??= BitChartPosition.Left;
+            y.Position ??= BitSide.Left;
         }
         if (!_options.Scales.ContainsKey("y"))
         {
             var y = _options.GetOrAddScale("y", BitChartScaleType.Linear);
-            y.Position ??= BitChartPosition.Left;
+            y.Position ??= BitSide.Left;
         }
     }
 
