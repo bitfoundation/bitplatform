@@ -27,6 +27,7 @@ public partial class BitPullToRefresh : BitComponentBase
     private string? _lastScrollerSelector;
     private ElementReference? _lastScrollerElement;
     private ElementReference _loadingRef = default!;
+    private DotNetObjectReference<BitPullToRefresh>? _dotnetObj;
 
 
 
@@ -404,8 +405,22 @@ public partial class BitPullToRefresh : BitComponentBase
         if (firstRender)
         {
             CacheJsParameters();
-            var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, dotnetObj);
+
+            _dotnetObj = DotNetObjectReference.Create(this);
+
+            try
+            {
+                await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, _dotnetObj);
+            }
+            catch
+            {
+                // The setup didn't complete, so JS never registered this id and never took ownership of the
+                // reference - and the JS dispose silently no-ops for an unknown id, so DisposeAsync can't
+                // release it either. Release it here, then rethrow so the original failure still surfaces.
+                _dotnetObj.Dispose();
+                _dotnetObj = null;
+                throw;
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -590,12 +605,31 @@ public partial class BitPullToRefresh : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        // Ownership of _dotnetObj is single-sourced to the JS dispose path: BitPullToRefresh.ts disposes
+        // the .NET reference in its dispose(). Disposing it here too would double-dispose the same object.
         try
         {
             await _js.BitPullToRefreshDispose(UniqueId);
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
+        catch (JSDisconnectedException)
+        {
+            // The circuit/browser is gone, so the JS dispose that normally owns _dotnetObj can't run.
+            // Release the managed reference here so it doesn't leak.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+        }
+        catch
+        {
+            // Any other failure means the JS dispose didn't complete its ownership handoff, so release the
+            // managed reference here to avoid leaking it, then rethrow so the original error still surfaces.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+            throw;
+        }
+        finally
+        {
+            // Base cleanup must always run, even when the JS dispose failed and rethrew above.
+            await base.DisposeAsync(disposing);
+        }
     }
 }

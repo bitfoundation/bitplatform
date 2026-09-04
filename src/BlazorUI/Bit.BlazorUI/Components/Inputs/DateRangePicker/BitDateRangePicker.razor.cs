@@ -1523,7 +1523,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         ResetPickersState();
 
-        var bodyWidth = await _js.BitUtilsGetBodyWidth();
+        // A runtime that can't service the interop reports no width, which is taken as the narrowest
+        // viewport so the callout collapses instead of laying out at a width nothing measured.
+        var bodyWidth = await _js.BitUtilsGetBodyWidth() ?? 0;
 
         // The extra months are the first thing to go on a narrow viewport, and only what is left
         // decides whether the month and time pickers still have to collapse into overlays.
@@ -3711,8 +3713,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
-        _dotnetObj?.Dispose();
-        _dotnetObj = null;
         OnValueChanged -= HandleOnValueChanged;
 
         try
@@ -3722,5 +3722,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Dispose the .NET reference after the JS cleanup so any callbacks the JS teardown makes still
+            // have a live target, matching BitDropdown.DisposeAsync. The finally ensures the managed
+            // reference is always released even if the JS cleanup throws a non-JSDisconnectedException.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+        }
     }
 }

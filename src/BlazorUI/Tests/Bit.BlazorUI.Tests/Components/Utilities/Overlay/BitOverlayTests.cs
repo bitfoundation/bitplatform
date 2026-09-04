@@ -1161,7 +1161,7 @@ public class BitOverlayTests : BunitTestContext
     [TestMethod]
     public void BitOverlayAbsolutePositionShouldCarryTheScrollTopOffsetOfTheToggledScroller()
     {
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
+        Context.JSInterop.Setup<float?>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
 
         var component = RenderComponent<BitOverlay>(parameters =>
         {
@@ -1179,7 +1179,7 @@ public class BitOverlayTests : BunitTestContext
     [TestMethod]
     public void BitOverlayFixedOverlayShouldNeverCarryTheScrollTopOffset()
     {
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
+        Context.JSInterop.Setup<float?>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
 
         var component = RenderComponent<BitOverlay>(parameters =>
         {
@@ -1200,7 +1200,7 @@ public class BitOverlayTests : BunitTestContext
     [TestMethod]
     public void BitOverlayShouldDropTheScrollTopOffsetWhenItCloses()
     {
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
+        Context.JSInterop.Setup<float?>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
 
         var isOpen = true;
         var component = RenderComponent<BitOverlay>(parameters =>
@@ -1234,8 +1234,8 @@ public class BitOverlayTests : BunitTestContext
     [TestMethod]
     public void BitOverlayShouldCarryTheScrollTopOffsetOfTheScrollerItWasReAimedAt()
     {
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", i => ".scroller".Equals(i.Arguments[1])).SetResult(120);
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", i => ".another-scroller".Equals(i.Arguments[1])).SetResult(300);
+        Context.JSInterop.Setup<float?>("BitBlazorUI.Utils.toggleOverflow", i => ".scroller".Equals(i.Arguments[1])).SetResult(120);
+        Context.JSInterop.Setup<float?>("BitBlazorUI.Utils.toggleOverflow", i => ".another-scroller".Equals(i.Arguments[1])).SetResult(300);
 
         var component = RenderComponent<BitOverlay>(parameters =>
         {

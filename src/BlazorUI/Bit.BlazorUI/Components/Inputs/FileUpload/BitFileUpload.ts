@@ -22,11 +22,13 @@ namespace BitBlazorUI {
                 FileUpload.clear(id);
             }
 
+            if (!inputElement?.files?.length) return [];
+
             const existingUploaders = append ? FileUpload._fileUploaders.filter(u => u.id === id) : [];
             // a reduce instead of a spread into Math.max, since a selection can carry
             // more items than the argument limit of a function call.
             const lastIndex = existingUploaders.reduce((max, u) => u.index + 1 > max ? u.index + 1 : max, 0);
-            const files = Array.from(inputElement.files!).map((file, index) => ({
+            const files = Array.from(inputElement.files).map((file, index) => ({
                 name: file.name,
                 size: file.size,
                 type: file.type,

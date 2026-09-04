@@ -401,6 +401,8 @@ namespace BitBlazorUI {
 
         public dispose() {
             this.removeHandlers();
+            // Let any failure from the .NET handoff surface so the C# DisposeAsync fallback can release
+            // _dotnetObj instead of silently leaking it.
             this.dotnetObj?.dispose();
         }
     }

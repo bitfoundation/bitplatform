@@ -81,7 +81,7 @@
 
         private readonly anchorEl: HTMLElement;
         private readonly loadingEl: HTMLElement;
-        private readonly dotnetObj: DotNetObject;
+        private dotnetObj?: DotNetObject;
 
         private scrollerEl: HTMLElement;
         private scrollerElement?: HTMLElement;
@@ -198,7 +198,7 @@
                 void this.loadingEl.offsetHeight;
                 this.loadingEl.style.minHeight = `${this.pullHeight(this.options.trigger)}px`;
 
-                await this.dotnetObj.invokeMethodAsync('Refresh');
+                await this.dotnetObj?.invokeMethodAsync('Refresh');
             } finally {
                 this.refreshing = false;
                 this.loadingEl.style.minHeight = '0';
@@ -225,7 +225,10 @@
             this.anchorEl.style.touchAction = this.anchorTouchAction;
             this.loadingEl.style.minHeight = '';
 
+            // Let any failure from the .NET handoff surface so the C# DisposeAsync fallback can release
+            // _dotnetObj instead of silently leaking it. Clear the reference only after dispose() succeeds.
             this.dotnetObj?.dispose();
+            this.dotnetObj = undefined;
         }
 
 
@@ -476,7 +479,7 @@
 
         private async invoke(method: string, ...args: any[]) {
             try {
-                await this.dotnetObj.invokeMethodAsync(method, ...args);
+                await this.dotnetObj?.invokeMethodAsync(method, ...args);
             } catch (e) {
                 // The circuit or the component is gone; a pull that can no longer be reported is not an error
                 // the page should see.

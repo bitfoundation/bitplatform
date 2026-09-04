@@ -2,7 +2,10 @@ namespace Bit.BlazorUI;
 
 internal static class BitCircularTimePickerJsRuntimeExtensions
 {
-    internal static ValueTask<string> BitCircularTimePickerSetup(this IJSRuntime js,
+    // FastInvoke returns default (null) when the runtime can't service interop or a JSON/JS interop
+    // error is swallowed on the in-process (WASM) path, so normalize to an empty id to keep callers
+    // from treating a failed setup as an initialized abort controller.
+    internal static async ValueTask<string> BitCircularTimePickerSetup(this IJSRuntime js,
         DotNetObjectReference<BitCircularTimePicker> obj,
         ElementReference clock,
         ElementReference input,
@@ -13,12 +16,15 @@ internal static class BitCircularTimePickerJsRuntimeExtensions
         string pointerUpHandler,
         string focusOutHandler)
     {
-        return js.Invoke<string>("BitBlazorUI.CircularTimePicker.setup", obj, clock, input, callout, dismissOnFocusOut,
-                                 pointerDownHandler, pointerMoveHandler, pointerUpHandler, focusOutHandler);
+        const string identifier = "BitBlazorUI.CircularTimePicker.setup";
+        var result = await js.FastInvoke<string>(identifier, obj, clock, input, callout, dismissOnFocusOut,
+                                                 pointerDownHandler, pointerMoveHandler, pointerUpHandler, focusOutHandler);
+        js.ReportIfUnexpectedNull(identifier, result);
+        return result ?? string.Empty;
     }
 
     internal static ValueTask BitCircularTimePickerDispose(this IJSRuntime jSRuntime, string? abortControllerId)
     {
-        return jSRuntime.InvokeVoid("BitBlazorUI.CircularTimePicker.dispose", abortControllerId);
+        return jSRuntime.FastInvokeVoid("BitBlazorUI.CircularTimePicker.dispose", abortControllerId);
     }
 }

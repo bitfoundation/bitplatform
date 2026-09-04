@@ -1204,7 +1204,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         ResetPickersState();
 
-        var bodyWidth = await _js.BitUtilsGetBodyWidth();
+        var bodyWidth = await _js.BitUtilsGetBodyWidth() ?? 0;
         var notEnoughWidthAvailable = bodyWidth < MAX_WIDTH;
 
         if (_showMonthPickerAsOverlayInternal is false)
@@ -3085,7 +3085,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             await _js.BitCalendarsDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        _dotnetObj?.Dispose();
+        finally
+        {
+            // Dispose the .NET reference after the JS cleanup so any callbacks the JS teardown makes still
+            // have a live target, matching BitDateRangePicker.DisposeAsync. The finally ensures it's always
+            // released even if the JS cleanup throws a non-JSDisconnectedException.
+            _dotnetObj?.Dispose();
+        }
     }
 }

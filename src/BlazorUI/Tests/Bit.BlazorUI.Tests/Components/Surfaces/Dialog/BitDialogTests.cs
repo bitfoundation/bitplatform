@@ -2057,7 +2057,7 @@ public class BitDialogTests : BunitTestContext
     [TestMethod]
     public void BitDialogAbsolutePositionShouldCarryTheScrollTopOffsetOfTheLockedScroller()
     {
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
+        Context.JSInterop.Setup<float?>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
 
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -2076,7 +2076,7 @@ public class BitDialogTests : BunitTestContext
     {
         // toggleOverflow reports the scroller's scrollTop, which only an absolutely positioned Dialog uses
         // to re-align itself; on a fixed one the same declaration would push it off the bottom of the screen.
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
+        Context.JSInterop.Setup<float?>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(120);
 
         var component = RenderComponent<BitDialog>(parameters =>
         {

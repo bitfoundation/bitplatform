@@ -1377,9 +1377,9 @@ public partial class BitModal : BitComponentBase
 
         try
         {
-            _offsetTop = _scrollerElementOnToggle.HasValue
+            _offsetTop = (_scrollerElementOnToggle.HasValue
                 ? await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnToggle.Value, isOpen)
-                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", isOpen);
+                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", isOpen)) ?? 0;
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }

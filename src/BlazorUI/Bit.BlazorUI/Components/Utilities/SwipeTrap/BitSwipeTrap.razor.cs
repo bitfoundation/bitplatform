@@ -14,6 +14,7 @@ public partial class BitSwipeTrap : BitComponentBase
     private BitSwipeOrientation _appliedOrientationLock;
     private bool _appliedTouchOnly;
     private string? _appliedSkipSelector;
+    private DotNetObjectReference<BitSwipeTrap>? _dotnetObj;
 
 
 
@@ -164,13 +165,19 @@ public partial class BitSwipeTrap : BitComponentBase
             {
                 if (firstRender is false)
                 {
+                    // The JS dispose owns the reference handed to the previous setup, so it is let go of
+                    // here rather than disposed a second time on this side.
                     await _js.BitSwipeTrapDispose(UniqueId);
+
+                    _dotnetObj = null;
                 }
 
                 // The JS side disposes the .NET reference it is handed when the trap is disposed or
                 // re-setup, so each setup gets a fresh one instead of a field kept for the component's life.
-                // Until the setup call has actually handed it over, disposing it is still this side's job.
-                var dotnetObj = DotNetObjectReference.Create(this);
+                // Until the setup call has actually handed it over, disposing it is still this side's job,
+                // and it is held on to afterwards so that a dispose which cannot reach the browser - a
+                // circuit that is already gone - can still release it rather than leak it.
+                _dotnetObj = DotNetObjectReference.Create(this);
                 try
                 {
                     await _js.BitSwipeTrapSetup(
@@ -183,11 +190,12 @@ public partial class BitSwipeTrap : BitComponentBase
                         orientationLock,
                         touchOnly,
                         skipSelector,
-                        dotnetObj);
+                        _dotnetObj);
                 }
                 catch
                 {
-                    dotnetObj.Dispose();
+                    _dotnetObj.Dispose();
+                    _dotnetObj = null;
                     throw;
                 }
 
@@ -213,12 +221,31 @@ public partial class BitSwipeTrap : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        // Ownership of _dotnetObj is single-sourced to the JS dispose path: BitSwipeTrap.ts disposes the
+        // .NET reference in its dispose(). Disposing it here too would double-dispose the same object.
         try
         {
             await _js.BitSwipeTrapDispose(UniqueId);
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        await base.DisposeAsync(disposing);
+        catch (JSDisconnectedException)
+        {
+            // The circuit/browser is gone, so the JS dispose that normally owns _dotnetObj can't run.
+            // Release the managed reference here so it doesn't leak.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+        }
+        catch
+        {
+            // Any other failure means the JS dispose didn't complete its ownership handoff, so release the
+            // managed reference here to avoid leaking it, then rethrow so the original error still surfaces.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+            throw;
+        }
+        finally
+        {
+            // Base cleanup must always run, even when the JS dispose failed and rethrew above.
+            await base.DisposeAsync(disposing);
+        }
     }
 }

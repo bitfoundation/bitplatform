@@ -36,6 +36,9 @@
     <ItemGroup>
         <PackageReference Include="bunit" Version="2.9.0" />
         <PackageReference Include="MSTest" Version="4.3.3" />
+        <!-- Used by FastInvokeSyncContractTests to parse C# sources (Roslyn) when resolving the
+             const-string identifiers passed to FastInvoke call sites. -->
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
     </ItemGroup>
 
     <!-- IsRuntimeInvalid probes framework-internal members of these assemblies reflectively and
