@@ -95,10 +95,10 @@ public partial class BitProgressDemo
         new()
         {
             Name = "GapPosition",
-            Type = "BitProgressGapPosition",
+            Type = "BitSide",
             LinkType = LinkType.Link,
             Href = "#gap-position-enum",
-            DefaultValue = "BitProgressGapPosition.Bottom",
+            DefaultValue = "BitSide.Bottom",
             Description = "Where the GapDegree gap sits, which is also where the stroke of the gauge begins and ends. Reversed mirrors the gauge, so it swaps a Start gap with an End one and leaves a Top or a Bottom one where it is.",
         },
         new()
@@ -383,14 +383,58 @@ public partial class BitProgressDemo
         new()
         {
             Id = "gap-position-enum",
-            Name = "BitProgressGapPosition",
+            Name = "BitSide",
             Description = "Where the gap of a gauge-shaped BitProgress sits, which is also where its stroke begins and ends.",
             Items =
             [
-                new() { Name = "Bottom", Description = "At the bottom of the ring, which is where a gauge is normally opened. This is the default.", Value = "0" },
-                new() { Name = "Top", Description = "At the top of the ring.", Value = "1" },
-                new() { Name = "Start", Description = "At the starting side of the ring - the left in a left-to-right context, the right in a right-to-left one.", Value = "2" },
-                new() { Name = "End", Description = "At the ending side of the ring - the right in a left-to-right context, the left in a right-to-left one.", Value = "3" }
+                new()
+                {
+                    Name = "Top",
+                    Value = "0",
+                    Description = "The top edge."
+                },
+                new()
+                {
+                    Name = "Bottom",
+                    Value = "1",
+                    Description = "The bottom edge."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "6",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "7",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
@@ -236,7 +236,7 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Type = "BitSide?",
             DefaultValue = "null",
             Description = "Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes with: above the input in the default one, and next to it in the Underlined one.",
             LinkType = LinkType.Link,
@@ -929,34 +929,58 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Id = "label-position-enum",
-            Name = "BitLabelPosition",
+            Name = "BitSide",
             Description = "Defines the positions a label can take relative to the control it belongs to.",
             Items =
             [
                 new()
                 {
                     Name = "Top",
-                    Description = "The label sits above the input.",
                     Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "The label sits after the input, on the same line.",
-                    Value = "1",
+                    Description = "The top edge."
                 },
                 new()
                 {
                     Name = "Bottom",
-                    Description = "The label sits under the input.",
-                    Value = "2",
+                    Value = "1",
+                    Description = "The bottom edge."
                 },
                 new()
                 {
                     Name = "Start",
-                    Description = "The label sits before the input, on the same line.",
-                    Value = "3",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
                 },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "6",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "7",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()
@@ -1866,16 +1890,16 @@ private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString
 private BitTextField? selectionRef;";
 
     private readonly string example17RazorCode = @"
-<BitTextField Label=""Top"" LabelPosition=""BitLabelPosition.Top"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Start"" LabelPosition=""BitLabelPosition.Start"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""End"" LabelPosition=""BitLabelPosition.End"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Top"" LabelPosition=""BitSide.Top"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Bottom"" LabelPosition=""BitSide.Bottom"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Start"" LabelPosition=""BitSide.Start"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""End"" LabelPosition=""BitSide.End"" Placeholder=""Enter a text..."" />
 
 <BitTextField Label=""Start + Required + a counter""
               Required
               ShowCount
               MaxLength=""20""
-              LabelPosition=""BitLabelPosition.Start""
+              LabelPosition=""BitSide.Start""
               Description=""The footer keeps its own line under the whole row."" />";
 
     private readonly string example18RazorCode = @"

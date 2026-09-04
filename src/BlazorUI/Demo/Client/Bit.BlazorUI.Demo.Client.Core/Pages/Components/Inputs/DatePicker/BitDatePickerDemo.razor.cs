@@ -381,12 +381,12 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "Determines the location of the DatePicker's icon.",
+            Name = "IconPosition",
+            Type = "BitIconPosition",
+            DefaultValue = "BitIconPosition.End",
+            Description = "Determines the side of the input the DatePicker's icon is rendered on. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.",
             LinkType = LinkType.Link,
-            Href = "#icon-location-enum"
+            Href = "#icon-position-enum"
         },
         new()
         {
@@ -1657,22 +1657,22 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Id = "icon-location-enum",
-            Name = "BitIconLocation",
+            Id = "icon-position-enum",
+            Name = "BitIconPosition",
             Description = "",
             Items =
             [
                 new()
                 {
-                    Name = "Left",
-                    Description = "Show the icon at the left side.",
-                    Value = "0"
+                    Name = "Start",
+                    Value = "0",
+                    Description = "The icon renders before the content."
                 },
                 new()
                 {
-                    Name = "Right",
-                    Description = "Show the icon at the right side.",
-                    Value = "1"
+                    Name = "End",
+                    Value = "1",
+                    Description = "The icon renders after the content."
                 }
             ]
         },

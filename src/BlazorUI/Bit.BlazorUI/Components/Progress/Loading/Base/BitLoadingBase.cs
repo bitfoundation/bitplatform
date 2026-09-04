@@ -122,9 +122,12 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <remarks>
     /// The Start and End positions follow the direction of the writing and swap sides in a right-to-left
     /// layout, while Top and Bottom stay where they are.
+    /// <br />
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitSide? LabelPosition { get; set; }
 
     /// <summary>
     /// The custom content of the label of the loading component.
@@ -262,7 +265,7 @@ public abstract class BitLoadingBase : BitComponentBase
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(LabelPosition):
-                    var labelPosition = (BitLabelPosition?)parameter.Value;
+                    var labelPosition = (BitSide?)parameter.Value;
                     if (LabelPosition != labelPosition) ClassBuilder.Reset();
                     LabelPosition = labelPosition;
                     parametersDictionary.Remove(parameter.Key);
@@ -426,10 +429,10 @@ public abstract class BitLoadingBase : BitComponentBase
 
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitLabelPosition.Top => "bit-ldn-ltp",
-            BitLabelPosition.Bottom => "bit-ldn-lbm",
-            BitLabelPosition.Start => "bit-ldn-lst",
-            BitLabelPosition.End => "bit-ldn-led",
+            BitSide.Top => "bit-ldn-ltp",
+            BitSide.Bottom => "bit-ldn-lbm",
+            BitSide.Start => "bit-ldn-lst",
+            BitSide.End => "bit-ldn-led",
             _ => "bit-ldn-ltp"
         });
 

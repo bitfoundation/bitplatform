@@ -1,4 +1,4 @@
-@page "/components/snackbar"
+﻿@page "/components/snackbar"
 
 <PageOutlet Url="components/snackbar"
             Title="Snackbar"
@@ -27,23 +27,33 @@
 
     <DemoExample Title="Position & Offset" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
-            The <b>Position</b> parameter pins the stack to one of the six corners and edges of the screen
-            (default is <b>BottomEnd</b>). The start/end naming follows the text direction, so a snack bar keeps to the
-            same side of the reading order in both LTR and RTL, and the enter animation always slides out of the edge
-            the stack is pinned to. <b>Offset</b> takes any CSS length and moves the whole stack away from those edges,
+            The <b>Position</b> parameter pins the stack to a point of the screen - a corner, the middle of an edge
+            or the middle of the screen (default is <b>BottomEnd</b>). The start/end naming follows the text direction,
+            so a snack bar keeps to the same side of the reading order in both LTR and RTL, while the left/right one
+            stays on the same side of the screen in either; the enter animation always slides out of the edge the stack
+            is pinned to. <b>Offset</b> takes any CSS length and moves the whole stack away from those edges,
             which is how a snack bar is kept clear of the chrome the app already has there - a bottom app bar, a cookie
             banner, the safe area of a phone.
         </div>
         <br />
         <BitSnackBar @ref="positionRef" Position="position" Offset="@offset" />
         <BitChoiceGroup @bind-Value="position" Label="Position" Horizontal
-                        TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
-            <BitChoiceGroupOption Text="TopStart" Value="BitSnackBarPosition.TopStart" />
-            <BitChoiceGroupOption Text="TopCenter" Value="BitSnackBarPosition.TopCenter" />
-            <BitChoiceGroupOption Text="TopEnd" Value="BitSnackBarPosition.TopEnd" />
-            <BitChoiceGroupOption Text="BottomStart" Value="BitSnackBarPosition.BottomStart" />
-            <BitChoiceGroupOption Text="BottomCenter" Value="BitSnackBarPosition.BottomCenter" />
-            <BitChoiceGroupOption Text="BottomEnd" Value="BitSnackBarPosition.BottomEnd" />
+                        TItem="BitChoiceGroupOption<BitPosition>" TValue="BitPosition">
+            <BitChoiceGroupOption Text="TopStart" Value="BitPosition.TopStart" />
+            <BitChoiceGroupOption Text="TopCenter" Value="BitPosition.TopCenter" />
+            <BitChoiceGroupOption Text="TopEnd" Value="BitPosition.TopEnd" />
+            <BitChoiceGroupOption Text="TopLeft" Value="BitPosition.TopLeft" />
+            <BitChoiceGroupOption Text="TopRight" Value="BitPosition.TopRight" />
+            <BitChoiceGroupOption Text="CenterStart" Value="BitPosition.CenterStart" />
+            <BitChoiceGroupOption Text="Center" Value="BitPosition.Center" />
+            <BitChoiceGroupOption Text="CenterEnd" Value="BitPosition.CenterEnd" />
+            <BitChoiceGroupOption Text="CenterLeft" Value="BitPosition.CenterLeft" />
+            <BitChoiceGroupOption Text="CenterRight" Value="BitPosition.CenterRight" />
+            <BitChoiceGroupOption Text="BottomStart" Value="BitPosition.BottomStart" />
+            <BitChoiceGroupOption Text="BottomCenter" Value="BitPosition.BottomCenter" />
+            <BitChoiceGroupOption Text="BottomEnd" Value="BitPosition.BottomEnd" />
+            <BitChoiceGroupOption Text="BottomLeft" Value="BitPosition.BottomLeft" />
+            <BitChoiceGroupOption Text="BottomRight" Value="BitPosition.BottomRight" />
         </BitChoiceGroup>
         <br />
         <BitChoiceGroup @bind-Value="offset" Label="Offset" Horizontal
@@ -410,13 +420,13 @@
             </BitChoiceGroup>
 
             <div>
-                <BitChoiceGroup @bind-Value="basicSnackBarPosition" Label="Position" TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
-                    <BitChoiceGroupOption Text="TopStart" Value="BitSnackBarPosition.TopStart" />
-                    <BitChoiceGroupOption Text="TopCenter" Value="BitSnackBarPosition.TopCenter" />
-                    <BitChoiceGroupOption Text="TopEnd" Value="BitSnackBarPosition.TopEnd" />
-                    <BitChoiceGroupOption Text="BottomStart" Value="BitSnackBarPosition.BottomStart" />
-                    <BitChoiceGroupOption Text="BottomCenter" Value="BitSnackBarPosition.BottomCenter" />
-                    <BitChoiceGroupOption Text="BottomEnd" Value="BitSnackBarPosition.BottomEnd" />
+                <BitChoiceGroup @bind-Value="basicSnackBarPosition" Label="Position" TItem="BitChoiceGroupOption<BitPosition>" TValue="BitPosition">
+                    <BitChoiceGroupOption Text="TopStart" Value="BitPosition.TopStart" />
+                    <BitChoiceGroupOption Text="TopCenter" Value="BitPosition.TopCenter" />
+                    <BitChoiceGroupOption Text="TopEnd" Value="BitPosition.TopEnd" />
+                    <BitChoiceGroupOption Text="BottomStart" Value="BitPosition.BottomStart" />
+                    <BitChoiceGroupOption Text="BottomCenter" Value="BitPosition.BottomCenter" />
+                    <BitChoiceGroupOption Text="BottomEnd" Value="BitPosition.BottomEnd" />
                 </BitChoiceGroup>
                 <br />
                 <BitChoiceGroup @bind-Value="direction" Label="Direction" TItem="BitChoiceGroupOption<BitDir>" TValue="BitDir">
@@ -564,12 +574,13 @@
 
     <DemoExample Title="RTL" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
         <div>
-            Set <b>Dir</b> to <b>BitDir.Rtl</b> to lay a snack bar out right-to-left. The positions are named after the
-            reading order rather than the screen, so a <b>BottomStart</b> stack sits at the bottom right here, the
-            leading icon comes first from the right, and the dismiss button keeps to the inline end.
+            Set <b>Dir</b> to <b>BitDir.Rtl</b> to lay a snack bar out right-to-left. The start/end positions are
+            named after the reading order rather than the screen, so a <b>BottomStart</b> stack sits at the bottom
+            right here, the leading icon comes first from the right, and the dismiss button keeps to the inline end.
+            The left/right ones are named after the screen instead and stay where they are put in either direction.
         </div>
         <br />
-        <BitSnackBar @ref="rtlRef" Dir="BitDir.Rtl" ShowIcon Position="BitSnackBarPosition.BottomEnd"
+        <BitSnackBar @ref="rtlRef" Dir="BitDir.Rtl" ShowIcon Position="BitPosition.BottomEnd"
                      AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)" />
         <div dir="rtl">
             <BitButton Dir="BitDir.Rtl" OnClick="OpenRtl">نمایش پیام</BitButton>

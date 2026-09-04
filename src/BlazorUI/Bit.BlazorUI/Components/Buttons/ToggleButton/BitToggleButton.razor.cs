@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// ToggleButton is a type of button that stores and shows a status representing the toggle state of the component.
@@ -163,7 +163,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The position of the loading label in regards to the spinner icon.
     /// </summary>
-    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitSide LoadingLabelPosition { get; set; } = BitSide.End;
 
     /// <summary>
     /// The custom template used to replace the default content of the toggle button in the loading state.
@@ -602,10 +606,10 @@ public partial class BitToggleButton : BitComponentBase
     private string GetLoadingLabelPositionClass()
         => LoadingLabelPosition switch
         {
-            BitLabelPosition.Top => "bit-tgb-top",
-            BitLabelPosition.Start => "bit-tgb-srt",
-            BitLabelPosition.End => "bit-tgb-end",
-            BitLabelPosition.Bottom => "bit-tgb-btm",
+            BitSide.Top => "bit-tgb-top",
+            BitSide.Start => "bit-tgb-srt",
+            BitSide.End => "bit-tgb-end",
+            BitSide.Bottom => "bit-tgb-btm",
             _ => "bit-tgb-end"
         };
 }

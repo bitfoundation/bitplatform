@@ -4,7 +4,7 @@ public partial class _BitChartPolarDemo
 {
     private readonly BitChartOptions _right = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Right } }
     };
 
     private readonly BitChartOptions _labels = new()
@@ -34,7 +34,7 @@ public partial class _BitChartPolarDemo
     private readonly string areaCsharpCode = @"
 private readonly BitChartOptions _right = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Right } }
 };
 
 private BitChartData Data() => new()

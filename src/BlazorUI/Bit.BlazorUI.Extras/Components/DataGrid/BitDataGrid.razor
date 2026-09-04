@@ -63,7 +63,7 @@
         </div>
     }
 
-    @if (PagingActive && (PagerPosition is BitDataGridPagerPosition.Top or BitDataGridPagerPosition.TopAndBottom))
+    @if (PagingActive && (PagerPosition is BitSide.Top or BitSide.TopAndBottom))
     {
         @RenderPager
     }
@@ -434,7 +434,7 @@
         </div>
     </div>
 
-    @if (PagingActive && (PagerPosition is BitDataGridPagerPosition.Bottom or BitDataGridPagerPosition.TopAndBottom))
+    @if (PagingActive && (PagerPosition is BitSide.Bottom or BitSide.TopAndBottom))
     {
         @RenderPager
     }

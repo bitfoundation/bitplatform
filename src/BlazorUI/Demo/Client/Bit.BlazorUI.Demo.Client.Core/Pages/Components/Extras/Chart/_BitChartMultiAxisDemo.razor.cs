@@ -4,17 +4,17 @@ public partial class _BitChartMultiAxisDemo
 {
     private readonly BitChartOptions _combo = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
         Scales =
         {
             ["y"] = new BitChartScaleOptions
             {
-                Id = "y", Type = BitChartScaleType.Linear, Position = BitChartPosition.Left, BeginAtZero = true,
+                Id = "y", Type = BitChartScaleType.Linear, Position = BitSide.Left, BeginAtZero = true,
                 Title = new BitChartScaleTitleOptions { Display = true, Text = "Rainfall (mm)" }
             },
             ["y2"] = new BitChartScaleOptions
             {
-                Id = "y2", Type = BitChartScaleType.Linear, Position = BitChartPosition.Right, BeginAtZero = true,
+                Id = "y2", Type = BitChartScaleType.Linear, Position = BitSide.Right, BeginAtZero = true,
                 Title = new BitChartScaleTitleOptions { Display = true, Text = "Temp (°C)" },
                 Grid = new BitChartGridOptions { DrawOnChartArea = false },
                 Ticks = new BitChartTickOptions { Suffix = "°" }
@@ -24,17 +24,17 @@ public partial class _BitChartMultiAxisDemo
 
     private readonly BitChartOptions _dual = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
         Scales =
         {
             ["y"] = new BitChartScaleOptions
             {
-                Id = "y", Type = BitChartScaleType.Linear, Position = BitChartPosition.Left,
+                Id = "y", Type = BitChartScaleType.Linear, Position = BitSide.Left,
                 Title = new BitChartScaleTitleOptions { Display = true, Text = "Users" }
             },
             ["y2"] = new BitChartScaleOptions
             {
-                Id = "y2", Type = BitChartScaleType.Linear, Position = BitChartPosition.Right,
+                Id = "y2", Type = BitChartScaleType.Linear, Position = BitSide.Right,
                 Title = new BitChartScaleTitleOptions { Display = true, Text = "Latency (ms)" },
                 Grid = new BitChartGridOptions { DrawOnChartArea = false }
             }
@@ -55,12 +55,12 @@ public partial class _BitChartMultiAxisDemo
 
     private readonly BitChartOptions _dualX = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } } },
         Scales =
         {
-            ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Position = BitChartPosition.Bottom,
+            ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Position = BitSide.Bottom,
                 Title = new BitChartScaleTitleOptions { Display = true, Text = "Wavelength (nm)" } },
-            ["x2"] = new BitChartScaleOptions { Id = "x2", Type = BitChartScaleType.Linear, Position = BitChartPosition.Top,
+            ["x2"] = new BitChartScaleOptions { Id = "x2", Type = BitChartScaleType.Linear, Position = BitSide.Top,
                 Title = new BitChartScaleTitleOptions { Display = true, Text = "Frequency (THz)" },
                 Grid = new BitChartGridOptions { DrawOnChartArea = false } },
             ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Grace = 0.1 }
@@ -90,17 +90,17 @@ public partial class _BitChartMultiAxisDemo
     private readonly string comboCsharpCode = @"
 private readonly BitChartOptions _combo = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
     Scales =
     {
         [""y""] = new BitChartScaleOptions
         {
-            Id = ""y"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Left, BeginAtZero = true,
+            Id = ""y"", Type = BitChartScaleType.Linear, Position = BitSide.Left, BeginAtZero = true,
             Title = new BitChartScaleTitleOptions { Display = true, Text = ""Rainfall (mm)"" }
         },
         [""y2""] = new BitChartScaleOptions
         {
-            Id = ""y2"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Right, BeginAtZero = true,
+            Id = ""y2"", Type = BitChartScaleType.Linear, Position = BitSide.Right, BeginAtZero = true,
             Title = new BitChartScaleTitleOptions { Display = true, Text = ""Temp (°C)"" },
             Grid = new BitChartGridOptions { DrawOnChartArea = false },
             Ticks = new BitChartTickOptions { Suffix = ""°"" }
@@ -124,17 +124,17 @@ private BitChartData TempAndRainfall() => new()
     private readonly string dualLineCsharpCode = @"
 private readonly BitChartOptions _dual = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
     Scales =
     {
         [""y""] = new BitChartScaleOptions
         {
-            Id = ""y"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Left,
+            Id = ""y"", Type = BitChartScaleType.Linear, Position = BitSide.Left,
             Title = new BitChartScaleTitleOptions { Display = true, Text = ""Users"" }
         },
         [""y2""] = new BitChartScaleOptions
         {
-            Id = ""y2"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Right,
+            Id = ""y2"", Type = BitChartScaleType.Linear, Position = BitSide.Right,
             Title = new BitChartScaleTitleOptions { Display = true, Text = ""Latency (ms)"" },
             Grid = new BitChartGridOptions { DrawOnChartArea = false }
         }
@@ -157,12 +157,12 @@ private BitChartData DualLine() => new()
     private readonly string dualXCsharpCode = @"
 private readonly BitChartOptions _dualX = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } } },
     Scales =
     {
-        [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Bottom,
+        [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Linear, Position = BitSide.Bottom,
             Title = new BitChartScaleTitleOptions { Display = true, Text = ""Wavelength (nm)"" } },
-        [""x2""] = new BitChartScaleOptions { Id = ""x2"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Top,
+        [""x2""] = new BitChartScaleOptions { Id = ""x2"", Type = BitChartScaleType.Linear, Position = BitSide.Top,
             Title = new BitChartScaleTitleOptions { Display = true, Text = ""Frequency (THz)"" },
             Grid = new BitChartGridOptions { DrawOnChartArea = false } },
         [""y""] = new BitChartScaleOptions { Id = ""y"", Type = BitChartScaleType.Linear, Grace = 0.1 }

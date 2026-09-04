@@ -4,12 +4,12 @@ public partial class _BitChartBarDemo
 {
     private readonly BitChartOptions _bottom = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
     };
 
     private readonly BitChartOptions _stacked = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
         Scales =
         {
             ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Stacked = true },
@@ -35,7 +35,7 @@ public partial class _BitChartBarDemo
 
     private readonly BitChartOptions _stacked100 = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
         Scales =
         {
             ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Stacked = true },
@@ -45,7 +45,7 @@ public partial class _BitChartBarDemo
 
     private readonly BitChartOptions _stackedGroups = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
         Scales =
         {
             ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Stacked = true },
@@ -145,7 +145,7 @@ public partial class _BitChartBarDemo
     private readonly string groupedCsharpCode = @"
 private readonly BitChartOptions _bottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Revenue() => new()
@@ -163,7 +163,7 @@ private BitChartData Revenue() => new()
     private readonly string stackedCsharpCode = @"
 private readonly BitChartOptions _stacked = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
     Scales =
     {
         [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Category, Stacked = true },
@@ -243,7 +243,7 @@ private BitChartData Floating() => new()
     private readonly string stacked100CsharpCode = @"
 private readonly BitChartOptions _stacked100 = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
     Scales =
     {
         [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Category, Stacked = true },
@@ -257,7 +257,7 @@ private readonly BitChartOptions _stacked100 = new()
     private readonly string patternedCsharpCode = @"
 private readonly BitChartOptions _bottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Patterned() => new()
@@ -316,7 +316,7 @@ private BitChartData Countries() => new()
     private readonly string stackedGroupsCsharpCode = @"
 private readonly BitChartOptions _stackedGroups = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
     Scales =
     {
         [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Category, Stacked = true },

@@ -100,6 +100,17 @@ public partial class BitTooltip : BitComponentBase
 
 
     /// <summary>
+    /// Where along <see cref="Side"/> the tooltip lines up with its anchor (default is centered on it).
+    /// </summary>
+    /// <remarks>
+    /// The axis is the one the side leaves free: a tooltip above or below its anchor is aligned horizontally,
+    /// one beside it vertically. It is always logical, so an alignment on the horizontal axis follows the
+    /// reading direction while one on the vertical axis reads top to bottom in either.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitSideAlignment Alignment { get; set; } = BitSideAlignment.Center;
+
+    /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Anchor { get; set; }
@@ -204,18 +215,6 @@ public partial class BitTooltip : BitComponentBase
     [Parameter, ResetStyleBuilder] public string? MaxWidth { get; set; }
 
     /// <summary>
-    /// Mirrors the position of the tooltip along the horizontal axis while the direction is right to
-    /// left, so that a position named for one side of the anchor lands on the side the reader starts at.
-    /// </summary>
-    /// <remarks>
-    /// The twelve positions are named for the sides of the screen rather than for the reading order, so
-    /// Left is the left of the anchor in either direction unless this is turned on. Turn it on for a
-    /// tooltip that follows the text - a hint beside a field, say - and leave it off for one that has to
-    /// stay where it is put, such as a tooltip aimed at the edge of a fixed layout.
-    /// </remarks>
-    [Parameter] public bool MirrorInRtl { get; set; }
-
-    /// <summary>
     /// Removes the fade the tooltip is shown and hidden with, so that it simply appears.
     /// </summary>
     [Parameter, ResetClassBuilder] public bool NoAnimation { get; set; }
@@ -263,12 +262,6 @@ public partial class BitTooltip : BitComponentBase
     [Parameter] public EventCallback<bool> OnToggle { get; set; }
 
     /// <summary>
-    /// The position of tooltip around its anchor.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitTooltipPosition Position { get; set; }
-
-    /// <summary>
     /// What the tooltip is to the anchor it belongs to: the description of a control that has a name of
     /// its own, the name of one that has none, or nothing at all.
     /// </summary>
@@ -314,6 +307,18 @@ public partial class BitTooltip : BitComponentBase
     /// Determines shows tooltip on hover.
     /// </summary>
     [Parameter] public bool ShowOnHover { get; set; } = true;
+
+    /// <summary>
+    /// The side of the anchor the tooltip is placed on (default is above it).
+    /// </summary>
+    /// <remarks>
+    /// Start and End follow the reading direction - Start is the left of the anchor in an LTR tooltip and the
+    /// right of it in an RTL one - which is what a tooltip that reads as part of its anchor wants. Left and
+    /// Right stay on the same side of the screen in either direction, for a tooltip aimed at the edge of a
+    /// fixed layout. The two combined values are not meaningful here and leave the tooltip above its anchor.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitSide Side { get; set; } = BitSide.Top;
 
     /// <summary>
     /// The size of the tooltip, which sets the size of its text and the padding around it.
@@ -914,44 +919,62 @@ public partial class BitTooltip : BitComponentBase
         return base.DisposeAsync(disposing);
     }
 
-    // The horizontal half of a position swapped for its opposite. The vertical ones are left alone: Top
-    // is the top of the anchor in either direction, and a centred position has no side to swap.
-    private static BitTooltipPosition Mirror(BitTooltipPosition position) => position switch
+    // The stylesheet draws the twelve placements physically - a class per side of the screen, each with its
+    // own inset - so the logical half of the two parameters is resolved here, which is the one place that
+    // knows the direction the tooltip is being read in.
+
+    // The side of the screen the tooltip lands on. The physical values are already it; the logical pair is
+    // read against the direction; the two combined values name no single side, so they leave the tooltip
+    // where an unset Side would put it.
+    private BitSide PhysicalSide => Side switch
     {
-        BitTooltipPosition.TopLeft => BitTooltipPosition.TopRight,
-        BitTooltipPosition.TopRight => BitTooltipPosition.TopLeft,
-        BitTooltipPosition.RightTop => BitTooltipPosition.LeftTop,
-        BitTooltipPosition.Right => BitTooltipPosition.Left,
-        BitTooltipPosition.RightBottom => BitTooltipPosition.LeftBottom,
-        BitTooltipPosition.BottomRight => BitTooltipPosition.BottomLeft,
-        BitTooltipPosition.BottomLeft => BitTooltipPosition.BottomRight,
-        BitTooltipPosition.LeftBottom => BitTooltipPosition.RightBottom,
-        BitTooltipPosition.Left => BitTooltipPosition.Right,
-        BitTooltipPosition.LeftTop => BitTooltipPosition.RightTop,
-        _ => position
+        BitSide.Bottom => BitSide.Bottom,
+        BitSide.Left => BitSide.Left,
+        BitSide.Right => BitSide.Right,
+        BitSide.Start => Dir == BitDir.Rtl ? BitSide.Right : BitSide.Left,
+        BitSide.End => Dir == BitDir.Rtl ? BitSide.Left : BitSide.Right,
+        _ => BitSide.Top
     };
+
+    // The alignment is logical on either axis, but only the horizontal one turns around with the direction:
+    // a tooltip beside its anchor is aligned top to bottom in both.
+    private BitSideAlignment PhysicalAlignment
+    {
+        get
+        {
+            if (Dir != BitDir.Rtl) return Alignment;
+            if (PhysicalSide is not (BitSide.Top or BitSide.Bottom)) return Alignment;
+
+            return Alignment switch
+            {
+                BitSideAlignment.Start => BitSideAlignment.End,
+                BitSideAlignment.End => BitSideAlignment.Start,
+                _ => BitSideAlignment.Center
+            };
+        }
+    }
 
     private string GetTooltipClasses()
     {
         var visibility = IsShown ? "bit-ttp-vis " : string.Empty;
 
-        var placement = MirrorInRtl && Dir == BitDir.Rtl ? Mirror(Position) : Position;
-
-        var position = placement switch
+        var position = (PhysicalSide, PhysicalAlignment) switch
         {
-            BitTooltipPosition.Top => "bit-ttp-top",
-            BitTooltipPosition.TopLeft => "bit-ttp-tlf",
-            BitTooltipPosition.TopRight => "bit-ttp-trg",
-            BitTooltipPosition.RightTop => "bit-ttp-rtp",
-            BitTooltipPosition.Right => "bit-ttp-rgt",
-            BitTooltipPosition.RightBottom => "bit-ttp-rbm",
-            BitTooltipPosition.BottomRight => "bit-ttp-brg",
-            BitTooltipPosition.Bottom => "bit-ttp-btm",
-            BitTooltipPosition.BottomLeft => "bit-ttp-blf",
-            BitTooltipPosition.LeftBottom => "bit-ttp-lbm",
-            BitTooltipPosition.Left => "bit-ttp-lft",
-            BitTooltipPosition.LeftTop => "bit-ttp-ltp",
-            _ => "bit-ttp-top"
+            (BitSide.Top, BitSideAlignment.Start) => "bit-ttp-tlf",
+            (BitSide.Top, BitSideAlignment.End) => "bit-ttp-trg",
+            (BitSide.Top, _) => "bit-ttp-top",
+
+            (BitSide.Bottom, BitSideAlignment.Start) => "bit-ttp-blf",
+            (BitSide.Bottom, BitSideAlignment.End) => "bit-ttp-brg",
+            (BitSide.Bottom, _) => "bit-ttp-btm",
+
+            (BitSide.Left, BitSideAlignment.Start) => "bit-ttp-ltp",
+            (BitSide.Left, BitSideAlignment.End) => "bit-ttp-lbm",
+            (BitSide.Left, _) => "bit-ttp-lft",
+
+            (BitSide.Right, BitSideAlignment.Start) => "bit-ttp-rtp",
+            (BitSide.Right, BitSideAlignment.End) => "bit-ttp-rbm",
+            _ => "bit-ttp-rgt"
         };
 
         return visibility + position;

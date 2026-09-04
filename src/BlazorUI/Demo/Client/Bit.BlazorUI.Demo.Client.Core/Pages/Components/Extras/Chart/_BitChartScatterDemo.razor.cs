@@ -6,7 +6,7 @@ public partial class _BitChartScatterDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+            Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
         },
         Scales =
         {
@@ -66,7 +66,7 @@ private readonly BitChartOptions _bottom = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
     },
     Scales =
     {
@@ -106,7 +106,7 @@ private readonly BitChartOptions _bottom = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+        Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
     },
     Scales =
     {

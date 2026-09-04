@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// SnackBars provide brief notifications. The component is also known as a toast.
@@ -332,10 +332,15 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public bool Persistent { get; set; }
 
     /// <summary>
-    /// The position of the snack bars to show (default is bottom right).
+    /// The corner or edge of the screen the snack bars are stacked at (default is the bottom end).
     /// </summary>
+    /// <remarks>
+    /// The Start and End values follow the text direction rather than the screen, so a stack keeps to the same
+    /// side of the reading order in both LTR and RTL; the Left and Right ones stay on the same side of the
+    /// screen in either. The enter animation of an item always slides out of the edge its stack is pinned to.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSnackBarPosition? Position { get; set; }
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// Skips showing a new snack bar while an identical one is already on screen.
@@ -717,12 +722,21 @@ public partial class BitSnackBar : BitComponentBase
 
         ClassBuilder.Register(() => Position switch
         {
-            BitSnackBarPosition.TopStart => "bit-snb-tst",
-            BitSnackBarPosition.TopCenter => "bit-snb-tcn",
-            BitSnackBarPosition.TopEnd => "bit-snb-ten",
-            BitSnackBarPosition.BottomStart => "bit-snb-bst",
-            BitSnackBarPosition.BottomCenter => "bit-snb-bcn",
-            BitSnackBarPosition.BottomEnd => "bit-snb-ben",
+            BitPosition.TopStart => "bit-snb-tst",
+            BitPosition.TopCenter => "bit-snb-tcn",
+            BitPosition.TopEnd => "bit-snb-ten",
+            BitPosition.TopLeft => "bit-snb-tlf",
+            BitPosition.TopRight => "bit-snb-trg",
+            BitPosition.CenterStart => "bit-snb-cst",
+            BitPosition.Center => "bit-snb-ctr",
+            BitPosition.CenterEnd => "bit-snb-cen",
+            BitPosition.CenterLeft => "bit-snb-clf",
+            BitPosition.CenterRight => "bit-snb-crg",
+            BitPosition.BottomStart => "bit-snb-bst",
+            BitPosition.BottomCenter => "bit-snb-bcn",
+            BitPosition.BottomEnd => "bit-snb-ben",
+            BitPosition.BottomLeft => "bit-snb-blf",
+            BitPosition.BottomRight => "bit-snb-brg",
             _ => "bit-snb-ben"
         });
     }

@@ -589,11 +589,11 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitPanelPosition.Start, "bit-drm-sta")]
-    [DataRow(BitPanelPosition.End, "bit-drm-end")]
-    [DataRow(BitPanelPosition.Top, "bit-drm-top")]
-    [DataRow(BitPanelPosition.Bottom, "bit-drm-btm")]
-    public void BitDropMenuShouldAddPanelPositionClass(BitPanelPosition position, string expectedClass)
+    [DataRow(BitSide.Start, "bit-drm-sta")]
+    [DataRow(BitSide.End, "bit-drm-end")]
+    [DataRow(BitSide.Top, "bit-drm-top")]
+    [DataRow(BitSide.Bottom, "bit-drm-btm")]
+    public void BitDropMenuShouldAddPanelPositionClass(BitSide position, string expectedClass)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
@@ -606,11 +606,11 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitPanelPosition.Start, BitSwipeOrientation.Horizontal)]
-    [DataRow(BitPanelPosition.End, BitSwipeOrientation.Horizontal)]
-    [DataRow(BitPanelPosition.Top, BitSwipeOrientation.Vertical)]
-    [DataRow(BitPanelPosition.Bottom, BitSwipeOrientation.Vertical)]
-    public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitPanelPosition position, BitSwipeOrientation expected)
+    [DataRow(BitSide.Start, BitSwipeOrientation.Horizontal)]
+    [DataRow(BitSide.End, BitSwipeOrientation.Horizontal)]
+    [DataRow(BitSide.Top, BitSwipeOrientation.Vertical)]
+    [DataRow(BitSide.Bottom, BitSwipeOrientation.Vertical)]
+    public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitSide position, BitSwipeOrientation expected)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {

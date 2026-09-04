@@ -248,7 +248,7 @@ public partial class BitPanelDemo
         new()
         {
             Name = "Position",
-            Type = "BitPanelPosition?",
+            Type = "BitSide?",
             DefaultValue = "null",
             Description = "The edge of the screen the panel slides in from. Start and End are the logical edges, so they follow the direction of the panel. It defaults to End.",
             Href = "#position-enum",
@@ -461,14 +461,58 @@ public partial class BitPanelDemo
         new()
         {
             Id = "position-enum",
-            Name = "BitPanelPosition",
+            Name = "BitSide",
             Description = "The edge of the screen the panel slides in from.",
             Items =
             [
-                new() { Name = "Start", Description = "The logical start edge of the screen: the left in left-to-right, the right in right-to-left.", Value = "0" },
-                new() { Name = "End", Description = "The logical end edge of the screen: the right in left-to-right, the left in right-to-left.", Value = "1" },
-                new() { Name = "Top", Description = "The top edge of the screen.", Value = "2" },
-                new() { Name = "Bottom", Description = "The bottom edge of the screen.", Value = "3" }
+                new()
+                {
+                    Name = "Top",
+                    Value = "0",
+                    Description = "The top edge."
+                },
+                new()
+                {
+                    Name = "Bottom",
+                    Value = "1",
+                    Description = "The bottom edge."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "6",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "7",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()
@@ -672,7 +716,7 @@ private bool isFooterTextPanelOpen;";
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenInPositionStart""
           AriaLabel=""A panel at the start of the screen""
-          Position=""BitPanelPosition.Start"">
+          Position=""BitSide.Start"">
     <div class=""panel-body"">
         BitPanel with Start position and custom Size.
         <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -682,7 +726,7 @@ private bool isFooterTextPanelOpen;";
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenPositionEnd""
           AriaLabel=""A panel at the end of the screen""
-          Position=""BitPanelPosition.End"">
+          Position=""BitSide.End"">
     <div class=""panel-body"">
         BitPanel with End position and custom Size.
         <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -692,7 +736,7 @@ private bool isFooterTextPanelOpen;";
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenInPositionTop""
           AriaLabel=""A panel at the top of the screen""
-          Position=""BitPanelPosition.Top"">
+          Position=""BitSide.Top"">
     <div class=""panel-body"">
         BitPanel with Top position and custom Size.
         <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -702,7 +746,7 @@ private bool isFooterTextPanelOpen;";
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenInPositionBottom""
           AriaLabel=""A panel at the bottom of the screen""
-          Position=""BitPanelPosition.Bottom"">
+          Position=""BitSide.Bottom"">
     <div class=""panel-body"">
         BitPanel with Bottom position and custom Size.
         <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -973,7 +1017,7 @@ private bool isNoSwipePanelOpen;";
                   ModeFull
                   ZIndex=""1310""
                   AriaLabel=""The inner panel""
-                  Position=""BitPanelPosition.Start"">
+                  Position=""BitSide.Start"">
             <div class=""panel-body"">
                 <h3>Inner</h3>
                 <div>Lifted over the panel it was opened from, so its own overlay covers it.</div>
@@ -1120,7 +1164,7 @@ private bool isPanelClassesOpen;";
 <BitPanel @bind-IsOpen=""isRtlPanelOpenStart""
           Dir=""BitDir.Rtl""
           AriaLabel=""پنل آغاز""
-          Position=""BitPanelPosition.Start"">
+          Position=""BitSide.Start"">
     <div class=""panel-body"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
@@ -1131,7 +1175,7 @@ private bool isPanelClassesOpen;";
 <BitPanel @bind-IsOpen=""isRtlPanelOpenEnd""
           Dir=""BitDir.Rtl""
           AriaLabel=""پنل پایان""
-          Position=""BitPanelPosition.End"">
+          Position=""BitSide.End"">
     <div class=""panel-body"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.

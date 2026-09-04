@@ -4,17 +4,17 @@ public partial class _BitChartMixedDemo
 {
     private readonly BitChartOptions _bottom = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
     };
 
     private readonly BitChartOptions _dual = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
         Scales =
         {
-            ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Position = BitChartPosition.Left, BeginAtZero = true,
+            ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Position = BitSide.Left, BeginAtZero = true,
                 Title = new BitChartScaleTitleOptions { Display = true, Text = "Revenue ($k)" } },
-            ["y2"] = new BitChartScaleOptions { Id = "y2", Type = BitChartScaleType.Linear, Position = BitChartPosition.Right, BeginAtZero = true,
+            ["y2"] = new BitChartScaleOptions { Id = "y2", Type = BitChartScaleType.Linear, Position = BitSide.Right, BeginAtZero = true,
                 Title = new BitChartScaleTitleOptions { Display = true, Text = "Margin %" },
                 Grid = new BitChartGridOptions { DrawOnChartArea = false } }
         }
@@ -46,7 +46,7 @@ public partial class _BitChartMixedDemo
     private readonly string barLineCsharpCode = @"
 private readonly BitChartOptions _bottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 // Each dataset sets its own Type to mix bars and lines.
@@ -64,12 +64,12 @@ private BitChartData BarLine() => new()
     private readonly string dualAxisCsharpCode = @"
 private readonly BitChartOptions _dual = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
     Scales =
     {
-        [""y""] = new BitChartScaleOptions { Id = ""y"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Left, BeginAtZero = true,
+        [""y""] = new BitChartScaleOptions { Id = ""y"", Type = BitChartScaleType.Linear, Position = BitSide.Left, BeginAtZero = true,
             Title = new BitChartScaleTitleOptions { Display = true, Text = ""Revenue ($k)"" } },
-        [""y2""] = new BitChartScaleOptions { Id = ""y2"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Right, BeginAtZero = true,
+        [""y2""] = new BitChartScaleOptions { Id = ""y2"", Type = BitChartScaleType.Linear, Position = BitSide.Right, BeginAtZero = true,
             Title = new BitChartScaleTitleOptions { Display = true, Text = ""Margin %"" },
             Grid = new BitChartGridOptions { DrawOnChartArea = false } }
     }

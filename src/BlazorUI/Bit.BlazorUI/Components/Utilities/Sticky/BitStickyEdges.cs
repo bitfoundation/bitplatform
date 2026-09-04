@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>
 /// These are the physical edges of the scrollport, the way the browser resolves them: a
-/// <see cref="BitStickyPosition.Start"/> sticky reports <see cref="Left"/> in a left-to-right
+/// <see cref="BitSide.Start"/> sticky reports <see cref="Left"/> in a left-to-right
 /// container and <see cref="Right"/> in a right-to-left one.
 /// <br />
 /// More than one of them can be set at once, since an element pinned into a corner is held by the

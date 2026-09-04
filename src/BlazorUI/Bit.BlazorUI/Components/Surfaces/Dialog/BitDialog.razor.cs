@@ -494,9 +494,9 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public EventCallback OnOpen { get; set; }
 
     /// <summary>
-    /// Position of the Dialog on the screen.
+    /// Position of the Dialog on the screen. Centered both ways by default.
     /// </summary>
-    [Parameter] public BitDialogPosition Position { get; set; }
+    [Parameter] public BitPosition Position { get; set; } = BitPosition.Center;
 
     /// <summary>
     /// Hands the focus back to whatever held it when the Dialog opened, once the Dialog closes.
@@ -1307,21 +1307,21 @@ public partial class BitDialog : BitComponentBase
 
     private string GetPositionClass() => Position switch
     {
-        BitDialogPosition.Center => "bit-dlg-ctr",
-        BitDialogPosition.TopLeft => "bit-dlg-tl",
-        BitDialogPosition.TopCenter => "bit-dlg-tc",
-        BitDialogPosition.TopRight => "bit-dlg-tr",
-        BitDialogPosition.CenterLeft => "bit-dlg-cl",
-        BitDialogPosition.CenterRight => "bit-dlg-cr",
-        BitDialogPosition.BottomLeft => "bit-dlg-bl",
-        BitDialogPosition.BottomCenter => "bit-dlg-bc",
-        BitDialogPosition.BottomRight => "bit-dlg-br",
-        BitDialogPosition.TopStart => "bit-dlg-ts",
-        BitDialogPosition.TopEnd => "bit-dlg-te",
-        BitDialogPosition.CenterStart => "bit-dlg-cs",
-        BitDialogPosition.CenterEnd => "bit-dlg-ce",
-        BitDialogPosition.BottomStart => "bit-dlg-bs",
-        BitDialogPosition.BottomEnd => "bit-dlg-be",
+        BitPosition.Center => "bit-dlg-ctr",
+        BitPosition.TopLeft => "bit-dlg-tl",
+        BitPosition.TopCenter => "bit-dlg-tc",
+        BitPosition.TopRight => "bit-dlg-tr",
+        BitPosition.CenterLeft => "bit-dlg-cl",
+        BitPosition.CenterRight => "bit-dlg-cr",
+        BitPosition.BottomLeft => "bit-dlg-bl",
+        BitPosition.BottomCenter => "bit-dlg-bc",
+        BitPosition.BottomRight => "bit-dlg-br",
+        BitPosition.TopStart => "bit-dlg-ts",
+        BitPosition.TopEnd => "bit-dlg-te",
+        BitPosition.CenterStart => "bit-dlg-cs",
+        BitPosition.CenterEnd => "bit-dlg-ce",
+        BitPosition.BottomStart => "bit-dlg-bs",
+        BitPosition.BottomEnd => "bit-dlg-be",
         _ => "bit-dlg-ctr",
     };
 

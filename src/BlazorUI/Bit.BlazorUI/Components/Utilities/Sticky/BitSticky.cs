@@ -126,7 +126,7 @@ public partial class BitSticky : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the finer grained half of <see cref="OnStuckChanged"/>: it names the edges rather than
-    /// only reporting that there are some, so a bar pinned by a <see cref="BitStickyPosition"/> that
+    /// only reporting that there are some, so a bar pinned by a <see cref="BitSide"/> that
     /// holds a pair of them can tell which of the two is holding it - which side to cast its shadow
     /// toward, which border to draw - and it also reports the move from one of them to the other,
     /// which never flips the boolean. The edges are physical, so a Start sticky reports
@@ -143,9 +143,12 @@ public partial class BitSticky : BitComponentBase
     /// End and StartAndEnd pin it while the container scrolls horizontally, and follow the reading
     /// direction (Start is left in LTR and right in RTL). When neither a Position nor any offset is
     /// set, the component sticks to the top.
+    /// <br />
+    /// Every side but the physical pair is meaningful here: Left and Right fall back to the default, since a
+    /// sticky element is pinned along the axis it scrolls on rather than to a side of the screen.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitStickyPosition? Position { get; set; }
+    public BitSide? Position { get; set; }
 
     /// <summary>
     /// Specifying the horizontal position of a positioned element from right.
@@ -283,12 +286,12 @@ public partial class BitSticky : BitComponentBase
     {
         ClassBuilder.Register(() => Position switch
         {
-            BitStickyPosition.Top => "bit-stk-top",
-            BitStickyPosition.Bottom => "bit-stk-btm",
-            BitStickyPosition.TopAndBottom => "bit-stk-tab",
-            BitStickyPosition.Start => "bit-stk-srt",
-            BitStickyPosition.End => "bit-stk-end",
-            BitStickyPosition.StartAndEnd => "bit-stk-sae",
+            BitSide.Top => "bit-stk-top",
+            BitSide.Bottom => "bit-stk-btm",
+            BitSide.TopAndBottom => "bit-stk-tab",
+            BitSide.Start => "bit-stk-srt",
+            BitSide.End => "bit-stk-end",
+            BitSide.StartAndEnd => "bit-stk-sae",
             _ => (Top.HasNoValue() && Bottom.HasNoValue() && Left.HasNoValue() && Right.HasNoValue())
                     ? "bit-stk-top"
                     : string.Empty

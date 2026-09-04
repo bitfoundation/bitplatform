@@ -361,14 +361,14 @@ public partial class BitAccordionDemo
                 new()
                 {
                     Name = "Start",
-                    Description = "Icon renders before the content.",
                     Value = "0",
+                    Description = "The icon renders before the content."
                 },
                 new()
                 {
                     Name = "End",
-                    Description = "Icon renders after the content (default).",
                     Value = "1",
+                    Description = "The icon renders after the content."
                 }
             ]
         },

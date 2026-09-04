@@ -14,15 +14,15 @@ namespace Bit.BlazorUI.Tests.Components.Notifications.SnackBar;
 public class BitSnackBarTests : BunitTestContext
 {
     [TestMethod,
-         DataRow(BitSnackBarPosition.TopStart),
-         DataRow(BitSnackBarPosition.TopCenter),
-         DataRow(BitSnackBarPosition.TopEnd),
-         DataRow(BitSnackBarPosition.BottomStart),
-         DataRow(BitSnackBarPosition.BottomCenter),
-         DataRow(BitSnackBarPosition.BottomEnd),
+         DataRow(BitPosition.TopStart),
+         DataRow(BitPosition.TopCenter),
+         DataRow(BitPosition.TopEnd),
+         DataRow(BitPosition.BottomStart),
+         DataRow(BitPosition.BottomCenter),
+         DataRow(BitPosition.BottomEnd),
          DataRow(null)
     ]
-    public void BitSnackBarPositionTest(BitSnackBarPosition? position)
+    public void BitSnackBarPositionTest(BitPosition? position)
     {
         var com = RenderComponent<BitSnackBar>(parameters =>
         {
@@ -33,12 +33,12 @@ public class BitSnackBarTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitSnackBarPosition.TopStart => "bit-snb-tst",
-            BitSnackBarPosition.TopCenter => "bit-snb-tcn",
-            BitSnackBarPosition.TopEnd => "bit-snb-ten",
-            BitSnackBarPosition.BottomStart => "bit-snb-bst",
-            BitSnackBarPosition.BottomCenter => "bit-snb-bcn",
-            BitSnackBarPosition.BottomEnd => "bit-snb-ben",
+            BitPosition.TopStart => "bit-snb-tst",
+            BitPosition.TopCenter => "bit-snb-tcn",
+            BitPosition.TopEnd => "bit-snb-ten",
+            BitPosition.BottomStart => "bit-snb-bst",
+            BitPosition.BottomCenter => "bit-snb-bcn",
+            BitPosition.BottomEnd => "bit-snb-ben",
             _ => "bit-snb-ben",
         };
 

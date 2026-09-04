@@ -409,14 +409,14 @@ public partial class BitLinkDemo
                 new()
                 {
                     Name = "Start",
-                    Description = "Icon renders before the content (default).",
                     Value = "0",
+                    Description = "The icon renders before the content."
                 },
                 new()
                 {
                     Name = "End",
-                    Description = "Icon renders after the content.",
                     Value = "1",
+                    Description = "The icon renders after the content."
                 }
             ]
         },

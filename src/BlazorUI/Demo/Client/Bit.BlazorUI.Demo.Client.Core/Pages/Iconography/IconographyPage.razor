@@ -560,7 +560,7 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
     <BitPanel AutoToggleScroll Modeless ShowCloseButton
               @bind-IsOpen="_isPanelOpen"
               Size="PANEL_SIZE"
-              Position="BitPanelPosition.End"
+              Position="BitSide.End"
               HeaderText="@(_selected?.Name ?? "Icon")"
               OnDismiss="HandlePanelDismissed">
         <Body>

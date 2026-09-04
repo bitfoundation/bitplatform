@@ -420,10 +420,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
-    /// Determines the location of the DatePicker's icon.
+    /// Determines the side of the input the DatePicker's icon is rendered on (default is the end side).
     /// </summary>
+    /// <remarks>
+    /// The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconLocation IconLocation { get; set; } = BitIconLocation.Right;
+    public BitIconPosition IconPosition { get; set; } = BitIconPosition.End;
 
     /// <summary>
     /// The name of the DatePicker's icon from the built-in Fluent UI icon set.
@@ -934,7 +937,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(GetSizeClass);
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-dtp-lic" : string.Empty);
+        ClassBuilder.Register(() => IconPosition is BitIconPosition.Start ? "bit-dtp-lic" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-dtp-und" : string.Empty);
 
@@ -1004,7 +1007,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // The swipe dismisses the callout, and standalone there is no callout to dismiss.
                 if (Responsive && Standalone is false)
                 {
-                    await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
+                    await _js.BitSwipesSetup(_calloutId, 0.25m, BitSide.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
                 }
                 // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
                 // callout element to toggle yet, so the open state is applied here instead - with the focus

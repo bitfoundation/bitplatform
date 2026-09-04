@@ -227,10 +227,13 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string HourButtonTitle { get; set; } = "Select hour";
 
     /// <summary>
-    /// TimePicker icon location
+    /// Determines the side of the input the CircularTimePicker's icon is rendered on (default is the end side).
     /// </summary>
+    /// <remarks>
+    /// The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconLocation IconLocation { get; set; } = BitIconLocation.Right;
+    public BitIconPosition IconPosition { get; set; } = BitIconPosition.End;
 
     /// <summary>
     /// The icon to display using custom CSS classes for external icon libraries.
@@ -695,7 +698,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         ClassBuilder.Register(() => SizeClass);
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lic" : string.Empty);
+        ClassBuilder.Register(() => IconPosition is BitIconPosition.Start ? "bit-ctp-lic" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-ctp-und" : string.Empty);
 
@@ -755,7 +758,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             // so a picker that never becomes a sheet does not get a gesture that would close it out of nowhere.
             if (Responsive && Standalone is false)
             {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitSide.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
 
                 // The setup is a round trip, so the picker can be gone by the time it comes back - at a point
                 // where DisposeAsync had nothing to tear down yet. The gesture it registered would outlive the

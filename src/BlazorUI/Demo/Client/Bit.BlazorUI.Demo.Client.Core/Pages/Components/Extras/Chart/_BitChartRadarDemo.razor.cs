@@ -4,12 +4,12 @@ public partial class _BitChartRadarDemo
 {
     private readonly BitChartOptions _bottom = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
     };
 
     private readonly BitChartOptions _circular = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
         Scales =
         {
             ["r"] = new BitChartScaleOptions
@@ -46,7 +46,7 @@ public partial class _BitChartRadarDemo
     private readonly string twoPlayersCsharpCode = @"
 private readonly BitChartOptions _bottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Skills() => new()
@@ -65,7 +65,7 @@ private BitChartData Skills() => new()
     private readonly string outlineCsharpCode = @"
 private readonly BitChartOptions _bottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 private BitChartData Outline() => new()
@@ -84,7 +84,7 @@ private BitChartData Outline() => new()
     private readonly string circularCsharpCode = @"
 private readonly BitChartOptions _circular = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
     Scales =
     {
         [""r""] = new BitChartScaleOptions
@@ -102,7 +102,7 @@ private readonly BitChartOptions _circular = new()
     private readonly string skipCsharpCode = @"
 private readonly BitChartOptions _bottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
 };
 
 // null values are skipped, not treated as zero

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -1941,11 +1941,11 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCircularTimePickerShouldRespectIconLocation()
+    public void BitCircularTimePickerShouldRespectIconPosition()
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IconLocation, BitIconLocation.Left);
+            parameters.Add(p => p.IconPosition, BitIconPosition.Start);
         });
 
         Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-lic"));

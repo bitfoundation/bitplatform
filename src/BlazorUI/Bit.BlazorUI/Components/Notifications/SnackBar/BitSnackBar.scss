@@ -390,3 +390,81 @@
     align-items: flex-end;
     inset-inline: var(--bit-snb-off-inline);
 }
+
+// The physical corners and the vertically centred stacks. A physical stack cannot span the screen and let
+// align-items pick its side the way the logical ones do - flex-start is the right edge in RTL - so it is
+// pinned by the physical property and shrunk to its content instead, which keeps it on the same side of the
+// screen in both reading directions. max-width on .bit-snb still caps how wide it may grow.
+.bit-snb-tlf {
+    width: auto;
+    right: auto;
+    align-items: flex-start;
+    top: var(--bit-snb-off-block);
+    left: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-t;
+}
+
+.bit-snb-trg {
+    width: auto;
+    left: auto;
+    align-items: flex-end;
+    top: var(--bit-snb-off-block);
+    right: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-t;
+}
+
+.bit-snb-blf {
+    width: auto;
+    right: auto;
+    align-items: flex-start;
+    left: var(--bit-snb-off-inline);
+    bottom: var(--bit-snb-off-block);
+}
+
+.bit-snb-brg {
+    width: auto;
+    left: auto;
+    align-items: flex-end;
+    right: var(--bit-snb-off-inline);
+    bottom: var(--bit-snb-off-block);
+}
+
+// The centred stacks are pinned at the middle of the block axis and pulled back by half their own height. The
+// horizontally centred one carries both halves of the translate, since a transform is one declaration.
+.bit-snb-cst {
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline: var(--bit-snb-off-inline);
+}
+
+.bit-snb-cen {
+    top: 50%;
+    align-items: flex-end;
+    transform: translateY(-50%);
+    inset-inline: var(--bit-snb-off-inline);
+}
+
+.bit-snb-clf {
+    top: 50%;
+    width: auto;
+    right: auto;
+    align-items: flex-start;
+    transform: translateY(-50%);
+    left: var(--bit-snb-off-inline);
+}
+
+.bit-snb-crg {
+    top: 50%;
+    width: auto;
+    left: auto;
+    align-items: flex-end;
+    transform: translateY(-50%);
+    right: var(--bit-snb-off-inline);
+}
+
+.bit-snb-ctr {
+    top: 50%;
+    left: 50%;
+    align-items: center;
+    transform: translate(-50%, -50%);
+}

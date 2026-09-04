@@ -11,7 +11,7 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth />
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker />
 <BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
-<BitDateRangePicker Label=""Left icon"" IconLocation=""BitIconLocation.Left"" />
+<BitDateRangePicker Label=""Left icon"" IconPosition=""BitIconPosition.Start"" />
 <BitDateRangePicker Label=""Underlined"" Underlined />
 <BitDateRangePicker Label=""Without border"" HasBorder=""false"" />
 <BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />

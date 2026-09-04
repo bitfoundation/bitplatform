@@ -1824,7 +1824,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             if (Responsive)
             {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitSide.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
             }
 
             // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no

@@ -79,7 +79,7 @@ public partial class BitLoadingDemo
         new()
         {
             Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Type = "BitSide?",
             DefaultValue = "null",
             Description = "The position of the label of the loading component.",
             LinkType = LinkType.Link,
@@ -303,34 +303,58 @@ public partial class BitLoadingDemo
         new()
         {
             Id = "label-position-enum",
-            Name = "BitLabelPosition",
+            Name = "BitSide",
             Description = "Defines where the label of a loading component sits relative to its animation.",
             Items =
             [
                 new()
                 {
-                    Name= "Top",
-                    Description="The label shows above the animation.",
-                    Value="0",
+                    Name = "Top",
+                    Value = "0",
+                    Description = "The top edge."
                 },
                 new()
                 {
-                    Name= "End",
-                    Description="The label shows at the end side of the animation, which follows the direction of the writing.",
-                    Value="1",
+                    Name = "Bottom",
+                    Value = "1",
+                    Description = "The bottom edge."
                 },
                 new()
                 {
-                    Name= "Bottom",
-                    Description="The label shows below the animation.",
-                    Value="2",
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
                 },
                 new()
                 {
-                    Name= "Start",
-                    Description="The label shows at the start side of the animation, which follows the direction of the writing.",
-                    Value="3",
+                    Name = "End",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
                 },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "6",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "7",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()
@@ -407,13 +431,13 @@ public partial class BitLoadingDemo
 <BitRingLoading Label=""Uploading photos..."" />";
 
     private readonly string example3RazorCode = @"
-<BitDotsRingLoading Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
+<BitDotsRingLoading Label=""Top"" LabelPosition=""BitSide.Top"" />
 
-<BitDotsRingLoading Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
+<BitDotsRingLoading Label=""Bottom"" LabelPosition=""BitSide.Bottom"" />
 
-<BitDotsRingLoading Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
+<BitDotsRingLoading Label=""Start"" LabelPosition=""BitSide.Start"" />
 
-<BitDotsRingLoading Label=""End"" LabelPosition=""BitLabelPosition.End"" />";
+<BitDotsRingLoading Label=""End"" LabelPosition=""BitSide.End"" />";
 
     private readonly string example4RazorCode = @"
 <BitEllipsisLoading>
@@ -422,7 +446,7 @@ public partial class BitLoadingDemo
     </LabelTemplate>
 </BitEllipsisLoading>
 
-<BitRollerLoading LabelPosition=""BitLabelPosition.Bottom"">
+<BitRollerLoading LabelPosition=""BitSide.Bottom"">
     <LabelTemplate>
         <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.SecondaryForeground"">
             Restoring your session
@@ -578,11 +602,11 @@ private async Task StartWork()
 
     private readonly string example14RazorCode = @"
 <div dir=""rtl"">
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPosition=""BitLabelPosition.Start"" />
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPosition=""BitSide.Start"" />
 
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPosition=""BitLabelPosition.End"" />
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPosition=""BitSide.End"" />
 
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""در حال بارگذاری"" LabelPosition=""BitLabelPosition.Bottom"" />
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""در حال بارگذاری"" LabelPosition=""BitSide.Bottom"" />
 
     @* The two loaders whose motion travels across the box are mirrored, so they run toward the end of the line. *@
     <BitEllipsisLoading Dir=""BitDir.Rtl"" Label=""نقطه‌ها"" />

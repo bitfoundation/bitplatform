@@ -173,10 +173,10 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange""
                  OnText=""Muted"" OffText=""Unmuted"" />
 
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.End"" Text=""End"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Start"" Text=""Start"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Top"" Text=""Top"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Bottom"" Text=""Bottom"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitSide.End"" Text=""End"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitSide.Start"" Text=""Start"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitSide.Top"" Text=""Top"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitSide.Bottom"" Text=""Bottom"" />
 
 <BitToggleButton IsLoading Text=""Muted"">
     <LoadingTemplate>
