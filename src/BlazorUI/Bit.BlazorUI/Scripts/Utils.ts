@@ -1053,16 +1053,16 @@
         // The older shape of the hold above, for the components that take a scroller for as long as they
         // are open and want its scroll offset back. It goes through the same counted registry, so one of
         // these can no longer hand back a scroller that a lock - or another one of these - is still
-        // holding. The scrollbar room is not compensated for here, which is what these callers have
-        // always done.
-        public static toggleOverflow(key: string, selector: string | HTMLElement, isOpen: boolean) {
+        // holding. The scrollbar room is only compensated for where the caller asks for it, so the callers
+        // that have always let the page shift by the width of the scrollbar carry on doing exactly that.
+        public static toggleOverflow(key: string, selector: string | HTMLElement, isOpen: boolean, compensate?: boolean) {
             const element = Utils.resolveScroller(selector);
 
             if (!element) return 0;
 
             try {
                 if (isOpen) {
-                    Utils.holdScroll(key, element, false);
+                    Utils.holdScroll(key, element, compensate === true);
                 } else {
                     Utils.releaseScroll(key);
                 }

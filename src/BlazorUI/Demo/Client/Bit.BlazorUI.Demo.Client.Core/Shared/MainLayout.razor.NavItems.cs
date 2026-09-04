@@ -147,7 +147,7 @@ public partial class MainLayout
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
                 new() { Text = "MediaQuery", Url = "/components/mediaquery" },
-                new() { Text = "Overlay", Url = "/components/overlay" },
+                new() { Text = "Overlay", Url = "/components/overlay", Description = "Backdrop, Scrim", Data = "Mask, Dim, BlockUI, LoadingOverlay, ClickCatcher" },
                 new() { Text = "Params", Url = "/components/params" },
                 new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
                 new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
