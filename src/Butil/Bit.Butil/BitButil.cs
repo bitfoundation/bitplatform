@@ -6,6 +6,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// The entry point a consuming app touches directly: service registration, and the two global
+/// switches (script loading mode and fast invoke) that apply to every Butil service at once.
+/// </summary>
 public static class BitButil
 {
     /// <summary>

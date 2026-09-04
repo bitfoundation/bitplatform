@@ -10,7 +10,6 @@ public partial class App
     [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
 
     [AutoInject] ServerWebSettings serverWebSettings = default!;
-    [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] AbsoluteServerAddressProvider absoluteServerAddress = default!;
 
     protected override void OnInitialized()

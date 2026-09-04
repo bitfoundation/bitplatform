@@ -610,8 +610,8 @@ and pre-rendering.
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

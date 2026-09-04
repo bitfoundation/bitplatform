@@ -41,10 +41,10 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
-
-        <!-- Enable BitButil script trimming -->
-        <BitButilTrimScripts>true</BitButilTrimScripts>
         <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**</DefaultItemExcludes>
+
+        <!-- Publish only the bit-butil.js modules the app uses. -->
+        <BitButilTrimScripts>true</BitButilTrimScripts>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 

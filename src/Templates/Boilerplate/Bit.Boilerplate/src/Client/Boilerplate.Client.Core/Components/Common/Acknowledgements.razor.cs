@@ -107,6 +107,9 @@ public partial class Acknowledgements
         //#if (aspire == true && filesStorage == "S3")
         new("MinIO", "https://www.min.io", "https://github.com/minio/minio", "AGPL-3.0-only"),
         //#endif
+        //#if (aspire == true && cloudflare == true)
+        new("Shirubasoft.Aspire.CloudflareTunnels", "https://github.com/Shirubasoft/aspire-extensions", "https://github.com/Shirubasoft/aspire-extensions", "MIT"),
+        //#endif
         //#if (signalR == true)
         new("Model Context Protocol (C# SDK)", "https://modelcontextprotocol.io", "https://github.com/modelcontextprotocol/csharp-sdk", "MIT"),
         new("Azure SignalR Service", "https://azure.microsoft.com/products/signalr-service", "https://github.com/Azure/azure-signalr", "MIT"),

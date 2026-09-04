@@ -42,6 +42,7 @@ public sealed class AnimationHandle : IAsyncDisposable
     /// <summary>Sets the playback rate (1 = normal speed; -1 = reverse at normal speed).</summary>
     public ValueTask SetPlaybackRate(double rate) => _js.InvokeVoid("BitButil.animation.setPlaybackRate", _id, rate);
 
+    /// <summary>Cancels the animation and releases the browser-side handle. Calling it again does nothing.</summary>
     public async ValueTask DisposeAsync()
     {
         if (_disposed) return;

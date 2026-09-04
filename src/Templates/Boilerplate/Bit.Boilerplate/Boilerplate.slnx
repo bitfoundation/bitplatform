@@ -28,13 +28,11 @@
 <!--#endif-->
   <Folder Name="/.SolutionItems/.github/" />
   <Folder Name="/.SolutionItems/.github/agents/">
-	<File Path=".github/agents/code-reviewer.agent.md" />
     <File Path=".github/agents/ai-dlc.agent.md" />
-  </Folder>
-  <Folder Name="/.SolutionItems/.github/prompts/">
-    <File Path=".github/prompts/bitify.prompt.md" />
-    <File Path=".github/prompts/resx.prompt.md" />
-    <File Path=".github/prompts/scaffold.prompt.md" />
+    <File Path=".github/agents/bitify-ui.agent.md" />
+    <File Path=".github/agents/code-reviewer.agent.md" />
+    <File Path=".github/agents/localize-strings.agent.md" />
+    <File Path=".github/agents/scaffold-entity.agent.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
     <File Path=".docs/00- Wiki.md" />
@@ -55,7 +53,7 @@
     <File Path=".docs/15- Logging, OpenTelemetry and Health Checks.md" />
     <File Path=".docs/16- CI-CD Pipeline and Environments.md" />
     <File Path=".docs/17- Automated Testing (Unitigration Tests).md" />
-    <File Path=".docs/18- Other Available Prompt Templates.md" />
+    <File Path=".docs/18- Available Agent Skills.md" />
     <File Path=".docs/19- Project Miscellaneous Files.md" />
     <File Path=".docs/20- .NET Aspire.md" />
     <File Path=".docs/21- .NET MAUI - Blazor Hybrid.md" />

@@ -1,6 +1,13 @@
 {
   "navigationFallback": {
-    "rewrite": "/index.html"
+    "rewrite": "/index.html",
+    "exclude": [
+      "/_framework/*",
+      "/_content/*",
+      "/images/*",
+      "/.well-known/*",
+      "/*.{css,js,mjs,json,xml,txt,map,br,gz,dat,wasm,pdb,webp,png,jpg,jpeg,gif,svg,ico,woff,woff2,ttf,webmanifest}"
+    ]
   },
   "globalHeaders": {
     "Strict-Transport-Security": "max-age=2592000",

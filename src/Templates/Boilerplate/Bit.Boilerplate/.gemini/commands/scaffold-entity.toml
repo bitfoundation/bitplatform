@@ -1,0 +1,9 @@
+description = "Scaffold a complete CRUD entity across every layer (entity, EF config + migration, DTO, Mapperly mapper, controller, IAppController, resx, Blazor pages, navigation)."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/scaffold-entity.agent.md}
+
+Entity to scaffold: {{args}}
+"""

@@ -1,5 +1,10 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// Which virtual keyboard to bring up for an editable element. A hint only: the browser still decides.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/inputmode">inputmode</see>
+/// </summary>
 public enum InputMode
 {
     /// <summary>

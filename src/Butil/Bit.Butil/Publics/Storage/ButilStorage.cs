@@ -174,6 +174,7 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
         });
     }
 
+    /// <summary>Unsubscribes every storage-event handler this instance registered and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

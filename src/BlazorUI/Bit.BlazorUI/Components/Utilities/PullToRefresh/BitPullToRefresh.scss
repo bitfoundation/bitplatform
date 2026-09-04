@@ -3,12 +3,21 @@
 .bit-ptr {
     width: fit-content;
     position: relative;
+
+    // The color of the glyph inside the indicator, which the Color and CustomColor parameters write over.
+    --bit-ptr-color: #{$clr-fg-pri};
+}
+
+// An anchor that fills a page or a layout region needs the component around it to fill it too, which the
+// shrink-wrapping default never does on its own.
+.bit-ptr-flw {
+    width: 100%;
 }
 
 .bit-ptr-lod {
     top: 0;
-    left: 0;
     height: 0;
+    inset-inline-start: 0;
     z-index: 1;
     display: flex;
     overflow: hidden;
@@ -17,13 +26,17 @@
     justify-content: center;
 }
 
+.bit-ptr-rtn {
+    transition: min-height $mot-duration-short $mot-easing;
+}
+
 .bit-ptr-spw {
     display: flex;
     border-radius: 50%;
     align-items: center;
     justify-content: center;
     background-color: $clr-bg-pri;
-    box-shadow: $box-shadow-callout2;
+    box-shadow: $box-shadow-popup;
 }
 
 .bit-ptr-swr {
@@ -33,11 +46,30 @@
 
 .bit-ptr-spn {
     display: flex;
-    color: $clr-fg-pri;
     align-items: center;
     justify-content: center;
+    color: var(--bit-ptr-color);
 }
 
 .bit-ptr-spin {
     animation: bit-spin $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+.bit-ptr-cmp {
+    background-color: $clr-bg-ter;
+}
+
+// What the refresh says to a screen reader: read by assistive technologies, taken out of the layout for
+// everyone else. It stays in the render tree rather than being display:none, which would take it out of the
+// accessibility tree along with the layout and leave the live region with nothing to announce.
+.bit-ptr-vhd {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }

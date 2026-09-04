@@ -48,12 +48,83 @@ public static class ElementReferenceExtensions
         => GetJSRuntime(element).InvokeVoid("BitButil.element.blur", element);
 
     /// <summary>
+    /// Returns whether the element is visible: laid out, not <c>display:none</c>, and - when asked
+    /// for by <paramref name="options"/> - not transparent, not <c>visibility:hidden</c> and not
+    /// inside a skipped <c>content-visibility:auto</c> subtree.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/checkVisibility">https://developer.mozilla.org/en-US/docs/Web/API/Element/checkVisibility</see>
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CheckVisibilityJsOptions))]
+    public static async ValueTask<bool> CheckVisibility(this ElementReference element, CheckVisibilityOptions? options = null)
+        => await GetJSRuntime(element).Invoke<bool>("BitButil.element.checkVisibility", element, options?.ToJsObject());
+
+    /// <summary>
+    /// Sends a synthetic click to the element, exactly as a real one would arrive: the element's own
+    /// handlers run, the event bubbles, and default behaviour (submitting a form, following a link,
+    /// toggling a checkbox) happens.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/click">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/click</see>
+    /// </summary>
+    /// <remarks>
+    /// A synthetic click is not a user gesture. APIs that require one - fullscreen, clipboard writes,
+    /// popup windows - still refuse when reached this way.
+    /// </remarks>
+    public static ValueTask Click(this ElementReference element)
+        => GetJSRuntime(element).InvokeVoid("BitButil.element.click", element);
+
+    /// <summary>
+    /// Returns whether the element, or any ancestor of it, matches <paramref name="selectors"/> -
+    /// the "am I inside one of these?" test.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/closest">https://developer.mozilla.org/en-US/docs/Web/API/Element/closest</see>
+    /// </summary>
+    /// <remarks>
+    /// The DOM method hands back the matching ancestor itself. An <see cref="ElementReference"/> can
+    /// only be minted by Blazor's renderer for an element it rendered, so there is nothing to hand
+    /// back across the boundary and the answer is whether a match was found.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public static async ValueTask<bool> Closest(this ElementReference element, string selectors)
+        => await GetJSRuntime(element).Invoke<bool>("BitButil.element.closest", element, selectors);
+
+    /// <summary>
+    /// Gives the element keyboard focus, scrolling it into view unless
+    /// <see cref="FocusOptions.PreventScroll"/> says otherwise.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus</see>
+    /// </summary>
+    /// <remarks>
+    /// Blazor's own <c>ElementReference.FocusAsync</c> covers the no-options case; this overload is
+    /// for when the scroll or the focus ring has to be controlled.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FocusJsOptions))]
+    public static ValueTask Focus(this ElementReference element, FocusOptions? options = null)
+        => GetJSRuntime(element).InvokeVoid("BitButil.element.focus", element, options?.ToJsObject());
+
+    /// <summary>
     /// Retrieves the value of the named attribute from the current node and returns it as a string.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute">https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute</see>
     /// </summary>
     public static ValueTask<string> GetAttribute(this ElementReference element, string name)
         => GetJSRuntime(element).Invoke<string>("BitButil.element.getAttribute", element, name);
+
+    /// <summary>
+    /// Retrieves the value of an attribute in the given namespace - what SVG's <c>xlink:href</c> and
+    /// XML's <c>xml:lang</c> need, and what <c>GetAttribute</c> cannot reach.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttributeNS">https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttributeNS</see>
+    /// </summary>
+    public static ValueTask<string> GetAttributeNS(this ElementReference element, string namespaceUri, string localName)
+        => GetJSRuntime(element).Invoke<string>("BitButil.element.getAttributeNS", element, namespaceUri, localName);
 
     /// <summary>
     /// Returns an array of attribute names from the current element.
@@ -83,6 +154,19 @@ public static class ElementReferenceExtensions
     /// </remarks>
     public static async ValueTask<bool> HasAttribute(this ElementReference element, string name)
         => await GetJSRuntime(element).Invoke<bool>("BitButil.element.hasAttribute", element, name);
+
+    /// <summary>
+    /// Returns whether the element carries the named attribute in the given namespace.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttributeNS">https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttributeNS</see>
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public static async ValueTask<bool> HasAttributeNS(this ElementReference element, string namespaceUri, string localName)
+        => await GetJSRuntime(element).Invoke<bool>("BitButil.element.hasAttributeNS", element, namespaceUri, localName);
 
     /// <summary>
     /// Returns a boolean value indicating if the element has one or more HTML attributes present.
@@ -146,6 +230,14 @@ public static class ElementReferenceExtensions
     /// </summary>
     public static async ValueTask RemoveAttribute(this ElementReference element, string name)
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.removeAttribute", element, name);
+
+    /// <summary>
+    /// Removes the named attribute in the given namespace.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/removeAttributeNS">https://developer.mozilla.org/en-US/docs/Web/API/Element/removeAttributeNS</see>
+    /// </summary>
+    public static async ValueTask RemoveAttributeNS(this ElementReference element, string namespaceUri, string localName)
+        => await GetJSRuntime(element).InvokeVoid("BitButil.element.removeAttributeNS", element, namespaceUri, localName);
 
     /// <summary>
     /// Asynchronously asks the browser to make the element fullscreen.
@@ -219,6 +311,24 @@ public static class ElementReferenceExtensions
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.scrollIntoView", element, null, options?.ToJsObject());
 
     /// <summary>
+    /// Scrolls to a particular set of coordinates inside a given element. The same operation as
+    /// <c>Scroll</c>, under the name the DOM also publishes it as.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTo">https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTo</see>
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScrollJsOptions))]
+    public static async ValueTask ScrollTo(this ElementReference element, ScrollOptions? options)
+        => await GetJSRuntime(element).InvokeVoid("BitButil.element.scrollTo", element, options?.ToJsObject(), null, null);
+    /// <summary>
+    /// Scrolls to a particular set of coordinates inside a given element. The same operation as
+    /// <c>Scroll</c>, under the name the DOM also publishes it as.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTo">https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTo</see>
+    /// </summary>
+    public static async ValueTask ScrollTo(this ElementReference element, double? x, double? y)
+        => await GetJSRuntime(element).InvokeVoid("BitButil.element.scrollTo", element, null, x, y);
+
+    /// <summary>
     /// Sets the value of a named attribute of the current node.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute">https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute</see>
@@ -232,6 +342,19 @@ public static class ElementReferenceExtensions
     /// </remarks>
     public static async ValueTask SetAttribute(this ElementReference element, string name, string value)
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.setAttribute", element, name, value);
+
+    /// <summary>
+    /// Sets an attribute in the given namespace, creating it when absent.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttributeNS">https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttributeNS</see>
+    /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> the same caveat as <c>SetAttribute</c> - values are written verbatim and
+    /// bypass Blazor's encoding, so a namespaced <c>xlink:href</c> holding a <c>javascript:</c> URL is
+    /// an XSS vector. Validate untrusted input before passing it here.
+    /// </remarks>
+    public static async ValueTask SetAttributeNS(this ElementReference element, string namespaceUri, string qualifiedName, string value)
+        => await GetJSRuntime(element).InvokeVoid("BitButil.element.setAttributeNS", element, namespaceUri, qualifiedName, value);
 
     /// <summary>
     /// Designates a specific element as the capture target of future pointer events.
@@ -417,6 +540,14 @@ public static class ElementReferenceExtensions
     /// </remarks>
     public static async ValueTask<float> GetScrollLeft(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.scrollLeft", element);
+    /// <summary>
+    /// Sets how far the element's content is scrolled from its left edge. Clamped by the browser to
+    /// the scrollable range.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft">https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft</see>
+    /// </summary>
+    public static async ValueTask SetScrollLeft(this ElementReference element, double value)
+        => await GetJSRuntime(element).InvokeVoid("BitButil.element.setScrollLeft", element, value);
 
     /// <summary>
     /// A number representing number of pixels the top of the element is scrolled vertically.
@@ -430,6 +561,14 @@ public static class ElementReferenceExtensions
     /// </remarks>
     public static async ValueTask<float> GetScrollTop(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.scrollTop", element);
+    /// <summary>
+    /// Sets how far the element's content is scrolled from its top edge. Clamped by the browser to
+    /// the scrollable range.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop">https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop</see>
+    /// </summary>
+    public static async ValueTask SetScrollTop(this ElementReference element, double value)
+        => await GetJSRuntime(element).InvokeVoid("BitButil.element.setScrollTop", element, value);
 
     /// <summary>
     /// Returns a number representing the scroll view width of the element.

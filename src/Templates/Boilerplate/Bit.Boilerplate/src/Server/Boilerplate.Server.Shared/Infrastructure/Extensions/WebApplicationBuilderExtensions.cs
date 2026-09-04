@@ -281,7 +281,7 @@ public static class WebApplicationBuilderExtensions
                 build: static policy => policy.Expire(TimeSpan.FromSeconds(10)).SetVaryByQuery([])));
 
             return builder.Services.AddHealthChecks()
-                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024), name: "binStorage", tags: ["live"]);
+                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 2 * 1024), name: "binStorage", tags: ["live"]);
         }
     }
 }

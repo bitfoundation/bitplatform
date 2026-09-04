@@ -4,80 +4,6 @@ using Bit.Butil.Demo.Client.Pages;
 namespace Bit.Butil.Demo.Client.Docs;
 
 /// <summary>
-/// How widely the underlying browser API is implemented. This is about the web platform, not about
-/// Butil: every wrapper on this site works everywhere Blazor does, but it can only expose what the
-/// browser underneath it implements.
-/// </summary>
-public enum ApiSupport
-{
-    /// <summary>Not a browser API at all - a guide page.</summary>
-    Guide,
-
-    /// <summary>Implemented by every current engine.</summary>
-    Broad,
-
-    /// <summary>Implemented everywhere, but with members or behaviour that differ between engines.</summary>
-    Partial,
-
-    /// <summary>Chromium only (Chrome, Edge, Opera and friends).</summary>
-    Chromium,
-
-    /// <summary>Chromium on desktop only.</summary>
-    ChromiumDesktop,
-
-    /// <summary>Chromium on Android only.</summary>
-    ChromiumMobile,
-}
-
-/// <summary>
-/// The preconditions an API imposes on the calling page, beyond simply being implemented.
-/// </summary>
-[Flags]
-public enum ApiNeeds
-{
-    None = 0,
-
-    /// <summary>Only available over HTTPS or on localhost.</summary>
-    SecureContext = 1,
-
-    /// <summary>The browser prompts the user, and the call fails if permission is denied.</summary>
-    Permission = 2,
-
-    /// <summary>Must be called from a user-gesture handler such as a click.</summary>
-    UserGesture = 4,
-
-    /// <summary>Behind an experimental or origin-trial flag in at least one shipping engine.</summary>
-    Experimental = 8,
-}
-
-/// <param name="PageType">
-/// The component routed at <paramref name="Url"/>. Naming it here is what lets the MCP server
-/// (Server/Controllers/McpController.cs) render a page's documentation on demand, so an agent reads
-/// the same text a human does instead of a second copy that could go stale.
-/// </param>
-/// <param name="Services">
-/// The Bit.Butil public types the page documents, when they are not simply the title without its
-/// spaces. Only the pages whose title is not a type name ("Local &amp; Session Storage") or whose
-/// API is a set of extension methods ("Element", "Animation") need to state them.
-/// </param>
-public record DocLink(
-    string Title,
-    string Url,
-    string Summary,
-    Type PageType,
-    ApiSupport Support = ApiSupport.Broad,
-    ApiNeeds Needs = ApiNeeds.None,
-    string[]? Services = null);
-
-/// <param name="Icon">
-/// The key of the mark that stands for this area of the platform, resolved by Shared/Icon.razor.
-/// It is declared per group rather than per page on purpose: sixty-six glyphs in one list is
-/// decoration a reader has to look past to find a name, while ten of them are landmarks that say
-/// which part of the browser they are now in.
-/// </param>
-public record DocGroup(string Title, string Icon, DocLink[] Links);
-
-/// <summary>
 /// The single source of truth for the site taxonomy: the sidebar, the home page feature grid,
 /// the browser-support matrix and the prev/next pager are all rendered from this list.
 /// </summary>
@@ -114,8 +40,8 @@ public static class DocsNav
         ]),
         new("DOM & Interaction", "dom",
         [
-            new("Element", "element", "Attributes, scrolling, fullscreen, pointer capture and events on any ElementReference.", typeof(ElementPage), ApiSupport.Broad, ApiNeeds.None,
-                ["ElementReferenceExtensions", "ElementReferenceEventExtensions", "ElementReferenceMediaExtensions"]),
+            new("Element", "element", "Attributes, ARIA, classes, content, scrolling, fullscreen, pointer capture and events on any ElementReference.", typeof(ElementPage), ApiSupport.Broad, ApiNeeds.None,
+                ["ElementReferenceExtensions", "ElementReferenceDomExtensions", "ElementReferenceStateExtensions", "ElementReferenceAriaExtensions", "ElementReferenceEventExtensions", "ElementReferenceMediaExtensions"]),
             new("Animation", "animation", "Run and control Web Animations on any element, straight from C#.", typeof(AnimationPage), ApiSupport.Broad, ApiNeeds.None,
                 ["ElementReferenceAnimationExtensions", "AnimationHandle"]),
             new("PictureInPicture", "picture-in-picture", "Float a video in an always-on-top window outside the page.", typeof(PictureInPicturePage), ApiSupport.Broad, ApiNeeds.UserGesture),

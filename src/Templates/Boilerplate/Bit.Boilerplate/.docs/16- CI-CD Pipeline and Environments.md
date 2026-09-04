@@ -709,3 +709,9 @@ Enabling/Disabling AOT during `dotnet publish` command has the most impact. `dot
 ---
 - **iOS/macOS** => 120MB to 130MB
 ---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

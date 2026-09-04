@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
         <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+        <BitButilScriptScan>TypeReferences</BitButilScriptScan>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Environment)' != 'Development' And '$(SelfContained)' == 'true'">

@@ -1,0 +1,19 @@
+﻿@* Covers BitLabelParams: the cascaded values fill in the parameters the label did not set itself,
+   and never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitLabelParams[]
+                         {
+                             new()
+                             {
+                                 Size = BitSize.Large,
+                                 Color = BitColor.Error,
+                                 NoWrap = true,
+                                 Required = true,
+                                 RequiredText = "(required)",
+                                 Classes = new() { Root = "cascaded" },
+                                 Element = "div",
+                             }
+                         })">
+    <BitLabel>cascaded</BitLabel>
+    <BitLabel Element="label" Size="BitSize.Small">own</BitLabel>
+</BitParams>

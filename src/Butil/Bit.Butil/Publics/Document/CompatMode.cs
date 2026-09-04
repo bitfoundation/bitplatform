@@ -1,5 +1,10 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// Which rendering mode the document was parsed in, decided by its doctype.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/compatMode">Document.compatMode</see>
+/// </summary>
 public enum CompatMode
 {
     /// <summary>

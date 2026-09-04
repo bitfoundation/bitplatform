@@ -25,6 +25,26 @@ public partial class AppAiChatPanel
     private string AiChatPanelPrompt2 = "What are the benefits of dedicated support?";
     private string AiChatPanelPrompt3 = "What does bit Butil do?";
 
+    private Action? unsubscribeOpenPanel;
+
+
+    protected override async Task OnInitAsync()
+    {
+        unsubscribeOpenPanel = PubSubService.Subscribe(PubSubMessages.OPEN_AI_CHAT_PANEL, async payload =>
+        {
+            await InvokeAsync(() =>
+            {
+                isOpen = true;
+                if (payload is string question && string.IsNullOrWhiteSpace(question) is false)
+                {
+                    userInput = question;
+                }
+                StateHasChanged();
+            });
+        });
+
+        await base.OnInitAsync();
+    }
 
     protected override async Task OnAfterFirstRenderAsync()
     {
@@ -166,6 +186,7 @@ public partial class AppAiChatPanel
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        unsubscribeOpenPanel?.Invoke();
         hubConnection.Reconnected -= HubConnection_Reconnected;
 
         await StopChannel();

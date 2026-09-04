@@ -157,6 +157,7 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
         return new NotificationHandle(this, js, id);
     }
 
+    /// <summary>Detaches every notification still tracked on the JavaScript side - so a later click or close cannot call into a disposed reference - and releases that reference.</summary>
     public async ValueTask DisposeAsync()
     {
         // Detach any still-tracked notifications on the JS side before releasing the ref. Without

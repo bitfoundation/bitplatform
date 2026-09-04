@@ -132,6 +132,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
         }
     }
 
+    /// <summary>Clears every position watch started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try { await ClearAllWatches(); }

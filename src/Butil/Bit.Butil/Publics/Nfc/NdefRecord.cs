@@ -26,10 +26,3 @@ public class NdefRecord
     /// <summary>Raw bytes when applicable (mime/etc.).</summary>
     public byte[]? Data { get; set; }
 }
-
-/// <summary>One scanned NDEF message.</summary>
-public class NdefMessage
-{
-    public string SerialNumber { get; set; } = string.Empty;
-    public NdefRecord[] Records { get; set; } = [];
-}

@@ -7,6 +7,11 @@
         <IsTrimmable>true</IsTrimmable>
         <!-- NU5100: tasks/Bit.Butil.Build.dll is an MSBuild task, meant to be loaded by the targets rather than referenced. -->
         <NoWarn>$(NoWarn);NU5100</NoWarn>
+        <!-- Opt back in to CS1591 (missing XML comment), which Bit.Build.props suppresses repo-wide. The XML
+             documentation on this assembly is not decoration: it is what IntelliSense and the demo's MCP server
+             hand out as the API reference, so an undocumented public member ships a blank entry to both. The
+             surface is fully documented today, and this keeps the compiler saying so. -->
+        <NoWarn>$(NoWarn.Replace('CS1591', ''))</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

@@ -5,13 +5,21 @@
     padding: 0;
     outline: none;
     cursor: pointer;
-    font-size: inherit;
     font-weight: inherit;
     text-decoration: none;
     color: var(--bit-lnk-clr);
     font-family: $tg-font-family;
     background-color: transparent;
     border-radius: $shp-radius-control;
+    // A link is a piece of text before it is a control, so it takes the type of the sentence it sits in
+    // rather than a size of its own - which is also what the four properties below are for. A button
+    // brings its own centered text, its own line box and its own baseline, and a link that renders as
+    // one has to be talked out of all three to sit on the same line as the words around it the way the
+    // anchor does. Size overrides the font size from the ramp; nothing overrides the rest.
+    font-size: inherit;
+    line-height: inherit;
+    text-align: inherit;
+    vertical-align: baseline;
 
     &:hover,
     &:active,
@@ -39,10 +47,10 @@
         }
 
         &:focus-visible {
-            // Cancel both layers of the focus-ring mixin applied above: the box-shadow ring and
-            // the forced-colors Highlight outline, so a disabled link never shows a focus indicator.
-            outline: none;
-            box-shadow: none;
+            // AllowDisabledFocus keeps a disabled link in the tab order, so the indicator has to stay
+            // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
+            // contradicts the inert look and reads as actionable.
+            @include focus-ring(var(--bit-lnk-clr-dis));
         }
 
         &:hover,
@@ -80,6 +88,54 @@
     &:focus {
         text-decoration: underline;
     }
+}
+
+.bit-lnk-icn {
+    // Whatever type scale the icon set came with, the glyph is normalized back to the size of the text
+    // beside it, and lowered by a fraction of that size so its optical center sits on the text's own
+    // center rather than on the baseline the letters stand on.
+    line-height: 1;
+    font-size: 1em;
+    vertical-align: -0.125em;
+}
+
+.bit-lnk-sic {
+    margin-inline-end: spacing(0.375);
+}
+
+.bit-lnk-eic {
+    margin-inline-start: spacing(0.375);
+}
+
+// The two pieces of text a link carries for a screen reader and for nobody else: the sentence saying that
+// it opens a new tab, and the description it is pointed at through aria-describedby. The visual cue for
+// either is the icon or the wording an author puts on the page themselves. Both are taken out of the flow
+// rather than hidden, since display:none and visibility:hidden are also hidden from the readers they are
+// written for.
+.bit-lnk-hnt,
+.bit-lnk-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// The size classes are for the link that stands on its own; a link inside a sentence is left inheriting.
+.bit-lnk-sm {
+    font-size: $tg-fs-xs;
+}
+
+.bit-lnk-md {
+    font-size: $tg-fs-sm;
+}
+
+.bit-lnk-lg {
+    font-size: $tg-fs-md;
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).

@@ -734,16 +734,38 @@
             } catch (e) { console.error("BitBlazorUI.Utils.scrollToChild:", e); }
         }
 
-        public static scrollElementIntoView(targetElementId: string) {
+        // Brings the element with the given id into view. The smooth scroll is a courtesy rather than a
+        // requirement, so it is dropped for a reader who has asked for less motion - a page that slides
+        // under someone with a vestibular disorder is worse than one that simply arrives. Passing focus
+        // moves the keyboard along with the viewport, which is what an in-page link owes a reader who is
+        // not looking at the scrollbar.
+        public static scrollElementIntoView(targetElementId: string, focus: boolean = false) {
             const element = document.getElementById(targetElementId);
             if (!element) return;
 
             try {
+                const reduced = typeof window.matchMedia === "function"
+                    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
                 element.scrollIntoView({
-                    behavior: "smooth",
+                    behavior: reduced ? "auto" : "smooth",
                     block: "start",
                     inline: "nearest"
                 });
+
+                if (!focus) return;
+
+                // An element that cannot take focus of its own is given a tab stop that only code can
+                // reach, so the destination becomes focusable without becoming one more stop for everyone
+                // tabbing through the page. One that is already focusable, or that was already given a
+                // tabindex of its own, is left exactly as it is.
+                if (element.tabIndex < 0 && !element.hasAttribute("tabindex")) {
+                    element.setAttribute("tabindex", "-1");
+                }
+
+                // The scroll above has already put the element where it belongs; letting the focus scroll
+                // to it as well would undo the alignment it was just given.
+                element.focus({ preventScroll: true });
             } catch (e) { console.error("BitBlazorUI.Utils.scrollElementIntoView:", e); }
         }
 

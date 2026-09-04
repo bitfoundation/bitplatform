@@ -1,5 +1,10 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// Whether an element is hidden, and how thoroughly.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/hidden">hidden</see>
+/// </summary>
 public enum Hidden
 {
     /// <summary>

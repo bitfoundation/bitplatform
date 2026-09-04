@@ -419,3 +419,9 @@ Environment is determined by `AppEnvironment.Current` which is set during build 
 See [`Directory.Build.props`](/src/Directory.Build.props) for environment configuration and [`src/Shared/Infrastructure/Services/AppEnvironment.cs`](/src/Shared/Infrastructure/Services/AppEnvironment.cs) for the environment service.
 
 ---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

@@ -91,6 +91,7 @@ public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
         return js.InvokeVoid("BitButil.speechRecognition.stop", id);
     }
 
+    /// <summary>Stops every recognition session started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try
