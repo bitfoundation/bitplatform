@@ -294,20 +294,10 @@ private bool BlockingIsOpen;";
         justify-content: center;
         border: 2px solid blue;
     }
-
-    .show-button {
-        gap: 5px;
-        top: 15px;
-        left: 10px;
-        display: flex;
-        width: fit-content;
-        position: absolute;
-        flex-flow: row wrap;
-    }
 </style>
 
 
-<BitButton Class=""show-button"" OnClick=""() => AbsoluteIsOpen = true"">Show Overlay</BitButton>
+<BitButton OnClick=""() => AbsoluteIsOpen = true"">Show Overlay</BitButton>
 
 <div class=""container"">
     <BitOverlay @bind-IsOpen=""AbsoluteIsOpen""

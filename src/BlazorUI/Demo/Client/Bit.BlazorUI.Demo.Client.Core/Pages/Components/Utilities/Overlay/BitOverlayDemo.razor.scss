@@ -61,14 +61,4 @@
         right: rem2(10px);
         position: absolute;
     }
-
-    .show-button {
-        gap: rem2(5px);
-        display: flex;
-        top: rem2(15px);
-        left: rem2(10px);
-        width: fit-content;
-        position: absolute;
-        flex-flow: row wrap;
-    }
 }

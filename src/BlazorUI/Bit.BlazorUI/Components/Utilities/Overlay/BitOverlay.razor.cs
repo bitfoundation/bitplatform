@@ -322,7 +322,7 @@ public partial class BitOverlay : BitComponentBase
         // opening, where it would refuse the first dismissal for no reason the user could see.
         _pressedOnContent = false;
 
-        var hadOffset = _offsetTop > 0;
+        var offsetBefore = _offsetTop;
 
         _offsetTop = 0;
 
@@ -343,7 +343,7 @@ public partial class BitOverlay : BitComponentBase
         // Only re-rendered when the offset the style reads actually changed, and only where the style
         // reads it at all, so an Overlay anchored to the screen renders nothing twice for an offset it
         // would never carry.
-        if (AbsolutePosition && hadOffset != _offsetTop > 0)
+        if (AbsolutePosition && _offsetTop != offsetBefore)
         {
             StyleBuilder.Reset();
             StateHasChanged();
@@ -433,7 +433,7 @@ public partial class BitOverlay : BitComponentBase
     // lets go first, so that it is never left doing both to the same scroller at once.
     private async Task SyncScroll()
     {
-        var hadOffset = _offsetTop > 0;
+        var offsetBefore = _offsetTop;
 
         // The hold is registered against the scroller it was taken on rather than against the parameter
         // that named it, so an Overlay pointed somewhere else lets go of the one it holds before it takes
@@ -458,7 +458,7 @@ public partial class BitOverlay : BitComponentBase
 
         // Only re-rendered when the offset the style reads actually changed, and only where the style reads
         // it at all - which is also what keeps this from rendering on every render of every Overlay.
-        if (AbsolutePosition && hadOffset != _offsetTop > 0)
+        if (AbsolutePosition && _offsetTop != offsetBefore)
         {
             StyleBuilder.Reset();
             StateHasChanged();

@@ -1228,4 +1228,37 @@ public class BitOverlayTests : BunitTestContext
             Assert.IsFalse(style.Contains("top:"), $"A closed Overlay must not carry a top offset, got '{style}'.");
         }, TimeSpan.FromSeconds(5));
     }
+
+    // The offset belongs to the scroller the hold is on, so an Overlay re-aimed while it is open carries the
+    // scrollTop of the scroller it is pointed at now rather than the one it opened over.
+    [TestMethod]
+    public void BitOverlayShouldCarryTheScrollTopOffsetOfTheScrollerItWasReAimedAt()
+    {
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", i => ".scroller".Equals(i.Arguments[1])).SetResult(120);
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", i => ".another-scroller".Equals(i.Arguments[1])).SetResult(300);
+
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AbsolutePosition, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+        });
+
+        component.WaitForAssertion(
+            () => StringAssert.Contains(component.Find(".bit-ovl").GetAttribute("style"), "top:120px"),
+            TimeSpan.FromSeconds(5));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AbsolutePosition, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerSelector, ".another-scroller");
+        });
+
+        component.WaitForAssertion(
+            () => StringAssert.Contains(component.Find(".bit-ovl").GetAttribute("style"), "top:300px"),
+            TimeSpan.FromSeconds(5));
+    }
 }
