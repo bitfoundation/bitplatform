@@ -42,7 +42,17 @@
 }
 
 ::deep {
+    // The Overlay covers what it covers and lays its content out no further than that, so the samples that
+    // want theirs in the middle of the layer center it themselves: the layer is a flex container, and this
+    // is the whole of what it takes.
+    .centered-overlay {
+        align-items: center;
+        justify-content: center;
+    }
+
     .custom-overlay {
+        align-items: center;
+        justify-content: center;
         backdrop-filter: blur(10px);
         background-color: rgba(0, 0, 0, 0.2);
     }

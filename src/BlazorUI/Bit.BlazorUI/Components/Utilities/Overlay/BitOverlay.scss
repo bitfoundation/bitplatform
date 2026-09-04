@@ -4,6 +4,9 @@
 // frame. It is hidden rather than removed, and a hidden element takes neither the clicks of the page nor
 // a place in the accessibility tree, so a closed Overlay leaves the page untouched. The durations
 // collapse to nothing under reduced motion, which the motion tokens take care of.
+// The layer is a flex container and lays its content out no further than that: what it hosts stretches
+// over the whole of it until the stylesheet of the consumer aligns it, which is two properties for the
+// scrim that centers a loader and a decision the Overlay has none of its own to make.
 .bit-ovl {
     inset: 0;
     opacity: 0;
@@ -27,13 +30,6 @@
 // flex container - the box is there for the events, and for nothing else.
 .bit-ovl-cnt {
     display: contents;
-}
-
-// Centered content, for the loaders and the messages; the content stretches over the whole layer
-// otherwise, which is the layout a surface of the consumer's own wants.
-.bit-ovl-ctr {
-    align-items: center;
-    justify-content: center;
 }
 
 // ModeFull: the Overlay dims what it covers instead of only catching the clicks meant for it. It is a

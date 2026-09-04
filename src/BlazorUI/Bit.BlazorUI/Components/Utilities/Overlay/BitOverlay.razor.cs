@@ -8,19 +8,25 @@ namespace Bit.BlazorUI;
 /// The Overlay is the low-level layer the dialog surfaces of the library (Modal, Panel, Dialog) are built
 /// on: a single element that covers the screen - or, with <see cref="AbsolutePosition"/>, the container it
 /// was declared inside of - catches the clicks meant for what it covers, and shows whatever content it was
-/// given. The dialog behaviors (focus trapping, Escape dismissal, page holding) belong to those surfaces;
-/// what the Overlay itself offers is the layer, the click handling and the scroll handling - the scrollbar
-/// toggle, and the gestures it hands on to the scroller it was told to leave scrolling.
+/// given. The dialog behaviors that follow from holding the keyboard (focus trapping, Escape dismissal)
+/// belong to those surfaces; what the Overlay itself offers is the layer, the click handling and the
+/// scroll handling - the counted hold it takes on the scroller it was told to hold, and the gestures it
+/// hands on to the one it was told to leave scrolling.
 /// <br/>
 /// A click dismisses the Overlay only where it is the layer that was clicked: the content it hosts is what
 /// the user is reaching past the layer for, so neither a click on it nor a press that began on it and
 /// ended on the layer takes the Overlay away. Every click is reported through <see cref="OnClick"/> all
-/// the same.
+/// the same, and <see cref="Blocking"/> takes the last dismissal away as well.
 /// </remarks>
 public partial class BitOverlay : BitComponentBase
 {
     private float _offsetTop;
     private bool _internalIsOpen;
+    // Which opening or closing is the current one, so that a run still waiting on the browser can tell it
+    // has been overtaken by the next. Taking the scroller is asked for over the wire, and an Overlay closed
+    // while that call was still out would otherwise report itself opened after it had already reported
+    // itself closed.
+    private int _lifecycle;
     // Whether the press the click on the way belongs to started on the content rather than on the layer
     // around it. A press that starts inside the content and ends on the layer - the last stretch of a text
     // selection dragged past the edge of a box - reports its click on the Overlay, since that is where the
@@ -84,19 +90,29 @@ public partial class BitOverlay : BitComponentBase
     /// The offset the scroller was left at is what an <see cref="AbsolutePosition"/> Overlay is pushed down
     /// by, so that it stays where the eye left it rather than jumping to the top of the scroller it is laid
     /// out in.
+    /// <br/>
+    /// It is read for as long as the Overlay is open rather than at the opening alone, so an Overlay told
+    /// to hold its scroller - or pointed at another one - while it is open takes the hold there and then,
+    /// and one told to let go hands it back without waiting to be closed.
+    /// <br/>
+    /// This is the whole of the scroll locking the dialog surfaces of the library do: the hold it takes is
+    /// the counted, compensated one a <c>BitModal</c> takes on the page, asked for the other way round -
+    /// the Overlay is a layer of the consumer's own, so it holds nothing until it is told to, where a
+    /// Modal is a dialog and holds the page unless it is told not to.
     /// </remarks>
     [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
-    /// Centers the content of the Overlay horizontally and vertically.
+    /// When enabled, prevents the Overlay from being light dismissed by clicking on the layer.
     /// </summary>
     /// <remarks>
-    /// The Overlay lays its content out as a flex container, which stretches it over the whole layer when
-    /// this is not set - the layout a surface of the consumer's own wants. Centering is what a loader or a
-    /// message wants, and setting it here saves the stylesheet that would otherwise carry nothing else.
+    /// The click is still reported through <see cref="OnClick"/>, which is what makes that the place to
+    /// react to a click the Overlay refuses to be closed by - and the place to close it on terms of the
+    /// consumer's own. Only the layer itself dismisses the Overlay either way - a click on the content it
+    /// hosts never does - so this is for the Overlay that has to stay up until whatever it is showing has
+    /// been dealt with.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool Center { get; set; }
+    [Parameter] public bool Blocking { get; set; }
 
     /// <summary>
     /// The content of the Overlay.
@@ -128,22 +144,11 @@ public partial class BitOverlay : BitComponentBase
     public bool ModeFull { get; set; }
 
     /// <summary>
-    /// When true, the Overlay will not be closed by clicking on it.
-    /// </summary>
-    /// <remarks>
-    /// The click is still reported through <see cref="OnClick"/>, which is what makes that the place to
-    /// react to a click the Overlay refuses to be closed by. Only the layer itself dismisses the Overlay
-    /// either way - a click on the content it hosts never does - so this is for the Overlay that has to
-    /// stay up until whatever it is showing is dealt with.
-    /// </remarks>
-    [Parameter] public bool NoAutoClose { get; set; }
-
-    /// <summary>
     /// Callback that is called when the overlay is clicked.
     /// </summary>
     /// <remarks>
     /// Invoked for every click on an open Overlay - the ones on its content included, and the ones a
-    /// <see cref="NoAutoClose"/> Overlay refuses to be closed by - and invoked before the Overlay closes.
+    /// <see cref="Blocking"/> Overlay refuses to be closed by - and invoked before the Overlay closes.
     /// Since a click on the content no longer closes the Overlay by itself, this is also what closes one on
     /// terms of the consumer's own: an <c>OnClick</c> that sets <see cref="IsOpen"/> to false brings back
     /// the dismissal from anywhere the Overlay used to do without being asked.
@@ -279,7 +284,6 @@ public partial class BitOverlay : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsOpen ? "bit-ovl-opn" : string.Empty);
-        ClassBuilder.Register(() => Center ? "bit-ovl-ctr" : string.Empty);
         ClassBuilder.Register(() => ModeFull ? "bit-ovl-mfl" : string.Empty);
         ClassBuilder.Register(() => AbsolutePosition ? "bit-ovl-abs" : string.Empty);
     }
@@ -288,12 +292,14 @@ public partial class BitOverlay : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        // The forwarding is settled on every render rather than only on an opening, since it is what the
-        // parameters say it is: an Overlay told to hold its scroller, or aimed at another one, while it is
-        // open has to have it taken back or made again there and then.
-        await SyncScrollForward();
-
-        if (_internalIsOpen == IsOpen) return;
+        if (_internalIsOpen == IsOpen)
+        {
+            // The scroll handling is settled on every render rather than only on an opening, since it is
+            // what the parameters say it is: an Overlay told to hold its scroller, or aimed at another one,
+            // while it is open has to have it taken back or made again there and then.
+            await SyncScroll();
+            return;
+        }
 
         // The state this pass is settling, held on to rather than read again: the scroller is asked for
         // over the wire, and an Overlay closed while that call was still out would otherwise be reported
@@ -302,6 +308,15 @@ public partial class BitOverlay : BitComponentBase
         var isOpen = IsOpen;
 
         _internalIsOpen = isOpen;
+
+        // Each opening and each closing is a run of its own, so that one still waiting on the browser can
+        // tell it has been overtaken by the next: the steps below reach the browser several times over, and
+        // on a circuit every one of those waits. What the run that overtook this one settles is the state
+        // the Overlay is actually in, so this one stands down rather than reporting the state it was
+        // settling after the newer one has already reported the state that replaced it.
+        var generation = ++_lifecycle;
+
+        bool Overtaken() => _lifecycle != generation;
 
         // A press whose click never came - one released outside the window - is not carried into the next
         // opening, where it would refuse the first dismissal for no reason the user could see.
@@ -318,6 +333,12 @@ public partial class BitOverlay : BitComponentBase
         {
             _offsetTop = 0;
         }
+
+        if (Overtaken()) return;
+
+        await SyncScrollForward();
+
+        if (Overtaken()) return;
 
         // Only re-rendered when the offset the style reads actually changed, and only where the style
         // reads it at all, so an Overlay anchored to the screen renders nothing twice for an offset it
@@ -356,9 +377,10 @@ public partial class BitOverlay : BitComponentBase
     {
         if (isOpen)
         {
-            // The decision is taken at open time; the close reuses it instead of re-reading
-            // AutoToggleScroll, which may have changed since the Overlay was opened.
-            _scrollToggledOnOpen = AutoToggleScroll;
+            // The decision is recorded as it is taken, and the close reads the record rather than
+            // AutoToggleScroll, which may have changed since. A disposed Overlay takes no hold at all: it
+            // has no close left to hand one back in.
+            _scrollToggledOnOpen = AutoToggleScroll && IsDisposed is false;
             if (_scrollToggledOnOpen is false) return;
 
             // The scroller is snapshotted with it, so the close hands back the same one even if
@@ -401,6 +423,47 @@ public partial class BitOverlay : BitComponentBase
                                         && AutoToggleScroll is false
                                         && AbsolutePosition is false
                                         && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
+
+    // The two ways an Overlay handles the scroll behind it - taking the overflow off its scroller, and
+    // handing the gestures it catches on to it - are one job done two ways, and which of them it is doing
+    // can change while it is open: AutoToggleScroll turned on or off, or the Overlay pointed at another
+    // scroller. Both were settled at the opening alone before, which left such an Overlay holding the
+    // scroller it was pointed at when it opened - or, having stood the forwarding down for a hold it never
+    // went on to take, doing neither - until it was closed and opened again. The one it is no longer doing
+    // lets go first, so that it is never left doing both to the same scroller at once.
+    private async Task SyncScroll()
+    {
+        var hadOffset = _offsetTop > 0;
+
+        // The hold is registered against the scroller it was taken on rather than against the parameter
+        // that named it, so an Overlay pointed somewhere else lets go of the one it holds before it takes
+        // the one it is pointed at now.
+        if (_scrollToggledOnOpen && (AutoToggleScroll is false ||
+                                     _scrollerSelectorOnToggle != ScrollerSelector ||
+                                     Nullable.Equals(_scrollerElementOnToggle, ScrollerElementTarget) is false))
+        {
+            await ToggleScroll(false);
+
+            _offsetTop = 0;
+        }
+
+        await SyncScrollForward();
+
+        if (AutoToggleScroll && IsOpen && _scrollToggledOnOpen is false)
+        {
+            _offsetTop = 0;
+
+            await ToggleScroll(true);
+        }
+
+        // Only re-rendered when the offset the style reads actually changed, and only where the style reads
+        // it at all - which is also what keeps this from rendering on every render of every Overlay.
+        if (AbsolutePosition && hadOffset != _offsetTop > 0)
+        {
+            StyleBuilder.Reset();
+            StateHasChanged();
+        }
+    }
 
     private async Task SyncScrollForward()
     {
@@ -495,7 +558,7 @@ public partial class BitOverlay : BitComponentBase
 
         await OnClick.InvokeAsync(e);
 
-        if (NoAutoClose) return;
+        if (Blocking) return;
 
         // The click of a press that began on the content: the pointer only reached the layer on its way
         // back up, which is the last stretch of a selection dragged past the edge of a box rather than the
