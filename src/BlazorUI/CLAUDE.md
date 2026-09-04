@@ -108,9 +108,11 @@ as actually deployed.
 
 Nothing is written down twice: the nav (`MainLayout.NavItems`, via `ComponentCatalog`) decides which
 components exist and what they are also called, the loaded assemblies which package each ships in and
-what it is generic over, the demo pages the hand-written parameter tables and worked examples, the XML
-documentation everything else. So **adding a component to the nav is all it takes for it to appear in
-the catalog, the search index and the completions.**
+what it is generic over, the demo pages the hand-written parameter tables and worked examples, the
+iconography page's `IconCatalog` the glyphs with their categories and the everyday words that point at
+MDL2's own (so `FindBitBlazorUIIcons` finds a house by teaching the page's search box, never by
+growing a second table), the XML documentation everything else. So **adding a component to the nav is
+all it takes for it to appear in the catalog, the search index and the completions.**
 
 - **Seven tools, and the count is the design** - every description is paid for in every request. A
   listing is not a tool but what a retrieval tool answers with no argument
