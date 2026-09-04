@@ -2036,8 +2036,9 @@ public class BitDialogTests : BunitTestContext
         Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
+        // The third argument is the one that says whether the overflow is being taken or handed back.
         Assert.IsFalse(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]
-                              .Any(i => i.Arguments[^1] is false));
+                              .Any(i => i.Arguments[2] is false));
     }
 
     [TestMethod]

@@ -224,4 +224,39 @@ public class ReferenceToolTests : McpTestBase
         // empty box rather than an error.
         StringAssert.Contains(cart, "Bit.BlazorUI.Icons");
     }
+
+    [TestMethod]
+    public async Task A_glyph_is_found_by_a_word_the_set_does_not_use()
+    {
+        using var scope = Assert.Scope();
+
+        // MDL2's names are its own, and an agent's are everyone else's. A word the set does not use
+        // is read through the alias table the iconography page's search box reads through, so the
+        // two can never disagree about whether the library has a home icon.
+        var house = await CallAsync("FindBitBlazorUIIcons", new { query = "house" });
+
+        StringAssert.Contains(house, "Home", "'house' found nothing, so the alias table is not reaching the tool.");
+        StringAssert.Contains(house, "no 'house'", "'house' was answered without saying what it was read as.");
+
+        // A misspelling is one edit from a word of a name, which is close enough to answer rather
+        // than refuse - a tool that answers a typo with nothing is a tool that gets called twice.
+        var typo = await CallAsync("FindBitBlazorUIIcons", new { query = "calender" });
+        StringAssert.Contains(typo, "Calendar");
+
+        // And an alias table entry is written best first: "spinner" is a ProgressRing before it is
+        // a Sync, and there are twenty Sync glyphs to bury it under.
+        var spinner = await CallAsync("FindBitBlazorUIIcons", new { query = "spinner", limit = 3 });
+        StringAssert.Contains(spinner, "ProgressRing");
+    }
+
+    [TestMethod]
+    public async Task A_glyph_is_named_as_the_member_that_compiles()
+    {
+        // The handful of glyphs whose name starts with a digit are declared with a leading
+        // underscore, because `BitIconName.12PointStar` is not an identifier. Answering with the
+        // glyph name rather than the member name is a miss that only shows up at build time.
+        var star = await CallAsync("FindBitBlazorUIIcons", new { query = "12 point star" });
+
+        StringAssert.Contains(star, "_12PointStar");
+    }
 }

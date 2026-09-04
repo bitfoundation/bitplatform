@@ -28,14 +28,14 @@ public sealed record IconEntry(string FieldName, string Name)
     public bool InCorePackage { get; init; }
 
     /// <summary>The whole name, lower-cased once, for the substring passes of the search.</summary>
-    internal string Lower { get; init; } = string.Empty;
+    public string Lower { get; init; } = string.Empty;
 
     /// <summary>
     /// The name split at its capitals and lower-cased - "AddFriend" as ["add", "friend"]. Words
     /// rather than substrings is what keeps "add" out of "Address", and lets a category be stated
     /// as the handful of words that name it instead of as a list of fragments that half-match.
     /// </summary>
-    internal string[] Words { get; init; } = [];
+    public string[] Words { get; init; } = [];
 
     /// <summary>One bit per entry of <see cref="IconCatalog.Categories"/>.</summary>
     internal int CategoryMask { get; init; }
@@ -218,7 +218,33 @@ public static class IconCatalog
         ["light"] = ["sunny", "brightness"],
         ["language"] = ["localelanguage", "translate"],
         ["terminal"] = ["commandprompt", "developertools"],
+        ["trashcan"] = ["delete", "recyclebin"],
+        ["garbage"] = ["delete", "recyclebin"],
+        ["profile"] = ["persona", "contact", "account"],
+        ["menu"] = ["globalnavbutton", "collapsemenu", "more"],
+        ["dropdown"] = ["chevrondown"],
+        ["success"] = ["completed", "accept", "checkmark"],
+        ["danger"] = ["warning", "error", "blocked"],
+        ["question"] = ["help", "unknown"],
+        ["notification"] = ["ringer", "alert"],
+        ["loading"] = ["progressring", "sync"],
+        ["moon"] = ["clearnight"],
+        ["wrench"] = ["repair", "toolbox"],
+        ["tool"] = ["repair", "toolbox", "developertools"],
+        ["idea"] = ["lightbulb"],
+        ["bulb"] = ["lightbulb"],
+        ["exit"] = ["signout", "leave"],
+        ["radio"] = ["radiobtn", "radiobullet"],
+        ["toggle"] = ["switch"],
+        ["battery"] = ["power"],
     };
+
+    /// <summary>
+    /// The alias table, for the other readers of this catalog - the MCP server searches the same
+    /// set and a word taught here has to answer there too, or the site and the tool disagree about
+    /// what the library contains.
+    /// </summary>
+    public static IReadOnlyDictionary<string, string[]> Aliases => aliases;
 
 
     /// <summary>Every icon, in the alphabetical order the grid reads in when nothing is typed.</summary>
@@ -348,6 +374,25 @@ public static class IconCatalog
         var bit = 1 << index;
 
         return [.. items.Where(i => (i.CategoryMask & bit) != 0)];
+    }
+
+    /// <summary>
+    /// The categories an icon falls in, in chip order - none for the few the keywords do not
+    /// reach. The page reads the mask the other way round, a category at a time; a caller holding
+    /// one icon wants the names.
+    /// </summary>
+    public static IReadOnlyList<string> CategoriesOf(IconEntry icon)
+    {
+        if (icon.CategoryMask == 0) return [];
+
+        var names = new List<string>(2);
+
+        for (var c = 0; c < Categories.Count; c++)
+        {
+            if ((icon.CategoryMask & (1 << c)) != 0) names.Add(Categories[c]);
+        }
+
+        return names;
     }
 
     /// <summary>

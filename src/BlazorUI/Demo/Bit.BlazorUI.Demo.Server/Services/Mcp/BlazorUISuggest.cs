@@ -54,13 +54,23 @@ public static class BlazorUISuggest
     }
 
     /// <summary>
+    /// Whether two words are within <paramref name="maxDistance"/> edits of each other - the same
+    /// measure the suggestions are ranked by, offered to the callers that compare single words
+    /// rather than whole names, so a typo is forgiven the same way everywhere.
+    /// </summary>
+    public static bool Within(string left, string right, int maxDistance)
+        => maxDistance > 0 && Distance(left, right, maxDistance) <= maxDistance;
+
+    private static int Distance(string left, string right) => Distance(left, right, MaxDistance);
+
+    /// <summary>
     /// The Levenshtein distance between two names, abandoned as soon as it passes what a suggestion
     /// is worth: the catalogs hold a thousand names and a full matrix for each of them, on a call
     /// that only happens after a miss, is work spent on rows that cannot win.
     /// </summary>
-    private static int Distance(string left, string right)
+    private static int Distance(string left, string right, int maxDistance)
     {
-        if (Math.Abs(left.Length - right.Length) > MaxDistance) return int.MaxValue;
+        if (Math.Abs(left.Length - right.Length) > maxDistance) return int.MaxValue;
 
         var previous = new int[right.Length + 1];
         var current = new int[right.Length + 1];
@@ -82,7 +92,7 @@ public static class BlazorUISuggest
 
             // Every distance from here on is at least the best of this row, so a row that is already
             // too far away settles it.
-            if (best > MaxDistance) return int.MaxValue;
+            if (best > maxDistance) return int.MaxValue;
 
             (previous, current) = (current, previous);
         }
