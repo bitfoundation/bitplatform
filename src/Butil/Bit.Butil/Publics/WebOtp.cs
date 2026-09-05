@@ -28,8 +28,8 @@ namespace Bit.Butil;
 [ButilService(typeof(WebOtp))]
 public class WebOtp(IJSRuntime js)
 {
-    // Per-instance handle for the pending request, so one circuit's Abort cannot cancel another's.
-    private readonly string _requestId = Guid.NewGuid().ToString("N");
+    // Per-instance handle for the pending requests, so one circuit's Abort cannot cancel another's.
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
 
     /// <summary>True when the runtime exposes <c>window.OTPCredential</c>.</summary>
     /// <remarks>
@@ -54,17 +54,22 @@ public class WebOtp(IJSRuntime js)
     /// </remarks>
     public async ValueTask<string?> Receive(TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
+        // A handle per call, not per instance: an already-cancelled token fires its abort before the
+        // receive below is dispatched, and the JS side holds that abort against this handle alone -
+        // so the wait it belongs to never starts, and the next Receive is left untouched.
+        var requestId = Guid.NewGuid().ToString("N");
+
         // Registered rather than awaited against: the JS side owns an AbortController, and the only
         // way to end the browser's wait early is to trip it. Disposed with the call either way, so a
         // long-lived token doesn't accumulate registrations.
-        using var registration = cancellationToken.Register(() => js.InvokeVoid("BitButil.webOtp.abort", _requestId));
+        using var registration = cancellationToken.Register(() => js.InvokeVoid("BitButil.webOtp.abort", _instanceId, requestId));
 
-        return await js.Invoke<string?>("BitButil.webOtp.receive", _requestId, timeout?.TotalMilliseconds);
+        return await js.Invoke<string?>("BitButil.webOtp.receive", _instanceId, requestId, timeout?.TotalMilliseconds);
     }
 
     /// <summary>
     /// Ends the wait started by <see cref="Receive"/> on this instance - the user chose to type the
     /// code, or moved on. Returns false when nothing was pending.
     /// </summary>
-    public ValueTask<bool> Abort() => js.Invoke<bool>("BitButil.webOtp.abort", _requestId);
+    public ValueTask<bool> Abort() => js.Invoke<bool>("BitButil.webOtp.abort", _instanceId, null);
 }

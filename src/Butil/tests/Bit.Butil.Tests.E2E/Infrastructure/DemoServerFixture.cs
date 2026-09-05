@@ -66,8 +66,9 @@ public class DemoServerFixture
         // Drain output so the child's stdout buffer never fills up and stalls the server. Written to
         // the console rather than to the TestContext above: these lines keep arriving on a
         // background thread long after this method - and eventually the whole run - has finished.
-        _process.OutputDataReceived += (_, e) => { if (e.Data is not null) Console.WriteLine(e.Data); };
-        _process.ErrorDataReceived += (_, e) => { if (e.Data is not null) Console.WriteLine(e.Data); };
+        // Qualified, because this namespace sits under Bit.Butil - which has a Console of its own.
+        _process.OutputDataReceived += (_, e) => { if (e.Data is not null) System.Console.WriteLine(e.Data); };
+        _process.ErrorDataReceived += (_, e) => { if (e.Data is not null) System.Console.WriteLine(e.Data); };
 
         if (!_process.Start())
             throw new InvalidOperationException("Failed to start the Bit.Butil demo process.");

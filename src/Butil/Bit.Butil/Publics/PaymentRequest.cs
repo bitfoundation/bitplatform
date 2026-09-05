@@ -44,10 +44,14 @@ public class PaymentRequest(IJSRuntime js)
     /// This is <c>canMakePayment()</c>, which answers about the <em>methods</em>, not about the
     /// user having a usable card behind them. Browsers rate-limit it.
     /// </remarks>
+    // PaymentDetails carries ShippingOptions and Modifiers, so serializing it reaches those two types
+    // as well - a trimmed or AOT build that kept only the four obvious ones loses them here.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentMethod))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentDetails))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentDetailsModifier))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentItem))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentCurrencyAmount))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentShippingOption))]
     public ValueTask<bool> CanMakePayment(PaymentMethod[] methods, PaymentDetails details)
         => js.Invoke<bool>("BitButil.paymentRequest.canMakePayment", methods, details);
 

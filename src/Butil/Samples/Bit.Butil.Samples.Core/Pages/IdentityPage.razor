@@ -46,7 +46,7 @@ var credential = await credentials.Get(new CredentialRequestOptions { Mediation 
 
     <DemoCard Title="Wait for an SMS code" Api="WebOtp.Receive"
               Description="Chromium on Android. Waits 30 seconds for a message whose last line names this origin and carries the code after a #.">
-        <button @onclick="ReceiveOtp">Receive</button>
+        <button @onclick="ReceiveOtp" disabled="@_otpPending">Receive</button>
         <button class="secondary" @onclick="AbortOtp">Abort</button>
     </DemoCard>
 
@@ -60,6 +60,10 @@ var credential = await credentials.Get(new CredentialRequestOptions { Mediation 
 
 @code {
     private DemoConsole output = default!;
+
+    // One receive at a time per WebOtp instance: a second overlapping wait aborts the first, so the
+    // button is held down for as long as one is in flight.
+    private bool _otpPending;
 
     private async Task CheckSupport()
     {
@@ -138,6 +142,11 @@ var credential = await credentials.Get(new CredentialRequestOptions { Mediation 
 
     private async Task ReceiveOtp()
     {
+        // Set before the support check, not after it: the check awaits, and a second click landing in
+        // that gap would start an overlapping wait on the same instance.
+        if (_otpPending) return;
+        _otpPending = true;
+
         try
         {
             if (!await webOtp.IsSupported())
@@ -153,6 +162,10 @@ var credential = await credentials.Get(new CredentialRequestOptions { Mediation 
         catch (Exception ex)
         {
             await output.Error("Receive failed →", ex.Message);
+        }
+        finally
+        {
+            _otpPending = false;
         }
     }
 

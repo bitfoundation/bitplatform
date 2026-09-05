@@ -24,8 +24,8 @@ namespace Bit.Butil;
 [ButilService(typeof(DigitalCredentials))]
 public class DigitalCredentials(IJSRuntime js)
 {
-    // Per-instance handle for the pending exchange, so one circuit's Abort cannot cancel another's.
-    private readonly string _requestId = Guid.NewGuid().ToString("N");
+    // Per-instance handle for the pending exchanges, so one circuit's Abort cannot cancel another's.
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
 
     /// <summary>True when the runtime exposes <c>window.DigitalCredential</c>.</summary>
     /// <remarks>
@@ -65,10 +65,16 @@ public class DigitalCredentials(IJSRuntime js)
         CredentialMediation mediation = CredentialMediation.Required,
         CancellationToken cancellationToken = default)
     {
-        using var registration = cancellationToken.Register(() => js.InvokeVoid("BitButil.digitalCredentials.abort", _requestId));
+        // A handle per call, not per instance: a presentation and an issuance can be in flight
+        // together, and an already-cancelled token fires its abort before the get below is
+        // dispatched - the JS side holds that abort against this handle alone, so this exchange
+        // never opens the wallet chooser and no other call is disturbed.
+        var requestId = Guid.NewGuid().ToString("N");
+
+        using var registration = cancellationToken.Register(() => js.InvokeVoid("BitButil.digitalCredentials.abort", _instanceId, requestId));
 
         return await js.Invoke<DigitalCredentialResponse?>("BitButil.digitalCredentials.get",
-            _requestId, requests, Credentials.ToName(mediation));
+            _instanceId, requestId, requests, Credentials.ToName(mediation));
     }
 
     /// <summary>
@@ -85,14 +91,17 @@ public class DigitalCredentials(IJSRuntime js)
         DigitalCredentialRequest[] requests,
         CancellationToken cancellationToken = default)
     {
-        using var registration = cancellationToken.Register(() => js.InvokeVoid("BitButil.digitalCredentials.abort", _requestId));
+        // Its own handle, for the same reasons as Get.
+        var requestId = Guid.NewGuid().ToString("N");
 
-        return await js.Invoke<DigitalCredentialResponse?>("BitButil.digitalCredentials.create", _requestId, requests);
+        using var registration = cancellationToken.Register(() => js.InvokeVoid("BitButil.digitalCredentials.abort", _instanceId, requestId));
+
+        return await js.Invoke<DigitalCredentialResponse?>("BitButil.digitalCredentials.create", _instanceId, requestId, requests);
     }
 
     /// <summary>
-    /// Ends the exchange this instance started, dismissing the wallet chooser. Returns false when
+    /// Ends the exchanges this instance started, dismissing the wallet chooser. Returns false when
     /// nothing was pending.
     /// </summary>
-    public ValueTask<bool> Abort() => js.Invoke<bool>("BitButil.digitalCredentials.abort", _requestId);
+    public ValueTask<bool> Abort() => js.Invoke<bool>("BitButil.digitalCredentials.abort", _instanceId, null);
 }

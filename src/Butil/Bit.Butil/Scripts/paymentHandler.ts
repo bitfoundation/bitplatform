@@ -17,10 +17,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // Every member goes through the active registration: paymentManager hangs off it, and a page
     // whose worker has not activated yet has nothing to configure. `ready` is the wait for that,
     // and it never rejects - it simply does not settle until there is a registration, so callers
-    // are not left with a half-applied hint.
+    // are not left with a half-applied hint. Which is also why getRegistration() comes first: with
+    // no worker registered at all `ready` never settles, and every call would hang forever instead
+    // of answering "nothing to configure here".
     async function manager() {
         if (!isSupported()) return null;
         try {
+            const registered = await navigator.serviceWorker.getRegistration();
+            if (!registered) return null;
+
             const registration: any = await navigator.serviceWorker.ready;
             return registration?.paymentManager ?? null;
         } catch {

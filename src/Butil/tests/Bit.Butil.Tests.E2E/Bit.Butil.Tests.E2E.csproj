@@ -28,4 +28,10 @@
     <PackageReference Include="MSTest" Version="4.3.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- For CancellationContractTests, which calls the library directly against a stub IJSRuntime.
+         Everything else here goes through a deployed harness page and needs no reference. -->
+    <ProjectReference Include="..\..\Bit.Butil\Bit.Butil.csproj" />
+  </ItemGroup>
+
 </Project>

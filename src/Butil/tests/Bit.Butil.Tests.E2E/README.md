@@ -50,6 +50,11 @@ dotnet test .\Bit.Butil.Tests.E2E.csproj
 * `InteropContractTests.cs` - runs `Infrastructure/verify-interop-contract.mjs` under Node: every
   `BitButil.x.y` identifier the C# side invokes must resolve against the bundle **and** against its own
   lazy-loadable module file evaluated on its own.
+* `CancellationContractTests.cs` - calls `WebOtp` and `DigitalCredentials` directly against a recording
+  stub `IJSRuntime`, no browser: an already-cancelled token dispatches its abort *before* the call it
+  cancels, so the two have to carry the same per-call handle or the wallet chooser / SMS prompt opens for
+  a request the caller had already given up on. Neither API can be driven headlessly - both prompt - so
+  the argument shape their JavaScript depends on is pinned here instead.
 
 ### Running against a trimmed publish
 
