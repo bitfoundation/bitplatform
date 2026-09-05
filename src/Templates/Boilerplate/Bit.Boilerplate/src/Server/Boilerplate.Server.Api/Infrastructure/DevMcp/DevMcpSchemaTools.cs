@@ -13,7 +13,8 @@ public sealed class DevMcpSchemaTools(AppDbContext db)
         [Description("Optional CLR type name, e.g. User or Product")] string? entityName = null,
         CancellationToken cancellationToken = default)
     {
-        await using var _ = await DevMcpReadOnly.BeginAsync(db, cancellationToken);
+        // The EF model, not information_schema: this reads no database at all.
+        await Task.CompletedTask;
 
         var entities = db.Model.GetEntityTypes()
             .Where(entity => entity.ClrType is not null && entity.IsOwned() is false)
@@ -37,20 +38,36 @@ public sealed class DevMcpSchemaTools(AppDbContext db)
     [Description("Lists EF Core migrations applied to this database, with the latest one first. Pending migrations (in the assembly but not applied) are listed separately. This is what 'did that migration actually run in production' is answered with.")]
     public async Task<string> GetAppliedMigrations(CancellationToken cancellationToken)
     {
-        await using var _ = await DevMcpReadOnly.BeginAsync(db, cancellationToken);
-
-        var applied = (await db.Database.GetAppliedMigrationsAsync(cancellationToken)).Reverse().ToArray();
-        var pending = (await db.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
-
-        return DevMcpJson.Serialize(new
+        return await DevMcpReadOnly.ReadMetadataAsync(db, async token =>
         {
-            CanConnect = await db.Database.CanConnectAsync(cancellationToken),
-            Latest = applied.FirstOrDefault(),
-            AppliedCount = applied.Length,
-            Applied = applied,
-            Pending = pending,
-            Note = "EnsureCreated deployments have an empty applied list even though the schema exists."
-        });
+            var canConnect = await db.Database.CanConnectAsync(token);
+
+            string[] applied = [], pending = [];
+            string? historyUnavailable = null;
+
+            try
+            {
+                applied = [.. (await db.Database.GetAppliedMigrationsAsync(token)).Reverse()];
+                pending = [.. await db.Database.GetPendingMigrationsAsync(token)];
+            }
+            catch (Exception exception)
+            {
+                // An EnsureCreated deployment has no __EFMigrationsHistory at all, and providers disagree about
+                // whether reading it then throws or answers empty.
+                historyUnavailable = exception.Message;
+            }
+
+            return DevMcpJson.Serialize(new
+            {
+                CanConnect = canConnect,
+                Latest = applied.FirstOrDefault(),
+                AppliedCount = applied.Length,
+                Applied = applied,
+                Pending = pending,
+                HistoryUnavailable = historyUnavailable,
+                Note = "EnsureCreated deployments have an empty applied list even though the schema exists."
+            });
+        }, cancellationToken);
     }
 
     private static object Describe(IEntityType entity)

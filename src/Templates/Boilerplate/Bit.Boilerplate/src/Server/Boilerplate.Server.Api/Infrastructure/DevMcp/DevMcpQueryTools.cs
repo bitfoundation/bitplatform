@@ -55,37 +55,38 @@ public sealed class DevMcpQueryTools(AppDbContext db, DevMcpAuditContext audit)
 
         try
         {
-            await using var _ = await DevMcpReadOnly.BeginAsync(db, cancellationToken);
-
-            IQueryable query = SetOf(entityType);
-            if (string.IsNullOrWhiteSpace(filter) is false)
-                query = query.Where(ParsingConfig, filter);
-
-            query = query.OrderBy(ParsingConfig, orderBy);
-
-            var projection = "new(" + string.Join(", ", select!.Select(column => $"{column} as {column}")) + ")";
-            query = query.Select(ProjectionConfig, projection);
-
-            var rows = await query.Skip(skip).Take(take).ToDynamicListAsync(cancellationToken);
-            audit.RowCount = rows.Count;
-
-            var payload = DevMcpJson.Serialize(new
+            return await DevMcpReadOnly.ReadAsync(db, async token =>
             {
-                Entity = entityType.ClrType.Name,
-                Table = entityType.GetTableName(),
-                Schema = entityType.GetSchema(),
-                QueryFiltersApplied = true,
-                IgnoreQueryFilters = false,
-                skip,
-                take,
-                Count = rows.Count,
-                Rows = rows
-            });
+                IQueryable query = SetOf(entityType);
+                if (string.IsNullOrWhiteSpace(filter) is false)
+                    query = query.Where(ParsingConfig, filter);
 
-            if (Encoding.UTF8.GetByteCount(payload) > DevMcpLimits.MaxPayloadBytes)
-                return DevMcpJson.Serialize(new { Error = $"Result exceeded {DevMcpLimits.MaxPayloadBytes} bytes. Narrow the projection or take." });
+                query = query.OrderBy(ParsingConfig, orderBy);
 
-            return payload;
+                var projection = "new(" + string.Join(", ", select!.Select(column => $"{column} as {column}")) + ")";
+                query = query.Select(ProjectionConfig, projection);
+
+                var rows = await query.Skip(skip).Take(take).ToDynamicListAsync(token);
+                audit.RowCount = rows.Count;
+
+                var payload = DevMcpJson.Serialize(new
+                {
+                    Entity = entityType.ClrType.Name,
+                    Table = entityType.GetTableName(),
+                    Schema = entityType.GetSchema(),
+                    QueryFiltersApplied = true,
+                    IgnoreQueryFilters = false,
+                    skip,
+                    take,
+                    Count = rows.Count,
+                    Rows = rows
+                });
+
+                if (Encoding.UTF8.GetByteCount(payload) > DevMcpLimits.MaxPayloadBytes)
+                    return DevMcpJson.Serialize(new { Error = $"Result exceeded {DevMcpLimits.MaxPayloadBytes} bytes. Narrow the projection or take." });
+
+                return payload;
+            }, cancellationToken);
         }
         catch (Exception exception)
         {

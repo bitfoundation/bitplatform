@@ -52,6 +52,21 @@ public class DevMcpForbiddenColumnsTests
             $"'{path}' is 'PasswordHash'. Skipping the whole path over its prefix would hand back the column the guard exists to refuse.");
     }
 
+    /// <summary>
+    /// "SET TRANSACTION READ ONLY" is PostgreSQL/MySQL syntax. T-SQL rejects it outright, so issuing it there would
+    /// break every Dev MCP read on a SQL Server deployment - and only that one CI job would notice.
+    /// </summary>
+    [TestMethod]
+    [DataRow("Npgsql.EntityFrameworkCore.PostgreSQL", true)]
+    [DataRow("Pomelo.EntityFrameworkCore.MySql", true)]
+    [DataRow("Microsoft.EntityFrameworkCore.SqlServer", false)]
+    [DataRow("Microsoft.EntityFrameworkCore.Sqlite", false)]
+    [DataRow(null, false)]
+    public void AReadOnlyTransaction_Should_OnlyBeOpenedOnProvidersThatHaveOne(string? providerName, bool supported)
+    {
+        Assert.AreEqual(supported, DevMcpReadOnly.SupportsReadOnlyTransaction(providerName));
+    }
+
     [TestMethod]
     public void ATypeNameOrLiteral_Should_StillBeSkipped()
     {
