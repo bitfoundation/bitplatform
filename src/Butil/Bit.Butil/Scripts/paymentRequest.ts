@@ -2,9 +2,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     // The sheet outlives the call that opened it: show() resolves while the browser is still
-    // showing "processing", and only complete() dismisses it. So both sides are held here - the
-    // request until it resolves (that is what abort() reaches), and the response until the .NET
-    // side completes it.
+    // showing "processing", and only complete() dismisses it. So both sides are held here, under the
+    // .NET instance's handle - the request until it resolves (that is what abort() reaches), and the
+    // response until the .NET side completes it. Keying the response by the same handle is what keeps
+    // a response nobody completed from living for the rest of the page: the instance's next show()
+    // replaces it.
     const _requests: { [id: string]: any } = {};
     const _responses: { [id: string]: any } = {};
 
@@ -34,14 +36,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function build(methods: any[], details: any, options: any) {
         const PR = (window as any).PaymentRequest;
-        return options
-            ? new PR(prune(methods), prune(details), prune(options))
-            : new PR(prune(methods), prune(details));
-    }
-
-    function newId() {
-        const c: any = window.crypto;
-        return c?.randomUUID ? c.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        // An undefined optional dictionary is the same as an absent one to WebIDL; a null one is not.
+        return new PR(prune(methods), prune(details), prune(options) ?? undefined);
     }
 
     function toAddress(address: any) {
@@ -88,11 +84,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         try {
             const response = await request.show();
-            const responseId = newId();
-            _responses[responseId] = response;
+
+            // A response the .NET side never completed - its processing threw, the circuit dropped,
+            // the browser timed the sheet out - is dropped here, once this instance opens the next
+            // sheet, rather than kept for the life of the page.
+            _responses[id] = response;
 
             return {
-                id: responseId,
+                id,
                 requestId: response.requestId ?? '',
                 methodName: response.methodName ?? '',
                 details: response.details ?? null,
@@ -111,11 +110,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         }
     }
 
-    async function complete(responseId: string, result: string) {
-        const response = _responses[responseId];
+    async function complete(id: string, result: string) {
+        const response = _responses[id];
         if (!response) return;
 
-        delete _responses[responseId];
+        delete _responses[id];
         try { await response.complete(result); }
         catch { /* the sheet was already dismissed */ }
     }

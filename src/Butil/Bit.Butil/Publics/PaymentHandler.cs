@@ -22,7 +22,11 @@ namespace Bit.Butil;
 [ButilService(typeof(PaymentHandler))]
 public class PaymentHandler(IJSRuntime js)
 {
-    /// <summary>True when the runtime exposes <c>ServiceWorkerRegistration.paymentManager</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>ServiceWorkerRegistration.paymentManager</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentManager">PaymentManager</see>
+    /// </summary>
     /// <remarks>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
@@ -33,24 +37,31 @@ public class PaymentHandler(IJSRuntime js)
     /// <summary>
     /// The hint shown beneath your app's name in another site's payment sheet - usually the signed-in
     /// account, e.g. <c>"user@example.com"</c>. Empty when none is set.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentManager/userHint">PaymentManager.userHint</see>
     /// </summary>
     public ValueTask<string> GetUserHint() => js.Invoke<string>("BitButil.paymentHandler.getUserHint");
 
     /// <summary>
     /// Sets the account hint. Set it after sign-in and clear it on sign-out: it is shown to users of
     /// other sites, so it should never outlive the session it describes.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentManager/userHint">PaymentManager.userHint</see>
     /// </summary>
     public ValueTask SetUserHint(string userHint) => js.InvokeVoid("BitButil.paymentHandler.setUserHint", userHint);
 
     /// <summary>
     /// Declares which fields your handler will collect itself, so the browser stops asking for them:
     /// <c>"shippingAddress"</c>, <c>"payerName"</c>, <c>"payerEmail"</c>, <c>"payerPhone"</c>.
-    /// Returns the delegations the browser accepted.
+    /// Returns true when the browser accepted them - all of them, since a name it does not know
+    /// rejects the whole call - and false when it refused or there is no active registration.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentManager/enableDelegations">PaymentManager.enableDelegations()</see>
     /// </summary>
     /// <remarks>
     /// Delegating a field makes your service worker responsible for putting it in the response;
     /// omitting it there leaves the merchant with a blank where the user filled something in.
     /// </remarks>
-    public ValueTask<string[]> EnableDelegations(string[] delegations)
-        => js.Invoke<string[]>("BitButil.paymentHandler.enableDelegations", delegations);
+    public ValueTask<bool> EnableDelegations(string[] delegations)
+        => js.Invoke<bool>("BitButil.paymentHandler.enableDelegations", delegations);
 }

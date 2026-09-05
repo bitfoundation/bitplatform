@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -21,7 +22,11 @@ namespace Bit.Butil;
 [ButilService(typeof(Credentials))]
 public class Credentials(IJSRuntime js)
 {
-    /// <summary>True when the runtime exposes <c>navigator.credentials</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>navigator.credentials</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer">CredentialsContainer</see>
+    /// </summary>
     /// <remarks>
     /// True in every current engine - it is also how WebAuthn is reached. For the password store
     /// specifically, ask <see cref="IsPasswordSupported"/>.
@@ -32,16 +37,26 @@ public class Credentials(IJSRuntime js)
     /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.credentials.isSupported");
 
-    /// <summary>True when the runtime exposes <c>window.PasswordCredential</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>window.PasswordCredential</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PasswordCredential">PasswordCredential</see>
+    /// </summary>
     public ValueTask<bool> IsPasswordSupported() => js.Invoke<bool>("BitButil.credentials.isPasswordSupported");
 
-    /// <summary>True when the runtime exposes <c>window.FederatedCredential</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>window.FederatedCredential</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/FederatedCredential">FederatedCredential</see>
+    /// </summary>
     public ValueTask<bool> IsFederatedSupported() => js.Invoke<bool>("BitButil.credentials.isFederatedSupported");
 
     /// <summary>
     /// Offers a username/password pair to the browser's password manager, which decides for itself
     /// whether to prompt the user to save it. Returns false when the browser refused or the API is
     /// not implemented.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/store">CredentialsContainer.store()</see>
     /// </summary>
     /// <param name="id">The account identifier - the username or email signed in with.</param>
     /// <param name="password">The password. It goes straight to the browser and is not kept here.</param>
@@ -57,6 +72,8 @@ public class Credentials(IJSRuntime js)
     /// <summary>
     /// Records that this account signs in through an identity provider, so the account chooser can
     /// offer "continue with ..." next time. No secret is stored.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/store">CredentialsContainer.store()</see>
     /// </summary>
     /// <param name="id">The account identifier at the provider.</param>
     /// <param name="provider">The provider's origin, e.g. <c>"https://accounts.google.com"</c>.</param>
@@ -69,7 +86,19 @@ public class Credentials(IJSRuntime js)
     /// <summary>
     /// Asks the browser for a stored credential, returning <c>null</c> when there is none or the
     /// user dismissed the chooser.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get">CredentialsContainer.get()</see>
     /// </summary>
+    /// <param name="options">
+    /// Which credentials are acceptable. At least one kind has to be:
+    /// <see cref="CredentialRequestOptions.Password"/>, or a non-empty
+    /// <see cref="CredentialRequestOptions.FederatedProviders"/>.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Neither passwords nor any federated provider was asked for. The browser would match every
+    /// credential type rather than none, so the request cannot be made - and returning <c>null</c>
+    /// would be indistinguishable from the user having nothing stored.
+    /// </exception>
     /// <remarks>
     /// With <see cref="CredentialMediation.Silent"/> this shows no UI at all, which makes it safe to
     /// call on page load: either a credential comes back and you can sign the user in, or nothing
@@ -80,8 +109,11 @@ public class Credentials(IJSRuntime js)
     {
         options ??= new CredentialRequestOptions();
 
+        if (options.Password is false && (options.FederatedProviders is null || options.FederatedProviders.Length == 0))
+            throw new ArgumentException($"Set {nameof(CredentialRequestOptions.Password)} or at least one {nameof(CredentialRequestOptions.FederatedProviders)} - a request for neither matches nothing.", nameof(options));
+
         return js.Invoke<CredentialInfo?>("BitButil.credentials.get",
-            options.Password, options.FederatedProviders, options.FederatedProtocols, ToName(options.Mediation));
+            options.Password, options.FederatedProviders, options.FederatedProtocols, CredentialMediations.ToName(options.Mediation));
     }
 
     /// <summary>
@@ -91,12 +123,4 @@ public class Credentials(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/preventSilentAccess">CredentialsContainer.preventSilentAccess()</see>
     /// </summary>
     public ValueTask PreventSilentAccess() => js.InvokeVoid("BitButil.credentials.preventSilentAccess");
-
-    internal static string ToName(CredentialMediation mediation) => mediation switch
-    {
-        CredentialMediation.Silent => "silent",
-        CredentialMediation.Required => "required",
-        CredentialMediation.Conditional => "conditional",
-        _ => "optional"
-    };
 }

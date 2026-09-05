@@ -26,7 +26,12 @@ and preserve the constructor by itself, quietly hiding the failure this project 
 Its calls deliberately cross the interop boundary in both directions: DTO-returning APIs
 (`Cookie.GetAll`, `Geolocation.GetCurrentPosition`, `Window.GetLocationBar`) and a DOM subscription
 (`Window.SubscribeEvent`), which drags in the internal `DomEventsInterop` and its `[JSInvokable]`
-callbacks. Everything else in Bit.Butil is untouched, so a trimmed publish should drop it.
+callbacks.
+
+[`CancellationContract`](CancellationContract.cs) adds three more references - `WebOtp`,
+`DigitalCredentials` and `Fetch` - which it constructs directly rather than injecting, because what it
+checks is the arguments they put on the wire. So a trimmed publish of this harness keeps eight services,
+not five; everything else in Bit.Butil is untouched and should be dropped.
 
 ## The checks
 
@@ -197,6 +202,21 @@ scripts off nothing may be imported. Runs in both modes of the harness, so the l
 survive trimming through the runtime override alone (this project never sets the `BitButilLazyScripts`
 switch).
 
+**Cancellation contract** ([`CancellationContract.cs`](CancellationContract.cs)). The other half of the
+interop contract: not which members survive, but which arguments the cancellable APIs put on the wire.
+`WebOtp` and `DigitalCredentials` each hand JavaScript an instance handle *and* a per-call one, and this
+pins why. A token that is **already** cancelled runs its registration synchronously, so its abort is
+dispatched *before* the call it cancels; with one handle per instance that abort would find nothing
+pending and be dropped, and the browser would open an SMS prompt or a wallet chooser for a request the
+caller had already given up on. So the checks are: the abort comes first and names the same per-call
+handle as the call; a second call gets a handle of its own; `Abort()` passes none, ending everything the
+instance has in flight; an uncancellable token registers nothing at all; an empty code from `Receive` is
+reported as `null`; and a `Fetch.Send` whose token is already cancelled is never dispatched.
+
+Neither API can be driven headlessly - both prompt, and both are Chromium-on-Android in practice - so the
+JavaScript half is exercised in the browser only through what these argument shapes guarantee. It lives in
+`webOtp.ts`, `digitalCredentials.ts` and the registry they share, `abortable.ts`.
+
 ## How it knows which run it is
 
 From `trimmed-publish.marker`, which the csproj copies to the **publish** output only (never to the build
@@ -233,21 +253,26 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 704,000 bytes | 118,272 bytes |
-| types in assembly | 882 | 149 |
-| `[ButilService]` discovered / registered | 64 / 64 | 5 / 5 |
-| interop contract | 43 types captured | 10 checked, 33 trimmed away, 0 problems |
-| JavaScript modules called | 70 of 72 | 6 of 72 (clipboard, cookie, events, geolocation, storage, window) |
-| `bit-butil.js` a publish would ship | 127,753 bytes, all 72 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 7.1% |
-| lazy scripts would download | 164,195 bytes over 70 files | 11,940 bytes over 6 files |
+| `Bit.Butil.dll` | 704,512 bytes | 130,560 bytes |
+| types in assembly | 883 | 167 |
+| `[ButilService]` discovered / registered | 64 / 64 | 8 / 8 |
+| interop contract | 43 types captured | 11 checked, 32 trimmed away, 0 problems |
+| JavaScript modules called | 70 of 73 | 9 of 73 (clipboard, cookie, digitalCredentials, events, fetch, geolocation, storage, webOtp, window) |
+| `bit-butil.js` a publish would ship | 128,484 bytes, all 73 modules | 13,587 bytes, 12 modules (4,490 gzip / 4,001 brotli) - 10.6% |
+| lazy scripts would download | 165,705 bytes over 70 files | 18,157 bytes over 9 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 37 / 37 | not run |
-| script-publishing checks | 26 / 26 (9 publishes, ~15s) | not run |
+| script-publishing checks | 26 / 26 (9 publishes, ~19s) | not run |
 | lazy-loader checks | 16 / 16 | 16 / 16 |
+| cancellation-contract checks | 24 / 24 | 24 / 24 |
 
-The two new rows are untrimmed-only by design: the class-to-module map is a question about the library as
-shipped, and the publish fixture is published by this process, so a trimmed run would publish the same app
-to the same answers at twice the cost.
+The two "not run" rows are untrimmed-only by design: the class-to-module map is a question about the
+library as shipped, and the publish fixture is published by this process, so a trimmed run would publish
+the same app to the same answers at twice the cost.
+
+Eight services survive rather than the five `ConsumerComponent` injects because `CancellationContract`
+constructs `WebOtp`, `DigitalCredentials` and `Fetch` directly - a reference the trimmer honours the same
+as an injected one, which is why they are in `MustSurvive` and their modules in `MustSurviveModules`.
 
 The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
 `GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code.
@@ -331,3 +356,9 @@ assembly comes out at 30,720 bytes and 36 types.
   chunks or the MSBuild task, both of which it points at the source tree.
 - **`lazy scripts: ...`** - the lazy loader imported the wrong module, imported twice, did not retry a
   failed import, or imported with lazy scripts off. See `LazyScripts.cs` for the exact expectation.
+
+- **`cancellation contract: ...`** - a cancellable API changed what it hands JavaScript. The abort of an
+  already-cancelled token has to name the *per-call* handle of the call it cancels, and be dispatched
+  before it; `Abort()` has to pass none, so it ends everything the instance has in flight. Getting this
+  wrong opens an SMS prompt or a wallet chooser for a request the caller already gave up on, or cancels
+  the wrong one - neither of which any browser test can catch, since both APIs prompt.

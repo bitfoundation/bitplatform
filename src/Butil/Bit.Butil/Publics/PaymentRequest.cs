@@ -23,11 +23,16 @@ namespace Bit.Butil;
 [ButilService(typeof(PaymentRequest))]
 public class PaymentRequest(IJSRuntime js)
 {
-    // The handle the JS side files this instance's in-flight request under. Per instance (the
-    // services are scoped), so one circuit's Abort cannot reach another's sheet.
-    private readonly string _requestId = Guid.NewGuid().ToString("N");
+    // The handle the JS side files this instance's in-flight request and its response under. Per
+    // instance (the services are scoped), so one circuit's Abort cannot reach another's sheet - and
+    // named the way the other cancellable services name theirs.
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
 
-    /// <summary>True when the runtime exposes <c>window.PaymentRequest</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>window.PaymentRequest</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentRequest">PaymentRequest</see>
+    /// </summary>
     /// <remarks>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
@@ -43,6 +48,8 @@ public class PaymentRequest(IJSRuntime js)
     /// <remarks>
     /// This is <c>canMakePayment()</c>, which answers about the <em>methods</em>, not about the
     /// user having a usable card behind them. Browsers rate-limit it.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentRequest/canMakePayment">PaymentRequest.canMakePayment()</see>
     /// </remarks>
     // PaymentDetails carries ShippingOptions and Modifiers, so serializing it reaches those two types
     // as well - a trimmed or AOT build that kept only the four obvious ones loses them here.
@@ -62,7 +69,10 @@ public class PaymentRequest(IJSRuntime js)
     /// <remarks>
     /// The returned <see cref="PaymentResponse"/> leaves the sheet open: process its
     /// <see cref="PaymentResponse.Details"/> server-side, then call <see cref="Complete"/> with the
-    /// <see cref="PaymentResponse.Id"/> to dismiss it.
+    /// <see cref="PaymentResponse.Id"/> to dismiss it. A response left uncompleted is held until
+    /// this instance's next <see cref="Show"/>, which replaces it.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentRequest/show">PaymentRequest.show()</see>
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentMethod))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentDetails))]
@@ -74,11 +84,13 @@ public class PaymentRequest(IJSRuntime js)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentResponse))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PaymentAddress))]
     public ValueTask<PaymentResponse?> Show(PaymentMethod[] methods, PaymentDetails details, PaymentOptions? options = null)
-        => js.Invoke<PaymentResponse?>("BitButil.paymentRequest.show", _requestId, methods, details, options);
+        => js.Invoke<PaymentResponse?>("BitButil.paymentRequest.show", _instanceId, methods, details, options);
 
     /// <summary>
     /// Dismisses the sheet a <see cref="Show"/> is still holding open, with the outcome of
     /// processing the payment.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentResponse/complete">PaymentResponse.complete()</see>
     /// </summary>
     /// <param name="responseId">The <see cref="PaymentResponse.Id"/> the sheet handed back.</param>
     /// <param name="result">What to tell the user. Defaults to <see cref="PaymentCompleteResult.Success"/>.</param>
@@ -88,8 +100,10 @@ public class PaymentRequest(IJSRuntime js)
     /// <summary>
     /// Closes the sheet this instance opened, before the user has authorized anything - the cart
     /// expired, the item sold out. Returns false when there is nothing in flight to abort.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaymentRequest/abort">PaymentRequest.abort()</see>
     /// </summary>
-    public ValueTask<bool> Abort() => js.Invoke<bool>("BitButil.paymentRequest.abort", _requestId);
+    public ValueTask<bool> Abort() => js.Invoke<bool>("BitButil.paymentRequest.abort", _instanceId);
 
     private static string ToName(PaymentCompleteResult result) => result switch
     {

@@ -13,7 +13,9 @@ public class PaymentResponse
 {
     /// <summary>
     /// The handle this response is tracked under on the JavaScript side - pass it to
-    /// <see cref="PaymentRequest.Complete"/>. It is Butil's own identifier, not the browser's.
+    /// <see cref="PaymentRequest.Complete"/>. It is Butil's own identifier, not the browser's, and
+    /// it belongs to the <see cref="PaymentRequest"/> instance that opened the sheet: the next
+    /// <see cref="PaymentRequest.Show"/> on that instance replaces the response held under it.
     /// </summary>
     public string Id { get; set; } = string.Empty;
 

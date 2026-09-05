@@ -61,7 +61,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         }
 
         // Asking for neither would hand navigator.credentials.get() an options object with only a
-        // mediation in it, which matches every credential type rather than none.
+        // mediation in it, which matches every credential type rather than none. The C# side refuses
+        // such a request before it gets here; this is the guard for a call that did not come through it.
         if (!options.password && !options.federated) return null;
 
         try {

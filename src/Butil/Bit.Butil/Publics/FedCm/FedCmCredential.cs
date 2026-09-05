@@ -7,9 +7,6 @@ namespace Bit.Butil;
 /// </summary>
 public class FedCmCredential
 {
-    /// <summary>Always <c>"identity"</c>.</summary>
-    public string Type { get; set; } = string.Empty;
-
     /// <summary>The account identifier the provider returned, where it sets one.</summary>
     public string? Id { get; set; }
 
@@ -26,6 +23,10 @@ public class FedCmCredential
     /// </summary>
     public bool IsAutoSelected { get; set; }
 
-    /// <summary>The <see cref="FedCmProvider.ConfigUrl"/> the token came from.</summary>
+    /// <summary>
+    /// The <see cref="FedCmProvider.ConfigUrl"/> the token came from, where the browser reports it.
+    /// Null when it does not - it is not inferred from the request, which would name the wrong
+    /// provider as soon as more than one was offered.
+    /// </summary>
     public string? ConfigUrl { get; set; }
 }

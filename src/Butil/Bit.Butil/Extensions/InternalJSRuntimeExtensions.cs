@@ -214,6 +214,47 @@ internal static class InternalJSRuntimeExtensions
 
 
     /// <summary>
+    /// Bridges a <see cref="CancellationToken"/> to a JavaScript-side abort: when the token fires, the
+    /// given interop function is invoked (fire-and-forget) with the given arguments. Returns the
+    /// registration to dispose once the call it guards has settled - or <c>default</c> when the token
+    /// can never be cancelled, so a <see cref="CancellationToken.None"/> caller pays nothing.
+    /// </summary>
+    /// <remarks>
+    /// One implementation for every cancellable wrapper (<see cref="Fetch"/>, <see cref="WebOtp"/>,
+    /// <see cref="DigitalCredentials"/>), because the callback runs in whatever context cancels the
+    /// token - a component's <c>Dispose</c>, a timer thread - and has nothing to hand an exception to.
+    /// A circuit that is already gone makes the interop call throw or fault; both are swallowed here,
+    /// the way any teardown-time interop failure is, rather than surfacing out of the caller's
+    /// <c>CancellationTokenSource.Cancel()</c> or as an unobserved task exception. An already-cancelled
+    /// token runs the callback synchronously inside this method, which is what dispatches the abort
+    /// <em>before</em> the call it belongs to - the JavaScript side holds such an abort against the
+    /// call's handle (see <c>abortable.ts</c>).
+    /// </remarks>
+    internal static CancellationTokenRegistration RegisterJsAbort(this IJSRuntime jsRuntime, CancellationToken cancellationToken, string identifier, params object?[]? args)
+    {
+        if (cancellationToken.CanBeCanceled is false) return default;
+
+        return cancellationToken.Register(static state =>
+        {
+            var (js, id, arguments) = ((IJSRuntime, string, object?[]?))state!;
+            try
+            {
+                var pending = js.InvokeVoid(id, arguments);
+                if (pending.IsCompletedSuccessfully is false) _ = Observe(pending);
+            }
+            catch (Exception exception) when (exception.IsIgnorableDisposalException()) { }
+        }, (jsRuntime, identifier, args));
+
+        // Awaited only to observe a failure: the abort itself is the whole of the work, and there is no
+        // caller left to report it to.
+        static async Task Observe(ValueTask pending)
+        {
+            try { await pending; }
+            catch (Exception exception) when (exception.IsIgnorableDisposalException() || exception is JSException) { }
+        }
+    }
+
+    /// <summary>
     /// True for exceptions that are safe to swallow while tearing down a wrapper (its
     /// <c>DisposeAsync</c> / teardown path). During teardown a JS interop call can surface as more
     /// than just a <see cref="JSDisconnectedException"/>:

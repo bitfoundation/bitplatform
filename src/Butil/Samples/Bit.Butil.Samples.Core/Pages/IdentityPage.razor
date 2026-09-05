@@ -149,7 +149,7 @@ var credential = await credentials.Get(new CredentialRequestOptions { Mediation 
 
         try
         {
-            if (!await webOtp.IsSupported())
+            if (await webOtp.IsSupported() is false)
             {
                 await output.Warn("WebOTP is not available here - try Chrome on Android over HTTPS.");
                 return;

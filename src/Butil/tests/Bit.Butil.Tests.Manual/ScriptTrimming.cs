@@ -21,19 +21,27 @@ namespace ButilTests.Manual;
 internal static class ScriptTrimming
 {
     /// <summary>
-    /// The modules a trimmed publish of this harness must end up calling - the JavaScript behind the services
-    /// <see cref="ConsumerComponent"/> uses (plus <c>events</c>, reached through <c>Window.SubscribeEvent</c>'s
-    /// internal <c>DomEventsInterop</c>). Dependencies (<c>butil</c>, <c>utils</c>) are added by the manifest,
-    /// not listed here, so this stays a statement about what the C# side calls.
+    /// The modules behind the services <see cref="ConsumerComponent"/> injects (plus <c>events</c>, reached
+    /// through <c>Window.SubscribeEvent</c>'s internal <c>DomEventsInterop</c>) - the answer the class-to-module
+    /// map has to give when asked about exactly those classes.
     /// </summary>
-    internal static readonly string[] MustSurviveModules = ["clipboard", "cookie", "events", "geolocation", "storage", "window"];
+    internal static readonly string[] InjectedModules = ["clipboard", "cookie", "events", "geolocation", "storage", "window"];
+
+    /// <summary>
+    /// The modules a trimmed publish of this harness must end up calling: <see cref="InjectedModules"/> plus the
+    /// three <see cref="CancellationContract"/> reaches by constructing the services directly. Dependencies
+    /// (<c>butil</c>, <c>utils</c>) are added by the manifest, not listed here, so this stays a statement about
+    /// what the C# side calls.
+    /// </summary>
+    internal static readonly string[] MustSurviveModules =
+        [.. InjectedModules, "digitalCredentials", "fetch", "webOtp"];
 
     /// <summary>
     /// Modules no C# code calls directly and that are legitimately only ever pulled in as a dependency of
     /// another module. Anything else in the manifest that nothing calls is an orphan: JavaScript shipped
     /// for an API that no longer exists on the C# side.
     /// </summary>
-    private static readonly string[] DependencyOnlyModules = ["butil", "utils"];
+    private static readonly string[] DependencyOnlyModules = ["abortable", "butil", "utils"];
 
     public sealed record Report(
         string[] Referenced,

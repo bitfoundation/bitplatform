@@ -9,8 +9,9 @@ namespace ButilTests.Manual;
 /// </summary>
 /// <remarks>
 /// <see cref="ScriptTrimming"/> checks the trimmed publish's signal - the interop identifiers ILLink leaves
-/// behind - against <see cref="ScriptTrimming.MustSurviveModules"/>, the modules
-/// <see cref="ConsumerComponent"/>'s five injected services need. That list is this file's ground truth too,
+/// behind - against <see cref="ScriptTrimming.MustSurviveModules"/>, the modules this project's own code
+/// needs (<see cref="ScriptTrimming.InjectedModules"/> is the injected-services half of it, which is what the
+/// map is asked about below). That list is this file's ground truth too,
 /// and that is the whole point: the map and the scan are meant to reach the same answer about the same code
 /// without ILLink having run, so the check that matters is that they do. If they ever diverge, an untrimmed
 /// consumer publishes a bundle missing JavaScript their app calls, and finds out in a browser.
@@ -95,15 +96,16 @@ internal static class ScriptScanning
             foreach (var module in modules) actual.Add(module);
         }
 
-        Compare(checks, ScriptTrimming.MustSurviveModules, actual,
+        Compare(checks, ScriptTrimming.InjectedModules, actual,
             "the classes ConsumerComponent injects map to exactly the modules ILLink leaves in a trimmed build of them",
             missing => $"the map does not lead from any injected class to [{missing}], so an untrimmed publish would drop JavaScript the app calls",
             extra => $"the map leads to [{extra}], which trimming the same code does not keep - the closure is reaching further than the code does");
     }
 
     /// <summary>
-    /// The scan, over this harness's own assembly, has to reach the same set: it is the same five classes,
-    /// named the way a consumer's assembly names them.
+    /// The scan, over this harness's own assembly, has to reach every module this project's code needs: the
+    /// injected classes named the way a consumer's assembly names them, plus the three services
+    /// <see cref="CancellationContract"/> constructs directly.
     /// </summary>
     private static void CheckScanFindsTheSameModules(ScriptBundling.Checks checks, ButilTypeModules map)
     {

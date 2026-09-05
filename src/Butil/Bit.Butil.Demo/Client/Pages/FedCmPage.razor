@@ -156,8 +156,8 @@ await fedCm.SetLoginStatus(FedCmLoginStatus.LoggedOut);
                Signature="string ConfigUrl, string ClientId, string? Nonce, string? LoginHint, string? DomainHint, string[]? Fields, object? Parameters"
                Description="One identity provider. Parameters is passed through as the provider dictionary's params." />
     <ApiMember Name="FedCmCredential"
-               Signature="string Type, string? Id, string Token, bool IsAutoSelected, string? ConfigUrl"
-               Description="The provider's token. IsAutoSelected is true when the browser signed the user in without asking." />
+               Signature="string? Id, string Token, bool IsAutoSelected, string? ConfigUrl"
+               Description="The provider's token. IsAutoSelected is true when the browser signed the user in without asking. ConfigUrl is null where the browser does not report which provider answered." />
     <ApiMember Name="FedCmLoginStatus"
                Signature="enum { LoggedIn, LoggedOut }"
                Description="What SetLoginStatus tells the browser about the provider's own session." />
@@ -192,7 +192,7 @@ await fedCm.SetLoginStatus(FedCmLoginStatus.LoggedOut);
     {
         try
         {
-            if (!await fedCm.IsSupported())
+            if (await fedCm.IsSupported() is false)
             {
                 await signInOutput.Warn("FedCM is not available in this browser.");
                 return;

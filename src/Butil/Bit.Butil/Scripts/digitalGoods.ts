@@ -3,10 +3,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     const DEFAULT_PROVIDER = 'https://play.google.com/billing';
 
-    // One service object per provider, kept for the life of the page: getDigitalGoodsService() is a
+    // One connection per provider, kept for the life of the page: getDigitalGoodsService() is a
     // connection to the store, not a lookup, and reconnecting on every call would put a round trip
-    // in front of each one.
-    const _services: { [provider: string]: any } = {};
+    // in front of each one. What is kept is the pending promise, not the resolved service, so
+    // concurrent first calls - listing purchases and fetching the catalogue together on launch - share
+    // one connection attempt instead of each opening a connection and orphaning all but the last.
+    const _services: { [provider: string]: Promise<any> } = {};
 
     butil.digitalGoods = {
         isSupported() { return typeof (window as any).getDigitalGoodsService === 'function'; },
@@ -17,21 +19,31 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         consume
     };
 
-    async function service(provider: string) {
+    function service(provider: string): Promise<any> {
         const W = window as any;
-        if (typeof W.getDigitalGoodsService !== 'function') return null;
+        if (typeof W.getDigitalGoodsService !== 'function') return Promise.resolve(null);
 
         const key = provider || DEFAULT_PROVIDER;
-        if (_services[key]) return _services[key];
+        return _services[key] || (_services[key] = openService(W, key));
+    }
 
+    async function openService(W: any, key: string) {
         try {
             const connected = await W.getDigitalGoodsService(key);
-            if (connected) _services[key] = connected;
-            return connected ?? null;
+            if (connected) return connected;
         } catch {
             // Not installed from this store - the ordinary answer in a browser tab.
-            return null;
         }
+
+        delete _services[key];
+        return null;
+    }
+
+    // A store call that rejects may mean the connection behind it is gone (the store app restarted),
+    // and a cached dead connection would answer every later call with nothing until a reload. Dropping
+    // it makes the next call reconnect.
+    function forget(provider: string) {
+        delete _services[provider || DEFAULT_PROVIDER];
     }
 
     function toAmount(amount: any) {
@@ -67,6 +79,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 introductoryPriceCycles: item.introductoryPriceCycles ?? null
             }));
         } catch {
+            forget(provider);
             return [];
         }
     }
@@ -76,7 +89,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!store?.listPurchases) return [];
 
         try { return ((await store.listPurchases()) || []).map(toPurchase); }
-        catch { return []; }
+        catch { forget(provider); return []; }
     }
 
     async function listPurchaseHistory(provider: string) {
@@ -84,7 +97,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!store?.listPurchaseHistory) return [];
 
         try { return ((await store.listPurchaseHistory()) || []).map(toPurchase); }
-        catch { return []; }
+        catch { forget(provider); return []; }
     }
 
     async function consume(purchaseToken: string, provider: string) {
@@ -92,6 +105,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!store?.consume || !purchaseToken) return false;
 
         try { await store.consume(purchaseToken); return true; }
-        catch { return false; }
+        catch { forget(provider); return false; }
     }
 }(BitButil));

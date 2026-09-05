@@ -27,7 +27,11 @@ public class DigitalCredentials(IJSRuntime js)
     // Per-instance handle for the pending exchanges, so one circuit's Abort cannot cancel another's.
     private readonly string _instanceId = Guid.NewGuid().ToString("N");
 
-    /// <summary>True when the runtime exposes <c>window.DigitalCredential</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>window.DigitalCredential</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/DigitalCredential">DigitalCredential</see>
+    /// </summary>
     /// <remarks>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
@@ -48,6 +52,8 @@ public class DigitalCredentials(IJSRuntime js)
     /// Asks the wallet to present a credential, resolving with what it signed or <c>null</c> when
     /// the user declined, no wallet matched, or the browser refused. Must be called from a
     /// user-gesture handler.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get">CredentialsContainer.get()</see>
     /// </summary>
     /// <param name="requests">
     /// The acceptable protocols and their request objects. More than one entry offers the wallet
@@ -71,10 +77,10 @@ public class DigitalCredentials(IJSRuntime js)
         // never opens the wallet chooser and no other call is disturbed.
         var requestId = Guid.NewGuid().ToString("N");
 
-        using var registration = cancellationToken.Register(() => js.InvokeVoid("BitButil.digitalCredentials.abort", _instanceId, requestId));
+        using var registration = js.RegisterJsAbort(cancellationToken, "BitButil.digitalCredentials.abort", _instanceId, requestId);
 
         return await js.Invoke<DigitalCredentialResponse?>("BitButil.digitalCredentials.get",
-            _instanceId, requestId, requests, Credentials.ToName(mediation));
+            _instanceId, requestId, requests, CredentialMediations.ToName(mediation));
     }
 
     /// <summary>
@@ -94,7 +100,7 @@ public class DigitalCredentials(IJSRuntime js)
         // Its own handle, for the same reasons as Get.
         var requestId = Guid.NewGuid().ToString("N");
 
-        using var registration = cancellationToken.Register(() => js.InvokeVoid("BitButil.digitalCredentials.abort", _instanceId, requestId));
+        using var registration = js.RegisterJsAbort(cancellationToken, "BitButil.digitalCredentials.abort", _instanceId, requestId);
 
         return await js.Invoke<DigitalCredentialResponse?>("BitButil.digitalCredentials.create", _instanceId, requestId, requests);
     }
@@ -102,6 +108,8 @@ public class DigitalCredentials(IJSRuntime js)
     /// <summary>
     /// Ends the exchanges this instance started, dismissing the wallet chooser. Returns false when
     /// nothing was pending.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort">AbortController.abort()</see>
     /// </summary>
     public ValueTask<bool> Abort() => js.Invoke<bool>("BitButil.digitalCredentials.abort", _instanceId, null);
 }

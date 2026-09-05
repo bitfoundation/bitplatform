@@ -30,7 +30,11 @@ public class DigitalGoods(IJSRuntime js)
     /// </summary>
     public const string GooglePlayBilling = "https://play.google.com/billing";
 
-    /// <summary>True when the runtime exposes <c>window.getDigitalGoodsService</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>window.getDigitalGoodsService</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/getDigitalGoodsService">Window.getDigitalGoodsService()</see>
+    /// </summary>
     /// <remarks>
     /// Being exposed is not the same as being connectable: an uninstalled app has the function and
     /// no store behind it. <see cref="Connect"/> is the check that answers for real.
@@ -45,6 +49,8 @@ public class DigitalGoods(IJSRuntime js)
     /// Connects to a store's billing service, returning false when there is none - the usual answer
     /// in a browser tab. The connection is cached, so the other members can be called straight away
     /// and this is only worth calling to decide whether to show a store UI at all.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/getDigitalGoodsService">Window.getDigitalGoodsService()</see>
     /// </summary>
     /// <param name="serviceProvider">The store's payment method identifier. Defaults to <see cref="GooglePlayBilling"/>.</param>
     public ValueTask<bool> Connect(string serviceProvider = GooglePlayBilling)
@@ -53,6 +59,8 @@ public class DigitalGoods(IJSRuntime js)
     /// <summary>
     /// Looks up the store's own title, description and price for each item id, skipping ids the
     /// store does not know. Empty when there is no store to ask.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/DigitalGoodsService/getDetails">DigitalGoodsService.getDetails()</see>
     /// </summary>
     /// <param name="itemIds">The item ids configured in the store's console.</param>
     /// <param name="serviceProvider">The store's payment method identifier. Defaults to <see cref="GooglePlayBilling"/>.</param>
@@ -64,6 +72,8 @@ public class DigitalGoods(IJSRuntime js)
     /// <summary>
     /// The purchases that are currently active - unconsumed one-offs and live subscriptions. This is
     /// what a client restores entitlements from after a reinstall, and what it re-checks on launch.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/DigitalGoodsService/listPurchases">DigitalGoodsService.listPurchases()</see>
     /// </summary>
     /// <param name="serviceProvider">The store's payment method identifier. Defaults to <see cref="GooglePlayBilling"/>.</param>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DigitalGoodsPurchase))]
@@ -73,6 +83,8 @@ public class DigitalGoods(IJSRuntime js)
     /// <summary>
     /// The most recent purchase per item, including ones already consumed or expired - the history
     /// behind <see cref="ListPurchases"/> rather than the current state.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/DigitalGoodsService/listPurchaseHistory">DigitalGoodsService.listPurchaseHistory()</see>
     /// </summary>
     /// <param name="serviceProvider">The store's payment method identifier. Defaults to <see cref="GooglePlayBilling"/>.</param>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DigitalGoodsPurchase))]
@@ -82,6 +94,8 @@ public class DigitalGoods(IJSRuntime js)
     /// <summary>
     /// Marks a purchase as used up, so the item can be bought again - the coin pack the user spent.
     /// Returns false when the store refused or there was no store.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/DigitalGoodsService/consume">DigitalGoodsService.consume()</see>
     /// </summary>
     /// <param name="purchaseToken">The <see cref="DigitalGoodsPurchase.PurchaseToken"/> to consume.</param>
     /// <param name="serviceProvider">The store's payment method identifier. Defaults to <see cref="GooglePlayBilling"/>.</param>

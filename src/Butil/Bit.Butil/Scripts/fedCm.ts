@@ -32,12 +32,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const credential: any = await navigator.credentials.get({ identity, mediation: mediation || 'optional' } as any);
             if (!credential) return null;
 
+            // configURL is left null when the browser does not report it: guessing it from the request
+            // names the wrong provider as soon as more than one was offered.
             return {
-                type: credential.type ?? 'identity',
                 id: credential.id ?? null,
                 token: credential.token ?? '',
                 isAutoSelected: !!credential.isAutoSelected,
-                configUrl: credential.configURL ?? providers[0]?.configUrl ?? null
+                configUrl: credential.configURL ?? null
             };
         } catch {
             // The user dismissed it, the provider returned no account, or the browser is in its

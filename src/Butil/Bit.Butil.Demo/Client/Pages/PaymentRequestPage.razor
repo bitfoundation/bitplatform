@@ -128,7 +128,7 @@ await paymentHandler.SetUserHint("user@example.com");
 
 var hint = await paymentHandler.GetUserHint();
 
-var accepted = await paymentHandler.EnableDelegations(
+var enabled = await paymentHandler.EnableDelegations(
     new[] { "shippingAddress", "payerEmail" });
 """)>
         <div class="field">
@@ -201,8 +201,8 @@ var accepted = await paymentHandler.EnableDelegations(
                Signature="ValueTask SetUserHint(string userHint)"
                Description="Sets that hint. Set it after sign-in, clear it on sign-out - other sites' users see it." />
     <ApiMember Name="PaymentHandler.EnableDelegations"
-               Signature="ValueTask<string[]> EnableDelegations(string[] delegations)"
-               Description="Declares the fields your handler collects itself (shippingAddress, payerName, payerEmail, payerPhone). Returns what the browser accepted." />
+               Signature="ValueTask<bool> EnableDelegations(string[] delegations)"
+               Description="Declares the fields your handler collects itself (shippingAddress, payerName, payerEmail, payerPhone). All or nothing: a name the engine does not know rejects the whole call, so the answer is true or false." />
 </ApiTable>
 
 @code {
@@ -261,7 +261,7 @@ var accepted = await paymentHandler.EnableDelegations(
     {
         try
         {
-            if (!await paymentRequest.IsSupported())
+            if (await paymentRequest.IsSupported() is false)
             {
                 await canPayOutput.Warn("The Payment Request API is not available in this browser.");
                 return;
@@ -280,7 +280,7 @@ var accepted = await paymentHandler.EnableDelegations(
     {
         try
         {
-            if (!await paymentRequest.IsSupported())
+            if (await paymentRequest.IsSupported() is false)
             {
                 await showOutput.Warn("The Payment Request API is not available in this browser.");
                 return;
@@ -356,7 +356,7 @@ var accepted = await paymentHandler.EnableDelegations(
     {
         try
         {
-            if (!await paymentHandler.IsSupported())
+            if (await paymentHandler.IsSupported() is false)
             {
                 await handlerOutput.Warn("The Payment Handler API is not available in this browser.");
                 return;
@@ -388,9 +388,9 @@ var accepted = await paymentHandler.EnableDelegations(
     {
         try
         {
-            var accepted = await paymentHandler.EnableDelegations(["shippingAddress", "payerEmail"]);
+            var enabled = await paymentHandler.EnableDelegations(["shippingAddress", "payerEmail"]);
             await handlerOutput.Success("EnableDelegations →",
-                accepted.Length > 0 ? string.Join(", ", accepted) : "none accepted (no registration, or unknown names)");
+                enabled ? "shippingAddress, payerEmail" : "refused (no registration, or a name this engine does not know)");
         }
         catch (Exception ex)
         {

@@ -22,7 +22,11 @@ namespace Bit.Butil;
 [ButilService(typeof(FedCm))]
 public class FedCm(IJSRuntime js)
 {
-    /// <summary>True when the runtime exposes <c>window.IdentityCredential</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>window.IdentityCredential</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/IdentityCredential">IdentityCredential</see>
+    /// </summary>
     /// <remarks>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
@@ -37,11 +41,13 @@ public class FedCm(IJSRuntime js)
     /// <remarks>
     /// Needs a user gesture unless the browser chooses to auto-reauthenticate a returning user. The
     /// dialog is the browser's own, so nothing about it can be styled or scripted from the page.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get">CredentialsContainer.get()</see>
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FedCmProvider))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FedCmCredential))]
     public ValueTask<FedCmCredential?> Get(FedCmOptions options)
-        => js.Invoke<FedCmCredential?>("BitButil.fedCm.get", options.Providers, options.Context, Credentials.ToName(options.Mediation));
+        => js.Invoke<FedCmCredential?>("BitButil.fedCm.get", options.Providers, options.Context, CredentialMediations.ToName(options.Mediation));
 
     /// <summary>
     /// Severs the connection between this relying party and one account at the provider, so the
@@ -56,7 +62,11 @@ public class FedCm(IJSRuntime js)
     public ValueTask<bool> Disconnect(string configUrl, string clientId, string accountHint)
         => js.Invoke<bool>("BitButil.fedCm.disconnect", configUrl, clientId, accountHint);
 
-    /// <summary>True when the runtime exposes <c>navigator.login</c>.</summary>
+    /// <summary>
+    /// True when the runtime exposes <c>navigator.login</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/NavigatorLogin">NavigatorLogin</see>
+    /// </summary>
     public ValueTask<bool> IsLoginStatusSupported() => js.Invoke<bool>("BitButil.fedCm.isLoginStatusSupported");
 
     /// <summary>
