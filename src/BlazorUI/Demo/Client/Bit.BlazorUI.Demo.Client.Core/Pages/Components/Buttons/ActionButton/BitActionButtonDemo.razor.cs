@@ -27,6 +27,13 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the action button automatically receives focus when the page renders (rendered as the autofocus attribute).",
+        },
+        new()
+        {
             Name = "AutoLoading",
             Type = "bool",
             DefaultValue = "false",
@@ -60,7 +67,7 @@ public partial class BitActionButtonDemo
             Name = "Classes",
             Type = "BitActionButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for the root, icon, and content sections of the action button.",
+            Description = "Custom CSS classes for the root, icon, content, loading label, and spinner of the action button.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
         },
@@ -69,7 +76,7 @@ public partial class BitActionButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the button that applies to the icon and text of the action button.",
+            Description = "The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral foreground; on hover and press it takes over the text as well, and it also picks the focus ring color.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -89,10 +96,17 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "FormId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the form element that the action button is associated with (rendered as the form attribute). Allows a submit/reset button to be placed outside of its form element.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Gets or sets a value indicating whether the component should expand to occupy the full available width.",
+            Description = "Stretches the action button across the full available width and spreads its icon and content to the two ends.",
         },
         new()
         {
@@ -134,6 +148,13 @@ public partial class BitActionButtonDemo
             Description = "Gets or sets the position of the icon relative to the component's content.",
             LinkType = LinkType.Link,
             Href = "#icon-position-enum",
+        },
+        new()
+        {
+            Name = "IconUrl",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The url of a custom image to render as the icon of the action button, used when neither Icon nor IconName is set.",
         },
         new()
         {
@@ -229,8 +250,96 @@ public partial class BitActionButtonDemo
             Name = "Underlined",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Adds an underline to the action button text, useful for link-style buttons.",
+            Description = "Underlines the text of the action button, which thickens on hover, for the link-style use inside running text.",
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-ActionButton-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color at rest. The role color only reaches the text on hover and press, so this is what colorizes the label permanently.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-icon-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Icon and spinner color at rest.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-hover-color",
+            DefaultValue = "The Color role's hover color",
+            Description = "Text and icon color while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-active-color",
+            DefaultValue = "The Color role's active color",
+            Description = "Text and icon color while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis (text), the Color role's disabled text color (icon)",
+            Description = "Text and icon color when IsEnabled is false; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the keyboard focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-background",
+            DefaultValue = "transparent",
+            Description = "Background at rest, and the fallback of the two state backgrounds below.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-hover-background",
+            DefaultValue = "--bit-ActionButton-background",
+            Description = "Background while hovered. A translucent tint of the role color, such as color-mix(in srgb, var(--bit-clr-pri) 12%, transparent), gives the Material-style state layer.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-active-background",
+            DefaultValue = "--bit-ActionButton-hover-background",
+            Description = "Background while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the box, which the backgrounds and the focus ring follow.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-padding",
+            DefaultValue = "Per Size: the control's y padding and one step below the standalone button's x padding",
+            Description = "Padding of the box. Set it to 0 for a button that sits flush inside running text or a table cell.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the icon (or spinner) and the content.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
+            Description = "Font size of the text and the loading label.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-icon-size",
+            DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
+            Description = "Size of the icon, the IconUrl image and the spinner, which share one slot so entering the loading state moves nothing.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -254,7 +363,7 @@ public partial class BitActionButtonDemo
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom class or style applied to the icon element of the BitActionButton."
+                    Description = "Custom class or style applied to the icon element of the BitActionButton (the glyph, or the image rendered for IconUrl)."
                 },
                 new()
                 {
@@ -664,8 +773,6 @@ public partial class BitActionButtonDemo
         buttonValidationModel = new();
 
         formIsValidSubmit = false;
-
-        StateHasChanged();
     }
 
     private void HandleInvalidSubmit()

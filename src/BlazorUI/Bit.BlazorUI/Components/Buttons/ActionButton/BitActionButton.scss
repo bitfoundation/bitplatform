@@ -1,38 +1,60 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// action button and one set on the Style of an instance re-skins that one alone:
+//   --bit-ActionButton-color               text color at rest                            (default: $clr-fg-pri)
+//   --bit-ActionButton-icon-color          icon and spinner color at rest                (default: the role's main color)
+//   --bit-ActionButton-hover-color         text and icon color on hover                  (default: the role's hover color)
+//   --bit-ActionButton-active-color        text and icon color while pressed             (default: the role's active color)
+//   --bit-ActionButton-disabled-color      text and icon color when disabled             (default: $clr-fg-dis / the role's disabled text color)
+//   --bit-ActionButton-focus-color         focus ring color                              (default: the role's focus color)
+//   --bit-ActionButton-background          background at rest                            (default: transparent)
+//   --bit-ActionButton-hover-background    background on hover                           (default: the rest background)
+//   --bit-ActionButton-active-background   background while pressed                      (default: the hover background)
+//   --bit-ActionButton-radius              corner radius of the box and its focus ring   (default: $shp-radius-button)
+//   --bit-ActionButton-padding             padding of the box                            (default: per size)
+//   --bit-ActionButton-gap                 room between the icon and the content         (default: spacing(1))
+//   --bit-ActionButton-font-size           text size                                     (default: per size, from the type ramp)
+//   --bit-ActionButton-icon-size           icon and spinner size                         (default: per size, $siz-icon-*)
+
 .bit-acb {
     border: none;
-    display: flex;
     cursor: pointer;
-    color: $clr-fg-pri;
+    text-align: start;
+    align-items: center;
+    display: inline-flex;
     text-decoration: none;
     box-sizing: border-box;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
-    background-color: transparent;
-    padding: var(--bit-acb-padding);
-    font-size: var(--bit-acb-fontsize);
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
     -webkit-tap-highlight-color: transparent;
-    transition: color $mot-duration-short $mot-easing;
+    color: var(--bit-ActionButton-color, #{$clr-fg-pri});
+    padding: var(--bit-ActionButton-padding, var(--bit-acb-padding));
+    font-size: var(--bit-ActionButton-font-size, var(--bit-acb-fontsize));
+    border-radius: var(--bit-ActionButton-radius, #{$shp-radius-button});
+    background-color: var(--bit-ActionButton-background, transparent);
+    // The one color the icon and the spinner read; every state below retargets it along with the text color.
+    --bit-acb-ico: var(--bit-ActionButton-icon-color, var(--bit-acb-clr-ico));
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-acb-clr-hover);
-            --bit-acb-clr-ico: var(--bit-acb-clr-hover);
+            color: var(--bit-ActionButton-hover-color, var(--bit-acb-clr-hover));
+            --bit-acb-ico: var(--bit-ActionButton-hover-color, var(--bit-acb-clr-hover));
+            background-color: var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent));
         }
     }
 
     &:active {
-        color: var(--bit-acb-clr-active);
-        --bit-acb-clr-ico: var(--bit-acb-clr-active);
+        color: var(--bit-ActionButton-active-color, var(--bit-acb-clr-active));
+        --bit-acb-ico: var(--bit-ActionButton-active-color, var(--bit-acb-clr-active));
+        background-color: var(--bit-ActionButton-active-background, var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent)));
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-acb-clr-focus));
-
-        border-radius: $shp-radius-button;
+        @include focus-ring(var(--bit-ActionButton-focus-color, var(--bit-acb-clr-focus)));
     }
 
     &.bit-dis {
@@ -40,33 +62,52 @@
         pointer-events: none;
         // The role color only ever reaches the icon here (the label sits on $clr-fg-pri), so the
         // disabled label follows the achromatic disabled foreground instead of the role's dis-text.
-        color: $clr-fg-dis;
-        --bit-acb-clr-ico: var(--bit-acb-clr-dis-text);
+        color: var(--bit-ActionButton-disabled-color, #{$clr-fg-dis});
+        --bit-acb-ico: var(--bit-ActionButton-disabled-color, var(--bit-acb-clr-dis-text));
+        background-color: var(--bit-ActionButton-background, transparent);
 
         // AllowDisabledFocus keeps a disabled button in the tab order, so the indicator has to stay
         // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
         // contradicts the inert look and reads as actionable.
         &:focus-visible {
-            @include focus-ring(var(--bit-acb-clr-dis-text));
+            @include focus-ring(var(--bit-ActionButton-disabled-color, var(--bit-acb-clr-dis-text)));
         }
     }
 }
 
-// The hover/active/disabled states retarget --bit-acb-clr-ico on the button, which changes the
+.bit-acb-inn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bit-ActionButton-gap, #{spacing(1)});
+}
+
+// The hover/active/disabled states retarget --bit-acb-ico on the button, which changes the
 // computed color here, so the transition has to sit on the icon to animate along with the label.
 .bit-acb-ico {
-    color: var(--bit-acb-clr-ico);
+    line-height: 1;
+    flex-shrink: 0;
+    color: var(--bit-acb-ico);
+    font-size: var(--bit-ActionButton-icon-size, var(--bit-acb-ico-size));
     transition: color $mot-duration-short $mot-easing;
 }
 
+.bit-acb-icu {
+    flex-shrink: 0;
+    object-fit: contain;
+    width: var(--bit-ActionButton-icon-size, var(--bit-acb-ico-size));
+    height: var(--bit-ActionButton-icon-size, var(--bit-acb-ico-size));
+}
+
+// The spinner takes the icon's slot and its size, so entering the loading state moves nothing around it.
 .bit-acb-spn {
+    flex-shrink: 0;
     border-radius: 50%;
-    border-width: $siz-spinner-stroke;
-    width: var(--bit-acb-spn-size);
-    height: var(--bit-acb-spn-size);
     border-color: $clr-brd-sec;
     border-style: $shp-border-style;
-    border-top-color: var(--bit-acb-clr-ico);
+    border-width: $siz-spinner-stroke;
+    border-top-color: var(--bit-acb-ico);
+    width: var(--bit-ActionButton-icon-size, var(--bit-acb-ico-size));
+    height: var(--bit-ActionButton-icon-size, var(--bit-acb-ico-size));
     animation: bit-acb-spin $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
@@ -80,12 +121,19 @@
     }
 }
 
+// The content is text before it is anything else, so it flows as text: a flex box here would turn
+// "Hello <b>world</b>" into two items and swallow the space between them. min-width lets it shrink
+// below its own text so a long label in a FullWidth row can be clamped or ellipsized by the author.
 .bit-acb-con {
+    min-width: 0;
     flex-grow: 1;
-    display: flex;
 }
 
-.bit-acb-sts {
+// The two pieces of text the button carries for a screen reader and for nobody else: the live region that
+// announces the loading label, and the description it is pointed at through aria-describedby. Both are taken
+// out of the flow rather than hidden, since display:none is also hidden from the readers they are written for.
+.bit-acb-sts,
+.bit-acb-dsc {
     border: 0;
     padding: 0;
     width: 1px;
@@ -95,22 +143,22 @@
     position: absolute;
     white-space: nowrap;
     clip-path: inset(50%);
-    clip: rect(0 0 0 0);
-}
-
-.bit-acb-inn {
-    display: inline-flex;
-    align-items: center;
-    gap: spacing(1);
 }
 
 .bit-acb-eni {
-    flex-direction: row-reverse;
+    .bit-acb-inn {
+        flex-direction: row-reverse;
+    }
 }
 
+// The inner wrapper fills the stretched box so the growing content pushes the icon to the far end - the
+// familiar navigation row with the label on one side and a chevron on the other.
 .bit-acb-fwi {
     width: 100%;
-    justify-content: flex-start;
+
+    .bit-acb-inn {
+        flex-grow: 1;
+    }
 }
 
 .bit-acb-lod {
@@ -118,25 +166,19 @@
     pointer-events: none;
 }
 
+// A real text underline rather than a painted bar: it follows the text through wrapping and survives a
+// forced-colors palette, which strips every background an author paints.
 .bit-acb-und {
-    .bit-acb-inn {
-        text-decoration: none;
-        position: relative;
+    .bit-acb-con {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+        text-decoration-thickness: $shp-border-width;
+        transition: text-decoration-thickness $mot-duration-short $mot-easing;
+    }
 
-        &::after {
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: $shp-border-width;
-            content: "";
-            position: absolute;
-            background-color: currentcolor;
-        }
-
-        @media (hover: hover) {
-            &:hover::after {
-                height: $shp-border-width-thick;
-            }
+    @media (hover: hover) {
+        &:hover .bit-acb-con {
+            text-decoration-thickness: $shp-border-width-thick;
         }
     }
 }
@@ -156,21 +198,38 @@
 
 // The x padding sits one ramp step below the standalone button's (an action button is Fluent's
 // light, link-like command - Material's "text button" - which every design system pads tighter
-// than a filled button), so the token still drives it.
+// than a filled button), so the token still drives it. The glyph is one step above the text on
+// the icon scale, the way every control in the library sizes the icon it carries.
 .bit-acb-sm {
     --bit-acb-fontsize: #{$tg-fs-xs};
-    --bit-acb-spn-size: #{spacing(1.25)};
+    --bit-acb-ico-size: #{$siz-icon-sm};
     --bit-acb-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
 }
 
 .bit-acb-md {
     --bit-acb-fontsize: #{$tg-fs-sm};
-    --bit-acb-spn-size: #{spacing(1.75)};
+    --bit-acb-ico-size: #{$siz-icon-md};
     --bit-acb-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm};
 }
 
 .bit-acb-lg {
     --bit-acb-fontsize: #{$tg-fs-md};
-    --bit-acb-spn-size: #{spacing(2.25)};
+    --bit-acb-ico-size: #{$siz-icon-lg};
     --bit-acb-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};
+}
+
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so a disabled button
+// conveyed through aria-disabled alone (AllowDisabledFocus) would look enabled, and the spinner's track and
+// arc would be painted the same color and stop reading as motion. Both are re-established in system colors.
+@media (forced-colors: active) {
+    .bit-acb.bit-dis {
+        color: GrayText;
+        --bit-acb-ico: GrayText;
+    }
+
+    .bit-acb-spn {
+        border-color: GrayText;
+        border-top-color: CanvasText;
+    }
 }

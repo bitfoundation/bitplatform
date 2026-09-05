@@ -5,6 +5,7 @@
     RenderFragment b = @<div style="@Styles?.Content" class="bit-acb-con @Classes?.Content">@(Body ?? ChildContent)</div>;
     var body = ((Body ?? ChildContent) is not null && IconOnly is false) ? b : null;
     var icon = BitIconInfo.From(Icon, IconName);
+    var descriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
 
     RenderFragment inner =
         @<text>
@@ -34,6 +35,10 @@
                 {
                     <i style="@Styles?.Icon" class="bit-acb-ico @icon.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
                 }
+                else if (IconUrl.HasValue())
+                {
+                    <img src="@IconUrl" alt="" style="@Styles?.Icon" class="bit-acb-icu @Classes?.Icon" aria-hidden="true" />
+                }
 
                 @body
             }
@@ -47,14 +52,16 @@
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             type="@_buttonType.GetValue()"
+            form="@FormId"
             dir="@Dir?.ToString().ToLower()"
             disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+            autofocus="@AutoFocus"
             title="@Title"
-            tabindex="@_tabIndex"
+            tabindex="@GetTabIndex()"
             aria-label="@AriaLabel"
-            aria-hidden="@AriaHidden"
+            aria-hidden="@(AriaHidden ? "true" : null)"
             aria-disabled="@(IsEnabled ? null : "true")"
-            aria-describedby="@AriaDescription"
+            aria-describedby="@descriptionId"
             aria-busy="@(IsLoading ? "true" : null)">
         <div class="bit-acb-inn">
             @inner
@@ -72,18 +79,25 @@ else
        dir="@Dir?.ToString().ToLower()"
        href="@(IsEnabled && IsLoading is false ? Href : null)"
        role="@(IsEnabled && IsLoading is false ? null : "link")"
+       autofocus="@AutoFocus"
        title="@Title"
        target="@Target"
        download="@Download"
-       tabindex="@_tabIndex"
+       tabindex="@GetTabIndex()"
        aria-label="@AriaLabel"
-       aria-hidden="@AriaHidden"
+       aria-hidden="@(AriaHidden ? "true" : null)"
        aria-disabled="@(IsEnabled ? null : "true")"
-       aria-describedby="@AriaDescription"
+       aria-describedby="@descriptionId"
        aria-busy="@(IsLoading ? "true" : null)">
         <span class="bit-acb-inn">
             @inner
         </span>
         <span class="bit-acb-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
     </a>
+}
+
+@* Rendered as a sibling of the button/anchor so the description drives aria-describedby without leaking into the accessible name. *@
+@if (descriptionId is not null)
+{
+    <span id="@descriptionId" class="bit-acb-dsc">@AriaDescription</span>
 }
