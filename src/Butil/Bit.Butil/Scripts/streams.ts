@@ -21,25 +21,30 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         async fromResponse(id: string, url: string, req: any) {
             if (typeof (window as any).ReadableStream !== 'function') return null;
 
-            const headers = new Headers();
-            if (req?.headers) for (const key of Object.keys(req.headers)) headers.set(key, req.headers[key]);
-
-            const init: RequestInit = {
-                method: req?.method || 'GET',
-                headers,
-                credentials: req?.credentials || 'same-origin',
-                mode: req?.mode || 'cors',
-                cache: req?.cache || 'default',
-                redirect: req?.redirect || 'follow'
-            };
-            if (req?.body && req.body.length > 0) init.body = butil.utils.arrayToBuffer(req.body);
-
-            // A shared AbortSignal composes with this request the same way it does for fetch().
-            const shared = req?.signalId ? butil.abortController.signalOf(req.signalId) : undefined;
-            if (shared) init.signal = shared;
-
+            // Building the request is inside the try along with the call: an invalid header name or
+            // an unusable body throws exactly where fetch() would fail, and a caller reading the
+            // documented Error result should not have to catch a rejected promise for those two.
             let response: Response;
-            try { response = await fetch(url, init); }
+            try {
+                const headers = new Headers();
+                if (req?.headers) for (const key of Object.keys(req.headers)) headers.set(key, req.headers[key]);
+
+                const init: RequestInit = {
+                    method: req?.method || 'GET',
+                    headers,
+                    credentials: req?.credentials || 'same-origin',
+                    mode: req?.mode || 'cors',
+                    cache: req?.cache || 'default',
+                    redirect: req?.redirect || 'follow'
+                };
+                if (req?.body && req.body.length > 0) init.body = butil.utils.arrayToBuffer(req.body);
+
+                // A shared AbortSignal composes with this request the same way it does for fetch().
+                const shared = req?.signalId ? butil.abortController.signalOf(req.signalId) : undefined;
+                if (shared) init.signal = shared;
+
+                response = await fetch(url, init);
+            }
             catch (e: any) { return { ok: false, status: 0, error: e?.message ?? String(e) }; }
 
             // A 204, a HEAD, or an opaque no-cors response has no body at all - which is not an
@@ -137,6 +142,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
             try {
                 const piped = entry.stream.pipeThrough({ writable, readable });
+                // The piped stream *is* the transform's readable end, which createCompression
+                // already registered under an id of its own. Two ids for one stream means reading
+                // through the stale one locks the other, so the transform's entry goes away here.
+                delete _readables[transform.readableId];
                 trackReadable(resultId, piped);
                 delete _readables[id];
                 return true;

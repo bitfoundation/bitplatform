@@ -2,7 +2,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     interface DropEntry { element: any; handlers: { [type: string]: (e: DragEvent) => void }; }
-    interface SourceEntry { element: any; handler: (e: DragEvent) => void; }
+    // draggable is remembered as it was found: an element that was already draggable (or explicitly
+    // draggable="false") has to be left that way when the source is removed, not stripped bare.
+    interface SourceEntry { element: any; handler: (e: DragEvent) => void; draggable: string | null; }
 
     const _drops: { [id: string]: DropEntry } = {};
     const _sources: { [id: string]: SourceEntry } = {};
@@ -100,9 +102,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 }
             };
 
+            const draggable = element.getAttribute('draggable');
             element.setAttribute('draggable', 'true');
             element.addEventListener('dragstart', handler);
-            _sources[id] = { element, handler };
+            _sources[id] = { element, handler, draggable };
             return true;
         },
 
@@ -111,7 +114,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (!entry) return;
             delete _sources[id];
             entry.element.removeEventListener('dragstart', entry.handler);
-            entry.element.removeAttribute('draggable');
+            if (entry.draggable === null) entry.element.removeAttribute('draggable');
+            else entry.element.setAttribute('draggable', entry.draggable);
         },
 
         async readFile(fileId: string) {

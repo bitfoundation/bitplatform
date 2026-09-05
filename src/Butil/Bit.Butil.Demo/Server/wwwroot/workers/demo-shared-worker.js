@@ -14,6 +14,14 @@ self.addEventListener('connect', e => {
     port.addEventListener('message', m => {
         const data = m.data;
 
+        // A shared worker is never told that a page went away, so a page that is leaving says so.
+        // Without this the list keeps ports nobody is holding and every count is too high.
+        if (data && data.op === 'disconnect') {
+            const index = ports.indexOf(port);
+            if (index >= 0) ports.splice(index, 1);
+            return;
+        }
+
         if (data && data.op === 'count') {
             port.postMessage({ op: 'count', connections: ports.length });
             return;

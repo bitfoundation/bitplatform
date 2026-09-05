@@ -69,21 +69,33 @@ public class DataTransfer(IJSRuntime js) : IAsyncDisposable
     /// <c>"move"</c>, <c>"link"</c> or <c>"none"</c>. It says what <em>will</em> happen; doing it is
     /// still yours.
     /// </param>
-    /// <returns>A subscription; disposing it stops the element being a drop target.</returns>
+    /// <returns>
+    /// A subscription; disposing it stops the element being a drop target. Null when the target
+    /// could not be wired up - there is no element behind the reference, or there is no JS runtime
+    /// to reach it with (prerender/SSR).
+    /// </returns>
     /// <remarks>
     /// The <c>dragover</c> handling that makes a drop possible at all is wired up with this, so
     /// there is nothing else to add.
     /// </remarks>
     [DynamicDependency(nameof(InvokeDrop), typeof(DataTransfer))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DroppedFile))]
-    public async ValueTask<ButilSubscription> OnDrop(ElementReference target, Action<DropPayload> onDrop, string dropEffect = "copy")
+    public async ValueTask<ButilSubscription?> OnDrop(ElementReference target, Action<DropPayload> onDrop, string dropEffect = "copy")
     {
         ArgumentNullException.ThrowIfNull(onDrop);
 
         var id = Guid.NewGuid();
         _dropHandlers[id] = onDrop;
 
-        await js.Invoke<bool>("BitButil.dataTransfer.listenForDrop", DotNetRef, id, target, dropEffect);
+        var listening = await js.Invoke<bool>("BitButil.dataTransfer.listenForDrop", DotNetRef, id, target, dropEffect);
+
+        if (listening is false)
+        {
+            // Nothing is listening, so a subscription would be a handle on nothing - and the
+            // handler it kept would never be called and never be removed.
+            _dropHandlers.TryRemove(id, out _);
+            return null;
+        }
 
         return new ButilSubscription(id, async () =>
         {
@@ -113,24 +125,30 @@ public class DataTransfer(IJSRuntime js) : IAsyncDisposable
     /// </param>
     /// <param name="dragImageX">Where the cursor sits within the image, horizontally.</param>
     /// <param name="dragImageY">Where the cursor sits within the image, vertically.</param>
-    /// <returns>A subscription; disposing it makes the element undraggable again.</returns>
+    /// <returns>
+    /// A subscription; disposing it makes the element undraggable again. Null when the source could
+    /// not be wired up - there is no element behind the reference, or there is no JS runtime to
+    /// reach it with (prerender/SSR).
+    /// </returns>
     /// <remarks>
     /// The payload is settled here rather than produced by a callback because <c>dragstart</c> has
     /// to set its data synchronously, and a round trip to .NET is not synchronous. Call this again
     /// (after disposing) when what the element carries changes.
     /// </remarks>
-    public async ValueTask<ButilSubscription> ConfigureDragSource(ElementReference source,
-                                                                  Dictionary<string, string> items,
-                                                                  string effectAllowed = "all",
-                                                                  ElementReference? dragImage = null,
-                                                                  int dragImageX = 0,
-                                                                  int dragImageY = 0)
+    public async ValueTask<ButilSubscription?> ConfigureDragSource(ElementReference source,
+                                                                   Dictionary<string, string> items,
+                                                                   string effectAllowed = "all",
+                                                                   ElementReference? dragImage = null,
+                                                                   int dragImageX = 0,
+                                                                   int dragImageY = 0)
     {
         ArgumentNullException.ThrowIfNull(items);
 
         var id = Guid.NewGuid();
-        await js.Invoke<bool>("BitButil.dataTransfer.configureSource",
+        var configured = await js.Invoke<bool>("BitButil.dataTransfer.configureSource",
             id, source, items, effectAllowed, dragImage, dragImageX, dragImageY);
+
+        if (configured is false) return null;
 
         return new ButilSubscription(id, async () => await js.InvokeVoid("BitButil.dataTransfer.removeSource", id));
     }

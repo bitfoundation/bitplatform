@@ -80,12 +80,24 @@ public static class WebSocketEchoFixture
             : await context.WebSockets.AcceptWebSocketAsync(protocol);
 
         var buffer = new byte[4 * 1024];
+        using var message = new MemoryStream();
 
         try
         {
             while (socket.State == System.Net.WebSockets.WebSocketState.Open)
             {
-                var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
+                // A receive is a frame, not a message: anything bigger than the buffer, or sent
+                // fragmented, arrives in several of them and is only whole when EndOfMessage says
+                // so. Decoding a piece of a UTF-8 message would cut a character in half.
+                message.SetLength(0);
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await socket.ReceiveAsync(buffer, CancellationToken.None);
+                    if (result.MessageType == WebSocketMessageType.Close) break;
+                    message.Write(buffer, 0, result.Count);
+                }
+                while (result.EndOfMessage is false);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -99,12 +111,13 @@ public static class WebSocketEchoFixture
 
                 if (result.MessageType == WebSocketMessageType.Binary)
                 {
-                    for (var i = 0; i < result.Count; i++) buffer[i] = unchecked((byte)(buffer[i] + 1));
-                    await socket.SendAsync(buffer.AsMemory(0, result.Count), WebSocketMessageType.Binary, true, CancellationToken.None);
+                    var bytes = message.ToArray();
+                    for (var i = 0; i < bytes.Length; i++) bytes[i] = unchecked((byte)(bytes[i] + 1));
+                    await socket.SendAsync(bytes, WebSocketMessageType.Binary, true, CancellationToken.None);
                     continue;
                 }
 
-                var text = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                var text = Encoding.UTF8.GetString(message.GetBuffer(), 0, (int)message.Length);
 
                 if (text == "close")
                 {

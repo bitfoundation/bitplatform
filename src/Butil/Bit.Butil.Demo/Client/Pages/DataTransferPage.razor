@@ -140,10 +140,10 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
                Signature="ValueTask<bool> IsSupported()"
                Description="True when the runtime exposes DataTransfer. Returns default (false) during prerender/SSR instead of throwing." />
     <ApiMember Name="OnDrop"
-               Signature='ValueTask&lt;ButilSubscription&gt; OnDrop(ElementReference target, Action&lt;DropPayload&gt; onDrop, string dropEffect = "copy")'
+               Signature='ValueTask&lt;ButilSubscription?&gt; OnDrop(ElementReference target, Action&lt;DropPayload&gt; onDrop, string dropEffect = "copy")'
                Description="Makes an element a drop target, including the dragover handling that makes a drop possible at all. dropEffect chooses the cursor: copy, move, link or none." />
     <ApiMember Name="ConfigureDragSource"
-               Signature='ValueTask&lt;ButilSubscription&gt; ConfigureDragSource(ElementReference source, Dictionary&lt;string, string&gt; items, string effectAllowed = "all", ElementReference? dragImage = null, int dragImageX = 0, int dragImageY = 0)'
+               Signature='ValueTask&lt;ButilSubscription?&gt; ConfigureDragSource(ElementReference source, Dictionary&lt;string, string&gt; items, string effectAllowed = "all", ElementReference? dragImage = null, int dragImageX = 0, int dragImageY = 0)'
                Description="Makes an element draggable and decides what it carries. Disposing the subscription makes it undraggable again." />
     <ApiMember Name="ReadFile"
                Signature="ValueTask<byte[]?> ReadFile(Guid fileId)"
@@ -192,11 +192,18 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
         {
             _dropSubscription = await dataTransfer.OnDrop(_target, payload => InvokeAsync(async () =>
             {
+                // The previous drop's files are held by the browser until they are let go of, so a
+                // second drop that only overwrote the payload would leak every file before it.
+                await ReleasePayload();
+
                 _payload = payload;
                 await dropOutput.Success("Dropped →",
                     $"{payload.Files.Length} file(s); item types: {(payload.Items.Count == 0 ? "(none)" : string.Join(", ", payload.Items.Keys))}");
                 StateHasChanged();
             }));
+
+            if (_dropSubscription is null)
+                await dropOutput.Warn("OnDrop returned null - the target was not wired up, so nothing will be dropped on it.");
         }
         catch (Exception ex)
         {
@@ -269,15 +276,27 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
     {
         if (_payload is null) return;
 
-        foreach (var file in _payload.Files) await dataTransfer.ReleaseFile(file.Id);
+        var count = _payload.Files.Length;
+        await ReleasePayload();
 
+        await readOutput.Log($"Released {count} file(s) - reading them now answers null.");
+    }
+
+    /// <summary>
+    /// Lets go of everything the current payload is holding: the dropped files, which the browser
+    /// keeps until they are released, and the preview URL, which keeps one of them alive by itself.
+    /// </summary>
+    private async Task ReleasePayload()
+    {
         if (_previewUrl is not null)
         {
             await objectUrls.Revoke(_previewUrl);
             _previewUrl = null;
         }
 
-        await readOutput.Log($"Released {_payload.Files.Length} file(s) - reading them now answers null.");
+        if (_payload is null) return;
+
+        foreach (var file in _payload.Files) await dataTransfer.ReleaseFile(file.Id);
         _payload = null;
     }
 
@@ -295,6 +314,12 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
                 },
                 effectAllowed: "copyMove",
                 dragImage: _dragImage);
+
+            if (_sourceSubscription is null)
+            {
+                await sourceOutput.Warn("ConfigureDragSource returned null - the element was not made draggable.");
+                return;
+            }
 
             _draggable = true;
             await sourceOutput.Success("Configured →", "drag the chip onto the box above, or into a text editor.");

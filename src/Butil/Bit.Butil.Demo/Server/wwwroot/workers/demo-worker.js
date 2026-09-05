@@ -12,9 +12,10 @@ self.addEventListener('message', e => {
     // this worker holds is detached after the reply.
     if (data instanceof ArrayBuffer) {
         const bytes = new Uint8Array(data);
-        let sum = 0;
-        for (let i = 0; i < bytes.length; i++) { sum += bytes[i]; bytes[i] = (bytes[i] + 1) & 0xff; }
-        self.postMessage({ op: 'bytes', length: bytes.length, sum }, [bytes.buffer]);
+        for (let i = 0; i < bytes.length; i++) bytes[i] = (bytes[i] + 1) & 0xff;
+        // The buffer is both the message and the thing transferred: posting an object that merely
+        // lists the buffer as transferable would send JSON and detach the bytes on the way out.
+        self.postMessage(bytes.buffer, [bytes.buffer]);
         return;
     }
 

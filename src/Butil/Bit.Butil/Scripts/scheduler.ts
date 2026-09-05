@@ -109,13 +109,22 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (signal?.aborted) return 'aborted';
 
             return await new Promise<string | null>(resolve => {
+                // once:true takes the listener off when it fires, but a task that simply finishes
+                // would leave it attached - and a signal shared across many tasks would then hold
+                // every one of them, and its closure, for as long as it lives.
+                const onAbort = () => { clearTimeout(handle); resolve('aborted'); };
+                const finish = (result: string | null) => {
+                    signal?.removeEventListener('abort', onAbort);
+                    resolve(result);
+                };
+
                 const handle = setTimeout(async () => {
-                    if (signal?.aborted) { resolve('aborted'); return; }
+                    if (signal?.aborted) { finish('aborted'); return; }
                     await run();
-                    resolve(null);
+                    finish(null);
                 }, delayMs > 0 ? delayMs : 0);
 
-                signal?.addEventListener('abort', () => { clearTimeout(handle); resolve('aborted'); }, { once: true });
+                signal?.addEventListener('abort', onAbort, { once: true });
             });
         },
 

@@ -77,7 +77,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         close(id: string, code: number | null, reason: string | null) {
             const socket = _sockets[id];
             if (!socket) return;
-            delete _sockets[id];
+            // The entry is dropped by the close listener, not here: between close() and the close
+            // event the socket is genuinely CLOSING, and forgetting it now would report CLOSED.
             try {
                 // Only 1000 and 3000-4999 are legal from script; anything else throws. Passing
                 // nothing means 1005 "no status", which is the honest default for "just close".

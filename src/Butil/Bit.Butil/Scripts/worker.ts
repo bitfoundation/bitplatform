@@ -1,7 +1,7 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    interface Entry { worker: Worker | any; shared: boolean; }
+    interface Entry { worker: Worker | any; shared: boolean; portId?: string; }
 
     const _workers: { [id: string]: Entry } = {};
 
@@ -62,7 +62,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 return false;
             }
 
-            _workers[id] = { worker, shared: true };
+            _workers[id] = { worker, shared: true, portId };
             butil.messageChannel.adopt(portId, worker.port);
             return true;
         },
@@ -108,7 +108,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const entry = _workers[id];
             if (!entry) return;
             delete _workers[id];
-            if (entry.shared) return;
+
+            if (entry.shared) {
+                // Dropping this page's connection is all a shared worker allows, and the connection
+                // is the port - which was adopted by the messageChannel module, so forgetting the
+                // entry without releasing it there would leave the port registered for good.
+                if (entry.portId) {
+                    butil.messageChannel.close(entry.portId);
+                    butil.messageChannel.release(entry.portId);
+                }
+                return;
+            }
+
             try { entry.worker.terminate(); } catch { /* already gone */ }
         },
 

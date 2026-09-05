@@ -147,7 +147,18 @@ public class Streams(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         _sinks[id] = new SinkHandlers(onChunk, onFinished);
 
-        var created = await js.Invoke<bool>("BitButil.streams.createWritable", DotNetRef, id, highWaterMark);
+        bool created;
+        try
+        {
+            created = await js.Invoke<bool>("BitButil.streams.createWritable", DotNetRef, id, highWaterMark);
+        }
+        catch
+        {
+            // The sink was registered before the call, so a call that throws has to take it back out
+            // again - nothing else will ever reach handlers for a stream that was never created.
+            _sinks.TryRemove(id, out _);
+            throw;
+        }
 
         if (created is false)
         {

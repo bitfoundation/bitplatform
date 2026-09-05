@@ -233,12 +233,24 @@ app.MapGet("/ws/echo", async (HttpContext context, CancellationToken cancellatio
         : await context.WebSockets.AcceptWebSocketAsync(protocol);
 
     var buffer = new byte[8 * 1024];
+    using var message = new MemoryStream();
 
     try
     {
         while (socket.State == System.Net.WebSockets.WebSocketState.Open && cancellationToken.IsCancellationRequested is false)
         {
-            var result = await socket.ReceiveAsync(buffer, cancellationToken);
+            // A receive is a frame, not a message: anything bigger than the buffer, or sent
+            // fragmented, arrives in several of them and is only whole when EndOfMessage says so.
+            // Decoding a piece of a UTF-8 message would cut a character in half.
+            message.SetLength(0);
+            System.Net.WebSockets.WebSocketReceiveResult result;
+            do
+            {
+                result = await socket.ReceiveAsync(buffer, cancellationToken);
+                if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close) break;
+                message.Write(buffer, 0, result.Count);
+            }
+            while (result.EndOfMessage is false);
 
             if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
             {
@@ -254,12 +266,13 @@ app.MapGet("/ws/echo", async (HttpContext context, CancellationToken cancellatio
             {
                 // Echo the bytes back with each one incremented, so the page can tell a real round
                 // trip apart from having simply kept its own array.
-                for (var i = 0; i < result.Count; i++) buffer[i] = unchecked((byte)(buffer[i] + 1));
-                await socket.SendAsync(buffer.AsMemory(0, result.Count), System.Net.WebSockets.WebSocketMessageType.Binary, true, cancellationToken);
+                var bytes = message.ToArray();
+                for (var i = 0; i < bytes.Length; i++) bytes[i] = unchecked((byte)(bytes[i] + 1));
+                await socket.SendAsync(bytes, System.Net.WebSockets.WebSocketMessageType.Binary, true, cancellationToken);
                 continue;
             }
 
-            var text = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
+            var text = System.Text.Encoding.UTF8.GetString(message.GetBuffer(), 0, (int)message.Length);
 
             if (text == "close")
             {
@@ -297,6 +310,8 @@ app.MapGet("/api/stream", async (HttpContext context, CancellationToken cancella
 {
     var count = Math.Clamp(chunks, 1, 200);
     var size = Math.Clamp(chunkSize, 1, 64 * 1024);
+    // Clamped like the other two, and for a sharper reason: Task.Delay(-1) waits for ever.
+    var delay = Math.Clamp(delayMs, 0, 5_000);
 
     context.Response.Headers.ContentType = "application/octet-stream";
     context.Response.Headers.CacheControl = "no-store";
@@ -313,7 +328,7 @@ app.MapGet("/api/stream", async (HttpContext context, CancellationToken cancella
         {
             await context.Response.Body.WriteAsync(chunk, cancellationToken);
             await context.Response.Body.FlushAsync(cancellationToken);
-            await Task.Delay(delayMs, cancellationToken);
+            await Task.Delay(delay, cancellationToken);
         }
     }
     catch (OperationCanceledException)

@@ -5,6 +5,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         signal: AbortSignal;
         controller?: AbortController;   // absent for timeout()/any()-derived signals, which nobody can abort directly
         listeners: { [listenerId: string]: (e: any) => void };
+        // Only for a hand-wired composite (the pre-Safari-17.4 any() fallback): the source signals
+        // it is watching, with the listener each one is holding on its behalf.
+        sources?: { source: AbortSignal; handler: () => void }[];
     }
 
     // Every signal Butil hands to .NET lives here under the id .NET knows it by. Other modules
@@ -23,6 +26,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function track(id: string, signal: AbortSignal, controller?: AbortController) {
         _signals[id] = { signal, controller, listeners: {} };
+    }
+
+    // A source signal can outlive the composite watching it by a long way - a timeout signal held
+    // for the life of the page, say - and until its listener is removed it keeps that composite
+    // alive with it. Detach them as a set: the first abort makes the rest pointless anyway.
+    function detachSources(entry: Entry) {
+        if (!entry.sources) return;
+        for (const pair of entry.sources) pair.source.removeEventListener('abort', pair.handler);
+        entry.sources = undefined;
     }
 
     butil.abortController = {
@@ -63,14 +75,23 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // Pre-Safari-17.4 fallback. A hand-wired controller is observably the same thing: it
             // forwards the first source's reason and stops listening once it has fired.
             const controller = new AbortController();
+            track(id, controller.signal, controller);
+
             const already = sources.find(source => source.aborted);
             if (already) {
                 controller.abort((already as any).reason);
-            } else {
-                const forward = (source: AbortSignal) => () => controller.abort((source as any).reason);
-                for (const source of sources) source.addEventListener('abort', forward(source), { once: true });
+                return true;
             }
-            track(id, controller.signal, controller);
+
+            const entry = _signals[id];
+            entry.sources = sources.map(source => ({
+                source,
+                handler: () => {
+                    detachSources(entry);
+                    controller.abort((source as any).reason);
+                }
+            }));
+            for (const pair of entry.sources) pair.source.addEventListener('abort', pair.handler, { once: true });
             return true;
         },
 
@@ -124,6 +145,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             for (const listenerId of Object.keys(entry.listeners)) {
                 entry.signal.removeEventListener('abort', entry.listeners[listenerId]);
             }
+            detachSources(entry);
             delete _signals[id];
         },
 

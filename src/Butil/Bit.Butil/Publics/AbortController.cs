@@ -100,8 +100,8 @@ public class AbortController(IJSRuntime js) : IAsyncDisposable
     /// source's reason.
     /// </summary>
     /// <returns>
-    /// A signal, or null when any source has already been released or the runtime has neither
-    /// <c>AbortSignal.any</c> nor <c>AbortController</c>.
+    /// A signal, or null when a source is null or has already been released, or the runtime has
+    /// neither <c>AbortSignal.any</c> nor <c>AbortController</c>.
     /// </returns>
     /// <remarks>
     /// The composite does not keep its sources alive: release one and the composite is left watching
@@ -112,6 +112,10 @@ public class AbortController(IJSRuntime js) : IAsyncDisposable
     public async ValueTask<ButilAbortSignal?> Any(params ButilAbortSignal[] signals)
     {
         ArgumentNullException.ThrowIfNull(signals);
+
+        // A null source is the same kind of answer as a released one: there is no signal to compose,
+        // and a composite missing one of its sources would silently be weaker than it was asked for.
+        if (Array.Exists(signals, s => s is null)) return null;
 
         var id = Guid.NewGuid();
         var created = await js.Invoke<bool>("BitButil.abortController.any", id, Array.ConvertAll(signals, s => s.Id));

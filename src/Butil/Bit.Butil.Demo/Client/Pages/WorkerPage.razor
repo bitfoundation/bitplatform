@@ -86,7 +86,7 @@ await _worker!.PostMessage(new { op = "fib", n = 38 });
 
     <DemoSection Title="Binary, without a copy"
                  Api="PostBytes"
-                 Description="Transferring moves the ArrayBuffer to the worker instead of copying it, which is why bytes rather than JSON is the right shape for anything large: a copy of a hundred megabytes costs a hundred megabytes and a transfer costs nothing. The demo worker sums the bytes, increments each one, and transfers them straight back."
+                 Description="Transferring moves the ArrayBuffer to the worker instead of copying it, which is why bytes rather than JSON is the right shape for anything large: a copy of a hundred megabytes costs a hundred megabytes and a transfer costs nothing. The demo worker increments each byte and transfers the buffer straight back."
                  Code=@("""
 await _worker!.PostBytes([1, 2, 3, 4], transfer: true);
 
@@ -298,14 +298,12 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
     private async Task Route(string json)
     {
         var op = json.Contains("\"fib\"") ? "fib"
-            : json.Contains("\"bytes\"") ? "bytes"
             : json.Contains("\"tookPort\"") ? "port"
             : "echo";
 
         var console = op switch
         {
             "fib" => cpuOutput,
-            "bytes" => binaryOutput,
             "port" => portOutput,
             _ => workerOutput
         };
@@ -481,6 +479,10 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
 
     private async Task DisconnectShared()
     {
+        // A shared worker is never told that a page has gone: say so before the port closes, or it
+        // keeps counting a connection nobody is holding.
+        if (_shared is not null) await _shared.Port.PostMessage(new { op = "disconnect" });
+
         if (_sharedSubscription is not null)
         {
             await _sharedSubscription.DisposeAsync();

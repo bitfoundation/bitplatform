@@ -229,8 +229,18 @@ var all = await root.QueryAll("[part]");
             await using var found = await dom.Query(".shadow-demo .card");
             var text = found is null ? "(nothing)" : await found.GetText();
 
-            await queryOutput.Success("From the document →",
-                $"{(await dom.QueryAll(".shadow-demo .card")).Length} match(es) - \"{text}\". The shadow content is not among them.");
+            // Every handle QueryAll hands back holds its element in the JS registry until it is
+            // disposed, so they are released whatever the reporting does.
+            var all = await dom.QueryAll(".shadow-demo .card");
+            try
+            {
+                await queryOutput.Success("From the document →",
+                    $"{all.Length} match(es) - \"{text}\". The shadow content is not among them.");
+            }
+            finally
+            {
+                foreach (var handle in all) await handle.DisposeAsync();
+            }
         }
         catch (Exception ex)
         {
@@ -245,10 +255,16 @@ var all = await root.QueryAll("[part]");
         try
         {
             var inside = await _root!.QueryAll(".card");
-            await queryOutput.Success("Through the root →",
-                $"{inside.Length} match(es): {string.Join(", ", await Task.WhenAll(inside.Select(async h => $"\"{await h.GetText()}\"")))}");
-
-            foreach (var handle in inside) await handle.DisposeAsync();
+            try
+            {
+                await queryOutput.Success("Through the root →",
+                    $"{inside.Length} match(es): {string.Join(", ", await Task.WhenAll(inside.Select(async h => $"\"{await h.GetText()}\"")))}");
+            }
+            finally
+            {
+                // A GetText that throws would otherwise leave every handle registered in JS.
+                foreach (var handle in inside) await handle.DisposeAsync();
+            }
         }
         catch (Exception ex)
         {

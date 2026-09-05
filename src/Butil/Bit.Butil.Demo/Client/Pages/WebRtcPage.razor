@@ -101,7 +101,7 @@ await channel.SendBytes([1, 2, 3, 4]);
                  Code=@("""
 var stats = await a!.GetStats();
 
-var path = stats.FirstOrDefault(s => s.Type == "candidate-pair" && s.Values.GetValueOrDefault("nominated") == "True");
+var path = stats.FirstOrDefault(s => s.Type == "candidate-pair" && s.Values.GetValueOrDefault("nominated") == "true");
 var rtt = path?.Values.GetValueOrDefault("currentRoundTripTime");
 """)>
         <div class="controls">

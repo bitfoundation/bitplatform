@@ -101,8 +101,14 @@ public sealed class WebSocketHandle : IAsyncDisposable
     {
         if (_closed) return;
         _closed = true;
-        _onClosed();
+
+        // The close event is asynchronous, and it is what runs the onClose callback and unregisters
+        // the handlers. Releasing them here would make disposal the one close nobody hears about -
+        // so the handlers are only dropped by hand when the close cannot be asked for at all.
         try { await _js.InvokeVoid("BitButil.webSocket.close", Id, null, null); }
-        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) // teardown: circuit gone, cancelled, or already disposed
+        {
+            _onClosed();
+        }
     }
 }

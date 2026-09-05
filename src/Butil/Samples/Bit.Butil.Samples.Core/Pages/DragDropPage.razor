@@ -60,6 +60,13 @@ var bytes = await dataTransfer.ReadFile(payload.Files[0].Id);
 
         _dropSubscription = await dataTransfer.OnDrop(_target, payload => InvokeAsync(async () =>
         {
+            // The browser holds a dropped file until it is released, so the payload being replaced
+            // has to let go of its files rather than simply being overwritten.
+            if (_payload is not null)
+            {
+                foreach (var previous in _payload.Files) await dataTransfer.ReleaseFile(previous.Id);
+            }
+
             _payload = payload;
             await output.Success("Dropped →",
                 $"{payload.Files.Length} file(s); types: {(payload.Items.Count == 0 ? "(none)" : string.Join(", ", payload.Items.Keys))}");

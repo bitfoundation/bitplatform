@@ -757,6 +757,8 @@
         var subscription = await dataTransfer.ConfigureDragSource(_dragSource,
             new Dictionary<string, string> { ["text/plain"] = "dragged", ["application/x-butil"] = "custom" });
 
+        if (subscription is null) { Set("dt:source:not-configured"); return; }
+
         // Configuring makes the element draggable; disposing has to undo that rather than leave it.
         await using var handle = await dom.ById("dt-source");
         var whileConfigured = await handle!.GetAttribute("draggable");

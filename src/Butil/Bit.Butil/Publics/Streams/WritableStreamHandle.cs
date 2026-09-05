@@ -70,9 +70,11 @@ public sealed class WritableStreamHandle : IAsyncDisposable
     {
         if (_released) return;
         _released = true;
-        _onReleased();
 
+        // The sink's callbacks stay registered across the abort, so onFinished still hears about the
+        // stream ending; releasing them first would make disposal the one ending nobody is told of.
         try { await _js.Invoke<bool>("BitButil.streams.abortWritable", Id, "disposed"); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        finally { _onReleased(); }
     }
 }

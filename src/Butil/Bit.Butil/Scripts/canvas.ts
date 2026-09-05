@@ -27,20 +27,55 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return canvas;
     }
 
-    async function encode(canvas: any, type: string, quality: number): Promise<Uint8Array | null> {
+    async function encodeBlob(canvas: any, type: string, quality: number): Promise<Blob | null> {
         try {
             // Reading pixels back out of a canvas that drew a cross-origin image throws
             // SecurityError - the canvas is "tainted", and no amount of trying reads it. Null says
             // so, because it is a normal outcome of drawing someone else's picture.
-            const blob: Blob | null = typeof canvas.convertToBlob === 'function'
+            return typeof canvas.convertToBlob === 'function'
                 ? await canvas.convertToBlob({ type, quality })
                 : await new Promise(resolve => canvas.toBlob(resolve, type, quality));
-
-            if (!blob) return null;
-            return new Uint8Array(await blob.arrayBuffer());
         } catch {
             return null;
         }
+    }
+
+    async function encode(canvas: any, type: string, quality: number): Promise<Uint8Array | null> {
+        const blob = await encodeBlob(canvas, type, quality);
+        if (!blob) return null;
+        try { return new Uint8Array(await blob.arrayBuffer()); } catch { return null; }
+    }
+
+    // Draws the source into a scratch canvas at the requested size, or null when there is nothing to
+    // draw yet. Shared by capture() and captureToDataUrl() so the sizing rule lives in one place.
+    function captureCanvas(source: any, width: number, height: number): any | null {
+        const intrinsic = intrinsicSize(source);
+        if (intrinsic.width <= 0 || intrinsic.height <= 0) return null;   // nothing to capture yet
+
+        // A width or height of 0 means "keep the aspect ratio from the other one", and both
+        // zero means the source's own size - so a thumbnail is one number, not two.
+        let targetWidth = width > 0 ? width : 0;
+        let targetHeight = height > 0 ? height : 0;
+        if (targetWidth === 0 && targetHeight === 0) {
+            targetWidth = intrinsic.width;
+            targetHeight = intrinsic.height;
+        } else if (targetWidth === 0) {
+            targetWidth = Math.max(1, Math.round(intrinsic.width * (targetHeight / intrinsic.height)));
+        } else if (targetHeight === 0) {
+            targetHeight = Math.max(1, Math.round(intrinsic.height * (targetWidth / intrinsic.width)));
+        }
+
+        const canvas = scratchCanvas(targetWidth, targetHeight);
+        const context = contextOf(canvas);
+        if (!context) return null;
+
+        try {
+            context.drawImage(source, 0, 0, intrinsic.width, intrinsic.height, 0, 0, targetWidth, targetHeight);
+        } catch {
+            return null;
+        }
+
+        return canvas;
     }
 
     butil.canvas = {
@@ -122,44 +157,28 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Capture and encode in one step, with no canvas in the caller's markup: the frame is drawn
         // into a scratch canvas that is discarded afterwards.
         async capture(source: any, width: number, height: number, type: string, quality: number) {
-            const intrinsic = intrinsicSize(source);
-            if (intrinsic.width <= 0 || intrinsic.height <= 0) return null;   // nothing to capture yet
-
-            // A width or height of 0 means "keep the aspect ratio from the other one", and both
-            // zero means the source's own size - so a thumbnail is one number, not two.
-            let targetWidth = width > 0 ? width : 0;
-            let targetHeight = height > 0 ? height : 0;
-            if (targetWidth === 0 && targetHeight === 0) {
-                targetWidth = intrinsic.width;
-                targetHeight = intrinsic.height;
-            } else if (targetWidth === 0) {
-                targetWidth = Math.max(1, Math.round(intrinsic.width * (targetHeight / intrinsic.height)));
-            } else if (targetHeight === 0) {
-                targetHeight = Math.max(1, Math.round(intrinsic.height * (targetWidth / intrinsic.width)));
-            }
-
-            const canvas = scratchCanvas(targetWidth, targetHeight);
-            const context = contextOf(canvas);
-            if (!context) return null;
-
-            try {
-                context.drawImage(source, 0, 0, intrinsic.width, intrinsic.height, 0, 0, targetWidth, targetHeight);
-            } catch {
-                return null;
-            }
-
-            return await encode(canvas, type, quality);
+            const canvas = captureCanvas(source, width, height);
+            return canvas ? await encode(canvas, type, quality) : null;
         },
 
         async captureToDataUrl(source: any, width: number, height: number, type: string, quality: number) {
-            const bytes = await butil.canvas.capture(source, width, height, type, quality);
-            if (!bytes) return null;
+            // Drawing through the same helper as capture() keeps one path, so the two capture
+            // methods can never disagree about the picture.
+            const canvas = captureCanvas(source, width, height);
+            if (!canvas) return null;
 
-            // Encoding the bytes rather than calling toDataURL on the scratch canvas keeps one
-            // encode path, so the two capture methods can never disagree about the picture.
+            const blob = await encodeBlob(canvas, type, quality);
+            if (!blob) return null;
+
+            let bytes: Uint8Array;
+            try { bytes = new Uint8Array(await blob.arrayBuffer()); } catch { return null; }
+
             let binary = '';
             for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-            return `data:${type};base64,${btoa(binary)}`;
+
+            // The blob's own type, not the requested one: a format the engine cannot encode falls
+            // back to image/png silently, and a data URL claiming otherwise is a lie a decoder acts on.
+            return `data:${blob.type || type};base64,${btoa(binary)}`;
         }
     };
 }(BitButil));

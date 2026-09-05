@@ -360,6 +360,9 @@ await css.ClearHighlight("search");
 
         await _sheet.DisposeAsync();
         _sheet = null;
+        // The highlight rule was one of the rules that went with it, so the index has to go too, or
+        // the next highlight would think a replacement sheet already carried one.
+        _highlightRuleIndex = -1;
         await sheetOutput.Log("Removed - every rule it carried went with it.");
     }
 
