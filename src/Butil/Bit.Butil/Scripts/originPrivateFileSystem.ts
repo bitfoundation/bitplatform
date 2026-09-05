@@ -11,18 +11,37 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // worker is not an optimization, it is the only place the API exists. Built from a blob URL so
     // the library still ships as one bundle with no extra file for a consumer to copy or serve.
     const SYNC_WORKER_SOURCE = `
-self.onmessage = async function (e) {
+// One promise chain per path. A sync access handle is an exclusive lock for as long as it is open,
+// so two operations on the same file that both reach createSyncAccessHandle() have the second throw
+// NoModificationAllowedError - and messages arriving while an earlier one is awaiting would do
+// exactly that. The queue is taken synchronously, before the first await, which is what makes it a
+// queue at all; different paths never share one, so they still run concurrently.
+var _queues = {};
+
+self.onmessage = function (e) {
     var m = e.data, id = m.id;
+
+    if (m.op === 'probe') {
+        // Only the worker can answer this: createSyncAccessHandle is [Exposed=DedicatedWorker],
+        // so on the window the method is simply not on the prototype.
+        self.postMessage({
+            id: id, ok: true, result: typeof FileSystemFileHandle !== 'undefined'
+                && typeof FileSystemFileHandle.prototype.createSyncAccessHandle === 'function'
+        });
+        return;
+    }
+
+    var key = String(m.path || '');
+    var run = function () { return handle(m, id); };
+    // Both arms are the same call: run() never rejects, but a queue is only a queue if a failure
+    // in front of it still lets the rest through.
+    var current = (_queues[key] || Promise.resolve()).then(run, run);
+    _queues[key] = current;
+    current.then(function () { if (_queues[key] === current) delete _queues[key]; });
+};
+
+async function handle(m, id) {
     try {
-        if (m.op === 'probe') {
-            // Only the worker can answer this: createSyncAccessHandle is [Exposed=DedicatedWorker],
-            // so on the window the method is simply not on the prototype.
-            self.postMessage({
-                id: id, ok: true, result: typeof FileSystemFileHandle !== 'undefined'
-                    && typeof FileSystemFileHandle.prototype.createSyncAccessHandle === 'function'
-            });
-            return;
-        }
         var dir = await navigator.storage.getDirectory();
         var parts = String(m.path || '').split('/').filter(function (p) { return p && p !== '.'; });
         var name = parts.pop();
@@ -67,7 +86,7 @@ self.onmessage = async function (e) {
     } catch (err) {
         self.postMessage({ id: id, ok: false, error: String(err && err.message ? err.message : err) });
     }
-};
+}
 `;
 
     let _worker: Worker | null = null;

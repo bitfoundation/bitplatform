@@ -165,9 +165,25 @@ await contentIndex.Delete("article-42");
     {
         try
         {
-            // Index nothing the app cannot actually serve offline: cache the page first, which is
-            // also what keeps Chromium from dropping the entry again.
+            // Index nothing the app cannot actually serve offline. That takes two things, and an
+            // entry pointing at a URL missing either of them is a promise the browser cannot keep:
+            // an active worker (its fetch handler is what answers from the cache when the network
+            // is gone), and the URL sitting in the cache that handler reads.
+            var registration = await serviceWorker.GetRegistration();
+            if (registration.IsRegistered is false || registration.ActiveState != "activated")
+            {
+                await addOutput.Warn("Not indexed - no active service worker yet, so nothing could serve \"" + url + "\" offline. Register /sw.js first.");
+                return;
+            }
+
             await cacheStorage.Add("butil-content-index", url);
+
+            var cached = await cacheStorage.Match("butil-content-index", url);
+            if (cached.Found is false)
+            {
+                await addOutput.Warn($"Not indexed - \"{url}\" is not in the butil-content-index cache, so it would not be there offline either.");
+                return;
+            }
 
             var added = await contentIndex.Add(new Bit.Butil.ContentIndexEntry
             {

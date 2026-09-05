@@ -7,7 +7,7 @@
 
 <PageHeader Category="Network & Workers"
             Title="BackgroundFetch"
-            Lead="Downloads and uploads the browser owns: they keep running after the tab is closed, resume after a dropped connection, and show the user their own progress UI. Start one from C#, watch its progress, and let the service worker keep what arrives."
+            Lead="Downloads the browser owns: they keep running after the tab is closed, resume after a dropped connection, and show the user their own progress UI. Start one from C#, watch its progress, and let the service worker keep what arrives."
             MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Background_Fetch_API"
             InjectAs="BackgroundFetch backgroundFetch" />
 
@@ -171,7 +171,11 @@ string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0]
 
     private string fetchId = "butil-demo-fetch";
     private string fetchTitle = "Bit.Butil demo download";
-    private string urls = "/bit-butil.js";
+    // The library's own script, at the path static web assets actually serve it from. A background
+    // fetch of a URL that 404s does not fail at registration - it starts, then ends in the
+    // browser's UI as a failed download with failureReason "bad-status", which demonstrates
+    // nothing.
+    private string urls = "/_content/Bit.Butil/bit-butil.js";
 
     private string[] Urls => urls.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 

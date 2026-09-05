@@ -22,7 +22,7 @@
 
     <DemoSection Title="Check for support"
                  Api="IsSupported"
-                 Description="Chromium and Firefox implement WebTransport; Safari does not at the time of writing."
+                 Description="Chromium and Firefox implement WebTransport, and Safari from 26.4 on - so it comes down to the browser and its version, and IsSupported() is the answer that is actually current."
                  Code=@("""
 @inject Bit.Butil.WebTransport webTransport
 
@@ -239,9 +239,12 @@ if (stream is not null)
 
         try
         {
-            await CloseStream();
+            // The session first, then the stream. Closing a stream flushes what is still queued on
+            // it, so a stream the peer has stopped reading would hold this up; ending the session
+            // aborts its streams, and the stream object is then only local bookkeeping to drop.
             await session.Close(0, "closed from the demo");
             session = null;
+            await CloseStream();
             await sessionOutput.Info("Close() → session closed.");
         }
         catch (Exception ex)
@@ -322,7 +325,9 @@ if (stream is not null)
 
     public async ValueTask DisposeAsync()
     {
-        if (stream is not null) await stream.DisposeAsync();
+        // Same order as Close(): the session goes first, so a stream still waiting on flow control
+        // cannot hold the page's disposal open.
         if (session is not null) await session.DisposeAsync();
+        if (stream is not null) await stream.DisposeAsync();
     }
 }

@@ -238,8 +238,8 @@ read only partly would report `PASS` having verified less of it than the output 
 | `[ButilService]` discovered / registered | 62 / 62 | 5 / 5 |
 | interop contract | 45 types captured | 10 checked, 35 trimmed away, 0 problems |
 | JavaScript modules called | 68 of 70 | 6 of 70 (clipboard, cookie, events, geolocation, storage, window) |
-| `bit-butil.js` a publish would ship | 137,692 bytes, all 70 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 6.6% |
-| lazy scripts would download | 181,870 bytes over 68 files | 11,940 bytes over 6 files |
+| `bit-butil.js` a publish would ship | 138,304 bytes, all 70 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 6.6% |
+| lazy scripts would download | 182,566 bytes over 68 files | 11,940 bytes over 6 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 37 / 37 | not run |
 | script-publishing checks | 26 / 26 (9 publishes, ~15s) | not run |

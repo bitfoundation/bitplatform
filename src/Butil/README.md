@@ -139,7 +139,7 @@ registering everything.
 | --- | --- |
 | `ServiceWorker` | Register and inspect service workers, message them, navigation preload, `skipWaiting`/`claim` and the Clients API |
 | `BackgroundSync` | Defer work until the user has connectivity (one-shot and periodic) |
-| `BackgroundFetch` | Downloads and uploads the browser owns: they survive the tab closing, with their own progress UI |
+| `BackgroundFetch` | Downloads the browser owns: they survive the tab closing, with their own progress UI |
 | `ContentIndex` | Register offline-available content with the browser |
 | `WebTransport` | HTTP/3 streams and unreliable datagrams |
 | `Push` | Web push subscriptions |

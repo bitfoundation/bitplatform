@@ -81,7 +81,7 @@ public static class DocsNav
         [
             new("ServiceWorker", "service-worker", "Register and inspect service workers.", typeof(ServiceWorkerPage), ApiSupport.Broad, ApiNeeds.SecureContext),
             new("BackgroundSync", "background-sync", "Defer work until the user has connectivity.", typeof(BackgroundSyncPage), ApiSupport.Chromium, ApiNeeds.SecureContext),
-            new("BackgroundFetch", "background-fetch", "Downloads and uploads the browser owns - they survive the tab closing, with their own progress UI.", typeof(BackgroundFetchPage), ApiSupport.Chromium, ApiNeeds.SecureContext),
+            new("BackgroundFetch", "background-fetch", "Downloads the browser owns - they survive the tab closing, with their own progress UI.", typeof(BackgroundFetchPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission),
             new("ContentIndex", "content-index", "Register offline-available content so the browser can offer it to the user itself.", typeof(ContentIndexPage), ApiSupport.Chromium, ApiNeeds.SecureContext),
             new("WebTransport", "web-transport", "HTTP/3 streams and unreliable datagrams, without a WebSocket's head-of-line blocking.", typeof(WebTransportPage), ApiSupport.Partial, ApiNeeds.SecureContext),
             new("Push", "push", "Subscribe to web push notifications.", typeof(PushPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission),

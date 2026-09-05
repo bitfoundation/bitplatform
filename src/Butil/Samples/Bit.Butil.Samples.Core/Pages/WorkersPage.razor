@@ -135,7 +135,9 @@ var clients = await serviceWorker.MatchAllClients(includeUncontrolled: true);
 
     private async Task StartFetch()
     {
-        var registration = await backgroundFetch.Fetch(FetchId, ["/bit-butil.js"], "Bit.Butil sample download");
+        // The library's own script, at the path static web assets serve it from under every hosting
+        // model - a URL that 404s starts the fetch and then fails it as a browser download.
+        var registration = await backgroundFetch.Fetch(FetchId, ["/_content/Bit.Butil/bit-butil.js"], "Bit.Butil sample download");
         if (registration is null) await output.Warn("Fetch → null (Chromium only, and a worker must be registered)");
         else await output.Success($"Fetch(\"{registration.Id}\") → started");
     }

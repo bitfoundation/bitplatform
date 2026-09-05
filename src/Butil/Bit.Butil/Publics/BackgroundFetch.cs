@@ -9,7 +9,7 @@ namespace Bit.Butil;
 
 /// <summary>
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/Background_Fetch_API">Background Fetch API</see>
-/// (<c>ServiceWorkerRegistration.backgroundFetch</c>): downloads and uploads the browser owns, which
+/// (<c>ServiceWorkerRegistration.backgroundFetch</c>): downloads the browser owns, which
 /// keep running after the tab is closed and show the user their own progress UI.
 /// </summary>
 /// <remarks>

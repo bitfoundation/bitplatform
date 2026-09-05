@@ -138,6 +138,14 @@ await storageBuckets.Open("drafts", persisted: true);
 
     private async Task OpenBucket()
     {
+        // Open throws on a blank name rather than returning null, and the box is editable - so the
+        // sample says so through the console instead of surfacing an exception.
+        if (string.IsNullOrWhiteSpace(_bucket))
+        {
+            await output.Warn("Open(...) → a bucket name is required.");
+            return;
+        }
+
         var bucket = await storageBuckets.Open(_bucket, persisted: true);
         if (bucket is null) await output.Warn($"Open(\"{_bucket}\") → null (Storage Buckets is Chromium only)");
         else await output.Success($"Open(\"{bucket.Name}\") → persisted: {bucket.Persisted}, usage: {bucket.Usage?.ToString() ?? "(unknown)"}");

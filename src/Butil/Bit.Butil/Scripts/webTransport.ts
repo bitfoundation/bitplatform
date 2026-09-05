@@ -7,6 +7,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // again - the streams it opens dispatch their data through the same one.
         dotNetRef: any;
         streams: { [streamId: string]: { writer: any; readable: any } };
+        // One writer for the session's datagrams, acquired on the first send and kept. A writer
+        // locks the writable stream until it is released, so taking a fresh one per datagram makes
+        // any send that starts before the previous one finished throw - which is exactly what a
+        // send loop does, and it is the use case datagrams exist for. A held writer queues instead.
+        datagramWriter: any;
         nextStream: number;
         closed: boolean;
     }
@@ -106,7 +111,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 return { connected: false, error: String(e?.message ?? e) };
             }
 
-            const session: Session = { transport, dotNetRef, streams: {}, nextStream: 1, closed: false };
+            const session: Session = { transport, dotNetRef, streams: {}, datagramWriter: null, nextStream: 1, closed: false };
             _sessions[id] = session;
 
             try {
@@ -149,8 +154,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const session = _sessions[id];
             if (!session || session.closed) return false;
             try {
-                const writer = session.transport.datagrams.writable.getWriter();
-                try { await writer.write(data); } finally { writer.releaseLock(); }
+                // The writer is kept for the life of the session rather than taken and released
+                // around each send: releasing between overlapping sends is what makes the second
+                // one fail on an already-locked stream. Writes on one writer queue in order.
+                if (!session.datagramWriter) session.datagramWriter = session.transport.datagrams.writable.getWriter();
+                await session.datagramWriter.write(data);
                 return true;
             } catch {
                 // Datagrams are unreliable by design: one too large for the path MTU, or sent into
@@ -199,10 +207,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (!session) return;
             delete _sessions[id];
             session.closed = true;
-            for (const streamId of Object.keys(session.streams)) {
-                try { await session.streams[streamId].writer?.close(); } catch { /* already gone */ }
-            }
+            // Released rather than closed: closing the datagram writable is not this call's job,
+            // transport.close() ends the whole session anyway, and a lock left behind would block
+            // a later connect that pooled onto the same underlying connection.
+            try { session.datagramWriter?.releaseLock(); } catch { /* already released or errored */ }
+            session.datagramWriter = null;
+            // The session goes first, and the stream writers are not closed at all: writer.close()
+            // waits for everything already queued to be flushed, so a stream the peer has stopped
+            // reading - one whose flow-control window is full - leaves Close hanging for as long as
+            // the peer cares to wait. transport.close() aborts every stream on the session anyway,
+            // which is the same outcome without the wait.
             try { session.transport.close({ closeCode, reason }); } catch { /* already closed */ }
+            session.streams = {};
         },
         async disposeAll() {
             for (const id of Object.keys(_sessions)) await butil.webTransport.close(id, 0, '');
