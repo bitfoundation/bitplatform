@@ -24,6 +24,14 @@ public class AuthPolicies
     /// </summary>
     public const string ELEVATED_ACCESS = nameof(ELEVATED_ACCESS);
 
+    /// <summary>
+    /// This session completed a two-factor sign-in, which the <c>amr=mfa</c> claim of RFC 8176 says. Unlike
+    /// <see cref="ELEVATED_ACCESS"/> it does not expire, so it suits a capability a caller holds open for a long time.
+    /// Combine it with a feature policy to keep that capability away from power users who have not turned 2FA on -
+    /// policies named together on one endpoint must ALL pass.
+    /// </summary>
+    public const string TFA_ENABLED = nameof(TFA_ENABLED);
+
     //#if (multitenant == true)
     /// <summary>
     /// Determines whether the signed-in user currently selected a tenant,

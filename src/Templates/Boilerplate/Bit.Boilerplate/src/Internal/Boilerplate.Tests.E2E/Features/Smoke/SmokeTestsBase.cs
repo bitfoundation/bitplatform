@@ -1,4 +1,4 @@
-namespace Boilerplate.Tests.E2E.Features.Core;
+namespace Boilerplate.Tests.E2E.Features.Smoke;
 
 /// <summary>
 /// Opens each app and proves it is not only rendered but actually interactive; the Web, Windows and Android shells

@@ -615,7 +615,9 @@
                         // Needs ProductController (Admin module) and ProductViewController + the product page (Sales
                         // module) at once, and "module" is a single choice, so it can only ever run against the
                         // template's own source tree.
-                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs"
+                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
+                        // Only that test uses it.
+                        "src/Tests/Features/Caching/ReplayCountingOutputCacheStore.cs"
                     ]
                 },
                 {
@@ -701,6 +703,7 @@
                     "condition": "(advancedTests != true)",
                     "exclude": [
                         "src/Tests/Features/ServerWeb/**",
+                        "src/Tests/Features/DevMcp/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
                         "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
                         "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
@@ -727,7 +730,9 @@
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
+                        "src/Tests/Features/Identity/MagicLinkReplayTests.cs",
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
+                        "src/Tests/Features/Identity/TwoFactorAmrClaimTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
                         "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
@@ -771,6 +776,9 @@
                         "src/Tests/Features/OpenApi/OpenApiScalarIntegrationTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs",
                         "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
+                        "src/Tests/Features/Caching/ReplayCountingOutputCacheStore.cs",
+                        "src/Tests/Features/Jobs/RecurringJobPruningTests.cs",
+                        "src/Tests/Features/Caching/ProductImageCacheInvalidationTests.cs",
                         "src/Tests/Features/Caching/CultureCookieCacheabilityTests.cs",
                         "src/Tests/Features/Identity/TokenClassSeparationTests.cs",
                         "src/Tests/Features/Identity/RoleClaimGrantAllowListTests.cs",
@@ -853,8 +861,17 @@
                     "condition": "(advancedTests != true || module != Admin || multitenant != true)",
                     "exclude": [
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
+                        "src/Tests/Features/Caching/ProductImageCacheInvalidationTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
+                    ]
+                },
+                {
+                    // Needs all four at once: the hub that publishes DASHBOARD_DATA_CHANGED, the tenants it must be
+                    // scoped to, the category controller that publishes it and the seeded store-admin it signs in as.
+                    "condition": "(advancedTests != true || signalR != true || multitenant != true || module != Admin)",
+                    "exclude": [
+                        "src/Tests/Features/SignalR/DashboardBroadcastTenantScopeTests.cs"
                     ]
                 },
                 {

@@ -398,6 +398,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, elevatedSessionExpiresOn.Value.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)));
             }
 
+            // SignInManager stamps amr=mfa on the sign-in that completed the second factor, but this method builds its
+            // principal from the factory alone, so without carrying it over the fact would be lost on the first refresh
+            // - within five minutes, for a claim that describes how the session was established and never stops being true.
+            if (refreshTicket.Principal.HasClaim(AppClaimTypes.AMR, "mfa"))
+            {
+                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.AMR, "mfa"));
+            }
+
             userSession.RenewedOn = TimeProvider.GetUtcNow().ToUnixTimeSeconds();
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers

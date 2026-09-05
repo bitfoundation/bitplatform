@@ -2,7 +2,7 @@ namespace Boilerplate.Tests.E2E.Infrastructure;
 
 /// <summary>
 /// Base for tests written once and run on every platform that carries the app: the tests live in an abstract class
-/// under Features/Core, and a shell class per platform inherits it, picking only its <see cref="AppOpener"/> and the
+/// under Features/Smoke, and a shell class per platform inherits it, picking only its <see cref="AppOpener"/> and the
 /// platform's category/parallelism attributes. The hybrid shells inherit AppPageTest's browser page too and never
 /// touch it, which keeps its timeout, remote-server and video-on-retry setup single-sourced.
 /// </summary>

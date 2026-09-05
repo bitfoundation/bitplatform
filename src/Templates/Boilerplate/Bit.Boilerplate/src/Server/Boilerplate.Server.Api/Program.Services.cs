@@ -98,12 +98,13 @@ public static partial class Program
         services.AddPersonalDataServices();
         //#if (signalR == true)
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
-        // Add MCP server with chatbot tools
-        services.AddMcpServer()
-            .WithHttpTransport()
-            .WithToolsFromAssembly();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
         //#endif
+        services.AddDevMcp()
+        //#if (signalR == true)
+            .WithToolsFromAssembly() // Chatbot tools, served on /mcp only (See DevMcpServiceCollectionExtensions).
+        //#endif
+            ;
         //#if (module == "Sales" || module == "Admin")
         //#if (database == "PostgreSQL" || database == "SqlServer")
         services.AddScoped<ProductEmbeddingService>();

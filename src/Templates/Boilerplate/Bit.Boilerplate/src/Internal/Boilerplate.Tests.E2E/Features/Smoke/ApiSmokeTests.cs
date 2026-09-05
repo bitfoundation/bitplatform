@@ -1,6 +1,6 @@
 using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
-namespace Boilerplate.Tests.E2E.Features.Api;
+namespace Boilerplate.Tests.E2E.Features.Smoke;
 
 /// <summary>
 /// The browserless counterpart of the platform smoke tests: instead of opening an app, it calls the deployed APIs

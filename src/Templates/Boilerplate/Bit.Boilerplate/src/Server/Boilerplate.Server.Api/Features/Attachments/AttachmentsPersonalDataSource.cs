@@ -126,7 +126,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
                 await blobStorage.DeleteObject(blobPath, cancellationToken);
             }
 
-            await responseCacheService.PurgeUserProfileImagesCache(context.UserId);
+            await responseCacheService.PurgeAttachmentCache(context.UserId);
         }
         catch (Exception exp)
         {

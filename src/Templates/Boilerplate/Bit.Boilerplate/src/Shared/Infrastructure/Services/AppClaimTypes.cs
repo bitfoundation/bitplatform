@@ -6,6 +6,13 @@ public class AppClaimTypes
     public const string SESSION_ID = "s-id";
 
     /// <summary>
+    /// Authentication Methods References (RFC 8176). ASP.NET Identity stamps the value <c>mfa</c> on a completed
+    /// two-factor sign-in; this app carries it forward across refreshes (See IdentityController.Refresh).
+    /// <inheritdoc cref="AuthPolicies.TFA_ENABLED"/>
+    /// </summary>
+    public const string AMR = "amr";
+
+    /// <summary>
     /// true/false
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>

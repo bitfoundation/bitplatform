@@ -12,6 +12,11 @@ public static class RateLimitOptionsExtensions
     /// </summary>
     public const string IDENTITY = "identity";
 
+    /// <summary>The window every policy here counts in. Reported as-is by the Dev MCP's GetEffectiveConfiguration.</summary>
+    public static readonly TimeSpan Window = TimeSpan.FromMinutes(1);
+
+    public const int IdentityPermitLimit = 30;
+
     //#if (signalR == true)
     /// <summary>
     /// Applied with <c>[EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]</c> to the two endpoints of the AI chat
@@ -22,6 +27,13 @@ public static class RateLimitOptionsExtensions
     /// whole office as one caller.
     /// </summary>
     public const string SPEECH = "speech";
+
+    /// <summary>The per-ip limit that holds alongside <see cref="SPEECH"/>; it lives on the global limiter, not a policy.</summary>
+    public const string SPEECH_GLOBAL_IP = "speech-global-ip";
+
+    public const int SpeechPermitLimit = 10;
+
+    public const int SpeechGlobalIpPermitLimit = 100;
     //#endif
 
     extension(RateLimiterOptions options)
@@ -39,8 +51,8 @@ public static class RateLimitOptionsExtensions
                     partitionKey: GetPartitionKey(context),
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 30,
-                        Window = TimeSpan.FromMinutes(1)
+                        PermitLimit = IdentityPermitLimit,
+                        Window = Window
                     }));
 
             //#if (signalR == true)
@@ -51,8 +63,8 @@ public static class RateLimitOptionsExtensions
                     partitionKey: GetPartitionKey(context),
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 10,
-                        Window = TimeSpan.FromMinutes(1)
+                        PermitLimit = SpeechPermitLimit,
+                        Window = Window
                     }));
 
             // An endpoint is matched to a single policy, so the per-ip limit that holds alongside the per-user window
@@ -71,8 +83,8 @@ public static class RateLimitOptionsExtensions
                         partitionKey: $"ip:{context.Connection.RemoteIpAddress}",
                         factory: _ => new FixedWindowRateLimiterOptions
                         {
-                            PermitLimit = 100,
-                            Window = TimeSpan.FromMinutes(1)
+                            PermitLimit = SpeechGlobalIpPermitLimit,
+                            Window = Window
                         }));
 
             static bool IsSpeechEndpoint(HttpContext context)

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Boilerplate.Tests.E2E.Features.Web;
+namespace Boilerplate.Tests.E2E.Features.DownloadSize;
 
 [TestClass, TestCategory(TestCategories.Web), Retry(2)]
 public partial class WebAppDownloadSizeTests : AppPageTest

@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 
+using Hangfire.Storage;
 using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
 using Boilerplate.Server.Api.Features.Identity;
@@ -81,8 +82,11 @@ public static partial class Program
 
         //#if (signalR == true)
         app.MapHub<Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
-        app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
+        app.MapMcp("/mcp").RequireAuthorization(); // Chatbot tools. Isolated from /dev-mcp.
         //#endif
+
+        // Both policies, so both must pass: /dev-mcp is for global admins who have turned 2FA on, not either-or.
+        app.MapMcp("/dev-mcp").RequireAuthorization(AppFeatures.System.DevMcp, AuthPolicies.TFA_ENABLED);
 
         app.MapOpenIdConfiguration();
 
@@ -100,27 +104,60 @@ public static partial class Program
     {
         var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
 
+        List<string> scheduled = [];
+
         recurringJobManager.AddOrUpdate<UserSessionsRetentionJobRunner>(UserSessionsRetentionJobRunner.RecurringJobId,
                                                                        runner => runner.EnforceRetention(CancellationToken.None),
                                                                        Cron.Daily);
+        scheduled.Add(UserSessionsRetentionJobRunner.RecurringJobId);
 
         recurringJobManager.AddOrUpdate<UnconfirmedUsersRetentionJobRunner>(UnconfirmedUsersRetentionJobRunner.RecurringJobId,
                                                                            runner => runner.EnforceRetention(CancellationToken.None),
                                                                            Cron.Daily);
+        scheduled.Add(UnconfirmedUsersRetentionJobRunner.RecurringJobId);
 
         //#if (notification == true)
         recurringJobManager.AddOrUpdate<PushSubscriptionsRetentionJobRunner>(PushSubscriptionsRetentionJobRunner.RecurringJobId,
                                                                             runner => runner.EnforceRetention(CancellationToken.None),
                                                                             Cron.Daily);
+        scheduled.Add(PushSubscriptionsRetentionJobRunner.RecurringJobId);
         //#endif
 
         //#if (signalR == true)
         recurringJobManager.AddOrUpdate<AiChatImagesRetentionJobRunner>(AiChatImagesRetentionJobRunner.RecurringJobId,
                                                                        runner => runner.EnforceRetention(CancellationToken.None),
                                                                        Cron.Hourly);
+        scheduled.Add(AiChatImagesRetentionJobRunner.RecurringJobId);
         //#endif
 
+        app.RemoveUnscheduledRecurringJobs(scheduled);
+
         return app;
+    }
+
+    /// <summary>
+    /// A schedule outlives the class it names. Every job id here is nameof(TheRunner), and AddOrUpdate only ever adds,
+    /// so renaming a runner - or switching off the feature that registered it - leaves the old id in storage, where
+    /// Hangfire retries it until it gives up and reports a job it can no longer load.
+    /// </summary>
+    private static void RemoveUnscheduledRecurringJobs(this WebApplication app, IReadOnlyCollection<string> scheduled)
+    {
+        try
+        {
+            var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+            using var connection = app.Services.GetRequiredService<JobStorage>().GetConnection();
+
+            foreach (var orphan in connection.GetRecurringJobs().Select(job => job.Id).Except(scheduled).ToArray())
+            {
+                recurringJobManager.RemoveIfExists(orphan);
+                app.Logger.LogWarning("Removed recurring job {RecurringJobId}: it is no longer registered by ScheduleAppRecurringJobs.", orphan);
+            }
+        }
+        catch (Exception exception)
+        {
+            // Tidying old schedules must never be what stops the app from starting.
+            app.Logger.LogError(exception, "Could not prune unregistered recurring jobs.");
+        }
     }
 
     /// <summary>

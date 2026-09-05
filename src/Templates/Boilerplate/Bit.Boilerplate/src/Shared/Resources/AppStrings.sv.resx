@@ -1699,9 +1699,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>
   </data>
-  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
-    <value>Läs användarens sessionsloggar</value>
-  </data>
   <!--#endif -->
   <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">

@@ -1,6 +1,4 @@
-using Boilerplate.Tests.E2E.Features.Core;
-
-namespace Boilerplate.Tests.E2E.Features.Windows;
+namespace Boilerplate.Tests.E2E.Features.Smoke;
 
 /// <summary>
 /// Not parallelized: every Client.Windows app answers on the same hard-coded CDP port 9222, so two sessions at once
