@@ -10,7 +10,10 @@ public class ScreenDetails
     /// <summary>True when more than one screen is attached.</summary>
     public bool IsExtended { get; set; }
 
-    /// <summary>The index into <see cref="Screens"/> of the screen this window is currently on.</summary>
+    /// <summary>
+    /// The index into <see cref="Screens"/> of the screen this window is currently on, or -1 when
+    /// the browser reports a current screen that is not in <see cref="Screens"/>.
+    /// </summary>
     public int CurrentScreenIndex { get; set; }
 
     /// <summary>

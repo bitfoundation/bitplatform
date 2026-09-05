@@ -70,12 +70,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         };
     }
 
+    // Returns null when the sensor started, or the reason it did not. A failure to start is
+    // reported through the return value rather than InvokeSensorError: .NET is still inside the
+    // call, so it can raise the reason once - a dispatched error would race the call's own result.
     function start(subscriptionId: string, dotNetRef: any, type: string, frequency: number | null, referenceFrame: string | null) {
         const Constructor = constructorOf(type);
-        if (typeof Constructor !== 'function') {
-            butil.utils.dispatch(dotNetRef, 'InvokeSensorError', subscriptionId, `${type} is not supported.`);
-            return false;
-        }
+        if (typeof Constructor !== 'function') return `${type} is not supported.`;
 
         const options: any = {};
         if (frequency) options.frequency = frequency;
@@ -89,8 +89,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         } catch (e: any) {
             // SecurityError when a Permissions-Policy blocks the sensor, ReferenceError when the
             // flag is off - both surface here rather than as an unhandled construction throw.
-            butil.utils.dispatch(dotNetRef, 'InvokeSensorError', subscriptionId, e?.message ?? String(e));
-            return false;
+            return e?.message ?? String(e);
         }
 
         sensor.addEventListener('reading', () => {
@@ -102,11 +101,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         _sensors[subscriptionId] = sensor;
         try { sensor.start(); } catch (e: any) {
-            butil.utils.dispatch(dotNetRef, 'InvokeSensorError', subscriptionId, e?.message ?? String(e));
             stop(subscriptionId);
-            return false;
+            return e?.message ?? String(e);
         }
-        return true;
+        return null;
     }
 
     function stop(subscriptionId: string) {

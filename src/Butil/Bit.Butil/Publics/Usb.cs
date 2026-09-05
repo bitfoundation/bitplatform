@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -76,8 +77,10 @@ public class Usb(IJSRuntime js) : IAsyncDisposable
         return device;
     }
 
-    // Called by a handle that is disposing itself, so the service stops holding it.
-    internal void Forget(UsbDevice device) => _devices.TryRemove(device.Id, out _);
+    // Called by a handle that is disposing itself, so the service stops holding it. The removal is
+    // identity-checked: two handles can share an id (a device surfaced again by GetDevices, or by a
+    // connect event), and untracking on the id alone would let the stale one release the live one.
+    internal void Forget(UsbDevice device) => _devices.TryRemove(new KeyValuePair<string, UsbDevice>(device.Id, device));
 
     /// <summary>
     /// Invoked from JS on <c>navigator.usb</c>'s <c>connect</c>. Public +

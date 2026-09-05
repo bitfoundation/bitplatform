@@ -53,7 +53,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const current = _details.currentScreen;
         return {
             isExtended: !!(window.screen as any).isExtended,
-            currentScreenIndex: Math.max(0, Array.prototype.indexOf.call(screens, current)),
+            // -1 is passed through rather than clamped to 0: a currentScreen that isn't in the list
+            // means "unknown", and reporting index 0 would name a screen no entry marks as current.
+            currentScreenIndex: Array.prototype.indexOf.call(screens, current),
             screens: Array.prototype.map.call(screens, (screen: any) => describe(screen, screen === current))
         };
     }
@@ -92,7 +94,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const details = await getScreenDetails();
         if (!details) return false;
         const screen = _details.screens[screenIndex];
-        const target = element ?? document.documentElement;
+        // An unset ElementReference (default(ElementReference)) does not arrive as null: Blazor
+        // marshals it as a `{ __internalId: null }` object that no ?? can see through, so the test
+        // is whether an actual element came across.
+        const target: any = element instanceof Element ? element : document.documentElement;
         if (!screen || typeof target.requestFullscreen !== 'function') return false;
         try { await target.requestFullscreen({ screen }); return true; } catch { return false; }
     }

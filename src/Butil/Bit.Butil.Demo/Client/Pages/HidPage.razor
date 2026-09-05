@@ -393,6 +393,7 @@ var revoked = await _device.Forget();
     private async Task SendReport()
     {
         if (await RequireDevice(reportOutput) is false) return;
+        if (await RequireByte(reportOutput, "Report id", _reportId) is false) return;
 
         try
         {
@@ -407,6 +408,7 @@ var revoked = await _device.Forget();
     private async Task SendFeatureReport()
     {
         if (await RequireDevice(reportOutput) is false) return;
+        if (await RequireByte(reportOutput, "Report id", _reportId) is false) return;
 
         try
         {
@@ -422,6 +424,7 @@ var revoked = await _device.Forget();
     private async Task ReceiveFeatureReport()
     {
         if (await RequireDevice(reportOutput) is false) return;
+        if (await RequireByte(reportOutput, "Report id", _reportId) is false) return;
 
         try
         {
@@ -481,6 +484,16 @@ var revoked = await _device.Forget();
     {
         if (_device is not null) return true;
         await output.Warn("Pick a device first with RequestDevice.");
+        return false;
+    }
+
+    // The report id input is an int, so an out-of-range value would wrap on the cast to byte and
+    // silently address a different report - 300 would go out as 44.
+    private async Task<bool> RequireByte(DemoConsole output, string name, int value)
+    {
+        if (value is >= byte.MinValue and <= byte.MaxValue) return true;
+
+        await output.Warn($"{name} must be between 0 and 255 - got {value}.");
         return false;
     }
 

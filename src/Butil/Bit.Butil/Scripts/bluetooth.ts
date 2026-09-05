@@ -18,6 +18,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     let _sequence = 0;
     function nextId() { return `bt${++_sequence}`; }
 
+    // The browser hands back the same BluetoothDevice object for a given device on every call, so
+    // minting a fresh id each time would pile up registry entries for one device - and leave a
+    // connected handle's id pointing at a device the caller thinks it already released.
+    function idOf(device: any) {
+        for (const key of Object.keys(_devices)) {
+            if (_devices[key] === device) return key;
+        }
+
+        const id = nextId();
+        _devices[id] = device;
+        return id;
+    }
+
     butil.bluetooth = {
         isSupported() { return !!(navigator as any).bluetooth; },
         getAvailability,
@@ -107,22 +120,16 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             throw e;
         }
 
-        const id = nextId();
-        _devices[id] = device;
-        return describe(id, device);
+        return describe(idOf(device), device);
     }
 
-    // Devices the user has already permitted, each under a fresh handle id.
+    // Devices the user has already permitted, each under its existing handle id or a fresh one.
     async function getDevices() {
         const bt = bluetooth();
         if (!bt || typeof bt.getDevices !== 'function') return [];
         try {
             const devices = await bt.getDevices();
-            return devices.map((device: any) => {
-                const id = nextId();
-                _devices[id] = device;
-                return describe(id, device);
-            });
+            return devices.map((device: any) => describe(idOf(device), device));
         } catch { return []; }
     }
 

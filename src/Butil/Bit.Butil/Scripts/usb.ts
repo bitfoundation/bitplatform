@@ -11,6 +11,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     let _sequence = 0;
     function nextId() { return `usb${++_sequence}`; }
 
+    // The USB API hands back the same USBDevice object for a given device on every call, so
+    // minting a fresh id each time would pile up registry entries for one device - and leave an
+    // open handle's id pointing at a device the caller thinks it already released.
+    function idOf(device: any) {
+        for (const key of Object.keys(_devices)) {
+            if (_devices[key] === device) return key;
+        }
+
+        const id = nextId();
+        _devices[id] = device;
+        return id;
+    }
+
     butil.usb = {
         isSupported() { return !!(navigator as any).usb; },
         requestDevice,
@@ -105,9 +118,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             throw e;
         }
 
-        const id = nextId();
-        _devices[id] = device;
-        return describe(id, device);
+        return describe(idOf(device), device);
     }
 
     async function getDevices() {
@@ -115,11 +126,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!api) return [];
         try {
             const devices = await api.getDevices();
-            return devices.map((device: any) => {
-                const id = nextId();
-                _devices[id] = device;
-                return describe(id, device);
-            });
+            return devices.map((device: any) => describe(idOf(device), device));
         } catch { return []; }
     }
 
@@ -247,17 +254,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         try { await device.reset(); return true; } catch { return false; }
     }
 
-    // The connect/disconnect events carry a USBDevice that .NET has no handle for yet, so each one
-    // is registered under a fresh id derived from the subscription - the caller can act on it
-    // straight away without a second requestDevice().
+    // The connect/disconnect events carry a USBDevice that .NET may have no handle for yet, so each
+    // one is registered (or matched to the handle it already has) before being dispatched - the
+    // caller can act on it straight away without a second requestDevice().
     function subscribeConnection(subscriptionId: string, dotNetRef: any) {
         const api = usb();
         if (!api) return false;
 
         const relay = (method: string) => ((event: any) => {
-            const id = nextId();
-            _devices[id] = event.device;
-            butil.utils.dispatch(dotNetRef, method, subscriptionId, describe(id, event.device));
+            butil.utils.dispatch(dotNetRef, method, subscriptionId, describe(idOf(event.device), event.device));
         }) as EventListener;
 
         const connect = relay('InvokeUsbConnected');

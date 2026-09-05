@@ -120,7 +120,16 @@ public sealed class UsbDevice : IAsyncDisposable
     /// Revokes this origin's permission for the device, so it stops appearing in
     /// <see cref="Usb.GetDevices"/> until the user picks it again.
     /// </summary>
-    public ValueTask<bool> Forget() => _js.Invoke<bool>("BitButil.usb.forget", Id);
+    public async ValueTask<bool> Forget()
+    {
+        var forgotten = await _js.Invoke<bool>("BitButil.usb.forget", Id);
+
+        // JS released its handle, so the id is dead - drop the tracked device so nothing hands it
+        // out again. A refused forget leaves the device exactly as it was.
+        if (forgotten) _owner.Forget(this);
+
+        return forgotten;
+    }
 
     /// <summary>Closes the device and releases the browser-side reference.</summary>
     public async ValueTask DisposeAsync()

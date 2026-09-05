@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -75,8 +76,10 @@ public class Serial(IJSRuntime js) : IAsyncDisposable
         return port;
     }
 
-    // Called by a handle that is disposing itself, so the service stops holding it.
-    internal void Forget(SerialPort port) => _ports.TryRemove(port.Id, out _);
+    // Called by a handle that is disposing itself, so the service stops holding it. The removal is
+    // identity-checked: two handles can share an id (a port surfaced again by GetPorts, or by a
+    // connect event), and untracking on the id alone would let the stale one release the live one.
+    internal void Forget(SerialPort port) => _ports.TryRemove(new KeyValuePair<string, SerialPort>(port.Id, port));
 
     /// <summary>
     /// Invoked from JS for each chunk read from a port. Public + <see cref="JSInvokableAttribute"/>

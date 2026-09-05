@@ -168,6 +168,20 @@ internal static class InternalJSRuntimeExtensions
     }
 
     /// <summary>
+    /// <see cref="InvokeRegister"/> for a registration function that reports failure by returning
+    /// the reason as a string, and null when it attached. The reason travels back with the call
+    /// rather than through the error callback, so the caller raises it exactly once and can put the
+    /// real message on the exception it throws.
+    /// </summary>
+    /// <remarks>Prerender/SSR reports success, for the reason given on <see cref="InvokeRegister"/>.</remarks>
+    internal static async ValueTask<string?> InvokeRegisterOrError(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        if (jsRuntime.IsJsRuntimeInvalid()) return null;
+
+        return await jsRuntime.Invoke<string?>(identifier, args);
+    }
+
+    /// <summary>
     /// Opt-in fast invoke for value-returning calls. Honors <see cref="BitButil.FastInvokeEnabled"/>
     /// and, when running under an <see cref="IJSInProcessRuntime"/> (Blazor WebAssembly), calls the
     /// JS function synchronously.

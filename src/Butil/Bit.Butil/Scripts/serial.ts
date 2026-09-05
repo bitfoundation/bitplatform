@@ -68,9 +68,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             throw e;
         }
 
-        const id = nextId();
-        _ports[id] = port;
-        return describe(id, port);
+        return describe(idOf(port), port);
     }
 
     async function getPorts() {
@@ -82,9 +80,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         } catch { return []; }
     }
 
-    // getPorts() hands back the same SerialPort objects on every call, so minting a fresh id each
-    // time would pile up registry entries for one port - and leave an open handle's id pointing at
-    // a port the caller thinks it already released.
+    // The browser hands back the same SerialPort object for a given port on every call, so minting
+    // a fresh id each time would pile up registry entries for one port - and leave an open handle's
+    // id pointing at a port the caller thinks it already released.
     function idOf(port: any) {
         for (const key of Object.keys(_ports)) {
             if (_ports[key] === port) return key;
@@ -222,16 +220,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         try { await port.setSignals(signals); return true; } catch { return false; }
     }
 
-    // As in usb.ts: the event carries a port .NET has no handle for, so one is minted here.
+    // As in usb.ts: the event carries a port .NET may have no handle for, so one is minted here -
+    // or the handle it already has is reused.
     function subscribeConnection(subscriptionId: string, dotNetRef: any) {
         const api = serial();
         if (!api) return false;
 
         const relay = (method: string) => ((event: any) => {
             const port = event.target ?? event.port;
-            const id = nextId();
-            _ports[id] = port;
-            butil.utils.dispatch(dotNetRef, method, subscriptionId, describe(id, port));
+            butil.utils.dispatch(dotNetRef, method, subscriptionId, describe(idOf(port), port));
         }) as EventListener;
 
         const connect = relay('InvokeSerialConnected');

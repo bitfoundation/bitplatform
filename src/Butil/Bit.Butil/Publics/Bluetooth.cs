@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -98,10 +99,12 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
     // Called by a handle that is disposing itself, so the service stops holding it. The JS-side
     // release() detaches every listener attached through that handle, so the .NET closures behind
     // them have to go with it - otherwise disposing one device leaks the handlers of that device
-    // for as long as the service lives.
+    // for as long as the service lives. The registry removal is identity-checked: two handles can
+    // share an id (a device surfaced again by GetDevices), and untracking on the id alone would let
+    // the stale one release the live one.
     internal void Forget(BluetoothDevice device)
     {
-        _devices.TryRemove(device.Id, out _);
+        _devices.TryRemove(new KeyValuePair<string, BluetoothDevice>(device.Id, device));
 
         foreach (var pair in _valueHandlers)
         {

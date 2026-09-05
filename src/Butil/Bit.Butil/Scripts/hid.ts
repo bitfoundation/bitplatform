@@ -13,6 +13,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     let _sequence = 0;
     function nextId() { return `hid${++_sequence}`; }
 
+    // The HID API hands back the same HIDDevice object for a given device on every call, so
+    // minting a fresh id each time would pile up registry entries for one device - and leave an
+    // open handle's id pointing at a device the caller thinks it already released.
+    function idOf(device: any) {
+        for (const key of Object.keys(_devices)) {
+            if (_devices[key] === device) return key;
+        }
+
+        const id = nextId();
+        _devices[id] = device;
+        return id;
+    }
+
     butil.hid = {
         isSupported() { return !!(navigator as any).hid; },
         requestDevice,
@@ -76,11 +89,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // requestDevice returns an array - the chooser can hand back more than one device when the
         // request allowed it - so this returns a list where the other buses return a single device.
         const devices = await api.requestDevice({ filters: requested });
-        return devices.map((device: any) => {
-            const id = nextId();
-            _devices[id] = device;
-            return describe(id, device);
-        });
+        return devices.map((device: any) => describe(idOf(device), device));
     }
 
     async function getDevices() {
@@ -88,11 +97,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!api) return [];
         try {
             const devices = await api.getDevices();
-            return devices.map((device: any) => {
-                const id = nextId();
-                _devices[id] = device;
-                return describe(id, device);
-            });
+            return devices.map((device: any) => describe(idOf(device), device));
         } catch { return []; }
     }
 
@@ -182,15 +187,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         entry.device.removeEventListener('inputreport', entry.handler);
     }
 
-    // As in usb.ts: the event carries a device .NET has no handle for, so one is minted here.
+    // As in usb.ts: the event carries a device .NET may have no handle for, so one is minted here -
+    // or the handle it already has is reused.
     function subscribeConnection(subscriptionId: string, dotNetRef: any) {
         const api = hid();
         if (!api) return false;
 
         const relay = (method: string) => ((event: any) => {
-            const id = nextId();
-            _devices[id] = event.device;
-            butil.utils.dispatch(dotNetRef, method, subscriptionId, describe(id, event.device));
+            butil.utils.dispatch(dotNetRef, method, subscriptionId, describe(idOf(event.device), event.device));
         }) as EventListener;
 
         const connect = relay('InvokeHidConnected');

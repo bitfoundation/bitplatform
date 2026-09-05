@@ -84,7 +84,10 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
         if (_handlers.TryGetValue(id, out var handlers)) handlers.OnReading.Invoke(reading);
     }
 
-    /// <summary>Invoked from JS when a sensor errors or refuses to start. See <see cref="InvokeSensorReading"/>.</summary>
+    /// <summary>
+    /// Invoked from JS when a running sensor errors. See <see cref="InvokeSensorReading"/>. A sensor
+    /// that refuses to start reports through <see cref="Subscribe"/> instead, not through here.
+    /// </summary>
     [JSInvokable(ErrorMethodName)]
     public void InvokeSensorError(Guid id, string message)
     {
@@ -127,10 +130,10 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
             _ => null
         };
 
-        bool started;
+        string? failure;
         try
         {
-            started = await js.InvokeRegister("BitButil.sensors.start", id, DotNetRef, NameOf(type), options?.Frequency, referenceFrame);
+            failure = await js.InvokeRegisterOrError("BitButil.sensors.start", id, DotNetRef, NameOf(type), options?.Frequency, referenceFrame);
         }
         catch
         {
@@ -139,12 +142,14 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
             throw;
         }
 
-        if (started is false)
+        if (failure is not null)
         {
+            // The reason comes back with the call rather than through InvokeSensorError, so it is
+            // raised here exactly once - and with what the browser actually said, instead of a
+            // generic message racing the dispatched one.
             _handlers.TryRemove(id, out _);
-            var message = $"The {NameOf(type)} sensor could not be started.";
-            onError?.Invoke(message);
-            throw new InvalidOperationException(message);
+            onError?.Invoke(failure);
+            throw new InvalidOperationException(failure);
         }
 
         return new ButilSubscription(id, async () =>
