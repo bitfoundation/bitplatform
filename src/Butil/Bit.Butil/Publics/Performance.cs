@@ -98,11 +98,19 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// The timeline only holds the buffered entry types. Long tasks, long animation frames, layout
     /// shifts, LCP candidates, event timings and element timings are delivered to observers and
     /// never stored there, so for those this reads what Butil's own observer has collected: the
-    /// first call starts that observer and comes back empty or nearly so, and a later call returns
-    /// what the page produced in between. Call it once early and read it again later - or use
-    /// <see cref="SubscribeObserver{T}(string[], Action{T[]}, bool)"/> to be told as they happen.
-    /// An entry type the engine does not support stays empty rather than failing.
+    /// first call starts that observer and returns whatever the engine had already buffered, and a
+    /// later call returns what the page produced in between. Call it once early and read it again
+    /// later - or use <see cref="SubscribeObserver{T}(string[], Action{T[]}, bool)"/> to be told as
+    /// they happen. An entry type the engine does not support stays empty rather than failing.
     /// </remarks>
+    // T's own members are preserved by its annotation, but the DTOs hanging off it are not reached
+    // transitively, and this is a public entry point of its own - an app calling it with one of the
+    // nested-shaped entry types and never calling the named getter below would otherwise deserialize
+    // those nested members empty under trimming.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceTaskAttributionTiming))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceScriptTiming))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftAttribution))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftRect))]
     public ValueTask<T[]> GetTypedEntries<[DynamicallyAccessedMembers(JsonSerialized)] T>(string entryType, string? name = null)
         => js.Invoke<T[]>("BitButil.performance.getEntries", name, entryType);
 
@@ -137,7 +145,8 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// Long tasks never reach the timeline, so this reads Butil's own observer records: the first
-    /// call starts that observer and returns nothing, and a later one returns the long tasks since.
+    /// call starts that observer and returns the long tasks the engine had buffered before it, and
+    /// a later one returns the ones since.
     /// <br/>
     /// Those records are the 250 most recent entries of the type - the same window the platform's
     /// own resource buffer keeps - so read them as you go rather than at the end of a long session.
@@ -168,8 +177,8 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/LargestContentfulPaint">LargestContentfulPaint</see>
     /// </summary>
     /// <remarks>
-    /// Observer-fed like <see cref="GetLongTasks"/>, but with the engine's buffer behind it: the
-    /// candidates that painted before the first call are backfilled, on the task after it.
+    /// Observer-fed like <see cref="GetLongTasks"/>: the candidates that painted before the first
+    /// call are backfilled from the engine's buffer and included in that first read.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LargestContentfulPaint))]
     public ValueTask<LargestContentfulPaint[]> GetLargestContentfulPaints()

@@ -47,6 +47,16 @@ public class PerformanceAndPlatformTests : ButilObserversPageTest
     }
 
     [TestMethod]
+    public async Task First_Typed_Read_Returns_The_Records_Buffered_Before_It()
+    {
+        // The observer-fed reads start their observer on the first call. Chromium buffers
+        // largest-contentful-paint, so the candidates from the page's own load already exist by the
+        // time this clicks - and that first read has to hand them back rather than come up empty
+        // because the observer's callback had not run yet.
+        await ClickAndExpectAsync("perf-buffered-read", "perf:buffered-read:True");
+    }
+
+    [TestMethod]
     public async Task IsInputPending_Answers_On_Every_Engine()
     {
         // The value itself is whatever the input queue happens to hold; what matters is that a

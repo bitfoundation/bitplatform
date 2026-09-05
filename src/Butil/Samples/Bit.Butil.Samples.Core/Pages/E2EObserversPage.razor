@@ -40,6 +40,7 @@
     <button id="perf-navigation" @onclick="PerfNavigation">navigation timing</button>
     <button id="perf-resources" @onclick="PerfResources">resource timing</button>
     <button id="perf-vitals" @onclick="PerfWebVitals">web vitals</button>
+    <button id="perf-buffered-read" @onclick="PerfBufferedRead">first read of a buffered observer-only type</button>
 </section>
 
 <section>
@@ -138,6 +139,10 @@
     private async Task PerfObserver()
     {
         var tcs = new TaskCompletionSource<bool>();
+
+        // The harness button can be pressed more than once; drop the previous observer first so a
+        // second run does not leave the first one still reporting into a dead handler.
+        if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
         _perfObserverSub = await performance.SubscribeObserver(["mark"], entries =>
         {
             if (entries.Length > 0) tcs.TrySetResult(true);
@@ -155,6 +160,8 @@
         // demand - so this proves the typed relay without depending on the browser being slow.
         var tcs = new TaskCompletionSource<bool>();
 
+        // Same as above: a repeated activation replaces the subscription, so release the old one.
+        if (_typedObserverSub is not null) await _typedObserverSub.DisposeAsync();
         _typedObserverSub = await performance.SubscribeObserver<PerformanceEntry>(
             [PerformanceEntryTypes.Measure],
             entries =>
@@ -198,6 +205,23 @@
         // and without any user interaction.
         var ok = vitals is not null && vitals.Ttfb is >= 0;
         Set($"perf:vitals:{ok}");
+    }
+
+    private async Task PerfBufferedRead()
+    {
+        // Long tasks never reach the timeline and are only ever observed - and unlike an LCP
+        // candidate one can be produced on demand, which is what makes this deterministic. Block the
+        // main thread, let the blocking task end so the engine records it, and only then make the
+        // very first read of the type. That read is what starts the observer behind it, so it can
+        // only see the long task if the module drains the fresh observer's records rather than
+        // waiting for the callback a later task would have run.
+        var until = DateTime.UtcNow.AddMilliseconds(120);
+        while (DateTime.UtcNow < until) { }
+        await Task.Delay(50);
+
+        var tasks = await performance.GetLongTasks();
+        var ok = tasks.Length > 0 && tasks.All(t => t.EntryType == "longtask" && t.Duration > 0);
+        Set($"perf:buffered-read:{ok}");
     }
 
     // ─── Storage Manager + Network ───────────────────────────────────────────────

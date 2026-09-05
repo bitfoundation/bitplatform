@@ -3,6 +3,28 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     const _controllers: { [id: string]: AbortController } = {};
 
+    // Aborts that arrived before the request they name existed here. .NET registers the cancellation
+    // callback before it posts the call, so a token that fires in between reaches abort() while
+    // _controllers still has nothing under that id - and without this the abort would be dropped and
+    // the request would run, and upload its whole body, uncancelled.
+    const _pendingAborts: { [id: string]: boolean } = {};
+
+    // How long a pending abort is kept. An abort naming an id that never starts - the token firing
+    // just after the request completed and deleted its controller - would otherwise sit here for the
+    // life of the document; the id is single-use, so forgetting it after a while loses nothing.
+    const PENDING_ABORT_TTL = 30000;
+
+    // The controller for one request, already aborted if the abort beat it here.
+    function openController(id: string) {
+        const controller = new AbortController();
+        _controllers[id] = controller;
+        if (_pendingAborts[id]) {
+            delete _pendingAborts[id];
+            try { controller.abort(); } catch { /* nothing to abort yet */ }
+        }
+        return controller;
+    }
+
     butil.fetch = {
         send,
         sendStream,
@@ -118,8 +140,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     async function send(id: string, req: any, dotNetRef: any, withProgress: boolean): Promise<any> {
-        const controller = new AbortController();
-        _controllers[id] = controller;
+        const controller = openController(id);
 
         try {
             const resp = await fetch(req.url, buildInit(req, controller));
@@ -144,10 +165,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     async function sendStream(id: string, req: any, streamRef: any, dotNetRef: any, withProgress: boolean, total: number | null): Promise<any> {
-        const controller = new AbortController();
-        _controllers[id] = controller;
+        // Consumes an abort that arrived before this call did, so the fetch below starts already
+        // aborted rather than pulling the whole body from .NET first.
+        const controller = openController(id);
 
         try {
+            // Aborted before it began: answer without ever asking .NET for the stream, so nothing of
+            // the body is pulled and the caller's stream is untouched.
+            if (controller.signal.aborted) return toErrorResponse(req.url, { name: 'AbortError' });
+
             // The .NET stream arrives as a reference; stream() turns it into a ReadableStream that
             // pulls from .NET on demand, so the body is never held in memory whole on either side.
             const source: ReadableStream = await streamRef.stream();
@@ -207,8 +233,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function start(id: string, req: any) {
-        const controller = new AbortController();
-        _controllers[id] = controller;
+        const controller = openController(id);
         // Fire-and-forget: errors are silently swallowed because there's no consumer for the
         // result. Use send() when you need the response.
         fetch(req.url, buildInit(req, controller)).catch(() => { /* ignore */ }).finally(() => { delete _controllers[id]; });
@@ -216,7 +241,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function abort(id: string) {
         const c = _controllers[id];
-        if (!c) return;
+        if (!c) {
+            // Either the request has not reached this module yet - the race openController() closes -
+            // or it has already finished, in which case the note expires unread.
+            _pendingAborts[id] = true;
+            setTimeout(() => { delete _pendingAborts[id]; }, PENDING_ABORT_TTL);
+            return;
+        }
         delete _controllers[id];
         try { c.abort(); } catch { /* already aborted */ }
     }

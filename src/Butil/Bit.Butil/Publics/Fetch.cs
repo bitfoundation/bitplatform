@@ -173,6 +173,12 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
     /// Wires the token to the JS-side <c>AbortController</c> for this request, or hands back an
     /// empty registration when the token can never fire.
     /// </summary>
+    /// <remarks>
+    /// This runs before the call is posted to JS, so a token that fires immediately reaches the JS
+    /// <c>abort</c> before the request it names exists there. The JS side records such an abort
+    /// against the id and the request consumes it as it starts - which is what stops a cancelled
+    /// <see cref="SendStream"/> from uploading its body anyway.
+    /// </remarks>
     private CancellationTokenRegistration RegisterAbort(Guid id, CancellationToken cancellationToken)
         => cancellationToken.CanBeCanceled
             ? cancellationToken.Register(static state =>

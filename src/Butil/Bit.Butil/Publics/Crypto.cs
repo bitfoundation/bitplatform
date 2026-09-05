@@ -247,12 +247,12 @@ public class Crypto(IJSRuntime js)
     /// null-check it if you call it anywhere a prerender pass can reach.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
-    public ValueTask<CryptoJsonWebKey> ExportJsonWebKey(byte[] key, CryptoKeyFormat sourceFormat, CryptoKeyAlgorithm algorithm)
+    public ValueTask<CryptoJsonWebKey?> ExportJsonWebKey(byte[] key, CryptoKeyFormat sourceFormat, CryptoKeyAlgorithm algorithm)
     {
         ArgumentNullException.ThrowIfNull(algorithm);
         RequireByteFormat(sourceFormat, nameof(sourceFormat));
 
-        return js.Invoke<CryptoJsonWebKey>("BitButil.crypto.exportJwk",
+        return js.Invoke<CryptoJsonWebKey?>("BitButil.crypto.exportJwk",
             CryptoFormatName.Resolve(sourceFormat), key, new CryptoKeyAlgorithmJsOptions(algorithm));
     }
 

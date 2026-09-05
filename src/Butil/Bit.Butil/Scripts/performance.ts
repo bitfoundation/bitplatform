@@ -45,7 +45,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     const RETAINED_MAX = 250;
 
     function supportsEntryType(type: string) {
-        const types = (PerformanceObserver as any)?.supportedEntryTypes;
+        // Read the constructor off window rather than as a bare identifier: optional chaining does
+        // not rescue an undeclared global, so `PerformanceObserver?.x` is still a ReferenceError on
+        // an engine that has no PerformanceObserver at all.
+        const types = (window as any).PerformanceObserver?.supportedEntryTypes;
         return Array.isArray(types) && types.indexOf(type) >= 0;
     }
 
@@ -64,22 +67,33 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         }
     }
 
-    // The records for one observer-only type. The first ask starts the observer, so it comes back
-    // empty or nearly so - buffered:true backfills what the engine held from before the observer
-    // existed, but the report arrives on a later task either way. Reading again once the page has
-    // run is what returns anything, which is the same shape webVitals() has.
+    // Appends what an observer reported to the records of its type, as plain JSON, keeping only the
+    // most recent RETAINED_MAX of them. Shared by the observer callback and the synchronous drain
+    // below so both apply the same conversion and the same window.
+    function retain(type: string, entries: any[]) {
+        const bucket = _retained[type];
+        if (!bucket) return;
+        for (const entry of entries) bucket.push(entry.toJSON ? entry.toJSON() : entry);
+        if (bucket.length > RETAINED_MAX) bucket.splice(0, bucket.length - RETAINED_MAX);
+    }
+
+    // The records for one observer-only type. The first ask starts the observer; buffered:true
+    // backfills what the engine held from before it existed, but that report would only reach the
+    // callback on a later task - so the queue is drained synchronously here too, and the first read
+    // returns what was already buffered. Entries produced after the call still need a later read.
     function retainedEntries(type: string, name?: string) {
         if (!_retained[type]) {
             _retained[type] = [];
             // durationThreshold below the 104ms default so short interactions are counted too, for
             // the same reason the vitals collector lowers it.
             const options = type === 'event' ? { durationThreshold: 16 } : {};
-            const observer = observeVital(type, list => {
-                const bucket = _retained[type];
-                for (const entry of list.getEntries()) bucket.push((entry as any).toJSON ? (entry as any).toJSON() : entry);
-                if (bucket.length > RETAINED_MAX) bucket.splice(0, bucket.length - RETAINED_MAX);
-            }, options);
-            if (observer) _retainedObservers[type] = observer;
+            const observer = observeVital(type, list => retain(type, list.getEntries()), options);
+            if (observer) {
+                _retainedObservers[type] = observer;
+                // takeRecords() hands over the queued reports - the buffered backfill among them -
+                // without waiting for the task that would have delivered them to the callback.
+                try { retain(type, observer.takeRecords()); } catch { /* not implemented here */ }
+            }
         }
 
         const entries = _retained[type];
