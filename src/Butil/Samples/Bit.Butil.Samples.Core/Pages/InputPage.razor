@@ -1,0 +1,248 @@
+@page "/input"
+@implements IAsyncDisposable
+@inject Bit.Butil.CloseWatcher closeWatcher
+@inject Bit.Butil.KeyboardLock keyboardLock
+@inject Bit.Butil.KeyboardLayout keyboardLayout
+@inject Bit.Butil.VirtualKeyboard virtualKeyboard
+@inject Bit.Butil.PointerTracker pointerTracker
+@inject Bit.Butil.TextEditContext editContext
+
+<PageTitle>Butil - Advanced Input Samples</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="Advanced Input"
+            Lead="Close requests, keyboard lock and layout, the on-screen keyboard, full-rate pointer sampling and the EditContext API."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CloseWatcher" />
+
+<pre>
+@@inject Bit.Butil.CloseWatcher closeWatcher
+
+var watcher = await closeWatcher.Create(onClose: () => _open = false);
+await watcher!.RequestClose();
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Close watcher" Api="Create / RequestClose"
+              Description="One handler for Escape, the Android back gesture and the platform's own close affordance.">
+        <div class="controls">
+            <button @onclick="OpenWatcher">Open panel</button>
+            <button @onclick="RequestClose">RequestClose</button>
+            <button class="danger" @onclick="DisposeWatcher">Dispose</button>
+        </div>
+        @if (_panelOpen)
+        {
+            <div class="field">
+                <span class="field-label">Panel</span>
+                <span>Open - press Esc.</span>
+            </div>
+        }
+    </DemoCard>
+
+    <DemoCard Title="Keyboard lock & layout" Api="Lock / Unlock / Get"
+              Description="Lock needs fullscreen; the layout map says what a physical key prints on this keyboard.">
+        <div @ref="_stage" class="field">
+            <span class="field-label">Fullscreen stage</span>
+            <span>This box goes fullscreen so the lock can take effect.</span>
+        </div>
+        <div class="controls">
+            <button @onclick="GoFullscreen">Fullscreen</button>
+            <button @onclick="LockKeys">Lock(Escape, KeyW)</button>
+            <button class="danger" @onclick="UnlockKeys">Unlock</button>
+            <button @onclick="LookupKey">Get("KeyW")</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Virtual keyboard" Api="SetOverlaysContent / Show / Hide / OnGeometryChange"
+              Description="Chromium on touch devices. With overlaysContent on, the app lays out around the keyboard itself.">
+        <div @ref="_editor" contenteditable="true" tabindex="0" class="field">
+            <span class="field-label">Editable surface</span>
+            <span>Focus me, then Show.</span>
+        </div>
+        <div class="controls">
+            <button @onclick="OverlaysOn">SetOverlaysContent(true)</button>
+            <button @onclick="ShowKeyboard">Show</button>
+            <button class="secondary" @onclick="HideKeyboard">Hide</button>
+            <button @onclick="SubscribeKeyboard">Subscribe</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Pointer sampling" Api="Track"
+              Description="Drag on the pad: 'samples' counts the positions the browser merged into each delivered event.">
+        <div @ref="_pad" style="height:6rem;border:1px dashed #999;border-radius:6px;touch-action:none"></div>
+        <div class="controls">
+            <button @onclick="StartTracking">Track</button>
+            <button class="danger" @onclick="StopTracking">Stop</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Totals</span>
+            <span>@_frames frames · @_samples samples</span>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Edit context" Api="Attach / UpdateText"
+              Description="Takes over text input for the surface; the text below is rendered from C#, not by the browser.">
+        <div @ref="_surface" tabindex="0" style="min-height:2.5rem;padding:0.5rem;border:1px solid #999;border-radius:6px">@_editText</div>
+        <div class="controls">
+            <button @onclick="AttachContext">Attach</button>
+            <button class="danger" @onclick="DetachContext">Detach</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="input output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference _stage;
+    private ElementReference _editor;
+    private ElementReference _pad;
+    private ElementReference _surface;
+
+    private CloseWatcherHandle? _watcher;
+    private TextEditContextHandle? _context;
+    private ButilSubscription? _pointerSub;
+    private ButilSubscription? _keyboardSub;
+
+    private bool _panelOpen;
+    private int _frames;
+    private int _samples;
+    private string _editText = "";
+
+    private async Task OpenWatcher()
+    {
+        await DisposeWatcher();
+
+        _watcher = await closeWatcher.Create(() =>
+        {
+            _panelOpen = false;
+            _watcher = null;
+            _ = InvokeAsync(StateHasChanged);
+            _ = output.Success("onClose → the panel closed.");
+        });
+
+        if (_watcher is null)
+        {
+            await output.Warn("CloseWatcher.Create → null. Not supported here.");
+            return;
+        }
+
+        _panelOpen = true;
+        await output.Log("Panel open. Press Esc.");
+    }
+
+    private async Task RequestClose()
+    {
+        if (_watcher is not null) await _watcher.RequestClose();
+    }
+
+    private async Task DisposeWatcher()
+    {
+        if (_watcher is not null) await _watcher.DisposeAsync();
+        _watcher = null;
+        _panelOpen = false;
+    }
+
+    private async Task GoFullscreen()
+    {
+        await _stage.RequestFullScreen(null);
+        await output.Log("Fullscreen requested.");
+    }
+
+    private async Task LockKeys()
+        => await output.Success("Lock →", await keyboardLock.Lock("Escape", "KeyW"));
+
+    private async Task UnlockKeys()
+    {
+        await keyboardLock.Unlock();
+        await output.Log("Unlocked.");
+    }
+
+    private async Task LookupKey()
+        => await output.Success("KeyboardLayout.Get(\"KeyW\") →", await keyboardLayout.Get("KeyW") ?? "(null)");
+
+    private async Task OverlaysOn()
+    {
+        await virtualKeyboard.SetOverlaysContent(true);
+        await output.Log("overlaysContent = true.");
+    }
+
+    private async Task ShowKeyboard()
+    {
+        await _editor.SetVirtualKeyboardPolicy(VirtualKeyboardPolicy.Manual);
+        await _editor.Focus();
+        await virtualKeyboard.Show();
+        await output.Log("Show requested.");
+    }
+
+    private async Task HideKeyboard()
+    {
+        await virtualKeyboard.Hide();
+        await output.Log("Hide requested.");
+    }
+
+    private async Task SubscribeKeyboard()
+    {
+        if (_keyboardSub is not null) await _keyboardSub.DisposeAsync();
+
+        _keyboardSub = await virtualKeyboard.OnGeometryChange(geometry =>
+            _ = output.Log($"geometrychange → {geometry.Width}×{geometry.Height}, visible {geometry.IsVisible}"));
+
+        await output.Log("Subscribed to the keyboard's geometry.");
+    }
+
+    private async Task StartTracking()
+    {
+        await StopTracking();
+
+        _frames = 0;
+        _samples = 0;
+
+        _pointerSub = await pointerTracker.Track(_pad, frame =>
+        {
+            _frames++;
+            _samples += frame.Coalesced.Length;
+            _ = InvokeAsync(StateHasChanged);
+        });
+
+        await output.Log("Tracking pointermove on the pad.");
+    }
+
+    private async Task StopTracking()
+    {
+        if (_pointerSub is null) return;
+        await _pointerSub.DisposeAsync();
+        _pointerSub = null;
+        await output.Log($"Stopped → {_frames} frames carried {_samples} samples.");
+    }
+
+    private async Task AttachContext()
+    {
+        await DetachContext();
+
+        _context = await editContext.Attach(_surface, update =>
+        {
+            _editText = update.Value;
+            _ = InvokeAsync(StateHasChanged);
+        }, new TextEditContextOptions { Text = _editText });
+
+        if (_context is null) await output.Warn("EditContext.Attach → null. Not supported here.");
+        else await output.Log("Attached. Click the surface and type.");
+    }
+
+    private async Task DetachContext()
+    {
+        if (_context is null) return;
+        await _context.DisposeAsync();
+        _context = null;
+        await output.Log("Detached.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_watcher is not null) await _watcher.DisposeAsync();
+        if (_context is not null) await _context.DisposeAsync();
+        if (_pointerSub is not null) await _pointerSub.DisposeAsync();
+        if (_keyboardSub is not null) await _keyboardSub.DisposeAsync();
+    }
+}

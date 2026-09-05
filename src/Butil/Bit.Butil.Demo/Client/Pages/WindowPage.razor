@@ -205,6 +205,29 @@ await window.ClearSelection();
         <DemoConsole @ref="selectionOutput" Title="find and selection output" />
     </DemoSection>
 
+    <DemoSection Title="Selection across shadow boundaries"
+                 Api="IsComposedRangesSupported / GetComposedRanges"
+                 Description="An ordinary selection can only describe boundaries in the document tree: one that starts or ends inside a shadow root is reported against the host element instead, which loses exactly what a component library needs to know. GetComposedRanges reports the real boundary points - but only inside the shadow roots you name, so encapsulation is kept. The boundary nodes themselves can't cross interop, so what identifies them is reported instead."
+                 Code=@("""
+var ranges = await window.GetComposedRanges(_componentHost);
+
+foreach (var range in ranges)
+{
+    if (range.CrossesShadowBoundary) HandleInternalSelection(range);
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckComposedRanges">IsComposedRangesSupported</button>
+            <button @onclick="ReadComposedRanges">GetComposedRanges</button>
+        </div>
+        <p class="section-desc">
+            Select some text on this page first. With no shadow hosts passed, this reports the same
+            boundaries an ordinary selection would - which is the point: a root you don't name stays
+            hidden.
+        </p>
+        <DemoConsole @ref="composedOutput" Title="composed ranges output" />
+    </DemoSection>
+
     <DemoSection Title="Context, naming and media queries"
                  Api="IsSecureContext / GetOrigin / GetName / SetName / GetLocationBar / MatchMedia / WatchMatchMedia"
                  Description="Inspect the browsing context: secure-context state, origin, the window name and the location bar visibility. MatchMedia evaluates a CSS media query once, while WatchMatchMedia keeps a handler subscribed to its change event via a disposable subscription."
@@ -289,6 +312,8 @@ ButilSubscription sub = await window.WatchMatchMedia(
     <ApiMember Name="SelectElement" Signature="Task SelectElement(Microsoft.AspNetCore.Components.ElementReference element)" Description="Selects every text node inside the element (falls back to input select())." />
     <ApiMember Name="CopySelection" Signature="Task<bool> CopySelection()" Description="Copies the current selection to the clipboard; true on success." />
     <ApiMember Name="ClearSelection" Signature="Task ClearSelection()" Description="Removes any current selection." />
+    <ApiMember Name="IsComposedRangesSupported" Signature="Task<bool> IsComposedRangesSupported()" Description="True when the runtime implements Selection.getComposedRanges()." />
+    <ApiMember Name="GetComposedRanges" Signature="Task<ComposedRange[]> GetComposedRanges(params ElementReference[] shadowHosts)" Description="The selection's ranges with boundary points inside the named shadow roots reported rather than collapsed onto the host. A root not named stays hidden." />
     <ApiMember Name="MatchMedia" Signature="Task<MediaQueryList> MatchMedia(string query)" Description="Evaluates a media query once, returning Matches and the normalized Media text." />
     <ApiMember Name="SubscribeMatchMedia" Signature="Task<Guid> SubscribeMatchMedia(string query, Action<MediaQueryList> handler)" Description="Subscribes to the query's change event; returns an id for UnsubscribeMatchMedia." />
     <ApiMember Name="WatchMatchMedia" Signature="Task<ButilSubscription> WatchMatchMedia(string query, Action<MediaQueryList> handler)" Description="SubscribeMatchMedia variant returning a disposable subscription." />
@@ -330,6 +355,7 @@ ButilSubscription sub = await window.WatchMatchMedia(
     private DemoConsole popupsOutput = default!;
     private DemoConsole base64Output = default!;
     private DemoConsole selectionOutput = default!;
+    private DemoConsole composedOutput = default!;
     private DemoConsole contextOutput = default!;
 
     private ButilSubscription? keydownSubscription;
@@ -638,6 +664,34 @@ ButilSubscription sub = await window.WatchMatchMedia(
         catch (Exception ex)
         {
             await selectionOutput.Error("ClearSelection failed:", ex.Message);
+        }
+    }
+
+    private async Task CheckComposedRanges()
+    {
+        try
+        {
+            var supported = await window.IsComposedRangesSupported();
+            if (supported) await composedOutput.Success("IsComposedRangesSupported →", true);
+            else await composedOutput.Warn("IsComposedRangesSupported →", "false - GetComposedRanges returns an empty array here.");
+        }
+        catch (Exception ex)
+        {
+            await composedOutput.Error("IsComposedRangesSupported failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadComposedRanges()
+    {
+        try
+        {
+            var ranges = await window.GetComposedRanges();
+            if (ranges.Length == 0) await composedOutput.Warn("GetComposedRanges →", "nothing selected, or the runtime doesn't implement it.");
+            else await composedOutput.Success("GetComposedRanges →", ranges);
+        }
+        catch (Exception ex)
+        {
+            await composedOutput.Error("GetComposedRanges failed:", ex.Message);
         }
     }
 

@@ -259,4 +259,88 @@ public class Navigator(IJSRuntime js)
     /// </remarks>
     public async Task<bool> Vibrate(int[] pattern)
         => await js.Invoke<bool>("BitButil.navigator.vibrate", pattern);
+
+    /// <summary>
+    /// True when the runtime implements <c>registerProtocolHandler</c>.
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> CanRegisterProtocolHandler()
+        => await js.Invoke<bool>("BitButil.navigator.canRegisterProtocolHandler");
+
+    /// <summary>
+    /// Offers this site as the handler for a URL scheme, so that opening a <c>mailto:</c>,
+    /// <c>web+coffee:</c> or similar link brings the user here.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/registerProtocolHandler">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/registerProtocolHandler</see>
+    /// </summary>
+    /// <param name="scheme">
+    /// The scheme to handle. Either one of the safelisted schemes (<c>mailto</c>, <c>bitcoin</c>,
+    /// <c>sms</c>, <c>tel</c>, <c>webcal</c>…) or a custom one prefixed with <c>web+</c> and
+    /// otherwise all-lowercase letters, e.g. <c>"web+coffee"</c>.
+    /// </param>
+    /// <param name="url">
+    /// The page that handles it, containing a single <c>%s</c> placeholder that the whole link is
+    /// substituted into - <c>"/open?link=%s"</c>. Must be same-origin with this page.
+    /// </param>
+    /// <returns>
+    /// False when the runtime has no such method, or rejected the request: a disallowed scheme, a
+    /// cross-origin url, or a url with no <c>%s</c> in it.
+    /// </returns>
+    /// <remarks>
+    /// Registering does not switch the handler over - the browser asks the user, and may hold the
+    /// request back until the site has been engaged with. Nothing observable happens on success.
+    /// <br/>
+    /// An installed app usually wants the manifest's <c>protocol_handlers</c> instead, which routes
+    /// the link to <see cref="LaunchQueue"/> rather than to a browser tab.
+    /// </remarks>
+    public async Task<bool> RegisterProtocolHandler(string scheme, string url)
+        => await js.Invoke<bool>("BitButil.navigator.registerProtocolHandler", scheme, url);
+
+    /// <summary>
+    /// Removes a registration made by <see cref="RegisterProtocolHandler"/>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/unregisterProtocolHandler">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/unregisterProtocolHandler</see>
+    /// </summary>
+    /// <returns>False when the runtime doesn't implement it - it is non-standard and Chromium-only.</returns>
+    /// <remarks>
+    /// The scheme and url must match the registration exactly. Where this isn't implemented the user
+    /// can still remove the handler from the browser's site settings.
+    /// </remarks>
+    public async Task<bool> UnregisterProtocolHandler(string scheme, string url)
+        => await js.Invoke<bool>("BitButil.navigator.unregisterProtocolHandler", scheme, url);
+
+    /// <summary>
+    /// True when the runtime implements <c>getInstalledRelatedApps</c>.
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> CanGetInstalledRelatedApps()
+        => await js.Invoke<bool>("BitButil.navigator.canGetInstalledRelatedApps");
+
+    /// <summary>
+    /// Which of the apps this site claims as its own are actually installed - the check behind
+    /// "you already have our app, open it there".
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getInstalledRelatedApps">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getInstalledRelatedApps</see>
+    /// </summary>
+    /// <returns>
+    /// The installed subset of the manifest's <c>related_applications</c>, or an empty array when
+    /// none are installed, the manifest declares none, or the runtime doesn't implement this.
+    /// </returns>
+    /// <remarks>
+    /// Requires a secure context and a manifest whose <c>related_applications</c> entries name the
+    /// apps, and the relationship has to be proven from the other side too (Digital Asset Links on
+    /// Android). This is deliberately not an install enumerator: an app the manifest doesn't claim
+    /// is never reported.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RelatedApp))]
+    public async Task<RelatedApp[]> GetInstalledRelatedApps()
+        => await js.Invoke<RelatedApp[]>("BitButil.navigator.getInstalledRelatedApps");
 }

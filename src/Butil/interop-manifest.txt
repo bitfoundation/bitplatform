@@ -1,5 +1,7 @@
 # Bit.Butil interop contract captured from an untrimmed build. Regenerate with: dotnet run -c Release
-@services|BackgroundSync,BarcodeDetector,Battery,BroadcastChannel,CacheStorage,Clipboard,Compression,Console,ContactPicker,Cookie,CookieStore,Crypto,DeviceOrientation,Document,EventSource,EyeDropper,Fetch,FileReader,FileSystem,Gamepad,Geolocation,History,IdleDetector,IndexedDb,Keyboard,LocalStorage,Location,MediaDevices,MediaRecorder,MediaSession,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,Performance,Permissions,PictureInPicture,Push,Reporting,Screen,ScreenOrientation,ServiceWorker,SessionStorage,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageManager,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebLocks,Window
+@services|AudioSession,BackgroundSync,BarcodeDetector,Battery,BroadcastChannel,CacheStorage,Clipboard,CloseWatcher,Compression,Console,ContactPicker,Cookie,CookieStore,Crypto,Css,CustomElements,DeviceOrientation,Document,EventSource,EyeDropper,Fetch,FileReader,FileSystem,Gamepad,Geolocation,History,IdleDetector,IndexedDb,InstallPrompt,InvokerCommands,Keyboard,KeyboardLayout,KeyboardLock,LanguageDetector,LanguageModel,LaunchQueue,LocalStorage,Location,MediaDevices,MediaRecorder,MediaSession,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,Performance,Permissions,PictureInPicture,PointerTracker,Proofreader,Push,Reporting,Rewriter,Screen,ScreenOrientation,ServiceWorker,SessionStorage,SharedStorage,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageManager,Summarizer,TextEditContext,TextFragment,Translator,UserAgent,ViewTransition,VirtualKeyboard,VisualViewport,WakeLock,WebAudio,WebAuthn,WebLocks,WebNN,Window,WindowControlsOverlay,Writer
+Bit.Butil.AiInterop|J|-|1|InvokeAiChunk,InvokeAiDone,InvokeAiProgress|
+Bit.Butil.AudioSession|J|-|1|InvokeStateChange|
 Bit.Butil.BarProp|-|P|1||Visible
 Bit.Butil.BarcodeDetector|J|-|1|InvokeBarcodesDetected|
 Bit.Butil.Battery|J|-|1|InvokeBatteryChange|
@@ -7,6 +9,7 @@ Bit.Butil.BroadcastChannel|J|-|1|InvokeBroadcastChannelError,InvokeBroadcastChan
 Bit.Butil.ButilCookie|-|P|1||Domain,Expires,MaxAge,Name,Partitioned,Path,SameSite,Secure,Value
 Bit.Butil.ButilMouseEventArgs|-|P|1||AltKey,Button,Buttons,ClientX,ClientY,CtrlKey,LayerX,LayerY,MetaKey,MovementX,MovementY,OffsetX,OffsetY,PageX,PageY,RelatedTarget,ScreenX,ScreenY,ShiftKey,X,Y
 Bit.Butil.ButilStorage|J|-|1|InvokeStorageEvent|
+Bit.Butil.CloseWatcher|J|-|1|InvokeCancel,InvokeClose|
 Bit.Butil.CookieStore|J|-|1|InvokeCookieStoreChange|
 Bit.Butil.DeviceOrientation|J|-|1|InvokeMotion,InvokeOrientation|
 Bit.Butil.DomEventsInterop|J|-|1|InvokeClipboardEvent,InvokeCompositionEvent,InvokeDomEvent,InvokeDragEvent,InvokeFocusEvent,InvokeInputEvent,InvokeKeyboardEvent,InvokeMouseEvent,InvokePointerEvent,InvokeTouchEvent,InvokeWheelEvent|
@@ -19,8 +22,11 @@ Bit.Butil.GeolocationPosition|-|P|1||Coords,Timestamp
 Bit.Butil.History|J|-|1|InvokeHistoryPopState|
 Bit.Butil.IdleDetector|J|-|1|InvokeIdleDetector|
 Bit.Butil.IndexedDbHandle|J|-|0|InvokeIndexedDbBlocked,InvokeIndexedDbClose,InvokeIndexedDbVersionChange|
+Bit.Butil.InstallPrompt|J|-|1|InvokeAppInstalled,InvokeInstallAvailable|
 Bit.Butil.IntersectionObserverInterop|J|-|1|InvokeIntersection|
+Bit.Butil.InvokerCommands|J|-|1|InvokeCommand|
 Bit.Butil.Keyboard|J|-|1|InvokeKeyboard|
+Bit.Butil.LaunchQueue|J|-|1|InvokeLaunch|
 Bit.Butil.LocalStorage|J|-|1|InvokeStorageEvent|
 Bit.Butil.MediaDevices|J|-|1|InvokeDisplayEnded|
 Bit.Butil.MediaRecorder|J|-|1|InvokeRecorderData,InvokeRecorderError|
@@ -33,6 +39,7 @@ Bit.Butil.Notification|J|-|1|InvokeNotificationClick,InvokeNotificationClose,Inv
 Bit.Butil.Performance|J|-|1|InvokePerformanceObserver|
 Bit.Butil.Permissions|J|-|1|InvokePermissionChange|
 Bit.Butil.PictureInPicture|J|-|1|InvokePictureInPictureChange|
+Bit.Butil.PointerTracker|J|-|1|InvokePointerFrame|
 Bit.Butil.Reporting|J|-|1|InvokeBrowserReport|
 Bit.Butil.ResizeObserverInterop|J|-|1|InvokeResize|
 Bit.Butil.Screen|J|-|1|InvokeScreenChange|
@@ -40,7 +47,10 @@ Bit.Butil.ScreenOrientation|J|-|1|InvokeScreenOrientationChange|
 Bit.Butil.ServiceWorker|J|-|1|InvokeServiceWorkerControllerChange,InvokeServiceWorkerMessage|
 Bit.Butil.SessionStorage|J|-|1|InvokeStorageEvent|
 Bit.Butil.SpeechRecognition|J|-|1|InvokeSpeechRecognitionEnd,InvokeSpeechRecognitionError,InvokeSpeechRecognitionResult|
-Bit.Butil.ViewTransition|J|-|1|InvokeViewTransitionPhase,InvokeViewTransitionUpdate|
+Bit.Butil.TextEditContext|J|-|1|InvokeComposition,InvokeTextFormat,InvokeTextUpdate|
+Bit.Butil.ViewTransition|J|-|1|InvokeCrossDocumentEvent,InvokeViewTransitionPhase,InvokeViewTransitionUpdate|
+Bit.Butil.VirtualKeyboard|J|-|1|InvokeGeometryChange|
 Bit.Butil.VisualViewport|J|-|1|InvokeVisualViewport|
 Bit.Butil.Window|J|-|1|InvokeMediaQueryChange|
-@count|43
+Bit.Butil.WindowControlsOverlay|J|-|1|InvokeGeometryChange|
+@count|53

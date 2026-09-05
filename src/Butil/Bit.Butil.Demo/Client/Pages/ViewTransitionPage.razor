@@ -134,6 +134,48 @@ await handle.Skip();
         </div>
         <DemoConsole @ref="phaseOutput" Title="phase output" />
     </DemoSection>
+
+    <DemoSection Title="Across a navigation"
+                 Api="IsCrossDocumentSupported / EnableCrossDocument / DisableCrossDocument"
+                 Description="View Transitions level 2 animates across a real navigation, between two documents. There is no scripted switch for it - the whole opt-in is the @@view-transition { navigation: auto; } at-rule, which EnableCrossDocument installs as a stylesheet. Both documents have to opt in, and the navigation has to be same-origin."
+                 Code=@("""
+// once, at start-up
+await viewTransition.EnableCrossDocument();
+
+// with types the arriving document's CSS can select on
+await viewTransition.EnableCrossDocument(["forward"]);
+""")>
+        <div class="controls">
+            <button @onclick="CheckCrossDocument">IsCrossDocumentSupported</button>
+            <button @onclick="EnableCrossDocument">EnableCrossDocument</button>
+            <button class="danger" @onclick="DisableCrossDocument">DisableCrossDocument</button>
+            <button @onclick="CheckCrossDocumentEnabled">IsCrossDocumentEnabled</button>
+        </div>
+        <Callout Type="info" Title="Blazor's router doesn't navigate">
+            An in-app route change never leaves the document, so no cross-document transition can
+            happen for it - that is what <code>Start</code> above is for. This applies to navigations
+            that really do load a new document.
+        </Callout>
+        <DemoConsole @ref="crossOutput" Title="cross-document output" />
+    </DemoSection>
+
+    <DemoSection Title="The two hook points"
+                 Api="OnPageSwap / OnPageReveal"
+                 Description="pageswap fires on the outgoing document just before it is snapshotted - the last chance to set up what the transition animates away from. pagereveal fires on the incoming one just before its first paint, where the arriving page decides how the transition should look, or skips it. NavigationType is what tells a back navigation from a forward one, so the animation can go the right way."
+                 Code=@("""
+_swapSub = await viewTransition.OnPageSwap(e =>
+{
+    if (e.HasTransition && e.NavigationType == "traverse") MarkAsBackNavigation();
+});
+
+_revealSub = await viewTransition.OnPageReveal(e => { /* on the new document */ });
+""")>
+        <div class="controls">
+            <button @onclick="SubscribePageEvents" disabled="@(_swapSub is not null)">Subscribe</button>
+            <button class="danger" @onclick="UnsubscribePageEvents" disabled="@(_swapSub is null)">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="pageEventOutput" Title="pageswap / pagereveal output" />
+    </DemoSection>
 </div>
 
 <Callout Type="info" Title="The animation itself is CSS">
@@ -168,6 +210,24 @@ await handle.Skip();
     <ApiMember Name="ViewTransitionHandle.Skip"
                Signature="ValueTask Skip()"
                Description="Jumps to the end state immediately, dropping the animation." />
+    <ApiMember Name="IsCrossDocumentSupported"
+               Signature="ValueTask<bool> IsCrossDocumentSupported()"
+               Description="True when the runtime implements cross-document transitions - the @@view-transition opt-in plus pageswap/pagereveal. Independent of IsSupported." />
+    <ApiMember Name="IsCrossDocumentEnabled"
+               Signature="ValueTask<bool> IsCrossDocumentEnabled()"
+               Description="True when this document has been opted in through EnableCrossDocument." />
+    <ApiMember Name="EnableCrossDocument"
+               Signature="ValueTask<bool> EnableCrossDocument(string[]? types = null)"
+               Description="Opts this document into animating across same-origin navigations, by installing the @@view-transition rule." />
+    <ApiMember Name="DisableCrossDocument"
+               Signature="ValueTask DisableCrossDocument()"
+               Description="Removes the opt-in, so navigations stop animating." />
+    <ApiMember Name="OnPageSwap"
+               Signature="Task<ButilSubscription> OnPageSwap(Action<CrossDocumentTransitionEvent> handler)"
+               Description="Fires on the outgoing document just before the browser snapshots it. Keep the handler synchronous - the document is on its way out." />
+    <ApiMember Name="OnPageReveal"
+               Signature="Task<ButilSubscription> OnPageReveal(Action<CrossDocumentTransitionEvent> handler)"
+               Description="Fires on the incoming document just before its first paint." />
 </ApiTable>
 
 @code {
@@ -175,6 +235,11 @@ await handle.Skip();
     private DemoConsole transitionOutput = default!;
     private DemoConsole listOutput = default!;
     private DemoConsole phaseOutput = default!;
+    private DemoConsole crossOutput = default!;
+    private DemoConsole pageEventOutput = default!;
+
+    private ButilSubscription? _swapSub;
+    private ButilSubscription? _revealSub;
 
     private readonly string[] _cards = ["One", "Two", "Three"];
     private string[] _items = ["Alpha", "Bravo", "Charlie", "Delta", "Echo"];
@@ -315,10 +380,94 @@ await handle.Skip();
         }
     }
 
+    private async Task CheckCrossDocument()
+    {
+        try
+        {
+            var supported = await viewTransition.IsCrossDocumentSupported();
+            if (supported) await crossOutput.Success("IsCrossDocumentSupported →", true);
+            else await crossOutput.Warn("IsCrossDocumentSupported →", "false - this engine only does same-document transitions.");
+        }
+        catch (Exception ex)
+        {
+            await crossOutput.Error("IsCrossDocumentSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task EnableCrossDocument()
+    {
+        try
+        {
+            var enabled = await viewTransition.EnableCrossDocument();
+            if (enabled) await crossOutput.Success("EnableCrossDocument →", "the @view-transition rule is installed. The document being navigated to has to opt in too.");
+            else await crossOutput.Warn("EnableCrossDocument →", "false - the opt-in couldn't be installed here.");
+        }
+        catch (Exception ex)
+        {
+            await crossOutput.Error("EnableCrossDocument failed →", ex.Message);
+        }
+    }
+
+    private async Task DisableCrossDocument()
+    {
+        try
+        {
+            await viewTransition.DisableCrossDocument();
+            await crossOutput.Info("DisableCrossDocument →", "the opt-in is gone.");
+        }
+        catch (Exception ex)
+        {
+            await crossOutput.Error("DisableCrossDocument failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckCrossDocumentEnabled()
+    {
+        try
+        {
+            await crossOutput.Success("IsCrossDocumentEnabled →", await viewTransition.IsCrossDocumentEnabled());
+        }
+        catch (Exception ex)
+        {
+            await crossOutput.Error("IsCrossDocumentEnabled failed →", ex.Message);
+        }
+    }
+
+    private async Task SubscribePageEvents()
+    {
+        try
+        {
+            _swapSub = await viewTransition.OnPageSwap(e =>
+                _ = InvokeAsync(() => pageEventOutput.Info("pageswap →", e)));
+
+            _revealSub = await viewTransition.OnPageReveal(e =>
+                _ = InvokeAsync(() => pageEventOutput.Info("pagereveal →", e)));
+
+            await pageEventOutput.Success("Subscribed. This document's own pagereveal - it fires before .NET starts - "
+                                       + "is replayed above if Butil's script was on the page in time; pageswap fires on the way out.");
+        }
+        catch (Exception ex)
+        {
+            await pageEventOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribePageEvents()
+    {
+        if (_swapSub is not null) await _swapSub.DisposeAsync();
+        if (_revealSub is not null) await _revealSub.DisposeAsync();
+        _swapSub = null;
+        _revealSub = null;
+        await pageEventOutput.Info("Unsubscribed.");
+    }
+
     public async ValueTask DisposeAsync()
     {
         try
         {
+            if (_swapSub is not null) await _swapSub.DisposeAsync();
+            if (_revealSub is not null) await _revealSub.DisposeAsync();
+
             // A transition left running would keep the page's snapshot layer alive after we've gone.
             if (_current is not null)
             {

@@ -27,8 +27,9 @@ public static class DocsNav
             new("History", "history", "Session history: navigate back/forward and push/replace states.", typeof(HistoryPage)),
             new("Navigation", "navigation", "The modern successor to History - read the entry list, and finally know whether you can go back.", typeof(NavigationPage)),
             new("Location", "location", "Read and mutate the current URL, reload or navigate.", typeof(LocationPage)),
-            new("Navigator", "navigator", "Browser identity, languages, share, vibrate, badges and more.", typeof(NavigatorPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
+            new("Navigator", "navigator", "Browser identity, languages, share, vibrate, badges, protocol handlers and more.", typeof(NavigatorPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
             new("UserAgent", "user-agent", "Parsed user-agent brands, platform and mobile-ness.", typeof(UserAgentPage), ApiSupport.Partial),
+            new("TextFragment", "text-fragment", "Scroll-to-text URLs: deep-link to a phrase rather than to an anchor.", typeof(TextFragmentPage), ApiSupport.Partial),
         ]),
         new("Screen & Diagnostics", "diagnostics",
         [
@@ -54,6 +55,16 @@ public static class DocsNav
                 ["MutationObserverExtensions", "MutationObserverOptions"]),
             new("ResizeObserver", "resize-observer", "Observe element size changes with box-model detail.", typeof(ResizeObserverPage), ApiSupport.Broad, ApiNeeds.None,
                 ["ResizeObserverExtensions"]),
+            new("CloseWatcher", "close-watcher", "One event for Escape, the Android back gesture and every other way a user asks to close something.", typeof(CloseWatcherPage), ApiSupport.Chromium, ApiNeeds.UserGesture),
+            new("InvokerCommands", "invoker-commands", "The command / commandfor attributes: declarative wiring for dialogs and popovers.", typeof(InvokerCommandsPage), ApiSupport.Partial),
+            new("TextEditContext", "edit-context", "The EditContext API: text input and IME composition decoupled from the editing surface.", typeof(EditContextPage), ApiSupport.Chromium),
+            new("PointerTracker", "pointer-tracker", "Coalesced and predicted pointer samples, for drawing and annotation surfaces.", typeof(PointerTrackerPage), ApiSupport.Partial),
+            new("Keyboard lock & layout", "keyboard-lock", "Capture keys while fullscreen, and show the right key name on any layout.", typeof(KeyboardLockPage), ApiSupport.ChromiumDesktop, ApiNeeds.SecureContext | ApiNeeds.UserGesture,
+                ["KeyboardLock", "KeyboardLayout"]),
+            new("VirtualKeyboard", "virtual-keyboard", "Show, hide and lay out around the on-screen keyboard.", typeof(VirtualKeyboardPage), ApiSupport.ChromiumMobile),
+            new("CSS Typed OM", "css", "Feature queries, typed style maps, animatable custom properties and Houdini worklets.", typeof(CssPage), ApiSupport.Partial, ApiNeeds.None,
+                ["Css", "ElementReferenceStyleMapExtensions"]),
+            new("CustomElements", "custom-elements", "ElementInternals and CustomStateSet: component state exposed to CSS as :state().", typeof(CustomElementsPage), ApiSupport.Broad),
         ]),
         new("Storage", "storage",
         [
@@ -65,6 +76,7 @@ public static class DocsNav
             new("CacheStorage", "cache-storage", "The service-worker Cache API: store and match requests.", typeof(CacheStoragePage), ApiSupport.Broad, ApiNeeds.SecureContext),
             new("StorageManager", "storage-manager", "Storage quota, usage estimates and persistence.", typeof(StorageManagerPage), ApiSupport.Broad, ApiNeeds.SecureContext),
             new("StorageAccess", "storage-access", "Ask for unpartitioned storage from inside a third-party iframe.", typeof(StorageAccessPage), ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("SharedStorage", "shared-storage", "Cross-site storage a page can write but never read - the Privacy Sandbox's frequency-capping primitive.", typeof(SharedStoragePage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Experimental),
         ]),
         new("Files & Data", "files",
         [
@@ -85,6 +97,13 @@ public static class DocsNav
             new("BroadcastChannel", "broadcast-channel", "Message other tabs and windows of the same origin.", typeof(BroadcastChannelPage)),
             new("WebLocks", "web-locks", "Cross-tab cooperative resource locking.", typeof(WebLocksPage), ApiSupport.Broad, ApiNeeds.SecureContext),
             new("EventSource", "event-source", "Server-sent events, with reconnection built into the browser.", typeof(EventSourcePage)),
+        ]),
+        new("PWA & Installation", "install",
+        [
+            new("PWA integration", "pwa", "Share targets, protocol handlers and related apps - the manifest half of the installed-app story.", typeof(PwaIntegrationPage), ApiSupport.Guide),
+            new("InstallPrompt", "install-prompt", "Capture beforeinstallprompt, put the install button in your own UI, and know when the app was installed.", typeof(InstallPromptPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
+            new("LaunchQueue", "launch-queue", "How an installed app receives the files and the target URL it was launched with.", typeof(LaunchQueuePage), ApiSupport.Chromium, ApiNeeds.SecureContext),
+            new("WindowControlsOverlay", "window-controls-overlay", "Title-bar geometry for a desktop PWA that draws its own.", typeof(WindowControlsOverlayPage), ApiSupport.ChromiumDesktop, ApiNeeds.SecureContext),
         ]),
         new("Device & Hardware", "device",
         [
@@ -113,6 +132,18 @@ public static class DocsNav
             new("WebAudio", "web-audio", "Play and control audio buffers with the Web Audio API.", typeof(WebAudioPage), ApiSupport.Broad, ApiNeeds.UserGesture),
             new("MediaRecorder", "media-recorder", "Record a camera, microphone or screen share to a file.", typeof(MediaRecorderPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
             new("MediaSession", "media-session", "Lock-screen metadata and hardware media-key handlers.", typeof(MediaSessionPage), ApiSupport.Partial),
+            new("AudioSession", "audio-session", "Declare playback intent so the OS ducks, mixes or interrupts correctly.", typeof(AudioSessionPage), ApiSupport.Chromium, ApiNeeds.Experimental),
+        ]),
+        new("Built-in AI", "sparkle",
+        [
+            new("LanguageModel", "language-model", "The Prompt API: a general-purpose language model running on the device.", typeof(LanguageModelPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("Summarizer", "summarizer", "On-device summaries: key points, a TL;DR, a teaser or a headline.", typeof(SummarizerPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("Translation", "translation", "On-device translation, and the language detector that feeds it.", typeof(TranslationPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental,
+                ["Translator", "LanguageDetector"]),
+            new("Writer & Rewriter", "writer-rewriter", "Produce new text from a prompt, or transform text you already have.", typeof(WriterRewriterPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental,
+                ["Writer", "Rewriter"]),
+            new("Proofreader", "proofreader", "Spelling, grammar and punctuation corrections, positioned in the original text.", typeof(ProofreaderPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("WebNN", "web-nn", "The Web Neural Network API's entry point: execution contexts and operator support.", typeof(WebNNPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Experimental),
         ]),
     ];
 

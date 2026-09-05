@@ -116,6 +116,24 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
         <p class="section-desc">Vibration only has a physical effect on devices with a vibration motor.</p>
         <DemoConsole @ref="beaconOutput" Title="beacon and vibration output" />
     </DemoSection>
+
+    <DemoSection Title="Protocol handlers and related apps"
+                 Api="RegisterProtocolHandler / UnregisterProtocolHandler / GetInstalledRelatedApps"
+                 Description="RegisterProtocolHandler offers this site as the handler for a URL scheme - one of the safelisted ones, or a custom one prefixed with web+. Nothing observable happens on success: the browser asks the user in its own time. GetInstalledRelatedApps reports which of the apps your manifest claims in related_applications are actually installed, and is deliberately not an install enumerator."
+                 Code=@("""
+var registered = await navigator.RegisterProtocolHandler("web+butil", "/open?link=%s");
+
+var installed = await navigator.GetInstalledRelatedApps();
+if (installed.Any(app => app.Platform == "play")) HideTheWebInstallButton();
+""")>
+        <div class="controls">
+            <button @onclick="RegisterHandler">RegisterProtocolHandler</button>
+            <button class="secondary" @onclick="UnregisterHandler">UnregisterProtocolHandler</button>
+            <button @onclick="RelatedApps">GetInstalledRelatedApps</button>
+        </div>
+        <p class="section-desc">See the <a href="pwa">PWA integration</a> guide for the manifest side of both.</p>
+        <DemoConsole @ref="pwaOutput" Title="protocol handler output" />
+    </DemoSection>
 </div>
 
 <Callout Type="warning" Title="Secure context and user gesture required">
@@ -153,9 +171,28 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
     <ApiMember Name="UserActivationState"
                Signature="class UserActivationState { bool HasBeenActive; bool IsActive; }"
                Description="Sticky activation (has ever interacted) and transient activation (recent enough for a gesture-gated API). Check IsActive before calling one, to fail fast with your own message instead of an opaque browser rejection." />
+    <ApiMember Name="CanRegisterProtocolHandler"
+               Signature="Task<bool> CanRegisterProtocolHandler()"
+               Description="True when the runtime implements registerProtocolHandler." />
+    <ApiMember Name="RegisterProtocolHandler"
+               Signature="Task<bool> RegisterProtocolHandler(string scheme, string url)"
+               Description="Offers this site as the handler for a URL scheme. The url must be same-origin and contain a single %s placeholder. False when the scheme or the url was rejected." />
+    <ApiMember Name="UnregisterProtocolHandler"
+               Signature="Task<bool> UnregisterProtocolHandler(string scheme, string url)"
+               Description="Removes a registration. Non-standard and Chromium-only; false elsewhere, where the user removes it from site settings instead." />
+    <ApiMember Name="CanGetInstalledRelatedApps"
+               Signature="Task<bool> CanGetInstalledRelatedApps()"
+               Description="True when the runtime implements getInstalledRelatedApps." />
+    <ApiMember Name="GetInstalledRelatedApps"
+               Signature="Task<RelatedApp[]> GetInstalledRelatedApps()"
+               Description="The installed subset of the manifest's related_applications. Empty when none are installed or the manifest declares none." />
+    <ApiMember Name="RelatedApp"
+               Signature="class RelatedApp { string Id; string Platform; string Url; string Version; }"
+               Description="One installed related app: its platform-specific id, the platform (play, windows, webapp…), its URL and its version." />
 </ApiTable>
 
 @code {
+    private DemoConsole pwaOutput = default!;
     private DemoConsole hardwareOutput = default!;
     private DemoConsole traitsOutput = default!;
     private DemoConsole onlineOutput = default!;
@@ -305,6 +342,60 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
         catch (Exception ex)
         {
             await beaconOutput.Error("Vibrate failed:", ex.Message);
+        }
+    }
+
+    private async Task RegisterHandler()
+    {
+        try
+        {
+            if (await navigator.CanRegisterProtocolHandler() is false)
+            {
+                await pwaOutput.Warn("registerProtocolHandler is not implemented in this browser.");
+                return;
+            }
+
+            var registered = await navigator.RegisterProtocolHandler("web+butil", "/open?link=%s");
+            if (registered) await pwaOutput.Success("RegisterProtocolHandler →", "accepted. The browser decides when to ask the user.");
+            else await pwaOutput.Warn("RegisterProtocolHandler →", "rejected - a disallowed scheme, a cross-origin url, or no %s placeholder.");
+        }
+        catch (Exception ex)
+        {
+            await pwaOutput.Error("RegisterProtocolHandler failed:", ex.Message);
+        }
+    }
+
+    private async Task UnregisterHandler()
+    {
+        try
+        {
+            var removed = await navigator.UnregisterProtocolHandler("web+butil", "/open?link=%s");
+            if (removed) await pwaOutput.Success("UnregisterProtocolHandler →", "removed.");
+            else await pwaOutput.Warn("UnregisterProtocolHandler →", "not implemented here - the user can still remove it from site settings.");
+        }
+        catch (Exception ex)
+        {
+            await pwaOutput.Error("UnregisterProtocolHandler failed:", ex.Message);
+        }
+    }
+
+    private async Task RelatedApps()
+    {
+        try
+        {
+            if (await navigator.CanGetInstalledRelatedApps() is false)
+            {
+                await pwaOutput.Warn("getInstalledRelatedApps is not implemented in this browser.");
+                return;
+            }
+
+            var apps = await navigator.GetInstalledRelatedApps();
+            if (apps.Length == 0) await pwaOutput.Info("GetInstalledRelatedApps →", "none - this site's manifest declares no related applications.");
+            else await pwaOutput.Success("GetInstalledRelatedApps →", apps);
+        }
+        catch (Exception ex)
+        {
+            await pwaOutput.Error("GetInstalledRelatedApps failed:", ex.Message);
         }
     }
 }

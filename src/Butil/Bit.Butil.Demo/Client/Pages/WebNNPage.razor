@@ -1,0 +1,183 @@
+@page "/web-nn"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebNN webNN
+
+<PageTitle>WebNN - Bit.Butil</PageTitle>
+
+<PageHeader Category="Built-in AI"
+            Title="WebNN"
+            Lead="The Web Neural Network API's entry point: create an execution context on the CPU, GPU or NPU, and find out which operators that backend actually implements."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebNN_API"
+            InjectAs="WebNN webNN" />
+
+<Callout Type="warning" Title="Early - behind a flag even in Chromium">
+    WebNN is not shipped anywhere by default and its shape is still changing. Treat a supported
+    result as an opportunity, never as a requirement.
+</Callout>
+
+<Callout Type="info" Title="What is wrapped, and what isn't">
+    This service wraps the part that answers <i>"can this device run a model, and on what"</i>.
+    Building and running a graph is not wrapped: an <code>MLGraphBuilder</code> program is dozens of
+    chained operator calls over tensor handles that cannot cross interop, and marshalling each one
+    through JSON would be slower than the inference it is meant to accelerate. Build the graph in a
+    JS module and call into it - and use this service to decide whether loading that module is worth
+    it at all.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.ml.createContext. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.WebNN webNN
+
+if (await webNN.IsSupported() is false) UseWasmInferenceInstead();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Create a context"
+                 Api="CreateContext"
+                 Description="The device type is a hint: the runtime may hand back another one, which is why the returned context reports what was actually created. Dispose it - a context can hold a real accelerator backend open."
+                 Code=@("""
+await using var context = await webNN.CreateContext("gpu", "high-performance");
+
+if (context?.Info.CanBuildGraph is true)
+{
+    // MLGraphBuilder exists - a model could be built and run here
+}
+""")>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Device</span>
+                <select @bind="_deviceType">
+                    <option value="">(browser's choice)</option>
+                    <option value="cpu">cpu</option>
+                    <option value="gpu">gpu</option>
+                    <option value="npu">npu</option>
+                </select>
+            </label>
+            <label class="field">
+                <span class="field-label">Power</span>
+                <select @bind="_powerPreference">
+                    <option value="">(default)</option>
+                    <option value="high-performance">high-performance</option>
+                    <option value="low-power">low-power</option>
+                </select>
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="CreateContext" disabled="@(_context is not null)">CreateContext</button>
+            <button class="danger" @onclick="DisposeContext" disabled="@(_context is null)">Dispose context</button>
+        </div>
+        @if (_context is not null)
+        {
+            <div class="field">
+                <span class="field-label">Context</span>
+                <span><code>@_context.Info.DeviceType · @_context.Info.PowerPreference · graph builder: @_context.Info.CanBuildGraph</code></span>
+            </div>
+        }
+        <DemoConsole @ref="contextOutput" Title="context output" />
+    </DemoSection>
+
+    <DemoSection Title="What can this backend do?"
+                 Api="WebNNContext.GetOpSupportLimits"
+                 Description="Which operators the backend implements, and within what limits. The same model can run on one backend and be rejected by another, so a page offering a choice of device wants to know before it builds a graph. The detail differs per operator and per backend, so it is reported as JSON rather than modelled."
+                 Code=@("""
+var limits = await context!.GetOpSupportLimits();
+var hasConv = limits.Any(op => op.Name == "conv2d");
+""")>
+        <div class="controls">
+            <button @onclick="ReadLimits" disabled="@(_context is null)">GetOpSupportLimits</button>
+        </div>
+        <DemoConsole @ref="limitsOutput" Title="operator support output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.ml.createContext." />
+    <ApiMember Name="CreateContext"
+               Signature="ValueTask<WebNNContext?> CreateContext(string deviceType = '', string powerPreference = '')"
+               Description="Creates an execution context on a device. Null when the runtime has no WebNN or no backend for the request." />
+    <ApiMember Name="WebNNContext.Info"
+               Signature="WebNNContextInfo Info"
+               Description="Which backend this context actually got, and whether MLGraphBuilder exists." />
+    <ApiMember Name="WebNNContext.GetOpSupportLimits"
+               Signature="ValueTask<WebNNOpSupport[]> GetOpSupportLimits()"
+               Description="Which operators this backend implements, and within what limits." />
+    <ApiMember Name="WebNNContext.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Releases the context." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Releases every context created through this instance that is still open." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole contextOutput = default!;
+    private DemoConsole limitsOutput = default!;
+
+    private WebNNContext? _context;
+    private string _deviceType = "";
+    private string _powerPreference = "";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await webNN.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - WebNN is behind a flag in Chromium and absent elsewhere.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateContext()
+    {
+        try
+        {
+            _context = await webNN.CreateContext(_deviceType, _powerPreference);
+            if (_context is null) await contextOutput.Warn("CreateContext →", "null - no WebNN here, or no backend for that request.");
+            else await contextOutput.Success("CreateContext →", _context.Info);
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("CreateContext failed →", ex.Message);
+        }
+    }
+
+    private async Task DisposeContext()
+    {
+        if (_context is not null) await _context.DisposeAsync();
+        _context = null;
+        await contextOutput.Info("Context disposed.");
+    }
+
+    private async Task ReadLimits()
+    {
+        try
+        {
+            var limits = await _context!.GetOpSupportLimits();
+            if (limits.Length == 0) await limitsOutput.Warn("GetOpSupportLimits →", "empty - this build doesn't report operator limits.");
+            else await limitsOutput.Success("GetOpSupportLimits →", $"{limits.Length} entries: {string.Join(", ", limits.Take(12).Select(l => l.Name))}…");
+        }
+        catch (Exception ex)
+        {
+            await limitsOutput.Error("GetOpSupportLimits failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_context is not null) await _context.DisposeAsync();
+    }
+}

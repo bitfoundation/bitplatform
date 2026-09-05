@@ -1,0 +1,158 @@
+@page "/pwa"
+@inject Bit.Butil.Navigator navigator
+
+<PageTitle>PWA integration - Bit.Butil</PageTitle>
+
+<PageHeader Category="PWA & Installation"
+            Title="PWA integration"
+            Lead="The parts of the installed-app story that are declared in the manifest rather than called from C# - share targets, protocol handlers and related apps - and where each of them hands control back to Butil." />
+
+<Callout Type="info" Title="Manifest first, code second">
+    Everything on this page starts in <code>manifest.webmanifest</code>. The manifest is what makes
+    the browser offer an install, register the app for a file type or a scheme, and put it in the
+    system share sheet; the C# below is only what happens <i>after</i> the OS has routed something to
+    your app.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Web Share Target - the receiving half"
+                 Api="share_target"
+                 Description="Butil's Navigator.Share sends; Web Share Target receives. There is no JavaScript API for it at all: an installed app declares a share_target in its manifest and the OS then lists it in the system share sheet. A GET target arrives as an ordinary navigation with query parameters; a POST target arrives as a multipart form, which needs a service worker to intercept - a Blazor client cannot read a POST body the browser posted to it."
+                 Code=@("""
+{
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  }
+}
+""") Language="json" />
+
+    <DemoSection Title="Reading a GET share target"
+                 Api="Location.GetSearch"
+                 Description="With method GET the share is just a navigation to your action URL, so the shared data is in the query string and any Blazor page can read it. This is the one share-target shape worth reaching for first."
+                 Code=@("""
+@page "/share"
+@inject Bit.Butil.Location location
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender is false) return;
+
+    var query = await location.GetSearch();
+    var parsed = System.Web.HttpUtility.ParseQueryString(query);
+    _sharedTitle = parsed["title"];
+    _sharedUrl = parsed["url"];
+}
+""") />
+
+    <DemoSection Title="Receiving shared files"
+                 Api="share_target + LaunchQueue"
+                 Description="A share that carries files must be a POST target with enctype multipart/form-data, and the files reach the app through a service worker that intercepts the request. Where the browser routes the share as a launch instead, LaunchQueue.SetConsumer is what receives it - the same handler that serves file_handlers."
+                 Code=@("""
+{
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [{ "name": "media", "accept": ["image/*"] }]
+    }
+  }
+}
+""") Language="json" />
+
+    <DemoSection Title="Custom URL schemes"
+                 Api="Navigator.RegisterProtocolHandler"
+                 Description="Offers this site as the handler for a URL scheme, so a web+butil: link brings the user here. The scheme must be safelisted (mailto, tel, sms, webcal…) or prefixed with web+, and the url must be same-origin and contain a single %s placeholder. Nothing observable happens on success - the browser asks the user, in its own time."
+                 Code=@("""
+@inject Bit.Butil.Navigator navigator
+
+var registered = await navigator.RegisterProtocolHandler("web+butil", "/open?link=%s");
+""")>
+        <div class="controls">
+            <button @onclick="RegisterHandler">RegisterProtocolHandler</button>
+            <button class="secondary" @onclick="UnregisterHandler">UnregisterProtocolHandler</button>
+        </div>
+        <DemoConsole @ref="protocolOutput" Title="protocol handler output" />
+    </DemoSection>
+
+    <DemoSection Title="Is the native app already installed?"
+                 Api="Navigator.GetInstalledRelatedApps"
+                 Description="Reports which of the apps your manifest claims in related_applications are actually installed - the check behind 'you already have our app, open it there'. Deliberately not an install enumerator: an app the manifest doesn't claim is never reported, and the relationship has to be proven from the other side too."
+                 Code=@("""
+var installed = await navigator.GetInstalledRelatedApps();
+
+if (installed.Any(app => app.Platform == "play"))
+{
+    // don't offer the web install - they already have the Android app
+}
+""")>
+        <div class="controls">
+            <button @onclick="ReadRelatedApps">GetInstalledRelatedApps</button>
+        </div>
+        <DemoConsole @ref="relatedOutput" Title="related apps output" />
+    </DemoSection>
+
+    <DemoSection Title="Where the rest lives"
+                 Description="The three parts of this story that are real APIs each have their own page: InstallPrompt for the install button, LaunchQueue for files and launch URLs arriving from the OS, and WindowControlsOverlay for a desktop app that draws its own title bar." />
+</div>
+
+@code {
+    private DemoConsole protocolOutput = default!;
+    private DemoConsole relatedOutput = default!;
+
+    private async Task RegisterHandler()
+    {
+        try
+        {
+            if (await navigator.CanRegisterProtocolHandler() is false)
+            {
+                await protocolOutput.Warn("registerProtocolHandler is not implemented in this browser.");
+                return;
+            }
+
+            var registered = await navigator.RegisterProtocolHandler("web+butil", "/open?link=%s");
+            if (registered) await protocolOutput.Success("RegisterProtocolHandler →", "accepted. The browser decides when to ask the user.");
+            else await protocolOutput.Warn("RegisterProtocolHandler →", "rejected - a disallowed scheme, a cross-origin url, or no %s placeholder.");
+        }
+        catch (Exception ex)
+        {
+            await protocolOutput.Error("RegisterProtocolHandler failed →", ex.Message);
+        }
+    }
+
+    private async Task UnregisterHandler()
+    {
+        try
+        {
+            var removed = await navigator.UnregisterProtocolHandler("web+butil", "/open?link=%s");
+            if (removed) await protocolOutput.Success("UnregisterProtocolHandler →", "removed.");
+            else await protocolOutput.Warn("UnregisterProtocolHandler →", "not implemented here - the user can still remove it from site settings.");
+        }
+        catch (Exception ex)
+        {
+            await protocolOutput.Error("UnregisterProtocolHandler failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadRelatedApps()
+    {
+        try
+        {
+            if (await navigator.CanGetInstalledRelatedApps() is false)
+            {
+                await relatedOutput.Warn("getInstalledRelatedApps is not implemented in this browser.");
+                return;
+            }
+
+            var apps = await navigator.GetInstalledRelatedApps();
+            if (apps.Length == 0) await relatedOutput.Info("GetInstalledRelatedApps →", "none - this site's manifest declares no related applications.");
+            else await relatedOutput.Success("GetInstalledRelatedApps →", apps);
+        }
+        catch (Exception ex)
+        {
+            await relatedOutput.Error("GetInstalledRelatedApps failed →", ex.Message);
+        }
+    }
+}

@@ -1,0 +1,266 @@
+@page "/virtual-keyboard"
+@implements IAsyncDisposable
+@inject Bit.Butil.VirtualKeyboard virtualKeyboard
+
+<PageTitle>VirtualKeyboard - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="VirtualKeyboard"
+            Lead="Show and hide the on-screen keyboard, and know exactly where it is - so a chat composer stays pinned above it instead of jumping."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/VirtualKeyboard_API"
+            InjectAs="VirtualKeyboard virtualKeyboard" />
+
+<Callout Type="info" Title="OverlaysContent is the switch that matters">
+    By default the browser handles the keyboard by shrinking the viewport and the page learns
+    nothing. Turning on <code>SetOverlaysContent(true)</code> switches that off: the keyboard is drawn
+    <b>over</b> the page, the viewport keeps its size, and the app becomes responsible for keeping its
+    content out from under it - through <code>OnGeometryChange</code> here, or the
+    <code>keyboard-inset-*</code> CSS environment variables.
+</Callout>
+
+<Callout Type="warning" Title="Chromium on touch devices">
+    Elsewhere <code>IsSupported</code> is false and every call is a no-op. <code>Show</code> also
+    needs a user gesture and a focused element whose <code>virtualkeyboardpolicy</code> is
+    <code>manual</code> - the attribute half of this API, set through
+    <code>ElementReferenceStateExtensions.SetVirtualKeyboardPolicy</code>.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.virtualKeyboard. During prerender/SSR the check returns false rather than throwing."
+                 Code=@("""
+@inject Bit.Butil.VirtualKeyboard virtualKeyboard
+
+var supported = await virtualKeyboard.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Take over the layout"
+                 Api="GetOverlaysContent / SetOverlaysContent"
+                 Description="Set this once at start-up, before anything can be focused - flipping it while the keyboard is up produces a visible jump. Until it is on, GetBoundingRect reports zeros, because the browser is resizing the viewport instead and has nothing to report."
+                 Code=@("""
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender) await virtualKeyboard.SetOverlaysContent(true);
+}
+""")>
+        <div class="controls">
+            <button @onclick="() => SetOverlays(true)">SetOverlaysContent(true)</button>
+            <button class="secondary" @onclick="() => SetOverlays(false)">SetOverlaysContent(false)</button>
+            <button @onclick="ReadOverlays">GetOverlaysContent</button>
+        </div>
+        <DemoConsole @ref="overlayOutput" Title="overlaysContent output" />
+    </DemoSection>
+
+    <DemoSection Title="Show and hide it yourself"
+                 Api="Show / Hide"
+                 Description="With virtualkeyboardpolicy set to manual on a contenteditable element, focusing it no longer raises the keyboard - Show and Hide do. That is what lets a custom editor decide when the keyboard is wanted."
+                 Code=@("""
+await _editor.SetVirtualKeyboardPolicy(VirtualKeyboardPolicy.Manual);
+
+// from a click handler, with the editor focused:
+await virtualKeyboard.Show();
+""")>
+        <div @ref="_editor" contenteditable="true" tabindex="0"
+             style="min-height:2.5rem;padding:0.75rem;border:1px solid var(--border,#ccc);border-radius:6px">
+            A contenteditable surface. Set the policy, focus it, then Show.
+        </div>
+        <div class="controls">
+            <button @onclick="SetManualPolicy">SetVirtualKeyboardPolicy(Manual)</button>
+            <button @onclick="ShowKeyboard">Show</button>
+            <button class="secondary" @onclick="HideKeyboard">Hide</button>
+        </div>
+        <DemoConsole @ref="showOutput" Title="show/hide output" />
+    </DemoSection>
+
+    <DemoSection Title="Follow the keyboard"
+                 Api="GetBoundingRect / OnGeometryChange"
+                 Description="Fires when the keyboard appears, disappears or resizes, plus once immediately with the current geometry. The Y coordinate is the line your content has to stay above. Dispose the returned subscription."
+                 Code=@("""
+_sub = await virtualKeyboard.OnGeometryChange(geometry =>
+{
+    _composerBottomPadding = geometry.Height;
+    InvokeAsync(StateHasChanged);
+});
+""")>
+        <div class="controls">
+            <button @onclick="ReadRect">GetBoundingRect</button>
+            <button @onclick="Subscribe" disabled="@(_sub is not null)">Subscribe</button>
+            <button class="danger" @onclick="Unsubscribe" disabled="@(_sub is null)">Unsubscribe</button>
+        </div>
+        @if (_geometry is not null)
+        {
+            <div class="field">
+                <span class="field-label">Keyboard</span>
+                <span><code>x @_geometry.X · y @_geometry.Y · @_geometry.Width × @_geometry.Height · visible: @_geometry.IsVisible</code></span>
+            </div>
+        }
+        <DemoConsole @ref="geometryOutput" Title="geometrychange output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.virtualKeyboard." />
+    <ApiMember Name="Show"
+               Signature="ValueTask Show()"
+               Description="Asks for the on-screen keyboard. Needs a user gesture and a focused element whose virtualkeyboardpolicy is manual." />
+    <ApiMember Name="Hide"
+               Signature="ValueTask Hide()"
+               Description="Dismisses the on-screen keyboard, leaving focus where it is." />
+    <ApiMember Name="GetOverlaysContent"
+               Signature="ValueTask<bool> GetOverlaysContent()"
+               Description="True when the keyboard is drawn over the page rather than resizing the viewport." />
+    <ApiMember Name="SetOverlaysContent"
+               Signature="ValueTask SetOverlaysContent(bool value)"
+               Description="Takes over (or hands back) responsibility for laying out around the keyboard." />
+    <ApiMember Name="GetBoundingRect"
+               Signature="ValueTask<VirtualKeyboardGeometry> GetBoundingRect()"
+               Description="Where the keyboard is right now. All zeros when it isn't showing, or when OverlaysContent was never turned on." />
+    <ApiMember Name="OnGeometryChange"
+               Signature="Task<ButilSubscription> OnGeometryChange(Action<VirtualKeyboardGeometry> handler)"
+               Description="Watches the keyboard. Fires on show, hide and resize, plus once immediately." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every listener registered through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole overlayOutput = default!;
+    private DemoConsole showOutput = default!;
+    private DemoConsole geometryOutput = default!;
+
+    private ElementReference _editor;
+    private ButilSubscription? _sub;
+    private VirtualKeyboardGeometry? _geometry;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await virtualKeyboard.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - Chromium on a touch device is where this exists.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task SetOverlays(bool value)
+    {
+        try
+        {
+            await virtualKeyboard.SetOverlaysContent(value);
+            await overlayOutput.Success("SetOverlaysContent →", value);
+        }
+        catch (Exception ex)
+        {
+            await overlayOutput.Error("SetOverlaysContent failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadOverlays()
+    {
+        try
+        {
+            await overlayOutput.Success("GetOverlaysContent →", await virtualKeyboard.GetOverlaysContent());
+        }
+        catch (Exception ex)
+        {
+            await overlayOutput.Error("GetOverlaysContent failed →", ex.Message);
+        }
+    }
+
+    private async Task SetManualPolicy()
+    {
+        try
+        {
+            await _editor.SetVirtualKeyboardPolicy(VirtualKeyboardPolicy.Manual);
+            await showOutput.Success("SetVirtualKeyboardPolicy →", "Manual - focusing the surface no longer raises the keyboard.");
+        }
+        catch (Exception ex)
+        {
+            await showOutput.Error("SetVirtualKeyboardPolicy failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowKeyboard()
+    {
+        try
+        {
+            await _editor.Focus();
+            await virtualKeyboard.Show();
+            await showOutput.Info("Show →", "requested. Ignored unless the focused element's policy is manual.");
+        }
+        catch (Exception ex)
+        {
+            await showOutput.Error("Show failed →", ex.Message);
+        }
+    }
+
+    private async Task HideKeyboard()
+    {
+        try
+        {
+            await virtualKeyboard.Hide();
+            await showOutput.Info("Hide →", "requested.");
+        }
+        catch (Exception ex)
+        {
+            await showOutput.Error("Hide failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadRect()
+    {
+        try
+        {
+            _geometry = await virtualKeyboard.GetBoundingRect();
+            await geometryOutput.Success("GetBoundingRect →", _geometry);
+        }
+        catch (Exception ex)
+        {
+            await geometryOutput.Error("GetBoundingRect failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            _sub = await virtualKeyboard.OnGeometryChange(async geometry => await InvokeAsync(async () =>
+            {
+                _geometry = geometry;
+                StateHasChanged();
+                await geometryOutput.Info("geometrychange →", geometry);
+            }));
+
+            await geometryOutput.Success("Subscribed.");
+        }
+        catch (Exception ex)
+        {
+            await geometryOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+        _sub = null;
+        await geometryOutput.Info("Unsubscribed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+    }
+}

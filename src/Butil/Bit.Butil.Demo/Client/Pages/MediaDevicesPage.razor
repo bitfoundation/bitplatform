@@ -144,6 +144,7 @@ if (_screen is not null)
         <div class="controls">
             <label><input type="checkbox" @bind="_captureAudio" /> Request audio too</label>
             <label><input type="checkbox" @bind="_excludeSelf" /> Exclude this tab</label>
+            <label><input type="checkbox" @bind="_keepFocus" /> Don't focus the captured surface</label>
         </div>
         <div class="controls">
             <button @onclick="StartCapture">GetDisplayMedia</button>
@@ -191,6 +192,9 @@ if (_screen is not null)
     <ApiMember Name="GetDisplaySettings"
                Signature="ValueTask<DisplayMediaSettings?> GetDisplaySettings(MediaStreamHandle stream)"
                Description="What the capture track actually negotiated: surface kind, size and frame rate. Null when the stream is already gone." />
+    <ApiMember Name="DisplayMediaOptions.FocusBehavior"
+               Signature='string? FocusBehavior'
+               Description="Whether the captured tab or window is brought to the front when capture starts: 'focus-captured-surface' (the browser's default) or 'no-focus-change'. Backed by a CaptureController; ignored by runtimes without one, and meaningless for whole-monitor capture." />
     <ApiMember Name="DisposeAsync"
                Signature="ValueTask DisposeAsync()"
                Description="On scope/circuit teardown, stops any streams whose handle was never disposed so hardware can't stay live." />
@@ -224,6 +228,7 @@ if (_screen is not null)
     private bool _enabled = true;
     private bool _captureAudio;
     private bool _excludeSelf = true;
+    private bool _keepFocus = true;
 
     private async Task CheckSupported()
     {
@@ -329,6 +334,9 @@ if (_screen is not null)
             var options = new DisplayMediaOptions
             {
                 SelfBrowserSurface = _excludeSelf ? "exclude" : "include",
+                // Without this the browser brings the captured tab or window to the front, which is
+                // wrong for a recorder: the user picked a surface and then stays on this page.
+                FocusBehavior = _keepFocus ? "no-focus-change" : null,
             };
 
             _screen = await mediaDevices.GetDisplayMedia(_captureAudio, options, onEnded: OnShareEnded);

@@ -1,4 +1,5 @@
 ﻿@page "/e2e"
+@implements IAsyncDisposable
 @inject Bit.Butil.LocalStorage localStorage
 @inject Bit.Butil.SessionStorage sessionStorage
 @inject Bit.Butil.Cookie cookie
@@ -8,6 +9,24 @@
 @inject Bit.Butil.Window window
 @inject Bit.Butil.History history
 @inject Bit.Butil.Location location
+@inject IJSRuntime js
+@inject Bit.Butil.TextFragment textFragment
+@inject Bit.Butil.Css css
+@inject Bit.Butil.CustomElements customElements
+@inject Bit.Butil.InvokerCommands invokerCommands
+@inject Bit.Butil.CloseWatcher closeWatcher
+@inject Bit.Butil.InstallPrompt installPrompt
+@inject Bit.Butil.LaunchQueue launchQueue
+@inject Bit.Butil.WindowControlsOverlay windowControlsOverlay
+@inject Bit.Butil.VirtualKeyboard virtualKeyboard
+@inject Bit.Butil.KeyboardLock keyboardLock
+@inject Bit.Butil.KeyboardLayout keyboardLayout
+@inject Bit.Butil.PointerTracker pointerTracker
+@inject Bit.Butil.TextEditContext textEditContext
+@inject Bit.Butil.AudioSession audioSession
+@inject Bit.Butil.SharedStorage sharedStorage
+@inject Bit.Butil.WebNN webNN
+@inject Bit.Butil.LanguageModel languageModel
 
 @*
     Deterministic end-to-end harness for Playwright. Every interactive element exposes
@@ -110,6 +129,32 @@
     <button id="el-rects" @onclick="ElementClientRects">getClientRects</button>
     <button id="el-popover" @onclick="ElementPopoverState">popover</button>
     <button id="el-identity" @onclick="ElementIdentity">identity + tree facts</button>
+</section>
+
+<section>
+    <h3>Platform</h3>
+    @* Same rule as the Element section: every target here is rendered once and never re-rendered,
+       so nothing a Blazor diff does can undo what the interop writes between click and assertion. *@
+    <div @ref="_moveSource" id="plat-move-source" style="width:120px;">
+        <span @ref="_moveNode" id="plat-move-node">moving</span>
+    </div>
+    <div @ref="_moveTarget" id="plat-move-target" style="width:120px;"></div>
+    <div @ref="_cssBox" id="plat-css-box" style="width:200px;height:40px;"></div>
+    <butil-e2e-panel @ref="_customPanel" id="plat-custom-panel">custom element</butil-e2e-panel>
+    <div @ref="_commandTarget" id="plat-command-target">command target</div>
+    <button @ref="_commandInvoker" id="plat-command-invoker">invoke</button>
+    <p id="plat-fragment-text">A distinctive phrase for the text fragment harness.</p>
+
+    <button id="plat-support" @onclick="PlatformSupport">support probes</button>
+    <button id="plat-css" @onclick="PlatformCss">css typed om</button>
+    <button id="plat-custom" @onclick="PlatformCustomElements">custom element states</button>
+    <button id="plat-command" @onclick="PlatformCommands">invoker commands</button>
+    <button id="plat-move" @onclick="PlatformMoveBefore">moveBefore</button>
+    <button id="plat-fragment" @onclick="PlatformTextFragment">text fragment</button>
+    <button id="plat-close" @onclick="PlatformCloseWatcher">close watcher</button>
+    <button id="plat-animations" @onclick="PlatformAnimations">getAnimations + commitStyles</button>
+    <button id="plat-composed" @onclick="PlatformComposedRanges">composed ranges</button>
+    <button id="plat-ai" @onclick="PlatformAi">built-in ai availability</button>
 </section>
 
 @code {
@@ -458,6 +503,199 @@
         var children = await _elementBox.GetChildElementCount();
         var zoom = await _elementBox.GetCurrentCssZoom();
         Set($"el:identity:{title}/{lang}/{draggable}/{localName}/{children}/{zoom > 0}");
+    }
+
+    // ─── Platform (Tier 7) ──────────────────────────────────────────────────────
+    private ElementReference _moveSource;
+    private ElementReference _moveTarget;
+    private ElementReference _moveNode;
+    private ElementReference _cssBox;
+    private ElementReference _customPanel;
+    private ElementReference _commandTarget;
+    private ElementReference _commandInvoker;
+
+    /// <summary>
+    /// Every new module's support probe, called through real interop. The values differ per engine,
+    /// so the assertion is that all of them answered - a mistyped
+    /// <c>BitButil.&lt;module&gt;.&lt;function&gt;</c> identifier throws instead.
+    /// </summary>
+    private async Task PlatformSupport()
+    {
+        var probes = new[]
+        {
+            await installPrompt.IsSupported(),
+            await launchQueue.IsSupported(),
+            await windowControlsOverlay.IsSupported(),
+            await virtualKeyboard.IsSupported(),
+            await keyboardLock.IsSupported(),
+            await keyboardLayout.IsSupported(),
+            await pointerTracker.IsSupported(),
+            await textEditContext.IsSupported(),
+            await closeWatcher.IsSupported(),
+            await invokerCommands.IsSupported(),
+            await customElements.IsSupported(),
+            await css.IsSupported(),
+            await textFragment.IsSupported(),
+            await audioSession.IsSupported(),
+            await sharedStorage.IsSupported(),
+            await webNN.IsSupported(),
+        };
+
+        Set($"plat:support:{probes.Length}/{probes.Count(p => p)}");
+    }
+
+    private async Task PlatformCss()
+    {
+        var supportsGrid = await css.Supports("display", "grid");
+        var supportsNonsense = await css.Supports("display", "butil-nope");
+        var escaped = await css.Escape("1st:item");
+
+        var written = await _cssBox.SetStyleValue("width", 120, "px");
+        var readBack = await _cssBox.GetStyleValue("width");
+        var computed = await _cssBox.GetComputedValue("width");
+        await _cssBox.ClearStyleValues();
+
+        Set($"plat:css:{supportsGrid}/{supportsNonsense}/{escaped}/{written}/{readBack?.Value ?? -1}/{computed?.Unit ?? "-"}");
+    }
+
+    private async Task PlatformCustomElements()
+    {
+        // Defining is idempotent by design, so re-clicking the button must not fail.
+        var defined = await customElements.Define("butil-e2e-panel");
+        var added = await customElements.AddState(_customPanel, "ready");
+        var has = await customElements.HasState(_customPanel, "ready");
+        var states = await customElements.GetStates(_customPanel);
+        var cleared = await customElements.ClearStates(_customPanel);
+        var afterClear = await customElements.HasState(_customPanel, "ready");
+
+        Set($"plat:custom:{defined}/{added}/{has}/{states.Length}/{cleared}/{afterClear}");
+    }
+
+    private async Task PlatformCommands()
+    {
+        // Subscribing once and never resetting the counter is what lets the test wire the button,
+        // click it, and then read back how many commands actually arrived.
+        _commandSub ??= await invokerCommands.OnCommand(_commandTarget, _ =>
+        {
+            _commandsReceived++;
+            // The status element is the only thing the test can read, so the new count has to land
+            // in it - re-rendering on its own would leave the previous message on screen.
+            InvokeAsync(() => Set($"plat:command:received:{_commandsReceived}"));
+        });
+
+        var wired = await invokerCommands.SetCommandFor(_commandInvoker, _commandTarget, "--butil-e2e");
+        var command = await invokerCommands.GetCommand(_commandInvoker);
+
+        Set($"plat:command:{wired}/{command}/{_commandsReceived}");
+    }
+
+    private async Task PlatformMoveBefore()
+    {
+        var supported = await _moveTarget.IsMoveBeforeSupported();
+        var moved = await _moveTarget.MoveBefore(_moveNode);
+        var inTarget = await _moveTarget.GetChildElementCount();
+        var inSource = await _moveSource.GetChildElementCount();
+
+        // Put it back, so the button is idempotent and a re-run starts from the same DOM.
+        await _moveSource.MoveBefore(_moveNode);
+
+        Set($"plat:move:{supported}/{moved}/{inTarget}/{inSource}");
+    }
+
+    private async Task PlatformTextFragment()
+    {
+        var directive = new TextFragmentDirective { Start = "a distinctive phrase" };
+        var fragment = await textFragment.Build(directive);
+        var url = await textFragment.BuildUrl("/e2e", directive);
+        // Parsed back out of the URL just built: the browser strips the directive off the current
+        // URL while navigating, so a round-trip through a link is the only thing there is to check.
+        var parsed = await textFragment.Parse(url);
+
+        Set($"plat:fragment:{fragment}/{url}/{parsed.Length}");
+    }
+
+    private async Task PlatformCloseWatcher()
+    {
+        var handle = await closeWatcher.Create(() =>
+        {
+            _closed = true;
+            InvokeAsync(StateHasChanged);
+        });
+
+        if (handle is null)
+        {
+            Set("plat:close:unsupported");
+            return;
+        }
+
+        _closed = false;
+        await handle.Close();
+        // Disposal after a close is a no-op on the JS side, and keeps the page from leaving a
+        // watcher in the browser's close stack if the engine ever stops firing 'close'.
+        await handle.DisposeAsync();
+
+        Set($"plat:close:{_closed}");
+    }
+
+    private async Task PlatformAnimations()
+    {
+        var timelines = await _cssBox.IsTimelineSupported(js);
+
+        await using var handle = await _cssBox.Animate(js,
+            [
+                new() { ["opacity"] = "1" },
+                new() { ["opacity"] = "0.5" },
+            ],
+            new AnimationOptions { Duration = 40, Fill = "forwards" });
+
+        var running = await _cssBox.GetAnimations(js);
+        // A time-driven animation reports its progress in milliseconds; the unit travels with the
+        // number because a scroll-driven one reports a percentage of its range instead.
+        var unit = running.Length > 0 ? running[0].CurrentTimeUnit : "none";
+        await handle.WhenFinished();
+        var committed = await handle.CommitStyles();
+        await handle.Cancel();
+        var cancelled = await _cssBox.CancelAnimations(js);
+        await _cssBox.ClearStyleValues();
+
+        Set($"plat:animations:{timelines}/{running.Length}/{unit}/{committed}/{cancelled}");
+    }
+
+    private async Task PlatformComposedRanges()
+    {
+        var supported = await window.IsComposedRangesSupported();
+        await window.SelectElement(_commandTarget);
+        var ranges = await window.GetComposedRanges();
+        await window.ClearSelection();
+
+        Set($"plat:composed:{supported}/{ranges.Length}");
+    }
+
+    /// <summary>
+    /// The availability probes of the built-in AI APIs. No model is downloaded and no session is
+    /// created, so this is deterministic everywhere: an engine without them answers Unavailable.
+    /// </summary>
+    private async Task PlatformAi()
+    {
+        var supported = await languageModel.IsSupported();
+        var plain = await languageModel.Availability();
+        var withOptions = await languageModel.Availability(new LanguageModelOptions { Temperature = 0.5 });
+        var modelParams = await languageModel.GetParams();
+
+        Set($"plat:ai:{supported}/{plain}/{withOptions}/{modelParams is not null}");
+    }
+
+    private ButilSubscription? _commandSub;
+    private int _commandsReceived;
+    private bool _closed;
+
+    /// <summary>
+    /// The command subscription is the one thing on this page with no owning service to drain it -
+    /// see ElementReferenceEventExtensions - so the harness disposes it like a real consumer would.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_commandSub is not null) await _commandSub.DisposeAsync();
     }
 
     public class SamplePayload(int number, string label)

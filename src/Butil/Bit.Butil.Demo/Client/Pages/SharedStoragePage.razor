@@ -1,0 +1,263 @@
+@page "/shared-storage"
+@inject Bit.Butil.SharedStorage sharedStorage
+
+<PageTitle>SharedStorage - Bit.Butil</PageTitle>
+
+<PageHeader Category="Storage"
+            Title="SharedStorage"
+            Lead="Cross-site storage that a page can write but never read - the Privacy Sandbox's answer to frequency capping and A/B assignment without a cross-site identifier."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Shared_Storage_API"
+            InjectAs="SharedStorage sharedStorage" />
+
+<Callout Type="warning" Title="This is not a place to keep your app's data">
+    Shared storage is unpartitioned - the same data is there whichever site embeds you - which would
+    be a cross-site identifier if the page could read it back. So it can't. For your own app's data
+    use <a href="/storage">LocalStorage</a>, <a href="/indexed-db">IndexedDb</a> or
+    <a href="/storage-manager">StorageManager</a>.
+</Callout>
+
+<Callout Type="info" Title="The worklet is the only reader">
+    A worklet runs in an isolated scope with no network access, and its single permitted output is a
+    choice among URLs (<code>SelectUrl</code>) rendered inside a fenced frame. <code>Run</code> gets
+    no result at all - not even a boolean about what it computed.
+</Callout>
+
+<Callout Type="warning" Title="Early - Chromium, behind a permissions policy">
+    Every method answers false rather than throwing where the runtime disagrees, and the shape of
+    this API has changed more than once.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes window.sharedStorage. During prerender/SSR the check returns false rather than throwing."
+                 Code=@("""
+@inject Bit.Butil.SharedStorage sharedStorage
+
+var supported = await sharedStorage.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Write (there is no read)"
+                 Api="Set / Append / Delete / Clear"
+                 Description="Set writes a value, optionally leaving an existing one alone. Append adds to one. Delete and Clear remove. Keys and values are both capped at a few hundred characters, and a value over the limit fails rather than truncating."
+                 Code=@("""
+await sharedStorage.Set("campaign-seen", "1", ignoreIfPresent: true);
+await sharedStorage.Append("impressions", ",42");
+await sharedStorage.Delete("campaign-seen");
+""")>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Key</span>
+                <input @bind="_key" />
+            </label>
+            <label class="field">
+                <span class="field-label">Value</span>
+                <input @bind="_value" />
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="Set">Set</button>
+            <button @onclick="Append">Append</button>
+            <button class="secondary" @onclick="Delete">Delete</button>
+            <button class="danger" @onclick="Clear">Clear</button>
+        </div>
+        <DemoConsole @ref="writeOutput" Title="write output" />
+    </DemoSection>
+
+    <DemoSection Title="Load the worklet"
+                 Api="AddModule"
+                 Description="The worklet module is the only code that ever sees a stored value. It must be same-origin, and a page may add one only once. Inside it, a register('name', …) call declares the operations Run and SelectUrl can call."
+                 Code=@("""
+// shared-storage-worklet.js
+class FrequencyCap {
+  async run(data) {
+    const seen = await sharedStorage.get('seen');
+    // decides, but cannot report back
+  }
+}
+register('frequency-cap', FrequencyCap);
+""") Language="javascript">
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Module URL</span>
+                <input @bind="_moduleUrl" />
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="AddModule">AddModule</button>
+        </div>
+        <DemoConsole @ref="workletOutput" Title="worklet output" />
+    </DemoSection>
+
+    <DemoSection Title="Run an operation"
+                 Api="Run / SelectUrl"
+                 Description="Run starts a registered operation and tells you only whether it started. SelectUrl runs an operation that picks one of the given URLs by index; which one won is not reported to the page - the result is only usable by handing it to a fenced frame, whose whole point is that the embedding page cannot inspect it."
+                 Code=@("""
+await sharedStorage.Run("frequency-cap", new { campaignId = 42 });
+
+await sharedStorage.SelectUrl("pick-creative",
+    ["/creative-a", "/creative-b"],
+    new { slot = "hero" });
+""")>
+        <div class="controls">
+            <button @onclick="Run">Run</button>
+            <button @onclick="SelectUrl">SelectUrl</button>
+        </div>
+        <DemoConsole @ref="runOutput" Title="run output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.sharedStorage." />
+    <ApiMember Name="Set"
+               Signature="ValueTask<bool> Set(string key, string value, bool ignoreIfPresent = false)"
+               Description="Writes a value. There is no matching read." />
+    <ApiMember Name="Append"
+               Signature="ValueTask<bool> Append(string key, string value)"
+               Description="Appends to an existing value, or sets it when there is none." />
+    <ApiMember Name="Delete"
+               Signature="ValueTask<bool> Delete(string key)"
+               Description="Removes one key." />
+    <ApiMember Name="Clear"
+               Signature="ValueTask<bool> Clear()"
+               Description="Removes everything this origin has written." />
+    <ApiMember Name="AddModule"
+               Signature="ValueTask<bool> AddModule(string url)"
+               Description="Loads the worklet module - the only code that can read what was written. A page may add one only once." />
+    <ApiMember Name="Run"
+               Signature="ValueTask<bool> Run(string operation, object? data = null, bool keepAlive = false)"
+               Description="Runs a registered worklet operation. Reports whether it started, never what it computed." />
+    <ApiMember Name="SelectUrl"
+               Signature="ValueTask<bool> SelectUrl(string operation, string[] urls, object? data = null, bool resolveToConfig = false)"
+               Description="Runs a worklet operation that picks one of the given URLs. Which one won is not reported to the page." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole writeOutput = default!;
+    private DemoConsole workletOutput = default!;
+    private DemoConsole runOutput = default!;
+
+    private string _key = "butil-demo";
+    private string _value = "1";
+    private string _moduleUrl = "/shared-storage-worklet.js";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await sharedStorage.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - Chromium with the Privacy Sandbox enabled is where this exists.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Set()
+    {
+        try
+        {
+            var ok = await sharedStorage.Set(_key, _value);
+            if (ok) await writeOutput.Success("Set →", $"'{_key}' written. Nothing can read it back from the page.");
+            else await writeOutput.Warn("Set →", "false - no API here, blocked by permissions policy, or over the limits.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("Set failed →", ex.Message);
+        }
+    }
+
+    private async Task Append()
+    {
+        try
+        {
+            var ok = await sharedStorage.Append(_key, _value);
+            if (ok) await writeOutput.Success("Append →", $"appended to '{_key}'.");
+            else await writeOutput.Warn("Append →", "false - no API here, blocked by permissions policy, or over the limits.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("Append failed →", ex.Message);
+        }
+    }
+
+    private async Task Delete()
+    {
+        try
+        {
+            var ok = await sharedStorage.Delete(_key);
+            if (ok) await writeOutput.Success("Delete →", $"'{_key}' deleted.");
+            else await writeOutput.Warn("Delete →", "false - no API here, or the write was refused.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("Delete failed →", ex.Message);
+        }
+    }
+
+    private async Task Clear()
+    {
+        try
+        {
+            var ok = await sharedStorage.Clear();
+            if (ok) await writeOutput.Success("Clear →", "the whole origin's shared storage is gone.");
+            else await writeOutput.Warn("Clear →", "false - no API here, or the write was refused.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("Clear failed →", ex.Message);
+        }
+    }
+
+    private async Task AddModule()
+    {
+        try
+        {
+            var added = await sharedStorage.AddModule(_moduleUrl);
+            if (added) await workletOutput.Success("AddModule →", "loaded.");
+            else await workletOutput.Warn("AddModule →", "false - no API here, the module 404'd, or one was already added.");
+        }
+        catch (Exception ex)
+        {
+            await workletOutput.Error("AddModule failed →", ex.Message);
+        }
+    }
+
+    private async Task Run()
+    {
+        try
+        {
+            var started = await sharedStorage.Run("frequency-cap", new { campaignId = 42 });
+            if (started) await runOutput.Success("Run →", "started. The result is unreadable by design.");
+            else await runOutput.Warn("Run →", "false - no worklet registered under that name, or the module was never added.");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("Run failed →", ex.Message);
+        }
+    }
+
+    private async Task SelectUrl()
+    {
+        try
+        {
+            var chosen = await sharedStorage.SelectUrl("pick-creative", ["/creative-a", "/creative-b"], new { slot = "hero" });
+            if (chosen) await runOutput.Success("SelectUrl →", "a choice was made - which one is not reported to the page.");
+            else await runOutput.Warn("SelectUrl →", "false - no API here, or the operation isn't registered.");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("SelectUrl failed →", ex.Message);
+        }
+    }
+}
