@@ -25,8 +25,13 @@ public class FetchResponse
     public string Url { get; set; } = string.Empty;
 
     /// <summary>
-    /// Response headers, repeats included - which is what makes <c>Set-Cookie</c> readable here at
-    /// all, on the browsers that expose it.
+    /// Response headers, repeats included - <c>Link</c> and <c>Vary</c> arrive whole rather than
+    /// flattened.
+    /// <br/>
+    /// Only the headers fetch is permitted to expose are here: the CORS-safelisted ones plus
+    /// whatever <c>Access-Control-Expose-Headers</c> names. The forbidden response headers are
+    /// filtered out by the browser, so <c>Set-Cookie</c> is never readable through this no matter
+    /// what the server sent - the cookie still reaches the cookie jar, just not this list.
     /// </summary>
     public FetchHeaders Headers { get; set; } = new();
 

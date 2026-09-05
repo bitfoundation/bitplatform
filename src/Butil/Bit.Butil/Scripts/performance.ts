@@ -24,6 +24,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // events sharing an id, and the interaction's latency is the worst of them, not their sum.
     const _interactions: { [id: string]: number } = {};
 
+    // These entry types are never kept on the performance timeline: getEntriesByType() answers them
+    // with an empty array on every engine, and they only ever arrive through a PerformanceObserver.
+    // So reading one has to mean "what an observer has collected", and this module keeps its own
+    // records for them - see retainedEntries().
+    const OBSERVER_ONLY_TYPES = ['longtask', 'long-animation-frame', 'largest-contentful-paint', 'layout-shift', 'event', 'first-input', 'element'];
+
+    // type -> the entries an observer of that type has reported so far, once something has asked.
+    const _retained: { [type: string]: any[] } = {};
+
     function supportsEntryType(type: string) {
         const types = (PerformanceObserver as any)?.supportedEntryTypes;
         return Array.isArray(types) && types.indexOf(type) >= 0;
@@ -39,6 +48,25 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // option) - leave the metric at null rather than reporting a number nothing feeds.
             return false;
         }
+    }
+
+    // The records for one observer-only type. The first ask starts the observer, so it comes back
+    // empty or nearly so - buffered:true backfills what the engine held from before the observer
+    // existed, but the report arrives on a later task either way. Reading again once the page has
+    // run is what returns anything, which is the same shape webVitals() has.
+    function retainedEntries(type: string, name?: string) {
+        if (!_retained[type]) {
+            _retained[type] = [];
+            // durationThreshold below the 104ms default so short interactions are counted too, for
+            // the same reason the vitals collector lowers it.
+            const options = type === 'event' ? { durationThreshold: 16 } : {};
+            observeVital(type, list => {
+                for (const entry of list.getEntries()) _retained[type].push((entry as any).toJSON ? (entry as any).toJSON() : entry);
+            }, options);
+        }
+
+        const entries = _retained[type];
+        return name ? entries.filter(e => e.name === name) : entries.slice();
     }
 
     function startWebVitals() {
@@ -136,6 +164,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         clearMeasures(name?: string) { performance.clearMeasures(name ?? undefined); },
         clearResourceTimings() { performance.clearResourceTimings(); },
         getEntries(name?: string, type?: string) {
+            // An observer-only type would come back empty from the timeline whatever it was asked -
+            // answer it from this module's own records instead.
+            if (type && OBSERVER_ONLY_TYPES.indexOf(type) >= 0) return retainedEntries(type, name);
+
             let entries: PerformanceEntry[];
             if (name) entries = performance.getEntriesByName(name, type ?? undefined);
             else if (type) entries = performance.getEntriesByType(type);

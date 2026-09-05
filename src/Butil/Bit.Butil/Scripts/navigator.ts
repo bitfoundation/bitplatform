@@ -22,7 +22,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
         // navigator.scheduling is Chromium-only; where it is missing the honest answer is "no
         // pending input", which is also the answer that keeps a yield loop running rather than
-        // stalling it.
+        // stalling it. So this only ever lets a caller yield sooner - the caller still owes the
+        // loop a deadline or a periodic yield of its own.
         isInputPending(includeContinuous: boolean) {
             const scheduling = (window.navigator as any).scheduling;
             if (!scheduling || typeof scheduling.isInputPending !== 'function') return false;

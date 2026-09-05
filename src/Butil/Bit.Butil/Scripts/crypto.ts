@@ -263,12 +263,22 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         }
     }
 
+    // A JWK may narrow what the key is allowed to do with "key_ops", and importKey rejects the whole
+    // key with a DataError when the usages asked for are not a subset of it. So where the JWK
+    // declares them, they decide - intersected with what the algorithm supports, since key_ops is
+    // the key's own list and may name an operation this algorithm has no usage for.
+    function requestedUsages(name: string, format: string, key: any): KeyUsage[] {
+        const supported = usagesFor(name, format, key);
+        const declared = format === 'jwk' && Array.isArray(key?.key_ops) ? key.key_ops : null;
+        return declared ? supported.filter(u => declared.includes(u)) : supported;
+    }
+
     function importKeyMaterial(format: string, key: any, algorithm: any, extractable: boolean) {
         // A JWK crosses as an object; every other format crosses as bytes. Its absent members are
         // dropped rather than passed through as null - JWK members are typed by the specification,
         // and an explicit "n": null makes importKey reject the whole key with a DataError.
         const keyData = format === 'jwk' ? withoutNulls(key) : butil.utils.arrayToBuffer(key);
-        return crypto.subtle.importKey(format as any, keyData, keyAlgorithmFor(algorithm), extractable, usagesFor(algorithm.name, format, key));
+        return crypto.subtle.importKey(format as any, keyData, keyAlgorithmFor(algorithm), extractable, requestedUsages(algorithm.name, format, key));
     }
 
     function withoutNulls(source: any) {

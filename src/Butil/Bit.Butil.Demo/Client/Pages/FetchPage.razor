@@ -229,7 +229,7 @@ await handle.Abort();
     <ApiMember Name="FetchResponse.Status" Signature="int Status" Description="HTTP status, or 0 when the request was aborted or failed before headers." />
     <ApiMember Name="FetchResponse.StatusText" Signature="string StatusText" Description="The HTTP status text." />
     <ApiMember Name="FetchResponse.Url" Signature="string Url" Description="Final URL after redirects." />
-    <ApiMember Name="FetchResponse.Headers" Signature="FetchHeaders Headers" Description="Response headers, repeats included - which is what makes Set-Cookie readable where the browser exposes it." />
+    <ApiMember Name="FetchResponse.Headers" Signature="FetchHeaders Headers" Description="Response headers, repeats included, so Link and Vary arrive whole. Only the headers fetch is permitted to expose are present - the CORS-safelisted ones plus whatever Access-Control-Expose-Headers names; forbidden ones such as Set-Cookie are filtered out by the browser." />
     <ApiMember Name="FetchResponse.Body" Signature="byte[] Body" Description="Body bytes. May be empty for 204/304 or aborted responses." />
     <ApiMember Name="FetchResponse.Redirected" Signature="bool Redirected" Description="Whether the request went through at least one redirect to get here." />
     <ApiMember Name="FetchResponse.Type" Signature="string Type" Description='"basic", "cors", "opaque", "opaqueredirect" or "error". An opaque response has status 0 and no readable body.' />

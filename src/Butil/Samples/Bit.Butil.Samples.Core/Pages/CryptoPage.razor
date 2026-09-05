@@ -196,7 +196,7 @@ var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
         var salt = await crypto.GetRandomValues(16);
 
         var encryptionKey = await crypto.DeriveHkdfKey(secret, salt, System.Text.Encoding.UTF8.GetBytes("encryption"), CryptoKeyAlgorithm.AesGcm(256));
-        var signingKey = await crypto.DeriveHkdfKey(secret, salt, System.Text.Encoding.UTF8.GetBytes("signing"), CryptoKeyAlgorithm.AesGcm(256));
+        var signingKey = await crypto.DeriveHkdfKey(secret, salt, System.Text.Encoding.UTF8.GetBytes("signing"), CryptoKeyAlgorithm.Hmac());
 
         await output.Success("DeriveHkdfKey (encryption) →", BitConverter.ToString(encryptionKey));
         await output.Success("Different info, different key →", !encryptionKey.SequenceEqual(signingKey));

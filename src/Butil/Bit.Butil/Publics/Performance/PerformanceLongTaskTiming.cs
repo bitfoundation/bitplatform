@@ -8,8 +8,9 @@ namespace Bit.Butil;
 /// </summary>
 /// <remarks>
 /// Long tasks are reported to a <c>PerformanceObserver</c> as they happen and are not kept in the
-/// timeline buffer, so <see cref="Performance.GetLongTasks"/> only sees what an observer with
-/// <c>buffered</c> was there to catch. Subscribe early if you want them all.
+/// timeline buffer, so <see cref="Performance.GetLongTasks"/> reads what an observer was there to
+/// catch: its own first call starts one, and only tasks after that are counted. Call it - or
+/// subscribe - early if you want them all.
 /// <br/>
 /// The name is always <c>"self"</c> or the frame the task is attributed to; the interesting field is
 /// <see cref="PerformanceEntry.Duration"/>. Use <see cref="PerformanceLongAnimationFrameTiming"/>

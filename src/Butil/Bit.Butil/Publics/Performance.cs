@@ -95,9 +95,13 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <param name="entryType">One of the <see cref="PerformanceEntryTypes"/> constants.</param>
     /// <param name="name">Optionally narrow to entries with this name - a URL, or a mark's name.</param>
     /// <remarks>
-    /// Only the buffered entry types can be read back this way. Long tasks, layout shifts and LCP
-    /// candidates are delivered to observers and never stored, so the timeline holds none of them -
-    /// use <see cref="SubscribeObserver{T}(string[], Action{T[]}, bool)"/> for those.
+    /// The timeline only holds the buffered entry types. Long tasks, long animation frames, layout
+    /// shifts, LCP candidates, event timings and element timings are delivered to observers and
+    /// never stored there, so for those this reads what Butil's own observer has collected: the
+    /// first call starts that observer and comes back empty or nearly so, and a later call returns
+    /// what the page produced in between. Call it once early and read it again later - or use
+    /// <see cref="SubscribeObserver{T}(string[], Action{T[]}, bool)"/> to be told as they happen.
+    /// An entry type the engine does not support stays empty rather than failing.
     /// </remarks>
     public ValueTask<T[]> GetTypedEntries<[DynamicallyAccessedMembers(JsonSerialized)] T>(string entryType, string? name = null)
         => js.Invoke<T[]>("BitButil.performance.getEntries", name, entryType);
@@ -132,9 +136,8 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongTaskTiming">PerformanceLongTaskTiming</see>
     /// </summary>
     /// <remarks>
-    /// Long tasks are not buffered by the timeline, so this returns what a
-    /// <see cref="SubscribeObserver{T}(string[], Action{T[]}, bool)"/> already running has collected -
-    /// on its own, typically nothing.
+    /// Long tasks never reach the timeline, so this reads Butil's own observer records: the first
+    /// call starts that observer and returns nothing, and a later one returns the long tasks since.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceLongTaskTiming))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceTaskAttributionTiming))]
@@ -146,7 +149,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongAnimationFrameTiming">PerformanceLongAnimationFrameTiming</see>
     /// </summary>
-    /// <remarks>Chromium-only; an engine without it returns an empty array rather than failing.</remarks>
+    /// <remarks>
+    /// Chromium-only; an engine without it returns an empty array rather than failing. Observer-fed
+    /// like <see cref="GetLongTasks"/> - the first call starts collecting, a later one reads it.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceLongAnimationFrameTiming))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceScriptTiming))]
     public ValueTask<PerformanceLongAnimationFrameTiming[]> GetLongAnimationFrames()
@@ -157,6 +163,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/LargestContentfulPaint">LargestContentfulPaint</see>
     /// </summary>
+    /// <remarks>
+    /// Observer-fed like <see cref="GetLongTasks"/>, but with the engine's buffer behind it: the
+    /// candidates that painted before the first call are backfilled, on the task after it.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LargestContentfulPaint))]
     public ValueTask<LargestContentfulPaint[]> GetLargestContentfulPaints()
         => GetTypedEntries<LargestContentfulPaint>(PerformanceEntryTypes.LargestContentfulPaint);
@@ -167,6 +177,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/LayoutShift">LayoutShift</see>
     /// </summary>
+    /// <remarks>
+    /// Observer-fed like <see cref="GetLongTasks"/>: shifts from before the first call are
+    /// backfilled from the engine's buffer, shifts after it accumulate.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShift))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftAttribution))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftRect))]
@@ -179,6 +193,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEventTiming">PerformanceEventTiming</see>
     /// </summary>
     /// <param name="firstInputOnly">Read the page's single <c>"first-input"</c> entry instead of every slow interaction.</param>
+    /// <remarks>
+    /// Observer-fed like <see cref="GetLongTasks"/>, collected from a <c>durationThreshold</c> of
+    /// 16 ms rather than the 104 ms default, so short interactions count towards INP too.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceEventTiming))]
     public ValueTask<PerformanceEventTiming[]> GetEventTimings(bool firstInputOnly = false)
         => GetTypedEntries<PerformanceEventTiming>(firstInputOnly ? PerformanceEntryTypes.FirstInput : PerformanceEntryTypes.Event);

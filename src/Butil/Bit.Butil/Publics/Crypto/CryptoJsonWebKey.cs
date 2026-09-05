@@ -36,7 +36,11 @@ public class CryptoJsonWebKey
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Use { get; set; }
 
-    /// <summary>The operations the key may be used for, e.g. <c>["encrypt", "decrypt"]</c>.</summary>
+    /// <summary>
+    /// The operations the key may be used for, e.g. <c>["encrypt", "decrypt"]</c>. When set, it is
+    /// what the key is imported with - the browser rejects an import asking for more than the JWK
+    /// declares - so leave it null to get every usage the algorithm supports.
+    /// </summary>
     [JsonPropertyName("key_ops")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string[]? KeyOps { get; set; }

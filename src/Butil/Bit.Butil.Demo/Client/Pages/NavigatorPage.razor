@@ -57,15 +57,20 @@ bool online = await navigator.IsOnLine();
 
     <DemoSection Title="Pending input"
                  Api="IsInputPending"
-                 Description="Asks whether the browser has user input waiting that this task is holding up - the check that turns a long loop into one that yields only when yielding would help. The demo runs a 600 ms busy loop that polls between chunks and stops the moment input is pending; click somewhere while it runs. Chromium-only: elsewhere it answers false, which keeps a loop written around it running rather than yielding forever."
+                 Description="Asks whether the browser has user input waiting that this task is holding up - the check that turns a long loop into one that yields only when yielding would help. The demo runs a 600 ms busy loop that polls between chunks and yields whenever input is pending, then carries on; click somewhere while it runs. Experimental and Chromium-only: elsewhere it answers false, so treat it as a hint and always bound the loop with a deadline of your own."
                  Code=@("""
+// IsInputPending only ever lets you yield *sooner*; a deadline is what
+// guarantees you yield at all on a browser that always answers false
+var nextYield = DateTime.UtcNow.AddMilliseconds(50);
+
 while (thereIsMoreWork)
 {
     DoAChunkOfWork();
 
-    if (await navigator.IsInputPending())
+    if (await navigator.IsInputPending() || DateTime.UtcNow >= nextYield)
     {
         await Task.Yield();   // let the browser answer the user first
+        nextYield = DateTime.UtcNow.AddMilliseconds(50);
     }
 }
 
@@ -177,7 +182,7 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
                Description="Whether the user has interacted with the page and whether that interaction is still spendable. Null on browsers without navigator.userActivation." />
     <ApiMember Name="IsInputPending"
                Signature="Task<bool> IsInputPending(bool includeContinuous = false)"
-               Description="Whether the browser has user input waiting that this task is holding up. Poll it between chunks of a long loop and yield when it says yes. False on browsers without navigator.scheduling, which keeps such a loop running rather than yielding forever." />
+               Description="Whether the browser has user input waiting that this task is holding up. Poll it between chunks of a long loop and yield when it says yes. Experimental and Chromium-only - it answers false everywhere else, so it is a hint that lets you yield sooner, never the thing that ends the loop: bound that with a deadline." />
     <ApiMember Name="UserActivationState"
                Signature="class UserActivationState { bool HasBeenActive; bool IsActive; }"
                Description="Sticky activation (has ever interacted) and transient activation (recent enough for a gesture-gated API). Check IsActive before calling one, to fail fast with your own message instead of an opaque browser rejection." />
@@ -207,10 +212,11 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
     {
         try
         {
-            await inputPendingOutput.Info("Running for up to 600 ms - click anywhere to interrupt it.");
+            await inputPendingOutput.Info("Running for up to 600 ms - click anywhere to make it yield.");
 
             var deadline = DateTime.UtcNow.AddMilliseconds(600);
             var chunks = 0;
+            var yields = 0;
 
             while (DateTime.UtcNow < deadline)
             {
@@ -221,12 +227,15 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
 
                 if (await navigator.IsInputPending())
                 {
-                    await inputPendingOutput.Success($"Input pending after {chunks} chunk(s) - yielding so the browser can answer it.");
-                    return;
+                    yields++;
+                    await inputPendingOutput.Info($"Input pending after {chunks} chunk(s) - yielding so the browser can answer it, then carrying on.");
+                    // The point of the poll is to hand the thread back and resume, not to abandon
+                    // the work: the deadline is what ends the loop.
+                    await Task.Yield();
                 }
             }
 
-            await inputPendingOutput.Log($"Ran {chunks} chunk(s) with no input pending. On a non-Chromium browser this is the only outcome.");
+            await inputPendingOutput.Log($"Ran {chunks} chunk(s), yielded {yields} time(s). On a browser without navigator.scheduling the count is always zero, so the deadline is the only thing bounding the loop.");
         }
         catch (Exception ex)
         {

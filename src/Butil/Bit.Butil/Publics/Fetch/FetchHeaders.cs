@@ -13,10 +13,14 @@ namespace Bit.Butil;
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Headers">https://developer.mozilla.org/en-US/docs/Web/API/Headers</see>
 /// </summary>
 /// <remarks>
-/// A dictionary cannot express a response's headers: <c>Set-Cookie</c> repeats, and so do
-/// <c>Link</c>, <c>Vary</c> and <c>Warning</c>. This keeps the repeats -
-/// <see cref="GetAll(string)"/> returns them all, while <see cref="Get(string)"/> joins them with
-/// ", " as the Headers specification does.
+/// A dictionary cannot express a response's headers: <c>Link</c>, <c>Vary</c>, <c>Warning</c> and
+/// <c>Set-Cookie</c> all repeat. This keeps the repeats - <see cref="GetAll(string)"/> returns them
+/// all, while <see cref="Get(string)"/> joins them with ", " as the Headers specification does.
+/// <br/>
+/// What a response actually hands back is a separate question: fetch exposes only the permitted
+/// response headers - the CORS-safelisted ones plus whatever <c>Access-Control-Expose-Headers</c>
+/// names, and never the forbidden ones. <c>Set-Cookie</c> is filtered out of a fetch response by
+/// every browser, so it is absent here regardless of what the server sent.
 /// <br/>
 /// It converts to and from <see cref="Dictionary{TKey, TValue}"/> implicitly, so code written
 /// against the dictionary this replaced keeps working; the conversion to a dictionary is the lossy
@@ -58,7 +62,7 @@ public class FetchHeaders : IEnumerable<KeyValuePair<string, string>>
 
     /// <summary>
     /// Adds a header, keeping any that is already there under the same name. This is
-    /// <c>Headers.append()</c>, and the method to use for <c>Set-Cookie</c>.
+    /// <c>Headers.append()</c>, and the method to use for a name that legitimately repeats.
     /// </summary>
     public FetchHeaders Append(string name, string value)
     {

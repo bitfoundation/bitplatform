@@ -668,7 +668,7 @@ byte[] recovered = await crypto.UnwrapKey(
             var salt = await crypto.GetRandomValues(16);
 
             var encryptionKey = await crypto.DeriveHkdfKey(secret, salt, Encoding.UTF8.GetBytes("encryption"), CryptoKeyAlgorithm.AesGcm(256));
-            var signingKey = await crypto.DeriveHkdfKey(secret, salt, Encoding.UTF8.GetBytes("signing"), CryptoKeyAlgorithm.AesGcm(256));
+            var signingKey = await crypto.DeriveHkdfKey(secret, salt, Encoding.UTF8.GetBytes("signing"), CryptoKeyAlgorithm.Hmac());
 
             await hkdfOutput.Success("DeriveHkdfKey (info: encryption) →", Convert.ToHexString(encryptionKey));
             await hkdfOutput.Success("DeriveHkdfKey (info: signing) →", Convert.ToHexString(signingKey));
