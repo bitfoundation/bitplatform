@@ -89,7 +89,10 @@ public class Permissions(IJSRuntime js) : IAsyncDisposable
         }));
     }
 
-    private static PermissionState ToState(string? raw) => raw switch
+    // Internal rather than private: every service that reads a permission - Sensors,
+    // WindowManagement, IdleDetector - has to answer in PermissionState, and one mapping is what
+    // keeps an unrecognized state meaning the same thing on all of them.
+    internal static PermissionState ToState(string? raw) => raw switch
     {
         "granted" => PermissionState.Granted,
         "denied" => PermissionState.Denied,

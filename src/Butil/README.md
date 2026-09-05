@@ -87,6 +87,7 @@ registering everything.
 | Service | What it wraps |
 | --- | --- |
 | `Screen` | Physical screen metrics, colour depth, availability |
+| `WindowManagement` | Every attached screen, and placing windows or fullscreen content on a chosen one |
 | `ScreenOrientation` | Read, lock and observe the screen orientation |
 | `VisualViewport` | The visual viewport: scale, offsets, resize and scroll events |
 | `Performance` | High-resolution timing, marks, measures, `PerformanceObserver` |
@@ -130,6 +131,7 @@ registering everything.
 | `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
 | `Fetch` | The fetch API with full request/response control and progress |
 | `Compression` | Gzip and deflate through the browser's native codec |
+| `LocalFonts` | List installed fonts, and read one's raw font file |
 
 ### Network & workers
 
@@ -153,6 +155,14 @@ registering everything.
 | `Gamepad` | Game controllers: buttons, sticks, triggers and rumble |
 | `DeviceOrientation` | Tilt, acceleration and rotation from the device's own sensors |
 | `Nfc` | Read and write NDEF messages on NFC tags |
+| `Sensors` | The Generic Sensor API: accelerometer, gyroscope, magnetometer, orientation, gravity, linear acceleration, ambient light |
+| `Bluetooth` | Web Bluetooth: pick a BLE device, then read, write or subscribe to its GATT characteristics |
+| `Usb` | WebUSB: claim an interface and run control, bulk or interrupt transfers |
+| `Serial` | Web Serial: open a port with the device's line settings, then read and write bytes |
+| `Hid` | WebHID: input, output and feature reports |
+| `Midi` | Web MIDI: inputs, outputs, incoming messages and note sending |
+| `ComputePressure` | CPU and thermal pressure, for shedding work before the machine stutters |
+| `DevicePosture` | Whether a foldable device is flat or folded across its hinge |
 | `WakeLock` | Keep the screen awake, with an auto-reacquiring persistent mode |
 | `IdleDetector` | User and screen idle-state changes |
 | `ContactPicker` | Let users pick contacts to share with your app |
@@ -176,6 +186,7 @@ registering everything.
 | `WebAudio` | Play and control audio buffers |
 | `MediaRecorder` | Record a camera, microphone or screen share to a file |
 | `MediaSession` | Lock-screen metadata and hardware media-key handlers |
+| `AudioOutput` | Route a media element's sound to a chosen speaker or headset |
 
 ---
 

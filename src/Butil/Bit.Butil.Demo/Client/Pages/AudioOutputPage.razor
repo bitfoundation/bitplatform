@@ -1,0 +1,211 @@
+@page "/audio-output"
+@inject Bit.Butil.AudioOutput audioOutput
+
+<PageTitle>AudioOutput - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media & Speech"
+            Title="AudioOutput"
+            Lead="Send a media element's sound to a chosen speaker or headset instead of the system default - setSinkId and the browser's own output chooser."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Audio_Output_Devices_API"
+            InjectAs="AudioOutput audioOutput" />
+
+<Callout Type="warning" Title="Needs HTTPS, and a gesture for the chooser">
+    <code>setSinkId</code> ships in Chromium-based browsers and in recent Firefox;
+    <code>selectAudioOutput</code> is narrower still, so check both flags. The chooser must be
+    opened from a user gesture.
+</Callout>
+
+<Callout Type="info" Title="Routing is per element">
+    The sink is a property of one <code>&lt;audio&gt;</code> or <code>&lt;video&gt;</code> element,
+    not of the page, so an app playing several sounds sets it on each element it wants moved. An
+    empty device id routes back to the system default.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsSelectionSupported"
+                 Description="IsSupported reports whether audio can be routed at all; IsSelectionSupported reports whether the browser offers a chooser, which is narrower - an engine can route without offering one."
+                 Code=@("""
+@inject Bit.Butil.AudioOutput audioOutput
+
+var canRoute  = await audioOutput.IsSupported();
+var canChoose = await audioOutput.IsSelectionSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="List and choose a device"
+                 Api="GetDevices / SelectDevice"
+                 Description="GetDevices enumerates the output devices this origin can see - unlabelled until a device permission has been granted once. SelectDevice opens the browser's chooser, which is the way to get a labelled device without asking for a microphone."
+                 Code=@("""
+var devices = await audioOutput.GetDevices();
+
+var picked = await audioOutput.SelectDevice();   // needs a user gesture
+""")>
+        <div class="controls">
+            <button @onclick="LoadDevices">GetDevices</button>
+            <button @onclick="ChooseDevice">SelectDevice</button>
+        </div>
+        @if (_devices.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">Output device</span>
+                <select @bind="_deviceId">
+                    <option value="">(system default)</option>
+                    @foreach (var device in _devices)
+                    {
+                        <option value="@device.DeviceId">@(string.IsNullOrEmpty(device.Label) ? device.DeviceId : device.Label)</option>
+                    }
+                </select>
+            </div>
+        }
+        <DemoConsole @ref="deviceOutput" Title="device output" />
+    </DemoSection>
+
+    <DemoSection Title="Route a media element"
+                 Api="SetSinkId / GetSinkId"
+                 Description="SetSinkId moves one element's playback to the chosen device; GetSinkId reads back where it is going. Press play, then switch devices - the sound follows without the element reloading."
+                 Code=@("""
+<audio @ref="_player" controls src="..."></audio>
+
+await audioOutput.SetSinkId(_player, deviceId);
+var current = await audioOutput.GetSinkId(_player);   // "" means the system default
+""")>
+        <audio @ref="_player" controls loop style="width:100%"
+               src="https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg"></audio>
+        <div class="controls">
+            <button @onclick="Route">SetSinkId</button>
+            <button class="secondary" @onclick="RouteDefault">SetSinkId (default)</button>
+            <button @onclick="ReadSink">GetSinkId</button>
+        </div>
+        <DemoConsole @ref="routeOutput" Title="routing output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes HTMLMediaElement.setSinkId. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsSelectionSupported"
+               Signature="ValueTask<bool> IsSelectionSupported()"
+               Description="True when the runtime exposes navigator.mediaDevices.selectAudioOutput." />
+    <ApiMember Name="GetDevices"
+               Signature="ValueTask<MediaDeviceInfo[]> GetDevices()"
+               Description="The audio output devices this origin can see. Labels are empty until a device permission has been granted." />
+    <ApiMember Name="SelectDevice"
+               Signature="ValueTask<MediaDeviceInfo?> SelectDevice()"
+               Description="Opens the browser's output chooser and returns the picked device, or null when dismissed. Needs a user gesture." />
+    <ApiMember Name="SetSinkId"
+               Signature="ValueTask<bool> SetSinkId(ElementReference mediaElement, string deviceId)"
+               Description="Routes one media element's sound to the given device; an empty id means the system default." />
+    <ApiMember Name="GetSinkId"
+               Signature="ValueTask<string> GetSinkId(ElementReference mediaElement)"
+               Description="The device an element is currently playing through; empty for the system default." />
+    <ApiMember Name="MediaDeviceInfo"
+               Signature="class MediaDeviceInfo { string DeviceId; string Kind; string Label; string GroupId; }"
+               Description="One device, the same type MediaDevices.EnumerateDevices returns - so a device from either service can be routed without re-fetching. Kind is 'audiooutput' here." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole deviceOutput = default!;
+    private DemoConsole routeOutput = default!;
+
+    private ElementReference _player;
+    private MediaDeviceInfo[] _devices = [];
+    private string _deviceId = "";
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await audioOutput.IsSupported());
+            await supportOutput.Success("IsSelectionSupported →", await audioOutput.IsSelectionSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task LoadDevices()
+    {
+        try
+        {
+            _devices = await audioOutput.GetDevices();
+            await deviceOutput.Success("GetDevices →", $"{_devices.Length} output device(s)");
+            foreach (var device in _devices)
+            {
+                await deviceOutput.Log($"  {(string.IsNullOrEmpty(device.Label) ? "(unlabelled)" : device.Label)}",
+                    $"id={device.DeviceId}, group={device.GroupId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await deviceOutput.Error("GetDevices failed →", ex.Message);
+        }
+    }
+
+    private async Task ChooseDevice()
+    {
+        try
+        {
+            if (!await audioOutput.IsSelectionSupported())
+            {
+                await deviceOutput.Warn("selectAudioOutput is not available in this browser - use GetDevices instead.");
+                return;
+            }
+
+            var device = await audioOutput.SelectDevice();
+            if (device is null)
+            {
+                await deviceOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            _deviceId = device.DeviceId;
+            if (_devices.All(d => d.DeviceId != device.DeviceId)) _devices = [.. _devices, device];
+
+            await deviceOutput.Success("SelectDevice →", $"{device.Label} ({device.DeviceId})");
+        }
+        catch (Exception ex)
+        {
+            await deviceOutput.Error("SelectDevice failed →", ex.Message);
+        }
+    }
+
+    private async Task Route()
+    {
+        try
+        {
+            var ok = await audioOutput.SetSinkId(_player, _deviceId);
+            await routeOutput.Success("SetSinkId →", ok ? $"routed to {(_deviceId.Length == 0 ? "the system default" : _deviceId)}." : "refused.");
+        }
+        catch (Exception ex)
+        {
+            await routeOutput.Error("SetSinkId failed →", ex.Message);
+        }
+    }
+
+    private async Task RouteDefault()
+    {
+        _deviceId = "";
+        await Route();
+    }
+
+    private async Task ReadSink()
+    {
+        try
+        {
+            var sink = await audioOutput.GetSinkId(_player);
+            await routeOutput.Success("GetSinkId →", sink.Length == 0 ? "(system default)" : sink);
+        }
+        catch (Exception ex)
+        {
+            await routeOutput.Error("GetSinkId failed →", ex.Message);
+        }
+    }
+}

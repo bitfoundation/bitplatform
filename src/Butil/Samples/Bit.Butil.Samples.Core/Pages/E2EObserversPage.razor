@@ -19,6 +19,17 @@
 @inject Bit.Butil.Location butilLocation
 @inject Bit.Butil.Document butilDocument
 @inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.Bluetooth bluetooth
+@inject Bit.Butil.Usb usb
+@inject Bit.Butil.Serial serial
+@inject Bit.Butil.Hid hid
+@inject Bit.Butil.Midi midi
+@inject Bit.Butil.Sensors sensors
+@inject Bit.Butil.ComputePressure computePressure
+@inject Bit.Butil.DevicePosture devicePosture
+@inject Bit.Butil.WindowManagement windowManagement
+@inject Bit.Butil.LocalFonts localFonts
+@inject Bit.Butil.AudioOutput audioOutput
 @inject IJSRuntime js
 
 @*
@@ -42,6 +53,16 @@
     <h3>Storage Manager + Network</h3>
     <button id="storage-estimate" @onclick="StorageEstimate">storage.estimate</button>
     <button id="network-status" @onclick="NetworkStatus">connection status</button>
+</section>
+
+<section>
+    @* Hardware buses only ever get as far as a support probe here: every device they reach needs a
+       chooser the user has to click through, which is exactly what this suite must not depend on.
+       What is testable is that the whole surface resolves and answers - see the demo pages for the
+       parts that need real hardware. *@
+    <h3>Hardware buses</h3>
+    <button id="hw-support" @onclick="HardwareSupport">support probe</button>
+    <button id="hw-reads" @onclick="HardwareReads">permissionless reads</button>
 </section>
 
 <section>
@@ -155,6 +176,40 @@
     {
         var status = await networkInformation.GetStatus();
         Set($"network:online:{status.Online}");
+    }
+
+    // ─── Hardware buses ─────────────────────────────────────────────────────────
+    // Whether a given bus is implemented depends on the browser the suite happens to run, so these
+    // assert that the calls resolve and answer, not what they answer.
+    private async Task HardwareSupport()
+    {
+        _ = await bluetooth.IsSupported();
+        _ = await usb.IsSupported();
+        _ = await serial.IsSupported();
+        _ = await hid.IsSupported();
+        _ = await midi.IsSupported();
+        _ = await sensors.IsSupported(SensorType.Accelerometer);
+        _ = await computePressure.IsSupported();
+        _ = await devicePosture.IsSupported();
+        _ = await windowManagement.IsSupported();
+        _ = await localFonts.IsSupported();
+        _ = await audioOutput.IsSupported();
+        Set("hw:support:ok");
+    }
+
+    // The reads that need no permission and no device, so they have one right answer everywhere:
+    // a non-foldable is "continuous", and the two listings come back empty rather than refusing.
+    // LocalFonts.Query() is deliberately not here - it prompts for the local-fonts permission, which
+    // a headless run has nothing to answer with. QueryPermission only reads state, so it stays.
+    private async Task HardwareReads()
+    {
+        var posture = await devicePosture.GetPosture();
+        _ = await windowManagement.IsExtended();
+        _ = await sensors.QueryPermission(SensorType.Accelerometer);
+        var sources = await computePressure.GetKnownSources();
+        var outputs = await audioOutput.GetDevices();
+        var ports = await midi.GetPorts();
+        Set($"hw:reads:{posture}:{sources is not null}/{outputs is not null}/{ports is null}");
     }
 
     // ─── Observers ───────────────────────────────────────────────────────────────

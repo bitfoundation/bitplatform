@@ -40,15 +40,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     // Both streams fire far faster than a Blazor render can keep up with (iOS motion defaults to
     // 60 Hz), so every subscription is throttled in JS rather than flooding the interop channel.
-    function throttle(minInterval: number, send: (e: any) => void) {
-        let lastSentAt = 0;
-        return (e: any) => {
-            const now = performance.now();
-            if (now - lastSentAt < minInterval) return;
-            lastSentAt = now;
-            send(e);
-        };
-    }
+    const throttle = butil.utils.throttle;
 
     butil.deviceOrientation = {
         // "Is any of this here at all", in the spelling the rest of Butil uses. The two below

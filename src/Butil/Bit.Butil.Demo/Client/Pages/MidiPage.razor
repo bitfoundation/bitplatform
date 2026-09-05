@@ -1,0 +1,425 @@
+@page "/midi"
+@implements IAsyncDisposable
+@inject Bit.Butil.Midi midi
+
+<PageTitle>Midi - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Midi"
+            Lead="Enumerate MIDI inputs and outputs, listen to what a controller sends, and send notes to a synth - all from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_MIDI_API"
+            InjectAs="Midi midi" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    Web MIDI ships in Chromium-based browsers. Firefox implements it behind a preference, and Safari
+    not at all. Everything below returns nothing useful until <code>RequestAccess</code> has
+    resolved - the port list is part of the grant.
+</Callout>
+
+<Callout Type="info" Title="Sysex is a separate, stricter permission">
+    Asking for system-exclusive access shows a different prompt, because sysex can rewrite a
+    device's firmware. Leave it off unless the app really does send or read sysex.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.requestMIDIAccess. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Midi midi
+
+var supported = await midi.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Request access"
+                 Api="RequestAccess / GetPorts"
+                 Description="RequestAccess prompts the user and returns the ports the grant covers. The resolved access is cached for the page, so calling it again is cheap and does not re-prompt; GetPorts re-reads the same list."
+                 Code=@("""
+var access = await midi.RequestAccess(sysex: false);
+foreach (var input in access!.Inputs)  { /* input.Id, input.Name */ }
+foreach (var output in access.Outputs) { /* output.Id, output.Name */ }
+
+var current = await midi.GetPorts();
+""")>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_sysex" /> Request sysex</label>
+            <label><input type="checkbox" @bind="_software" /> Include software synths</label>
+        </div>
+        <div class="controls">
+            <button @onclick="RequestAccess">RequestAccess</button>
+            <button class="secondary" @onclick="GetPorts">GetPorts</button>
+        </div>
+        @if (_outputs.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">Output port</span>
+                <select @bind="_selectedOutputId">
+                    @foreach (var output in _outputs)
+                    {
+                        <option value="@output.Id">@(output.Name ?? output.Id)</option>
+                    }
+                </select>
+            </div>
+        }
+        <DemoConsole @ref="accessOutput" Title="access output" />
+    </DemoSection>
+
+    <DemoSection Title="Listen to a controller"
+                 Api="SubscribeMessages"
+                 Description="Subscribes to one input, or - with no id - to every input at once, which is usually what an app wants since the user's controller is whichever one they touch."
+                 Code=@("""
+await using var messages = await midi.SubscribeMessages(message =>
+{
+    // message.Data[0] is the status byte: 0x90|channel is note-on
+    // message.TimeStamp is on the performance.now() clock
+});
+""")>
+        <div class="controls">
+            <button @onclick="StartListening">SubscribeMessages (all inputs)</button>
+            <button class="danger" @onclick="StopListening">Stop</button>
+        </div>
+        <DemoConsole @ref="messageOutput" Title="message output" />
+    </DemoSection>
+
+    <DemoSection Title="Send notes"
+                 Api="Send / SendNoteOn / SendNoteOff / Clear"
+                 Description="SendNoteOn and SendNoteOff are the two messages every synth understands; Send takes raw bytes for everything else. Clear drops whatever is still queued - the way out of a note left hanging."
+                 Code=@("""
+await midi.SendNoteOn(outputId, note: 60, velocity: 100);
+await midi.SendNoteOff(outputId, note: 60);
+
+// raw: program change to patch 5 on channel 1
+await midi.Send(outputId, [0xC0, 0x05]);
+
+await midi.Clear(outputId);
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Note (60 = middle C)</span>
+                <input type="number" min="0" max="127" @bind="_note" />
+            </div>
+            <div class="field">
+                <span class="field-label">Velocity</span>
+                <input type="number" min="0" max="127" @bind="_velocity" />
+            </div>
+            <div class="field">
+                <span class="field-label">Channel</span>
+                <input type="number" min="0" max="15" @bind="_channel" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="SendNoteOn">SendNoteOn</button>
+            <button class="secondary" @onclick="SendNoteOff">SendNoteOff</button>
+            <button @onclick="SendProgramChange">Send (program change)</button>
+            <button class="danger" @onclick="ClearOutput">Clear</button>
+        </div>
+        <DemoConsole @ref="sendOutput" Title="send output" />
+    </DemoSection>
+
+    <DemoSection Title="Ports coming and going"
+                 Api="SubscribeStateChange"
+                 Description="Fires when a port is connected or disconnected. A port that has been unplugged stays in the list as disconnected, so a subscription survives the cable being re-seated."
+                 Code=@("""
+await using var watch = await midi.SubscribeStateChange(port =>
+{
+    // port?.Name, port?.State, port?.Connection
+});
+""")>
+        <div class="controls">
+            <button @onclick="StartWatching">SubscribeStateChange</button>
+            <button class="danger" @onclick="StopWatching">Stop watching</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="state change output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.requestMIDIAccess. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="RequestAccess"
+               Signature="ValueTask<MidiAccessInfo?> RequestAccess(bool sysex = false, bool software = false)"
+               Description="Prompts for MIDI access and returns the ports it covers, or null when refused. The access is cached for the page." />
+    <ApiMember Name="GetPorts"
+               Signature="ValueTask<MidiAccessInfo?> GetPorts()"
+               Description="The current port list. Null until RequestAccess has resolved." />
+    <ApiMember Name="Send"
+               Signature="ValueTask<bool> Send(string outputId, byte[] data, double? timestamp = null)"
+               Description="Sends raw MIDI bytes, opening the port if needed. The timestamp is on the performance.now() clock." />
+    <ApiMember Name="SendNoteOn / SendNoteOff"
+               Signature="ValueTask<bool> SendNoteOn(string outputId, byte note, byte velocity = 100, byte channel = 0) / SendNoteOff(string outputId, byte note, byte velocity = 0, byte channel = 0)"
+               Description="The two messages every synth understands." />
+    <ApiMember Name="Clear"
+               Signature="ValueTask<bool> Clear(string outputId)"
+               Description="Drops every message queued for the port that has not been sent yet." />
+    <ApiMember Name="SubscribeMessages"
+               Signature="ValueTask<ButilSubscription> SubscribeMessages(Action<MidiMessage> handler, string? inputId = null)"
+               Description="Listens to one input, or to every input when inputId is null." />
+    <ApiMember Name="SubscribeStateChange"
+               Signature="ValueTask<ButilSubscription> SubscribeStateChange(Action<MidiPortInfo?> handler)"
+               Description="Watches ports being connected and disconnected." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every listener this instance attached and releases the JS callback reference." />
+    <ApiMember Name="InvokeMidiMessage"
+               Signature="void InvokeMidiMessage(Guid id, MidiMessage message)"
+               Description="JSInvokable interop plumbing for incoming messages - not intended for app code." />
+    <ApiMember Name="InvokeMidiStateChange"
+               Signature="void InvokeMidiStateChange(Guid id, MidiPortInfo? port)"
+               Description="JSInvokable interop plumbing for port state changes - not intended for app code." />
+    <ApiMember Name="MidiAccessInfo"
+               Signature="class MidiAccessInfo { bool SysexEnabled; MidiPortInfo[] Inputs; MidiPortInfo[] Outputs; }"
+               Description="The granted ports, and whether sysex is included." />
+    <ApiMember Name="MidiPortInfo"
+               Signature="class MidiPortInfo { string Id; string? Name; string? Manufacturer; string? Version; string Type; string State; string Connection; }"
+               Description="One input or output port." />
+    <ApiMember Name="MidiMessage"
+               Signature="class MidiMessage { string PortId; byte[] Data; double TimeStamp; }"
+               Description="One received message: the port, the raw bytes and the arrival time." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole accessOutput = default!;
+    private DemoConsole messageOutput = default!;
+    private DemoConsole sendOutput = default!;
+    private DemoConsole watchOutput = default!;
+
+    private ButilSubscription? _messages;
+    private ButilSubscription? _watch;
+
+    private bool _sysex;
+    private bool _software;
+    private MidiPortInfo[] _outputs = [];
+    private string? _selectedOutputId;
+    private int _note = 60;
+    private int _velocity = 100;
+    private int _channel = 0;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await midi.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestAccess()
+    {
+        try
+        {
+            if (!await midi.IsSupported())
+            {
+                await accessOutput.Warn("Web MIDI is not supported in this browser.");
+                return;
+            }
+
+            var access = await midi.RequestAccess(_sysex, _software);
+            await Report(access, "RequestAccess");
+        }
+        catch (Exception ex)
+        {
+            await accessOutput.Error("RequestAccess failed →", ex.Message);
+        }
+    }
+
+    private async Task GetPorts()
+    {
+        try
+        {
+            await Report(await midi.GetPorts(), "GetPorts");
+        }
+        catch (Exception ex)
+        {
+            await accessOutput.Error("GetPorts failed →", ex.Message);
+        }
+    }
+
+    private async Task Report(MidiAccessInfo? access, string call)
+    {
+        if (access is null)
+        {
+            await accessOutput.Warn($"{call} → no access. Request it first, or the prompt was refused.");
+            return;
+        }
+
+        _outputs = access.Outputs;
+
+        // The selection has to be re-checked against the new list: a port that has been unplugged
+        // since the last read is gone, and sending to its id would fail on every attempt.
+        if (_selectedOutputId is not null && _outputs.Any(output => output.Id == _selectedOutputId) is false)
+            _selectedOutputId = null;
+
+        _selectedOutputId ??= _outputs.FirstOrDefault()?.Id;
+
+        await accessOutput.Success($"{call} →",
+            $"sysex={access.SysexEnabled}, inputs={access.Inputs.Length}, outputs={access.Outputs.Length}");
+
+        foreach (var port in access.Inputs.Concat(access.Outputs))
+        {
+            await accessOutput.Log($"  [{port.Type}] {port.Name ?? port.Id}", $"{port.State}/{port.Connection}");
+        }
+    }
+
+    private async Task StartListening()
+    {
+        await StopListening();
+
+        try
+        {
+            _messages = await midi.SubscribeMessages(message =>
+                _ = InvokeAsync(() => messageOutput.Log("Message →",
+                    $"{Convert.ToHexString(message.Data)} ({Describe(message.Data)}) at {message.TimeStamp:F0}ms")));
+
+            await messageOutput.Log("Listening - play something on a connected controller.");
+        }
+        catch (Exception ex)
+        {
+            await messageOutput.Error("SubscribeMessages failed →", ex.Message);
+        }
+    }
+
+    private async Task StopListening()
+    {
+        if (_messages is null) return;
+        await _messages.DisposeAsync();
+        _messages = null;
+        await messageOutput.Log("Stopped listening.");
+    }
+
+    private async Task SendNoteOn()
+    {
+        if (await RequireOutput() is false) return;
+        if (await RequireRange("Note", _note, 127) is false) return;
+        if (await RequireRange("Velocity", _velocity, 127) is false) return;
+        if (await RequireRange("Channel", _channel, 15) is false) return;
+
+        try
+        {
+            await sendOutput.Success("SendNoteOn →",
+                await midi.SendNoteOn(_selectedOutputId!, (byte)_note, (byte)_velocity, (byte)_channel));
+        }
+        catch (Exception ex)
+        {
+            await sendOutput.Error("SendNoteOn failed →", ex.Message);
+        }
+    }
+
+    private async Task SendNoteOff()
+    {
+        if (await RequireOutput() is false) return;
+        if (await RequireRange("Note", _note, 127) is false) return;
+        if (await RequireRange("Channel", _channel, 15) is false) return;
+
+        try
+        {
+            await sendOutput.Success("SendNoteOff →",
+                await midi.SendNoteOff(_selectedOutputId!, (byte)_note, channel: (byte)_channel));
+        }
+        catch (Exception ex)
+        {
+            await sendOutput.Error("SendNoteOff failed →", ex.Message);
+        }
+    }
+
+    private async Task SendProgramChange()
+    {
+        if (await RequireOutput() is false) return;
+        if (await RequireRange("Channel", _channel, 15) is false) return;
+
+        try
+        {
+            await sendOutput.Success("Send →",
+                await midi.Send(_selectedOutputId!, [(byte)(0xC0 | (_channel & 0x0F)), 0x05]));
+        }
+        catch (Exception ex)
+        {
+            await sendOutput.Error("Send failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearOutput()
+    {
+        if (await RequireOutput() is false) return;
+
+        try
+        {
+            await sendOutput.Success("Clear →", await midi.Clear(_selectedOutputId!));
+        }
+        catch (Exception ex)
+        {
+            await sendOutput.Error("Clear failed →", ex.Message);
+        }
+    }
+
+    private async Task StartWatching()
+    {
+        await StopWatching();
+
+        try
+        {
+            _watch = await midi.SubscribeStateChange(port =>
+                _ = InvokeAsync(() => watchOutput.Log("State change →",
+                    port is null ? "(no port)" : $"{port.Name ?? port.Id}: {port.State}/{port.Connection}")));
+
+            await watchOutput.Log("Watching - plug or unplug a MIDI device.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("SubscribeStateChange failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        if (_watch is null) return;
+        await _watch.DisposeAsync();
+        _watch = null;
+        await watchOutput.Log("Stopped watching.");
+    }
+
+    private async Task<bool> RequireOutput()
+    {
+        if (string.IsNullOrEmpty(_selectedOutputId) is false) return true;
+        await sendOutput.Warn("Request access first, then pick an output port.");
+        return false;
+    }
+
+    // The number inputs are ints, so their min/max are a hint and not a guarantee - an unchecked
+    // cast would wrap 128 round to 0 and play a note nobody asked for.
+    private async Task<bool> RequireRange(string name, int value, int max)
+    {
+        if (value >= 0 && value <= max) return true;
+
+        await sendOutput.Warn($"{name} must be between 0 and {max} - got {value}.");
+        return false;
+    }
+
+    // The status byte's high nibble names the message; the low nibble is the channel.
+    private static string Describe(byte[] data) => data.Length == 0 ? "empty" : (data[0] & 0xF0) switch
+    {
+        0x80 => "note off",
+        0x90 => data.Length > 2 && data[2] == 0 ? "note off (velocity 0)" : "note on",
+        0xA0 => "aftertouch",
+        0xB0 => "control change",
+        0xC0 => "program change",
+        0xD0 => "channel pressure",
+        0xE0 => "pitch bend",
+        _ => "system"
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_messages is not null) await _messages.DisposeAsync();
+        if (_watch is not null) await _watch.DisposeAsync();
+    }
+}

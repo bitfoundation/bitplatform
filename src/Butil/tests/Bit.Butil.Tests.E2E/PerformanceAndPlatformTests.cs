@@ -29,4 +29,26 @@ public class PerformanceAndPlatformTests : ButilObserversPageTest
     {
         await ClickAndExpectAsync("network-status", "network:online:True");
     }
+
+    /// <summary>
+    /// The hardware buses (Bluetooth, USB, serial, HID, MIDI, sensors, pressure, posture, window
+    /// management, local fonts, audio output) all reach a real device only through a chooser the
+    /// user clicks, so the suite probes the part that needs neither: that every support check
+    /// resolves and answers rather than throwing.
+    /// </summary>
+    [TestMethod]
+    public async Task Hardware_Support_Probes_All_Resolve()
+    {
+        await ClickAndExpectAsync("hw-support", "hw:support:ok");
+    }
+
+    /// <summary>
+    /// The permissionless reads have one right answer on any browser: a machine that cannot fold
+    /// is "continuous", and the listings come back empty rather than refusing.
+    /// </summary>
+    [TestMethod]
+    public async Task Hardware_Permissionless_Reads_Answer()
+    {
+        await ClickAndExpectAsync("hw-reads", "hw:reads:Continuous:True/True/True");
+    }
 }
