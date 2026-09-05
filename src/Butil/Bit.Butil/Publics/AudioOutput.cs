@@ -41,21 +41,22 @@ public class AudioOutput(IJSRuntime js)
     public ValueTask<bool> IsSelectionSupported() => js.Invoke<bool>("BitButil.audioOutput.isSelectionSupported");
 
     /// <summary>
-    /// The audio output devices this origin can see. Labels are empty until the origin has been
-    /// granted a device permission, so a picker built on this alone shows unnamed entries - use
-    /// <see cref="SelectDevice"/> instead where the chooser is available.
+    /// The audio output devices this origin can see - the <see cref="MediaDeviceInfo.Kind"/>
+    /// <c>"audiooutput"</c> entries of <see cref="MediaDevices.EnumerateDevices"/>. Labels are empty
+    /// until the origin has been granted a device permission, so a picker built on this alone shows
+    /// unnamed entries - use <see cref="SelectDevice"/> instead where the chooser is available.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AudioOutputDeviceInfo))]
-    public ValueTask<AudioOutputDeviceInfo[]> GetDevices()
-        => js.Invoke<AudioOutputDeviceInfo[]>("BitButil.audioOutput.getDevices");
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaDeviceInfo))]
+    public ValueTask<MediaDeviceInfo[]> GetDevices()
+        => js.Invoke<MediaDeviceInfo[]>("BitButil.audioOutput.getDevices");
 
     /// <summary>
     /// Opens the browser's audio-output chooser and returns the device the user picked, or null
     /// when they dismissed it. Must be called from a user gesture.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AudioOutputDeviceInfo))]
-    public ValueTask<AudioOutputDeviceInfo?> SelectDevice()
-        => js.Invoke<AudioOutputDeviceInfo?>("BitButil.audioOutput.selectDevice");
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaDeviceInfo))]
+    public ValueTask<MediaDeviceInfo?> SelectDevice()
+        => js.Invoke<MediaDeviceInfo?>("BitButil.audioOutput.selectDevice");
 
     /// <summary>
     /// Routes one <c>&lt;audio&gt;</c> or <c>&lt;video&gt;</c> element's sound to the given device.

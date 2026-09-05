@@ -7,24 +7,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     const _inputListeners: { [id: string]: { device: any, handler: EventListener } } = {};
     const _connectionListeners: { [id: string]: { connect: EventListener, disconnect: EventListener } } = {};
 
-    // Handle ids are minted here rather than by .NET: requestDevice() can hand back several
-    // devices at once, and getDevices() and the connect/disconnect events surface devices .NET has
-    // never seen. See bluetooth.ts.
-    let _sequence = 0;
-    function nextId() { return `hid${++_sequence}`; }
+    // Handle ids are minted here rather than by .NET, through the registry every device module
+    // shares: the browser surfaces a device .NET has never seen, so there is nothing for it to key on
+    // until the info comes back. Every entry point that hands one out hands out its id with it.
+    const _registry = butil.utils.handleRegistry('hid', _devices);
+    const idOf = _registry.idOf;
 
-    // The HID API hands back the same HIDDevice object for a given device on every call, so
-    // minting a fresh id each time would pile up registry entries for one device - and leave an
-    // open handle's id pointing at a device the caller thinks it already released.
-    function idOf(device: any) {
-        for (const key of Object.keys(_devices)) {
-            if (_devices[key] === device) return key;
-        }
-
-        const id = nextId();
-        _devices[id] = device;
-        return id;
-    }
 
     butil.hid = {
         isSupported() { return !!(navigator as any).hid; },
@@ -108,8 +96,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function release(id: string) {
-        const device = _devices[id];
-        delete _devices[id];
+        const device = _registry.remove(id);
         if (!device) return;
 
         for (const key of Object.keys(_inputListeners)) {
@@ -161,7 +148,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const device = _devices[id];
         if (!device) return null;
         const view: DataView = await device.receiveFeatureReport(reportId);
-        return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+        return butil.utils.viewToBytes(view);
     }
 
     function subscribeInputReports(subscriptionId: string, dotNetRef: any, id: string) {
@@ -172,7 +159,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const view: DataView = event.data;
             butil.utils.dispatch(dotNetRef, 'InvokeHidInputReport', subscriptionId, {
                 reportId: event.reportId,
-                data: new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
+                data: butil.utils.viewToBytes(view)
             });
         };
         device.addEventListener('inputreport', handler);

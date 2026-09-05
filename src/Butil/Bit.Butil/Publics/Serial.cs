@@ -25,7 +25,10 @@ public class Serial(IJSRuntime js) : IAsyncDisposable
     internal const string ConnectedMethodName = nameof(InvokeSerialConnected);
     internal const string DisconnectedMethodName = nameof(InvokeSerialDisconnected);
 
-    private readonly ConcurrentDictionary<Guid, (Action<byte[]> OnData, Action<string>? OnError)> _dataHandlers = new();
+    // Keyed by subscription id, but carrying the port each one belongs to: serial.ts release() stops
+    // that port's read loop, so the .NET closures behind it have to go at the same moment - otherwise
+    // disposing one port leaks its handlers for as long as the service lives.
+    private readonly ConcurrentDictionary<Guid, (string PortId, Action<byte[]> OnData, Action<string>? OnError)> _dataHandlers = new();
     private readonly ConcurrentDictionary<Guid, (Action<SerialPort>? OnConnected, Action<SerialPort>? OnDisconnected)> _connectionHandlers = new();
 
     // Every handle this service handed out, so a scope/circuit teardown closes the port even when
@@ -69,17 +72,27 @@ public class Serial(IJSRuntime js) : IAsyncDisposable
         return [.. infos.Select(Track)];
     }
 
-    private SerialPort Track(SerialPortInfo info)
-    {
-        var port = new SerialPort(this, js, info);
-        _ports[info.Id] = port;
-        return port;
-    }
+    // One handle per browser-side id. serial.ts idOf() deliberately hands the same id back for the
+    // same port, so a port surfaced again by GetPorts or by a connect event has to return the handle
+    // already in play: a second wrapper over one JS registry entry would let disposing either of them
+    // release the port out from under the other. Info stays the snapshot the first handle was created
+    // from - it is documented as not updating on its own, and GetInfo() re-reads it.
+    private SerialPort Track(SerialPortInfo info) => _ports.GetOrAdd(info.Id, _ => new SerialPort(this, js, info));
 
-    // Called by a handle that is disposing itself, so the service stops holding it. The removal is
-    // identity-checked: two handles can share an id (a port surfaced again by GetPorts, or by a
-    // connect event), and untracking on the id alone would let the stale one release the live one.
-    internal void Forget(SerialPort port) => _ports.TryRemove(new KeyValuePair<string, SerialPort>(port.Id, port));
+    // Called by a handle that is disposing itself, so the service stops holding it. The JS-side
+    // release() stops that port's read loop, so the .NET closures behind it have to go with it -
+    // otherwise disposing one port leaks the handlers of that port for as long as the service lives.
+    // The registry removal is identity-checked so a handle that has already been replaced cannot
+    // untrack its successor.
+    internal void Forget(SerialPort port)
+    {
+        _ports.TryRemove(new KeyValuePair<string, SerialPort>(port.Id, port));
+
+        foreach (var pair in _dataHandlers)
+        {
+            if (pair.Value.PortId == port.Id) _dataHandlers.TryRemove(pair.Key, out _);
+        }
+    }
 
     /// <summary>
     /// Invoked from JS for each chunk read from a port. Public + <see cref="JSInvokableAttribute"/>
@@ -116,36 +129,15 @@ public class Serial(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(nameof(InvokeSerialError), typeof(Serial))]
     internal async ValueTask<ButilSubscription> SubscribeData(string portId, Action<byte[]> onData, Action<string>? onError)
     {
-        var id = Guid.NewGuid();
-        _dataHandlers[id] = (onData, onError);
-
-        bool reading;
-        try
-        {
-            reading = await js.InvokeRegister("BitButil.serial.startReading", id, DotNetRef, portId);
-        }
-        catch
-        {
-            // No read loop on the JS side, so the entry must not outlive the call.
-            _dataHandlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (reading is false)
-        {
-            _dataHandlers.TryRemove(id, out _);
-            var message = "Reading could not be started - the port is not open, or it is already being read.";
-            onError?.Invoke(message);
-            throw new InvalidOperationException(message);
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _dataHandlers.TryRemove(id, out _);
-            // Reading is keyed by the port, not the subscription: the stream lock is exclusive, so
-            // there is at most one read loop per port to stop.
-            await js.InvokeVoid("BitButil.serial.stopReading", portId);
-        });
+        // The subscription id goes to stopReading along with the port id: the stream lock is
+        // exclusive, so a port carries at most one read loop, but that loop can end on its own (the
+        // device closed the stream, or Close() was called) and a later subscription can start a new
+        // one. Stopping on the port alone would let a stale dispose cancel a reader it never started.
+        return await ButilSubscriptionHelper.Register(_dataHandlers, (portId, onData, onError),
+                                                      id => js.InvokeRegister("BitButil.serial.startReading", id, DotNetRef, portId),
+                                                      id => js.InvokeVoid("BitButil.serial.stopReading", portId, id),
+                                                      "Reading could not be started - the port is not open, or it is already being read.",
+                                                      onError);
     }
 
     /// <summary>
@@ -153,21 +145,17 @@ public class Serial(IJSRuntime js) : IAsyncDisposable
     /// unplugged. Only ports this origin already has permission for raise these.
     /// </summary>
     /// <returns>A subscription - dispose it to detach the listeners.</returns>
+    /// <exception cref="InvalidOperationException">The listeners were not attached - no Web Serial support.</exception>
     [DynamicDependency(nameof(InvokeSerialConnected), typeof(Serial))]
     [DynamicDependency(nameof(InvokeSerialDisconnected), typeof(Serial))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SerialPortInfo))]
     public async ValueTask<ButilSubscription> SubscribeConnection(Action<SerialPort>? onConnected = null,
                                                                   Action<SerialPort>? onDisconnected = null)
     {
-        var id = Guid.NewGuid();
-        _connectionHandlers[id] = (onConnected, onDisconnected);
-        await js.InvokeVoid("BitButil.serial.subscribeConnection", id, DotNetRef);
-
-        return new ButilSubscription(id, async () =>
-        {
-            _connectionHandlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.serial.unsubscribeConnection", id);
-        });
+        return await ButilSubscriptionHelper.Register(_connectionHandlers, (onConnected, onDisconnected),
+                                                      id => js.InvokeRegister("BitButil.serial.subscribeConnection", id, DotNetRef),
+                                                      id => js.InvokeVoid("BitButil.serial.unsubscribeConnection", id),
+                                                      "The serial connection listeners could not be attached - the Web Serial API is not available.");
     }
 
     /// <summary>

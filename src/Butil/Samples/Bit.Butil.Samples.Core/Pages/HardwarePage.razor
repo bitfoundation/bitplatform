@@ -142,13 +142,29 @@ await using var _ = await sensors.Subscribe(SensorType.Accelerometer, r => { });
     {
         try
         {
-            _bluetoothDevice = await bluetooth.RequestDevice(new BluetoothRequestOptions
+            var picked = await bluetooth.RequestDevice(new BluetoothRequestOptions
             {
                 AcceptAllDevices = true,
                 OptionalServices = ["battery_service", "device_information"]
             });
 
-            await output.Success("Bluetooth.RequestDevice →", _bluetoothDevice?.Name ?? "(dismissed)");
+            if (picked is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await output.Success("Bluetooth.RequestDevice →", "(dismissed)");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it rather than
+            // leaving the device connected. Re-picking the same device hands back the handle already
+            // in play, and disposing that one would release the device this page is about to use.
+            if (_bluetoothDevice is not null && ReferenceEquals(_bluetoothDevice, picked) is false)
+            {
+                await _bluetoothDevice.DisposeAsync();
+            }
+
+            _bluetoothDevice = picked;
+            await output.Success("Bluetooth.RequestDevice →", _bluetoothDevice.Name ?? "(unnamed)");
         }
         catch (Exception ex)
         {
@@ -180,8 +196,24 @@ await using var _ = await sensors.Subscribe(SensorType.Accelerometer, r => { });
     {
         try
         {
-            _usbDevice = await usb.RequestDevice();
-            await output.Success("Usb.RequestDevice →", _usbDevice?.Info.ProductName ?? "(dismissed)");
+            var picked = await usb.RequestDevice();
+
+            if (picked is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await output.Success("Usb.RequestDevice →", "(dismissed)");
+                return;
+            }
+
+            // See PickBluetooth: release the handle the replacement makes unreachable, unless the
+            // user re-picked the same device and got that very handle back.
+            if (_usbDevice is not null && ReferenceEquals(_usbDevice, picked) is false)
+            {
+                await _usbDevice.DisposeAsync();
+            }
+
+            _usbDevice = picked;
+            await output.Success("Usb.RequestDevice →", _usbDevice.Info.ProductName ?? "(unnamed)");
         }
         catch (Exception ex)
         {
@@ -214,8 +246,26 @@ await using var _ = await sensors.Subscribe(SensorType.Accelerometer, r => { });
     {
         try
         {
-            _serialPort = await serial.RequestPort();
-            await output.Success("Serial.RequestPort →", _serialPort?.Id ?? "(dismissed)");
+            var picked = await serial.RequestPort();
+
+            if (picked is null)
+            {
+                // A dismissed chooser is not a reason to throw away the port already in hand.
+                await output.Success("Serial.RequestPort →", "(dismissed)");
+                return;
+            }
+
+            // See PickBluetooth, plus the read loop: the data subscription was taken through the
+            // port being replaced, so it goes first - exactly as PickHid drops its input reports.
+            if (ReferenceEquals(_serialPort, picked) is false)
+            {
+                if (_serialData is not null) await _serialData.DisposeAsync();
+                _serialData = null;
+                if (_serialPort is not null) await _serialPort.DisposeAsync();
+            }
+
+            _serialPort = picked;
+            await output.Success("Serial.RequestPort →", _serialPort.Id);
         }
         catch (Exception ex)
         {
@@ -284,10 +334,15 @@ await using var _ = await sensors.Subscribe(SensorType.Accelerometer, r => { });
             }
 
             // The replacement makes the previous handle unreachable, so release it - and the input
-            // reports subscribed through it - rather than leaving the device open.
-            if (_hidReports is not null) await _hidReports.DisposeAsync();
-            _hidReports = null;
-            if (_hidDevice is not null) await _hidDevice.DisposeAsync();
+            // reports subscribed through it - rather than leaving the device open. Re-picking the
+            // same device hands back the handle already in play, and disposing that one would
+            // release the device this page is about to use.
+            if (ReferenceEquals(_hidDevice, picked) is false)
+            {
+                if (_hidReports is not null) await _hidReports.DisposeAsync();
+                _hidReports = null;
+                if (_hidDevice is not null) await _hidDevice.DisposeAsync();
+            }
 
             _hidDevice = picked;
             await output.Success("Hid.RequestDevice →", _hidDevice.ProductName ?? "(unnamed)");

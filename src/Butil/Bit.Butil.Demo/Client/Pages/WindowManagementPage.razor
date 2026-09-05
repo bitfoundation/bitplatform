@@ -28,13 +28,13 @@
 <div class="stack">
     <DemoSection Title="Support, extension and permission"
                  Api="IsSupported / IsExtended / QueryPermission"
-                 Description="IsSupported reports whether getScreenDetails exists; IsExtended reports whether more than one screen is attached, without any permission; QueryPermission reads the window-management state without prompting."
+                 Description="IsSupported reports whether getScreenDetails exists; IsExtended reports whether more than one screen is attached, without any permission - the same reading Screen.IsExtended gives, offered here so a component already injecting this service needs no second one; QueryPermission reads the window-management state without prompting, and answers in PermissionState like every other permission read in the package."
                  Code=@("""
 @inject Bit.Butil.WindowManagement windowManagement
 
 var supported = await windowManagement.IsSupported();
 var extended  = await windowManagement.IsExtended();
-var state     = await windowManagement.QueryPermission();  // granted / denied / prompt
+PermissionState state = await windowManagement.QueryPermission();
 """)>
         <div class="controls">
             <button @onclick="CheckSupport">Check</button>
@@ -135,10 +135,10 @@ await using var subscription = await windowManagement.SubscribeChange(details =>
                Description="True when the runtime exposes window.getScreenDetails. Returns default (false) during prerender/SSR instead of throwing." />
     <ApiMember Name="IsExtended"
                Signature="ValueTask<bool> IsExtended()"
-               Description="True when more than one screen is attached. Readable without any permission." />
+               Description="True when more than one screen is attached. Readable without any permission. The same reading as Screen.IsExtended, which it calls through to." />
     <ApiMember Name="QueryPermission"
-               Signature="ValueTask<string> QueryPermission()"
-               Description="The window-management permission state - 'granted', 'denied' or 'prompt'. A query only." />
+               Signature="ValueTask<PermissionState> QueryPermission()"
+               Description="The window-management permission state, as PermissionState. A query only - the prompt happens on the first GetScreenDetails. Equivalent to Permissions.Query('window-management'), and routed through it." />
     <ApiMember Name="GetScreenDetails"
                Signature="ValueTask<ScreenDetails?> GetScreenDetails()"
                Description="Every attached screen and which one this window is on. Prompts on the first call, so run it from a user gesture." />
@@ -181,6 +181,11 @@ await using var subscription = await windowManagement.SubscribeChange(details =>
     private ElementReference _stage;
     private ScreenDetails? _details;
     private ButilSubscription? _subscription;
+
+    // Every transition of _subscription runs alone. Subscribing is a round-trip, so two clicks
+    // landing during it would each see a null field, attach a listener, and leave the first one
+    // with nothing holding its handle - and a removal racing a subscribe would drop the wrong one.
+    private readonly System.Threading.SemaphoreSlim _gate = new(1, 1);
 
     private int _screenIndex;
     private string _url = "https://bitplatform.dev";
@@ -259,6 +264,7 @@ await using var subscription = await windowManagement.SubscribeChange(details =>
 
     private async Task Subscribe()
     {
+        await _gate.WaitAsync();
         try
         {
             // Subscribing twice would overwrite the field and strand the first listener, which
@@ -280,30 +286,61 @@ await using var subscription = await windowManagement.SubscribeChange(details =>
         {
             await changeOutput.Error("SubscribeChange failed →", ex.Message);
         }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     private async Task RemoveOne()
     {
-        if (_subscription is null)
+        await _gate.WaitAsync();
+        try
         {
-            await changeOutput.Warn("Subscribe first.");
-            return;
-        }
+            if (_subscription is null)
+            {
+                await changeOutput.Warn("Subscribe first.");
+                return;
+            }
 
-        await windowManagement.RemoveChange(_subscription.Id);
-        await changeOutput.Log($"RemoveChange({_subscription.Id}) - listener detached.");
-        _subscription = null;
+            var id = _subscription.Id;
+            await windowManagement.RemoveChange(id);
+            _subscription = null;
+            await changeOutput.Log($"RemoveChange({id}) - listener detached.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     private async Task RemoveAll()
     {
-        await windowManagement.RemoveAllChanges();
-        _subscription = null;
-        await changeOutput.Log("RemoveAllChanges - every listener detached.");
+        await _gate.WaitAsync();
+        try
+        {
+            _subscription = null;
+            await windowManagement.RemoveAllChanges();
+            await changeOutput.Log("RemoveAllChanges - every listener detached.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_subscription is not null) await _subscription.DisposeAsync();
+        await _gate.WaitAsync();
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            _subscription = null;
+        }
+        finally
+        {
+            _gate.Release();
+            _gate.Dispose();
+        }
     }
 }

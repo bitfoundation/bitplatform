@@ -93,10 +93,10 @@ var current = await audioOutput.GetSinkId(_player);   // "" means the system def
                Signature="ValueTask<bool> IsSelectionSupported()"
                Description="True when the runtime exposes navigator.mediaDevices.selectAudioOutput." />
     <ApiMember Name="GetDevices"
-               Signature="ValueTask<AudioOutputDeviceInfo[]> GetDevices()"
+               Signature="ValueTask<MediaDeviceInfo[]> GetDevices()"
                Description="The audio output devices this origin can see. Labels are empty until a device permission has been granted." />
     <ApiMember Name="SelectDevice"
-               Signature="ValueTask<AudioOutputDeviceInfo?> SelectDevice()"
+               Signature="ValueTask<MediaDeviceInfo?> SelectDevice()"
                Description="Opens the browser's output chooser and returns the picked device, or null when dismissed. Needs a user gesture." />
     <ApiMember Name="SetSinkId"
                Signature="ValueTask<bool> SetSinkId(ElementReference mediaElement, string deviceId)"
@@ -104,9 +104,9 @@ var current = await audioOutput.GetSinkId(_player);   // "" means the system def
     <ApiMember Name="GetSinkId"
                Signature="ValueTask<string> GetSinkId(ElementReference mediaElement)"
                Description="The device an element is currently playing through; empty for the system default." />
-    <ApiMember Name="AudioOutputDeviceInfo"
-               Signature="class AudioOutputDeviceInfo { string DeviceId; string Label; string GroupId; }"
-               Description="One output device. GroupId is shared by every device on the same physical unit." />
+    <ApiMember Name="MediaDeviceInfo"
+               Signature="class MediaDeviceInfo { string DeviceId; string Kind; string Label; string GroupId; }"
+               Description="One device, the same type MediaDevices.EnumerateDevices returns - so a device from either service can be routed without re-fetching. Kind is 'audiooutput' here." />
 </ApiTable>
 
 @code {
@@ -115,7 +115,7 @@ var current = await audioOutput.GetSinkId(_player);   // "" means the system def
     private DemoConsole routeOutput = default!;
 
     private ElementReference _player;
-    private AudioOutputDeviceInfo[] _devices = [];
+    private MediaDeviceInfo[] _devices = [];
     private string _deviceId = "";
 
     private async Task CheckSupport()

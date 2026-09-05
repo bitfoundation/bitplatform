@@ -6,23 +6,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     const _devices: { [id: string]: any } = {};
     const _connectionListeners: { [id: string]: { connect: EventListener, disconnect: EventListener } } = {};
 
-    // Handle ids are minted here rather than by .NET: getDevices() and the connect/disconnect
-    // events both surface devices .NET has never seen. See bluetooth.ts.
-    let _sequence = 0;
-    function nextId() { return `usb${++_sequence}`; }
+    // Handle ids are minted here rather than by .NET, through the registry every device module
+    // shares: the browser surfaces a device .NET has never seen, so there is nothing for it to key on
+    // until the info comes back. Every entry point that hands one out hands out its id with it.
+    const _registry = butil.utils.handleRegistry('usb', _devices);
+    const idOf = _registry.idOf;
 
-    // The USB API hands back the same USBDevice object for a given device on every call, so
-    // minting a fresh id each time would pile up registry entries for one device - and leave an
-    // open handle's id pointing at a device the caller thinks it already released.
-    function idOf(device: any) {
-        for (const key of Object.keys(_devices)) {
-            if (_devices[key] === device) return key;
-        }
-
-        const id = nextId();
-        _devices[id] = device;
-        return id;
-    }
 
     butil.usb = {
         isSupported() { return !!(navigator as any).usb; },
@@ -137,11 +126,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function release(id: string) {
-        const device = _devices[id];
-        delete _devices[id];
+        const device = _registry.remove(id);
         if (!device) return;
         // Fire-and-forget: disposal must not wait on a device that has already been unplugged.
-        try { if (device.opened) device.close(); } catch { /* already closed or gone */ }
+        // close() rejects asynchronously, so the catch has to be on the promise as well - a bare
+        // try/catch here would leave an unhandled rejection behind.
+        try { if (device.opened) void device.close()?.catch(() => { /* already closed or gone */ }); }
+        catch { /* already closed or gone */ }
     }
 
     async function open(id: string) {
@@ -211,7 +202,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return {
             status: result.status,
             bytesWritten: 0,
-            data: result.data ? new Uint8Array(result.data.buffer, result.data.byteOffset, result.data.byteLength) : null
+            data: result.data ? butil.utils.viewToBytes(result.data) : null
         };
     }
 
@@ -231,7 +222,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return {
             status: result.status,
             bytesWritten: 0,
-            data: result.data ? new Uint8Array(result.data.buffer, result.data.byteOffset, result.data.byteLength) : null
+            data: result.data ? butil.utils.viewToBytes(result.data) : null
         };
     }
 

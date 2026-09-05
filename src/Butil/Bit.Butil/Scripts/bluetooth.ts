@@ -12,24 +12,26 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     const _notifications: { [id: string]: { device: any, characteristic: any, handler: EventListener } } = {};
     const _disconnects: { [id: string]: { device: any, handler: EventListener } } = {};
 
-    // Handle ids are minted here rather than by .NET: getDevices() surfaces devices .NET has never
-    // seen, so there is nothing for it to key them on until the info comes back. Every entry point
-    // that hands a device out therefore hands out its id with it.
-    let _sequence = 0;
-    function nextId() { return `bt${++_sequence}`; }
+    // Resolved GATT characteristics, keyed `deviceId|serviceUuid|characteristicUuid`. Resolving one
+    // is two browser-process round-trips and, over a link that has just come up, real BLE attribute
+    // discovery - so a caller polling a characteristic would pay three operations for every one it
+    // asked for. The objects stay valid for the life of a connection, and every path that ends one
+    // empties them.
+    const _characteristics: { [key: string]: any } = {};
 
-    // The browser hands back the same BluetoothDevice object for a given device on every call, so
-    // minting a fresh id each time would pile up registry entries for one device - and leave a
-    // connected handle's id pointing at a device the caller thinks it already released.
-    function idOf(device: any) {
-        for (const key of Object.keys(_devices)) {
-            if (_devices[key] === device) return key;
+    function dropCharacteristics(id: string) {
+        const prefix = `${id}|`;
+        for (const key of Object.keys(_characteristics)) {
+            if (key.indexOf(prefix) === 0) delete _characteristics[key];
         }
-
-        const id = nextId();
-        _devices[id] = device;
-        return id;
     }
+
+    // Handle ids are minted here rather than by .NET, through the registry every device module
+    // shares: the browser surfaces a device .NET has never seen, so there is nothing for it to key on
+    // until the info comes back. Every entry point that hands one out hands out its id with it.
+    const _registry = butil.utils.handleRegistry('bt', _devices);
+    const idOf = _registry.idOf;
+
 
     butil.bluetooth = {
         isSupported() { return !!(navigator as any).bluetooth; },
@@ -72,9 +74,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return trimmed;
     }
 
-    function bytes(view: DataView) {
-        return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
-    }
 
     async function getAvailability() {
         const bt = bluetooth();
@@ -142,8 +141,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // Drops the registry entry and every listener attached through it. Called on handle disposal;
     // the device itself stays permitted - forget() is what revokes the grant.
     function release(id: string) {
-        const device = _devices[id];
-        delete _devices[id];
+        dropCharacteristics(id);
+        const device = _registry.remove(id);
         if (!device) return;
 
         for (const key of Object.keys(_disconnects)) {
@@ -165,6 +164,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function disconnect(id: string) {
+        dropCharacteristics(id);
         try { _devices[id]?.gatt?.disconnect(); } catch { /* already gone */ }
     }
 
@@ -174,8 +174,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const device = _devices[id];
         if (!device?.gatt) return null;
         // A GATT server drops the connection between operations more often than not, so every
-        // operation re-connects rather than assuming an earlier connect() still holds.
-        if (!device.gatt.connected) await device.gatt.connect();
+        // operation re-connects rather than assuming an earlier connect() still holds. This is also
+        // the one place a dropped link is observed, so it is where anything resolved over the old
+        // one has to be thrown away.
+        if (!device.gatt.connected) {
+            dropCharacteristics(id);
+            await device.gatt.connect();
+        }
         return device.gatt;
     }
 
@@ -203,18 +208,27 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         }));
     }
 
+    // server() runs first on purpose: it is what notices a dropped link and empties the cache, so
+    // a hit below is always a characteristic resolved over the link still in use.
     async function characteristic(id: string, serviceUuid: string, characteristicUuid: string) {
         const gatt = await server(id);
         if (!gatt) return null;
+
+        const key = `${id}|${serviceUuid}|${characteristicUuid}`;
+        const cached = _characteristics[key];
+        if (cached) return cached;
+
         const service = await gatt.getPrimaryService(uuid(serviceUuid));
-        return await service.getCharacteristic(uuid(characteristicUuid));
+        const target = await service.getCharacteristic(uuid(characteristicUuid));
+        _characteristics[key] = target;
+        return target;
     }
 
     async function readValue(id: string, serviceUuid: string, characteristicUuid: string) {
         const target = await characteristic(id, serviceUuid, characteristicUuid);
         if (!target) return null;
         const value = await target.readValue();
-        return bytes(value);
+        return butil.utils.viewToBytes(value);
     }
 
     async function writeValue(id: string, serviceUuid: string, characteristicUuid: string, data: Uint8Array, withResponse: boolean) {
@@ -235,7 +249,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         const handler: EventListener = event => {
             const value = (event.target as any).value as DataView;
-            butil.utils.dispatch(dotNetRef, 'InvokeBluetoothValueChanged', subscriptionId, bytes(value));
+            butil.utils.dispatch(dotNetRef, 'InvokeBluetoothValueChanged', subscriptionId, butil.utils.viewToBytes(value));
         };
         // Attached before starting so the first notification can't slip through, and taken back off
         // if the device refuses - a rejected start would otherwise leave a listener nothing tracks

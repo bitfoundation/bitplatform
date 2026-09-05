@@ -47,7 +47,10 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
         SensorType.RelativeOrientation => "relative-orientation",
         SensorType.Gravity => "gravity",
         SensorType.LinearAcceleration => "linear-acceleration",
-        _ => "ambient-light"
+        SensorType.AmbientLight => "ambient-light",
+        // Deliberately not a fallback: a sensor added to the enum without a name here would
+        // silently start the ambient-light sensor instead of failing.
+        _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown sensor type.")
     };
 
     /// <summary>True when the runtime exposes the constructor behind <paramref name="type"/>.</summary>
@@ -62,17 +65,15 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
     public ValueTask<bool> IsSupported(SensorType type)
         => js.Invoke<bool>("BitButil.sensors.isSupported", NameOf(type));
 
-    /// <summary>
-    /// The permission state for a sensor: <c>"granted"</c>, <c>"denied"</c> or <c>"prompt"</c>.
-    /// </summary>
+    /// <summary>The permission state for a sensor.</summary>
     /// <remarks>
     /// Sensor permissions cannot be requested on their own - the prompt, where an engine has one,
     /// happens on the first <see cref="Subscribe"/>. This is a query, so use it to decide whether
     /// starting is worth attempting, not to trigger a prompt. Sensors that fuse several physical
     /// ones report the least-granted of the permissions they need.
     /// </remarks>
-    public ValueTask<string> QueryPermission(SensorType type)
-        => js.Invoke<string>("BitButil.sensors.requestPermission", NameOf(type));
+    public async ValueTask<PermissionState> QueryPermission(SensorType type)
+        => Permissions.ToState(await js.Invoke<string>("BitButil.sensors.requestPermission", NameOf(type)));
 
     /// <summary>
     /// Invoked from JS for each sensor reading. Public + <see cref="JSInvokableAttribute"/> so it
@@ -99,7 +100,7 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <param name="type">Which sensor to start.</param>
     /// <param name="onReading">Called for every reading.</param>
-    /// <param name="options">Sample rate, and the reference frame for the orientation sensors.</param>
+    /// <param name="options">Sample rate, and the reference frame for every sensor but the ambient-light one.</param>
     /// <param name="onError">
     /// Called when the sensor cannot start or stops working - permission refused, blocked by a
     /// Permissions-Policy, or no such hardware. These arrive here rather than as an exception,
@@ -120,43 +121,22 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
                                                         SensorOptions? options = null,
                                                         Action<string>? onError = null)
     {
-        var id = Guid.NewGuid();
-        _handlers[id] = (onReading, onError);
+        // Defaulted here rather than read through ?. at each use, so the rate limit a caller passing
+        // no options gets is the one SensorOptions documents instead of a second literal.
+        options ??= new SensorOptions();
 
-        var referenceFrame = options?.ReferenceFrame switch
+        var referenceFrame = options.ReferenceFrame switch
         {
             SensorReferenceFrame.Device => "device",
             SensorReferenceFrame.Screen => "screen",
             _ => null
         };
 
-        string? failure;
-        try
-        {
-            failure = await js.InvokeRegisterOrError("BitButil.sensors.start", id, DotNetRef, NameOf(type), options?.Frequency, referenceFrame);
-        }
-        catch
-        {
-            // Nothing is listening on the JS side, so the registration must not outlive the call.
-            _handlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (failure is not null)
-        {
-            // The reason comes back with the call rather than through InvokeSensorError, so it is
-            // raised here exactly once - and with what the browser actually said, instead of a
-            // generic message racing the dispatched one.
-            _handlers.TryRemove(id, out _);
-            onError?.Invoke(failure);
-            throw new InvalidOperationException(failure);
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _handlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.sensors.stop", id);
-        });
+        return await ButilSubscriptionHelper.RegisterOrError(_handlers, (onReading, onError),
+                                                             id => js.InvokeRegisterOrError("BitButil.sensors.start", id, DotNetRef, NameOf(type),
+                                                                                            options.Frequency, referenceFrame, Math.Max(0, options.MinIntervalMs)),
+                                                             id => js.InvokeVoid("BitButil.sensors.stop", id),
+                                                             onError);
     }
 
     /// <summary>Stops every sensor this instance started and releases its interop reference.</summary>

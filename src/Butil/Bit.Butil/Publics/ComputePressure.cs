@@ -77,31 +77,10 @@ public class ComputePressure(IJSRuntime js) : IAsyncDisposable
                                                       string source = "cpu",
                                                       int sampleIntervalMs = 0)
     {
-        var id = Guid.NewGuid();
-        _handlers[id] = handler;
-        bool observing;
-        try
-        {
-            observing = await js.InvokeRegister("BitButil.computePressure.observe", id, DotNetRef, source, sampleIntervalMs);
-        }
-        catch
-        {
-            // Nothing is observing on the JS side, so the entry must not outlive the call.
-            _handlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (observing is false)
-        {
-            _handlers.TryRemove(id, out _);
-            throw new InvalidOperationException($"The '{source}' pressure source could not be observed.");
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _handlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.computePressure.disconnect", id);
-        });
+        return await ButilSubscriptionHelper.Register(_handlers, handler,
+                                                      id => js.InvokeRegister("BitButil.computePressure.observe", id, DotNetRef, source, sampleIntervalMs),
+                                                      id => js.InvokeVoid("BitButil.computePressure.disconnect", id),
+                                                      $"The '{source}' pressure source could not be observed.");
     }
 
     /// <summary>Disconnects every observer this instance started and releases its interop reference.</summary>

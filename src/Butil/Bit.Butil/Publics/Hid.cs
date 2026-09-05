@@ -27,7 +27,10 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     internal const string ConnectedMethodName = nameof(InvokeHidConnected);
     internal const string DisconnectedMethodName = nameof(InvokeHidDisconnected);
 
-    private readonly ConcurrentDictionary<Guid, Action<HidInputReport>> _inputHandlers = new();
+    // Keyed by subscription id, but carrying the device each one belongs to: hid.ts release() detaches
+    // that device's listeners, so the .NET closures behind them have to go at the same moment -
+    // otherwise disposing one device leaks its handlers for as long as the service lives.
+    private readonly ConcurrentDictionary<Guid, (string DeviceId, Action<HidInputReport> Handler)> _inputHandlers = new();
     private readonly ConcurrentDictionary<Guid, (Action<HidDevice>? OnConnected, Action<HidDevice>? OnDisconnected)> _connectionHandlers = new();
 
     // Every handle this service handed out, so a scope/circuit teardown closes the device even
@@ -54,6 +57,8 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <param name="filters">Which devices the chooser lists. Pass none to list everything the browser allows.</param>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidDeviceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidCollectionInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidReportInfo))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidDeviceFilter))]
     public async ValueTask<HidDevice[]> RequestDevice(params HidDeviceFilter[] filters)
     {
@@ -63,23 +68,35 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>The devices this origin has already been granted, without showing a chooser.</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidDeviceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidCollectionInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidReportInfo))]
     public async ValueTask<HidDevice[]> GetDevices()
     {
         var infos = await js.Invoke<HidDeviceInfo[]>("BitButil.hid.getDevices");
         return [.. infos.Select(Track)];
     }
 
-    private HidDevice Track(HidDeviceInfo info)
-    {
-        var device = new HidDevice(this, js, info);
-        _devices[info.Id] = device;
-        return device;
-    }
+    // One handle per browser-side id. hid.ts idOf() deliberately hands the same id back for the same
+    // device, so a device surfaced again by GetDevices or by a connect event has to return the handle
+    // already in play: a second wrapper over one JS registry entry would let disposing either of them
+    // release the device out from under the other. Info stays the snapshot the first handle was
+    // created from - it is documented as not updating on its own, and GetInfo() re-reads it.
+    private HidDevice Track(HidDeviceInfo info) => _devices.GetOrAdd(info.Id, _ => new HidDevice(this, js, info));
 
-    // Called by a handle that is disposing itself, so the service stops holding it. The removal is
-    // identity-checked: two handles can share an id (a device surfaced again by GetDevices, or by a
-    // connect event), and untracking on the id alone would let the stale one release the live one.
-    internal void Forget(HidDevice device) => _devices.TryRemove(new KeyValuePair<string, HidDevice>(device.Id, device));
+    // Called by a handle that is disposing itself, so the service stops holding it. The JS-side
+    // release() detaches every input listener attached through that handle, so the .NET closures
+    // behind them have to go with it - otherwise disposing one device leaks the handlers of that
+    // device for as long as the service lives. The registry removal is identity-checked so a handle
+    // that has already been replaced cannot untrack its successor.
+    internal void Forget(HidDevice device)
+    {
+        _devices.TryRemove(new KeyValuePair<string, HidDevice>(device.Id, device));
+
+        foreach (var pair in _inputHandlers)
+        {
+            if (pair.Value.DeviceId == device.Id) _inputHandlers.TryRemove(pair.Key, out _);
+        }
+    }
 
     /// <summary>
     /// Invoked from JS for each input report. Public + <see cref="JSInvokableAttribute"/> so it can
@@ -88,7 +105,7 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     [JSInvokable(InputReportMethodName)]
     public void InvokeHidInputReport(Guid id, HidInputReport report)
     {
-        if (_inputHandlers.TryGetValue(id, out var handler)) handler.Invoke(report);
+        if (_inputHandlers.TryGetValue(id, out var entry)) entry.Handler.Invoke(report);
     }
 
     /// <summary>Invoked from JS on <c>navigator.hid</c>'s <c>connect</c>. See <see cref="InvokeHidInputReport"/>.</summary>
@@ -109,32 +126,10 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidInputReport))]
     internal async ValueTask<ButilSubscription> SubscribeInputReports(string deviceId, Action<HidInputReport> handler)
     {
-        var id = Guid.NewGuid();
-        _inputHandlers[id] = handler;
-
-        bool subscribed;
-        try
-        {
-            subscribed = await js.InvokeRegister("BitButil.hid.subscribeInputReports", id, DotNetRef, deviceId);
-        }
-        catch
-        {
-            // Nothing is listening on the JS side, so the entry must not outlive the call.
-            _inputHandlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (subscribed is false)
-        {
-            _inputHandlers.TryRemove(id, out _);
-            throw new InvalidOperationException("The input report listener could not be attached - the device handle is no longer known.");
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _inputHandlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.hid.unsubscribeInputReports", id);
-        });
+        return await ButilSubscriptionHelper.Register(_inputHandlers, (deviceId, handler),
+                                                      id => js.InvokeRegister("BitButil.hid.subscribeInputReports", id, DotNetRef, deviceId),
+                                                      id => js.InvokeVoid("BitButil.hid.unsubscribeInputReports", id),
+                                                      "The input report listener could not be attached - the device handle is no longer known.");
     }
 
     /// <summary>
@@ -146,35 +141,15 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(nameof(InvokeHidConnected), typeof(Hid))]
     [DynamicDependency(nameof(InvokeHidDisconnected), typeof(Hid))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidDeviceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidCollectionInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidReportInfo))]
     public async ValueTask<ButilSubscription> SubscribeConnection(Action<HidDevice>? onConnected = null,
                                                                   Action<HidDevice>? onDisconnected = null)
     {
-        var id = Guid.NewGuid();
-        _connectionHandlers[id] = (onConnected, onDisconnected);
-
-        bool subscribed;
-        try
-        {
-            subscribed = await js.InvokeRegister("BitButil.hid.subscribeConnection", id, DotNetRef);
-        }
-        catch
-        {
-            // Nothing is listening on the JS side, so the entry must not outlive the call.
-            _connectionHandlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (subscribed is false)
-        {
-            _connectionHandlers.TryRemove(id, out _);
-            throw new InvalidOperationException("The HID connection listeners could not be attached - the WebHID API is not available.");
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _connectionHandlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.hid.unsubscribeConnection", id);
-        });
+        return await ButilSubscriptionHelper.Register(_connectionHandlers, (onConnected, onDisconnected),
+                                                      id => js.InvokeRegister("BitButil.hid.subscribeConnection", id, DotNetRef),
+                                                      id => js.InvokeVoid("BitButil.hid.unsubscribeConnection", id),
+                                                      "The HID connection listeners could not be attached - the WebHID API is not available.");
     }
 
     /// <summary>
@@ -185,11 +160,9 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     {
         try
         {
-            foreach (var id in _inputHandlers.Keys.ToArray())
-            {
-                _inputHandlers.TryRemove(id, out _);
-                await js.InvokeVoid("BitButil.hid.unsubscribeInputReports", id);
-            }
+            // Releasing a device detaches its input listeners, and every entry left here belongs to a
+            // device still in _devices - Forget() strips the rest - so the loop below covers them.
+            _inputHandlers.Clear();
 
             foreach (var id in _connectionHandlers.Keys.ToArray())
             {

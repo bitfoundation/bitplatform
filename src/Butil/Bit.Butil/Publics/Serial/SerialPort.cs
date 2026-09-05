@@ -39,6 +39,7 @@ public sealed class SerialPort : IAsyncDisposable
     public string Id => Info.Id;
 
     /// <summary>Opens the port with the given line settings. Already-open is not an error.</summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SerialOpenJsOptions))]
     public ValueTask<bool> Open(SerialOptions? options = null)
     {
         options ??= new SerialOptions();

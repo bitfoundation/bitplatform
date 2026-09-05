@@ -33,7 +33,7 @@
 @inject Bit.Butil.Sensors sensors
 
 var supported = await sensors.IsSupported(SensorType.Accelerometer);
-var state = await sensors.QueryPermission(SensorType.Accelerometer);  // granted / denied / prompt
+PermissionState state = await sensors.QueryPermission(SensorType.Accelerometer);
 """)>
         <div class="controls">
             <button @onclick="CheckAll">Check every sensor</button>
@@ -43,12 +43,12 @@ var state = await sensors.QueryPermission(SensorType.Accelerometer);  // granted
 
     <DemoSection Title="Read a sensor"
                  Api="Subscribe"
-                 Description="Starts a sensor and calls back on every reading. The eight sensors report different quantities, so a reading carries all of them and leaves the ones this sensor does not produce as null. Dispose the subscription to stop - a running sensor keeps hardware awake."
+                 Description="Starts a sensor and calls back on every reading. The eight sensors report different quantities, so a reading carries all of them and leaves the ones this sensor does not produce as null. Frequency is a hint the platform is free to ignore; MinIntervalMs is the rate limit that actually holds, applied in JS so a 60 Hz sensor does not spend 60 interop round-trips a second. Dispose the subscription to stop - a running sensor keeps hardware awake."
                  Code=@("""
 await using var subscription = await sensors.Subscribe(
     SensorType.Accelerometer,
     reading => Console.WriteLine($"{reading.X}, {reading.Y}, {reading.Z}"),
-    new SensorOptions { Frequency = 10 },
+    new SensorOptions { Frequency = 10, MinIntervalMs = 100 },
     onError: message => Console.WriteLine(message));
 """)>
         <div class="field-row">
@@ -66,7 +66,11 @@ await using var subscription = await sensors.Subscribe(
                 <input type="number" min="0" max="60" @bind="_frequency" />
             </div>
             <div class="field">
-                <span class="field-label">Reference frame (orientation sensors only)</span>
+                <span class="field-label">Min interval (ms, 0 = every reading)</span>
+                <input type="number" min="0" max="2000" @bind="_minIntervalMs" />
+            </div>
+            <div class="field">
+                <span class="field-label">Reference frame (every sensor but ambient light)</span>
                 <select @bind="_referenceFrame">
                     <option value="@SensorReferenceFrame.Device">Device</option>
                     <option value="@SensorReferenceFrame.Screen">Screen</option>
@@ -93,7 +97,7 @@ await using var subscription = await sensors.Subscribe(
                Signature="ValueTask<bool> IsSupported(SensorType type)"
                Description="True when the runtime exposes the constructor behind the given sensor. Returns default (false) during prerender/SSR instead of throwing." />
     <ApiMember Name="QueryPermission"
-               Signature="ValueTask<string> QueryPermission(SensorType type)"
+               Signature="ValueTask<PermissionState> QueryPermission(SensorType type)"
                Description="The permission state - 'granted', 'denied' or 'prompt'. A query only; sensors that fuse several physical ones report the least-granted." />
     <ApiMember Name="Subscribe"
                Signature="ValueTask<ButilSubscription> Subscribe(SensorType type, Action<SensorReading> onReading, SensorOptions? options = null, Action<string>? onError = null)"
@@ -111,11 +115,11 @@ await using var subscription = await sensors.Subscribe(
                Signature="enum SensorType { Accelerometer, Gyroscope, Magnetometer, AbsoluteOrientation, RelativeOrientation, Gravity, LinearAcceleration, AmbientLight }"
                Description="Which of the eight Generic Sensor classes to use." />
     <ApiMember Name="SensorOptions"
-               Signature="class SensorOptions { double? Frequency; SensorReferenceFrame? ReferenceFrame; }"
-               Description="Sample rate, and the axes an orientation sensor reports against." />
+               Signature="class SensorOptions { double? Frequency; SensorReferenceFrame? ReferenceFrame; int MinIntervalMs = 100; }"
+               Description="Sample rate, the axes a spatial sensor reports against (every type but AmbientLight), and the shortest gap between two readings reaching .NET. Frequency is only a hint the platform may ignore; MinIntervalMs is the cap that holds, applied in JS before the interop round-trip is paid for. 0 forwards every reading." />
     <ApiMember Name="SensorReferenceFrame"
                Signature="enum SensorReferenceFrame { Device, Screen }"
-               Description="Device axes ignore screen rotation; screen axes follow it." />
+               Description="Device axes ignore screen rotation; screen axes follow it. Taken by every sensor but AmbientLight." />
     <ApiMember Name="SensorReading"
                Signature="class SensorReading { string Type; double Timestamp; double? X; double? Y; double? Z; double[]? Quaternion; double? Illuminance; }"
                Description="One reading. Vector sensors fill X/Y/Z, orientation sensors fill Quaternion, the light sensor fills Illuminance." />
@@ -130,6 +134,7 @@ await using var subscription = await sensors.Subscribe(
 
     private SensorType _type = SensorType.Accelerometer;
     private int _frequency = 5;
+    private int _minIntervalMs = 100;
     private SensorReferenceFrame _referenceFrame = SensorReferenceFrame.Device;
 
     private async Task CheckAll()
@@ -139,7 +144,7 @@ await using var subscription = await sensors.Subscribe(
             foreach (var type in Enum.GetValues<SensorType>())
             {
                 var supported = await sensors.IsSupported(type);
-                var permission = supported ? await sensors.QueryPermission(type) : "n/a";
+                var permission = supported ? (await sensors.QueryPermission(type)).ToString() : "n/a";
                 await supportOutput.Log($"{type} →", $"supported={supported}, permission={permission}");
             }
         }
@@ -171,7 +176,8 @@ await using var subscription = await sensors.Subscribe(
                 new SensorOptions
                 {
                     Frequency = _frequency > 0 ? _frequency : null,
-                    ReferenceFrame = _referenceFrame
+                    ReferenceFrame = _referenceFrame,
+                    MinIntervalMs = _minIntervalMs
                 },
                 onError: message => _ = InvokeAsync(() => readingOutput.Error("Sensor error →", message)));
 

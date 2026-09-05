@@ -1,7 +1,9 @@
 namespace Bit.Butil;
 
 /// <summary>
-/// Which set of axes an orientation sensor reports against. Only the orientation sensors take one.
+/// Which set of axes a spatial sensor reports against - the accelerometer, gyroscope, magnetometer,
+/// gravity and linear-acceleration sensors as well as both orientation sensors. Only
+/// <see cref="SensorType.AmbientLight"/> has no axes to frame and ignores it.
 /// <br/>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/OrientationSensor">OrientationSensor</see>
 /// </summary>

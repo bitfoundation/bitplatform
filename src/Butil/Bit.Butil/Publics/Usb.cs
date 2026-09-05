@@ -55,6 +55,10 @@ public class Usb(IJSRuntime js) : IAsyncDisposable
     /// show - which on a typical machine is a short list, since drivers have claimed the rest.
     /// </param>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbDeviceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbConfigurationInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbInterfaceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbAlternateInterfaceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbEndpointInfo))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbDeviceFilter))]
     public async ValueTask<UsbDevice?> RequestDevice(params UsbDeviceFilter[] filters)
     {
@@ -64,22 +68,25 @@ public class Usb(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>The devices this origin has already been granted, without showing a chooser.</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbDeviceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbConfigurationInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbInterfaceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbAlternateInterfaceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbEndpointInfo))]
     public async ValueTask<UsbDevice[]> GetDevices()
     {
         var infos = await js.Invoke<UsbDeviceInfo[]>("BitButil.usb.getDevices");
         return [.. infos.Select(Track)];
     }
 
-    private UsbDevice Track(UsbDeviceInfo info)
-    {
-        var device = new UsbDevice(this, js, info);
-        _devices[info.Id] = device;
-        return device;
-    }
+    // One handle per browser-side id. usb.ts idOf() deliberately hands the same id back for the same
+    // device, so a device surfaced again by GetDevices or by a connect event has to return the handle
+    // already in play: a second wrapper over one JS registry entry would let disposing either of them
+    // release the device out from under the other. Info stays the snapshot the first handle was
+    // created from - it is documented as not updating on its own, and GetInfo() re-reads it.
+    private UsbDevice Track(UsbDeviceInfo info) => _devices.GetOrAdd(info.Id, _ => new UsbDevice(this, js, info));
 
     // Called by a handle that is disposing itself, so the service stops holding it. The removal is
-    // identity-checked: two handles can share an id (a device surfaced again by GetDevices, or by a
-    // connect event), and untracking on the id alone would let the stale one release the live one.
+    // identity-checked so a handle that has already been replaced cannot untrack its successor.
     internal void Forget(UsbDevice device) => _devices.TryRemove(new KeyValuePair<string, UsbDevice>(device.Id, device));
 
     /// <summary>
@@ -106,21 +113,21 @@ public class Usb(IJSRuntime js) : IAsyncDisposable
     /// told about.
     /// </summary>
     /// <returns>A subscription - dispose it to detach the listeners.</returns>
+    /// <exception cref="InvalidOperationException">The listeners were not attached - no WebUSB support.</exception>
     [DynamicDependency(nameof(InvokeUsbConnected), typeof(Usb))]
     [DynamicDependency(nameof(InvokeUsbDisconnected), typeof(Usb))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbDeviceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbConfigurationInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbInterfaceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbAlternateInterfaceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbEndpointInfo))]
     public async ValueTask<ButilSubscription> SubscribeConnection(Action<UsbDevice>? onConnected = null,
                                                                   Action<UsbDevice>? onDisconnected = null)
     {
-        var id = Guid.NewGuid();
-        _connectionHandlers[id] = (onConnected, onDisconnected);
-        await js.InvokeVoid("BitButil.usb.subscribeConnection", id, DotNetRef);
-
-        return new ButilSubscription(id, async () =>
-        {
-            _connectionHandlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.usb.unsubscribeConnection", id);
-        });
+        return await ButilSubscriptionHelper.Register(_connectionHandlers, (onConnected, onDisconnected),
+                                                      id => js.InvokeRegister("BitButil.usb.subscribeConnection", id, DotNetRef),
+                                                      id => js.InvokeVoid("BitButil.usb.unsubscribeConnection", id),
+                                                      "The USB connection listeners could not be attached - the WebUSB API is not available.");
     }
 
     /// <summary>

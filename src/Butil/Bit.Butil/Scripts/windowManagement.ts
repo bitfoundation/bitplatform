@@ -6,24 +6,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     let _details: any = null;
     const _handlers: { [id: string]: { screens: EventListener, current: EventListener } } = {};
 
+    // No isExtended or queryPermission here: screen.ts already reads window.screen.isExtended and
+    // permissions.ts already runs navigator.permissions.query, so the .NET side of this service
+    // calls those modules rather than carrying a second copy of either.
     butil.windowManagement = {
         isSupported() { return typeof (window as any).getScreenDetails === 'function'; },
-        isExtended() { return !!(window.screen as any).isExtended; },
-        queryPermission,
         getScreenDetails,
         openOnScreen,
         requestFullscreenOnScreen,
         addChange,
         removeChange
     };
-
-    async function queryPermission() {
-        if (!navigator.permissions) return 'prompt';
-        try {
-            const status = await navigator.permissions.query({ name: 'window-management' } as any);
-            return status.state;
-        } catch { return 'prompt'; }
-    }
 
     function describe(screen: any, isCurrent: boolean) {
         return {
@@ -109,12 +102,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const details = await getScreenDetails();
         if (!details) return false;
 
-        const relay = () => butil.utils.dispatch(dotNetRef, 'InvokeScreensChange', listenerId, snapshot());
-        const screens: EventListener = () => relay();
-        const current: EventListener = () => relay();
-        _details.addEventListener('screenschange', screens);
-        _details.addEventListener('currentscreenchange', current);
-        _handlers[listenerId] = { screens, current };
+        // Both events carry the same payload, so one handler serves both - it is stored twice only
+        // because removeEventListener needs the same reference it was added with.
+        const relay: EventListener = () => butil.utils.dispatch(dotNetRef, 'InvokeScreensChange', listenerId, snapshot());
+        _details.addEventListener('screenschange', relay);
+        _details.addEventListener('currentscreenchange', relay);
+        _handlers[listenerId] = { screens: relay, current: relay };
         return true;
     }
 

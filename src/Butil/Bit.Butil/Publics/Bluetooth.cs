@@ -89,19 +89,18 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
         return [.. infos.Select(Track)];
     }
 
-    private BluetoothDevice Track(BluetoothDeviceInfo info)
-    {
-        var device = new BluetoothDevice(this, js, info);
-        _devices[info.Id] = device;
-        return device;
-    }
+    // One handle per browser-side id. bluetooth.ts idOf() deliberately hands the same id back for the
+    // same device, so a device surfaced again by GetDevices has to return the handle already in play:
+    // a second wrapper over one JS registry entry would let disposing either of them release the
+    // device out from under the other. Info stays the snapshot the first handle was created from - it
+    // is documented as not updating on its own.
+    private BluetoothDevice Track(BluetoothDeviceInfo info) => _devices.GetOrAdd(info.Id, _ => new BluetoothDevice(this, js, info));
 
     // Called by a handle that is disposing itself, so the service stops holding it. The JS-side
     // release() detaches every listener attached through that handle, so the .NET closures behind
     // them have to go with it - otherwise disposing one device leaks the handlers of that device
-    // for as long as the service lives. The registry removal is identity-checked: two handles can
-    // share an id (a device surfaced again by GetDevices), and untracking on the id alone would let
-    // the stale one release the live one.
+    // for as long as the service lives. The registry removal is identity-checked so a handle
+    // that has already been replaced cannot untrack its successor.
     internal void Forget(BluetoothDevice device)
     {
         _devices.TryRemove(new KeyValuePair<string, BluetoothDevice>(device.Id, device));
@@ -140,63 +139,19 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(nameof(InvokeBluetoothValueChanged), typeof(Bluetooth))]
     internal async ValueTask<ButilSubscription> SubscribeValueChanged(string deviceId, string serviceUuid, string characteristicUuid, Action<byte[]> handler)
     {
-        var id = Guid.NewGuid();
-        _valueHandlers[id] = (deviceId, handler);
-
-        bool started;
-        try
-        {
-            started = await js.InvokeRegister("BitButil.bluetooth.startNotifications", id, DotNetRef, deviceId, serviceUuid, characteristicUuid);
-        }
-        catch
-        {
-            // Nothing is notifying on the JS side, so the entry must not outlive the call.
-            _valueHandlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (started is false)
-        {
-            _valueHandlers.TryRemove(id, out _);
-            throw new InvalidOperationException($"Notifications could not be started for characteristic '{characteristicUuid}' of service '{serviceUuid}'.");
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _valueHandlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.bluetooth.stopNotifications", id);
-        });
+        return await ButilSubscriptionHelper.Register(_valueHandlers, (deviceId, handler),
+                                                      id => js.InvokeRegister("BitButil.bluetooth.startNotifications", id, DotNetRef, deviceId, serviceUuid, characteristicUuid),
+                                                      id => js.InvokeVoid("BitButil.bluetooth.stopNotifications", id),
+                                                      $"Notifications could not be started for characteristic '{characteristicUuid}' of service '{serviceUuid}'.");
     }
 
     [DynamicDependency(nameof(InvokeBluetoothDisconnected), typeof(Bluetooth))]
     internal async ValueTask<ButilSubscription> SubscribeDisconnected(string deviceId, Action handler)
     {
-        var id = Guid.NewGuid();
-        _disconnectHandlers[id] = (deviceId, handler);
-
-        bool subscribed;
-        try
-        {
-            subscribed = await js.InvokeRegister("BitButil.bluetooth.subscribeDisconnect", id, DotNetRef, deviceId);
-        }
-        catch
-        {
-            // Nothing is listening on the JS side, so the entry must not outlive the call.
-            _disconnectHandlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (subscribed is false)
-        {
-            _disconnectHandlers.TryRemove(id, out _);
-            throw new InvalidOperationException("The disconnect listener could not be attached - the device handle is no longer known.");
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _disconnectHandlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.bluetooth.unsubscribeDisconnect", id);
-        });
+        return await ButilSubscriptionHelper.Register(_disconnectHandlers, (deviceId, handler),
+                                                      id => js.InvokeRegister("BitButil.bluetooth.subscribeDisconnect", id, DotNetRef, deviceId),
+                                                      id => js.InvokeVoid("BitButil.bluetooth.unsubscribeDisconnect", id),
+                                                      "The disconnect listener could not be attached - the device handle is no longer known.");
     }
 
     /// <summary>
@@ -207,17 +162,11 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
     {
         try
         {
-            foreach (var id in _valueHandlers.Keys.ToArray())
-            {
-                _valueHandlers.TryRemove(id, out _);
-                await js.InvokeVoid("BitButil.bluetooth.stopNotifications", id);
-            }
-
-            foreach (var id in _disconnectHandlers.Keys.ToArray())
-            {
-                _disconnectHandlers.TryRemove(id, out _);
-                await js.InvokeVoid("BitButil.bluetooth.unsubscribeDisconnect", id);
-            }
+            // Releasing a device stops its notifications and detaches its disconnect listener, and
+            // every entry left here belongs to a device still in _devices - Forget() strips the rest -
+            // so the loop below covers them without a round-trip per subscription.
+            _valueHandlers.Clear();
+            _disconnectHandlers.Clear();
 
             foreach (var device in _devices.Values.ToArray())
             {

@@ -71,28 +71,12 @@ public class DevicePosture(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(nameof(InvokeDevicePostureChange), typeof(DevicePosture))]
     public async ValueTask<ButilSubscription> SubscribeChange(Action<DevicePostureType> handler)
     {
-        var id = Guid.NewGuid();
-        _handlers[id] = handler;
-
-        bool added;
-        try
-        {
-            added = await js.InvokeRegister("BitButil.devicePosture.addChange", DotNetRef, id);
-        }
-        catch
-        {
-            // Nothing is listening on the JS side, so the entry must not outlive the call.
-            _handlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (added is false)
-        {
-            _handlers.TryRemove(id, out _);
-            throw new InvalidOperationException("The device posture listener could not be attached - the API is not available.");
-        }
-
-        return new ButilSubscription(id, () => RemoveChange(id));
+        // The detach goes straight to JS rather than through RemoveChange: the helper has already
+        // taken the entry out by then, and RemoveChange returns early when it finds nothing to remove.
+        return await ButilSubscriptionHelper.Register(_handlers, handler,
+                                                      id => js.InvokeRegister("BitButil.devicePosture.addChange", DotNetRef, id),
+                                                      id => js.InvokeVoid("BitButil.devicePosture.removeChange", new[] { id }),
+                                                      "The device posture listener could not be attached - the API is not available.");
     }
 
     /// <summary>Detaches one posture listener by the id its subscription carries.</summary>

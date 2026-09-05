@@ -106,7 +106,7 @@ public static class DocsNav
                 ["Hid", "HidDevice"]),
             new("Midi", "midi", "MIDI inputs and outputs: listen to a controller, send notes to a synth.", typeof(MidiPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission),
             new("ComputePressure", "compute-pressure", "Shed work before the machine stutters, by watching CPU and thermal pressure.", typeof(ComputePressurePage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Experimental),
-            new("DevicePosture", "device-posture", "Whether a foldable device is currently flat or folded across its hinge.", typeof(DevicePosturePage), ApiSupport.Chromium, ApiNeeds.Experimental),
+            new("DevicePosture", "device-posture", "Whether a foldable device is currently flat or folded across its hinge.", typeof(DevicePosturePage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Experimental),
             new("WakeLock", "wake-lock", "Keep the screen awake while your app needs it.", typeof(WakeLockPage), ApiSupport.Partial, ApiNeeds.SecureContext),
             new("IdleDetector", "idle-detector", "Detect user and screen idle state changes.", typeof(IdleDetectorPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
             new("ContactPicker", "contact-picker", "Let users pick contacts to share with your app.", typeof(ContactPickerPage), ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),

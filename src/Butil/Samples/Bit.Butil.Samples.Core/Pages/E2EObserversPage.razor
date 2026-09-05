@@ -198,17 +198,18 @@
     }
 
     // The reads that need no permission and no device, so they have one right answer everywhere:
-    // a non-foldable is "continuous", and the three listings come back empty rather than refusing.
+    // a non-foldable is "continuous", and the two listings come back empty rather than refusing.
+    // LocalFonts.Query() is deliberately not here - it prompts for the local-fonts permission, which
+    // a headless run has nothing to answer with. QueryPermission only reads state, so it stays.
     private async Task HardwareReads()
     {
         var posture = await devicePosture.GetPosture();
         _ = await windowManagement.IsExtended();
         _ = await sensors.QueryPermission(SensorType.Accelerometer);
         var sources = await computePressure.GetKnownSources();
-        var fonts = await localFonts.Query();
         var outputs = await audioOutput.GetDevices();
         var ports = await midi.GetPorts();
-        Set($"hw:reads:{posture}:{sources is not null}/{fonts is not null}/{outputs is not null}/{ports is null}");
+        Set($"hw:reads:{posture}:{sources is not null}/{outputs is not null}/{ports is null}");
     }
 
     // ─── Observers ───────────────────────────────────────────────────────────────

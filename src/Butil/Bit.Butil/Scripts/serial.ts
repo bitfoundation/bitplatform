@@ -8,10 +8,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     const _readers: { [id: string]: { reader: any, subscriptionId: string, stopping: boolean } } = {};
     const _connectionListeners: { [id: string]: { connect: EventListener, disconnect: EventListener } } = {};
 
-    // Handle ids are minted here rather than by .NET: getPorts() and the connect/disconnect events
-    // both surface ports .NET has never seen. See bluetooth.ts.
-    let _sequence = 0;
-    function nextId() { return `sp${++_sequence}`; }
+    // Handle ids are minted here rather than by .NET, through the registry every device module
+    // shares: the browser surfaces a port .NET has never seen, so there is nothing for it to key on
+    // until the info comes back. Every entry point that hands one out hands out its id with it.
+    const _registry = butil.utils.handleRegistry('sp', _ports);
+    const idOf = _registry.idOf;
 
     butil.serial = {
         isSupported() { return !!(navigator as any).serial; },
@@ -80,18 +81,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         } catch { return []; }
     }
 
-    // The browser hands back the same SerialPort object for a given port on every call, so minting
-    // a fresh id each time would pile up registry entries for one port - and leave an open handle's
-    // id pointing at a port the caller thinks it already released.
-    function idOf(port: any) {
-        for (const key of Object.keys(_ports)) {
-            if (_ports[key] === port) return key;
-        }
-
-        const id = nextId();
-        _ports[id] = port;
-        return id;
-    }
 
     async function forget(id: string) {
         const port = _ports[id];
@@ -100,8 +89,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function release(id: string) {
-        const port = _ports[id];
-        delete _ports[id];
+        const port = _registry.remove(id);
         if (!port) return;
         // Fire-and-forget: disposal must not wait on a port whose cable has already been pulled.
         // The read loop still holds the readable stream locked, though, and close() rejects until
@@ -186,9 +174,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return true;
     }
 
-    async function stopReading(id: string) {
+    // A port carries at most one read loop, but that loop can end on its own - the device closed the
+    // stream, or close() was called - and a later subscription can start a new one on the same port.
+    // So a stop that names a subscription only stops the loop that subscription started: without the
+    // check, disposing a stale subscription would cancel a reader it never began. Passing no
+    // subscription id means "whatever is reading this port", which is what close() and release() want.
+    async function stopReading(id: string, subscriptionId: string | null = null) {
         const entry = _readers[id];
         if (!entry) return;
+        if (subscriptionId && entry.subscriptionId !== subscriptionId) return;
         entry.stopping = true;
         delete _readers[id];
         try { await entry.reader.cancel(); } catch { /* already cancelled */ }

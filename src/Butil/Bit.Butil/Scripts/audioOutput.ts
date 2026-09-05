@@ -14,20 +14,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return element && typeof element.play === 'function' ? element as HTMLMediaElement : null;
     }
 
-    // Labels stay empty until the origin has been granted a device permission at least once -
+    // The outputs among everything mediaDevices.ts enumerates - the same objects, in the same shape,
+    // so a device from either service can be handed to setSinkId without being re-fetched. Labels
+    // stay empty until the origin has been granted a device permission at least once:
     // enumerateDevices() never leaks hardware names to a page the user has not engaged with.
     async function getDevices() {
-        if (!navigator.mediaDevices?.enumerateDevices) return [];
-        try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            return devices
-                .filter(device => device.kind === 'audiooutput')
-                .map(device => ({
-                    deviceId: device.deviceId,
-                    label: device.label ?? '',
-                    groupId: device.groupId ?? ''
-                }));
-        } catch { return []; }
+        const devices = await butil.mediaDevices.enumerate();
+        return devices.filter((device: any) => device.kind === 'audiooutput');
     }
 
     // The chooser: one device, picked by the user, and the only way to learn an output's label
@@ -37,7 +30,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (typeof api?.selectAudioOutput !== 'function') return null;
         try {
             const device = await api.selectAudioOutput();
-            return { deviceId: device.deviceId, label: device.label ?? '', groupId: device.groupId ?? '' };
+            // kind is filled in rather than read back: selectAudioOutput only ever returns an
+            // output, and the caller gets the same MediaDeviceInfo shape enumerating produces.
+            return { deviceId: device.deviceId, kind: device.kind ?? 'audiooutput', label: device.label ?? '', groupId: device.groupId ?? '' };
         } catch { return null; } // the user dismissed the chooser
     }
 

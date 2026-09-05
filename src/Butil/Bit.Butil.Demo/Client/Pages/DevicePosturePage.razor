@@ -102,6 +102,11 @@ await devicePosture.RemoveAllChanges();
     private ButilSubscription? _subscription;
     private DevicePostureType? _current;
 
+    // Every transition of _subscription runs alone. Subscribing is a round-trip, so two clicks
+    // landing during it would each see a null field, attach a listener, and leave the first one
+    // with nothing holding its handle - and a removal racing a subscribe would drop the wrong one.
+    private readonly System.Threading.SemaphoreSlim _gate = new(1, 1);
+
     private async Task Read()
     {
         try
@@ -119,6 +124,7 @@ await devicePosture.RemoveAllChanges();
 
     private async Task Subscribe()
     {
+        await _gate.WaitAsync();
         try
         {
             if (!await devicePosture.IsSupported())
@@ -145,30 +151,61 @@ await devicePosture.RemoveAllChanges();
         {
             await changeOutput.Error("SubscribeChange failed →", ex.Message);
         }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     private async Task RemoveOne()
     {
-        if (_subscription is null)
+        await _gate.WaitAsync();
+        try
         {
-            await changeOutput.Warn("Subscribe first.");
-            return;
-        }
+            if (_subscription is null)
+            {
+                await changeOutput.Warn("Subscribe first.");
+                return;
+            }
 
-        await devicePosture.RemoveChange(_subscription.Id);
-        await changeOutput.Log($"RemoveChange({_subscription.Id}) - listener detached.");
-        _subscription = null;
+            var id = _subscription.Id;
+            await devicePosture.RemoveChange(id);
+            _subscription = null;
+            await changeOutput.Log($"RemoveChange({id}) - listener detached.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     private async Task RemoveAll()
     {
-        await devicePosture.RemoveAllChanges();
-        _subscription = null;
-        await changeOutput.Log("RemoveAllChanges - every listener detached.");
+        await _gate.WaitAsync();
+        try
+        {
+            _subscription = null;
+            await devicePosture.RemoveAllChanges();
+            await changeOutput.Log("RemoveAllChanges - every listener detached.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_subscription is not null) await _subscription.DisposeAsync();
+        await _gate.WaitAsync();
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            _subscription = null;
+        }
+        finally
+        {
+            _gate.Release();
+            _gate.Dispose();
+        }
     }
 }

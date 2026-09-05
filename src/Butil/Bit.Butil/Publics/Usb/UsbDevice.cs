@@ -59,6 +59,10 @@ public sealed class UsbDevice : IAsyncDisposable
     /// update on its own.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbDeviceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbConfigurationInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbInterfaceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbAlternateInterfaceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsbEndpointInfo))]
     public ValueTask<UsbDeviceInfo?> GetInfo() => _js.Invoke<UsbDeviceInfo?>("BitButil.usb.getInfo", Id);
 
     /// <summary>Selects a configuration by its <see cref="UsbConfigurationInfo.ConfigurationValue"/>.</summary>

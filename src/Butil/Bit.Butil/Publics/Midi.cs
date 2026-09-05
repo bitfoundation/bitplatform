@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -44,9 +45,15 @@ public class Midi(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Asks the user for MIDI access and returns the ports it covers, or null when the prompt was
-    /// refused. The resolved access is cached for the page, so calling this again is cheap and does
-    /// not re-prompt.
+    /// refused. The resolved access is cached for the page, so calling this again with the same
+    /// arguments is cheap and does not re-prompt.
     /// </summary>
+    /// <remarks>
+    /// Asking again with a different <paramref name="sysex"/> or <paramref name="software"/> is a
+    /// different grant, so the browser replaces the access object and every port object under it.
+    /// Subscriptions already handed out survive that: they are re-attached to the new ports, so a
+    /// handler keeps firing and the <see cref="ButilSubscription"/> stays the way to detach it.
+    /// </remarks>
     /// <param name="sysex">
     /// Request system-exclusive messages as well. A separate and stricter permission - sysex can
     /// rewrite a device's firmware - so ask for it only when the app sends or reads sysex.
@@ -81,12 +88,27 @@ public class Midi(IJSRuntime js) : IAsyncDisposable
     /// Sends a note-on message on <paramref name="channel"/> (0-15). A velocity of 0 is a note-off
     /// by convention, and is what most devices actually send when a key is released.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="channel"/> is above 15.</exception>
     public ValueTask<bool> SendNoteOn(string outputId, byte note, byte velocity = 100, byte channel = 0)
-        => Send(outputId, [(byte)(0x90 | (channel & 0x0F)), note, velocity]);
+    {
+        ThrowIfNotAChannel(channel);
+        return Send(outputId, [(byte)(0x90 | channel), note, velocity]);
+    }
 
     /// <summary>Sends a note-off message on <paramref name="channel"/> (0-15).</summary>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="channel"/> is above 15.</exception>
     public ValueTask<bool> SendNoteOff(string outputId, byte note, byte velocity = 0, byte channel = 0)
-        => Send(outputId, [(byte)(0x80 | (channel & 0x0F)), note, velocity]);
+    {
+        ThrowIfNotAChannel(channel);
+        return Send(outputId, [(byte)(0x80 | channel), note, velocity]);
+    }
+
+    // Masking a bad channel down to 0-15 would send the message on some other channel and look like
+    // the device ignored it; the caller's arithmetic is what is wrong, so it is raised as such.
+    private static void ThrowIfNotAChannel(byte channel, [CallerArgumentExpression(nameof(channel))] string? paramName = null)
+    {
+        if (channel > 15) throw new ArgumentOutOfRangeException(paramName, channel, "A MIDI channel is 0-15.");
+    }
 
     /// <summary>
     /// Drops every message queued for the port that has not been sent yet - the way out of a note
@@ -120,37 +142,20 @@ public class Midi(IJSRuntime js) : IAsyncDisposable
     /// the user's controller is whichever one they touch.
     /// </param>
     /// <returns>A subscription - dispose it to detach the listener.</returns>
+    /// <remarks>
+    /// Listening to all of them is a standing subscription, not a snapshot: a controller plugged in
+    /// afterwards is picked up too, and subscribing before anything is plugged in is allowed. A
+    /// named <paramref name="inputId"/>, by contrast, has to exist at the time of the call.
+    /// </remarks>
     /// <exception cref="InvalidOperationException">The listener was not attached - no MIDI access, or no such input.</exception>
     [DynamicDependency(nameof(InvokeMidiMessage), typeof(Midi))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MidiMessage))]
     public async ValueTask<ButilSubscription> SubscribeMessages(Action<MidiMessage> handler, string? inputId = null)
     {
-        var id = Guid.NewGuid();
-        _messageHandlers[id] = handler;
-
-        bool subscribed;
-        try
-        {
-            subscribed = await js.InvokeRegister("BitButil.midi.subscribeMessages", id, DotNetRef, inputId);
-        }
-        catch
-        {
-            // Nothing is listening on the JS side, so the entry must not outlive the call.
-            _messageHandlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (subscribed is false)
-        {
-            _messageHandlers.TryRemove(id, out _);
-            throw new InvalidOperationException("The MIDI message listener could not be attached - call RequestAccess() first, and make sure the input exists.");
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _messageHandlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.midi.unsubscribeMessages", id);
-        });
+        return await ButilSubscriptionHelper.Register(_messageHandlers, handler,
+                                                      id => js.InvokeRegister("BitButil.midi.subscribeMessages", id, DotNetRef, inputId),
+                                                      id => js.InvokeVoid("BitButil.midi.unsubscribeMessages", id),
+                                                      "The MIDI message listener could not be attached - call RequestAccess() first, and make sure the named input exists.");
     }
 
     /// <summary>
@@ -163,32 +168,10 @@ public class Midi(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MidiPortInfo))]
     public async ValueTask<ButilSubscription> SubscribeStateChange(Action<MidiPortInfo?> handler)
     {
-        var id = Guid.NewGuid();
-        _stateHandlers[id] = handler;
-
-        bool subscribed;
-        try
-        {
-            subscribed = await js.InvokeRegister("BitButil.midi.subscribeStateChange", id, DotNetRef);
-        }
-        catch
-        {
-            // Nothing is listening on the JS side, so the entry must not outlive the call.
-            _stateHandlers.TryRemove(id, out _);
-            throw;
-        }
-
-        if (subscribed is false)
-        {
-            _stateHandlers.TryRemove(id, out _);
-            throw new InvalidOperationException("The MIDI state-change listener could not be attached - call RequestAccess() first.");
-        }
-
-        return new ButilSubscription(id, async () =>
-        {
-            _stateHandlers.TryRemove(id, out _);
-            await js.InvokeVoid("BitButil.midi.unsubscribeStateChange", id);
-        });
+        return await ButilSubscriptionHelper.Register(_stateHandlers, handler,
+                                                      id => js.InvokeRegister("BitButil.midi.subscribeStateChange", id, DotNetRef),
+                                                      id => js.InvokeVoid("BitButil.midi.unsubscribeStateChange", id),
+                                                      "The MIDI state-change listener could not be attached - call RequestAccess() first.");
     }
 
     /// <summary>Detaches every listener this instance attached and releases its interop reference.</summary>

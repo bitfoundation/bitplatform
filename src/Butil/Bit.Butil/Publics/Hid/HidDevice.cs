@@ -58,6 +58,8 @@ public sealed class HidDevice : IAsyncDisposable
     /// created and does not update on its own.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidDeviceInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidCollectionInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidReportInfo))]
     public ValueTask<HidDeviceInfo?> GetInfo() => _js.Invoke<HidDeviceInfo?>("BitButil.hid.getInfo", Id);
 
     /// <summary>

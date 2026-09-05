@@ -49,6 +49,6 @@ public class PerformanceAndPlatformTests : ButilObserversPageTest
     [TestMethod]
     public async Task Hardware_Permissionless_Reads_Answer()
     {
-        await ClickAndExpectAsync("hw-reads", "hw:reads:Continuous:True/True/True/True");
+        await ClickAndExpectAsync("hw-reads", "hw:reads:Continuous:True/True/True");
     }
 }

@@ -3,30 +3,22 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     const _sensors: { [id: string]: any } = {};
 
-    // The eight Generic Sensor classes, by the kebab-case name .NET sends. Everything else about
-    // them is uniform - construct, start(), read on 'reading' - so one module covers all of them.
-    const CONSTRUCTORS: { [type: string]: string } = {
-        'accelerometer': 'Accelerometer',
-        'gyroscope': 'Gyroscope',
-        'magnetometer': 'Magnetometer',
-        'absolute-orientation': 'AbsoluteOrientationSensor',
-        'relative-orientation': 'RelativeOrientationSensor',
-        'gravity': 'GravitySensor',
-        'linear-acceleration': 'LinearAccelerationSensor',
-        'ambient-light': 'AmbientLightSensor'
-    };
-
-    // The Permissions-API names each sensor is gated on. Orientation sensors fuse several
-    // physical sensors and need every one of them granted.
-    const PERMISSIONS: { [type: string]: string[] } = {
-        'accelerometer': ['accelerometer'],
-        'gyroscope': ['gyroscope'],
-        'magnetometer': ['magnetometer'],
-        'absolute-orientation': ['accelerometer', 'gyroscope', 'magnetometer'],
-        'relative-orientation': ['accelerometer', 'gyroscope'],
-        'gravity': ['accelerometer'],
-        'linear-acceleration': ['accelerometer'],
-        'ambient-light': ['ambient-light-sensor']
+    // The eight Generic Sensor classes, by the kebab-case name .NET sends: the constructor to look
+    // up, the Permissions-API names the sensor is gated on (orientation sensors fuse several
+    // physical sensors and need every one of them granted), and whether it takes a referenceFrame.
+    // Every sensor that reports along axes takes one - the motion sensors read out in the frame
+    // just as the orientation sensors do; ambient-light is the one reading with no axes at all.
+    // Everything else about them is uniform - construct, start(), read on 'reading' - so one module
+    // covers all of them, and adding a sensor is one row here.
+    const SENSORS: { [type: string]: { ctor: string, permissions: string[], referenceFrame?: boolean } } = {
+        'accelerometer': { ctor: 'Accelerometer', permissions: ['accelerometer'], referenceFrame: true },
+        'gyroscope': { ctor: 'Gyroscope', permissions: ['gyroscope'], referenceFrame: true },
+        'magnetometer': { ctor: 'Magnetometer', permissions: ['magnetometer'], referenceFrame: true },
+        'absolute-orientation': { ctor: 'AbsoluteOrientationSensor', permissions: ['accelerometer', 'gyroscope', 'magnetometer'], referenceFrame: true },
+        'relative-orientation': { ctor: 'RelativeOrientationSensor', permissions: ['accelerometer', 'gyroscope'], referenceFrame: true },
+        'gravity': { ctor: 'GravitySensor', permissions: ['accelerometer'], referenceFrame: true },
+        'linear-acceleration': { ctor: 'LinearAccelerationSensor', permissions: ['accelerometer'], referenceFrame: true },
+        'ambient-light': { ctor: 'AmbientLightSensor', permissions: ['ambient-light-sensor'] }
     };
 
     butil.sensors = {
@@ -37,7 +29,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     };
 
     function constructorOf(type: string) {
-        const name = CONSTRUCTORS[type];
+        const name = SENSORS[type]?.ctor;
         return name ? (window as any)[name] : undefined;
     }
 
@@ -47,7 +39,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // offers, and the actual prompt (where there is one) happens on the first start(). The
     // aggregate is the least-granted of the names the sensor needs.
     async function requestPermission(type: string) {
-        const names = PERMISSIONS[type] ?? [];
+        const names = SENSORS[type]?.permissions ?? [];
         if (!names.length || !navigator.permissions) return 'prompt';
         try {
             const states = await Promise.all(names.map(name => navigator.permissions.query({ name } as any).then(s => s.state, () => 'prompt')));
@@ -73,15 +65,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // Returns null when the sensor started, or the reason it did not. A failure to start is
     // reported through the return value rather than InvokeSensorError: .NET is still inside the
     // call, so it can raise the reason once - a dispatched error would race the call's own result.
-    function start(subscriptionId: string, dotNetRef: any, type: string, frequency: number | null, referenceFrame: string | null) {
+    function start(subscriptionId: string, dotNetRef: any, type: string, frequency: number | null, referenceFrame: string | null, minIntervalMs: number) {
         const Constructor = constructorOf(type);
         if (typeof Constructor !== 'function') return `${type} is not supported.`;
 
         const options: any = {};
         if (frequency) options.frequency = frequency;
-        // Only the orientation sensors accept referenceFrame; passing it elsewhere is ignored,
-        // but it is left out anyway so the constructed options match what the sensor documents.
-        if (referenceFrame && (type === 'absolute-orientation' || type === 'relative-orientation')) options.referenceFrame = referenceFrame;
+        // Every spatial sensor accepts referenceFrame; ambient-light has no axes to frame, so it
+        // is left out there so the constructed options match what the sensor documents.
+        if (referenceFrame && SENSORS[type]?.referenceFrame) options.referenceFrame = referenceFrame;
 
         let sensor: any;
         try {
@@ -92,9 +84,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             return e?.message ?? String(e);
         }
 
-        sensor.addEventListener('reading', () => {
+        // frequency is only a hint the platform is free to ignore, and its default is 60 Hz on the
+        // motion sensors - which is 60 interop round-trips a second for readings a UI can show a
+        // handful of. The rate limit is applied here, before the round-trip is paid for, exactly as
+        // deviceOrientation.ts does for the legacy event streams.
+        sensor.addEventListener('reading', butil.utils.throttle(minIntervalMs, () => {
             butil.utils.dispatch(dotNetRef, 'InvokeSensorReading', subscriptionId, reading(type, sensor));
-        });
+        }));
         sensor.addEventListener('error', (event: any) => {
             butil.utils.dispatch(dotNetRef, 'InvokeSensorError', subscriptionId, event?.error?.message ?? 'sensor error');
         });
