@@ -90,14 +90,24 @@ public class PlatformApisTests : ButilPageTest
         await ClickAndExpectAsync("plat-composed", "plat:composed:True/1");
     }
 
+    /// <summary>The names of Bit.Butil's AiAvailability - the project doesn't reference the library, so they are spelled out.</summary>
+    private static readonly string[] _aiAvailabilities = ["Unavailable", "Downloadable", "Downloading", "Available"];
+
     [TestMethod]
     public async Task BuiltInAi_Availability_Answers_Without_Creating_A_Session()
     {
-        // Headless Chromium has no on-device model, so the probes answer Unavailable rather than
-        // throwing - which is the contract every caller is told to branch on. Whether the API object
-        // itself exists depends on the build, so only the two availability answers are pinned.
+        // Which availability comes back depends on the build - a channel with no on-device model
+        // answers Unavailable, one that could fetch it answers Downloadable - so the value itself
+        // cannot be pinned. What is pinned is that both probes answer with an AiAvailability rather
+        // than throwing, which is the contract every caller is told to branch on, and that the
+        // harness's option set doesn't change the answer.
         await ClickAndExpectAsync("plat-ai", "plat:ai:");
-        StringAssert.Contains(await CurrentStatusAsync(), "/Unavailable/Unavailable/",
-            "both availability probes must answer Unavailable where no model can be had");
+
+        // plat:ai:<supported>/<plain>/<with options>/<has params>
+        var parts = (await CurrentStatusAsync()).Split('/');
+        Assert.AreEqual(4, parts.Length, "the probe reports supported, both availabilities and params");
+        CollectionAssert.Contains(_aiAvailabilities, parts[1], $"'{parts[1]}' is not an AiAvailability");
+        CollectionAssert.Contains(_aiAvailabilities, parts[2], $"'{parts[2]}' is not an AiAvailability");
+        Assert.AreEqual(parts[1], parts[2], "a temperature the model accepts cannot change its availability");
     }
 }

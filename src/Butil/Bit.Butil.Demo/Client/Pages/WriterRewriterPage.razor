@@ -160,6 +160,9 @@ var polished = await session!.Rewrite(draft, context: "This is going to a custom
     <ApiMember Name="WriterSession.WriteStreaming"
                Signature="Task<string> WriteStreaming(string input, Action<string>? onChunk = null, string? context = null)"
                Description="Writes text from a prompt, reporting it as it is generated." />
+    <ApiMember Name="WriterSession.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
     <ApiMember Name="Rewriter.IsSupported"
                Signature="ValueTask<bool> IsSupported()"
                Description="True when the runtime exposes the Rewriter API." />
@@ -175,6 +178,9 @@ var polished = await session!.Rewrite(draft, context: "This is going to a custom
     <ApiMember Name="RewriterSession.RewriteStreaming"
                Signature="Task<string> RewriteStreaming(string input, Action<string>? onChunk = null, string? context = null)"
                Description="Rewrites a piece of text, reporting it as it is generated." />
+    <ApiMember Name="RewriterSession.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
 </ApiTable>
 
 @code {

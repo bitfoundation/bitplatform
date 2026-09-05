@@ -129,6 +129,9 @@ return await session!.Translate(text) ?? text;
     <ApiMember Name="TranslatorSession.TranslateStreaming"
                Signature="Task<string> TranslateStreaming(string input, Action<string>? onChunk = null)"
                Description="Translates a piece of text, reporting it as it is produced." />
+    <ApiMember Name="TranslatorSession.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
     <ApiMember Name="LanguageDetector.IsSupported"
                Signature="ValueTask<bool> IsSupported()"
                Description="True when the runtime exposes the LanguageDetector API." />
@@ -141,6 +144,9 @@ return await session!.Translate(text) ?? text;
     <ApiMember Name="LanguageDetectorSession.Detect"
                Signature="ValueTask<LanguageDetectionResult[]> Detect(string input)"
                Description="Ranks the languages a piece of text might be in, most confident first." />
+    <ApiMember Name="LanguageDetectorSession.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
 </ApiTable>
 
 @code {
