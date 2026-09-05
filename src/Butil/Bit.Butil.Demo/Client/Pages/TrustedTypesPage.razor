@@ -1,0 +1,326 @@
+@page "/trusted-types"
+@implements IAsyncDisposable
+@inject Bit.Butil.TrustedTypes trustedTypes
+
+<PageTitle>TrustedTypes - Bit.Butil</PageTitle>
+
+<PageHeader Category="Security &amp; Privacy"
+            Title="TrustedTypes"
+            Lead="Policies that turn a string into a value the browser will accept at a dangerous sink - and a CSP that makes every other string throw. The 'no unreviewed strings reach innerHTML' rule, enforced by the browser rather than by review."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API"
+            InjectAs="TrustedTypes trustedTypes" />
+
+<Callout Type="info" Title="How enforcement is turned on">
+    Nothing here enforces anything on its own. Enforcement comes from a response header -
+    <code>Content-Security-Policy: require-trusted-types-for 'script'; trusted-types my-policy</code> -
+    at which point assigning a plain string to <code>innerHTML</code>, <code>script.src</code> or
+    <code>eval</code> throws, and only a value produced by a listed policy goes through. Start with
+    the <code>-Report-Only</code> header and <code>OnViolation</code>; every violation is a call site
+    to fix before you switch it on.
+</Callout>
+
+<Callout Type="warning" Title="Rules are declared, not written as callbacks">
+    A policy's transform has to run synchronously, and every call back into .NET is asynchronous - so
+    a C# callback cannot be a policy. <code>TrustedTypePolicyOptions</code> declares what a
+    hand-written policy usually does instead: sanitize the HTML (through the browser's own
+    <a href="/sanitizer">Sanitizer</a>, optionally one you configured), and allow script URLs only
+    from prefixes you named.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Is it there, and is it on?"
+                 Api="IsSupported / IsEnforced"
+                 Description="Two different questions. IsSupported says window.trustedTypes exists; IsEnforced says a CSP is actually making plain strings fail. Nothing in the platform reports the second, so it is asked by assigning a plain string to a sink on a detached element and seeing whether it throws - the element is never in the document, so the probe has no effect. It comes back null rather than false when a 'default' policy is registered, because that policy would rescue the probe under enforcement too."
+                 Code=@("""
+@inject Bit.Butil.TrustedTypes trustedTypes
+
+var available = await trustedTypes.IsSupported();
+bool? enforced = await trustedTypes.IsEnforced();   // null = a 'default' policy hides the answer
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check both</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Create a policy"
+                 Api="CreatePolicy / HasPolicy / GetPolicyNames"
+                 Description="A policy name has to be listed in the CSP's trusted-types directive, and can only be created once per document - so a false here is a configuration fact rather than an error. The name 'default' is special: the browser falls back to it for any string assigned to a sink without a policy, which is how existing code keeps working under enforcement."
+                 Code=@("""
+var created = await trustedTypes.CreatePolicy("app-html", new TrustedTypePolicyOptions
+{
+    SanitizeHtml = true,
+    AllowedScriptUrlPrefixes = ["https://cdn.example.com/", "/_content/"],
+});
+""")>
+        <div class="controls">
+            <button @onclick="CreatePolicy">CreatePolicy("app-html")</button>
+            <button class="secondary" @onclick="ListPolicies">GetPolicyNames</button>
+        </div>
+        <DemoConsole @ref="policyOutput" Title="policy output" />
+    </DemoSection>
+
+    <DemoSection Title="Produce a value"
+                 Api="CreateHtml / CreateScriptUrl"
+                 Description="The trusted value itself never crosses to .NET - it would arrive as its string and lose exactly the type that makes it trusted - so what comes back is only the resulting text, for display or comparison. Note the script URL: one that matches an allowed prefix comes back, anything else is refused."
+                 Code=@("""
+var html = await trustedTypes.CreateHtml("app-html", userMarkup);
+var src = await trustedTypes.CreateScriptUrl("app-html", "https://cdn.example.com/lib.js");
+var refused = await trustedTypes.CreateScriptUrl("app-html", "https://evil.example/x.js");  // null
+""")>
+        <div class="controls">
+            <button @onclick="MakeHtml">CreateHtml on a hostile string</button>
+            <button class="secondary" @onclick="MakeScriptUrls">CreateScriptUrl, allowed and not</button>
+        </div>
+        <DemoConsole @ref="createOutput" Title="create output" />
+    </DemoSection>
+
+    <DemoSection Title="Write through the policy"
+                 Api="SetHtml / SetScriptSrc"
+                 Description="The point of having a policy: under enforcement this succeeds where assigning a string to innerHTML throws. The markup is created and assigned in one call, because the trusted value cannot be handed back to C# in between."
+                 Code=@("""
+await trustedTypes.SetHtml(preview, "app-html", userMarkup);
+await trustedTypes.SetScriptSrc(scriptElement, "app-html", "https://cdn.example.com/lib.js");
+""")>
+        <div class="demo-box dashed" @ref="_preview">The markup written through the policy will appear here.</div>
+        <div class="controls">
+            <button @onclick="WriteHtml">SetHtml</button>
+        </div>
+        <DemoConsole @ref="writeOutput" Title="write output" />
+    </DemoSection>
+
+    <DemoSection Title="Find what still writes strings"
+                 Api="OnViolation"
+                 Description="Where a rollout starts. Serve the report-only header, subscribe here, and every violation names a sink still being written to as a plain string, with the file and line that did it. Nothing will be reported on this page unless you are serving that header."
+                 Code=@("""
+_subscription = await trustedTypes.OnViolation(violation =>
+{
+    logger.LogWarning("{Directive} at {File}:{Line} - {Sample}",
+        violation.Directive, violation.SourceFile, violation.LineNumber, violation.Sample);
+});
+""")>
+        <div class="controls">
+            <button @onclick="ToggleWatch">@(_subscription is null ? "Start listening" : "Stop listening")</button>
+        </div>
+        <DemoConsole @ref="violationOutput" Title="violation output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.trustedTypes. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsEnforced"
+               Signature="ValueTask<bool?> IsEnforced()"
+               Description="Whether a CSP is actually enforcing Trusted Types on this document. Null when a 'default' policy makes the probe unable to tell, and during prerender/SSR." />
+    <ApiMember Name="CreatePolicy"
+               Signature="ValueTask<bool> CreatePolicy(string name, TrustedTypePolicyOptions? options = null, SanitizerHandle? sanitizer = null)"
+               Description="Creates a policy. False when the CSP doesn't list the name, the name is taken, or the runtime has no Trusted Types." />
+    <ApiMember Name="HasPolicy"
+               Signature="ValueTask<bool> HasPolicy(string name)"
+               Description="True when a policy of this name was created through this API." />
+    <ApiMember Name="GetPolicyNames"
+               Signature="ValueTask<string[]> GetPolicyNames()"
+               Description="The names of the policies created through this API." />
+    <ApiMember Name="CreateHtml"
+               Signature="ValueTask<string?> CreateHtml(string policyName, string html)"
+               Description="Runs markup through a policy and returns the resulting text. Null when there is no such policy or it refused." />
+    <ApiMember Name="CreateScriptUrl"
+               Signature="ValueTask<string?> CreateScriptUrl(string policyName, string url)"
+               Description="Runs a script URL through a policy. Null when the URL isn't one the policy allows." />
+    <ApiMember Name="SetHtml"
+               Signature="ValueTask<bool> SetHtml(ElementReference element, string policyName, string html)"
+               Description="Writes markup into an element through a policy - the call that works under enforcement." />
+    <ApiMember Name="SetScriptSrc"
+               Signature="ValueTask<bool> SetScriptSrc(ElementReference scriptElement, string policyName, string url)"
+               Description="Sets a script element's src through a policy." />
+    <ApiMember Name="OnViolation"
+               Signature="ValueTask<ButilSubscription> OnViolation(Action<TrustedTypeViolation> handler)"
+               Description="Reports every Trusted Types violation on the document. Dispose the subscription to stop." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, detaches any violation listener whose subscription was never disposed. The policies themselves are kept: a name cannot be created twice, so dropping them would leave a re-created scope unable to get them back." />
+    <ApiMember Name="TrustedTypePolicyOptions"
+               Signature="SanitizeHtml | AllowedScriptUrlPrefixes | AllowScript"
+               Description="What a policy allows. Sanitizing is on and script URLs are refused by default." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole policyOutput = default!;
+    private DemoConsole createOutput = default!;
+    private DemoConsole writeOutput = default!;
+    private DemoConsole violationOutput = default!;
+
+    private ElementReference _preview;
+    private ButilSubscription? _subscription;
+    private bool _created;
+
+    private const string PolicyName = "app-html";
+
+    private const string Hostile = """<p onclick="steal()">Hello</p><script>steal()</script>""";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await trustedTypes.IsSupported());
+            var enforced = await trustedTypes.IsEnforced();
+            await supportOutput.Info("IsEnforced →", enforced?.ToString() ?? "null - a 'default' policy is registered, so the probe can't tell.");
+            await supportOutput.Log("This site does not serve the require-trusted-types-for header, so IsEnforced is false here - the policies below still work.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task<bool> EnsurePolicy()
+    {
+        if (_created) return true;
+
+        // A policy name can only be created once per document, and the ones already created outlive
+        // this component - so coming back to the page finds the policy still there, and re-creating
+        // it would only fail.
+        if (await trustedTypes.HasPolicy(PolicyName))
+        {
+            _created = true;
+            return true;
+        }
+
+        _created = await trustedTypes.CreatePolicy(PolicyName, new TrustedTypePolicyOptions
+        {
+            SanitizeHtml = true,
+            AllowedScriptUrlPrefixes = ["https://cdn.example.com/", "/_content/"],
+        });
+
+        return _created;
+    }
+
+    private async Task CreatePolicy()
+    {
+        try
+        {
+            if (await EnsurePolicy())
+            {
+                await policyOutput.Success($"CreatePolicy(\"{PolicyName}\") →", "created.");
+                await policyOutput.Info("HasPolicy →", await trustedTypes.HasPolicy(PolicyName));
+            }
+            else
+            {
+                await policyOutput.Warn("CreatePolicy →", "false - either the runtime has no Trusted Types, or a CSP refuses this name.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await policyOutput.Error("CreatePolicy failed →", ex.Message);
+        }
+    }
+
+    private async Task ListPolicies()
+    {
+        try
+        {
+            var names = await trustedTypes.GetPolicyNames();
+            await policyOutput.Info("GetPolicyNames →", names.Length == 0 ? "(none yet)" : string.Join(", ", names));
+        }
+        catch (Exception ex)
+        {
+            await policyOutput.Error("GetPolicyNames failed →", ex.Message);
+        }
+    }
+
+    private async Task MakeHtml()
+    {
+        try
+        {
+            if (await EnsurePolicy() is false)
+            {
+                await createOutput.Warn("Create the policy first - this browser refused it.");
+                return;
+            }
+
+            var html = await trustedTypes.CreateHtml(PolicyName, Hostile);
+            await createOutput.Success("CreateHtml →", html ?? "(null)");
+            await createOutput.Log("The policy sanitizes, so the handler attribute and the script are gone from the value it produced.");
+        }
+        catch (Exception ex)
+        {
+            await createOutput.Error("CreateHtml failed →", ex.Message);
+        }
+    }
+
+    private async Task MakeScriptUrls()
+    {
+        try
+        {
+            if (await EnsurePolicy() is false)
+            {
+                await createOutput.Warn("Create the policy first - this browser refused it.");
+                return;
+            }
+
+            var allowed = await trustedTypes.CreateScriptUrl(PolicyName, "https://cdn.example.com/lib.js");
+            var refused = await trustedTypes.CreateScriptUrl(PolicyName, "https://evil.example/x.js");
+
+            await createOutput.Success("Allowed prefix →", allowed ?? "(null)");
+            await createOutput.Info("Anything else →", refused is null ? "null - refused by the policy" : refused);
+        }
+        catch (Exception ex)
+        {
+            await createOutput.Error("CreateScriptUrl failed →", ex.Message);
+        }
+    }
+
+    private async Task WriteHtml()
+    {
+        try
+        {
+            if (await EnsurePolicy() is false)
+            {
+                await writeOutput.Warn("Create the policy first - this browser refused it.");
+                return;
+            }
+
+            var ok = await trustedTypes.SetHtml(_preview, PolicyName, Hostile);
+
+            if (ok) await writeOutput.Success("SetHtml →", "written through the policy, sanitized on the way.");
+            else await writeOutput.Warn("SetHtml →", "false - no such policy, or the policy refused the markup.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("SetHtml failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleWatch()
+    {
+        try
+        {
+            if (_subscription is not null)
+            {
+                await _subscription.DisposeAsync();
+                _subscription = null;
+                await violationOutput.Info("Stopped listening.");
+                return;
+            }
+
+            _subscription = await trustedTypes.OnViolation(violation =>
+            {
+                _ = violationOutput.Warn($"{violation.Directive} ({violation.Disposition}) at {violation.SourceFile}:{violation.LineNumber} →", violation.Sample);
+                InvokeAsync(StateHasChanged);
+            });
+
+            await violationOutput.Success("Listening for Trusted Types violations.");
+        }
+        catch (Exception ex)
+        {
+            await violationOutput.Error("OnViolation failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
+}

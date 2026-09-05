@@ -8,6 +8,10 @@
 @inject Bit.Butil.Window window
 @inject Bit.Butil.History history
 @inject Bit.Butil.Location location
+@inject Bit.Butil.TextEncoding textEncoding
+@inject Bit.Butil.StructuredClone structuredClone
+@inject Bit.Butil.Url url
+@inject Bit.Butil.Selection selection
 
 @*
     Deterministic end-to-end harness for Playwright. Every interactive element exposes
@@ -110,6 +114,37 @@
     <button id="el-rects" @onclick="ElementClientRects">getClientRects</button>
     <button id="el-popover" @onclick="ElementPopoverState">popover</button>
     <button id="el-identity" @onclick="ElementIdentity">identity + tree facts</button>
+</section>
+
+<section>
+    <h3>Text, clone and URL</h3>
+    <button id="text-decode" @onclick="TextDecodeLegacy">decode shift_jis</button>
+    <button id="text-encode" @onclick="TextEncodeAndMeasure">encode + byte length</button>
+    <button id="text-stream" @onclick="TextDecodeStreaming">streaming decoder</button>
+    <button id="clone-roundtrip" @onclick="CloneRoundTrip">structuredClone</button>
+    <button id="clone-can" @onclick="CloneCheck">canClone</button>
+    <button id="url-parse" @onclick="UrlParse">URL parts</button>
+    <button id="url-query" @onclick="UrlQuery">repeated query values</button>
+    <button id="url-pattern" @onclick="UrlPattern">URLPattern</button>
+    <button id="url-pattern-credentials" @onclick="UrlPatternCredentials">URLPattern credentials</button>
+    <button id="url-pattern-relative" @onclick="UrlPatternRelative">URLPattern relative</button>
+    <button id="url-pattern-wildcards" @onclick="UrlPatternWildcards">URLPattern wildcards</button>
+</section>
+
+<section>
+    <h3>Selection</h3>
+    @* Fixed, never re-rendered text so the offsets below are stable across runs. *@
+    <span @ref="_selectionTarget" id="sel-target">butil selection target</span>
+    @* No text at all, so the one position in it is the only one there is to restore a caret to. *@
+    <span @ref="_selectionEmptyTarget" id="sel-empty-target"></span>
+    <button id="sel-select" @onclick="SelectionSelectContents">select contents</button>
+    <button id="sel-range" @onclick="SelectionSelectRange">select range 0-5</button>
+    <button id="sel-offsets" @onclick="SelectionOffsets">offsets in element</button>
+    <button id="sel-empty-range" @onclick="SelectionEmptyRange">caret in an empty element</button>
+    <button id="sel-content-offsets" @onclick="SelectionContentsOffsets">offsets of a whole element</button>
+    <button id="sel-bad-range" @onclick="SelectionNegativeRange">negative range</button>
+    <button id="sel-replace" @onclick="SelectionReplace">replace with text</button>
+    <button id="sel-clear" @onclick="SelectionClear">remove all</button>
 </section>
 
 @code {
@@ -458,6 +493,157 @@
         var children = await _elementBox.GetChildElementCount();
         var zoom = await _elementBox.GetCurrentCssZoom();
         Set($"el:identity:{title}/{lang}/{draggable}/{localName}/{children}/{zoom > 0}");
+    }
+
+    // ─── Text, clone and URL ────────────────────────────────────────────────────
+    // "こんにちは" in Shift_JIS. As bytes because that is the point: .NET on WebAssembly cannot
+    // decode this without an extra package, and the browser can.
+    private static readonly byte[] ShiftJisGreeting = [0x82, 0xB1, 0x82, 0xF1, 0x82, 0xC9, 0x82, 0xBF, 0x82, 0xCD];
+
+    private async Task TextDecodeLegacy()
+    {
+        var text = await textEncoding.Decode(ShiftJisGreeting, "shift_jis");
+        var canonical = await textEncoding.GetCanonicalName("sjis");
+        Set($"text:decode:{text}/{canonical}");
+    }
+    private async Task TextEncodeAndMeasure()
+    {
+        var bytes = await textEncoding.Encode("héllo");
+        var length = await textEncoding.GetUtf8ByteLength("héllo");
+        Set($"text:encode:{bytes.Length}/{length}");
+    }
+    private async Task TextDecodeStreaming()
+    {
+        // Split through the middle of the third character - the case a per-chunk decode gets wrong.
+        await using var decoder = await textEncoding.CreateDecoder("shift_jis");
+        if (decoder is null) { Set("text:stream:no-decoder"); return; }
+
+        var streamed = await decoder.Decode(ShiftJisGreeting[..5]) + await decoder.Decode(ShiftJisGreeting[5..], more: false);
+        var whole = await textEncoding.Decode(ShiftJisGreeting, "shift_jis");
+        Set($"text:stream:{streamed == whole}");
+    }
+    private async Task CloneRoundTrip()
+    {
+        var copy = await structuredClone.Clone(new SamplePayload(42, "answer"));
+        Set($"clone:roundtrip:{copy?.Number}/{copy?.Label}");
+    }
+    private async Task CloneCheck()
+    {
+        var can = await structuredClone.CanClone(new SamplePayload(1, "x"));
+        Set($"clone:can:{can}");
+    }
+    private async Task UrlParse()
+    {
+        var parts = await url.Parse("https://example.com:8080/docs/guide?tag=a&tag=b#top");
+        // Pipe-separated because the components are full of slashes themselves.
+        Set($"url:parse:{parts?.Origin}|{parts?.Pathname}|{parts?.Port}|{parts?.Hash}");
+    }
+    private async Task UrlQuery()
+    {
+        var values = await url.GetQueryValues("?tag=a&tag=b&page=2", "tag");
+        var sorted = await url.SortQuery("https://example.com/x?b=2&a=1");
+        Set($"url:query:{values.Length}/{sorted}");
+    }
+    private async Task UrlPattern()
+    {
+        if (await url.IsPatternSupported() is false) { Set("url:pattern:unsupported"); return; }
+
+        var match = await url.MatchPattern("/books/:id", "https://example.com/books/42", "https://example.com");
+        Set($"url:pattern:{match?.Groups.GetValueOrDefault("id")}");
+    }
+
+    private async Task UrlPatternCredentials()
+    {
+        if (await url.IsPatternSupported() is false) { Set("url:credentials:unsupported"); return; }
+
+        // The two components a URL rarely carries - and the ones a pattern has to report when it does.
+        var match = await url.MatchPattern("https://:user::pass@example.com/*", "https://ada:secret@example.com/x");
+        Set($"url:credentials:{match?.Username}/{match?.Password}");
+    }
+
+    private async Task UrlPatternRelative()
+    {
+        if (await url.IsPatternSupported() is false) { Set("url:relative:unsupported"); return; }
+
+        // The base resolves the candidate too, not only the pattern - a router matches the path it
+        // has, not a URL it had to build first.
+        var tested = await url.TestPattern("/books/:id", "/books/42", "https://example.com");
+        var match = await url.MatchPattern("/books/:id", "/books/42", "https://example.com");
+        Set($"url:relative:{tested}/{match?.Groups.GetValueOrDefault("id")}");
+    }
+
+    private async Task UrlPatternWildcards()
+    {
+        if (await url.IsPatternSupported() is false) { Set("url:wildcards:unsupported"); return; }
+
+        // Two unnamed groups, one per component: both are numbered '0' by URLPattern, so only the
+        // component prefix keeps them apart.
+        var match = await url.MatchPattern("https://*.example.com/assets/*", "https://cdn.example.com/assets/logo.svg");
+        Set($"url:wildcards:{match?.Groups.GetValueOrDefault("hostname.0")}/{match?.Groups.GetValueOrDefault("pathname.0")}");
+    }
+
+    // ─── Selection ──────────────────────────────────────────────────────────────
+    private ElementReference _selectionTarget;
+    private ElementReference _selectionEmptyTarget;
+
+    private async Task SelectionSelectContents()
+    {
+        await selection.SelectElementContents(_selectionTarget);
+        var text = await selection.GetText();
+        Set($"sel:select:{text}");
+    }
+    private async Task SelectionSelectRange()
+    {
+        await selection.SelectRange(_selectionTarget, 0, 5);
+        var text = await selection.GetText();
+        Set($"sel:range:{text}");
+    }
+    private async Task SelectionOffsets()
+    {
+        await selection.SelectRange(_selectionTarget, 6, 15);
+        var offsets = await selection.GetRangeIn(_selectionTarget);
+        Set($"sel:offsets:{offsets?.Start}/{offsets?.End}");
+    }
+    private async Task SelectionContentsOffsets()
+    {
+        // selectNodeContents leaves both ends on the element itself rather than in its text, which
+        // still has to read as "all of it" - 0 to the text's length.
+        await selection.SelectElementContents(_selectionTarget);
+        var offsets = await selection.GetRangeIn(_selectionTarget);
+        Set($"sel:contents:{offsets?.Start}/{offsets?.End}");
+    }
+    private async Task SelectionEmptyRange()
+    {
+        // The round trip an emptied editor needs: an element with no text reports {0,0}, and the
+        // caret has to go back to exactly that.
+        var placed = await selection.SelectRange(_selectionEmptyTarget, 0, 0);
+        var offsets = await selection.GetRangeIn(_selectionEmptyTarget);
+        Set($"sel:empty:{placed}/{offsets?.Start}/{offsets?.End}");
+    }
+    private async Task SelectionNegativeRange()
+    {
+        // Out-of-range offsets are a false, not an exception - a negative one included.
+        var start = await selection.SelectRange(_selectionTarget, -1, 5);
+        var end = await selection.SelectRange(_selectionTarget, 0, -5);
+        Set($"sel:badrange:{start}/{end}");
+    }
+    private async Task SelectionReplace()
+    {
+        // The replacement leaves a caret after the text, not the text selected.
+        await selection.SelectRange(_selectionTarget, 0, 5);
+        await selection.ReplaceWithText("BUTIL");
+        var collapsed = (await selection.Get())?.IsCollapsed;
+
+        // Selecting all of it is how its text is read back from here.
+        await selection.SelectElementContents(_selectionTarget);
+        Set($"sel:replace:{collapsed}/{await selection.GetText()}");
+    }
+    private async Task SelectionClear()
+    {
+        await selection.SelectElementContents(_selectionTarget);
+        await selection.RemoveAll();
+        var text = await selection.GetText();
+        Set($"sel:clear:{text.Length == 0}");
     }
 
     public class SamplePayload(int number, string label)

@@ -1,0 +1,303 @@
+@page "/url"
+@inject Bit.Butil.Url url
+
+<PageTitle>Url - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window &amp; Browsing"
+            Title="Url"
+            Lead="URL, URLSearchParams and URLPattern from C#: parse and edit URLs exactly as the browser does, and match routes with named parameters - which .NET has no equivalent for at all."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/URL_API"
+            InjectAs="Url url" />
+
+<Callout Type="info" Title="When System.Uri is the better tool">
+    For ordinary parsing it usually is - it needs no interop call. Come here when the answer has to
+    match what the <em>browser</em> will do: WHATWG and RFC 3986 disagree on trailing dots in a host,
+    on how far <code>..</code> may climb, and on which characters get percent-encoded. And come here
+    for <code>URLPattern</code>, which has no .NET counterpart.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Parse and resolve"
+                 Api="IsSupported / CanParse / Parse / Resolve"
+                 Description="Parse splits a URL into the components the browser sees. CanParse asks the same question without the exception a constructor would throw. Resolve applies a relative reference to a base, including the scheme-relative and over-climbing cases."
+                 Code=@("""
+@inject Bit.Butil.Url url
+
+var parts = await url.Parse("https://example.com:8080/docs/a?x=1#top");
+// parts.Origin, parts.Pathname, parts.Search, ...
+
+var absolute = await url.Resolve("../b", "https://example.com/docs/a");
+// "https://example.com/b"
+""")>
+        <div class="controls">
+            <input @bind="_url" placeholder="URL" style="min-width:24rem" />
+            <button @onclick="ParseUrl">Parse</button>
+            <button class="secondary" @onclick="ResolveSamples">Resolve a few references</button>
+        </div>
+        @if (_parts is not null)
+        {
+            <div class="field"><span class="field-label">Origin</span><span><code>@_parts.Origin</code></span></div>
+            <div class="field"><span class="field-label">Host</span><span><code>@_parts.Host</code></span></div>
+            <div class="field"><span class="field-label">Pathname</span><span><code>@_parts.Pathname</code></span></div>
+            <div class="field"><span class="field-label">Search</span><span><code>@_parts.Search</code></span></div>
+            <div class="field"><span class="field-label">Hash</span><span><code>@_parts.Hash</code></span></div>
+        }
+        <DemoConsole @ref="parseOutput" Title="parse output" />
+    </DemoSection>
+
+    <DemoSection Title="Query strings"
+                 Api="ParseQuery / BuildQuery / GetQueryValues / SetQuery / AppendQuery / RemoveQuery / SortQuery"
+                 Description="ParseQuery returns a flat list rather than a map, because a query string may repeat a name - ?tag=a&tag=b is two parameters, and a map would drop one. The whole-URL edits save re-assembling the parts by hand; SortQuery is the one to reach for when two URLs that differ only in parameter order should produce the same cache key."
+                 Code=@("""
+var parameters = await url.ParseQuery("?tag=a&tag=b&page=2");
+var values = await url.GetQueryValues("?tag=a&tag=b", "tag");   // ["a", "b"]
+
+var next = await url.AppendQuery(current, [new("page", "3")]);
+var clean = await url.RemoveQuery(current, "utm_source", "utm_medium");
+var key = await url.SortQuery(current);
+""")>
+        <div class="controls">
+            <input @bind="_queryUrl" placeholder="URL with a query" style="min-width:24rem" />
+            <button @onclick="ShowQuery">Parse its query</button>
+            <button class="secondary" @onclick="EditQuery">Append, remove, sort</button>
+        </div>
+        <DemoConsole @ref="queryOutput" Title="query output" />
+    </DemoSection>
+
+    <DemoSection Title="Match a route"
+                 Api="IsPatternSupported / IsPatternValid / TestPattern / MatchPattern"
+                 Description="URLPattern is a route matcher: :name captures a segment, * is a wildcard, and {} groups can be made optional with ?. TestPattern answers yes or no; MatchPattern also hands back what each parameter captured. A path-only pattern needs a base URL to resolve against."
+                 Code=@("""
+var match = await url.MatchPattern("/books/:id", "https://example.com/books/42",
+                                   baseUrl: "https://example.com");
+
+var id = match?.Groups["id"];   // "42"
+""")>
+        <div class="controls">
+            <input @bind="_pattern" placeholder="/books/:id" style="min-width:14rem" />
+            <input @bind="_candidate" placeholder="https://example.com/books/42" style="min-width:20rem" />
+            <button @onclick="MatchPattern">Match</button>
+            <button class="secondary" @onclick="MatchSamples">Try a few patterns</button>
+        </div>
+        <DemoConsole @ref="patternOutput" Title="pattern output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes URL. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="CanParse"
+               Signature="ValueTask<bool> CanParse(string url, string? baseUrl = null)"
+               Description="Whether the browser can parse this URL, without the exception the constructor would throw." />
+    <ApiMember Name="Parse"
+               Signature="ValueTask<UrlParts?> Parse(string url, string? baseUrl = null)"
+               Description="Splits a URL into its components as the browser parsed it. Null when it doesn't parse." />
+    <ApiMember Name="Resolve"
+               Signature="ValueTask<string?> Resolve(string url, string baseUrl)"
+               Description="Resolves a possibly relative reference against a base, the way the browser's own resolver does." />
+    <ApiMember Name="ParseQuery"
+               Signature="ValueTask<UrlQueryParameter[]> ParseQuery(string query)"
+               Description="Parses a query string into its parameters, in order, keeping repeats." />
+    <ApiMember Name="BuildQuery"
+               Signature="ValueTask<string> BuildQuery(UrlQueryParameter[] parameters)"
+               Description="Builds a query string, percent-encoding each parameter the way the browser does. No leading '?'." />
+    <ApiMember Name="GetQueryValues"
+               Signature="ValueTask<string[]> GetQueryValues(string query, string key)"
+               Description="Every value of one repeated parameter, in order." />
+    <ApiMember Name="SetQuery"
+               Signature="ValueTask<string?> SetQuery(string url, UrlQueryParameter[] parameters)"
+               Description="Replaces a URL's whole query string." />
+    <ApiMember Name="AppendQuery"
+               Signature="ValueTask<string?> AppendQuery(string url, UrlQueryParameter[] parameters)"
+               Description="Appends parameters, keeping any already there - including one of the same name." />
+    <ApiMember Name="RemoveQuery"
+               Signature="ValueTask<string?> RemoveQuery(string url, params string[] keys)"
+               Description="Removes every parameter with any of these names." />
+    <ApiMember Name="SortQuery"
+               Signature="ValueTask<string?> SortQuery(string url)"
+               Description="Sorts a URL's query parameters by name - for a cache key or a signature." />
+    <ApiMember Name="IsPatternSupported"
+               Signature="ValueTask<bool> IsPatternSupported()"
+               Description="True when the runtime exposes URLPattern. Newer than the rest of this class." />
+    <ApiMember Name="IsPatternValid"
+               Signature="ValueTask<bool> IsPatternValid(string pattern, string? baseUrl = null)"
+               Description="Whether the pattern itself compiles - a malformed pattern otherwise looks like 'no match'." />
+    <ApiMember Name="TestPattern"
+               Signature="ValueTask<bool> TestPattern(string pattern, string url, string? baseUrl = null)"
+               Description="Whether a URL matches a pattern." />
+    <ApiMember Name="MatchPattern"
+               Signature="ValueTask<UrlPatternMatch?> MatchPattern(string pattern, string url, string? baseUrl = null)"
+               Description="Matches a URL against a pattern and returns what the named parameters captured. Null when it doesn't match." />
+</ApiTable>
+
+@code {
+    private DemoConsole parseOutput = default!;
+    private DemoConsole queryOutput = default!;
+    private DemoConsole patternOutput = default!;
+
+    private string _url = "https://user:pw@example.com:8080/docs/guide?tag=a&tag=b#section";
+    private string _queryUrl = "https://example.com/list?page=2&utm_source=mail&tag=a&tag=b";
+    private string _pattern = "/books/:id";
+    private string _candidate = "https://example.com/books/42";
+    private UrlParts? _parts;
+
+    private async Task ParseUrl()
+    {
+        try
+        {
+            _parts = await url.Parse(_url);
+
+            if (_parts is null)
+            {
+                await parseOutput.Warn("Parse →", "null - the browser can't parse that.");
+                return;
+            }
+
+            await parseOutput.Success("Parse →", _parts.Href);
+        }
+        catch (Exception ex)
+        {
+            await parseOutput.Error("Parse failed →", ex.Message);
+        }
+    }
+
+    private async Task ResolveSamples()
+    {
+        try
+        {
+            const string baseUrl = "https://example.com/docs/guide/page";
+
+            foreach (var reference in new[] { "../other", "/root", "//cdn.example.net/x", "?only=query", "../../../../up" })
+            {
+                await parseOutput.Info($"Resolve(\"{reference}\") →", await url.Resolve(reference, baseUrl) ?? "(null)");
+            }
+
+            await parseOutput.Log("The last one climbs past the root: the browser stops at the origin rather than failing.");
+        }
+        catch (Exception ex)
+        {
+            await parseOutput.Error("Resolve failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowQuery()
+    {
+        try
+        {
+            var parts = await url.Parse(_queryUrl);
+            var parameters = await url.ParseQuery(parts?.Search ?? string.Empty);
+
+            foreach (var parameter in parameters)
+            {
+                await queryOutput.Info($"{parameter.Key} =", parameter.Value);
+            }
+
+            var tags = await url.GetQueryValues(parts?.Search ?? string.Empty, "tag");
+            await queryOutput.Success("GetQueryValues(\"tag\") →", string.Join(", ", tags));
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("ParseQuery failed →", ex.Message);
+        }
+    }
+
+    private async Task EditQuery()
+    {
+        try
+        {
+            var appended = await url.AppendQuery(_queryUrl, [new UrlQueryParameter("page", "3")]);
+            await queryOutput.Info("AppendQuery →", appended ?? "(null)");
+
+            var cleaned = await url.RemoveQuery(appended ?? _queryUrl, "utm_source");
+            await queryOutput.Info("RemoveQuery →", cleaned ?? "(null)");
+
+            var sorted = await url.SortQuery(cleaned ?? _queryUrl);
+            await queryOutput.Success("SortQuery →", sorted ?? "(null)");
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("Query edit failed →", ex.Message);
+        }
+    }
+
+    private async Task MatchPattern()
+    {
+        try
+        {
+            if (await url.IsPatternSupported() is false)
+            {
+                await patternOutput.Warn("URLPattern isn't supported in this browser - try a recent Chromium or Safari.");
+                return;
+            }
+
+            if (await url.IsPatternValid(_pattern, "https://example.com") is false)
+            {
+                await patternOutput.Warn("IsPatternValid →", "that pattern doesn't compile.");
+                return;
+            }
+
+            var match = await url.MatchPattern(_pattern, _candidate, "https://example.com");
+
+            if (match is null)
+            {
+                await patternOutput.Warn("MatchPattern →", "no match.");
+                return;
+            }
+
+            await patternOutput.Success("MatchPattern →", $"pathname '{match.Pathname}'.");
+
+            // The two components a URL rarely carries, and never silently: worth showing when it does.
+            if (match.Username.Length > 0 || match.Password.Length > 0)
+            {
+                await patternOutput.Info("  credentials =", $"{match.Username}:{match.Password}");
+            }
+
+            foreach (var group in match.Groups)
+            {
+                await patternOutput.Info($"  {group.Key} =", group.Value ?? "(null)");
+            }
+        }
+        catch (Exception ex)
+        {
+            await patternOutput.Error("MatchPattern failed →", ex.Message);
+        }
+    }
+
+    private async Task MatchSamples()
+    {
+        try
+        {
+            if (await url.IsPatternSupported() is false)
+            {
+                await patternOutput.Warn("URLPattern isn't supported in this browser.");
+                return;
+            }
+
+            (string Pattern, string Url)[] samples =
+            [
+                ("/books/:id", "https://example.com/books/42"),
+                ("/books/:id/pages/:page", "https://example.com/books/42/pages/7"),
+                ("/files/:name.:ext", "https://example.com/files/report.pdf"),
+                ("/assets/*", "https://example.com/assets/img/logo.svg"),
+                ("/books/:id", "https://example.com/authors/42"),
+            ];
+
+            foreach (var (pattern, candidate) in samples)
+            {
+                var matched = await url.TestPattern(pattern, candidate, "https://example.com");
+                var match = matched ? await url.MatchPattern(pattern, candidate, "https://example.com") : null;
+                var groups = match is null
+                    ? string.Empty
+                    : " → " + string.Join(", ", match.Groups.Select(g => $"{g.Key}={g.Value}"));
+
+                if (matched) await patternOutput.Success($"{pattern} matches {candidate}{groups}");
+                else await patternOutput.Info($"{pattern} does not match {candidate}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await patternOutput.Error("TestPattern failed →", ex.Message);
+        }
+    }
+}

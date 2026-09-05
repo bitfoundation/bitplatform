@@ -285,7 +285,7 @@ internal static class Program
     /// </summary>
     /// <remarks>
     /// Every other check here starts from the attribute, so a class that simply never got one is invisible
-    /// to all of them: the report still says "57 of 57 registered, PASS" while consumers hit "Cannot provide
+    /// to all of them: the report still says "71 of 71 registered, PASS" while consumers hit "Cannot provide
     /// a value for property" at runtime. That is the failure mode reflection-based registration introduces -
     /// there is no central <c>AddScoped&lt;T&gt;()</c> list whose absence a reviewer would notice - so it is
     /// the one thing this harness has to find without being told the answer.

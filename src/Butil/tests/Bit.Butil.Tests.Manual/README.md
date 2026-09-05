@@ -34,7 +34,7 @@ callbacks. Everything else in Bit.Butil is untouched, so a trimmed publish shoul
 public constructor; the services nothing references must be gone.
 
 That check starts from the attribute, so on its own it is blind to a service class that never got one -
-the report would happily say "57 of 57 registered" while consumers hit *Cannot provide a value for
+the report would happily say "71 of 71 registered" while consumers hit *Cannot provide a value for
 property* at runtime. So the harness also looks for service classes by **shape**: a public, constructible
 class taking an `IJSRuntime`. Any such class without `[ButilService]` is a failure. (`ButilStorage` is
 excluded: it takes an `IJSRuntime` too, but it is the shared base of `LocalStorage` and `SessionStorage`
@@ -231,7 +231,7 @@ a genuinely exercised code path can be asserted on.
 Run both from this folder, so they share the manifest:
 
 ```bash
-# untrimmed: all 57 [ButilService] classes present; writes interop-manifest.txt
+# untrimmed: all 71 [ButilService] classes present; writes interop-manifest.txt
 dotnet run -c Release
 
 # trimmed, TrimMode=full (what Blazor WebAssembly uses); checks against the manifest
@@ -247,13 +247,13 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 622,080 bytes | 118,272 bytes |
-| types in assembly | 793 | 149 |
-| `[ButilService]` discovered / registered | 57 / 57 | 5 / 5 |
-| interop contract | 43 types captured | 10 checked, 33 trimmed away, 0 problems |
-| JavaScript modules called | 63 of 65 | 6 of 65 (clipboard, cookie, events, geolocation, storage, window) |
-| `bit-butil.js` a publish would ship | 112,422 bytes, all 65 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 8.1% |
-| lazy scripts would download | 147,730 bytes over 63 files | 11,940 bytes over 6 files |
+| `Bit.Butil.dll` | 725,504 bytes | 118,272 bytes |
+| types in assembly | 909 | 149 |
+| `[ButilService]` discovered / registered | 71 / 71 | 5 / 5 |
+| interop contract | 46 types captured | 10 checked, 36 trimmed away, 0 problems |
+| JavaScript modules called | 77 of 79 | 6 of 79 (clipboard, cookie, events, geolocation, storage, window) |
+| `bit-butil.js` a publish would ship | 140,547 bytes, all 79 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 6.5% |
+| lazy scripts would download | 188,283 bytes over 77 files | 11,940 bytes over 6 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 37 / 37 | not run |
 | script-publishing checks | 26 / 26 (9 publishes, ~15s) | not run |

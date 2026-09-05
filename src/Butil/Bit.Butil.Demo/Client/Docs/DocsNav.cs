@@ -29,6 +29,8 @@ public static class DocsNav
             new("Location", "location", "Read and mutate the current URL, reload or navigate.", typeof(LocationPage)),
             new("Navigator", "navigator", "Browser identity, languages, share, vibrate, badges and more.", typeof(NavigatorPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
             new("UserAgent", "user-agent", "Parsed user-agent brands, platform and mobile-ness.", typeof(UserAgentPage), ApiSupport.Partial),
+            new("Url", "url", "Parse and edit URLs the way the browser does - and match routes with URLPattern.", typeof(UrlPage), ApiSupport.Partial),
+            new("Speculation", "speculation", "Prefetch and prerender rules, and knowing whether anyone is looking at this page yet.", typeof(SpeculationPage), ApiSupport.Chromium),
         ]),
         new("Screen & Diagnostics", "diagnostics",
         [
@@ -54,6 +56,9 @@ public static class DocsNav
                 ["MutationObserverExtensions", "MutationObserverOptions"]),
             new("ResizeObserver", "resize-observer", "Observe element size changes with box-model detail.", typeof(ResizeObserverPage), ApiSupport.Broad, ApiNeeds.None,
                 ["ResizeObserverExtensions"]),
+            new("Selection", "selection", "Read, move and edit the user's selection - highlight it, replace it, or restore a caret.", typeof(SelectionPage), ApiSupport.Broad),
+            new("Ink", "ink", "Delegated ink trails: the compositor draws ahead of your rendering.", typeof(InkPage), ApiSupport.Chromium),
+            new("HandwritingRecognition", "handwriting-recognition", "Turn strokes into text with a model already on the device.", typeof(HandwritingRecognitionPage), ApiSupport.Chromium, ApiNeeds.Experimental),
         ]),
         new("Storage", "storage",
         [
@@ -75,6 +80,8 @@ public static class DocsNav
             new("Fetch", "fetch", "The browser fetch API with full request/response control.", typeof(FetchPage)),
             new("FileSystem", "file-system", "Pick real files and folders, then read and write them back.", typeof(FileSystemPage), ApiSupport.Chromium, ApiNeeds.UserGesture),
             new("Compression", "compression", "Gzip and deflate through the browser's native codec.", typeof(CompressionPage), ApiSupport.Broad),
+            new("TextEncoding", "text-encoding", "Decode Shift_JIS, windows-1256 and the rest of the legacy code pages.", typeof(TextEncodingPage), ApiSupport.Broad),
+            new("StructuredClone", "structured-clone", "Deep-copy a value, and know whether postMessage or IndexedDB will take it.", typeof(StructuredClonePage), ApiSupport.Broad),
         ]),
         new("Network & Workers", "network",
         [
@@ -99,12 +106,20 @@ public static class DocsNav
             new("ContactPicker", "contact-picker", "Let users pick contacts to share with your app.", typeof(ContactPickerPage), ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
             new("EyeDropper", "eye-dropper", "Sample any pixel color on the screen.", typeof(EyeDropperPage), ApiSupport.ChromiumDesktop, ApiNeeds.UserGesture | ApiNeeds.Experimental),
             new("BarcodeDetector", "barcode-detector", "Find QR codes and barcodes in a camera frame or an image.", typeof(BarcodeDetectorPage), ApiSupport.Chromium, ApiNeeds.Experimental),
+            new("FaceDetector", "face-detector", "Find where faces are in an image or a camera frame - never whose they are.", typeof(FaceDetectorPage), ApiSupport.Chromium, ApiNeeds.Experimental),
+            new("TextDetector", "text-detector", "Read printed text out of an image or a camera frame.", typeof(TextDetectorPage), ApiSupport.Chromium, ApiNeeds.Experimental),
         ]),
         new("Identity & Permissions", "identity",
         [
             new("WebAuthn", "web-authn", "Passkeys: create credentials and verify assertions.", typeof(WebAuthnPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
             new("Permissions", "permissions", "Query the state of any browser permission.", typeof(PermissionsPage), ApiSupport.Partial),
             new("Notification", "notification", "Request permission and show system notifications.", typeof(NotificationPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
+        ]),
+        new("Security & Privacy", "security",
+        [
+            new("Sanitizer", "sanitizer", "The browser's own XSS filter, configurable and reusable.", typeof(SanitizerPage), ApiSupport.Chromium),
+            new("TrustedTypes", "trusted-types", "Policies that turn a string into a value a dangerous sink will accept.", typeof(TrustedTypesPage), ApiSupport.Chromium),
+            new("PrivacySandbox", "privacy-sandbox", "Topics, Attribution Reporting, Private State Tokens and fenced frames.", typeof(PrivacySandboxPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Experimental),
         ]),
         new("Media & Speech", "media",
         [
@@ -113,6 +128,8 @@ public static class DocsNav
             new("WebAudio", "web-audio", "Play and control audio buffers with the Web Audio API.", typeof(WebAudioPage), ApiSupport.Broad, ApiNeeds.UserGesture),
             new("MediaRecorder", "media-recorder", "Record a camera, microphone or screen share to a file.", typeof(MediaRecorderPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
             new("MediaSession", "media-session", "Lock-screen metadata and hardware media-key handlers.", typeof(MediaSessionPage), ApiSupport.Partial),
+            new("Region & Element Capture", "capture", "Narrow a screen share of this tab down to one element.", typeof(CapturePage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture,
+                ["RegionCapture", "ElementCapture"]),
         ]),
     ];
 

@@ -1,0 +1,250 @@
+@page "/privacy-sandbox"
+@inject Bit.Butil.PrivacySandbox privacySandbox
+
+<PageTitle>PrivacySandbox - Bit.Butil</PageTitle>
+
+<PageHeader Category="Security &amp; Privacy"
+            Title="PrivacySandbox"
+            Lead="The browser-side halves of Topics, Attribution Reporting, Private State Tokens and fenced frames - the APIs proposed to do what third-party cookies used to, with the browser holding the data instead of the site."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Privacy_Sandbox"
+            InjectAs="PrivacySandbox privacySandbox" />
+
+<Callout Type="warning" Title="Volatile, and none of it works from a call alone">
+    Chromium-only, and genuinely unstable: shapes have changed between releases and parts have been
+    deprecated outright. Each API also needs more than a call - a permissions policy on the document,
+    response headers from the server, and for attribution and tokens an origin enrolled with the
+    browser vendor. What is here is the client-side half; the rest is configuration you arrange
+    elsewhere. Expect empty results on this page.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Topics"
+                 Api="IsTopicsSupported / GetTopics"
+                 Description="A topic is an id in a public taxonomy - never a profile, an identifier or a history. At most three come back, and only ones the browser has already observed this caller present for, so an empty array is the ordinary answer. Reading with skipObservation records nothing; observing should follow from a real ad request rather than from a debug read."
+                 Code=@("""
+@inject Bit.Butil.PrivacySandbox privacySandbox
+
+var topics = await privacySandbox.GetTopics(skipObservation: true);
+
+foreach (var topic in topics)
+{
+    // topic.Topic indexes into topic.TaxonomyVersion's taxonomy
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckTopicsSupport">IsTopicsSupported</button>
+            <button @onclick="ReadTopics">GetTopics (skipObservation)</button>
+        </div>
+        <DemoConsole @ref="topicsOutput" Title="topics output" />
+    </DemoSection>
+
+    <DemoSection Title="Attribution Reporting"
+                 Api="IsAttributionReportingSupported / RegisterAttribution / RegisterAttributionImage"
+                 Description="The registration lives in the response headers of a URL you fetch, not in its body - the browser reads them and stores what it read, and nothing comes back to your code. Which is the design: measurement without the site learning who converted. The image form is what an ad creative uses; the fetch form suits an app that is already making the request."
+                 Code=@("""
+// a source - an impression or a click that may later convert:
+await privacySandbox.RegisterAttribution("https://reporter.example/source",
+                                         eventSourceEligible: true);
+
+// the conversion itself:
+await privacySandbox.RegisterAttribution("https://reporter.example/trigger",
+                                         eventSourceEligible: false, triggerEligible: true);
+""")>
+        <div class="controls">
+            <button @onclick="CheckAttributionSupport">IsAttributionReportingSupported</button>
+            <label>Endpoint
+                <input @bind="_attributionUrl" style="min-width:18rem" />
+            </label>
+            <button class="secondary" @onclick="RegisterSource">RegisterAttribution</button>
+        </div>
+        <DemoConsole @ref="attributionOutput" Title="attribution output" />
+    </DemoSection>
+
+    <DemoSection Title="Private State Tokens"
+                 Api="IsPrivateStateTokensSupported / HasPrivateToken / HasRedemptionRecord / RequestToken"
+                 Description="An anti-fraud signal that carries nothing else: a site the user has already proved themselves on issues tokens, and another site spends one to learn 'trusted' and no more. The two Has… calls are the cheap checks - they answer whether the challenge needs running again at all."
+                 Code=@("""
+if (await privacySandbox.HasRedemptionRecord(issuer) is false)
+{
+    await privacySandbox.RequestToken(issuerUrl, PrivateStateTokenOperation.TokenRedemption);
+}
+
+// Attaching the record needs the issuers it may come from - nothing else says whose:
+await privacySandbox.RequestToken(apiUrl, PrivateStateTokenOperation.SendRedemptionRecord,
+                                  issuers: [issuer]);
+""")>
+        <div class="controls">
+            <button @onclick="CheckTokensSupport">IsPrivateStateTokensSupported</button>
+            <label>Issuer
+                <input @bind="_issuer" style="min-width:18rem" />
+            </label>
+            <button class="secondary" @onclick="CheckTokens">HasPrivateToken / HasRedemptionRecord</button>
+        </div>
+        <DemoConsole @ref="tokensOutput" Title="tokens output" />
+    </DemoSection>
+
+    <DemoSection Title="Fenced frames"
+                 Api="IsFencedFrameSupported / IsInFencedFrame"
+                 Description="Worth knowing rather than assuming: inside a fenced frame storage is partitioned differently, there is no access to the embedder, navigation is restricted and the referrer is gone - so code that takes any of those for granted has to behave differently there."
+                 Code=@("""
+if (await privacySandbox.IsInFencedFrame())
+{
+    // no embedder, partitioned storage, no referrer
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckFencedFrames">Check both</button>
+        </div>
+        <DemoConsole @ref="fencedOutput" Title="fenced frame output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsTopicsSupported"
+               Signature="ValueTask<bool> IsTopicsSupported()"
+               Description="True when the runtime exposes document.browsingTopics. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetTopics"
+               Signature="ValueTask<BrowsingTopic[]> GetTopics(bool skipObservation = false)"
+               Description="At most three coarse interests, and only ones already observed for this caller. Empty is the normal answer." />
+    <ApiMember Name="IsAttributionReportingSupported"
+               Signature="ValueTask<bool> IsAttributionReportingSupported()"
+               Description="True when the runtime supports Attribution Reporting registrations." />
+    <ApiMember Name="RegisterAttribution"
+               Signature="ValueTask<bool> RegisterAttribution(string url, bool eventSourceEligible = true, bool triggerEligible = false)"
+               Description="Registers a source or a trigger by fetching a URL whose response carries the registration headers." />
+    <ApiMember Name="RegisterAttributionImage"
+               Signature="ValueTask<bool> RegisterAttributionImage(string url)"
+               Description="The same registration through an image, the way an ad creative does it. The image is never displayed." />
+    <ApiMember Name="IsPrivateStateTokensSupported"
+               Signature="ValueTask<bool> IsPrivateStateTokensSupported()"
+               Description="True when the runtime exposes document.hasPrivateToken." />
+    <ApiMember Name="HasPrivateToken"
+               Signature="ValueTask<bool> HasPrivateToken(string issuer)"
+               Description="Whether this browser holds any unspent token from an issuer." />
+    <ApiMember Name="HasRedemptionRecord"
+               Signature="ValueTask<bool> HasRedemptionRecord(string issuer)"
+               Description="Whether this browser already holds a redemption record from an issuer for this site." />
+    <ApiMember Name="RequestToken"
+               Signature="ValueTask<bool> RequestToken(string url, PrivateStateTokenOperation operation, int version = 1, string[]? issuers = null)"
+               Description="Runs one token operation as a fetch: requesting, redeeming, or attaching the record. SendRedemptionRecord needs issuers; the other two ignore it." />
+    <ApiMember Name="IsFencedFrameSupported"
+               Signature="ValueTask<bool> IsFencedFrameSupported()"
+               Description="True when the runtime supports &lt;fencedframe&gt;." />
+    <ApiMember Name="IsInFencedFrame"
+               Signature="ValueTask<bool> IsInFencedFrame()"
+               Description="Whether this document is itself running inside a fenced frame." />
+</ApiTable>
+
+@code {
+    private DemoConsole topicsOutput = default!;
+    private DemoConsole attributionOutput = default!;
+    private DemoConsole tokensOutput = default!;
+    private DemoConsole fencedOutput = default!;
+
+    private string _attributionUrl = "https://reporter.example/source";
+    private string _issuer = "https://issuer.example";
+
+    private async Task CheckTopicsSupport()
+    {
+        try
+        {
+            var supported = await privacySandbox.IsTopicsSupported();
+
+            if (supported) await topicsOutput.Success("IsTopicsSupported →", true);
+            else await topicsOutput.Warn("IsTopicsSupported →", "false - Chromium only, and it also needs the browsing-topics permissions policy.");
+        }
+        catch (Exception ex)
+        {
+            await topicsOutput.Error("IsTopicsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadTopics()
+    {
+        try
+        {
+            var topics = await privacySandbox.GetTopics(skipObservation: true);
+
+            if (topics.Length == 0)
+            {
+                await topicsOutput.Warn("GetTopics → empty. Normal: this origin has no observations for you, or the policy blocks it.");
+                return;
+            }
+
+            foreach (var topic in topics)
+            {
+                await topicsOutput.Success($"Topic {topic.Topic} (taxonomy {topic.TaxonomyVersion}, model {topic.ModelVersion})");
+            }
+        }
+        catch (Exception ex)
+        {
+            await topicsOutput.Error("GetTopics failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckAttributionSupport()
+    {
+        try
+        {
+            await attributionOutput.Info("IsAttributionReportingSupported →", await privacySandbox.IsAttributionReportingSupported());
+        }
+        catch (Exception ex)
+        {
+            await attributionOutput.Error("IsAttributionReportingSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task RegisterSource()
+    {
+        try
+        {
+            var ok = await privacySandbox.RegisterAttribution(_attributionUrl, eventSourceEligible: true);
+
+            await attributionOutput.Info("RegisterAttribution →", ok);
+            await attributionOutput.Log("True only means the request completed. Whether the browser accepted the registration is deliberately not observable from script - the placeholder endpoint above will simply fail.");
+        }
+        catch (Exception ex)
+        {
+            await attributionOutput.Error("RegisterAttribution failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckTokensSupport()
+    {
+        try
+        {
+            await tokensOutput.Info("IsPrivateStateTokensSupported →", await privacySandbox.IsPrivateStateTokensSupported());
+        }
+        catch (Exception ex)
+        {
+            await tokensOutput.Error("IsPrivateStateTokensSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckTokens()
+    {
+        try
+        {
+            await tokensOutput.Info("HasPrivateToken →", await privacySandbox.HasPrivateToken(_issuer));
+            await tokensOutput.Info("HasRedemptionRecord →", await privacySandbox.HasRedemptionRecord(_issuer));
+            await tokensOutput.Log("Both are false for an issuer that never issued you anything - which is every issuer, for this placeholder origin.");
+        }
+        catch (Exception ex)
+        {
+            await tokensOutput.Error("Token check failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckFencedFrames()
+    {
+        try
+        {
+            await fencedOutput.Info("IsFencedFrameSupported →", await privacySandbox.IsFencedFrameSupported());
+            await fencedOutput.Success("IsInFencedFrame →", await privacySandbox.IsInFencedFrame());
+        }
+        catch (Exception ex)
+        {
+            await fencedOutput.Error("Fenced frame check failed →", ex.Message);
+        }
+    }
+}
