@@ -89,6 +89,10 @@ public sealed class SerialPort : IAsyncDisposable
     /// </summary>
     /// <param name="onData">Called for every chunk read from the port.</param>
     /// <param name="onError">Called when the read loop fails - an unplugged adapter, a framing error.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Reading did not start - the port is closed, or a read loop is already running on it.
+    /// <paramref name="onError"/> is called with the same message first.
+    /// </exception>
     /// <returns>A subscription - dispose it to stop reading and release the stream lock.</returns>
     public ValueTask<ButilSubscription> SubscribeData(Action<byte[]> onData, Action<string>? onError = null)
         => _owner.SubscribeData(Id, onData, onError);

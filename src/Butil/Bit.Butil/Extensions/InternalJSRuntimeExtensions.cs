@@ -150,6 +150,24 @@ internal static class InternalJSRuntimeExtensions
     }
 
     /// <summary>
+    /// Invokes a JS listener-registration function - one that reports whether it actually attached
+    /// by returning a boolean - and tells the caller whether the registration took.
+    /// </summary>
+    /// <remarks>
+    /// Plain <see cref="Invoke{TValue}(IJSRuntime, string, object?[])"/> can't be used for this:
+    /// during prerender/SSR it hands back <c>default(bool)</c>, which is indistinguishable from the
+    /// JS side refusing to attach. Nothing is registered during prerender and nothing failed either
+    /// - the caller's subscription is simply inert until the app is interactive - so this reports
+    /// success there, and only a real <c>false</c> from JS means "the listener is not attached".
+    /// </remarks>
+    internal static async ValueTask<bool> InvokeRegister(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        if (jsRuntime.IsJsRuntimeInvalid()) return true;
+
+        return await jsRuntime.Invoke<bool>(identifier, args);
+    }
+
+    /// <summary>
     /// Opt-in fast invoke for value-returning calls. Honors <see cref="BitButil.FastInvokeEnabled"/>
     /// and, when running under an <see cref="IJSInProcessRuntime"/> (Blazor WebAssembly), calls the
     /// JS function synchronously.

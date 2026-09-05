@@ -115,7 +115,26 @@ public class Serial(IJSRuntime js) : IAsyncDisposable
     {
         var id = Guid.NewGuid();
         _dataHandlers[id] = (onData, onError);
-        await js.InvokeVoid("BitButil.serial.startReading", id, DotNetRef, portId);
+
+        bool reading;
+        try
+        {
+            reading = await js.InvokeRegister("BitButil.serial.startReading", id, DotNetRef, portId);
+        }
+        catch
+        {
+            // No read loop on the JS side, so the entry must not outlive the call.
+            _dataHandlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (reading is false)
+        {
+            _dataHandlers.TryRemove(id, out _);
+            var message = "Reading could not be started - the port is not open, or it is already being read.";
+            onError?.Invoke(message);
+            throw new InvalidOperationException(message);
+        }
 
         return new ButilSubscription(id, async () =>
         {

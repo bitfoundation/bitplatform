@@ -65,12 +65,32 @@ public class DevicePosture(IJSRuntime js) : IAsyncDisposable
     /// Runs <paramref name="handler"/> whenever the device is folded or unfolded.
     /// </summary>
     /// <returns>A subscription - dispose it to detach the listener.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The listener was not attached - the browser does not expose <c>navigator.devicePosture</c>.
+    /// </exception>
     [DynamicDependency(nameof(InvokeDevicePostureChange), typeof(DevicePosture))]
     public async ValueTask<ButilSubscription> SubscribeChange(Action<DevicePostureType> handler)
     {
         var id = Guid.NewGuid();
         _handlers[id] = handler;
-        await js.InvokeVoid("BitButil.devicePosture.addChange", DotNetRef, id);
+
+        bool added;
+        try
+        {
+            added = await js.InvokeRegister("BitButil.devicePosture.addChange", DotNetRef, id);
+        }
+        catch
+        {
+            // Nothing is listening on the JS side, so the entry must not outlive the call.
+            _handlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (added is false)
+        {
+            _handlers.TryRemove(id, out _);
+            throw new InvalidOperationException("The device posture listener could not be attached - the API is not available.");
+        }
 
         return new ButilSubscription(id, () => RemoveChange(id));
     }

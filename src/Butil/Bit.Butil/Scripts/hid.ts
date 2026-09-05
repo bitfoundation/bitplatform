@@ -111,7 +111,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (_inputListeners[key].device === device) unsubscribeInputReports(key);
         }
         // Fire-and-forget: disposal must not wait on a device that has already been unplugged.
-        try { if (device.opened) device.close(); } catch { /* already closed or gone */ }
+        // close() rejects asynchronously, so the catch has to be on the promise as well - a bare
+        // try/catch here would leave an unhandled rejection behind.
+        try { if (device.opened) void device.close()?.catch(() => { /* already closed or gone */ }); }
+        catch { /* already closed or gone */ }
     }
 
     async function open(id: string) {

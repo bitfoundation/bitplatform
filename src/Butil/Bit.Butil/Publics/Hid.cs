@@ -108,7 +108,24 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     {
         var id = Guid.NewGuid();
         _inputHandlers[id] = handler;
-        await js.InvokeVoid("BitButil.hid.subscribeInputReports", id, DotNetRef, deviceId);
+
+        bool subscribed;
+        try
+        {
+            subscribed = await js.InvokeRegister("BitButil.hid.subscribeInputReports", id, DotNetRef, deviceId);
+        }
+        catch
+        {
+            // Nothing is listening on the JS side, so the entry must not outlive the call.
+            _inputHandlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (subscribed is false)
+        {
+            _inputHandlers.TryRemove(id, out _);
+            throw new InvalidOperationException("The input report listener could not be attached - the device handle is no longer known.");
+        }
 
         return new ButilSubscription(id, async () =>
         {
@@ -122,6 +139,7 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     /// permission for raise these.
     /// </summary>
     /// <returns>A subscription - dispose it to detach the listeners.</returns>
+    /// <exception cref="InvalidOperationException">The listeners were not attached - no WebHID support.</exception>
     [DynamicDependency(nameof(InvokeHidConnected), typeof(Hid))]
     [DynamicDependency(nameof(InvokeHidDisconnected), typeof(Hid))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HidDeviceInfo))]
@@ -130,7 +148,24 @@ public class Hid(IJSRuntime js) : IAsyncDisposable
     {
         var id = Guid.NewGuid();
         _connectionHandlers[id] = (onConnected, onDisconnected);
-        await js.InvokeVoid("BitButil.hid.subscribeConnection", id, DotNetRef);
+
+        bool subscribed;
+        try
+        {
+            subscribed = await js.InvokeRegister("BitButil.hid.subscribeConnection", id, DotNetRef);
+        }
+        catch
+        {
+            // Nothing is listening on the JS side, so the entry must not outlive the call.
+            _connectionHandlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (subscribed is false)
+        {
+            _connectionHandlers.TryRemove(id, out _);
+            throw new InvalidOperationException("The HID connection listeners could not be attached - the WebHID API is not available.");
+        }
 
         return new ButilSubscription(id, async () =>
         {

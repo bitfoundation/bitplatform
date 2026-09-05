@@ -127,6 +127,11 @@ await devicePosture.RemoveAllChanges();
                 return;
             }
 
+            // Subscribing twice would overwrite the field and strand the first listener, which
+            // nothing could then detach.
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            _subscription = null;
+
             _subscription = await devicePosture.SubscribeChange(posture => _ = InvokeAsync(() =>
             {
                 _current = posture;

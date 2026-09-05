@@ -274,8 +274,23 @@ await using var _ = await sensors.Subscribe(SensorType.Accelerometer, r => { });
         try
         {
             var devices = await hid.RequestDevice();
-            _hidDevice = devices.FirstOrDefault();
-            await output.Success("Hid.RequestDevice →", _hidDevice?.ProductName ?? "(dismissed)");
+            var picked = devices.FirstOrDefault();
+
+            if (picked is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await output.Success("Hid.RequestDevice →", "(dismissed)");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it - and the input
+            // reports subscribed through it - rather than leaving the device open.
+            if (_hidReports is not null) await _hidReports.DisposeAsync();
+            _hidReports = null;
+            if (_hidDevice is not null) await _hidDevice.DisposeAsync();
+
+            _hidDevice = picked;
+            await output.Success("Hid.RequestDevice →", _hidDevice.ProductName ?? "(unnamed)");
         }
         catch (Exception ex)
         {

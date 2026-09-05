@@ -47,7 +47,10 @@ var state     = await windowManagement.QueryPermission();  // granted / denied /
                  Description="Returns every attached screen and which one this window is on. Null when the API is missing or the prompt was dismissed. Before permission is granted a browser reports only the current screen, so the list length is itself a hint about the permission state."
                  Code=@("""
 var details = await windowManagement.GetScreenDetails();
-foreach (var screen in details!.Screens)
+// Null when the API is missing or the prompt was dismissed - there is nothing to enumerate.
+if (details is null) return;
+
+foreach (var screen in details.Screens)
 {
     // screen.Label, screen.Left, screen.Top, screen.AvailWidth, screen.IsPrimary, screen.IsCurrent
 }
@@ -258,6 +261,11 @@ await using var subscription = await windowManagement.SubscribeChange(details =>
     {
         try
         {
+            // Subscribing twice would overwrite the field and strand the first listener, which
+            // nothing - not even DisposeAsync - could then detach.
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            _subscription = null;
+
             _subscription = await windowManagement.SubscribeChange(details => _ = InvokeAsync(() =>
             {
                 _details = details;

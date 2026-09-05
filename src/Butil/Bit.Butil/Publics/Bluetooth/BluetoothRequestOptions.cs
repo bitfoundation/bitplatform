@@ -7,9 +7,11 @@ namespace Bit.Butil;
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Bluetooth/requestDevice">Bluetooth.requestDevice()</see>
 /// </summary>
 /// <remarks>
-/// A grant covers only the services named here: a device picked with no
-/// <see cref="OptionalServices"/> can be connected to and nothing more, because every
-/// <c>getPrimaryService</c> for a service the user never agreed to is a <c>SecurityError</c>.
+/// A grant covers exactly the services named here - those on the <see cref="BluetoothFilter.Services"/>
+/// of a filter the device matched, plus every entry in <see cref="OptionalServices"/>. A service
+/// named in neither stays unreachable: <c>getPrimaryService</c> for it is a <c>SecurityError</c>,
+/// so a device picked with filters that name no service and no <see cref="OptionalServices"/> can
+/// be connected to and nothing more.
 /// </remarks>
 public class BluetoothRequestOptions
 {

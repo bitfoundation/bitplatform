@@ -295,10 +295,22 @@ var revoked = await _device.Forget();
             else
                 options.Filters = [new BluetoothFilter { NamePrefix = _namePrefix }];
 
-            _device = await bluetooth.RequestDevice(options);
+            var requested = await bluetooth.RequestDevice(options);
 
-            if (_device is null) await deviceOutput.Warn("The chooser was dismissed.");
-            else await deviceOutput.Success("RequestDevice →", $"{_device.Name ?? "(unnamed)"} ({_device.Info.DeviceId})");
+            if (requested is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await deviceOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it - and the
+            // subscriptions taken through it - rather than leaving the radio connected.
+            await ReleaseSubscriptions();
+            if (_device is not null) await _device.DisposeAsync();
+
+            _device = requested;
+            await deviceOutput.Success("RequestDevice →", $"{_device.Name ?? "(unnamed)"} ({_device.Info.DeviceId})");
         }
         catch (Exception ex)
         {
@@ -324,9 +336,20 @@ var revoked = await _device.Forget();
         }
     }
 
+    // Subscriptions belong to the device they were taken on, so they never outlive its handle.
+    private async Task ReleaseSubscriptions()
+    {
+        if (_values is not null) await _values.DisposeAsync();
+        _values = null;
+
+        if (_disconnected is not null) await _disconnected.DisposeAsync();
+        _disconnected = null;
+    }
+
     private async Task ReleaseDevice()
     {
         if (_device is null) return;
+        await ReleaseSubscriptions();
         await _device.DisposeAsync();
         _device = null;
         await deviceOutput.Log("Handle disposed - the device is disconnected but still granted.");
@@ -515,10 +538,21 @@ var revoked = await _device.Forget();
 
     private static string Hex(byte[] value) => value.Length == 0 ? "(empty)" : Convert.ToHexString(value);
 
-    private static byte[] ParseHex(string text) =>
-        [.. text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries)
-                .Where(part => byte.TryParse(part, System.Globalization.NumberStyles.HexNumber, null, out _))
-                .Select(part => byte.Parse(part, System.Globalization.NumberStyles.HexNumber))];
+    // A token that is not a hex byte is a typo, not something to quietly drop: "00 zz ff" has to be
+    // rejected rather than reach the device as the two bytes that happened to parse.
+    private static byte[] ParseHex(string text)
+    {
+        var parts = text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var bytes = new byte[parts.Length];
+
+        for (var index = 0; index < parts.Length; index++)
+        {
+            if (byte.TryParse(parts[index], System.Globalization.NumberStyles.HexNumber, null, out bytes[index]) is false)
+                throw new FormatException($"'{parts[index]}' is not a hexadecimal byte.");
+        }
+
+        return bytes;
+    }
 
     public async ValueTask DisposeAsync()
     {

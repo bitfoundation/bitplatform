@@ -67,6 +67,10 @@ public class ComputePressure(IJSRuntime js) : IAsyncDisposable
     /// the right default - a short interval is throttled anyway.
     /// </param>
     /// <returns>A subscription - dispose it to stop observing.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The observer did not start - <c>PressureObserver</c> is missing, the source is unknown, or
+    /// the observation was refused.
+    /// </exception>
     [DynamicDependency(nameof(InvokePressureRecords), typeof(ComputePressure))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PressureRecord))]
     public async ValueTask<ButilSubscription> Observe(Action<PressureRecord[]> handler,
@@ -75,7 +79,23 @@ public class ComputePressure(IJSRuntime js) : IAsyncDisposable
     {
         var id = Guid.NewGuid();
         _handlers[id] = handler;
-        await js.InvokeVoid("BitButil.computePressure.observe", id, DotNetRef, source, sampleIntervalMs);
+        bool observing;
+        try
+        {
+            observing = await js.InvokeRegister("BitButil.computePressure.observe", id, DotNetRef, source, sampleIntervalMs);
+        }
+        catch
+        {
+            // Nothing is observing on the JS side, so the entry must not outlive the call.
+            _handlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (observing is false)
+        {
+            _handlers.TryRemove(id, out _);
+            throw new InvalidOperationException($"The '{source}' pressure source could not be observed.");
+        }
 
         return new ButilSubscription(id, async () =>
         {

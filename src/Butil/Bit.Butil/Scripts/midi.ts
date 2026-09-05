@@ -4,6 +4,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // One MIDIAccess per page: it is the permission grant, and re-requesting it with the same
     // options resolves to an equivalent object, so caching it keeps port ids stable.
     let _access: any = null;
+    // The options the cached access was granted under - asking again with the same pair reuses it.
+    let _accessSysex = false;
+    let _accessSoftware = false;
     // MIDI port ids are strings the browser assigns and they stay valid for the life of the
     // access object, so - unlike the other bus APIs - .NET can address ports by their own id
     // and nothing has to be minted here.
@@ -52,8 +55,28 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     async function requestAccess(sysex: boolean, software: boolean) {
         if (typeof (navigator as any).requestMIDIAccess !== 'function') return null;
-        _access = await (navigator as any).requestMIDIAccess({ sysex, software });
+
+        // Re-requesting with the same options would resolve to an equivalent object, but a
+        // different one - and every listener in _messageListeners/_stateListeners is attached to
+        // the ports of the old one. Hand the cached access back instead.
+        if (_access && _accessSysex === sysex && _accessSoftware === software) return snapshot();
+
+        // Different options mean a different grant, so the old access - and everything listening
+        // through its ports - is replaced.
+        const access = await (navigator as any).requestMIDIAccess({ sysex, software });
+        unsubscribeAll();
+        _access = access;
+        _accessSysex = sysex;
+        _accessSoftware = software;
         return snapshot();
+    }
+
+    // Detaches every listener attached through the outgoing access object. The .NET subscriptions
+    // survive as ids, but their ports are gone, so leaving the listeners on them leaks both the
+    // listener and the callback behind it.
+    function unsubscribeAll() {
+        for (const key of Object.keys(_messageListeners)) unsubscribeMessages(key);
+        for (const key of Object.keys(_stateListeners)) unsubscribeStateChange(key);
     }
 
     // Null until requestAccess() has resolved - reading the port list is not itself a way to get

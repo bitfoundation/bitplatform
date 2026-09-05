@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -27,6 +28,11 @@ public class WindowManagement(IJSRuntime js) : IAsyncDisposable
     internal const string InvokeMethodName = nameof(InvokeScreensChange);
 
     private readonly ConcurrentDictionary<Guid, Action<ScreenDetails?>> _handlers = new();
+
+    // The dictionary is concurrent, but a subscription is two steps - the entry and the JS listener -
+    // and the removals are three. Without a gate a RemoveAllChanges landing between SubscribeChange's
+    // two steps drops the entry it never saw and leaves the listener attached in JS.
+    private readonly SemaphoreSlim _gate = new(1, 1);
 
     // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
@@ -116,14 +122,44 @@ public class WindowManagement(IJSRuntime js) : IAsyncDisposable
     /// <returns>A subscription - dispose it to detach the listener.</returns>
     /// <remarks>Requires the window-management permission, so it only attaches once
     /// <see cref="GetScreenDetails"/> has succeeded.</remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The listener was not attached - the API is missing, or the window-management permission has
+    /// not been granted yet.
+    /// </exception>
     [DynamicDependency(nameof(InvokeScreensChange), typeof(WindowManagement))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenDetails))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenDetailInfo))]
     public async ValueTask<ButilSubscription> SubscribeChange(Action<ScreenDetails?> handler)
     {
         var id = Guid.NewGuid();
-        _handlers[id] = handler;
-        await js.InvokeVoid("BitButil.windowManagement.addChange", DotNetRef, id);
+
+        await _gate.WaitAsync();
+        try
+        {
+            _handlers[id] = handler;
+
+            bool added;
+            try
+            {
+                added = await js.InvokeRegister("BitButil.windowManagement.addChange", DotNetRef, id);
+            }
+            catch
+            {
+                // Nothing is listening on the JS side, so the entry must not outlive the call.
+                _handlers.TryRemove(id, out _);
+                throw;
+            }
+
+            if (added is false)
+            {
+                _handlers.TryRemove(id, out _);
+                throw new InvalidOperationException("The screens-change listener could not be attached - call GetScreenDetails() from a user gesture first.");
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
 
         return new ButilSubscription(id, () => RemoveChange(id));
     }
@@ -131,20 +167,36 @@ public class WindowManagement(IJSRuntime js) : IAsyncDisposable
     /// <summary>Detaches one screens-change listener by the id its subscription carries.</summary>
     public async ValueTask RemoveChange(Guid id)
     {
-        if (_handlers.TryRemove(id, out _) is false) return;
+        await _gate.WaitAsync();
+        try
+        {
+            if (_handlers.TryRemove(id, out _) is false) return;
 
-        await js.InvokeVoid("BitButil.windowManagement.removeChange", new[] { id });
+            await js.InvokeVoid("BitButil.windowManagement.removeChange", new[] { id });
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     /// <summary>Detaches every screens-change listener registered through this instance.</summary>
     public async ValueTask RemoveAllChanges()
     {
-        if (_handlers.IsEmpty) return;
+        await _gate.WaitAsync();
+        try
+        {
+            if (_handlers.IsEmpty) return;
 
-        var ids = _handlers.Keys.ToArray();
-        _handlers.Clear();
+            var ids = _handlers.Keys.ToArray();
+            _handlers.Clear();
 
-        await js.InvokeVoid("BitButil.windowManagement.removeChange", ids);
+            await js.InvokeVoid("BitButil.windowManagement.removeChange", ids);
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
     /// <summary>Detaches every listener this instance registered and releases its interop reference.</summary>
@@ -159,6 +211,7 @@ public class WindowManagement(IJSRuntime js) : IAsyncDisposable
         {
             _dotNetRef?.Dispose();
             _dotNetRef = null;
+            _gate.Dispose();
         }
 
         GC.SuppressFinalize(this);

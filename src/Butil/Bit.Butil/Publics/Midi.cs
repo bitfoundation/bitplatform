@@ -120,13 +120,31 @@ public class Midi(IJSRuntime js) : IAsyncDisposable
     /// the user's controller is whichever one they touch.
     /// </param>
     /// <returns>A subscription - dispose it to detach the listener.</returns>
+    /// <exception cref="InvalidOperationException">The listener was not attached - no MIDI access, or no such input.</exception>
     [DynamicDependency(nameof(InvokeMidiMessage), typeof(Midi))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MidiMessage))]
     public async ValueTask<ButilSubscription> SubscribeMessages(Action<MidiMessage> handler, string? inputId = null)
     {
         var id = Guid.NewGuid();
         _messageHandlers[id] = handler;
-        await js.InvokeVoid("BitButil.midi.subscribeMessages", id, DotNetRef, inputId);
+
+        bool subscribed;
+        try
+        {
+            subscribed = await js.InvokeRegister("BitButil.midi.subscribeMessages", id, DotNetRef, inputId);
+        }
+        catch
+        {
+            // Nothing is listening on the JS side, so the entry must not outlive the call.
+            _messageHandlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (subscribed is false)
+        {
+            _messageHandlers.TryRemove(id, out _);
+            throw new InvalidOperationException("The MIDI message listener could not be attached - call RequestAccess() first, and make sure the input exists.");
+        }
 
         return new ButilSubscription(id, async () =>
         {
@@ -140,13 +158,31 @@ public class Midi(IJSRuntime js) : IAsyncDisposable
     /// re-reading the whole list is only necessary when the app tracks more than one.
     /// </summary>
     /// <returns>A subscription - dispose it to detach the listener.</returns>
+    /// <exception cref="InvalidOperationException">The listener was not attached - no MIDI access.</exception>
     [DynamicDependency(nameof(InvokeMidiStateChange), typeof(Midi))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MidiPortInfo))]
     public async ValueTask<ButilSubscription> SubscribeStateChange(Action<MidiPortInfo?> handler)
     {
         var id = Guid.NewGuid();
         _stateHandlers[id] = handler;
-        await js.InvokeVoid("BitButil.midi.subscribeStateChange", id, DotNetRef);
+
+        bool subscribed;
+        try
+        {
+            subscribed = await js.InvokeRegister("BitButil.midi.subscribeStateChange", id, DotNetRef);
+        }
+        catch
+        {
+            // Nothing is listening on the JS side, so the entry must not outlive the call.
+            _stateHandlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (subscribed is false)
+        {
+            _stateHandlers.TryRemove(id, out _);
+            throw new InvalidOperationException("The MIDI state-change listener could not be attached - call RequestAccess() first.");
+        }
 
         return new ButilSubscription(id, async () =>
         {

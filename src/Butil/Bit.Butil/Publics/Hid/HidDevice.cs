@@ -80,6 +80,7 @@ public sealed class HidDevice : IAsyncDisposable
     /// Subscribes to the device's input reports - the events it sends unprompted. The device has to
     /// be open first.
     /// </summary>
+    /// <exception cref="InvalidOperationException">The listener was not attached - the handle is no longer known.</exception>
     /// <returns>A subscription - dispose it to detach the listener.</returns>
     public ValueTask<ButilSubscription> SubscribeInputReports(Action<HidInputReport> handler)
         => _owner.SubscribeInputReports(Id, handler);
@@ -88,7 +89,16 @@ public sealed class HidDevice : IAsyncDisposable
     /// Revokes this origin's permission for the device, so it stops appearing in
     /// <see cref="Hid.GetDevices"/> until the user picks it again.
     /// </summary>
-    public ValueTask<bool> Forget() => _js.Invoke<bool>("BitButil.hid.forget", Id);
+    public async ValueTask<bool> Forget()
+    {
+        var forgotten = await _js.Invoke<bool>("BitButil.hid.forget", Id);
+
+        // JS released its handle, so the id is dead - drop the tracked device so nothing hands it
+        // out again. A refused forget leaves the device exactly as it was.
+        if (forgotten) _owner.Forget(this);
+
+        return forgotten;
+    }
 
     /// <summary>Closes the device, detaches its listeners and releases the browser-side reference.</summary>
     public async ValueTask DisposeAsync()

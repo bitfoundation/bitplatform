@@ -9,7 +9,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     // 'characteristicvaluechanged' and 'gattserverdisconnected' listeners, keyed by the
     // subscription id .NET minted for each.
-    const _notifications: { [id: string]: { characteristic: any, handler: EventListener } } = {};
+    const _notifications: { [id: string]: { device: any, characteristic: any, handler: EventListener } } = {};
     const _disconnects: { [id: string]: { device: any, handler: EventListener } } = {};
 
     // Handle ids are minted here rather than by .NET: getDevices() surfaces devices .NET has never
@@ -73,7 +73,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const bt = bluetooth();
         if (!bt) return null;
 
-        const filters = (options?.filters ?? []).map((filter: any) => {
+        // acceptAllDevices and filters are mutually exclusive - passing both is a TypeError - and
+        // acceptAllDevices is documented to win, so the filters aren't even looked at then.
+        const acceptAll = options?.acceptAllDevices === true;
+        const supplied = acceptAll ? [] : (options?.filters ?? []);
+
+        const filters = supplied.map((filter: any) => {
             const out: any = {};
             if (filter.services?.length) out.services = filter.services.map(uuid);
             if (filter.name) out.name = filter.name;
@@ -81,10 +86,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             return out;
         }).filter((filter: any) => Object.keys(filter).length > 0);
 
+        // Filters that were asked for but carry no criterion are a mistake in the caller's options.
+        // Silently widening that to "every device nearby" is the opposite of what they asked for.
+        if (supplied.length && filters.length === 0)
+            throw new TypeError('Every supplied Bluetooth filter is empty - give each one a service, name or namePrefix, or set AcceptAllDevices.');
+
         const request: any = {};
-        // acceptAllDevices and filters are mutually exclusive - passing both is a TypeError.
-        if (options?.acceptAllDevices || filters.length === 0) request.acceptAllDevices = true;
-        else request.filters = filters;
+        if (filters.length) request.filters = filters;
+        else request.acceptAllDevices = true;
         if (options?.optionalServices?.length) request.optionalServices = options.optionalServices.map(uuid);
 
         let device: any;
@@ -132,6 +141,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         for (const key of Object.keys(_disconnects)) {
             if (_disconnects[key].device === device) unsubscribeDisconnect(key);
+        }
+        // Notifications are attached through the same handle, so they go with it. Fire-and-forget:
+        // stopNotifications drops the entry and the listener synchronously, and only the device
+        // round-trip is left to settle on its own.
+        for (const key of Object.keys(_notifications)) {
+            if (_notifications[key].device === device) void stopNotifications(key).catch(() => { /* device already gone */ });
         }
         try { device.gatt?.disconnect(); } catch { /* already gone */ }
     }
@@ -215,9 +230,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const value = (event.target as any).value as DataView;
             butil.utils.dispatch(dotNetRef, 'InvokeBluetoothValueChanged', subscriptionId, bytes(value));
         };
+        // Attached before starting so the first notification can't slip through, and taken back off
+        // if the device refuses - a rejected start would otherwise leave a listener nothing tracks
+        // and nothing can remove.
         target.addEventListener('characteristicvaluechanged', handler);
-        await target.startNotifications();
-        _notifications[subscriptionId] = { characteristic: target, handler };
+        try {
+            await target.startNotifications();
+        } catch (e) {
+            target.removeEventListener('characteristicvaluechanged', handler);
+            throw e;
+        }
+        _notifications[subscriptionId] = { device: _devices[id], characteristic: target, handler };
         return true;
     }
 

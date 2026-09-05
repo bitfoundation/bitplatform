@@ -488,10 +488,21 @@ var revoked = await _device.Forget();
         ushort.TryParse(text?.Replace("0x", "", StringComparison.OrdinalIgnoreCase),
             System.Globalization.NumberStyles.HexNumber, null, out value);
 
-    private static byte[] ParseHex(string text) =>
-        [.. text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries)
-                .Where(part => byte.TryParse(part, System.Globalization.NumberStyles.HexNumber, null, out _))
-                .Select(part => byte.Parse(part, System.Globalization.NumberStyles.HexNumber))];
+    // A token that is not a hex byte is a typo, not something to quietly drop: "00 zz ff" has to be
+    // rejected rather than reach the device as the two bytes that happened to parse.
+    private static byte[] ParseHex(string text)
+    {
+        var parts = text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var bytes = new byte[parts.Length];
+
+        for (var index = 0; index < parts.Length; index++)
+        {
+            if (byte.TryParse(parts[index], System.Globalization.NumberStyles.HexNumber, null, out bytes[index]) is false)
+                throw new FormatException($"'{parts[index]}' is not a hexadecimal byte.");
+        }
+
+        return bytes;
+    }
 
     public async ValueTask DisposeAsync()
     {

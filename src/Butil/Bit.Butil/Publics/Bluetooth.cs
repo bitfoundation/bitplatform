@@ -24,8 +24,10 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
     internal const string ValueChangedMethodName = nameof(InvokeBluetoothValueChanged);
     internal const string DisconnectedMethodName = nameof(InvokeBluetoothDisconnected);
 
-    private readonly ConcurrentDictionary<Guid, Action<byte[]>> _valueHandlers = new();
-    private readonly ConcurrentDictionary<Guid, Action> _disconnectHandlers = new();
+    // Keyed by subscription id, but carrying the device each one belongs to: releasing a single
+    // handle has to drop that device's handlers without touching the others'.
+    private readonly ConcurrentDictionary<Guid, (string DeviceId, Action<byte[]> Handler)> _valueHandlers = new();
+    private readonly ConcurrentDictionary<Guid, (string DeviceId, Action Handler)> _disconnectHandlers = new();
 
     // Every handle this service handed out, so a scope/circuit teardown disconnects the radio even
     // when the caller never disposed the device itself.
@@ -93,8 +95,24 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
         return device;
     }
 
-    // Called by a handle that is disposing itself, so the service stops holding it.
-    internal void Forget(BluetoothDevice device) => _devices.TryRemove(device.Id, out _);
+    // Called by a handle that is disposing itself, so the service stops holding it. The JS-side
+    // release() detaches every listener attached through that handle, so the .NET closures behind
+    // them have to go with it - otherwise disposing one device leaks the handlers of that device
+    // for as long as the service lives.
+    internal void Forget(BluetoothDevice device)
+    {
+        _devices.TryRemove(device.Id, out _);
+
+        foreach (var pair in _valueHandlers)
+        {
+            if (pair.Value.DeviceId == device.Id) _valueHandlers.TryRemove(pair.Key, out _);
+        }
+
+        foreach (var pair in _disconnectHandlers)
+        {
+            if (pair.Value.DeviceId == device.Id) _disconnectHandlers.TryRemove(pair.Key, out _);
+        }
+    }
 
     /// <summary>
     /// Invoked from JS when a subscribed characteristic's value changes. Public +
@@ -104,7 +122,7 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
     [JSInvokable(ValueChangedMethodName)]
     public void InvokeBluetoothValueChanged(Guid id, byte[] value)
     {
-        if (_valueHandlers.TryGetValue(id, out var handler)) handler.Invoke(value);
+        if (_valueHandlers.TryGetValue(id, out var entry)) entry.Handler.Invoke(value);
     }
 
     /// <summary>
@@ -113,15 +131,32 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
     [JSInvokable(DisconnectedMethodName)]
     public void InvokeBluetoothDisconnected(Guid id)
     {
-        if (_disconnectHandlers.TryGetValue(id, out var handler)) handler.Invoke();
+        if (_disconnectHandlers.TryGetValue(id, out var entry)) entry.Handler.Invoke();
     }
 
     [DynamicDependency(nameof(InvokeBluetoothValueChanged), typeof(Bluetooth))]
     internal async ValueTask<ButilSubscription> SubscribeValueChanged(string deviceId, string serviceUuid, string characteristicUuid, Action<byte[]> handler)
     {
         var id = Guid.NewGuid();
-        _valueHandlers[id] = handler;
-        await js.InvokeVoid("BitButil.bluetooth.startNotifications", id, DotNetRef, deviceId, serviceUuid, characteristicUuid);
+        _valueHandlers[id] = (deviceId, handler);
+
+        bool started;
+        try
+        {
+            started = await js.InvokeRegister("BitButil.bluetooth.startNotifications", id, DotNetRef, deviceId, serviceUuid, characteristicUuid);
+        }
+        catch
+        {
+            // Nothing is notifying on the JS side, so the entry must not outlive the call.
+            _valueHandlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (started is false)
+        {
+            _valueHandlers.TryRemove(id, out _);
+            throw new InvalidOperationException($"Notifications could not be started for characteristic '{characteristicUuid}' of service '{serviceUuid}'.");
+        }
 
         return new ButilSubscription(id, async () =>
         {
@@ -134,8 +169,25 @@ public class Bluetooth(IJSRuntime js) : IAsyncDisposable
     internal async ValueTask<ButilSubscription> SubscribeDisconnected(string deviceId, Action handler)
     {
         var id = Guid.NewGuid();
-        _disconnectHandlers[id] = handler;
-        await js.InvokeVoid("BitButil.bluetooth.subscribeDisconnect", id, DotNetRef, deviceId);
+        _disconnectHandlers[id] = (deviceId, handler);
+
+        bool subscribed;
+        try
+        {
+            subscribed = await js.InvokeRegister("BitButil.bluetooth.subscribeDisconnect", id, DotNetRef, deviceId);
+        }
+        catch
+        {
+            // Nothing is listening on the JS side, so the entry must not outlive the call.
+            _disconnectHandlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (subscribed is false)
+        {
+            _disconnectHandlers.TryRemove(id, out _);
+            throw new InvalidOperationException("The disconnect listener could not be attached - the device handle is no longer known.");
+        }
 
         return new ButilSubscription(id, async () =>
         {

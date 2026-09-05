@@ -367,18 +367,35 @@ var revoked = await _device.Forget();
 
     private async Task CheckOpened() => await Run(setupOutput, "IsOpened", async d => await d.IsOpened());
 
-    private async Task SelectConfiguration() =>
+    private async Task SelectConfiguration()
+    {
+        if (await RequireByte(setupOutput, "Configuration value", _configurationValue) is false) return;
+
         await Run(setupOutput, "SelectConfiguration", async d => await d.SelectConfiguration((byte)_configurationValue));
+    }
 
-    private async Task ClaimInterface() =>
+    private async Task ClaimInterface()
+    {
+        if (await RequireByte(setupOutput, "Interface number", _interfaceNumber) is false) return;
+
         await Run(setupOutput, "ClaimInterface", async d => await d.ClaimInterface((byte)_interfaceNumber));
+    }
 
-    private async Task ReleaseInterface() =>
+    private async Task ReleaseInterface()
+    {
+        if (await RequireByte(setupOutput, "Interface number", _interfaceNumber) is false) return;
+
         await Run(setupOutput, "ReleaseInterface", async d => await d.ReleaseInterface((byte)_interfaceNumber));
+    }
 
-    private async Task SelectAlternate() =>
+    private async Task SelectAlternate()
+    {
+        if (await RequireByte(setupOutput, "Interface number", _interfaceNumber) is false) return;
+        if (await RequireByte(setupOutput, "Alternate setting", _alternateSetting) is false) return;
+
         await Run(setupOutput, "SelectAlternateInterface",
             async d => await d.SelectAlternateInterface((byte)_interfaceNumber, (byte)_alternateSetting));
+    }
 
     private async Task DescribeDevice()
     {
@@ -417,6 +434,13 @@ var revoked = await _device.Forget();
     private async Task TransferIn()
     {
         if (await RequireDevice(transferOutput) is false) return;
+        if (await RequireByte(transferOutput, "IN endpoint", _inEndpoint) is false) return;
+
+        if (_readLength < 0)
+        {
+            await transferOutput.Warn($"Read length must not be negative - got {_readLength}.");
+            return;
+        }
 
         try
         {
@@ -433,6 +457,7 @@ var revoked = await _device.Forget();
     private async Task TransferOut()
     {
         if (await RequireDevice(transferOutput) is false) return;
+        if (await RequireByte(transferOutput, "OUT endpoint", _outEndpoint) is false) return;
 
         try
         {
@@ -494,8 +519,12 @@ var revoked = await _device.Forget();
         }
     }
 
-    private async Task ClearHalt() =>
+    private async Task ClearHalt()
+    {
+        if (await RequireByte(transferOutput, "IN endpoint", _inEndpoint) is false) return;
+
         await Run(transferOutput, "ClearHalt", async d => await d.ClearHalt("in", (byte)_inEndpoint));
+    }
 
     private async Task ResetDevice() => await Run(transferOutput, "Reset", async d => await d.Reset());
 
@@ -564,14 +593,35 @@ var revoked = await _device.Forget();
         return false;
     }
 
+    // The number inputs are ints, so anything at all can be typed into them - and an unchecked cast
+    // would wrap 256 round to 0 and send the device a command nobody asked for.
+    private async Task<bool> RequireByte(DemoConsole output, string name, int value)
+    {
+        if (value is >= byte.MinValue and <= byte.MaxValue) return true;
+
+        await output.Warn($"{name} must be between 0 and 255 - got {value}.");
+        return false;
+    }
+
     private static bool TryHex(string text, out ushort value) =>
         ushort.TryParse(text?.Replace("0x", "", StringComparison.OrdinalIgnoreCase),
             System.Globalization.NumberStyles.HexNumber, null, out value);
 
-    private static byte[] ParseHex(string text) =>
-        [.. text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries)
-                .Where(part => byte.TryParse(part, System.Globalization.NumberStyles.HexNumber, null, out _))
-                .Select(part => byte.Parse(part, System.Globalization.NumberStyles.HexNumber))];
+    // A token that is not a hex byte is a typo, not something to quietly drop: "00 zz ff" has to be
+    // rejected rather than reach the device as the two bytes that happened to parse.
+    private static byte[] ParseHex(string text)
+    {
+        var parts = text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var bytes = new byte[parts.Length];
+
+        for (var index = 0; index < parts.Length; index++)
+        {
+            if (byte.TryParse(parts[index], System.Globalization.NumberStyles.HexNumber, null, out bytes[index]) is false)
+                throw new FormatException($"'{parts[index]}' is not a hexadecimal byte.");
+        }
+
+        return bytes;
+    }
 
     public async ValueTask DisposeAsync()
     {

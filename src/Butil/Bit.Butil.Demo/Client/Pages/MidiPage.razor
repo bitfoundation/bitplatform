@@ -253,6 +253,12 @@ await using var watch = await midi.SubscribeStateChange(port =>
         }
 
         _outputs = access.Outputs;
+
+        // The selection has to be re-checked against the new list: a port that has been unplugged
+        // since the last read is gone, and sending to its id would fail on every attempt.
+        if (_selectedOutputId is not null && _outputs.Any(output => output.Id == _selectedOutputId) is false)
+            _selectedOutputId = null;
+
         _selectedOutputId ??= _outputs.FirstOrDefault()?.Id;
 
         await accessOutput.Success($"{call} →",
@@ -293,6 +299,9 @@ await using var watch = await midi.SubscribeStateChange(port =>
     private async Task SendNoteOn()
     {
         if (await RequireOutput() is false) return;
+        if (await RequireRange("Note", _note, 127) is false) return;
+        if (await RequireRange("Velocity", _velocity, 127) is false) return;
+        if (await RequireRange("Channel", _channel, 15) is false) return;
 
         try
         {
@@ -308,6 +317,8 @@ await using var watch = await midi.SubscribeStateChange(port =>
     private async Task SendNoteOff()
     {
         if (await RequireOutput() is false) return;
+        if (await RequireRange("Note", _note, 127) is false) return;
+        if (await RequireRange("Channel", _channel, 15) is false) return;
 
         try
         {
@@ -323,6 +334,7 @@ await using var watch = await midi.SubscribeStateChange(port =>
     private async Task SendProgramChange()
     {
         if (await RequireOutput() is false) return;
+        if (await RequireRange("Channel", _channel, 15) is false) return;
 
         try
         {
@@ -339,7 +351,14 @@ await using var watch = await midi.SubscribeStateChange(port =>
     {
         if (await RequireOutput() is false) return;
 
-        await sendOutput.Success("Clear →", await midi.Clear(_selectedOutputId!));
+        try
+        {
+            await sendOutput.Success("Clear →", await midi.Clear(_selectedOutputId!));
+        }
+        catch (Exception ex)
+        {
+            await sendOutput.Error("Clear failed →", ex.Message);
+        }
     }
 
     private async Task StartWatching()
@@ -372,6 +391,16 @@ await using var watch = await midi.SubscribeStateChange(port =>
     {
         if (string.IsNullOrEmpty(_selectedOutputId) is false) return true;
         await sendOutput.Warn("Request access first, then pick an output port.");
+        return false;
+    }
+
+    // The number inputs are ints, so their min/max are a hint and not a guarantee - an unchecked
+    // cast would wrap 128 round to 0 and play a note nobody asked for.
+    private async Task<bool> RequireRange(string name, int value, int max)
+    {
+        if (value >= 0 && value <= max) return true;
+
+        await sendOutput.Warn($"{name} must be between 0 and {max} - got {value}.");
         return false;
     }
 

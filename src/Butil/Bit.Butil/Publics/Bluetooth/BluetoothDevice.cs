@@ -90,11 +90,16 @@ public sealed class BluetoothDevice : IAsyncDisposable
     /// or <see cref="BluetoothCharacteristicInfo.Indicate"/>.
     /// </summary>
     /// <returns>A subscription - dispose it to stop the notifications.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Notifications did not start - the characteristic could not be resolved, or it does not
+    /// notify.
+    /// </exception>
     public ValueTask<ButilSubscription> SubscribeValueChanged(string serviceUuid, string characteristicUuid, Action<byte[]> handler)
         => _owner.SubscribeValueChanged(Id, serviceUuid, characteristicUuid, handler);
 
     /// <summary>Runs <paramref name="handler"/> when the device drops the GATT connection.</summary>
     /// <returns>A subscription - dispose it to detach the listener.</returns>
+    /// <exception cref="InvalidOperationException">The listener was not attached - the handle is no longer known.</exception>
     public ValueTask<ButilSubscription> SubscribeDisconnected(Action handler)
         => _owner.SubscribeDisconnected(Id, handler);
 

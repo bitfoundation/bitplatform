@@ -78,12 +78,21 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!api) return [];
         try {
             const ports = await api.getPorts();
-            return ports.map((port: any) => {
-                const id = nextId();
-                _ports[id] = port;
-                return describe(id, port);
-            });
+            return ports.map((port: any) => describe(idOf(port), port));
         } catch { return []; }
+    }
+
+    // getPorts() hands back the same SerialPort objects on every call, so minting a fresh id each
+    // time would pile up registry entries for one port - and leave an open handle's id pointing at
+    // a port the caller thinks it already released.
+    function idOf(port: any) {
+        for (const key of Object.keys(_ports)) {
+            if (_ports[key] === port) return key;
+        }
+
+        const id = nextId();
+        _ports[id] = port;
+        return id;
     }
 
     async function forget(id: string) {
@@ -97,8 +106,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         delete _ports[id];
         if (!port) return;
         // Fire-and-forget: disposal must not wait on a port whose cable has already been pulled.
-        stopReading(id);
-        try { port.close(); } catch { /* not open, or already gone */ }
+        // The read loop still holds the readable stream locked, though, and close() rejects until
+        // it lets go - so the close is chained behind stopReading rather than raced with it.
+        stopReading(id).then(() => port.close()).catch(() => { /* not open, or already gone */ });
     }
 
     async function open(id: string, options: any) {

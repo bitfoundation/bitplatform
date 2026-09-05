@@ -104,6 +104,11 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
     /// </param>
     /// <returns>A subscription - dispose it to stop the sensor. Sensors keep the radio or the
     /// hardware awake, so a reading nobody is watching is a battery cost with no benefit.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The sensor did not start - unsupported, blocked, or refused. <paramref name="onError"/> is
+    /// called with the same message first, so the failure reaches the error channel whether or not
+    /// the caller supplied one.
+    /// </exception>
     [DynamicDependency(nameof(InvokeSensorReading), typeof(Sensors))]
     [DynamicDependency(nameof(InvokeSensorError), typeof(Sensors))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SensorReading))]
@@ -122,7 +127,25 @@ public class Sensors(IJSRuntime js) : IAsyncDisposable
             _ => null
         };
 
-        await js.InvokeVoid("BitButil.sensors.start", id, DotNetRef, NameOf(type), options?.Frequency, referenceFrame);
+        bool started;
+        try
+        {
+            started = await js.InvokeRegister("BitButil.sensors.start", id, DotNetRef, NameOf(type), options?.Frequency, referenceFrame);
+        }
+        catch
+        {
+            // Nothing is listening on the JS side, so the registration must not outlive the call.
+            _handlers.TryRemove(id, out _);
+            throw;
+        }
+
+        if (started is false)
+        {
+            _handlers.TryRemove(id, out _);
+            var message = $"The {NameOf(type)} sensor could not be started.";
+            onError?.Invoke(message);
+            throw new InvalidOperationException(message);
+        }
 
         return new ButilSubscription(id, async () =>
         {
