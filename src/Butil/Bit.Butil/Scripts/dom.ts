@@ -8,7 +8,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function track(node: any) {
         if (!node) return null;
-        const id = crypto.randomUUID();
+        const id = butil.utils.randomUUID();
         _nodes[id] = node;
         return { id, tagName: (node.tagName ?? '').toLowerCase(), nodeType: node.nodeType ?? 0 };
     }
@@ -157,10 +157,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // a test - if a future Blazor changes the convention, that test fails rather than a
         // consumer discovering it. Two consequences worth knowing: the lookup does not pierce
         // shadow roots, and it needs the element to be in the document.
+        // Stamped once per element: an element that already carries a reference attribute - from an
+        // earlier call, or from Blazor's own rendering - hands its id back instead of collecting
+        // another attribute on every call.
         elementReferenceId(id: string) {
             const node = _nodes[id];
             if (!node?.setAttribute) return null;
-            const referenceId = crypto.randomUUID();
+
+            const existing = Array.from(node.attributes ?? [])
+                .map((attr: any) => attr.name as string)
+                .find(name => name.startsWith('_bl_'));
+            if (existing) return existing.slice('_bl_'.length);
+
+            const referenceId = butil.utils.randomUUID();
             node.setAttribute(`_bl_${referenceId}`, '');
             return referenceId;
         },

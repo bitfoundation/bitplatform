@@ -88,13 +88,23 @@ public sealed class RtcDataChannelHandle : IAsyncDisposable
     /// <summary>
     /// Closes the channel. Idempotent, and safe during teardown. The connection itself stays open.
     /// </summary>
+    /// <remarks>
+    /// The <c>onClose</c> callback still runs after this - closing locally and being closed by the
+    /// peer are the same event.
+    /// </remarks>
     public async ValueTask DisposeAsync()
     {
         if (_closed) return;
         _closed = true;
-        _owner.ForgetChannel(Id);
 
+        // The close event is asynchronous, and it is what runs the onClose callback and unregisters
+        // the handlers (see WebSocketHandle, which closes for the same reason). Forgetting them here
+        // would make disposal the one close nobody hears about - so they are only dropped by hand
+        // when the close cannot be asked for at all.
         try { await _js.InvokeVoid("BitButil.webRtc.closeChannel", Id); }
-        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) // teardown: circuit gone, cancelled, or already disposed
+        {
+            _owner.ForgetChannel(Id);
+        }
     }
 }

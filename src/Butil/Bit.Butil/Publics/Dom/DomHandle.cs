@@ -51,6 +51,9 @@ public sealed class DomHandle : IAsyncDisposable
     /// Two consequences: the element has to be <em>in the document</em> for the lookup to find it -
     /// append it first - and the lookup does not pierce shadow roots, so a reference to an element
     /// inside one will not resolve.
+    /// <br/>
+    /// The attribute is stamped once per element, so calling this repeatedly returns the same
+    /// reference rather than accumulating attributes on the element.
     /// </remarks>
     public async ValueTask<ElementReference?> AsElementReference()
     {

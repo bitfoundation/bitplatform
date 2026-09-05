@@ -29,7 +29,9 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
     internal const string IdleMethodName = nameof(InvokeIdleCallback);
     internal const string TaskMethodName = nameof(InvokeScheduledTask);
 
-    private readonly ConcurrentDictionary<Guid, Action<double>> _frameHandlers = new();
+    // A frame handler carries whether it repeats, because a one-shot request and a loop share this
+    // dictionary and the same JS callback - and only the one-shot's handler is finished after it runs.
+    private readonly ConcurrentDictionary<Guid, (Action<double> OnFrame, bool Repeats)> _frameHandlers = new();
     private readonly ConcurrentDictionary<Guid, Action<IdleDeadline>> _idleHandlers = new();
     private readonly ConcurrentDictionary<Guid, Action> _taskHandlers = new();
 
@@ -72,7 +74,13 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
     [JSInvokable(FrameMethodName)]
     public void InvokeAnimationFrame(Guid id, double timestamp)
     {
-        if (_frameHandlers.TryGetValue(id, out var handler)) handler(timestamp);
+        if (_frameHandlers.TryGetValue(id, out var handler) is false) return;
+
+        // A single frame does not repeat, so the handler goes with it - a loop keeps its own until
+        // the subscription is disposed.
+        if (handler.Repeats is false) _frameHandlers.TryRemove(id, out _);
+
+        handler.OnFrame(timestamp);
     }
 
     /// <summary>
@@ -109,7 +117,7 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(onFrame);
 
         var id = Guid.NewGuid();
-        _frameHandlers[id] = onFrame;
+        _frameHandlers[id] = (onFrame, Repeats: false);
 
         await js.Invoke<bool>("BitButil.scheduler.requestFrame", DotNetRef, id);
 
@@ -139,7 +147,7 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(onFrame);
 
         var id = Guid.NewGuid();
-        _frameHandlers[id] = onFrame;
+        _frameHandlers[id] = (onFrame, Repeats: true);
 
         await js.Invoke<bool>("BitButil.scheduler.startFrameLoop", DotNetRef, id);
 

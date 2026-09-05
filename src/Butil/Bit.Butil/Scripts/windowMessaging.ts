@@ -38,7 +38,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 // so .NET gets handles it can use, rather than a boolean saying some arrived.
                 const portIds: string[] = [];
                 for (const port of e.ports ?? []) {
-                    const portId = crypto.randomUUID();
+                    const portId = butil.utils.randomUUID();
                     butil.messageChannel.adopt(portId, port);
                     portIds.push(portId);
                 }

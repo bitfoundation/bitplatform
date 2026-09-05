@@ -67,10 +67,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     async function send(id: string, req: any, dotNetRef: any, withProgress: boolean): Promise<any> {
         const controller = new AbortController();
         _controllers[id] = controller;
-        const { init, cleanup } = buildInit(req, controller);
+
+        // buildInit throws on its own (an invalid header name, most likely). It stays inside the
+        // try so that failure comes back as the documented error result rather than as a
+        // JSException, and so the finally still releases the controller.
+        let cleanup = () => { /* nothing was built yet */ };
 
         try {
-            const resp = await fetch(req.url, init);
+            const built = buildInit(req, controller);
+            cleanup = built.cleanup;
+
+            const resp = await fetch(req.url, built.init);
             const total = (() => {
                 const cl = resp.headers.get('content-length');
                 return cl ? Number(cl) : null;
@@ -130,10 +137,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function start(id: string, req: any) {
         const controller = new AbortController();
         _controllers[id] = controller;
-        const { init, cleanup } = buildInit(req, controller);
+
         // Fire-and-forget: errors are silently swallowed because there's no consumer for the
-        // result. Use send() when you need the response.
-        fetch(req.url, init).catch(() => { /* ignore */ }).finally(() => { cleanup(); delete _controllers[id]; });
+        // result - including the ones buildInit raises. Use send() when you need the response.
+        try {
+            const { init, cleanup } = buildInit(req, controller);
+            fetch(req.url, init).catch(() => { /* ignore */ }).finally(() => { cleanup(); delete _controllers[id]; });
+        } catch {
+            delete _controllers[id];
+        }
     }
 
     function abort(id: string) {

@@ -61,7 +61,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // A channel the *other* side created. It arrives as an event rather than as a return
             // value, which is why this needs a callback at all.
             pc.addEventListener('datachannel', (e: any) => {
-                const channelId = crypto.randomUUID();
+                const channelId = butil.utils.randomUUID();
                 wireChannel(dotNetRef, channelId, e.channel);
                 butil.utils.dispatch(dotNetRef, 'InvokeRemoteChannel', id, channelId, e.channel.label);
             });

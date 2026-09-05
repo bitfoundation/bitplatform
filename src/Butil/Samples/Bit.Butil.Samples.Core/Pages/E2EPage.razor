@@ -835,6 +835,11 @@
         var reference = await box.AsElementReference();
         if (reference is null) { Set("dom:bridge:no-reference"); return; }
 
+        // The stamp is made once: a second call has to hand back the same id rather than pile
+        // another reference attribute onto the element.
+        var again = await box.AsElementReference();
+        if (again?.Id != reference.Value.Id) { Set("dom:bridge:unstable"); return; }
+
         // Round trip through an ordinary ElementReference extension, read back through the handle.
         await reference.Value.AddClass("bridged");
         var classAttribute = await box.GetAttribute("class");

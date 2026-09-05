@@ -43,7 +43,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
                 if (transfer) {
                     for (const file of Array.from(transfer.files ?? [])) {
-                        const fileId = crypto.randomUUID();
+                        const fileId = butil.utils.randomUUID();
                         _files[fileId] = file;
                         files.push({
                             id: fileId,
