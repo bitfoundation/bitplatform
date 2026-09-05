@@ -29,11 +29,14 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     [AutoInject] private IConfiguration configuration = default!;
 
+    /// <summary>The largest upload every endpoint here accepts; the Dev MCP reports this value rather than a copy of it.</summary>
+    public const int MaxUploadSizeBytes = 11 * 1024 * 1024;
+
     // For open telemetry metrics
     private static readonly Histogram<double> updateResizeDurationHistogram = Meter.Current.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
 
     [HttpPost]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     public async Task<IActionResult> UploadUserProfilePicture(IFormFile? file, CancellationToken cancellationToken)
     {
         return await UploadAttachment(
@@ -45,7 +48,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     //#if (module == "Sales" || module == "Admin")
     [HttpPost("{productId}")]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
     [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
     //#if (multitenant == true)
@@ -76,7 +79,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// </para>
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     public async Task<IActionResult> UploadAiChatImage(IFormFile? file, CancellationToken cancellationToken)
     {
         var attachmentId = Guid.CreateSequentialGuid();

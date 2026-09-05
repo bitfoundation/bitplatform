@@ -39,4 +39,26 @@ public class DevMcpForbiddenColumnsTests
         Assert.Contains("UserName", paths);
         Assert.DoesNotContain("PasswordHash", paths);
     }
+
+    [TestMethod]
+    [DataRow("it.PasswordHash")]
+    [DataRow("this.PasswordHash")]
+    [DataRow("root.PasswordHash")]
+    [DataRow("parent.PasswordHash")]
+    [DataRow("it.it.PasswordHash")]
+    public void ARowSelfReference_Should_NotHideTheColumnItNames(string path)
+    {
+        Assert.Contains("PasswordHash", DevMcpQueryGuards.ExtractPaths($"{path} != null").ToArray(),
+            $"'{path}' is 'PasswordHash'. Skipping the whole path over its prefix would hand back the column the guard exists to refuse.");
+    }
+
+    [TestMethod]
+    public void ATypeNameOrLiteral_Should_StillBeSkipped()
+    {
+        var paths = DevMcpQueryGuards.ExtractPaths("CreatedOn > DateTime(2024,1,1) && IsActive == true").ToArray();
+        Assert.Contains("CreatedOn", paths);
+        Assert.Contains("IsActive", paths);
+        Assert.DoesNotContain("DateTime", paths);
+        Assert.DoesNotContain("true", paths);
+    }
 }

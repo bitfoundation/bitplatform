@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ModelContextProtocol.Server;
+using Boilerplate.Server.Api.Features.Attachments;
 
 namespace Boilerplate.Server.Api.Infrastructure.DevMcp;
 
@@ -147,13 +148,16 @@ public sealed class DevMcpConfigurationTools(
             AiChatImagesRetention = settings.AiChatImagesRetention.ToString(),
             HubMaximumReceiveMessageSize = configuration.GetValue<long?>("HubOptions:MaximumReceiveMessageSize"),
             //#endif
-            UploadSizeLimitBytes = 11 * 1024 * 1024,
+            AttachmentUploadSizeLimitBytes = AttachmentController.MaxUploadSizeBytes,
+            //#if (signalR == true)
+            SpeechUploadSizeLimitBytes = ChatbotController.MaxSpeechUploadSizeBytes,
+            //#endif
             RateLimits = new object[]
             {
-                new { Policy = RateLimitOptionsExtensions.IDENTITY, PermitLimit = 30, Window = "00:01:00", Partition = "user-or-ip" },
+                new { Policy = RateLimitOptionsExtensions.IDENTITY, PermitLimit = RateLimitOptionsExtensions.IdentityPermitLimit, Window = RateLimitOptionsExtensions.Window.ToString(), Partition = "user-or-ip" },
                 //#if (signalR == true)
-                new { Policy = RateLimitOptionsExtensions.SPEECH, PermitLimit = 10, Window = "00:01:00", Partition = "user-or-ip" },
-                new { Policy = "speech-global-ip", PermitLimit = 100, Window = "00:01:00", Partition = "ip" }
+                new { Policy = RateLimitOptionsExtensions.SPEECH, PermitLimit = RateLimitOptionsExtensions.SpeechPermitLimit, Window = RateLimitOptionsExtensions.Window.ToString(), Partition = "user-or-ip" },
+                new { Policy = RateLimitOptionsExtensions.SPEECH_GLOBAL_IP, PermitLimit = RateLimitOptionsExtensions.SpeechGlobalIpPermitLimit, Window = RateLimitOptionsExtensions.Window.ToString(), Partition = "ip" }
                 //#endif
             }
         };

@@ -10,7 +10,18 @@ public static class McpHangfireExtensions
     private static readonly Regex SixDigit = new(@"\b(\d{6})\b", RegexOptions.Compiled);
     private static readonly Regex Href = new(@"href\s*=\s*[""']([^""']+)[""']", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    public static async Task<JsonNode> WaitForHangfireJob(this McpClient mcp, string argumentContains, DateTimeOffset? fromUtc, CancellationToken cancellationToken)
+    /// <summary>The jobs already addressed to <paramref name="argumentContains"/>, to exclude from a later wait.</summary>
+    public static async Task<IReadOnlyCollection<string>> HangfireJobIds(this McpClient mcp, string argumentContains, CancellationToken cancellationToken)
+    {
+        return [.. JobIdsIn(await List(mcp, argumentContains, cancellationToken))];
+    }
+
+    /// <summary>
+    /// The next job addressed to <paramref name="argumentContains"/> that is none of <paramref name="knownJobIds"/>.
+    /// Job ids rather than a timestamp: one address collects several mails in a journey, and the deployment's clock is
+    /// not this machine's.
+    /// </summary>
+    public static async Task<JsonNode> WaitForHangfireJob(this McpClient mcp, string argumentContains, IReadOnlyCollection<string> knownJobIds, CancellationToken cancellationToken)
     {
         var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(1);
         JsonNode? last = null;
@@ -19,25 +30,30 @@ public static class McpHangfireExtensions
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var arguments = new Dictionary<string, object?>
-            {
-                ["state"] = "any",
-                ["argumentContains"] = argumentContains,
-                ["take"] = 10
-            };
-            if (fromUtc is not null)
-                arguments["fromUtc"] = fromUtc.Value.UtcDateTime;
-
-            last = JsonNode.Parse(await CallText(mcp, "ListHangfireJobs", arguments, cancellationToken));
-            var jobs = last?["jobs"]?.AsArray();
-            if (jobs is { Count: > 0 })
-                return jobs[0]!;
+            last = await List(mcp, argumentContains, cancellationToken);
+            var job = last?["jobs"]?.AsArray().FirstOrDefault(item => knownJobIds.Contains(JobId(item)) is false);
+            if (job is not null)
+                return job;
 
             await Task.Delay(500, cancellationToken);
         }
 
-        throw new TimeoutException($"No Hangfire job whose arguments contain '{argumentContains}' since {fromUtc:o}. Last payload: {last}");
+        throw new TimeoutException($"No new Hangfire job whose arguments contain '{argumentContains}'. Already seen: [{string.Join(", ", knownJobIds)}]. Last payload: {last}");
     }
+
+    private static async Task<JsonNode?> List(McpClient mcp, string argumentContains, CancellationToken cancellationToken)
+    {
+        return JsonNode.Parse(await CallText(mcp, "ListHangfireJobs", new Dictionary<string, object?>
+        {
+            ["state"] = "any",
+            ["argumentContains"] = argumentContains,
+            ["take"] = 50 // ListHangfireJobs' own cap.
+        }, cancellationToken));
+    }
+
+    private static IEnumerable<string> JobIdsIn(JsonNode? payload) => payload?["jobs"]?.AsArray().Select(JobId) ?? [];
+
+    private static string JobId(JsonNode? job) => job?["id"]?.GetValue<string>() ?? "";
 
     public static string? SixDigitInArguments(this JsonNode job)
     {

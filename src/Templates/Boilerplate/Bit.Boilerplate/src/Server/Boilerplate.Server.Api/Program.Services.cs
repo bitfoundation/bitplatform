@@ -100,10 +100,11 @@ public static partial class Program
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
         //#endif
-        var mcp = services.AddDevMcp();
+        services.AddDevMcp()
         //#if (signalR == true)
-        mcp.WithToolsFromAssembly();
+            .WithToolsFromAssembly() // Chatbot tools, served on /mcp only (See DevMcpServiceCollectionExtensions).
         //#endif
+            ;
         //#if (module == "Sales" || module == "Admin")
         //#if (database == "PostgreSQL" || database == "SqlServer")
         services.AddScoped<ProductEmbeddingService>();

@@ -5,12 +5,20 @@ namespace Boilerplate.Server.Api.Infrastructure.DevMcp;
 
 public static partial class DevMcpQueryGuards
 {
+    // Literals, operators and type names: a path that opens with one of these names no column of the entity.
     private static readonly HashSet<string> Keywords = new(StringComparer.OrdinalIgnoreCase)
     {
         "true", "false", "null", "new", "and", "or", "not", "iif", "as",
         "int", "long", "string", "bool", "decimal", "double", "float", "guid",
         "datetime", "datetimeoffset", "timespan", "object", "convert", "parse",
-        "it", "parent", "root", "this", "byte", "short", "uint", "ulong", "char"
+        "byte", "short", "uint", "ulong", "char"
+    };
+
+    // Dynamic LINQ's own names for the row: "it.PasswordHash" IS "PasswordHash", so the prefix is stripped rather
+    // than treated as a keyword - skipping the whole path would hand back every column this guard exists to refuse.
+    private static readonly HashSet<string> SelfReferences = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "it", "this", "parent", "root"
     };
 
     public static string? Validate(IEntityType entityType, string[] select, string? filter, string? orderBy)
@@ -33,7 +41,7 @@ public static partial class DevMcpQueryGuards
         {
             foreach (var key in SplitOrderBy(orderBy))
             {
-                var error = DevMcpForbiddenColumns.RejectProperty(entityType, key);
+                var error = DevMcpForbiddenColumns.RejectProperty(entityType, StripSelfReferences(key));
                 if (error is not null)
                     return error;
             }
@@ -43,9 +51,6 @@ public static partial class DevMcpQueryGuards
         {
             foreach (var path in ExtractPaths(filter))
             {
-                if (Keywords.Contains(path.Replace(".", "")))
-                    continue;
-
                 var error = DevMcpForbiddenColumns.RejectProperty(entityType, path);
                 if (error is not null)
                     return error;
@@ -70,12 +75,25 @@ public static partial class DevMcpQueryGuards
         var withoutStrings = StripQuoted(expression);
         foreach (Match match in IdentifierPath().Matches(withoutStrings))
         {
-            var path = match.Value;
-            var first = path.Split('.')[0];
-            if (Keywords.Contains(first))
+            var path = StripSelfReferences(match.Value);
+
+            if (path.Length == 0 || Keywords.Contains(path.Split('.')[0]))
                 continue;
+
             yield return path;
         }
+    }
+
+    /// <summary>"it.Email" is "Email". Empty when the path names the row and no column of it.</summary>
+    public static string StripSelfReferences(string path)
+    {
+        var segments = path.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var start = 0;
+        while (start < segments.Length && SelfReferences.Contains(segments[start]))
+            start++;
+
+        return start == segments.Length ? "" : string.Join('.', segments[start..]);
     }
 
     private static string StripQuoted(string expression)

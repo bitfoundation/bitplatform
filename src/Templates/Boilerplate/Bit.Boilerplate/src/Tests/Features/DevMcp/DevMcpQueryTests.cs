@@ -51,6 +51,19 @@ public class DevMcpQueryTests
             ["filter"] = "new(Email) != null"
         }, TestContext.CancellationToken);
         Assert.Contains("new", constructed, StringComparison.OrdinalIgnoreCase);
+
+        // Dynamic LINQ names the row itself "it"/"this"/"root"/"parent", which is the same column under another name.
+        foreach (var selfReference in new[] { "it", "this", "root", "parent" })
+        {
+            var aliased = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+            {
+                ["entity"] = "User",
+                ["select"] = new[] { "Id", "Email" },
+                ["filter"] = $"{selfReference}.PasswordHash != null"
+            }, TestContext.CancellationToken);
+            Assert.Contains("forbidden", aliased, StringComparison.OrdinalIgnoreCase,
+                $"'{selfReference}.PasswordHash' reads the password hash, so it must be refused exactly like 'PasswordHash'. Result: {aliased}");
+        }
     }
 
     [TestMethod]
@@ -143,13 +156,17 @@ public class DevMcpQueryTests
         await using var _ = grant;
         await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "dev-mcp", TestContext.CancellationToken);
 
-        var orderBy = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        foreach (var key in new[] { "PasswordHash desc", "it.PasswordHash desc" })
         {
-            ["entity"] = "User",
-            ["select"] = new[] { "Id", "Email" },
-            ["orderBy"] = "PasswordHash desc"
-        }, TestContext.CancellationToken);
-        Assert.Contains("forbidden", orderBy, StringComparison.OrdinalIgnoreCase);
+            var orderBy = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+            {
+                ["entity"] = "User",
+                ["select"] = new[] { "Id", "Email" },
+                ["orderBy"] = key
+            }, TestContext.CancellationToken);
+            Assert.Contains("forbidden", orderBy, StringComparison.OrdinalIgnoreCase,
+                $"Ordering by '{key}' leaks the hash through the row order. Result: {orderBy}");
+        }
 
         var text = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
         {

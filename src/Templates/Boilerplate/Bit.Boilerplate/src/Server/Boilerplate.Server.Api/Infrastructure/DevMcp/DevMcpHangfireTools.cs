@@ -58,6 +58,8 @@ public sealed class DevMcpHangfireTools(JobStorage jobStorage, ServerApiSettings
             var jobs = DevMcpHangfireReader.ReadJobs(monitoring, state, queue)
                 .Where(job => DevMcpHangfireReader.Matches(job, argumentContains, fromUtc, toUtc))
                 .OrderByDescending(job => job.At ?? DateTime.MinValue)
+                // state "any" reads six snapshots, so a job caught mid-transition is in two of them; the newest wins.
+                .DistinctBy(job => job.Id)
                 .Skip(from)
                 .Take(take)
                 .Select(job => new

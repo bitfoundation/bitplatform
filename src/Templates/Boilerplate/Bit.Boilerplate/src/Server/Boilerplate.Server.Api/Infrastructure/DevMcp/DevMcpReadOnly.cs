@@ -32,6 +32,9 @@ internal static class DevMcpReadOnly
         public async ValueTask DisposeAsync()
         {
             await transaction.DisposeAsync();
+            // Matches the OpenConnectionAsync above: EF counts opens, so without this the connection stays out of the
+            // pool until the request scope ends.
+            await db.Database.CloseConnectionAsync();
             db.Database.SetCommandTimeout(previousTimeout);
         }
     }

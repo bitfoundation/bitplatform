@@ -62,12 +62,15 @@ public partial class TenantInvitationJourneyTests : AppsTestBase
             var adminPage = await adminContext.NewPageAsync();
             await adminPage.GotoAsync(adminPanel.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
             await SignInExistingUser(adminPage, tenantAdminEmail, tenantAdminPassword, mcp);
-            await SwitchToTenant(adminPage, e2eTenantName, tenantTitle);
+            await SwitchToTenant(adminPage, e2eTenantName);
+
+            // The sign-in above already mailed this address, so the invitation is identified as the job that is not
+            // one of these rather than by a timestamp.
+            var mailedBeforeTheInvite = await mcp.HangfireJobIds(invitedEmail, TestContext.CancellationToken);
 
             await InviteUser(adminPage, invitedEmail, tenantAdminEmail, mcp);
 
-            var invitation = await mcp.WaitForHangfireJob(invitedEmail, DateTimeOffset.UtcNow.AddMinutes(-2),
-                TestContext.CancellationToken);
+            var invitation = await mcp.WaitForHangfireJob(invitedEmail, mailedBeforeTheInvite, TestContext.CancellationToken);
 
             var body = invitation.DecodedArguments();
             Assert.Contains("دعوت", body, "The Hangfire job for the invitation must carry the Persian copy.");
@@ -104,11 +107,11 @@ public partial class TenantInvitationJourneyTests : AppsTestBase
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
         await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(password);
 
-        var since = DateTimeOffset.UtcNow.AddSeconds(-5);
+        var mailedBefore = await mcp.HangfireJobIds(email, TestContext.CancellationToken);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
 
-        var token = await WaitForSixDigit(mcp, email, since);
+        var token = await WaitForSixDigit(mcp, email, mailedBefore);
         await BitOtpInputUtils.FillOtpInputs(page, token);
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
@@ -122,9 +125,9 @@ public partial class TenantInvitationJourneyTests : AppsTestBase
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
         await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(userPassword);
 
-        var since = DateTimeOffset.UtcNow.AddSeconds(-5);
+        var mailedBefore = await mcp.HangfireJobIds(email, TestContext.CancellationToken);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
-        await FillElevatedAccessIfPrompted(page, email, since, mcp);
+        await FillElevatedAccessIfPrompted(page, email, mailedBefore, mcp);
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
     }
@@ -140,24 +143,20 @@ public partial class TenantInvitationJourneyTests : AppsTestBase
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
-    private async Task SwitchToTenant(IPage page, string tenantName, string tenantTitle)
+    /// <summary>No Switch button on the card means this tenant is already the selected one.</summary>
+    private async Task SwitchToTenant(IPage page, string tenantName)
     {
         await page.GotoAsync(AppUrl(PageUrls.ManageMyTenants), new() { WaitUntil = WaitUntilState.NetworkIdle });
         await Expect(page.GetByText(tenantName).First).ToBeVisibleAsync();
 
-        var switchButton = page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Switch });
-        if (await switchButton.CountAsync() > 0 && await switchButton.First.IsVisibleAsync())
-        {
-            var card = page.Locator(".tenant-card", new() { HasText = tenantName });
-            var cardSwitch = card.GetByRole(AriaRole.Button, new() { Name = AppStrings.Switch });
-            if (await cardSwitch.CountAsync() > 0)
-            {
-                await cardSwitch.ClickAsync();
-                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            }
-        }
+        var cardSwitch = page.Locator(".tenant-card", new() { HasText = tenantName })
+            .GetByRole(AriaRole.Button, new() { Name = AppStrings.Switch });
 
-        _ = tenantTitle;
+        if (await cardSwitch.CountAsync() > 0)
+        {
+            await cardSwitch.First.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        }
     }
 
     private async Task InviteUser(IPage page, string email, string tenantAdminEmail, McpClient mcp)
@@ -168,9 +167,9 @@ public partial class TenantInvitationJourneyTests : AppsTestBase
         await page.GetByText(inviteHeaderPrefix).First.ClickAsync();
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
 
-        var since = DateTimeOffset.UtcNow.AddSeconds(-5);
+        var mailedBefore = await mcp.HangfireJobIds(tenantAdminEmail, TestContext.CancellationToken);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Invite, Exact = true }).ClickAsync();
-        await FillElevatedAccessIfPrompted(page, tenantAdminEmail, since, mcp);
+        await FillElevatedAccessIfPrompted(page, tenantAdminEmail, mailedBefore, mcp);
 
         await Expect(BitSnackBarUtils.GetSnackBar(page, AppStrings.UserInvitedSuccessfullyMessage)).ToBeVisibleAsync();
     }
@@ -196,16 +195,16 @@ public partial class TenantInvitationJourneyTests : AppsTestBase
         var yes = Localized(nameof(AppStrings.Yes), faCulture);
         await page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(leave, AppStrings.LeaveTenant) }).ClickAsync();
 
-        var since = DateTimeOffset.UtcNow.AddSeconds(-5);
+        var mailedBefore = await mcp.HangfireJobIds(email, TestContext.CancellationToken);
         await page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(yes, AppStrings.Yes) }).ClickAsync();
-        await FillElevatedAccessIfPrompted(page, email, since, mcp);
+        await FillElevatedAccessIfPrompted(page, email, mailedBefore, mcp);
 
         var accept = Localized(nameof(AppStrings.AcceptInvitation), faCulture);
         await Expect(page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(accept, AppStrings.AcceptInvitation) }))
             .ToBeVisibleAsync();
     }
 
-    private async Task FillElevatedAccessIfPrompted(IPage page, string recipient, DateTimeOffset since, McpClient mcp)
+    private async Task FillElevatedAccessIfPrompted(IPage page, string recipient, IReadOnlyCollection<string> mailedBefore, McpClient mcp)
     {
         var otp = page.Locator(".bit-otp-inp").First;
         try
@@ -217,13 +216,13 @@ public partial class TenantInvitationJourneyTests : AppsTestBase
             return;
         }
 
-        var token = await WaitForSixDigit(mcp, recipient, since);
+        var token = await WaitForSixDigit(mcp, recipient, mailedBefore);
         await BitOtpInputUtils.FillOtpInputs(page, token);
     }
 
-    private async Task<string> WaitForSixDigit(McpClient mcp, string argumentContains, DateTimeOffset since)
+    private async Task<string> WaitForSixDigit(McpClient mcp, string argumentContains, IReadOnlyCollection<string> mailedBefore)
     {
-        var job = await mcp.WaitForHangfireJob(argumentContains, since, TestContext.CancellationToken);
+        var job = await mcp.WaitForHangfireJob(argumentContains, mailedBefore, TestContext.CancellationToken);
         var token = job.SixDigitInArguments();
         Assert.IsFalse(string.IsNullOrWhiteSpace(token),
             $"The Hangfire job matching '{argumentContains}' had no 6-digit token. Arguments: '{job.DecodedArguments()}'.");
