@@ -420,8 +420,12 @@ await cancel.Abort("cancelled by the user");   // ... or wait 5s for the deadlin
             _compositeCancel = await abortController.Create();
             _compositeDeadline = await abortController.Timeout(TimeSpan.FromSeconds(5));
 
+            // Either half can come back null on its own, so the giving-up paths release whatever the
+            // other half already allocated - a controller left behind here is a JS-side registry entry
+            // nothing will ever reach again, and every click would add another.
             if (_compositeCancel is null || _compositeDeadline is null)
             {
+                await DisposeComposite();
                 await compositeOutput.Warn("Unavailable - this engine has no AbortController or no AbortSignal.timeout.");
                 return;
             }
@@ -429,6 +433,7 @@ await cancel.Abort("cancelled by the user");   // ... or wait 5s for the deadlin
             _composite = await abortController.Any(_compositeCancel.Signal, _compositeDeadline);
             if (_composite is null)
             {
+                await DisposeComposite();
                 await compositeOutput.Warn("Any returned null.");
                 return;
             }

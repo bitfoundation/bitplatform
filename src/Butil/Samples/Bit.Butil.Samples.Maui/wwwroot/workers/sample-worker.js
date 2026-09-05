@@ -4,7 +4,7 @@
 self.addEventListener('message', e => {
     const data = e.data;
 
-    // Binary in, binary out, transferred both ways: no copy is made in either direction.
+    // Binary in, transferred in with no copy; the reply is a JSON sum object rather than bytes.
     if (data instanceof ArrayBuffer) {
         const bytes = new Uint8Array(data);
         let sum = 0;

@@ -65,6 +65,8 @@ var before = await css.GetComputedStyle(_sample, ["content"], "::before");
                  Api="Supports / SupportsCondition / Escape"
                  Description="The honest way to feature-detect CSS: it asks the browser's own parser rather than inferring support from a name and a version. Escape is the other half - an id that starts with a digit, or contains a dot or a space, is perfectly legal HTML and illegal in a selector without it, so anything that came from data rather than from your markup should go through it."
                  Code=@("""
+@inject Bit.Butil.Dom dom
+
 var grid = await css.Supports("display", "grid");
 var has = await css.SupportsCondition("selector(:has(a))");
 

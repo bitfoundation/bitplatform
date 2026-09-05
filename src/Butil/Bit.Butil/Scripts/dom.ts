@@ -10,7 +10,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!node) return null;
         const id = butil.utils.randomUUID();
         _nodes[id] = node;
-        return { id, tagName: (node.tagName ?? '').toLowerCase(), nodeType: node.nodeType ?? 0 };
+        return { id, tagName: (node.tagName ?? '').toLowerCase() };
     }
 
     function trackAll(nodes: any) {
@@ -71,35 +71,35 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         // --- placement ------------------------------------------------------------------------
+        // The placement operations all catch: a move the tree refuses - putting an element inside
+        // its own descendant, or inside itself - throws a HierarchyRequestError, and these answer
+        // false like every other refusal in this module rather than throwing across the interop
+        // boundary out of a method whose result is a bool.
         append(parentId: string, childId: string) {
             const parent = _nodes[parentId];
             const child = _nodes[childId];
             if (!parent || !child) return false;
-            parent.appendChild(child);
-            return true;
+            try { parent.appendChild(child); return true; } catch { return false; }
         },
 
         appendTo(element: any, childId: string) {
             const child = _nodes[childId];
             if (!element || !child) return false;
-            element.appendChild(child);
-            return true;
+            try { element.appendChild(child); return true; } catch { return false; }
         },
 
         prepend(parentId: string, childId: string) {
             const parent = _nodes[parentId];
             const child = _nodes[childId];
             if (!parent || !child?.nodeType) return false;
-            parent.insertBefore(child, parent.firstChild);
-            return true;
+            try { parent.insertBefore(child, parent.firstChild); return true; } catch { return false; }
         },
 
         insertBefore(referenceId: string, childId: string) {
             const reference = _nodes[referenceId];
             const child = _nodes[childId];
             if (!reference?.parentNode || !child) return false;
-            reference.parentNode.insertBefore(child, reference);
-            return true;
+            try { reference.parentNode.insertBefore(child, reference); return true; } catch { return false; }
         },
 
         remove(id: string) {
@@ -146,7 +146,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Whether the element is still in the document. A handle survives its element being
         // removed - it just stops being connected, which is a different thing from being gone.
         isConnected(id: string) { return _nodes[id]?.isConnected === true; },
-        exists(id: string) { return _nodes[id] !== undefined; },
 
         // Stamps the attribute Blazor's own ElementReference lookup searches for, so an element
         // this module found or created can be passed to every ElementReference extension in the

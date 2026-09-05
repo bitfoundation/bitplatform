@@ -212,7 +212,10 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
     /// A shared <see cref="ButilAbortSignal"/> that cancels the task if it has not run yet - the
     /// same signal that cancels your requests can cancel your queued work.
     /// </param>
-    /// <returns>Null when the task ran, or the reason it did not - <c>"aborted"</c>, most often.</returns>
+    /// <returns>
+    /// Null when the task ran, or the reason it did not - <c>"aborted"</c>, most often, and
+    /// <c>"unavailable"</c> when there is no browser to post to yet (prerendering or SSR).
+    /// </returns>
     /// <remarks>
     /// Where <c>scheduler.postTask</c> is missing this falls back to a timeout, which has one queue
     /// and no priorities: the task still runs, and the priority is ignored rather than approximated.
@@ -223,6 +226,11 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
                                              ButilAbortSignal? signal = null)
     {
         ArgumentNullException.ThrowIfNull(work);
+
+        // Said explicitly rather than left to Invoke's safe default, which for a string is the empty
+        // string: as a "reason it did not run" that says nothing, and the work really does not run
+        // here. Registering the handler after this check also keeps it out of the dictionary.
+        if (js.IsJsRuntimeInvalid()) return "unavailable";
 
         var id = Guid.NewGuid();
         _taskHandlers[id] = work;

@@ -2,12 +2,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     interface PeerEntry { pc: any; remoteStream: MediaStream; }
+    // The peer a channel belongs to is kept here because closing a connection has to announce its
+    // channels itself - see close().
+    interface ChannelEntry { channel: any; peerId: string; dotNetRef: any; }
 
     const _peers: { [id: string]: PeerEntry } = {};
-    const _channels: { [id: string]: any } = {};
+    const _channels: { [id: string]: ChannelEntry } = {};
 
-    function wireChannel(dotNetRef: any, channelId: string, channel: any) {
-        _channels[channelId] = channel;
+    function channelOf(channelId: string) { return _channels[channelId]?.channel; }
+
+    function wireChannel(dotNetRef: any, peerId: string, channelId: string, channel: any) {
+        _channels[channelId] = { channel, peerId, dotNetRef };
         // Binary arrives as an ArrayBuffer rather than a Blob, for the same reason as on a
         // WebSocket: a Blob would need an extra asynchronous read per message.
         channel.binaryType = 'arraybuffer';
@@ -17,13 +22,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             delete _channels[channelId];
             butil.utils.dispatch(dotNetRef, 'InvokeChannelClose', channelId);
         });
-        channel.addEventListener('message', (e: MessageEvent) => {
-            if (typeof e.data === 'string') {
-                butil.utils.dispatch(dotNetRef, 'InvokeChannelMessage', channelId, false, e.data, null);
-            } else {
-                butil.utils.dispatch(dotNetRef, 'InvokeChannelMessage', channelId, true, null, new Uint8Array(e.data));
-            }
-        });
+        // Through the shared encoder, so a data-channel message keeps the ButilMessage contract the
+        // ports and workers already keep: binary stays binary and everything else is valid JSON,
+        // which is what makes Deserialize<T>() work on a payload the peer sent as a plain string.
+        channel.addEventListener('message', (e: MessageEvent) =>
+            butil.utils.dispatch(dotNetRef, 'InvokeChannelMessage', channelId, ...butil.utils.encodeMessage(e.data)));
     }
 
     butil.webRtc = {
@@ -62,7 +65,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // value, which is why this needs a callback at all.
             pc.addEventListener('datachannel', (e: any) => {
                 const channelId = butil.utils.randomUUID();
-                wireChannel(dotNetRef, channelId, e.channel);
+                wireChannel(dotNetRef, id, channelId, e.channel);
                 butil.utils.dispatch(dotNetRef, 'InvokeRemoteChannel', id, channelId, e.channel.label);
             });
 
@@ -79,7 +82,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 // definition, and passing 0 would mean "never retransmit" rather than "reliable".
                 if (maxRetransmits >= 0) options.maxRetransmits = maxRetransmits;
 
-                wireChannel(dotNetRef, channelId, entry.pc.createDataChannel(label, options));
+                wireChannel(dotNetRef, peerId, channelId, entry.pc.createDataChannel(label, options));
                 return true;
             } catch { return false; }
         },
@@ -171,37 +174,48 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         sendText(channelId: string, text: string) {
-            const channel = _channels[channelId];
+            const channel = channelOf(channelId);
             if (!channel || channel.readyState !== 'open') return false;
             try { channel.send(text); return true; } catch { return false; }
         },
 
         sendBytes(channelId: string, bytes: Uint8Array) {
-            const channel = _channels[channelId];
+            const channel = channelOf(channelId);
             if (!channel || channel.readyState !== 'open') return false;
             try { channel.send(butil.utils.arrayToBuffer(bytes)); return true; } catch { return false; }
         },
 
-        channelState(channelId: string) { return _channels[channelId]?.readyState ?? 'closed'; },
-        channelBuffered(channelId: string) { return _channels[channelId]?.bufferedAmount ?? 0; },
+        channelState(channelId: string) { return channelOf(channelId)?.readyState ?? 'closed'; },
+        channelBuffered(channelId: string) { return channelOf(channelId)?.bufferedAmount ?? 0; },
 
         closeChannel(channelId: string) {
-            const channel = _channels[channelId];
-            if (!channel) return;
+            const entry = _channels[channelId];
+            if (!entry) return;
             delete _channels[channelId];
-            try { channel.close(); } catch { /* already closed */ }
+            try { entry.channel.close(); } catch { /* already closed */ }
         },
 
         close(id: string) {
             const entry = _peers[id];
             if (!entry) return;
             delete _peers[id];
+
+            // Closing a connection closes its channels "abruptly", without running the closing
+            // procedure - so no channel fires a close event and .NET would never hear that they
+            // ended. Announce them here, before the connection goes, or their handlers are stranded.
+            for (const channelId of Object.keys(_channels)) {
+                const channelEntry = _channels[channelId];
+                if (channelEntry.peerId !== id) continue;
+                delete _channels[channelId];
+                butil.utils.dispatch(channelEntry.dotNetRef, 'InvokeChannelClose', channelId);
+            }
+
             try { entry.pc.close(); } catch { /* already closed */ }
         },
 
         disposeAll() {
-            for (const id of Object.keys(_channels)) butil.webRtc.closeChannel(id);
             for (const id of Object.keys(_peers)) butil.webRtc.close(id);
+            for (const id of Object.keys(_channels)) butil.webRtc.closeChannel(id);
         }
     };
 }(BitButil));

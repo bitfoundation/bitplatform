@@ -349,7 +349,10 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
         {
             if (_dropSubscription is not null) await _dropSubscription.DisposeAsync();
             if (_sourceSubscription is not null) await _sourceSubscription.DisposeAsync();
-            if (_previewUrl is not null) await objectUrls.Revoke(_previewUrl);
+
+            // The whole payload, not just the preview URL: the retained file ids are held on the JS
+            // side until they are released, and navigating away is not a release.
+            await ReleasePayload();
         }
         catch (Exception)
         {

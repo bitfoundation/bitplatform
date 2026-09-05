@@ -6,7 +6,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     butil.fetch = {
         send,
         start,
-        abort
+        abort,
+        // Exported so streams.fromResponse builds its request through the same mapping instead of
+        // keeping a second copy of it - the copy is what let the shared-signal handling drift.
+        requestInit: buildInit
     };
 
     // The request always has its own controller (that is what abort(id) reaches). A shared signal
@@ -37,24 +40,34 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return { signal: controller.signal, cleanup: () => shared.removeEventListener('abort', forward) };
     }
 
+    // An abort is not always an AbortError: a signal aborted with a reason rejects fetch with that
+    // reason, and AbortSignal.timeout rejects with a TimeoutError. The signal is the only reliable
+    // witness, so ask it rather than the exception it produced.
+    function wasAborted(signal: AbortSignal | undefined, e: any): boolean {
+        return signal?.aborted === true || e?.name === 'AbortError';
+    }
+
     function buildInit(req: any, controller: AbortController): { init: RequestInit; cleanup: () => void } {
         const headers = new Headers();
         if (req.headers) {
             for (const k of Object.keys(req.headers)) headers.set(k, req.headers[k]);
         }
-        const { signal, cleanup } = signalFor(req, controller);
         const init: RequestInit = {
             method: req.method || 'GET',
             headers,
             credentials: req.credentials || 'same-origin',
             mode: req.mode || 'cors',
             cache: req.cache || 'default',
-            redirect: req.redirect || 'follow',
-            signal
+            redirect: req.redirect || 'follow'
         };
         if (req.body && req.body.length > 0) {
             init.body = butil.utils.arrayToBuffer(req.body);
         }
+        // Last, because signalFor can register a listener on a shared signal and only the cleanup it
+        // returns takes it off again: anything above throwing before that cleanup reaches the caller
+        // would leak the listener, and this request's controller with it.
+        const { signal, cleanup } = signalFor(req, controller);
+        init.signal = signal;
         return { init, cleanup };
     }
 
@@ -72,10 +85,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // try so that failure comes back as the documented error result rather than as a
         // JSException, and so the finally still releases the controller.
         let cleanup = () => { /* nothing was built yet */ };
+        let signal: AbortSignal | undefined;
 
         try {
             const built = buildInit(req, controller);
             cleanup = built.cleanup;
+            signal = built.init.signal as AbortSignal;
 
             const resp = await fetch(req.url, built.init);
             const total = (() => {
@@ -117,7 +132,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 error: null
             };
         } catch (e: any) {
-            const aborted = e?.name === 'AbortError';
+            const aborted = wasAborted(signal, e);
             return {
                 ok: false,
                 status: 0,

@@ -33,11 +33,29 @@ internal sealed class ConsumerComponent
 
     [Inject] public Geolocation Geolocation { get; set; } = default!;
 
+    // These four are here for the interop contract only, and each for a payload shape the ones above do
+    // not cover: an options object serialized on the way *out* (CanvasDrawOptions), a DTO reached through
+    // a handle rather than returned directly (StreamChunk), one that arrives as an array (RtcStat), and
+    // two that are internal - DomNodeDto and StreamedResponseDto are wrapped before a caller ever sees
+    // them, so nothing outside the library can reference them and only the library's own
+    // DynamicDependency keeps their members alive.
+    [Inject] public Canvas Canvas { get; set; } = default!;
+
+    [Inject] public Dom Dom { get; set; } = default!;
+
+    [Inject] public Streams Streams { get; set; } = default!;
+
+    [Inject] public WebRtc WebRtc { get; set; } = default!;
+
     /// <summary>
     /// The Butil services this component injects. <c>typeof</c> references the type without preserving
     /// its constructors, matching what the property declarations above already do.
     /// </summary>
-    public static Type[] InjectedTypes => [typeof(LocalStorage), typeof(Clipboard), typeof(Cookie), typeof(Window), typeof(Geolocation)];
+    public static Type[] InjectedTypes =>
+    [
+        typeof(LocalStorage), typeof(Clipboard), typeof(Cookie), typeof(Window), typeof(Geolocation),
+        typeof(Canvas), typeof(Dom), typeof(Streams), typeof(WebRtc)
+    ];
 
     /// <summary>
     /// The DTOs the calls in <see cref="Use"/> actually round-trip through System.Text.Json. These, and
@@ -53,7 +71,19 @@ internal sealed class ConsumerComponent
     /// <c>typeof</c> here keeps the types present but preserves none of their members, so it cannot mask a
     /// failure: the members have to survive on the strength of the library's own annotations.
     /// </remarks>
-    public static Type[] ExercisedPayloadTypes => [typeof(ButilCookie), typeof(GeolocationPosition), typeof(BarProp), typeof(ButilMouseEventArgs)];
+    public static Type[] ExercisedPayloadTypes =>
+    [
+        typeof(ButilCookie), typeof(GeolocationPosition), typeof(BarProp), typeof(ButilMouseEventArgs),
+        typeof(CanvasSize), typeof(CanvasDrawOptions), typeof(StreamChunk), typeof(RtcStat)
+    ];
+
+    /// <summary>
+    /// The same list for payload types the library keeps <c>internal</c>, which no <c>typeof</c> outside it
+    /// can name. Resolved against the assembly under test instead, and simply absent from a trimmed run
+    /// where the trimmer removed them - which is the same "removed entirely is not a defect" rule the
+    /// verification already applies.
+    /// </summary>
+    public static string[] ExercisedInternalPayloadTypeNames => ["Bit.Butil.DomNodeDto", "Bit.Butil.StreamedResponseDto"];
 
     public void Inject(IServiceProvider serviceProvider)
     {
@@ -62,6 +92,10 @@ internal sealed class ConsumerComponent
         Cookie = (Cookie)serviceProvider.GetRequiredService(typeof(Cookie));
         Window = (Window)serviceProvider.GetRequiredService(typeof(Window));
         Geolocation = (Geolocation)serviceProvider.GetRequiredService(typeof(Geolocation));
+        Canvas = (Canvas)serviceProvider.GetRequiredService(typeof(Canvas));
+        Dom = (Dom)serviceProvider.GetRequiredService(typeof(Dom));
+        Streams = (Streams)serviceProvider.GetRequiredService(typeof(Streams));
+        WebRtc = (WebRtc)serviceProvider.GetRequiredService(typeof(WebRtc));
     }
 
     /// <summary>
@@ -93,6 +127,29 @@ internal sealed class ConsumerComponent
             // A DOM subscription: reaches the internal DomEventsInterop, whose [JSInvokable] callbacks JS
             // dispatches by name, and hands back a ButilMouseEventArgs payload.
             ("Window.SubscribeEvent", () => Window.SubscribeEvent<ButilMouseEventArgs>(ButilEvents.Click, _ => { })),
+
+            // A DTO in each direction: CanvasSize comes back, CanvasDrawOptions goes out.
+            ("Canvas.GetSize", () => Canvas.GetSize(default).AsTask()),
+            ("Canvas.DrawImage", () => Canvas.DrawImage(default, default, new CanvasDrawOptions { SourceX = 0 }).AsTask()),
+
+            // An internal DTO the caller never sees: Query wraps a DomNodeDto in a DomHandle.
+            ("Dom.Query", () => Dom.Query("body").AsTask()),
+
+            // The other internal one, plus a payload reached through the handle it produces rather than
+            // returned from the call. The stub hands back nulls, so the reads are guarded - the call being
+            // present in IL is what the trimmer works from, not it being executed.
+            ("Streams.FromResponse", async () =>
+            {
+                var response = await Streams.FromResponse(new FetchRequest { Url = "/nothing" });
+                if (response.Stream is not null) await response.Stream.Read();
+            }),
+
+            // An array of DTOs, each carrying a dictionary.
+            ("WebRtc.GetStats", async () =>
+            {
+                var connection = await WebRtc.CreatePeerConnection();
+                if (connection is not null) await connection.GetStats();
+            }),
         ];
 
         var succeeded = 0;

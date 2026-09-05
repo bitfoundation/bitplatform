@@ -60,11 +60,10 @@ public sealed class PeerConnectionHandle : IAsyncDisposable
 
         var channelId = Guid.NewGuid();
         var created = await _js.Invoke<bool>("BitButil.webRtc.createChannel",
-            _owner.Reference, Id, channelId, label, ordered, maxRetransmits);
+            _owner.DotNetRef, Id, channelId, label, ordered, maxRetransmits);
 
         if (created is false) return null;
 
-        _owner.TrackChannel(channelId);
         return new RtcDataChannelHandle(_js, _owner, channelId, label);
     }
 

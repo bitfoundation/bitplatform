@@ -42,9 +42,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 if (entry.busy) return;
                 entry.busy = true;
 
+                // Caught before finally, not after: dispatch hands back the invocation's own
+                // promise, so a .NET handler that throws would leave the promise derived here
+                // rejected and unhandled - a browser-level unhandled rejection every frame.
                 const promise = butil.utils.dispatch(dotNetRef, 'InvokeAnimationFrame', id, timestamp);
-                if (promise && typeof promise.finally === 'function') promise.finally(() => { entry.busy = false; });
-                else entry.busy = false;
+                if (promise && typeof promise.then === 'function') {
+                    promise.then(() => { entry.busy = false; }, () => { entry.busy = false; });
+                } else {
+                    entry.busy = false;
+                }
             };
 
             entry.handle = requestAnimationFrame(step);
@@ -86,13 +92,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // setTimeout, which is a single queue with no priorities - the priority argument is honoured
         // where the API exists and ignored where it does not, which is the honest degradation.
         async postTask(dotNetRef: any, id: string, priority: string, delayMs: number, signalId: string | null) {
-            const run = () => butil.utils.dispatch(dotNetRef, 'InvokeScheduledTask', id);
+            // A .NET task that throws still ran, and this call answers "why it did not run". Letting
+            // the rejection out would report a task that ran as one that did not on the native path,
+            // and on the fallback path it would skip finish() entirely and strand the promise, so
+            // the caller would wait for a result that never comes. dispatch has already logged it.
+            const run = async () => { try { await butil.utils.dispatch(dotNetRef, 'InvokeScheduledTask', id); } catch { /* logged by dispatch */ } };
+            const signal = signalId ? butil.abortController.signalOf(signalId) : undefined;
             const scheduler = (window as any).scheduler;
 
             if (typeof scheduler?.postTask === 'function') {
                 const options: any = { priority };
                 if (delayMs > 0) options.delay = delayMs;
-                const signal = signalId ? butil.abortController.signalOf(signalId) : undefined;
                 if (signal) options.signal = signal;
 
                 try {
@@ -100,12 +110,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     return null;
                 } catch (e: any) {
                     // An aborted task rejects; so does an invalid priority. Both are answers, not
-                    // crashes.
+                    // crashes. An abort is reported as the same 'aborted' the fallback returns, so
+                    // the answer does not depend on which engine is underneath.
+                    if (signal?.aborted || e?.name === 'AbortError') return 'aborted';
                     return e?.message ?? String(e);
                 }
             }
 
-            const signal = signalId ? butil.abortController.signalOf(signalId) : undefined;
             if (signal?.aborted) return 'aborted';
 
             return await new Promise<string | null>(resolve => {
@@ -120,8 +131,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
                 const handle = setTimeout(async () => {
                     if (signal?.aborted) { finish('aborted'); return; }
-                    await run();
-                    finish(null);
+                    // The postTask branch above reports a rejected task as its message; the fallback
+                    // has to do the same, or the same failing task answers 'no error' on one engine
+                    // and an error on another.
+                    try {
+                        await run();
+                        finish(null);
+                    } catch (e: any) {
+                        finish(e?.message ?? String(e));
+                    }
                 }, delayMs > 0 ? delayMs : 0);
 
                 signal?.addEventListener('abort', onAbort, { once: true });

@@ -1,4 +1,5 @@
 @page "/worker"
+@using System.Text.Json.Serialization
 @implements IAsyncDisposable
 @inject Bit.Butil.Worker worker
 @inject Bit.Butil.MessageChannel messageChannel
@@ -265,7 +266,7 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
                     }
                     else
                     {
-                        await Route(m.Json ?? string.Empty);
+                        await Route(m);
                     }
                     StateHasChanged();
                 }),
@@ -295,20 +296,35 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
     /// The demo worker tags every reply with an <c>op</c>, so one message callback can feed the
     /// section that asked for it rather than every section sharing one console.
     /// </summary>
-    private async Task Route(string json)
+    private async Task Route(ButilMessage message)
     {
-        var op = json.Contains("\"fib\"") ? "fib"
-            : json.Contains("\"tookPort\"") ? "port"
-            : "echo";
+        // Read as JSON rather than searched as text: an echoed payload containing the word "fib" is
+        // not a fib reply, and the tag is the one thing the worker promises to put in every message.
+        string? op;
+        try
+        {
+            op = message.Deserialize<WorkerReply>()?.Op;
+        }
+        catch (JsonException)
+        {
+            op = null;
+        }
 
         var console = op switch
         {
             "fib" => cpuOutput,
-            "port" => portOutput,
+            "tookPort" => portOutput,
             _ => workerOutput
         };
 
-        await console.Success("Worker →", json);
+        await console.Success("Worker →", message.Json);
+    }
+
+    /// <summary>Just the routing tag - the rest of each reply is shown as the JSON it arrived as.</summary>
+    private sealed record WorkerReply
+    {
+        [JsonPropertyName("op")]
+        public string? Op { get; init; }
     }
 
     private async Task EchoWorker()

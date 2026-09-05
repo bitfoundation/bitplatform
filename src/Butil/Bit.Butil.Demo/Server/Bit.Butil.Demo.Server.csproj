@@ -37,6 +37,7 @@
     </EmbeddedResource>
 
     <EmbeddedResource Include="Program.cs" LogicalName="ButilSource/Demo/Server/Program.cs" />
+    <EmbeddedResource Include="Endpoints\WebSocketEcho.cs" LogicalName="ButilSource/Demo/Server/Endpoints/WebSocketEcho.cs" />
 
     <!-- The Components\ and wwwroot\ prefixes are written out: %(RecursiveDir) only captures what
          the '**' matched, so it starts below the folder and would drop the folder itself. -->

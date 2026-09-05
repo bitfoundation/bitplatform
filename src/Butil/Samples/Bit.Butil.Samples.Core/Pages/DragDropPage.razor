@@ -99,6 +99,14 @@ var bytes = await dataTransfer.ReadFile(payload.Files[0].Id);
     {
         try
         {
+            // Same reason as the replacement above: a dropped file is held until it is released, and
+            // leaving the page is not a release.
+            if (_payload is not null)
+            {
+                foreach (var file in _payload.Files) await dataTransfer.ReleaseFile(file.Id);
+                _payload = null;
+            }
+
             if (_dropSubscription is not null) await _dropSubscription.DisposeAsync();
             if (_sourceSubscription is not null) await _sourceSubscription.DisposeAsync();
         }

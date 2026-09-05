@@ -29,13 +29,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         host(rootId: string) { return adopt(butil.dom.nodeOf(rootId)?.host); },
 
-        html(rootId: string) { return butil.dom.nodeOf(rootId)?.innerHTML ?? ''; },
-        setHtml(rootId: string, html: string) {
-            const root = butil.dom.nodeOf(rootId);
-            if (!root) return false;
-            root.innerHTML = html;
-            return true;
-        },
+        // No html/setHtml here: shadow roots live in the dom module's registry, so its own html and
+        // setHtml already serve them, and ShadowRootHandle calls those.
 
         // Styles inside a shadow root are scoped to it: the page's stylesheet does not reach in, and
         // this does not leak out. That is what makes a shadow root worth attaching.

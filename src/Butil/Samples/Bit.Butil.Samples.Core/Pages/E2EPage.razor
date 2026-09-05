@@ -236,6 +236,7 @@
     <button id="ws-state" @onclick="WebSocketState">state + url + buffered</button>
     <button id="ws-server-close" @onclick="WebSocketServerClose">server closes (4001)</button>
     <button id="ws-close" @onclick="WebSocketClose">close (4000)</button>
+    <button id="ws-replace" @onclick="WebSocketReplace">replace a closing socket</button>
     <button id="ws-bad-url" @onclick="WebSocketBadUrl">malformed url</button>
 </section>
 
@@ -622,7 +623,9 @@
             onIceCandidate: json => InvokeAsync(async () => { if (_peerA is not null) await _peerA.AddIceCandidate(json); }),
             // B's channel arrives as an event rather than as a return value.
             onRemoteChannel: channel => channel.Listen(
-                onMessage: m => received.TrySetResult(m.IsBinary ? $"[{string.Join(",", m.Data ?? [])}]" : m.Json ?? string.Empty)));
+                // Deserialize rather than reading Json raw: a data channel keeps the ButilMessage
+                // contract, so text sent as a plain string arrives as quoted JSON.
+                onMessage: m => received.TrySetResult(m.IsBinary ? $"[{string.Join(",", m.Data ?? [])}]" : m.Deserialize<string>() ?? string.Empty)));
 
         if (_peerA is null || _peerB is null) { Set("rtc:connect:unsupported"); return; }
 
@@ -1088,6 +1091,14 @@
     // ─── Streams ────────────────────────────────────────────────────────────────
     private const string SampleUrl = "/data/stream-sample.txt";   // exactly 1024 bytes of 'x'
 
+    /// <summary>
+    /// Waits for a writable sink's close callback, bounded. Reported as "did it arrive" rather than
+    /// as the reason it carried: a clean close reports no reason at all, so a null result cannot
+    /// double as the timeout signal here the way it does for the callbacks above.
+    /// </summary>
+    private static async Task<bool> AwaitSinkClose(TaskCompletionSource<string?> source, int seconds = 10)
+        => await Task.WhenAny(source.Task, Task.Delay(TimeSpan.FromSeconds(seconds))) == source.Task;
+
     private static async Task<long> DrainStream(ReadableStreamHandle stream)
     {
         var total = 0L;
@@ -1165,7 +1176,8 @@
         var error = await restored.PipeTo(sink);
         if (error is not null) { Set($"stream:roundtrip:error:{error}"); return; }
 
-        await finished.Task;
+        if (await AwaitSinkClose(finished) is false) { Set("stream:roundtrip:(timed out)"); return; }
+
         Set($"stream:roundtrip:{received}");
     }
 
@@ -1183,6 +1195,8 @@
 
         for (var i = 1; i <= 3; i++) await sink.Write(new byte[i * 10]);
         await sink.Close();
+
+        if (await AwaitSinkClose(finished) is false) { Set("stream:write:(timed out)"); return; }
 
         var reason = await finished.Task;
         // A clean close reports no reason - that is what tells it apart from an abort.
@@ -1504,13 +1518,12 @@
         return finished == source.Task ? await source.Task : null;
     }
 
-    private async Task WebSocketOpen()
+    /// <summary>
+    /// Opens the socket the rest of this section works with and waits for its open event, leaving it
+    /// in <c>_socket</c>. Returns the negotiated protocol, or null for a socket that never opened.
+    /// </summary>
+    private async Task<string?> OpenCurrent(string url)
     {
-        await CloseSocket();
-
-        var url = EchoUrl;
-        if (url is null) { Set("ws:no-endpoint"); return; }
-
         var opened = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         _closed = new TaskCompletionSource<WebSocketClose>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1520,10 +1533,56 @@
             onOpen: (protocol, _) => { _negotiatedProtocol = protocol; opened.TrySetResult(protocol); },
             onClose: close => _closed?.TrySetResult(close));
 
+        return _socket is null ? null : await AwaitSocket(opened);
+    }
+
+    private async Task WebSocketOpen()
+    {
+        await CloseSocket();
+
+        var url = EchoUrl;
+        if (url is null) { Set("ws:no-endpoint"); return; }
+
+        var protocol = await OpenCurrent(url);
         if (_socket is null) { Set("ws:open:null"); return; }
 
-        var protocol = await AwaitSocket(opened);
         Set($"ws:open:{protocol ?? "(timed out)"}");
+    }
+
+    /// <summary>
+    /// A socket closed while its replacement is already open. The close callback belongs to the
+    /// socket that raised it, so a page that tracks "the current socket" must not let the old one's
+    /// news reach through to the new one - the replacement has to still be usable afterwards.
+    /// </summary>
+    private async Task WebSocketReplace()
+    {
+        await CloseSocket();
+
+        var url = EchoUrl;
+        if (url is null) { Set("ws:no-endpoint"); return; }
+
+        var firstOpened = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstClosed = new TaskCompletionSource<WebSocketClose>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using var first = await webSocket.Open(url, _ => { },
+            protocols: ["butil-echo"],
+            onOpen: (protocol, _) => firstOpened.TrySetResult(protocol),
+            onClose: close => firstClosed.TrySetResult(close));
+
+        if (first is null || await AwaitSocket(firstOpened) is null) { Set("ws:replace:no-first"); return; }
+
+        // Closing is a handshake, so the callback is still in flight while the replacement opens -
+        // which is the whole point: the two overlap rather than happening one cleanly after the other.
+        await first.Close(4000, "replaced");
+
+        _nextMessage = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (await OpenCurrent(url) is null) { Set("ws:replace:no-second"); return; }
+
+        var closed = await AwaitSocket(firstClosed);
+        var sent = await _socket!.SendText("after");
+        var echo = await AwaitSocket(_nextMessage);
+
+        Set($"ws:replace:{closed?.Code.ToString() ?? "(timed out)"}/{sent}/{echo ?? "(timed out)"}");
     }
 
     private async Task WebSocketText()

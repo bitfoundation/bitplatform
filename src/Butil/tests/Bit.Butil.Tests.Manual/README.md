@@ -17,16 +17,24 @@ non-zero when the outcome does not match what it expects.
 ## What it exercises
 
 [`ConsumerComponent`](ConsumerComponent.cs) stands in for a consumer's Blazor component. It injects
-`LocalStorage`, `Clipboard`, `Cookie`, `Window` and `Geolocation` through `[Inject]` properties and
+`LocalStorage`, `Clipboard`, `Cookie`, `Window`, `Geolocation`, `Canvas`, `Dom`, `Streams` and `WebRtc`
+through `[Inject]` properties and
 resolves them through the **non-generic** `GetRequiredService(Type)` - the same shape razor's `@inject`
 produces. That detail is the whole point: `@inject` references a service's *type* and never its
 *constructor*, and `GetRequiredService<T>()` would annotate the type argument with `PublicConstructors`
 and preserve the constructor by itself, quietly hiding the failure this project exists to catch.
 
 Its calls deliberately cross the interop boundary in both directions: DTO-returning APIs
-(`Cookie.GetAll`, `Geolocation.GetCurrentPosition`, `Window.GetLocationBar`) and a DOM subscription
-(`Window.SubscribeEvent`), which drags in the internal `DomEventsInterop` and its `[JSInvokable]`
-callbacks. Everything else in Bit.Butil is untouched, so a trimmed publish should drop it.
+(`Cookie.GetAll`, `Geolocation.GetCurrentPosition`, `Window.GetLocationBar`, `Canvas.GetSize`) and a DOM
+subscription (`Window.SubscribeEvent`), which drags in the internal `DomEventsInterop` and its
+`[JSInvokable]` callbacks. The last four services are there for the interop contract rather than for the
+registration check, each for a payload shape the others do not reach: an options object serialized on the
+way *out* (`Canvas.DrawImage`'s `CanvasDrawOptions`), a DTO reached through a handle rather than returned
+from the call (`ReadableStreamHandle.Read`'s `StreamChunk`), one that arrives as an array of records
+carrying a dictionary (`PeerConnectionHandle.GetStats`'s `RtcStat`), and two the library keeps **internal**
+and wraps before a caller sees them (`DomNodeDto`, `StreamedResponseDto`), so only its own
+`DynamicDependency` keeps their members alive. Everything else in Bit.Butil is untouched, so a trimmed
+publish should drop it.
 
 ## The checks
 
@@ -135,9 +143,14 @@ since the map is a question about the library as shipped rather than about what 
 
 - **the class-to-module map**, built from `Bit.Butil.dll` by walking each type's IL for interop literals and
   closing over the types it can reach. Every module the library calls has to be reachable from some class -
-  one that is not is a module no scan could ever include - and the map, asked about the five classes
-  `ConsumerComponent` injects, has to answer **exactly `MustSurviveModules`**: the same set ILLink
-  independently arrives at for the same code. That equality is the point of the file. It is also a real test
+  one that is not is a module no scan could ever include - and the map, asked about the classes
+  `ConsumerComponent` injects, has to answer **exactly `ScanReachableModules`**: what ILLink independently
+  arrives at for the same code (`MustSurviveModules`), plus the two modules a *reference* closure reaches
+  where a *call* closure does not - `Streams` hands out a `FetchRequest` carrying an abort signal, and
+  `WebRtc` names the media-stream types, without this project calling either. The two lists are kept apart
+  and each compared exactly, rather than the check being loosened to a subset test that would stop noticing
+  either direction; over-including is the safe one (bytes, not a broken app), and it is the *only* one this
+  project is allowed to be wrong in. That equality is the point of the file. It is also a real test
   of the closure rather than a restatement of it: `LocalStorage` carries no interop literals of its own (they
   are on the `ButilStorage` base class) and `Window` reaches `events` only through an internal interop class
   called from inside a compiler-generated async state machine, so anything less than the full reference
@@ -212,6 +225,11 @@ over-reports badly: `ScrollOptions` and `WindowFeatures` belong to `Window` meth
 calls, so the trimmer strips them to shells - correct behaviour that looks like a defect. Only a type on
 a genuinely exercised code path can be asserted on.
 
+The library's `internal` payload types cannot be named with a `typeof` from out here at all, so they are
+listed as strings in `ConsumerComponent.ExercisedInternalPayloadTypeNames` and resolved against the
+assembly under test. One that is simply gone from a trimmed assembly is dropped rather than reported -
+the same "removed entirely is not a defect" rule the verification already applies.
+
 ## Running it
 
 Run both from this folder, so they share the manifest:
@@ -233,15 +251,15 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 857,600 bytes | 118,272 bytes |
-| types in assembly | 1,008 | 149 |
-| `[ButilService]` discovered / registered | 70 / 70 | 5 / 5 |
-| interop contract | 52 types captured | 10 checked, 42 trimmed away, 0 problems |
-| JavaScript modules called | 76 of 78 | 6 of 78 (clipboard, cookie, events, geolocation, storage, window) |
-| `bit-butil.js` a publish would ship | 152,652 bytes, all 78 modules | 9,481 bytes, 8 modules (3,161 gzip / 2,816 brotli) - 6.2% |
-| lazy scripts would download | 229,801 bytes over 76 files | 13,467 bytes over 6 files |
+| `Bit.Butil.dll` | 858,112 bytes | 150,016 bytes |
+| types in assembly | 1,008 | 190 |
+| `[ButilService]` discovered / registered | 70 / 70 | 9 / 9 |
+| interop contract | 58 types captured | 18 checked, 40 trimmed away, 0 problems |
+| JavaScript modules called | 76 of 78 | 10 of 78 (canvas, clipboard, cookie, dom, events, geolocation, storage, streams, webRtc, window) |
+| `bit-butil.js` a publish would ship | 154,507 bytes, all 78 modules | 32,966 bytes, 15 modules (9,602 gzip / 8,538 brotli) - 21.3% |
+| lazy scripts would download | 257,085 bytes over 76 files | 42,481 bytes over 10 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
-| script-scanning checks | 37 / 37 | not run |
+| script-scanning checks | 41 / 41 | not run |
 | script-publishing checks | 26 / 26 (9 publishes, ~15s) | not run |
 | lazy-loader checks | 16 / 16 | 16 / 16 |
 
@@ -307,8 +325,8 @@ assembly comes out at 30,720 bytes and 36 types.
   what a consumer would see as `BitButil.x is undefined`), and *packed into the folder the consumer-side
   targets read them from* (Bit.Butil.csproj and buildTransitive/Bit.Butil.targets disagree about where the
   chunks, the manifest or the task live, which breaks every consumer's publish and no build in this repo).
-- **`script scanning: the classes ConsumerComponent injects map to exactly the modules ILLink leaves ...`** -
-  the class-to-module map and the trimmer have stopped agreeing about the same five classes. A module the map
+- **`script scanning: the classes ConsumerComponent injects map to exactly the modules a reference closure ...`** -
+  the class-to-module map and `ScanReachableModules` have stopped agreeing about the same classes. A module the map
   *misses* is the serious direction: an untrimmed consumer would publish a bundle without JavaScript their app
   calls. Usually the reference closure stopped following something - a base class, an internal interop helper,
   a generic call, or the compiler-generated type an `async` method's body actually lives in.

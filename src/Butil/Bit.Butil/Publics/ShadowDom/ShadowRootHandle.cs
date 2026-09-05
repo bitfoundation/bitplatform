@@ -57,7 +57,7 @@ public sealed class ShadowRootHandle : IAsyncDisposable
     public ValueTask<string> GetMode() => _js.Invoke<string>("BitButil.shadowDom.mode", Id);
 
     /// <summary>The root's contents as HTML text.</summary>
-    public ValueTask<string> GetHtml() => _js.Invoke<string>("BitButil.shadowDom.html", Id);
+    public ValueTask<string> GetHtml() => _js.Invoke<string>("BitButil.dom.html", Id);
 
     /// <summary>
     /// Replaces the root's contents with parsed HTML.
@@ -71,7 +71,7 @@ public sealed class ShadowRootHandle : IAsyncDisposable
     public ValueTask<bool> SetHtml(string html)
     {
         ArgumentNullException.ThrowIfNull(html);
-        return _js.Invoke<bool>("BitButil.shadowDom.setHtml", Id, html);
+        return _js.Invoke<bool>("BitButil.dom.setHtml", Id, html);
     }
 
     /// <summary>Appends an element into the root.</summary>

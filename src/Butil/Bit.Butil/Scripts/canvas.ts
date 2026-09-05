@@ -5,8 +5,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // out at 320px wide is still 1920 pixels of picture, and a thumbnail wants the pixels.
     function intrinsicSize(source: any): { width: number; height: number } {
         if (!source) return { width: 0, height: 0 };
-        if (typeof source.videoWidth === 'number' && source.videoWidth > 0)
+        if (typeof source.videoWidth === 'number') {
+            // videoWidth is filled in at HAVE_METADATA, but drawing a video before HAVE_CURRENT_DATA
+            // is a specified no-op - so a frame-less video reports no size rather than letting the
+            // caller encode a blank picture and believe it captured something.
+            if (source.videoWidth <= 0 || (source.readyState ?? 0) < 2) return { width: 0, height: 0 };
             return { width: source.videoWidth, height: source.videoHeight };
+        }
         if (typeof source.naturalWidth === 'number' && source.naturalWidth > 0)
             return { width: source.naturalWidth, height: source.naturalHeight };
         return { width: source.width ?? 0, height: source.height ?? 0 };
@@ -90,7 +95,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // The pixel buffer's size, which is what drawing and exporting use. CSS may be displaying it
         // at some other size entirely, and the two disagreeing is the usual cause of a blurry canvas.
         size(canvas: any) {
-            if (!canvas) return null;
+            // getContext is the test for "is a canvas" everywhere in this module: the documented
+            // answer for anything else is null, not a fabricated size.
+            if (!canvas || typeof canvas.getContext !== 'function') return null;
             const rect = typeof canvas.getBoundingClientRect === 'function' ? canvas.getBoundingClientRect() : null;
             return {
                 width: canvas.width ?? 0,
@@ -102,7 +109,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         setSize(canvas: any, width: number, height: number) {
-            if (!canvas) return false;
+            if (!canvas || typeof canvas.getContext !== 'function') return false;
             // Assigning either dimension clears the canvas - the specification's rule, and a common
             // surprise, so it is worth knowing rather than working around.
             canvas.width = width;
@@ -170,15 +177,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const blob = await encodeBlob(canvas, type, quality);
             if (!blob) return null;
 
-            let bytes: Uint8Array;
-            try { bytes = new Uint8Array(await blob.arrayBuffer()); } catch { return null; }
-
-            let binary = '';
-            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-
-            // The blob's own type, not the requested one: a format the engine cannot encode falls
-            // back to image/png silently, and a data URL claiming otherwise is a lie a decoder acts on.
-            return `data:${blob.type || type};base64,${btoa(binary)}`;
+            // readAsDataURL encodes natively and stamps the blob's own type - not the requested one,
+            // which matters because a format the engine cannot encode falls back to image/png
+            // silently, and a data URL claiming otherwise is a lie a decoder acts on. Building the
+            // base64 by hand would mean holding several megabytes of intermediate string per frame.
+            try {
+                return await new Promise<string | null>(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+                    reader.onerror = () => resolve(null);
+                    reader.readAsDataURL(blob);
+                });
+            } catch { return null; }
         }
     };
 }(BitButil));

@@ -10,7 +10,7 @@ namespace Bit.Butil;
 /// <remarks>
 /// Rules here reach the whole page through selectors, which is the thing setting a style on one
 /// element cannot do: a theme, a print stylesheet, a <c>::highlight()</c> rule, a
-/// <c>@@media</c> block.
+/// <c>@media</c> block.
 /// </remarks>
 public sealed class StyleSheetHandle : IAsyncDisposable
 {

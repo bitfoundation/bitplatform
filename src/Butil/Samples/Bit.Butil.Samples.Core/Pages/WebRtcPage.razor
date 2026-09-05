@@ -64,7 +64,9 @@ var offer = await a.CreateOffer();
             onIceCandidate: json => InvokeAsync(async () => { if (_a is not null) await _a.AddIceCandidate(json); }),
             onRemoteChannel: channel => channel.Listen(onMessage: m => InvokeAsync(async () =>
             {
-                _received.Add(m.Json ?? string.Empty);
+                // Text sent as a plain string arrives as quoted JSON, like every other structured
+                // channel here, so it is deserialized rather than read raw.
+                _received.Add(m.Deserialize<string>() ?? string.Empty);
                 await output.Success("B received →", _received[^1]);
                 StateHasChanged();
             })));

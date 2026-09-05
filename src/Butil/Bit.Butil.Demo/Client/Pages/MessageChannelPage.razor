@@ -196,6 +196,12 @@ await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!
 
             await Listen(_channel.Port1, "Port1", channelOutput);
             await Listen(_channel.Port2, "Port2", channelOutput);
+
+            // Once, here, rather than on each send: OnMessage adds a listener every time it is
+            // called, so subscribing inside the send handler would print one extra copy of every
+            // later message per click.
+            await Listen(_channel.Port2, "Port2", binaryOutput);
+
             await _channel.Port1.Start();
             await _channel.Port2.Start();
 
@@ -279,7 +285,6 @@ await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!
 
         try
         {
-            await Listen(_channel.Port2, "Port2", binaryOutput);
             await _channel.Port1.PostBytes([1, 2, 3, 4]);
         }
         catch (Exception ex)

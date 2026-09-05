@@ -255,7 +255,9 @@ await b!.AttachRemoteMedia(_remoteVideo);
                     channel.Listen(
                         onMessage: m => InvokeAsync(async () =>
                         {
-                            _received.Add(m.IsBinary ? $"binary [{string.Join(",", m.Data ?? [])}]" : m.Json ?? string.Empty);
+                            // A data channel carries a ButilMessage like every other structured
+                            // channel here, so text sent as a plain string arrives as quoted JSON.
+                            _received.Add(m.IsBinary ? $"binary [{string.Join(",", m.Data ?? [])}]" : m.Deserialize<string>() ?? string.Empty);
                             await channelOutput.Success("B received →", _received[^1]);
                             StateHasChanged();
                         }),

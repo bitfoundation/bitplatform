@@ -49,6 +49,10 @@ await socket.Close(1000, "done");
     private DemoConsole output = default!;
 
     private WebSocketHandle? _socket;
+    // Which open a callback belongs to. A close event arrives after the socket that raised it has
+    // been replaced often enough - disposing one and opening another is two round trips - and a
+    // callback that cleared _socket unconditionally would clear the new socket on the old one's news.
+    private int _generation;
     private string _url = "wss://echo.websocket.events";
     private string _outgoing = "hello";
     private string _state = "Not connected.";
@@ -63,6 +67,8 @@ await socket.Close(1000, "done");
             return;
         }
 
+        var generation = ++_generation;
+
         _socket = await webSocket.Open(_url.Trim(),
             onMessage: m => InvokeAsync(async () =>
             {
@@ -70,14 +76,18 @@ await socket.Close(1000, "done");
             }),
             onOpen: (protocol, extensions) => InvokeAsync(async () =>
             {
-                _state = "Open.";
+                if (generation == _generation) _state = "Open.";
                 await output.Success("Open. Protocol →", string.IsNullOrEmpty(protocol) ? "(none negotiated)" : protocol);
                 StateHasChanged();
             }),
             onClose: close => InvokeAsync(async () =>
             {
-                _state = $"Closed ({close.Code}).";
-                _socket = null;
+                // Only this open's own close touches the field: a later socket is already in it.
+                if (generation == _generation)
+                {
+                    _state = $"Closed ({close.Code}).";
+                    _socket = null;
+                }
                 await output.Warn($"Closed → code {close.Code}, clean {close.WasClean}.");
                 StateHasChanged();
             }),

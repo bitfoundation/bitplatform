@@ -28,7 +28,7 @@ internal static class Program
     /// every other <see cref="ButilServiceAttribute"/> class, since this list is the whole of what the
     /// project references.
     /// </summary>
-    private static readonly string[] MustSurvive = ["Clipboard", "Cookie", "Geolocation", "LocalStorage", "Window"];
+    private static readonly string[] MustSurvive = ["Canvas", "Clipboard", "Cookie", "Dom", "Geolocation", "LocalStorage", "Streams", "WebRtc", "Window"];
 
     /// <summary>
     /// Where the untrimmed run records the service roster and the interop contract for the trimmed run to
@@ -238,9 +238,20 @@ internal static class Program
     /// Types the trimmer removed entirely are skipped, because that is the point of the exercise - only a
     /// type that survived while losing members it is reflected over is a defect.
     /// </remarks>
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Looking a type up by name and finding it gone is exactly the outcome this harness measures.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2057",
+        Justification = "Looking a type up by name and finding it gone is exactly the outcome this harness measures.")]
     private static void VerifyInteropContract(Assembly assembly, bool trimmed, InteropManifest? manifest, string? manifestError, string[] serviceNames, List<string> failures)
     {
-        var contracts = InteropContract.Capture(assembly, ConsumerComponent.ExercisedPayloadTypes);
+        // The internal payload roots are looked up by name because nothing outside Bit.Butil can name them,
+        // and one that is simply gone from a trimmed assembly is dropped rather than reported: a type the
+        // trimmer removed outright is the feature working, the same rule Verify applies below.
+        var internalRoots = ConsumerComponent.ExercisedInternalPayloadTypeNames
+            .Select(assembly.GetType)
+            .OfType<Type>();
+
+        var contracts = InteropContract.Capture(assembly, [.. ConsumerComponent.ExercisedPayloadTypes, .. internalRoots]);
 
         if (trimmed is false)
         {

@@ -108,7 +108,7 @@ public class Css(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Whether the browser understands a whole condition, written as it would be inside
-    /// <c>@@supports</c>: <c>"(display: grid) and (gap: 1rem)"</c>, or
+    /// <c>@supports</c>: <c>"(display: grid) and (gap: 1rem)"</c>, or
     /// <c>"selector(:has(a))"</c>.
     /// </summary>
     public ValueTask<bool> SupportsCondition(string condition)

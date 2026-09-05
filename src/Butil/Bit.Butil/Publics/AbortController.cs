@@ -80,8 +80,9 @@ public class AbortController(IJSRuntime js) : IAsyncDisposable
     /// Creates a signal that aborts itself after <paramref name="delay"/> with a
     /// <c>TimeoutError</c> reason. Nothing can abort it early.
     /// </summary>
-    /// <param name="delay">How long to wait. Rounded to whole milliseconds.</param>
+    /// <param name="delay">How long to wait. Rounded to whole milliseconds. Must not be negative.</param>
     /// <returns>A signal, or null when the runtime has no <c>AbortSignal.timeout</c>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delay"/> is negative.</exception>
     /// <remarks>
     /// The timer starts immediately, not when the signal is first used. Combine it with a
     /// controller's own signal through <see cref="Any"/> to get a deadline that a user can also
@@ -89,6 +90,11 @@ public class AbortController(IJSRuntime js) : IAsyncDisposable
     /// </remarks>
     public async ValueTask<ButilAbortSignal?> Timeout(TimeSpan delay)
     {
+        // AbortSignal.timeout takes an [EnforceRange] unsigned long long, so a negative delay - the
+        // shape Timeout.InfiniteTimeSpan arrives in - is a TypeError in the browser rather than a
+        // deadline that never fires. Refuse it here, where the caller can see which argument it was.
+        ArgumentOutOfRangeException.ThrowIfLessThan(delay, TimeSpan.Zero);
+
         var id = Guid.NewGuid();
         var created = await js.Invoke<bool>("BitButil.abortController.timeout", id, (long)delay.TotalMilliseconds);
 

@@ -1,14 +1,17 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    interface PortEntry { port: MessagePort; listener?: (e: MessageEvent) => void; started: boolean; }
+    // closed is tracked here because the port itself will not say: postMessage on a closed port is
+    // a silent no-op rather than a throw, so without this the post functions report success for a
+    // message nothing will ever receive.
+    interface PortEntry { port: MessagePort; listener?: (e: MessageEvent) => void; started: boolean; closed: boolean; }
 
     const _ports: { [id: string]: PortEntry } = {};
     // channel id -> its two port ids, so releasing a channel releases both halves.
     const _channels: { [id: string]: [string, string] } = {};
 
     function track(id: string, port: MessagePort) {
-        _ports[id] = { port, started: false };
+        _ports[id] = { port, started: false, closed: false };
         return _ports[id];
     }
 
@@ -48,13 +51,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         postJson(portId: string, json: string | null) {
             const entry = _ports[portId];
-            if (!entry) return false;
+            if (!entry || entry.closed) return false;
             try { entry.port.postMessage(json === null ? null : JSON.parse(json)); return true; } catch { return false; }
         },
 
         postBytes(portId: string, bytes: Uint8Array, transfer: boolean) {
             const entry = _ports[portId];
-            if (!entry) return false;
+            if (!entry || entry.closed) return false;
             const buffer = butil.utils.arrayToBuffer(bytes);
             try {
                 // Transferring hands the buffer over instead of copying it - the sender's copy is
@@ -68,9 +71,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // transferred rather than copied: a port belongs to exactly one context at a time.
         postWithPorts(portId: string, json: string | null, transferredPortIds: string[]) {
             const entry = _ports[portId];
-            if (!entry) return false;
+            if (!entry || entry.closed) return false;
 
-            const ports = (transferredPortIds ?? []).map(id => _ports[id]?.port).filter(Boolean) as MessagePort[];
+            const ports = (transferredPortIds ?? [])
+                .map(id => (_ports[id]?.closed ? undefined : _ports[id]?.port))
+                .filter(Boolean) as MessagePort[];
             if (ports.length !== (transferredPortIds ?? []).length) return false;
 
             try {
@@ -85,6 +90,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         close(portId: string) {
             const entry = _ports[portId];
             if (!entry) return;
+            entry.closed = true;
             try { entry.port.close(); } catch { /* already closed */ }
         },
 

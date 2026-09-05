@@ -1,7 +1,17 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    interface ReadableEntry { stream: ReadableStream; reader?: ReadableStreamDefaultReader; }
+    interface ReadableEntry {
+        stream: ReadableStream;
+        reader?: ReadableStreamDefaultReader;
+        // The fetch behind a response body, so cancelling the stream stops the download instead of
+        // just letting go of it.
+        fetch?: AbortController;
+        fetchCleanup?: () => void;
+        // A pipe locks both of its ends for its whole duration, so nothing can be cancelled
+        // through the stream itself while this is set - aborting it is the only way to stop it.
+        pipe?: AbortController;
+    }
     interface WritableEntry { stream: WritableStream; writer?: WritableStreamDefaultWriter; }
 
     const _readables: { [id: string]: ReadableEntry } = {};
@@ -21,37 +31,29 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         async fromResponse(id: string, url: string, req: any) {
             if (typeof (window as any).ReadableStream !== 'function') return null;
 
-            // Building the request is inside the try along with the call: an invalid header name or
-            // an unusable body throws exactly where fetch() would fail, and a caller reading the
-            // documented Error result should not have to catch a rejected promise for those two.
+            // The request is built by the fetch module rather than here, so there is one mapping of
+            // FetchRequest onto RequestInit - including how a shared AbortSignal composes with the
+            // request's own controller, which is what cancel() reaches. Building it inside the try
+            // along with the call is deliberate: an invalid header name or an unusable body throws
+            // exactly where fetch() would fail, and a caller reading the documented Error result
+            // should not have to catch a rejected promise for those two.
+            const controller = new AbortController();
+            let cleanup = () => { /* nothing was built yet */ };
             let response: Response;
             try {
-                const headers = new Headers();
-                if (req?.headers) for (const key of Object.keys(req.headers)) headers.set(key, req.headers[key]);
-
-                const init: RequestInit = {
-                    method: req?.method || 'GET',
-                    headers,
-                    credentials: req?.credentials || 'same-origin',
-                    mode: req?.mode || 'cors',
-                    cache: req?.cache || 'default',
-                    redirect: req?.redirect || 'follow'
-                };
-                if (req?.body && req.body.length > 0) init.body = butil.utils.arrayToBuffer(req.body);
-
-                // A shared AbortSignal composes with this request the same way it does for fetch().
-                const shared = req?.signalId ? butil.abortController.signalOf(req.signalId) : undefined;
-                if (shared) init.signal = shared;
-
-                response = await fetch(url, init);
+                const built = butil.fetch.requestInit(req ?? {}, controller);
+                cleanup = built.cleanup;
+                response = await fetch(url, built.init);
             }
-            catch (e: any) { return { ok: false, status: 0, error: e?.message ?? String(e) }; }
+            catch (e: any) { cleanup(); return { ok: false, status: 0, error: e?.message ?? String(e) }; }
 
             // A 204, a HEAD, or an opaque no-cors response has no body at all - which is not an
             // error, but there is no stream to hand back either.
             if (!response.body) return { ok: false, status: response.status, error: 'The response has no body.' };
 
             trackReadable(id, response.body);
+            _readables[id].fetch = controller;
+            _readables[id].fetchCleanup = cleanup;
             const length = response.headers.get('content-length');
 
             return {
@@ -158,14 +160,22 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         async pipeTo(id: string, writableId: string, preventClose: boolean) {
             const entry = _readables[id];
             const destination = _writables[writableId];
-            if (!entry || entry.reader || !destination) return 'unknown or locked stream';
+            if (!entry || entry.reader || entry.pipe || !destination) return 'unknown or locked stream';
+
+            // Without a signal a pipe cannot be stopped at all: it holds the lock on both ends, so
+            // cancel() and abortWritable() are refused for as long as it runs, and an abandoned
+            // download would keep going to completion.
+            const pipe = new AbortController();
+            entry.pipe = pipe;
 
             try {
-                await entry.stream.pipeTo(destination.stream, { preventClose });
+                await entry.stream.pipeTo(destination.stream, { preventClose, signal: pipe.signal });
                 delete _readables[id];
                 return null;
             } catch (e: any) {
-                return e?.message ?? String(e);
+                return pipe.signal.aborted ? 'aborted' : (e?.message ?? String(e));
+            } finally {
+                entry.pipe = undefined;
             }
         },
 
@@ -179,10 +189,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const entry = _readables[id];
             if (!entry) return;
             delete _readables[id];
+
+            // Aborting the fetch is what actually stops a download; cancelling the body alone lets
+            // the response keep arriving into nothing.
+            try { entry.fetch?.abort(reason ?? undefined); } catch { /* already aborted */ }
+            entry.fetchCleanup?.();
+
             try {
-                // A reader has to be cancelled through itself; cancelling the stream under a live
-                // reader throws for being locked.
-                if (entry.reader) await entry.reader.cancel(reason ?? undefined);
+                // A pipe owns the lock on both ends, so its own signal is the only way in. A reader
+                // has to be cancelled through itself; cancelling the stream under a live reader
+                // throws for being locked.
+                if (entry.pipe) entry.pipe.abort(reason ?? undefined);
+                else if (entry.reader) await entry.reader.cancel(reason ?? undefined);
                 else await entry.stream.cancel(reason ?? undefined);
             } catch { /* already closed or errored */ }
         },
@@ -225,6 +243,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Drops registry entries without cancelling: a stream handed to a pipe is no longer this
         // registry's business, and cancelling it here would break the pipe.
         release(id: string) {
+            // Letting go of a request's stream without cancelling still means letting go of the
+            // listener it put on a shared signal, which would otherwise hold this request for as
+            // long as that signal lives.
+            _readables[id]?.fetchCleanup?.();
+
             delete _readables[id];
             delete _writables[id];
             const transform = _transforms[id];

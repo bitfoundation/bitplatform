@@ -45,7 +45,7 @@ public class WebRtc(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): connections are isolated per circuit / WASM
     // app and closed on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<WebRtc>? _dotNetRef;
-    private DotNetObjectReference<WebRtc> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
+    internal DotNetObjectReference<WebRtc> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     private sealed class PeerHandlers
     {
@@ -108,7 +108,6 @@ public class WebRtc(IJSRuntime js) : IAsyncDisposable
     {
         if (_peers.TryGetValue(peerId, out var handlers) is false) return;
 
-        _channels[channelId] = new ChannelHandlers();
         handlers.OnRemoteChannel?.Invoke(new RtcDataChannelHandle(js, this, channelId, label));
     }
 
@@ -194,14 +193,13 @@ public class WebRtc(IJSRuntime js) : IAsyncDisposable
         return new PeerConnectionHandle(js, this, id);
     }
 
-    internal DotNetObjectReference<WebRtc> Reference => DotNetRef;
-
-    internal void TrackChannel(Guid channelId) => _channels[channelId] = new ChannelHandlers();
-
     internal void ForgetPeer(Guid id) => _peers.TryRemove(id, out _);
 
     internal void ForgetChannel(Guid id) => _channels.TryRemove(id, out _);
 
+    // The only place a channel's entry is created. An entry whose callbacks are all null behaves
+    // exactly like no entry at all, so pre-seeding one when the channel is made would be state with
+    // nothing to observe it and one more place to keep in step with this one.
     internal void SetChannelHandlers(Guid channelId, Action? onOpen, Action? onClose, Action<ButilMessage>? onMessage)
     {
         var handlers = _channels.GetOrAdd(channelId, static _ => new ChannelHandlers());

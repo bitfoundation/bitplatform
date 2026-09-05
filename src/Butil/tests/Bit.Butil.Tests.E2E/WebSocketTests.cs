@@ -58,6 +58,14 @@ public class WebSocketTests : ButilHarnessTestBase
     }
 
     [TestMethod]
+    public async Task A_Socket_Closing_After_Its_Replacement_Opened_Leaves_The_Replacement_Usable()
+    {
+        // The first socket's close (4000) arrives while the second is already the current one, and
+        // the second still round-trips afterwards.
+        await ClickAndExpectAsync("ws-replace", "ws:replace:4000/True/echo: after");
+    }
+
+    [TestMethod]
     public async Task A_Url_With_A_Refused_Scheme_Returns_Null_Rather_Than_Throwing()
     {
         await ClickAndExpectAsync("ws-bad-url", "ws:bad-url:True");
