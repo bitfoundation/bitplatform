@@ -1,0 +1,400 @@
+@page "/payment-request"
+@inject Bit.Butil.PaymentRequest paymentRequest
+@inject Bit.Butil.PaymentHandler paymentHandler
+
+<PageTitle>PaymentRequest - Bit.Butil</PageTitle>
+
+<PageHeader Category="Commerce"
+            Title="PaymentRequest"
+            Lead="Open the browser's own payment sheet, filled from the cards and wallets the user already has - and, on the other side of the boundary, register your installed app as a payment handler other sites can pay through."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Payment_Request_API"
+            InjectAs="PaymentRequest paymentRequest" />
+
+<Callout Type="warning" Title="A sheet stays open until you complete it">
+    <code>Show</code> resolves while the sheet is still on screen showing "processing". You then
+    process <code>PaymentResponse.Details</code> on your server and call <code>Complete</code> with
+    the outcome - that is what dismisses it. Forget the second call and the user is left staring at
+    a spinner.
+</Callout>
+
+<Callout Type="info" Title="Preconditions">
+    Secure context, a user gesture, and a top-level page (or an iframe carrying
+    <code>allow="payment"</code>). The demo below uses the <code>basic-card</code> method
+    identifier, which most engines have retired - expect <code>IsSupported</code> to be true and the
+    sheet to refuse to open anyway. A real integration names its processor's method identifier, e.g.
+    <code>https://google.com/pay</code>.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes window.PaymentRequest. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.PaymentRequest paymentRequest
+
+var supported = await paymentRequest.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Can the browser pay at all?"
+                 Api="CanMakePayment"
+                 Description="Asks whether any of the given payment methods could be used, without showing UI and without needing a gesture. It answers about the methods, not about the user having a usable card behind them - and browsers rate-limit it, so call it once per page rather than per render."
+                 Code=@("""
+var methods = new[]
+{
+    new PaymentMethod { SupportedMethods = "https://google.com/pay" }
+};
+
+var details = new PaymentDetails
+{
+    Total = new PaymentItem
+    {
+        Label = "Total",
+        Amount = new PaymentCurrencyAmount { Currency = "USD", Value = "19.99" }
+    }
+};
+
+var canPay = await paymentRequest.CanMakePayment(methods, details);
+""")>
+        <div class="field">
+            <span class="field-label">Payment method identifier</span>
+            <input @bind="_method" style="min-width:22rem" />
+        </div>
+        <div class="controls">
+            <button @onclick="CanMakePayment">CanMakePayment</button>
+        </div>
+        <DemoConsole @ref="canPayOutput" Title="can-make-payment output" />
+    </DemoSection>
+
+    <DemoSection Title="Show the sheet"
+                 Api="Show / Complete / Abort"
+                 Description="Show opens the sheet from a click and resolves with what the user authorized, or null if they dismissed it. The response carries the processor payload as raw JSON in Details - send that to your server. Complete dismisses the sheet with the result; Abort closes it while the user is still deciding."
+                 Code=@("""
+var response = await paymentRequest.Show(methods, details, new PaymentOptions
+{
+    RequestPayerName = true,
+    RequestPayerEmail = true
+});
+
+if (response is not null)
+{
+    // Post response.Details to the server, then close the sheet with the answer.
+    var ok = await ProcessOnServer(response.Details);
+
+    await paymentRequest.Complete(response.Id,
+        ok ? PaymentCompleteResult.Success : PaymentCompleteResult.Fail);
+}
+""")>
+        <div class="field">
+            <span class="field-label">Total</span>
+            <div class="controls">
+                <input @bind="_label" style="min-width:10rem" />
+                <input @bind="_currency" style="width:6rem" />
+                <input @bind="_value" style="width:8rem" />
+            </div>
+        </div>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_requestPayerName" /> Request payer name</label>
+            <label><input type="checkbox" @bind="_requestPayerEmail" /> Request payer email</label>
+            <label><input type="checkbox" @bind="_requestShipping" /> Request shipping</label>
+        </div>
+        <div class="controls">
+            <button @onclick="Show">Show</button>
+            <button class="secondary" @onclick="Abort">Abort</button>
+            <button class="secondary" @onclick="() => Complete(PaymentCompleteResult.Success)" disabled="@(_response is null)">Complete (success)</button>
+            <button class="secondary" @onclick="() => Complete(PaymentCompleteResult.Fail)" disabled="@(_response is null)">Complete (fail)</button>
+        </div>
+        @if (_response is not null)
+        {
+            <div class="field">
+                <span class="field-label">Authorized with @_response.MethodName</span>
+                <span>Payer: @(_response.PayerName ?? "-") / @(_response.PayerEmail ?? "-")</span>
+            </div>
+        }
+        <DemoConsole @ref="showOutput" Title="payment sheet output" />
+    </DemoSection>
+
+    <DemoSection Title="Payment handler"
+                 Api="PaymentHandler.IsSupported / GetUserHint / SetUserHint / EnableDelegations"
+                 Description="The other side of the boundary: what an installed app registers so other sites can pay through it. The handling itself happens in the service worker's canmakepayment and paymentrequest events; what a page controls is the account hint shown next to your app, and which fields your handler collects itself. Needs an active service worker registration."
+                 Code=@("""
+@inject Bit.Butil.PaymentHandler paymentHandler
+
+await paymentHandler.SetUserHint("user@example.com");
+
+var hint = await paymentHandler.GetUserHint();
+
+var enabled = await paymentHandler.EnableDelegations(
+    new[] { "shippingAddress", "payerEmail" });
+""")>
+        <div class="field">
+            <span class="field-label">User hint</span>
+            <input @bind="_userHint" style="min-width:18rem" />
+        </div>
+        <div class="controls">
+            <button @onclick="HandlerSupported">IsSupported</button>
+            <button @onclick="SetUserHint">SetUserHint</button>
+            <button @onclick="GetUserHint">GetUserHint</button>
+            <button @onclick="EnableDelegations">EnableDelegations</button>
+        </div>
+        <DemoConsole @ref="handlerOutput" Title="payment handler output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="PaymentRequest.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.PaymentRequest. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="PaymentRequest.CanMakePayment"
+               Signature="ValueTask<bool> CanMakePayment(PaymentMethod[] methods, PaymentDetails details)"
+               Description="Whether the browser could pay with any of these methods. No UI, no gesture needed, rate-limited by the browser." />
+    <ApiMember Name="PaymentRequest.Show"
+               Signature="ValueTask<PaymentResponse?> Show(PaymentMethod[] methods, PaymentDetails details, PaymentOptions? options = null)"
+               Description="Opens the payment sheet from a user gesture. Null when the user dismissed it or the browser refused. Leaves the sheet open for Complete." />
+    <ApiMember Name="PaymentRequest.Complete"
+               Signature="ValueTask Complete(string responseId, PaymentCompleteResult result = PaymentCompleteResult.Success)"
+               Description="Dismisses the sheet with the outcome of processing the payment. responseId is PaymentResponse.Id." />
+    <ApiMember Name="PaymentRequest.Abort"
+               Signature="ValueTask<bool> Abort()"
+               Description="Closes the sheet this instance opened before the user authorized anything. False when nothing is in flight." />
+    <ApiMember Name="PaymentMethod"
+               Signature="string SupportedMethods, object? Data"
+               Description="A payment method identifier (usually an https URL) plus that method's own configuration object." />
+    <ApiMember Name="PaymentDetails"
+               Signature="string? Id, PaymentItem Total, PaymentItem[]? DisplayItems, PaymentShippingOption[]? ShippingOptions, PaymentDetailsModifier[]? Modifiers"
+               Description="What is being charged. Display items are not summed or checked against the total by the browser." />
+    <ApiMember Name="PaymentItem"
+               Signature="string Label, PaymentCurrencyAmount Amount, bool Pending"
+               Description="One line in the sheet - the total itself, or a display item beneath it." />
+    <ApiMember Name="PaymentCurrencyAmount"
+               Signature="string Currency, string Value"
+               Description="An ISO 4217 currency code and the amount as a decimal string - a string because floating point cannot hold 19.99 exactly." />
+    <ApiMember Name="PaymentShippingOption"
+               Signature="string Id, string Label, PaymentCurrencyAmount Amount, bool Selected"
+               Description="One shipping choice, offered when PaymentOptions.RequestShipping is set." />
+    <ApiMember Name="PaymentDetailsModifier"
+               Signature="string SupportedMethods, PaymentItem? Total, PaymentItem[]? AdditionalDisplayItems, object? Data"
+               Description="A per-method adjustment to the totals - a card-network surcharge, a wallet discount." />
+    <ApiMember Name="PaymentOptions"
+               Signature="bool RequestPayerName, bool RequestPayerEmail, bool RequestPayerPhone, bool RequestShipping, string? ShippingType"
+               Description="The contact details the sheet collects. Each flag is another field the user has to confirm." />
+    <ApiMember Name="PaymentResponse"
+               Signature="string Id, string RequestId, string MethodName, JsonElement Details, string? PayerName, string? PayerEmail, string? PayerPhone, string? ShippingOption, PaymentAddress? ShippingAddress"
+               Description="What the user authorized. Details is the processor payload as raw JSON - verify it server-side." />
+    <ApiMember Name="PaymentAddress"
+               Signature="string[] AddressLine, string? Country, string? City, string? Region, string? PostalCode, string? DependentLocality, string? SortingCode, string? Organization, string? Recipient, string? Phone"
+               Description="The shipping address, when one was requested. Every field is optional - which are filled depends on the country." />
+    <ApiMember Name="PaymentCompleteResult"
+               Signature="enum { Success, Fail, Unknown }"
+               Description="What Complete tells the user about the payment." />
+    <ApiMember Name="PaymentHandler.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes ServiceWorkerRegistration.paymentManager. Chromium only." />
+    <ApiMember Name="PaymentHandler.GetUserHint"
+               Signature="ValueTask<string> GetUserHint()"
+               Description="The account hint shown beneath your app's name in another site's payment sheet. Empty when none is set." />
+    <ApiMember Name="PaymentHandler.SetUserHint"
+               Signature="ValueTask SetUserHint(string userHint)"
+               Description="Sets that hint. Set it after sign-in, clear it on sign-out - other sites' users see it." />
+    <ApiMember Name="PaymentHandler.EnableDelegations"
+               Signature="ValueTask<bool> EnableDelegations(string[] delegations)"
+               Description="Declares the fields your handler collects itself (shippingAddress, payerName, payerEmail, payerPhone). All or nothing: a name the engine does not know rejects the whole call, so the answer is true or false." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole canPayOutput = default!;
+    private DemoConsole showOutput = default!;
+    private DemoConsole handlerOutput = default!;
+
+    private string _method = "basic-card";
+    private string _label = "Butil demo order";
+    private string _currency = "USD";
+    private string _value = "19.99";
+    private bool _requestPayerName = true;
+    private bool _requestPayerEmail;
+    private bool _requestShipping;
+    private string _userHint = "user@example.com";
+    private PaymentResponse? _response;
+
+    private PaymentMethod[] Methods => [new PaymentMethod { SupportedMethods = _method }];
+
+    private PaymentDetails Details => new()
+    {
+        Id = "butil-demo",
+        Total = new PaymentItem
+        {
+            Label = _label,
+            Amount = new PaymentCurrencyAmount { Currency = _currency, Value = _value }
+        },
+        ShippingOptions = _requestShipping
+            ?
+            [
+                new PaymentShippingOption
+                {
+                    Id = "standard",
+                    Label = "Standard shipping",
+                    Amount = new PaymentCurrencyAmount { Currency = _currency, Value = "0.00" },
+                    Selected = true
+                }
+            ]
+            : null
+    };
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await paymentRequest.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CanMakePayment()
+    {
+        try
+        {
+            if (await paymentRequest.IsSupported() is false)
+            {
+                await canPayOutput.Warn("The Payment Request API is not available in this browser.");
+                return;
+            }
+
+            var canPay = await paymentRequest.CanMakePayment(Methods, Details);
+            await canPayOutput.Success($"CanMakePayment({_method}) →", canPay);
+        }
+        catch (Exception ex)
+        {
+            await canPayOutput.Error("CanMakePayment failed →", ex.Message);
+        }
+    }
+
+    private async Task Show()
+    {
+        try
+        {
+            if (await paymentRequest.IsSupported() is false)
+            {
+                await showOutput.Warn("The Payment Request API is not available in this browser.");
+                return;
+            }
+
+            _response = await paymentRequest.Show(Methods, Details, new PaymentOptions
+            {
+                RequestPayerName = _requestPayerName,
+                RequestPayerEmail = _requestPayerEmail,
+                RequestShipping = _requestShipping
+            });
+
+            if (_response is null)
+            {
+                await showOutput.Warn("Show →", "no payment: the sheet was dismissed, or the browser refused the method.");
+                return;
+            }
+
+            await showOutput.Success("Show →", $"{_response.MethodName} authorized. Details: {_response.Details}");
+            await showOutput.Info("The sheet is still open - Complete dismisses it.");
+        }
+        catch (Exception ex)
+        {
+            await showOutput.Error("Show failed →", ex.Message);
+        }
+    }
+
+    private async Task Complete(PaymentCompleteResult result)
+    {
+        try
+        {
+            if (_response is null)
+            {
+                await showOutput.Warn("Nothing to complete - open the sheet first.");
+                return;
+            }
+
+            await paymentRequest.Complete(_response.Id, result);
+            await showOutput.Success("Complete →", result);
+            _response = null;
+        }
+        catch (Exception ex)
+        {
+            await showOutput.Error("Complete failed →", ex.Message);
+        }
+    }
+
+    private async Task Abort()
+    {
+        try
+        {
+            await showOutput.Success("Abort →", await paymentRequest.Abort());
+        }
+        catch (Exception ex)
+        {
+            await showOutput.Error("Abort failed →", ex.Message);
+        }
+    }
+
+    private async Task HandlerSupported()
+    {
+        try
+        {
+            await handlerOutput.Success("PaymentHandler.IsSupported →", await paymentHandler.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await handlerOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task SetUserHint()
+    {
+        try
+        {
+            if (await paymentHandler.IsSupported() is false)
+            {
+                await handlerOutput.Warn("The Payment Handler API is not available in this browser.");
+                return;
+            }
+
+            await paymentHandler.SetUserHint(_userHint);
+            await handlerOutput.Success("SetUserHint →", _userHint);
+        }
+        catch (Exception ex)
+        {
+            await handlerOutput.Error("SetUserHint failed →", ex.Message);
+        }
+    }
+
+    private async Task GetUserHint()
+    {
+        try
+        {
+            var hint = await paymentHandler.GetUserHint();
+            await handlerOutput.Success("GetUserHint →", string.IsNullOrEmpty(hint) ? "(none)" : hint);
+        }
+        catch (Exception ex)
+        {
+            await handlerOutput.Error("GetUserHint failed →", ex.Message);
+        }
+    }
+
+    private async Task EnableDelegations()
+    {
+        try
+        {
+            var enabled = await paymentHandler.EnableDelegations(["shippingAddress", "payerEmail"]);
+            await handlerOutput.Success("EnableDelegations →",
+                enabled ? "shippingAddress, payerEmail" : "refused (no registration, or a name this engine does not know)");
+        }
+        catch (Exception ex)
+        {
+            await handlerOutput.Error("EnableDelegations failed →", ex.Message);
+        }
+    }
+}

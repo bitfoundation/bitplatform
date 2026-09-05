@@ -28,4 +28,10 @@
     <PackageReference Include="MSTest" Version="4.3.3" />
   </ItemGroup>
 
+  <!-- Deliberately no ProjectReference to Bit.Butil: every test here drives a deployed harness page
+       through the browser, and this project's namespace sits under Bit.Butil, so referencing the
+       library would shadow System.Console, System.Uri-adjacent names and the rest behind Butil's own
+       Console/Window/Navigator/Screen services. What can be checked in-process against a stub
+       IJSRuntime - the interop and cancellation contracts - lives in Bit.Butil.Tests.Manual. -->
+
 </Project>

@@ -103,8 +103,18 @@ public static class DocsNav
         new("Identity & Permissions", "identity",
         [
             new("WebAuthn", "web-authn", "Passkeys: create credentials and verify assertions.", typeof(WebAuthnPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
+            new("Credentials", "credentials", "The password and federated credential store behind navigator.credentials.", typeof(CredentialsPage), ApiSupport.Chromium, ApiNeeds.SecureContext),
+            new("FedCm", "fed-cm", "Federated sign-in the browser mediates, without third-party cookies.", typeof(FedCmPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
+            new("WebOtp", "web-otp", "Autofill the one-time code out of an incoming SMS.", typeof(WebOtpPage), ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("DigitalCredentials", "digital-credentials", "Present a verifiable credential from the user's wallet.", typeof(DigitalCredentialsPage), ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
             new("Permissions", "permissions", "Query the state of any browser permission.", typeof(PermissionsPage), ApiSupport.Partial),
             new("Notification", "notification", "Request permission and show system notifications.", typeof(NotificationPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
+        ]),
+        new("Commerce", "commerce",
+        [
+            new("PaymentRequest", "payment-request", "The browser's own payment sheet, and registering as a payment handler.", typeof(PaymentRequestPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture,
+                ["PaymentRequest", "PaymentHandler"]),
+            new("DigitalGoods", "digital-goods", "In-app purchases and entitlements inside an installed PWA.", typeof(DigitalGoodsPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Experimental),
         ]),
         new("Media & Speech", "media",
         [

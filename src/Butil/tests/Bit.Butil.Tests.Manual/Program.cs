@@ -24,11 +24,19 @@ namespace ButilTests.Manual;
 internal static class Program
 {
     /// <summary>
-    /// Butil services <see cref="ConsumerComponent"/> injects - trimming must keep these, and must remove
-    /// every other <see cref="ButilServiceAttribute"/> class, since this list is the whole of what the
-    /// project references.
+    /// The Butil services this project references - trimming must keep these, and must remove every other
+    /// <see cref="ButilServiceAttribute"/> class.
     /// </summary>
-    private static readonly string[] MustSurvive = ["Clipboard", "Cookie", "Geolocation", "LocalStorage", "Window"];
+    /// <remarks>
+    /// Two sources, and both are references a trimmer has to honour: <see cref="ConsumerComponent"/> injects
+    /// the first five the way a razor <c>@inject</c> would, and <see cref="CancellationContract"/> constructs
+    /// <c>DigitalCredentials</c>, <c>Fetch</c> and <c>WebOtp</c> directly to check the handles they put on the
+    /// wire. So the trimmed run measures a slightly larger consumer than the injected five alone - the
+    /// alternative, checking that contract from a project that does not reference the library, is not a thing
+    /// that exists.
+    /// </remarks>
+    private static readonly string[] MustSurvive =
+        ["Clipboard", "Cookie", "DigitalCredentials", "Fetch", "Geolocation", "LocalStorage", "WebOtp", "Window"];
 
     /// <summary>
     /// Where the untrimmed run records the service roster and the interop contract for the trimmed run to
@@ -128,7 +136,7 @@ internal static class Program
             // Every survivor, not a hand-picked sample of the ones expected to go: a sampled list only ever
             // fails for the names someone thought to put in it, so a service that starts surviving for a
             // reason nobody anticipated - a new unconditional reference, a DynamicDependency added in
-            // passing - goes unreported. ConsumerComponent references exactly MustSurvive, so anything else
+            // passing - goes unreported. This project references exactly MustSurvive, so anything else
             // still here is either a trimming regression or a reference added without updating that list.
             var unexpected = discoveredNames.Except(MustSurvive, StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToArray();
             if (unexpected.Length > 0)
@@ -192,6 +200,14 @@ internal static class Program
         Console.WriteLine("--- lazy scripts ---");
         var (lazyPassed, lazyFailed) = await LazyScripts.Run(failures);
         Console.WriteLine($"  {lazyPassed} checks passed, {lazyFailed} failed");
+        Console.WriteLine();
+
+        // The other half of the interop contract: not which members survive, but which arguments the
+        // cancellable APIs put on the wire. Checkable without a browser, and only here - the APIs it covers
+        // all prompt, so no headless test can reach them.
+        Console.WriteLine("--- cancellation contract ---");
+        var (cancellationPassed, cancellationFailed) = await CancellationContract.Run(failures);
+        Console.WriteLine($"  {cancellationPassed} checks passed, {cancellationFailed} failed");
         Console.WriteLine();
 
         Console.WriteLine("--- activation ---");
@@ -285,7 +301,7 @@ internal static class Program
     /// </summary>
     /// <remarks>
     /// Every other check here starts from the attribute, so a class that simply never got one is invisible
-    /// to all of them: the report still says "57 of 57 registered, PASS" while consumers hit "Cannot provide
+    /// to all of them: the report still says "64 of 64 registered, PASS" while consumers hit "Cannot provide
     /// a value for property" at runtime. That is the failure mode reflection-based registration introduces -
     /// there is no central <c>AddScoped&lt;T&gt;()</c> list whose absence a reviewer would notice - so it is
     /// the one thing this harness has to find without being told the answer.

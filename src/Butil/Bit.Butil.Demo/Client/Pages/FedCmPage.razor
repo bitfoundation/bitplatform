@@ -1,0 +1,256 @@
+@page "/fed-cm"
+@inject Bit.Butil.FedCm fedCm
+
+<PageTitle>FedCm - Bit.Butil</PageTitle>
+
+<PageHeader Category="Identity &amp; Permissions"
+            Title="FedCm"
+            Lead="Federated sign-in the browser mediates itself: it fetches the provider's config, shows the account chooser and returns a token - with no third-party cookies, no popup, and no redirect away from your page."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/FedCM_API"
+            InjectAs="FedCm fedCm" />
+
+<Callout Type="warning" Title="Both sides have to be set up">
+    FedCM is not something a page can adopt alone. The identity provider hosts
+    <code>/.well-known/web-identity</code> and the config file named by <code>ConfigUrl</code>, with
+    accounts, client-metadata and assertion endpoints behind it, and it calls
+    <code>SetLoginStatus</code> as its own session changes - the browser will not even look for
+    accounts at a provider it believes is logged out. Against a provider that has done none of that,
+    <code>Get</code> returns null.
+</Callout>
+
+<Callout Type="info" Title="Verify the token on the server">
+    <code>FedCmCredential.Token</code> is a bearer credential, usually a signed JWT. Post it to your
+    backend and validate the signature, the issuer, the audience and the nonce you generated there.
+    Reading it in the browser proves nothing.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support checks"
+                 Api="IsSupported / IsLoginStatusSupported"
+                 Description="Whether the runtime exposes window.IdentityCredential, and whether navigator.login is there for a provider to report its session with. During prerender/SSR these return false rather than throwing, so defer them to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.FedCm fedCm
+
+var supported = await fedCm.IsSupported();
+var canReportLogin = await fedCm.IsLoginStatusSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Sign in"
+                 Api="Get"
+                 Description="Opens the browser's own account dialog for the given provider and resolves with the provider's token, or null when the user dismissed it or no account was found. The nonce belongs to your server: generate it there, and check it comes back in the token."
+                 Code=@("""
+var credential = await fedCm.Get(new FedCmOptions
+{
+    Providers =
+    [
+        new FedCmProvider
+        {
+            ConfigUrl = "https://idp.example/fedcm.json",
+            ClientId = "your-client-id",
+            Nonce = serverGeneratedNonce,
+            Fields = ["name", "email", "picture"]
+        }
+    ],
+    Context = "signin",
+    Mediation = CredentialMediation.Optional
+});
+
+if (credential is not null)
+{
+    // POST credential.Token to the backend and validate it there.
+}
+""")>
+        <div class="field">
+            <span class="field-label">Provider config URL</span>
+            <input @bind="_configUrl" style="min-width:24rem" />
+        </div>
+        <div class="field">
+            <span class="field-label">Client id</span>
+            <input @bind="_clientId" style="min-width:16rem" />
+        </div>
+        <div class="field">
+            <span class="field-label">Context</span>
+            <select @bind="_context">
+                <option value="signin">signin</option>
+                <option value="signup">signup</option>
+                <option value="use">use</option>
+                <option value="continue">continue</option>
+            </select>
+        </div>
+        <div class="field">
+            <span class="field-label">Mediation</span>
+            <select @bind="_mediation">
+                <option value="@CredentialMediation.Optional">Optional</option>
+                <option value="@CredentialMediation.Silent">Silent</option>
+                <option value="@CredentialMediation.Required">Required</option>
+            </select>
+        </div>
+        <div class="controls">
+            <button @onclick="SignIn">Get</button>
+        </div>
+        <DemoConsole @ref="signInOutput" Title="fedcm sign-in output" />
+    </DemoSection>
+
+    <DemoSection Title="Disconnect an account"
+                 Api="Disconnect"
+                 Description="Severs the link between this relying party and one account at the provider, so the next sign-in needs fresh consent. The provider's disconnect endpoint does the work; the browser only forwards the request."
+                 Code=@("""
+var disconnected = await fedCm.Disconnect(
+    configUrl: "https://idp.example/fedcm.json",
+    clientId: "your-client-id",
+    accountHint: "ada@example.com");
+""")>
+        <div class="field">
+            <span class="field-label">Account hint</span>
+            <input @bind="_accountHint" style="min-width:18rem" />
+        </div>
+        <div class="controls">
+            <button @onclick="Disconnect">Disconnect</button>
+        </div>
+        <DemoConsole @ref="disconnectOutput" Title="disconnect output" />
+    </DemoSection>
+
+    <DemoSection Title="Report the provider's own session"
+                 Api="SetLoginStatus"
+                 Description="Only an identity provider's own pages call this, and they call it on every session change. Set LoggedIn after a sign-in and LoggedOut after a sign-out: the browser skips the accounts endpoint entirely for a provider it believes is logged out."
+                 Code=@("""
+// On the identity provider's own origin:
+await fedCm.SetLoginStatus(FedCmLoginStatus.LoggedIn);
+
+// ...and on sign-out:
+await fedCm.SetLoginStatus(FedCmLoginStatus.LoggedOut);
+""")>
+        <div class="controls">
+            <button @onclick="() => SetLoginStatus(FedCmLoginStatus.LoggedIn)">SetLoginStatus(LoggedIn)</button>
+            <button class="secondary" @onclick="() => SetLoginStatus(FedCmLoginStatus.LoggedOut)">SetLoginStatus(LoggedOut)</button>
+        </div>
+        <DemoConsole @ref="loginStatusOutput" Title="login status output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.IdentityCredential. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Get"
+               Signature="ValueTask<FedCmCredential?> Get(FedCmOptions options)"
+               Description="Runs the browser-mediated sign-in. Null when the user dismissed the dialog, no account matched, or the browser refused." />
+    <ApiMember Name="Disconnect"
+               Signature="ValueTask<bool> Disconnect(string configUrl, string clientId, string accountHint)"
+               Description="Asks the provider to disconnect one account from this relying party." />
+    <ApiMember Name="IsLoginStatusSupported"
+               Signature="ValueTask<bool> IsLoginStatusSupported()"
+               Description="True when the runtime exposes navigator.login." />
+    <ApiMember Name="SetLoginStatus"
+               Signature="ValueTask<bool> SetLoginStatus(FedCmLoginStatus status)"
+               Description="An identity provider telling the browser whether anyone is signed in on its own origin." />
+    <ApiMember Name="FedCmOptions"
+               Signature="FedCmProvider[] Providers, string? Context, CredentialMediation Mediation"
+               Description="The providers on offer and how the browser should present the choice. Chromium honours the first provider only." />
+    <ApiMember Name="FedCmProvider"
+               Signature="string ConfigUrl, string ClientId, string? Nonce, string? LoginHint, string? DomainHint, string[]? Fields, object? Parameters"
+               Description="One identity provider. Parameters is passed through as the provider dictionary's params." />
+    <ApiMember Name="FedCmCredential"
+               Signature="string? Id, string Token, bool IsAutoSelected, string? ConfigUrl"
+               Description="The provider's token. IsAutoSelected is true when the browser signed the user in without asking. ConfigUrl is null where the browser does not report which provider answered." />
+    <ApiMember Name="FedCmLoginStatus"
+               Signature="enum { LoggedIn, LoggedOut }"
+               Description="What SetLoginStatus tells the browser about the provider's own session." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole signInOutput = default!;
+    private DemoConsole disconnectOutput = default!;
+    private DemoConsole loginStatusOutput = default!;
+
+    private string _configUrl = "https://idp.example/fedcm.json";
+    private string _clientId = "butil-demo";
+    private string _accountHint = "ada@example.com";
+    private string _context = "signin";
+    private CredentialMediation _mediation = CredentialMediation.Optional;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await fedCm.IsSupported());
+            await supportOutput.Success("IsLoginStatusSupported →", await fedCm.IsLoginStatusSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task SignIn()
+    {
+        try
+        {
+            if (await fedCm.IsSupported() is false)
+            {
+                await signInOutput.Warn("FedCM is not available in this browser.");
+                return;
+            }
+
+            var credential = await fedCm.Get(new FedCmOptions
+            {
+                Providers =
+                [
+                    new FedCmProvider
+                    {
+                        ConfigUrl = _configUrl,
+                        ClientId = _clientId,
+                        Nonce = Guid.NewGuid().ToString("N"),
+                        Fields = ["name", "email"]
+                    }
+                ],
+                Context = _context,
+                Mediation = _mediation
+            });
+
+            if (credential is null)
+            {
+                await signInOutput.Warn("Get →",
+                    "no credential. Expected against a placeholder provider - a real one has to serve /.well-known/web-identity and its config file.");
+                return;
+            }
+
+            await signInOutput.Success("Get →", $"token of {credential.Token.Length} chars, auto-selected: {credential.IsAutoSelected}");
+        }
+        catch (Exception ex)
+        {
+            await signInOutput.Error("Get failed →", ex.Message);
+        }
+    }
+
+    private async Task Disconnect()
+    {
+        try
+        {
+            await disconnectOutput.Success("Disconnect →", await fedCm.Disconnect(_configUrl, _clientId, _accountHint));
+        }
+        catch (Exception ex)
+        {
+            await disconnectOutput.Error("Disconnect failed →", ex.Message);
+        }
+    }
+
+    private async Task SetLoginStatus(FedCmLoginStatus status)
+    {
+        try
+        {
+            var set = await fedCm.SetLoginStatus(status);
+            await loginStatusOutput.Success($"SetLoginStatus({status}) →", set ? "reported" : "navigator.login is not available here");
+        }
+        catch (Exception ex)
+        {
+            await loginStatusOutput.Error("SetLoginStatus failed →", ex.Message);
+        }
+    }
+}

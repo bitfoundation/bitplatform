@@ -1,0 +1,173 @@
+@page "/web-otp"
+@implements IDisposable
+@inject Bit.Butil.WebOtp webOtp
+
+<PageTitle>WebOtp - Bit.Butil</PageTitle>
+
+<PageHeader Category="Identity &amp; Permissions"
+            Title="WebOtp"
+            Lead="Read the one-time code out of an incoming SMS, so a sign-up flow fills its own code box instead of sending the user off to the messages app and back."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebOTP_API"
+            InjectAs="WebOtp webOtp" />
+
+<Callout Type="info" Title="The SMS has to opt in">
+    Only a message whose last line names this exact origin is ever offered, and only the code after
+    the <code>#</code> is read:
+    <CodeBlock Language="text" Code=@("""
+Your Butil code is 123456
+
+@example.com #123456
+""") />
+    Get that line wrong - the wrong origin, a missing <code>#</code> - and the browser simply never
+    offers the message. Nothing else about it is inspected.
+</Callout>
+
+<Callout Type="warning" Title="Chromium on Android, over HTTPS">
+    No other engine implements it, and it is autofill rather than a replacement for typing: keep the
+    input usable, start the wait as the code step appears (the browser shows a prompt while one is
+    pending), and let a timeout end it.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes window.OTPCredential. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.WebOtp webOtp
+
+var supported = await webOtp.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Wait for a code"
+                 Api="Receive / Abort"
+                 Description="Waits for a matching SMS and returns the code from it, or null when the wait was aborted, timed out, or the user dismissed the prompt. Cancelling the CancellationToken ends it the same way Abort does - which is what to hook a disposed component up to."
+                 Code=@("""
+var code = await webOtp.Receive(TimeSpan.FromSeconds(60), cancellationToken);
+
+if (code is not null)
+{
+    _otp = code;   // fill the input and submit
+}
+""")>
+        <div class="field">
+            <span class="field-label">Timeout (seconds, 0 = wait indefinitely)</span>
+            <input type="number" min="0" @bind="_timeoutSeconds" style="width:8rem" />
+        </div>
+        <div class="field">
+            <span class="field-label">Code</span>
+            <input @bind="_code" autocomplete="one-time-code" inputmode="numeric" placeholder="123456" style="width:10rem" />
+        </div>
+        <div class="controls">
+            <button @onclick="Receive" disabled="@_waiting">@(_waiting ? "Waiting for an SMS..." : "Receive")</button>
+            <button class="secondary" @onclick="Abort" disabled="@(!_waiting)">Abort</button>
+        </div>
+        <DemoConsole @ref="receiveOutput" Title="web otp output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.OTPCredential. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Receive"
+               Signature="ValueTask<string?> Receive(TimeSpan? timeout = null, CancellationToken cancellationToken = default)"
+               Description="Waits for a matching SMS and returns its code. Null when aborted, timed out, or dismissed. One wait per service instance." />
+    <ApiMember Name="Abort"
+               Signature="ValueTask<bool> Abort()"
+               Description="Ends the wait started on this instance - the user chose to type the code instead. False when nothing was pending." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole receiveOutput = default!;
+
+    private int _timeoutSeconds = 60;
+    private string _code = "";
+    private bool _waiting;
+
+    // Tied to the component, not to the click: navigating away mid-wait leaves the browser's SMS
+    // prompt up otherwise, since nothing else reaches the receive that is still pending.
+    private readonly CancellationTokenSource _cts = new();
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await webOtp.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Receive()
+    {
+        // The input is min="0", but a typed-in negative still binds: caught here so it can never
+        // reach Receive, where a negative timeout throws, and so 0 stays the only "no timeout".
+        if (_timeoutSeconds < 0)
+        {
+            await receiveOutput.Warn("Timeout can't be negative - use 0 to wait indefinitely.");
+            return;
+        }
+
+        // Raised before the first await: Blazor renders when the handler yields and again when it
+        // returns, so a flag set after the first await leaves the Abort button disabled for the
+        // whole wait - the very wait that button exists to end.
+        _waiting = true;
+
+        try
+        {
+            if (await webOtp.IsSupported() is false)
+            {
+                await receiveOutput.Warn("WebOTP is not available here - try Chrome on Android over HTTPS.");
+                return;
+            }
+
+            await receiveOutput.Info("Receive →", "waiting for an SMS ending in \"@" + "this origin #code\"...");
+
+            var timeout = _timeoutSeconds > 0 ? TimeSpan.FromSeconds(_timeoutSeconds) : (TimeSpan?)null;
+            var code = await webOtp.Receive(timeout, _cts.Token);
+
+            if (code is null)
+            {
+                await receiveOutput.Warn("Receive →", "no code (aborted, timed out, or dismissed).");
+                return;
+            }
+
+            _code = code;
+            await receiveOutput.Success("Receive →", code);
+        }
+        catch (Exception ex)
+        {
+            await receiveOutput.Error("Receive failed →", ex.Message);
+        }
+        finally
+        {
+            _waiting = false;
+        }
+    }
+
+    private async Task Abort()
+    {
+        try
+        {
+            await receiveOutput.Success("Abort →", await webOtp.Abort());
+        }
+        catch (Exception ex)
+        {
+            await receiveOutput.Error("Abort failed →", ex.Message);
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

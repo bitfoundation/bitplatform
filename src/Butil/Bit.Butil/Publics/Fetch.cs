@@ -49,18 +49,17 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // A token already cancelled on the way in fires its abort registration before the request is
+        // dispatched, and an abort for a request JavaScript has not seen yet has nothing to stop - the
+        // request would go out and run to completion. Answering here is what "cancelled" means for it.
+        if (cancellationToken.IsCancellationRequested)
+            return new FetchResponse { Url = request.Url, Aborted = true };
+
         var id = Guid.NewGuid();
         if (onProgress is not null)
             _progressHandlers.TryAdd(id, onProgress);
 
-        var registration = cancellationToken.CanBeCanceled
-            ? cancellationToken.Register(static state =>
-            {
-                var (j, rid) = ((IJSRuntime, Guid))state!;
-                try { _ = j.InvokeVoid("BitButil.fetch.abort", rid); }
-                catch (JSDisconnectedException) { }
-            }, (js, id))
-            : default;
+        var registration = js.RegisterJsAbort(cancellationToken, "BitButil.fetch.abort", id);
 
         try
         {
