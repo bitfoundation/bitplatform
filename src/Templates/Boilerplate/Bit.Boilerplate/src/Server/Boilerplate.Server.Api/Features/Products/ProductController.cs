@@ -112,7 +112,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeHomePage();
+        await responseCacheService.PurgeProductCache(entityToAdd.ShortId, catalogChanged: true);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -183,7 +183,7 @@ public partial class ProductController : AppControllerBase, IProductController
             }
         }
 
-        await responseCacheService.PurgeProductCache(entityToDelete.ShortId);
+        await responseCacheService.PurgeProductCache(entityToDelete.ShortId, catalogChanged: true);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -195,7 +195,18 @@ public partial class ProductController : AppControllerBase, IProductController
     {
         // Check out AppHub's comments for more info.
         // In order to exclude current user session, gets its signalR connection id from database and use GroupExcept instead.
+        //#if (multitenant == true)
+        // Only this tenant: "AuthenticatedClients" spans every tenant.
+        await appHubContext.Clients.Group(AppHub.TenantGroupName(TenantProvider.GetCurrentTenantId())).Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         await appHubContext.Clients.Group("AuthenticatedClients").Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
     }
     //#endif
 

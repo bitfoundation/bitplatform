@@ -61,9 +61,9 @@ public partial class UserSession
     /// signed in with no way for the server to address them through this column.
     /// </para>
     /// <para>
-    /// So anything sent here reaches ONE tab or app. That is fine for what it is used for - a device level action
-    /// the user is watching for (a diagnostic log upload, an AI chatbot tool acting on the device) - but do not
-    /// treat it as "notify this session". For that, target all the sessions of the user instead.
+    /// So anything sent here reaches ONE tab or app. That is fine for what it is used for - a device-level action
+    /// the user is watching for (an AI chatbot tool acting on the device) - but do not treat it as "notify this
+    /// session". For that, target all the sessions of the user instead.
     /// </para>
     /// </summary>
     public string? SignalRConnectionId { get; set; }
