@@ -91,8 +91,18 @@ public sealed class WebTransportHandle : IAsyncDisposable
     {
         if (_closed) return;
         _closed = true;
-        _onClosed();
-        try { await _js.InvokeVoid("BitButil.webTransport.close", Id, closeCode, reason); }
-        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        try
+        {
+            // The handlers stay registered across this call: closing here still ends the session,
+            // and the onClosed callback is documented to report that. They are dropped by
+            // WebTransport.InvokeWebTransportClosed once the closure comes back.
+            await _js.InvokeVoid("BitButil.webTransport.close", Id, closeCode, reason);
+        }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException())
+        {
+            // teardown: circuit gone, cancelled, or already disposed - nothing will report the
+            // closure, so drop the handlers here instead.
+            _onClosed();
+        }
     }
 }

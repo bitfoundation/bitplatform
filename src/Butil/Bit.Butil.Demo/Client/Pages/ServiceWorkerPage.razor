@@ -149,7 +149,7 @@ self.addEventListener('message', event => {
 
     <DemoSection Title="The Clients API"
                  Api="MatchAllClients"
-                 Description="Which tabs, iframes and workers the service worker controls. The Clients API exists only on the worker's global scope, so this is a question asked over a MessageChannel - and an empty result also means 'the worker does not answer', since there is always at least the calling page."
+                 Description="Which tabs, iframes and workers the service worker controls. The Clients API exists only on the worker's global scope, so this is a question asked over a MessageChannel - and an empty result is ambiguous: the worker may have answered with no clients (this page is not in the list while it is uncontrolled and includeUncontrolled is false), or there was no active worker, or none answered."
                  Code=@("""
 // the page side
 ServiceWorkerClientInfo[] clients = await serviceWorker.MatchAllClients(
@@ -376,7 +376,7 @@ var removed = await serviceWorker.Unregister();
             var clients = await serviceWorker.MatchAllClients(includeUncontrolled, clientType);
             if (clients.Length == 0)
             {
-                await clientsOutput.Warn("MatchAllClients() → empty - no active worker, or it does not answer the clients message.");
+                await clientsOutput.Warn("MatchAllClients() → empty - no matching clients, no active worker, or it does not answer the clients message.");
                 return;
             }
 

@@ -249,7 +249,10 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
     /// <param name="type">Which kinds to report: <c>"window"</c>, <c>"worker"</c>, <c>"sharedworker"</c> or <c>"all"</c>.</param>
     /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
     /// <param name="timeoutMs">How long to wait for the worker's answer before giving up.</param>
-    /// <returns>The clients, or an empty array when there is no active worker or it didn't answer.</returns>
+    /// <returns>
+    /// The clients - which is empty when the worker reported none, and equally when there is no
+    /// active worker or it didn't answer.
+    /// </returns>
     /// <remarks>
     /// The <see href="https://developer.mozilla.org/en-US/docs/Web/API/Clients">Clients</see> API
     /// exists only on the worker's global scope, so this is a question asked over a
@@ -265,8 +268,11 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
     ///         })))));
     /// });
     /// </code>
-    /// An empty array therefore also means "the worker doesn't implement the protocol" - there is
-    /// always at least the calling page.
+    /// An empty array is therefore ambiguous, and cannot be read as "the worker doesn't implement
+    /// the protocol": the worker may equally have answered with no clients - the calling page is
+    /// itself absent from the list while it is uncontrolled and <paramref name="includeUncontrolled"/>
+    /// is false, as it is on the load that registered the worker - or there may have been no active
+    /// worker to ask, or no answer within <paramref name="timeoutMs"/>.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ServiceWorkerClientInfo))]
     public ValueTask<ServiceWorkerClientInfo[]> MatchAllClients(bool includeUncontrolled = false,

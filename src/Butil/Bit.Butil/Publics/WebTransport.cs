@@ -90,10 +90,15 @@ public class WebTransport(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>Invoked from JS when the session ends. See <see cref="InvokeWebTransportDatagram"/>.</summary>
+    /// <remarks>
+    /// This is where a session's handlers are dropped, rather than when <see cref="WebTransportHandle.Close"/>
+    /// was called: the closure is dispatched after that call, so removing them any earlier would
+    /// swallow the notification for every session this side closed.
+    /// </remarks>
     [JSInvokable(ClosedMethodName)]
     public void InvokeWebTransportClosed(Guid id, int closeCode, string reason, string error)
     {
-        if (_handlers.TryGetValue(id, out var handlers))
+        if (_handlers.TryRemove(id, out var handlers))
             handlers.OnClosed?.Invoke(new WebTransportCloseInfo(closeCode, reason, error));
     }
 

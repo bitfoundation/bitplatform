@@ -273,6 +273,14 @@ if (stream is not null)
 
         try
         {
+            // Opening a second stream over the first would leave that one open with nothing left
+            // holding it - the demo only ever tracks one.
+            if (stream is not null)
+            {
+                await stream.DisposeAsync();
+                stream = null;
+            }
+
             stream = await session.OpenStream(bidirectional);
             if (stream is null) await streamOutput.Warn("OpenStream → null - the session is closed.");
             else await streamOutput.Success($"OpenStream(bidirectional: {bidirectional}) → stream {stream.Id}");

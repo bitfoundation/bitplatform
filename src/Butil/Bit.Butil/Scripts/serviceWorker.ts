@@ -191,16 +191,23 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         catch { return false; }
     }
 
+    // The worker a scoped question goes to. The controller is the answer only to the unscoped
+    // question: it is whichever worker controls this page, which is not necessarily the one
+    // registered under the scope the caller named.
+    function workerFor(reg: ServiceWorkerRegistration | null | undefined, scope: string | null) {
+        return reg?.active ?? (scope === null ? window.navigator.serviceWorker?.controller : null);
+    }
+
     async function claim(scope: string | null, timeoutMs: number) {
         const reg = await window.navigator.serviceWorker?.getRegistration(scope ?? undefined);
-        const worker = reg?.active ?? window.navigator.serviceWorker?.controller;
+        const worker = workerFor(reg, scope);
         const answer = await ask(worker, 'claim', {}, timeoutMs);
         return answer === true || answer?.claimed === true;
     }
 
     async function matchAllClients(scope: string | null, includeUncontrolled: boolean, type: string, timeoutMs: number) {
         const reg = await window.navigator.serviceWorker?.getRegistration(scope ?? undefined);
-        const worker = reg?.active ?? window.navigator.serviceWorker?.controller;
+        const worker = workerFor(reg, scope);
         const answer = await ask(worker, 'clients', { includeUncontrolled, type }, timeoutMs);
         const clients = Array.isArray(answer) ? answer : answer?.clients;
         if (!Array.isArray(clients)) return [];

@@ -115,7 +115,7 @@ var subscription = await backgroundFetch.SubscribeProgress("manual-2024", info =
 await using var _ = subscription;
 """)>
         <div class="controls">
-            <button @onclick="Subscribe" disabled="@(progressSubscription is not null)">SubscribeProgress</button>
+            <button @onclick="Subscribe" disabled="@(progressSubscription is not null || isSubscribing)">SubscribeProgress</button>
             <button class="secondary" @onclick="Unsubscribe" disabled="@(progressSubscription is null)">Unsubscribe</button>
         </div>
         <DemoConsole @ref="progressOutput" Title="progress output" />
@@ -167,6 +167,7 @@ string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0]
     private DemoConsole recordOutput = default!;
 
     private Bit.Butil.ButilSubscription? progressSubscription;
+    private bool isSubscribing;
 
     private string fetchId = "butil-demo-fetch";
     private string fetchTitle = "Bit.Butil demo download";
@@ -273,6 +274,11 @@ string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0]
 
     private async Task Subscribe()
     {
+        // progressSubscription is still null while the call is in flight, so the button's disabled
+        // state alone would let a second click add a listener nothing then holds a handle to.
+        if (isSubscribing) return;
+        isSubscribing = true;
+
         try
         {
             // The handler is an Action, so the render-thread work is marshalled rather than awaited:
@@ -287,6 +293,10 @@ string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0]
         catch (Exception ex)
         {
             await progressOutput.Error(ex.Message);
+        }
+        finally
+        {
+            isSubscribing = false;
         }
     }
 

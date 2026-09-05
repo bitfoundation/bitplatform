@@ -100,14 +100,21 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const session: Session = { transport, dotNetRef, streams: {}, nextStream: 1, closed: false };
             _sessions[id] = session;
 
+            // A session the peer or the network ended is never closed through close(), so this is
+            // the only place it leaves _sessions - guarded on identity, since the same id could
+            // already have been replaced by a later connect.
+            const forget = () => { if (_sessions[id] === session) delete _sessions[id]; };
+
             transport.closed
                 .then((closeInfo: any) => {
                     session.closed = true;
                     butil.utils.dispatch(dotNetRef, 'InvokeWebTransportClosed', id, closeInfo?.closeCode ?? 0, closeInfo?.reason ?? '', '');
+                    forget();
                 })
                 .catch((e: any) => {
                     session.closed = true;
                     butil.utils.dispatch(dotNetRef, 'InvokeWebTransportClosed', id, 0, '', String(e?.message ?? e));
+                    forget();
                 });
 
             try {

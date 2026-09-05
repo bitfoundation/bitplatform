@@ -177,18 +177,20 @@ self.onmessage = async function (e) {
             else request.reject(new Error(error));
         };
         _worker.onerror = () => {
-            // The worker died; fail everything waiting on it rather than leaving those promises
-            // pending forever, and drop it so the next call builds a fresh one.
-            for (const id of Object.keys(_pending)) {
-                _pending[id].reject(new Error('the OPFS sync worker failed'));
-                delete _pending[id];
-            }
-            terminateWorker();
+            // The worker died; drop it so the next call builds a fresh one.
+            terminateWorker('the OPFS sync worker failed');
         };
         return _worker;
     }
 
-    function terminateWorker() {
+    function terminateWorker(reason = 'the OPFS sync worker was disposed') {
+        // Nothing can answer a request once the worker is gone, so fail everything waiting on it
+        // rather than leaving those promises pending forever.
+        for (const id of Object.keys(_pending)) {
+            const request = _pending[id];
+            delete _pending[id];
+            request.reject(new Error(reason));
+        }
         try { _worker?.terminate(); } catch { /* already gone */ }
         if (_workerUrl) URL.revokeObjectURL(_workerUrl);
         _worker = null;
@@ -272,6 +274,10 @@ self.onmessage = async function (e) {
                     await handle.move(target, name);
                     return true;
                 }
+
+                // Moving a file onto itself is a no-op, and has to be caught here: copy + delete
+                // would write the file and then remove what it just wrote.
+                if (segments(path).join('/') === segments(destination).join('/')) return true;
 
                 await writeUnder(from, destination, null, new Uint8Array(await (await handle.getFile()).arrayBuffer()));
                 await removeUnder(from, path, false);

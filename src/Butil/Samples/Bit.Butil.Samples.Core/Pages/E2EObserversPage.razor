@@ -468,7 +468,14 @@
 
         await opfs.Remove(path);
 
-        var supported = await opfs.IsSyncAccessSupported();
+        if (await opfs.IsSyncAccessSupported() is false)
+        {
+            // createSyncAccessHandle is worker-only and not everywhere; the suite also has to pass
+            // where it is absent, and every call below would silently report a failed write there.
+            Set("opfs:sync:unsupported");
+            return;
+        }
+
         var written = await opfs.SyncWrite(path, System.Text.Encoding.UTF8.GetBytes("record-1;"));
         var appended = await opfs.SyncAppend(path, System.Text.Encoding.UTF8.GetBytes("record-2;"));
         var size = await opfs.SyncSize(path);
@@ -476,7 +483,7 @@
         var text = slice is null ? "null" : System.Text.Encoding.UTF8.GetString(slice);
         await opfs.Remove("butil-e2e-sync", recursive: true);
 
-        Set($"opfs:sync:{supported}/{written}/{appended}/{size}/{text}");
+        Set($"opfs:sync:True/{written}/{appended}/{size}/{text}");
     }
 
     // ─── Storage buckets ───────────────────────────────────────────────────────
