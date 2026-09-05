@@ -469,8 +469,10 @@ public partial class ProductResponseCacheTests
     {
         await using var server = new AppTestServer();
 
+        var replays = new ReplayCountingOutputCacheStore.Counter();
+
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics().CountOutputCacheReplays(replays),
             configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
@@ -482,6 +484,11 @@ public partial class ProductResponseCacheTests
         var cachedBeforeTheCreate = await GetProductsSiteMap(visitorHttpClient);
         Assert.AreEqual(warmUp, cachedBeforeTheCreate,
             "products.xml is not being replayed from the output cache, so this test cannot tell a purge from a natural miss.");
+
+        // Equal bodies prove nothing on their own: products.xml is deterministic, so two live reads match too. The
+        // store having actually answered one of them is what makes every assertion below non-vacuous.
+        Assert.IsGreaterThan(0, replays.Count,
+            "The output cache never replayed a stored entry, so a purge and a plain cache miss are indistinguishable here.");
 
         var marker = Guid.NewGuid().ToString("N");
         ProductDto? created = null;

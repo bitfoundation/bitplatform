@@ -75,14 +75,14 @@ public static class DevMcpReadOnly
     }
 
     /// <summary>
-    /// Only PostgreSQL and MySQL have this statement, and there it is transaction-scoped. T-SQL has no equivalent (its
-    /// SET TRANSACTION only sets an isolation level), and SQLite's PRAGMA query_only is connection-scoped and would
-    /// poison the pool AppDbContext shares. Everywhere else the read-only guarantee is the one the tools themselves
-    /// give: AsNoTracking, a validated projection, and nothing that ever calls SaveChanges.
+    /// PostgreSQL alone accepts this statement once a transaction is open. T-SQL has no such statement at all ("Incorrect
+    /// syntax near the keyword 'READ'"), MySQL refuses to change transaction characteristics mid-transaction (error 1568)
+    /// and would need START TRANSACTION READ ONLY, which BeginTransactionAsync cannot express, and SQLite's PRAGMA
+    /// query_only is connection-scoped and would poison the pool AppDbContext shares. Everywhere else the read-only
+    /// guarantee is the one the tools themselves give: AsNoTracking, a validated projection, and never SaveChanges.
     /// </summary>
     public static bool SupportsReadOnlyTransaction(string? providerName)
     {
-        return providerName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) is true
-            || providerName?.Contains("MySql", StringComparison.OrdinalIgnoreCase) is true;
+        return providerName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) is true;
     }
 }

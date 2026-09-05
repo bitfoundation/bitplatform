@@ -53,12 +53,13 @@ public class DevMcpForbiddenColumnsTests
     }
 
     /// <summary>
-    /// "SET TRANSACTION READ ONLY" is PostgreSQL/MySQL syntax. T-SQL rejects it outright, so issuing it there would
-    /// break every Dev MCP read on a SQL Server deployment - and only that one CI job would notice.
+    /// Verified against real servers: SQL Server 2025 answers "Incorrect syntax near the keyword 'READ'" and MySQL 8
+    /// answers error 1568 "Transaction characteristics can't be changed while a transaction is in progress". Issuing it
+    /// on either breaks every Dev MCP read there, and only that one CI job would notice.
     /// </summary>
     [TestMethod]
     [DataRow("Npgsql.EntityFrameworkCore.PostgreSQL", true)]
-    [DataRow("Pomelo.EntityFrameworkCore.MySql", true)]
+    [DataRow("Pomelo.EntityFrameworkCore.MySql", false)]
     [DataRow("Microsoft.EntityFrameworkCore.SqlServer", false)]
     [DataRow("Microsoft.EntityFrameworkCore.Sqlite", false)]
     [DataRow(null, false)]

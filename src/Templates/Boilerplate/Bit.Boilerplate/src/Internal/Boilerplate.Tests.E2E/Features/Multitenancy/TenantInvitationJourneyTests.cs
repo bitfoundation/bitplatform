@@ -9,6 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Boilerplate.Tests.E2E.Features.Multitenancy;
 
+/// <summary>
+/// The "e2e" tenant and the TenantAdminEmail account are a fixture kept for this suite, so the three Ensure* calls
+/// below set that fixture rather than mutate someone's data, and are idempotent. They are deliberately not undone:
+/// the password hash they align with the secrets cannot be restored, and the next run wants the fixture in place.
+/// Only the per-run invited user is created and removed.
+/// </summary>
 [TestClass, TestCategory(TestCategories.Web), Retry(2), DoNotParallelize]
 public partial class TenantInvitationJourneyTests : AppsTestBase
 {

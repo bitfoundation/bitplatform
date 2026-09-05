@@ -39,7 +39,7 @@ public sealed class DevMcpHangfireTools(JobStorage jobStorage, ServerApiSettings
     }
 
     [McpServerTool(Name = nameof(ListHangfireJobs))]
-    [Description("Lists Hangfire jobs in one state with paging, via IMonitoringApi. State must be one of: succeeded, failed, scheduled, processing, enqueued, deleted, any. Optional argumentContains matches any argument as text. Optional fromUtc/toUtc filter on the state's timestamp. A succeeded job disappears after Hangfire.JobExpiration (see GetEffectiveConfiguration). Failed jobs do not expire. Does not enqueue, retry, delete or trigger jobs. Default queue is used when listing enqueued jobs if queue is omitted.")]
+    [Description("Lists Hangfire jobs in one state with paging, via IMonitoringApi. State must be one of: succeeded, failed, scheduled, processing, enqueued, deleted, any. Optional argumentContains matches any argument as text. Optional fromUtc/toUtc filter on the state's timestamp. A succeeded job disappears after Hangfire.JobExpiration (see GetEffectiveConfiguration). Failed jobs do not expire. Does not enqueue, retry, delete or trigger jobs. Default queue is used when listing enqueued jobs if queue is omitted. Job arguments are returned verbatim and are not redacted: a mail job carries its recipient and rendered body, so one-time codes and sign-in links are visible here. That is what this tool is for, and it is why the whole endpoint is global-admin only and every call is audited.")]
     public string ListHangfireJobs(
         [Required, Description("succeeded | failed | scheduled | processing | enqueued | deleted | any")] string state,
         [Description("0-based offset")] int from = 0,
@@ -90,7 +90,7 @@ public sealed class DevMcpHangfireTools(JobStorage jobStorage, ServerApiSettings
     }
 
     [McpServerTool(Name = nameof(GetHangfireJob))]
-    [Description("Fetches one Hangfire job by id, including method, arguments, state history and, for a failed job, the exception. Returns not-found if the job has expired (Hangfire.JobExpiration) or never existed. Read-only.")]
+    [Description("Fetches one Hangfire job by id, including method, arguments, state history and, for a failed job, the exception. Arguments are returned verbatim and unredacted, so a mail job's recipient and rendered body - one-time codes and sign-in links included - are visible. Returns not-found if the job has expired (Hangfire.JobExpiration) or never existed. Read-only.")]
     public string GetHangfireJob([Required, Description("Hangfire job id")] string jobId)
     {
         JobDetailsDto? details;

@@ -33,7 +33,8 @@ public static class TestHost
     private static readonly Lazy<IHost> host = new(Build, LazyThreadSafetyMode.ExecutionAndPublication);
     private static readonly SemaphoreSlim backendGate = new(1, 1);
     private static AsyncServiceScope? backendScope;
-    private static TestBackend? backend;
+    // volatile: GetBackend's fast path reads this without holding backendGate, and tests run in parallel.
+    private static volatile TestBackend? backend;
 
     public static IServiceProvider Services => host.Value.Services;
 

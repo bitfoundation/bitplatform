@@ -381,14 +381,26 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             await DbContext.SaveChangesAsync(cancellationToken);
         }
 
-        foreach (var (attachment, storedBytes) in preparedUploads)
-        {
-            await blobStorage.SetBytes(attachment.Path, storedBytes, cancellationToken: cancellationToken);
-        }
+        var wroteAnyBlob = false;
 
-        // The replacement is stored under the very key the old bytes were (See GetFilePath), so nothing else
-        // invalidates the copies already on the edge and in browsers.
-        await responseCacheService.PurgeAttachmentCache(attachmentId);
+        try
+        {
+            foreach (var (attachment, storedBytes) in preparedUploads)
+            {
+                await blobStorage.SetBytes(attachment.Path, storedBytes, cancellationToken: cancellationToken);
+                wroteAnyBlob = true;
+            }
+        }
+        finally
+        {
+            // The replacement is stored under the very key the old bytes were (See GetFilePath), so nothing else
+            // invalidates the copies already on the edge and in browsers. In the finally because a second kind that
+            // fails still leaves the first one replaced, and the edge still holding what it replaced.
+            if (wroteAnyBlob)
+            {
+                await responseCacheService.PurgeAttachmentCache(attachmentId);
+            }
+        }
 
         //#if (module == "Sales" || module == "Admin")
         if (kinds.Contains(AttachmentKind.ProductPrimaryImageMedium))
