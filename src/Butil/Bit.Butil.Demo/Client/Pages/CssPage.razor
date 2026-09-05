@@ -271,7 +271,8 @@ if (await css.SupportsPaintWorklet())
         try
         {
             var set = await _box.SetStyleText("border-color", "rebeccapurple");
-            await inlineOutput.Success("SetStyleText →", set);
+            if (set) await inlineOutput.Success("SetStyleText →", "border-color is now an inline style.");
+            else await inlineOutput.Warn("SetStyleText →", "false - the property name or the value was rejected.");
         }
         catch (Exception ex)
         {

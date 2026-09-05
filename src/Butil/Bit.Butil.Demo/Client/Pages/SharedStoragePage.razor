@@ -181,7 +181,9 @@ await sharedStorage.SelectUrl("pick-creative",
     {
         try
         {
-            await writeOutput.Success("Append →", await sharedStorage.Append(_key, _value));
+            var ok = await sharedStorage.Append(_key, _value);
+            if (ok) await writeOutput.Success("Append →", $"appended to '{_key}'.");
+            else await writeOutput.Warn("Append →", "false - no API here, blocked by permissions policy, or over the limits.");
         }
         catch (Exception ex)
         {
@@ -193,7 +195,9 @@ await sharedStorage.SelectUrl("pick-creative",
     {
         try
         {
-            await writeOutput.Success("Delete →", await sharedStorage.Delete(_key));
+            var ok = await sharedStorage.Delete(_key);
+            if (ok) await writeOutput.Success("Delete →", $"'{_key}' deleted.");
+            else await writeOutput.Warn("Delete →", "false - no API here, or the write was refused.");
         }
         catch (Exception ex)
         {
@@ -205,7 +209,9 @@ await sharedStorage.SelectUrl("pick-creative",
     {
         try
         {
-            await writeOutput.Success("Clear →", await sharedStorage.Clear());
+            var ok = await sharedStorage.Clear();
+            if (ok) await writeOutput.Success("Clear →", "the whole origin's shared storage is gone.");
+            else await writeOutput.Warn("Clear →", "false - no API here, or the write was refused.");
         }
         catch (Exception ex)
         {

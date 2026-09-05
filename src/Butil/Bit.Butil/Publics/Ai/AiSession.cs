@@ -58,9 +58,19 @@ public abstract class AiSession : IAsyncDisposable
     {
         var (streamId, completion) = Interop.BeginStream(onChunk);
 
-        await Js.InvokeVoid("BitButil.ai.runStreaming",
-            Id, input, options, Interop.DotNetRef, streamId,
-            AiInterop.ChunkMethodName, AiInterop.DoneMethodName);
+        try
+        {
+            await Js.InvokeVoid("BitButil.ai.runStreaming",
+                Id, input, options, Interop.DotNetRef, streamId,
+                AiInterop.ChunkMethodName, AiInterop.DoneMethodName);
+        }
+        catch (Exception ex)
+        {
+            // The run never started, so nothing will ever call back done for it: the registration
+            // has to be undone here, and the task faulted, or awaiting it would hang.
+            Interop.EndStream(streamId, ex);
+            throw;
+        }
 
         return await completion;
     }

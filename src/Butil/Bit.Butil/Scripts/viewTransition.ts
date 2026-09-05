@@ -9,6 +9,27 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // from C# means injecting the rule and removing it again.
     const OPT_IN_ID = 'bit-butil-view-transition-opt-in';
 
+    function describePageEvent(e: any, name: string) {
+        const activation = e?.activation;
+        return {
+            name,
+            hasTransition: !!e?.viewTransition,
+            fromUrl: activation?.from?.url ?? '',
+            toUrl: activation?.entry?.url ?? '',
+            navigationType: activation?.navigationType ?? ''
+        };
+    }
+
+    // 'pagereveal' fires on the incoming document before it is first painted - before .NET has
+    // started, let alone subscribed. So the listener goes on while this module is evaluated (which,
+    // for a bundle on the page, is early enough) and the event is parked until a subscriber asks for
+    // it, the way launchQueue parks a launch. Under lazy scripts the module is imported on the first
+    // call and there is nothing to park - the event is simply gone by then.
+    let _revealed: any = null;
+    if ('onpagereveal' in window) {
+        window.addEventListener('pagereveal', (e: any) => { _revealed = describePageEvent(e, 'pagereveal'); }, { once: true });
+    }
+
     butil.viewTransition = {
         isSupported() { return typeof (document as any).startViewTransition === 'function'; },
         isCrossDocumentSupported() {
@@ -37,19 +58,22 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // transition can be customized - or opted out of, by skipping it.
             if (!(`on${name}` in window)) return false;
 
-            const handler = (e: any) => {
-                const activation = e?.activation;
-                butil.utils.dispatch(dotNetRef, method, listenerId, {
-                    name,
-                    hasTransition: !!e?.viewTransition,
-                    fromUrl: activation?.from?.url ?? '',
-                    toUrl: activation?.entry?.url ?? '',
-                    navigationType: activation?.navigationType ?? ''
-                });
-            };
+            // Re-registering the same listener id would otherwise orphan the previous handler.
+            butil.viewTransition.offPageEvent(listenerId);
+
+            const handler = (e: any) => butil.utils.dispatch(dotNetRef, method, listenerId, describePageEvent(e, name));
 
             window.addEventListener(name, handler);
             _pageListeners[listenerId] = { name, handler };
+
+            // This document's own 'pagereveal' has already happened; replaying it is the only way a
+            // subscriber can see how this document was navigated into.
+            if (name === 'pagereveal' && _revealed) {
+                const revealed = _revealed;
+                _revealed = null;
+                butil.utils.dispatch(dotNetRef, method, listenerId, revealed);
+            }
+
             return true;
         },
         offPageEvent(listenerId: string) {

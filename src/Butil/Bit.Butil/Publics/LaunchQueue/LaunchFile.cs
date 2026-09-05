@@ -12,6 +12,9 @@ namespace Bit.Butil;
 /// </remarks>
 public class LaunchFile
 {
+    /// <summary>The launch this file came with - see <see cref="LaunchParams.LaunchId"/>.</summary>
+    public string LaunchId { get; set; } = string.Empty;
+
     /// <summary>Position of this file in the launch, and the key its contents are read by.</summary>
     public int Index { get; set; }
 

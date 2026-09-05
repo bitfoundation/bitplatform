@@ -10,10 +10,13 @@
             InjectAs="TextFragment textFragment" />
 
 <Callout Type="info" Title="Why it isn't just location.hash">
-    Everything after <code>:~:</code> is a <i>fragment directive</i>, which the browser strips out of
-    <code>location.hash</code> before page script ever sees it. That is why
-    <code>GetCurrent()</code> exists rather than parsing the hash yourself - and why the directive is
-    only acted on during a navigation, so <code>Navigate</code> is what makes the browser scroll.
+    Everything after <code>:~:</code> is a <i>fragment directive</i>, which the browser strips off the
+    URL while navigating - it is gone from <code>location.hash</code> <i>and</i> from
+    <code>location.href</code> before page script ever sees it, and
+    <code>document.fragmentDirective</code> deliberately exposes nothing. So the directive of the page
+    you are on cannot be read back: <code>Parse</code> reads a URL you still hold, before you navigate
+    to it. And because the directive is only acted on during a navigation,
+    <code>Navigate</code> is what makes the browser scroll.
 </Callout>
 
 <Callout Type="warning" Title="Chromium and Safari">
@@ -102,17 +105,17 @@ await textFragment.Navigate(url);
         <DemoConsole @ref="navigateOutput" Title="navigate output" />
     </DemoSection>
 
-    <DemoSection Title="How did the visitor arrive?"
-                 Api="GetCurrent"
-                 Description="The directives the current page was opened with - how to tell that someone arrived through a highlight link, and what they were looking for. Useful for analytics, or for expanding a collapsed section that contains the phrase."
+    <DemoSection Title="What does a link point at?"
+                 Api="Parse"
+                 Description="Reads the directives back out of a URL - the inverse of BuildUrl. It takes a URL rather than reading the current one because the browser strips the directive off while navigating, so the page you are on no longer carries it. Parse a link before following it: to show what it will highlight, to rewrite it, or to expand the collapsed section that contains the phrase."
                  Code=@("""
-var directives = await textFragment.GetCurrent();
+var directives = await textFragment.Parse(url);
 if (directives.Length > 0) ExpandSectionContaining(directives[0].Start);
 """)>
         <div class="controls">
-            <button @onclick="ReadCurrent">GetCurrent</button>
+            <button @onclick="ReadCurrent">Parse the built link</button>
         </div>
-        <DemoConsole @ref="currentOutput" Title="current directives output" />
+        <DemoConsole @ref="currentOutput" Title="parsed directives output" />
     </DemoSection>
 </div>
 
@@ -126,9 +129,9 @@ if (directives.Length > 0) ExpandSectionContaining(directives[0].Start);
     <ApiMember Name="BuildUrl"
                Signature="ValueTask<string> BuildUrl(string url, params TextFragmentDirective[] directives)"
                Description="Appends directives to a URL, replacing any it already carries and keeping an ordinary #anchor in front of them." />
-    <ApiMember Name="GetCurrent"
-               Signature="ValueTask<TextFragmentDirective[]> GetCurrent()"
-               Description="The directives the current page was opened with." />
+    <ApiMember Name="Parse"
+               Signature="ValueTask<TextFragmentDirective[]> Parse(string url)"
+               Description="Reads the directives out of a URL. Empty when it carries none. The current URL never carries one - the browser strips it off while navigating." />
     <ApiMember Name="FromSelection"
                Signature="ValueTask<TextFragmentDirective?> FromSelection()"
                Description="Turns the user's current selection into a directive. Null when nothing is selected." />
@@ -232,13 +235,14 @@ if (directives.Length > 0) ExpandSectionContaining(directives[0].Start);
     {
         try
         {
-            var directives = await textFragment.GetCurrent();
-            if (directives.Length == 0) await currentOutput.Info("GetCurrent →", "none - this page wasn't opened through a text-fragment link.");
-            else await currentOutput.Success("GetCurrent →", directives);
+            var url = string.IsNullOrEmpty(_built) ? await textFragment.BuildUrl("/text-fragment", Directive) : _built;
+            var directives = await textFragment.Parse(url);
+            if (directives.Length == 0) await currentOutput.Info($"Parse('{url}') →", "none - that URL carries no text directive.");
+            else await currentOutput.Success($"Parse('{url}') →", directives);
         }
         catch (Exception ex)
         {
-            await currentOutput.Error("GetCurrent failed →", ex.Message);
+            await currentOutput.Error("Parse failed →", ex.Message);
         }
     }
 }

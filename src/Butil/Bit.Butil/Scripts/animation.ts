@@ -3,6 +3,34 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     const _animations: { [id: string]: Animation } = {};
 
+    // ScrollTimeline's own default source is the document's scrolling element, while CSS `scroll()`
+    // defaults to the *nearest* scroll container - and the nearest one is what an animation inside a
+    // scrolling panel means. So the walk up the tree is done here rather than left to the browser.
+    function nearestScroller(animated: HTMLElement) {
+        for (let node = animated?.parentElement; node; node = node.parentElement) {
+            let overflow = '';
+            try {
+                const style = getComputedStyle(node);
+                overflow = `${style.overflowX} ${style.overflowY}`;
+            } catch {
+                // Detached or in a document without a view - it cannot be a scrollport either way.
+            }
+            // `hidden` makes a scroll container too, even though the user cannot scroll it; `clip`
+            // and `visible` do not.
+            if (/\b(auto|scroll|overlay|hidden)\b/.test(overflow)) return node;
+        }
+        return document.scrollingElement;
+    }
+
+    // The times a scroll-driven animation reports are CSSNumericValue percentages of the range, not
+    // milliseconds, and an idle animation reports none at all. Both travel with their unit so a 0%
+    // progress is not confused with 0ms, and "no time yet" stays distinguishable from zero.
+    function timeOf(value: any) {
+        if (typeof value === 'number') return { value, unit: 'ms' };
+        if (value && typeof value.value === 'number') return { value: value.value, unit: value.unit ?? '' };
+        return null;
+    }
+
     // A scroll-driven animation is progressed by a scroller's position (ScrollTimeline) or by how far
     // an element has moved through the scrollport (ViewTimeline) instead of by the clock. Duration
     // stops meaning milliseconds there, which is why `duration` is dropped when one is in play.
@@ -15,7 +43,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const ST = (window as any).ScrollTimeline;
             if (typeof ST !== 'function') return null;
             // No source means the nearest scrollport, which is what `scroll()` defaults to in CSS.
-            return new ST({ source: source ?? document.scrollingElement, axis });
+            return new ST({ source: source ?? nearestScroller(animated), axis });
         }
 
         if (timeline.type === 'view') {
@@ -117,18 +145,25 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const source: any = element ?? document;
             if (typeof source.getAnimations !== 'function') return [];
 
-            return source.getAnimations(element ? { subtree: !!subtree } : undefined).map((a: any) => ({
-                id: a.id ?? '',
-                playState: a.playState ?? '',
-                playbackRate: a.playbackRate ?? 1,
-                currentTime: typeof a.currentTime === 'number' ? a.currentTime : 0,
-                startTime: typeof a.startTime === 'number' ? a.startTime : 0,
-                pending: a.pending === true,
-                replaceState: a.replaceState ?? '',
-                // The class name is the only portable way to tell a CSS animation, a CSS transition
-                // and a scripted animation apart.
-                kind: a.constructor?.name ?? 'Animation'
-            }));
+            return source.getAnimations(element ? { subtree: !!subtree } : undefined).map((a: any) => {
+                const current = timeOf(a.currentTime);
+                const start = timeOf(a.startTime);
+
+                return {
+                    id: a.id ?? '',
+                    playState: a.playState ?? '',
+                    playbackRate: a.playbackRate ?? 1,
+                    currentTime: current?.value ?? null,
+                    currentTimeUnit: current?.unit ?? '',
+                    startTime: start?.value ?? null,
+                    startTimeUnit: start?.unit ?? '',
+                    pending: a.pending === true,
+                    replaceState: a.replaceState ?? '',
+                    // The class name is the only portable way to tell a CSS animation, a CSS transition
+                    // and a scripted animation apart.
+                    kind: a.constructor?.name ?? 'Animation'
+                };
+            });
         },
         cancelAll(element: HTMLElement, subtree: boolean) {
             const source: any = element ?? document;

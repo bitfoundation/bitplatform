@@ -1,16 +1,31 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    // The launch the app was started with. `setConsumer` may only be called once per page, and the
-    // browser delivers the launch as soon as a consumer exists - which can be before .NET has asked
-    // for one. So the consumer is installed while this module is evaluated and the launch is parked
-    // here until a .NET handler shows up.
-    let _pending: any = null;
+    // The launches the app was started with. `setConsumer` may only be called once per page, and the
+    // browser delivers a launch as soon as a consumer exists - which can be before .NET has asked
+    // for one. So the consumer is installed while this module is evaluated and the launches are
+    // parked here, in arrival order, until a .NET handler shows up. A queue rather than a single
+    // slot: a launch handler routing a second "open with" into this window would otherwise drop the
+    // first one.
+    let _pending: any[] = [];
     let _consumer: { dotNetRef: any, listenerId: string, method: string } | null = null;
 
     // The launched files' handles, kept so their contents can be read (and written back) later.
-    // Indexed by the position .NET sees in the reported file list.
-    let _handles: any[] = [];
+    // Keyed by an opaque launch id, and within a launch by the position .NET sees in the reported
+    // file list - so a second launch cannot become a way to reach the first launch's files.
+    const _launches: { [launchId: string]: any[] } = {};
+    let _launchCount = 0;
+    let _lastLaunchId = '';
+
+    // A page that is launched over and over would otherwise hold every file handle it was ever
+    // given; the recent ones are what a consumer can still be reading.
+    const MAX_RETAINED_LAUNCHES = 8;
+    const _launchIds: string[] = [];
+
+    function handlesOf(launchId: string) {
+        // An empty id is the by-index API talking about the most recent launch.
+        return _launches[launchId || _lastLaunchId] ?? [];
+    }
 
     const queue = (window as any).launchQueue;
     if (queue?.setConsumer) {
@@ -22,11 +37,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     async function describe(params: any) {
-        _handles = Array.isArray(params?.files) ? [...params.files] : [];
+        const launchId = `launch-${++_launchCount}`;
+        const handles = Array.isArray(params?.files) ? [...params.files] : [];
+
+        _launches[launchId] = handles;
+        _lastLaunchId = launchId;
+        _launchIds.push(launchId);
+        while (_launchIds.length > MAX_RETAINED_LAUNCHES) delete _launches[_launchIds.shift() as string];
 
         const files: any[] = [];
-        for (let i = 0; i < _handles.length; i++) {
-            const handle = _handles[i];
+        for (let i = 0; i < handles.length; i++) {
+            const handle = handles[i];
             let name = handle?.name ?? '';
             let size = 0;
             let type = '';
@@ -40,16 +61,16 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             } catch {
                 // The handle went stale, or permission was revoked between launch and read.
             }
-            files.push({ index: i, name, type, size, lastModified });
+            files.push({ launchId, index: i, name, type, size, lastModified });
         }
 
-        return { targetUrl: params?.targetURL ?? '', files };
+        return { launchId, targetUrl: params?.targetURL ?? '', files };
     }
 
     async function deliver(params: any) {
         const payload = await describe(params);
         if (_consumer) butil.utils.dispatch(_consumer.dotNetRef, _consumer.method, _consumer.listenerId, payload);
-        else _pending = payload;
+        else _pending.push(payload);
     }
 
     butil.launchQueue = {
@@ -59,18 +80,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         supportsFiles() { return 'LaunchParams' in window && 'files' in ((window as any).LaunchParams.prototype ?? {}); },
         setConsumer(dotNetRef: any, listenerId: string, method: string) {
             _consumer = { dotNetRef, listenerId, method };
-            // A launch that arrived before .NET was ready is replayed rather than dropped.
-            if (_pending) {
-                const payload = _pending;
-                _pending = null;
-                butil.utils.dispatch(dotNetRef, method, listenerId, payload);
-            }
+            // Launches that arrived before .NET was ready are replayed rather than dropped, oldest
+            // first, so the handler sees them in the order the browser delivered them.
+            const pending = _pending;
+            _pending = [];
+            for (const payload of pending) butil.utils.dispatch(dotNetRef, method, listenerId, payload);
         },
         clearConsumer(listenerId: string) {
             if (_consumer?.listenerId === listenerId) _consumer = null;
         },
-        async readText(index: number) {
-            const handle = _handles[index];
+        async readText(launchId: string, index: number) {
+            const handle = handlesOf(launchId)[index];
             if (!handle?.getFile) return null;
             try {
                 const file = await handle.getFile();
@@ -79,8 +99,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 return null;
             }
         },
-        async readBytes(index: number) {
-            const handle = _handles[index];
+        async readBytes(launchId: string, index: number) {
+            const handle = handlesOf(launchId)[index];
             if (!handle?.getFile) return null;
             try {
                 const file = await handle.getFile();
@@ -89,8 +109,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 return null;
             }
         },
-        async writeText(index: number, contents: string) {
-            const handle = _handles[index];
+        async writeText(launchId: string, index: number, contents: string) {
+            const handle = handlesOf(launchId)[index];
             if (!handle?.createWritable) return false;
             try {
                 // A file-handling launch grants read access; writing may still need an explicit
@@ -103,8 +123,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 return false;
             }
         },
-        async writeBytes(index: number, contents: Uint8Array) {
-            const handle = _handles[index];
+        async writeBytes(launchId: string, index: number, contents: Uint8Array) {
+            const handle = handlesOf(launchId)[index];
             if (!handle?.createWritable) return false;
             try {
                 const writable = await handle.createWritable();

@@ -67,7 +67,7 @@ await _box.SetStyleValue("width", 40, "percent");
               Description="Select some text on this page, then build a scroll-to-text link to it.">
         <div class="controls">
             <button @onclick="LinkToSelection">FromSelection + BuildUrl</button>
-            <button @onclick="CurrentDirectives">GetCurrent</button>
+            <button @onclick="CurrentDirectives">Parse</button>
         </div>
     </DemoCard>
 
@@ -152,7 +152,12 @@ await _box.SetStyleValue("width", 40, "percent");
     }
 
     private async Task CurrentDirectives()
-        => await output.Success("GetCurrent →", await textFragment.GetCurrent());
+    {
+        // The browser strips the directive off the URL while navigating, so a link has to be parsed
+        // before it is followed - the page it lands on cannot read it back.
+        var url = await textFragment.BuildUrl("/platform", new TextFragmentDirective { Start = "text fragment" });
+        await output.Success($"Parse('{url}') →", await textFragment.Parse(url));
+    }
 
     private async Task AmbientAudio()
         => await output.Success("SetSessionType(Ambient) →", await audioSession.SetSessionType(AudioSessionType.Ambient));

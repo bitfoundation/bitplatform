@@ -82,7 +82,17 @@ public class WindowControlsOverlay(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         _handlers.TryAdd(id, handler);
 
-        await js.Invoke<bool>("BitButil.windowControlsOverlay.onGeometryChange", DotNetRef, id, InvokeMethodName);
+        try
+        {
+            await js.Invoke<bool>("BitButil.windowControlsOverlay.onGeometryChange", DotNetRef, id, InvokeMethodName);
+        }
+        catch
+        {
+            // No subscription reaches the caller, so nothing would ever drop the handler again.
+            _handlers.TryRemove(id, out _);
+            try { await js.InvokeVoid("BitButil.windowControlsOverlay.offGeometryChange", id); } catch { /* the registration is what failed */ }
+            throw;
+        }
 
         return new ButilSubscription(id, async () =>
         {

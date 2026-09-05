@@ -34,6 +34,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const keyboard = vk();
             if (!keyboard?.addEventListener) return false;
 
+            // Re-registering the same listener id would otherwise orphan the previous handler.
+            butil.virtualKeyboard.offGeometryChange(listenerId);
+
             const handler = () => butil.utils.dispatch(dotNetRef, method, listenerId, geometry());
             keyboard.addEventListener('geometrychange', handler);
             _listeners[listenerId] = handler;

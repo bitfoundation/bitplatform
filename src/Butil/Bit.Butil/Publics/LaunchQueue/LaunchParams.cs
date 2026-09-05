@@ -7,6 +7,13 @@ namespace Bit.Butil;
 public class LaunchParams
 {
     /// <summary>
+    /// Identifies this launch on the JS side, where its file handles live. A second launch into the
+    /// same window gets its own id, so a <see cref="LaunchFile"/> from an earlier one keeps reading
+    /// the file it was actually about.
+    /// </summary>
+    public string LaunchId { get; set; } = string.Empty;
+
+    /// <summary>
     /// The URL the app was launched at. Empty for a plain launch from the app icon; set when the
     /// launch came from a protocol handler, a share target or a link capture.
     /// </summary>

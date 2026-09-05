@@ -159,7 +159,18 @@ public class InstallPrompt(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         _availableHandlers.TryAdd(id, handler);
 
-        await js.InvokeVoid("BitButil.installPrompt.onAvailable", DotNetRef, id, AvailableMethodName);
+        try
+        {
+            await js.InvokeVoid("BitButil.installPrompt.onAvailable", DotNetRef, id, AvailableMethodName);
+        }
+        catch
+        {
+            // Nothing is listening for this id, and the caller gets no subscription to dispose - so
+            // the handler it captured has to be dropped here rather than kept alive until disposal.
+            _availableHandlers.TryRemove(id, out _);
+            try { await js.InvokeVoid("BitButil.installPrompt.offAvailable", id); } catch { /* the registration is what failed */ }
+            throw;
+        }
 
         return new ButilSubscription(id, async () =>
         {
@@ -180,7 +191,16 @@ public class InstallPrompt(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         _installedHandlers.TryAdd(id, handler);
 
-        await js.InvokeVoid("BitButil.installPrompt.onInstalled", DotNetRef, id, InstalledMethodName);
+        try
+        {
+            await js.InvokeVoid("BitButil.installPrompt.onInstalled", DotNetRef, id, InstalledMethodName);
+        }
+        catch
+        {
+            _installedHandlers.TryRemove(id, out _);
+            try { await js.InvokeVoid("BitButil.installPrompt.offInstalled", id); } catch { /* the registration is what failed */ }
+            throw;
+        }
 
         return new ButilSubscription(id, async () =>
         {

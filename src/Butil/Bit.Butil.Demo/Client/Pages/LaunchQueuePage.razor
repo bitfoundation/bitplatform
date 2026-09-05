@@ -73,7 +73,7 @@ _sub = await launchQueue.SetConsumer(launch =>
 
     <DemoSection Title="Read a launched file"
                  Api="ReadText / ReadBytes"
-                 Description="A launched file's handle stays on the JS side - it cannot cross interop - so contents are read by the file's Index. Both overloads take either the LaunchFile or its index."
+                 Description="A launched file's handle stays on the JS side - it cannot cross interop - so contents are read by the file's Index. Both overloads take either the LaunchFile or its index; pass the LaunchFile where an app can be launched more than once, since it carries the LaunchId that keeps it pointing at its own launch's files rather than at the newest launch's."
                  Code=@("""
 foreach (var file in launch.Files)
 {

@@ -398,8 +398,9 @@ _revealSub = await viewTransition.OnPageReveal(e => { /* on the new document */ 
     {
         try
         {
-            await viewTransition.EnableCrossDocument();
-            await crossOutput.Success("EnableCrossDocument →", "the @view-transition rule is installed. The document being navigated to has to opt in too.");
+            var enabled = await viewTransition.EnableCrossDocument();
+            if (enabled) await crossOutput.Success("EnableCrossDocument →", "the @view-transition rule is installed. The document being navigated to has to opt in too.");
+            else await crossOutput.Warn("EnableCrossDocument →", "false - the opt-in couldn't be installed here.");
         }
         catch (Exception ex)
         {
@@ -442,7 +443,8 @@ _revealSub = await viewTransition.OnPageReveal(e => { /* on the new document */ 
             _revealSub = await viewTransition.OnPageReveal(e =>
                 _ = InvokeAsync(() => pageEventOutput.Info("pagereveal →", e)));
 
-            await pageEventOutput.Success("Subscribed. pagereveal fires on the next real document load.");
+            await pageEventOutput.Success("Subscribed. This document's own pagereveal - it fires before .NET starts - "
+                                       + "is replayed above if Butil's script was on the page in time; pageswap fires on the way out.");
         }
         catch (Exception ex)
         {

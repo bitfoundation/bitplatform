@@ -19,8 +19,8 @@ namespace Bit.Butil;
 /// <br/>
 /// <b>Timing:</b> the browser delivers the launch the moment a consumer exists, and a page may set
 /// one only once. Butil installs its consumer while the <c>launchQueue</c> module is evaluated and
-/// parks the launch until <see cref="SetConsumer(Action{LaunchParams})"/> is called, so a handler
-/// registered in <c>OnAfterRenderAsync</c> still receives it. Under
+/// parks the launches until <see cref="SetConsumer(Action{LaunchParams})"/> is called - all of them,
+/// in arrival order - so a handler registered in <c>OnAfterRenderAsync</c> still receives them. Under
 /// <see cref="BitButil.UseLazyScripts"/> the module isn't imported until the first call into it -
 /// call <see cref="IsSupported"/> early in app start-up so the consumer is in place.
 /// <br/>
@@ -98,11 +98,14 @@ public class LaunchQueue(IJSRuntime js) : IAsyncDisposable
     public ValueTask<string?> ReadText(LaunchFile file)
     {
         ArgumentNullException.ThrowIfNull(file);
-        return ReadText(file.Index);
+        return js.Invoke<string?>("BitButil.launchQueue.readText", file.LaunchId, file.Index);
     }
 
-    /// <summary>Reads a launched file as text, by its <see cref="LaunchFile.Index"/>.</summary>
-    public ValueTask<string?> ReadText(int index) => js.Invoke<string?>("BitButil.launchQueue.readText", index);
+    /// <summary>
+    /// Reads a launched file as text, by its <see cref="LaunchFile.Index"/> in the <b>most recent</b>
+    /// launch. Pass the <see cref="LaunchFile"/> itself when an app can be launched more than once.
+    /// </summary>
+    public ValueTask<string?> ReadText(int index) => js.Invoke<string?>("BitButil.launchQueue.readText", string.Empty, index);
 
     /// <summary>
     /// Reads a launched file as bytes.
@@ -111,11 +114,11 @@ public class LaunchQueue(IJSRuntime js) : IAsyncDisposable
     public ValueTask<byte[]?> ReadBytes(LaunchFile file)
     {
         ArgumentNullException.ThrowIfNull(file);
-        return ReadBytes(file.Index);
+        return js.Invoke<byte[]?>("BitButil.launchQueue.readBytes", file.LaunchId, file.Index);
     }
 
-    /// <summary>Reads a launched file as bytes, by its <see cref="LaunchFile.Index"/>.</summary>
-    public ValueTask<byte[]?> ReadBytes(int index) => js.Invoke<byte[]?>("BitButil.launchQueue.readBytes", index);
+    /// <summary>Reads a launched file as bytes, by its <see cref="LaunchFile.Index"/> in the most recent launch.</summary>
+    public ValueTask<byte[]?> ReadBytes(int index) => js.Invoke<byte[]?>("BitButil.launchQueue.readBytes", string.Empty, index);
 
     /// <summary>
     /// Writes text back to a launched file - the "save" half of an editor launched through
@@ -128,24 +131,24 @@ public class LaunchQueue(IJSRuntime js) : IAsyncDisposable
     public ValueTask<bool> WriteText(LaunchFile file, string contents)
     {
         ArgumentNullException.ThrowIfNull(file);
-        return WriteText(file.Index, contents);
+        return js.Invoke<bool>("BitButil.launchQueue.writeText", file.LaunchId, file.Index, contents);
     }
 
-    /// <summary>Writes text back to a launched file, by its <see cref="LaunchFile.Index"/>.</summary>
+    /// <summary>Writes text back to a launched file, by its <see cref="LaunchFile.Index"/> in the most recent launch.</summary>
     public ValueTask<bool> WriteText(int index, string contents)
-        => js.Invoke<bool>("BitButil.launchQueue.writeText", index, contents);
+        => js.Invoke<bool>("BitButil.launchQueue.writeText", string.Empty, index, contents);
 
     /// <summary>Writes bytes back to a launched file.</summary>
     /// <returns>False when the runtime can't write to the handle, or the write permission was refused.</returns>
     public ValueTask<bool> WriteBytes(LaunchFile file, byte[] contents)
     {
         ArgumentNullException.ThrowIfNull(file);
-        return WriteBytes(file.Index, contents);
+        return js.Invoke<bool>("BitButil.launchQueue.writeBytes", file.LaunchId, file.Index, contents);
     }
 
-    /// <summary>Writes bytes back to a launched file, by its <see cref="LaunchFile.Index"/>.</summary>
+    /// <summary>Writes bytes back to a launched file, by its <see cref="LaunchFile.Index"/> in the most recent launch.</summary>
     public ValueTask<bool> WriteBytes(int index, byte[] contents)
-        => js.Invoke<bool>("BitButil.launchQueue.writeBytes", index, contents);
+        => js.Invoke<bool>("BitButil.launchQueue.writeBytes", string.Empty, index, contents);
 
     /// <summary>Unregisters every handler registered through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()

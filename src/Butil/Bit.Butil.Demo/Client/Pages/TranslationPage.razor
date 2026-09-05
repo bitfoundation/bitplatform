@@ -77,7 +77,7 @@ await using var session = await translator.Create("en", "fr",
 var translated = await session!.Translate(text);
 """)>
         <div class="controls">
-            <button @onclick="CreateSession" disabled="@(_session is not null)">Create</button>
+            <button @onclick="CreateSession" disabled="@(_session is not null || _creating)">Create</button>
             <button @onclick="Translate" disabled="@(_session is null)">Translate</button>
             <button @onclick="TranslateStreaming" disabled="@(_session is null)">TranslateStreaming</button>
             <button class="danger" @onclick="DestroySession" disabled="@(_session is null)">Dispose session</button>
@@ -149,6 +149,9 @@ return await session!.Translate(text) ?? text;
     private DemoConsole runOutput = default!;
 
     private TranslatorSession? _session;
+    // Create is slow enough to be clicked twice, and the second session would overwrite - and leak -
+    // the first: the button only knows to disable itself once _session has been assigned.
+    private bool _creating;
     private string _source = "en";
     private string _target = "fr";
     private string _input = "The browser can now translate this sentence without a server.";
@@ -218,6 +221,9 @@ return await session!.Translate(text) ?? text;
 
     private async Task CreateSession()
     {
+        if (_creating) return;
+
+        _creating = true;
         try
         {
             _session = await translator.Create(_source, _target, async fraction => await InvokeAsync(() =>
@@ -232,6 +238,10 @@ return await session!.Translate(text) ?? text;
         catch (Exception ex)
         {
             await runOutput.Error("Create failed →", ex.Message);
+        }
+        finally
+        {
+            _creating = false;
         }
     }
 

@@ -65,7 +65,7 @@ _session = await summarizer.Create(new SummarizerOptions
             </label>
         </div>
         <div class="controls">
-            <button @onclick="CreateSession" disabled="@(_session is not null)">Create</button>
+            <button @onclick="CreateSession" disabled="@(_session is not null || _creating)">Create</button>
             <button class="danger" @onclick="DestroySession" disabled="@(_session is null)">Dispose session</button>
         </div>
         @if (_progress > 0 && _progress < 1)
@@ -133,6 +133,9 @@ await _session.SummarizeStreaming(article, chunk => { _summary += chunk; InvokeA
     private DemoConsole runOutput = default!;
 
     private SummarizerSession? _session;
+    // Create is slow enough to be clicked twice, and the second session would overwrite - and leak -
+    // the first: the button only knows to disable itself once _session has been assigned.
+    private bool _creating;
     private string _type = "key-points";
     private string _length = "short";
     private string _summary = "";
@@ -174,6 +177,9 @@ await _session.SummarizeStreaming(article, chunk => { _summary += chunk; InvokeA
 
     private async Task CreateSession()
     {
+        if (_creating) return;
+
+        _creating = true;
         try
         {
             _session = await summarizer.Create(Options, async fraction => await InvokeAsync(() =>
@@ -188,6 +194,10 @@ await _session.SummarizeStreaming(article, chunk => { _summary += chunk; InvokeA
         catch (Exception ex)
         {
             await sessionOutput.Error("Create failed →", ex.Message);
+        }
+        finally
+        {
+            _creating = false;
         }
     }
 

@@ -217,6 +217,14 @@ public class ViewTransition(IJSRuntime js) : IAsyncDisposable
     /// decides how the transition should look, or skips it.
     /// </summary>
     /// <returns>A subscription that detaches the listener on dispose.</returns>
+    /// <remarks>
+    /// The event happens before .NET is running, so no subscription can be in place for it. Butil
+    /// listens for it while its script is evaluated and replays the parked event to the first
+    /// subscriber - which means the arriving document learns how it was navigated into, but only
+    /// when the script was on the page in time. Under <see cref="BitButil.UseLazyScripts"/> the
+    /// module is imported on the first call into it, by which time the event is gone; the handler
+    /// then only sees the <i>next</i> document's reveal, in whatever document that turns out to be.
+    /// </remarks>
     [DynamicDependency(nameof(InvokeCrossDocumentEvent), typeof(ViewTransition))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CrossDocumentTransitionEvent))]
     public Task<ButilSubscription> OnPageReveal(Action<CrossDocumentTransitionEvent> handler)

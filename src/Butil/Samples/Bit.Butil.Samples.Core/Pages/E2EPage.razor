@@ -578,7 +578,9 @@
         _commandSub ??= await invokerCommands.OnCommand(_commandTarget, _ =>
         {
             _commandsReceived++;
-            InvokeAsync(StateHasChanged);
+            // The status element is the only thing the test can read, so the new count has to land
+            // in it - re-rendering on its own would leave the previous message on screen.
+            InvokeAsync(() => Set($"plat:command:received:{_commandsReceived}"));
         });
 
         var wired = await invokerCommands.SetCommandFor(_commandInvoker, _commandTarget, "--butil-e2e");
@@ -605,9 +607,11 @@
         var directive = new TextFragmentDirective { Start = "a distinctive phrase" };
         var fragment = await textFragment.Build(directive);
         var url = await textFragment.BuildUrl("/e2e", directive);
-        var current = await textFragment.GetCurrent();
+        // Parsed back out of the URL just built: the browser strips the directive off the current
+        // URL while navigating, so a round-trip through a link is the only thing there is to check.
+        var parsed = await textFragment.Parse(url);
 
-        Set($"plat:fragment:{fragment}/{url}/{current.Length}");
+        Set($"plat:fragment:{fragment}/{url}/{parsed.Length}");
     }
 
     private async Task PlatformCloseWatcher()
@@ -645,13 +649,16 @@
             new AnimationOptions { Duration = 40, Fill = "forwards" });
 
         var running = await _cssBox.GetAnimations(js);
+        // A time-driven animation reports its progress in milliseconds; the unit travels with the
+        // number because a scroll-driven one reports a percentage of its range instead.
+        var unit = running.Length > 0 ? running[0].CurrentTimeUnit : "none";
         await handle.WhenFinished();
         var committed = await handle.CommitStyles();
         await handle.Cancel();
         var cancelled = await _cssBox.CancelAnimations(js);
         await _cssBox.ClearStyleValues();
 
-        Set($"plat:animations:{timelines}/{running.Length}/{committed}/{cancelled}");
+        Set($"plat:animations:{timelines}/{running.Length}/{unit}/{committed}/{cancelled}");
     }
 
     private async Task PlatformComposedRanges()

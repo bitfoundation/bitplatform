@@ -78,7 +78,7 @@ var draft = await session!.Write("A polite decline of a meeting invitation.");
             </label>
         </div>
         <div class="controls">
-            <button @onclick="CreateWriter" disabled="@(_writerSession is not null)">Create</button>
+            <button @onclick="CreateWriter" disabled="@(_writerSession is not null || _creatingWriter)">Create</button>
             <button @onclick="Write" disabled="@(_writerSession is null)">Write</button>
             <button @onclick="WriteStreaming" disabled="@(_writerSession is null)">WriteStreaming</button>
             <button class="danger" @onclick="DisposeWriter" disabled="@(_writerSession is null)">Dispose</button>
@@ -128,7 +128,7 @@ var polished = await session!.Rewrite(draft, context: "This is going to a custom
             </label>
         </div>
         <div class="controls">
-            <button @onclick="CreateRewriter" disabled="@(_rewriterSession is not null)">Create</button>
+            <button @onclick="CreateRewriter" disabled="@(_rewriterSession is not null || _creatingRewriter)">Create</button>
             <button @onclick="Rewrite" disabled="@(_rewriterSession is null)">Rewrite</button>
             <button @onclick="RewriteStreaming" disabled="@(_rewriterSession is null)">RewriteStreaming</button>
             <button class="danger" @onclick="DisposeRewriter" disabled="@(_rewriterSession is null)">Dispose</button>
@@ -185,6 +185,11 @@ var polished = await session!.Rewrite(draft, context: "This is going to a custom
     private WriterSession? _writerSession;
     private RewriterSession? _rewriterSession;
 
+    // Create is slow enough to be clicked twice, and the second session would overwrite - and leak -
+    // the first: the buttons only know to disable themselves once the session has been assigned.
+    private bool _creatingWriter;
+    private bool _creatingRewriter;
+
     private string _writePrompt = "A polite decline of a meeting invitation.";
     private string _writeTone = "neutral";
     private string _writeLength = "short";
@@ -221,6 +226,9 @@ var polished = await session!.Rewrite(draft, context: "This is going to a custom
 
     private async Task CreateWriter()
     {
+        if (_creatingWriter) return;
+
+        _creatingWriter = true;
         try
         {
             _writerSession = await writer.Create(new WriterOptions { Tone = _writeTone, Length = _writeLength, Format = "plain-text" });
@@ -230,6 +238,10 @@ var polished = await session!.Rewrite(draft, context: "This is going to a custom
         catch (Exception ex)
         {
             await writeOutput.Error("Create failed →", ex.Message);
+        }
+        finally
+        {
+            _creatingWriter = false;
         }
     }
 
@@ -274,6 +286,9 @@ var polished = await session!.Rewrite(draft, context: "This is going to a custom
 
     private async Task CreateRewriter()
     {
+        if (_creatingRewriter) return;
+
+        _creatingRewriter = true;
         try
         {
             _rewriterSession = await rewriter.Create(new RewriterOptions { Tone = _rewriteTone, Length = _rewriteLength, Format = "plain-text" });
@@ -283,6 +298,10 @@ var polished = await session!.Rewrite(draft, context: "This is going to a custom
         catch (Exception ex)
         {
             await rewriteOutput.Error("Create failed →", ex.Message);
+        }
+        finally
+        {
+            _creatingRewriter = false;
         }
     }
 

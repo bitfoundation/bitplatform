@@ -321,7 +321,7 @@ assembly comes out at 30,720 bytes and 36 types.
 - **`script publishing: ...`** - the MSBuild half. The message names the claim; the ones worth knowing on
   sight are *is added to what the scan found, not used instead of it* (the csproj list has stopped being
   additive - a consumer naming one module would lose everything else), *publishes no per-module files* (the
-  publish asset list is no longer being narrowed, so a bundle-mode app ships all 65 module files - that is
+  publish asset list is no longer being narrowed, so a bundle-mode app ships all 82 module files - that is
   `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
   bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
   every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in

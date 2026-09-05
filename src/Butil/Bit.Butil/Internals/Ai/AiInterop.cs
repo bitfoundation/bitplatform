@@ -39,6 +39,16 @@ internal sealed class AiInterop : IDisposable
         return (id, _completions[id].Task);
     }
 
+    /// <summary>
+    /// Drops a streaming run that never started. The JS side never got as far as reporting done, so
+    /// the registration has to be taken back here or the caller's task would wait forever.
+    /// </summary>
+    internal void EndStream(Guid id, Exception error)
+    {
+        _chunkHandlers.TryRemove(id, out _);
+        if (_completions.TryRemove(id, out var completion)) completion.TrySetException(error);
+    }
+
     /// <summary>Registers a download-progress handler for one <c>create</c> call.</summary>
     internal Guid BeginProgress(Action<double>? onProgress)
     {

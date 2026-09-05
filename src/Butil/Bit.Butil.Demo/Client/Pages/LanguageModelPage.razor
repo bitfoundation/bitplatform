@@ -63,7 +63,7 @@ _session = await languageModel.Create(
             <input @bind="_systemPrompt" />
         </div>
         <div class="controls">
-            <button @onclick="CreateSession" disabled="@(_session is not null)">Create</button>
+            <button @onclick="CreateSession" disabled="@(_session is not null || _creating)">Create</button>
             <button class="danger" @onclick="DestroySession" disabled="@(_session is null)">Dispose session</button>
         </div>
         @if (_progress > 0 && _progress < 1)
@@ -181,6 +181,9 @@ var fork = await _session.Clone();
     private DemoConsole contextOutput = default!;
 
     private LanguageModelSession? _session;
+    // Create is slow enough to be clicked twice, and the second session would overwrite - and leak -
+    // the first: the button only knows to disable itself once _session has been assigned.
+    private bool _creating;
     private string _systemPrompt = "You answer in one short sentence.";
     private string _prompt = "Name three uses for a paperclip.";
     private string _streamed = "";
@@ -230,6 +233,9 @@ var fork = await _session.Clone();
 
     private async Task CreateSession()
     {
+        if (_creating) return;
+
+        _creating = true;
         try
         {
             _session = await languageModel.Create(
@@ -246,6 +252,10 @@ var fork = await _session.Clone();
         catch (Exception ex)
         {
             await sessionOutput.Error("Create failed →", ex.Message);
+        }
+        finally
+        {
+            _creating = false;
         }
     }
 

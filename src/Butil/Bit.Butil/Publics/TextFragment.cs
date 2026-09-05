@@ -13,11 +13,11 @@ namespace Bit.Butil;
 /// exist, and the link keeps working when the page is re-flowed, as long as the words survive.
 /// This is what a browser's "Copy link to highlight" produces.
 /// <br/>
-/// <b>How the browser treats it:</b> everything after <c>:~:</c> is a <i>fragment directive</i>,
-/// stripped out of <c>location.hash</c> before page script sees it - which is why
-/// <see cref="GetCurrent"/> exists rather than parsing the hash yourself. A directive is only acted
-/// on during a navigation, so <see cref="Navigate"/> is what makes the browser scroll; writing the
-/// URL into history does nothing.
+/// <b>How the browser treats it:</b> everything after <c>:~:</c> is a <i>fragment directive</i>, and
+/// the browser strips it off the URL while navigating - so it is gone from <c>location</c> before any
+/// page script runs, and <see cref="Parse"/> reads a URL you still hold rather than the current one.
+/// A directive is only acted on during a navigation, so <see cref="Navigate"/> is what makes the
+/// browser scroll; writing the URL into history does nothing.
 /// <br/>
 /// Style the result with the <c>::target-text</c> pseudo-element. Chromium and Safari implement
 /// this; Firefox does not, and there the link simply loads the page without scrolling.
@@ -56,13 +56,22 @@ public class TextFragment(IJSRuntime js)
         => js.Invoke<string>("BitButil.textFragment.buildUrl", url, directives);
 
     /// <summary>
-    /// The directives the current page was opened with - how to tell that a visitor arrived through
-    /// a highlight link, and what they were looking for.
+    /// Reads the directives out of a URL - the inverse of <see cref="BuildUrl"/>, for inspecting or
+    /// rewriting a highlight link before navigating to it.
     /// </summary>
+    /// <param name="url">A URL that may carry a <c>:~:text=…</c> fragment directive.</param>
     /// <returns>The directives, or an empty array when the URL carries none.</returns>
+    /// <remarks>
+    /// This takes a URL rather than reading the current one because the current one no longer has a
+    /// directive to read: the browser strips the fragment directive off while navigating, so it is
+    /// gone from <c>location.hash</c> <i>and</i> from <c>location.href</c> by the time any script
+    /// runs, and <c>document.fragmentDirective</c> deliberately exposes nothing. To know what a
+    /// visitor was linked to, pass the URL through your own app - a query parameter, say - or parse
+    /// the link before you navigate to it.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(TextFragmentDirective))]
-    public ValueTask<TextFragmentDirective[]> GetCurrent()
-        => js.Invoke<TextFragmentDirective[]>("BitButil.textFragment.getCurrent");
+    public ValueTask<TextFragmentDirective[]> Parse(string url)
+        => js.Invoke<TextFragmentDirective[]>("BitButil.textFragment.parse", url);
 
     /// <summary>
     /// Turns the user's current selection into a directive - the "copy link to this passage" button.

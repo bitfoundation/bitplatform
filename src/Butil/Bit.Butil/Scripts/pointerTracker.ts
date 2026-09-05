@@ -12,6 +12,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         track(element: HTMLElement, id: string, events: string[], includePredicted: boolean, dotNetRef: any, method: string) {
             if (!element) return false;
 
+            // Tracking the same id twice would otherwise leave the first registration's listeners
+            // attached with nothing left pointing at them.
+            butil.pointerTracker.untrack(id);
+
             const sample = (e: any) => ({
                 x: e.offsetX ?? 0,
                 y: e.offsetY ?? 0,

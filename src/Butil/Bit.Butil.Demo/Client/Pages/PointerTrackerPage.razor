@@ -11,10 +11,11 @@
             InjectAs="PointerTracker pointerTracker" />
 
 <Callout Type="info" Title="Why Blazor's own @@onpointermove isn't enough">
-    The browser fires at most one <code>pointermove</code> per animation frame, but a pen samples
-    several times faster than that. Blazor's <code>PointerEventArgs</code> has no way back to the DOM
-    event, so the coalesced list cannot be reached from it - this service attaches its own listener
-    instead.
+    A user agent may coalesce pointer samples before dispatching them - how many
+    <code>pointermove</code> events a pen's stream turns into is up to the implementation, and it is
+    typically far fewer than the pen produced. Blazor's <code>PointerEventArgs</code> has no way back
+    to the DOM event, so the coalesced list cannot be reached from it - this service attaches its own
+    listener instead.
 </Callout>
 
 <Callout Type="warning" Title="Chatty by design">

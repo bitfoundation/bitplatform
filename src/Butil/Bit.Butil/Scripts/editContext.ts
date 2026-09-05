@@ -17,13 +17,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     selectionStart: options?.selectionStart ?? 0,
                     selectionEnd: options?.selectionEnd ?? 0
                 });
+
+                // The edit context takes over text input for this element: the element stops being
+                // edited directly and becomes a surface the app paints, which is the whole point.
+                // The setter is inside the try because it throws NotSupportedError on an element
+                // that cannot host one - a <div> without contenteditable, for instance.
+                (element as any).editContext = context;
             } catch {
                 return false;
             }
-
-            // The edit context takes over text input for this element: the element stops being
-            // edited directly and becomes a surface the app paints, which is the whole point.
-            (element as any).editContext = context;
 
             context.addEventListener('textupdate', (e: any) => {
                 butil.utils.dispatch(dotNetRef, textMethod, id, {

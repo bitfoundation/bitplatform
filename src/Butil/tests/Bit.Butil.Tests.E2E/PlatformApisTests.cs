@@ -63,9 +63,9 @@ public class PlatformApisTests : ButilPageTest
     public async Task TextFragment_Builds_A_Directive_And_A_Url()
     {
         // The encoded directive, then the url it produces (which starts with its own "/e2e", hence
-        // the doubled separator), then 0 directives on the harness's own url.
+        // the doubled separator), then the 1 directive parsed back out of that url.
         await ClickAndExpectAsync("plat-fragment",
-            "plat:fragment::~:text=a%20distinctive%20phrase//e2e#:~:text=a%20distinctive%20phrase/0");
+            "plat:fragment::~:text=a%20distinctive%20phrase//e2e#:~:text=a%20distinctive%20phrase/1");
     }
 
     [TestMethod]
@@ -78,8 +78,9 @@ public class PlatformApisTests : ButilPageTest
     public async Task Animations_Are_Listed_Committed_And_Cancelled()
     {
         // Scroll-driven timelines are supported on Chromium, one animation was running when asked,
-        // commitStyles succeeded, and CancelAnimations found none left after Cancel.
-        await ClickAndExpectAsync("plat-animations", "plat:animations:True/1/True/0");
+        // its time came back in milliseconds (a scroll-driven one would say percent), commitStyles
+        // succeeded, and CancelAnimations found none left after Cancel.
+        await ClickAndExpectAsync("plat-animations", "plat:animations:True/1/ms/True/0");
     }
 
     [TestMethod]
@@ -93,7 +94,10 @@ public class PlatformApisTests : ButilPageTest
     public async Task BuiltInAi_Availability_Answers_Without_Creating_A_Session()
     {
         // Headless Chromium has no on-device model, so the probes answer Unavailable rather than
-        // throwing - which is the contract every caller is told to branch on.
+        // throwing - which is the contract every caller is told to branch on. Whether the API object
+        // itself exists depends on the build, so only the two availability answers are pinned.
         await ClickAndExpectAsync("plat-ai", "plat:ai:");
+        StringAssert.Contains(await CurrentStatusAsync(), "/Unavailable/Unavailable/",
+            "both availability probes must answer Unavailable where no model can be had");
     }
 }

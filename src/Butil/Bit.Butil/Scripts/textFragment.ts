@@ -62,15 +62,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const fragment = butil.textFragment.build(directives);
             if (!fragment) return url;
 
-            // Anything already after `:~:` is a fragment directive of its own and is replaced;
-            // an ordinary `#anchor` in front of it is kept.
-            const base = url.split(DELIMITER)[0];
-            return base.includes('#') ? `${base}${fragment}` : `${base}#${fragment}`;
+            // Only the fragment can hold a directive, so the split is on the first `#`: a `:~:` in
+            // the path or the query is ordinary text and has to survive untouched. Anything already
+            // after `:~:` is a fragment directive of its own and is replaced; an ordinary `#anchor`
+            // in front of it is kept.
+            const hash = url.indexOf('#');
+            const head = hash < 0 ? url : url.slice(0, hash);
+            const anchor = (hash < 0 ? '' : url.slice(hash + 1)).split(DELIMITER)[0];
+
+            return `${head}#${anchor}${fragment}`;
         },
-        getCurrent() {
-            // location.hash has the directive stripped out by the browser, so the raw URL is the
-            // only place it can still be read.
-            const fragment = fragmentOf(window.location.href);
+        parse(url: string) {
+            const fragment = fragmentOf(url ?? '');
             const start = fragment.indexOf(DELIMITER);
             if (start < 0) return [];
 

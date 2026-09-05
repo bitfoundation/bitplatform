@@ -338,6 +338,7 @@ var cancelled = await _box.CancelAnimations(js, subtree: true);
     private ElementReference _timelineRef;
     private ElementReference _commitRef;
     private AnimationHandle? _timelineHandle;
+    private AnimationHandle? _persistHandle;
 
     private ElementReference _boxRef;
     private ElementReference _pulseRef;
@@ -622,7 +623,12 @@ var cancelled = await _box.CancelAnimations(js, subtree: true);
                     Timeline = new AnimationTimelineOptions { Type = "scroll", Axis = "block" },
                 });
 
-            await timelineOutput.Success("Animate →", "the bar now follows the page's scroll position. Scroll to see it fill.");
+            // Without ScrollTimeline the timeline options are ignored and the animation runs on the
+            // clock, so saying "scroll to see it fill" there would be a lie.
+            if (await _timelineRef.IsTimelineSupported(js))
+                await timelineOutput.Success("Animate →", "the bar now follows the page's scroll position. Scroll to see it fill.");
+            else
+                await timelineOutput.Warn("Animate →", "no ScrollTimeline here, so the bar is running on the clock instead of on the scroll position.");
         }
         catch (Exception ex)
         {
@@ -665,7 +671,11 @@ var cancelled = await _box.CancelAnimations(js, subtree: true);
     {
         try
         {
-            var handle = await _commitRef.Animate(js,
+            // A persisted animation is exactly the one that is not cleaned up for us - it keeps its
+            // effect and its registry entry until this handle is disposed.
+            if (_persistHandle is not null) await _persistHandle.DisposeAsync();
+
+            var handle = _persistHandle = await _commitRef.Animate(js,
                 [
                     new() { ["transform"] = "translateX(120px)" },
                     new() { ["transform"] = "translateX(0)" },
@@ -713,6 +723,11 @@ var cancelled = await _box.CancelAnimations(js, subtree: true);
     public async ValueTask DisposeAsync()
     {
         await StopScrollTimeline();
+
+        if (_persistHandle is not null)
+        {
+            await _persistHandle.DisposeAsync();
+        }
 
         if (_slideHandle is not null)
         {
