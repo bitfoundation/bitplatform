@@ -215,6 +215,9 @@ await _subscription.DisposeAsync();   // stops listening
     <ApiMember Name="OnChange"
                Signature="ValueTask<ButilSubscription> OnChange(Action handler)"
                Description="Calls the handler on every selectionchange. Dispose the subscription to stop." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, detaches any selectionchange listener whose subscription was never disposed, and releases the JS callback reference." />
 </ApiTable>
 
 @code {

@@ -29,19 +29,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         try { return base ? new ctor(pattern, base) : new ctor(pattern); } catch { return null; }
     }
 
-    // The named groups of every component in one map. A pattern names each group once across the
-    // whole URL, so flattening loses nothing and spares the caller a component-shaped object; the
-    // component a group came from is still in `components` below.
+    // The groups of every component in one map, which spares the caller a component-shaped object.
+    // A pattern names each group once across the whole URL, so a named group keeps its bare name.
+    // Positional groups are the ones that would collide: every component numbers its own from '0',
+    // so they are qualified with the component they came from - 'pathname.0', 'hostname.0' - and
+    // none is lost to another component's.
     function flattenGroups(result: any) {
         const groups: { [key: string]: string | null } = {};
         for (const component of ['protocol', 'username', 'password', 'hostname', 'port', 'pathname', 'search', 'hash']) {
             const matched = result[component];
             if (!matched?.groups) continue;
             for (const key of Object.keys(matched.groups)) {
-                // Positional groups are keyed '0', '1', ... in every component, so a later component
-                // would overwrite an earlier one's. First writer wins, matching left-to-right order.
-                if (key in groups) continue;
-                groups[key] = matched.groups[key] ?? null;
+                const positional = /^\d+$/.test(key);
+                groups[positional ? `${component}.${key}` : key] = matched.groups[key] ?? null;
             }
         }
         return groups;
@@ -109,16 +109,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         isPatternSupported() { return typeof (window as any).URLPattern === 'function'; },
+        // The base is what the *pattern* is relative to, and equally what the tested URL is resolved
+        // against, so it is passed to both - a path-only pattern is usually given a path-only URL.
+        // An absolute URL ignores it, so passing it costs nothing in the common case.
         patternTest(pattern: string, base: string | null, url: string) {
             const compiled = makePattern(pattern, base);
             if (!compiled) return false;
-            try { return compiled.test(url); } catch { return false; }
+            try { return base ? compiled.test(url, base) : compiled.test(url); } catch { return false; }
         },
         patternExec(pattern: string, base: string | null, url: string) {
             const compiled = makePattern(pattern, base);
             if (!compiled) return null;
             let result: any;
-            try { result = compiled.exec(url); } catch { return null; }
+            try { result = base ? compiled.exec(url, base) : compiled.exec(url); } catch { return null; }
             if (!result) return null;
             return {
                 protocol: result.protocol?.input ?? '',

@@ -149,7 +149,19 @@ await regionCapture.Clear(_stream!);                // back to the whole tab
                 return;
             }
 
-            await _stream.AttachTo(_preview);
+            try
+            {
+                await _stream.AttachTo(_preview);
+            }
+            catch
+            {
+                // The share is live even though nothing is showing it: let go of it, so "share" is
+                // something the reader can press again.
+                await _stream.DisposeAsync();
+                _stream = null;
+                throw;
+            }
+
             await captureOutput.Success("Sharing. The preview shows the whole tab until you crop or restrict.");
         }
         catch (Exception ex)

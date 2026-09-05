@@ -57,8 +57,17 @@ public class TrustedTypes(IJSRuntime js) : IAsyncDisposable
     /// Nothing in the platform reports this, so it is asked the only way it can be: a plain string is
     /// assigned to a sink on a detached element, which is a no-op when nothing is enforced and a
     /// <c>TypeError</c> when it is. The element is never in the document, so the probe has no effect.
+    /// <para>
+    /// The probe has one blind spot, and it is reported rather than guessed at: a <c>"default"</c>
+    /// policy is run by the browser for any string assigned to a sink, so under enforcement the
+    /// assignment succeeds anyway and the two cases become indistinguishable.
+    /// </para>
     /// </remarks>
-    public ValueTask<bool> IsEnforced() => js.Invoke<bool>("BitButil.trustedTypes.isEnforced");
+    /// <returns>
+    /// True when enforcement is on, false when it is off, and null when there is a <c>"default"</c>
+    /// policy in the way - or during prerender/SSR, where nothing can be probed at all.
+    /// </returns>
+    public ValueTask<bool?> IsEnforced() => js.Invoke<bool?>("BitButil.trustedTypes.isEnforced");
 
     /// <summary>
     /// Creates a policy.

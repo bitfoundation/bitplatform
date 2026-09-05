@@ -233,13 +233,13 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 724,992 bytes | 118,272 bytes |
+| `Bit.Butil.dll` | 725,504 bytes | 118,272 bytes |
 | types in assembly | 909 | 149 |
 | `[ButilService]` discovered / registered | 71 / 71 | 5 / 5 |
 | interop contract | 46 types captured | 10 checked, 36 trimmed away, 0 problems |
 | JavaScript modules called | 77 of 79 | 6 of 79 (clipboard, cookie, events, geolocation, storage, window) |
-| `bit-butil.js` a publish would ship | 138,862 bytes, all 79 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 6.6% |
-| lazy scripts would download | 186,219 bytes over 77 files | 11,940 bytes over 6 files |
+| `bit-butil.js` a publish would ship | 140,547 bytes, all 79 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 6.5% |
+| lazy scripts would download | 188,283 bytes over 77 files | 11,940 bytes over 6 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 37 / 37 | not run |
 | script-publishing checks | 26 / 26 (9 publishes, ~15s) | not run |

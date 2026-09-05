@@ -121,6 +121,9 @@ await commentsHandle.SanitizeInto(preview, userHtml);
     <ApiMember Name="GetDefaultConfig"
                Signature="ValueTask<JsonElement?> GetDefaultConfig()"
                Description="The browser's default configuration, expanded. Raw JSON: what comes back is not the shape a configuration goes in as." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, drops any sanitizers whose handle was never disposed." />
     <ApiMember Name="SanitizerHandle.Sanitize"
                Signature="ValueTask<string?> Sanitize(string html)"
                Description="Sanitizes markup under this configuration." />
@@ -130,6 +133,9 @@ await commentsHandle.SanitizeInto(preview, userHtml);
     <ApiMember Name="SanitizerHandle.GetConfig"
                Signature="ValueTask<JsonElement?> GetConfig()"
                Description="This configuration as the browser expanded it - the answer to 'is that element really allowed'." />
+    <ApiMember Name="SanitizerHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Drops the sanitizer. Calling it again does nothing." />
     <ApiMember Name="SanitizerConfig"
                Signature="Elements | RemoveElements | ReplaceWithChildrenElements | Attributes | RemoveAttributes | Comments | DataAttributes"
                Description="Which elements and attributes survive. An allow-list or a deny-list, not both; every property left null keeps the browser's default." />

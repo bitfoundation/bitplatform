@@ -134,6 +134,9 @@ await _prefetch!.DisposeAsync();   // removes the rules, cancelling unused specu
     <ApiMember Name="OnActivated"
                Signature="ValueTask<ButilSubscription> OnActivated(Action<double> handler)"
                Description="Called when a prerendered page is activated, with the activation start. Never fires on a page that wasn't prerendered." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, removes any rule sets and activation listeners whose subscription was never disposed - a rule set left behind would keep asking the browser to load pages for a component that is gone." />
     <ApiMember Name="SpeculationEagerness"
                Signature="Immediate | Eager | Moderate | Conservative"
                Description="How keen the browser should be - the dial between wasted work and saved time." />

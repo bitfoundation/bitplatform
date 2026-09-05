@@ -30,12 +30,12 @@
 <div class="stack">
     <DemoSection Title="Is it there, and is it on?"
                  Api="IsSupported / IsEnforced"
-                 Description="Two different questions. IsSupported says window.trustedTypes exists; IsEnforced says a CSP is actually making plain strings fail. Nothing in the platform reports the second, so it is asked by assigning a plain string to a sink on a detached element and seeing whether it throws - the element is never in the document, so the probe has no effect."
+                 Description="Two different questions. IsSupported says window.trustedTypes exists; IsEnforced says a CSP is actually making plain strings fail. Nothing in the platform reports the second, so it is asked by assigning a plain string to a sink on a detached element and seeing whether it throws - the element is never in the document, so the probe has no effect. It comes back null rather than false when a 'default' policy is registered, because that policy would rescue the probe under enforcement too."
                  Code=@("""
 @inject Bit.Butil.TrustedTypes trustedTypes
 
 var available = await trustedTypes.IsSupported();
-var enforced = await trustedTypes.IsEnforced();
+bool? enforced = await trustedTypes.IsEnforced();   // null = a 'default' policy hides the answer
 """)>
         <div class="controls">
             <button @onclick="CheckSupported">Check both</button>
@@ -111,8 +111,8 @@ _subscription = await trustedTypes.OnViolation(violation =>
                Signature="ValueTask<bool> IsSupported()"
                Description="True when the runtime exposes window.trustedTypes. Returns default (false) during prerender/SSR instead of throwing." />
     <ApiMember Name="IsEnforced"
-               Signature="ValueTask<bool> IsEnforced()"
-               Description="Whether a CSP is actually enforcing Trusted Types on this document." />
+               Signature="ValueTask<bool?> IsEnforced()"
+               Description="Whether a CSP is actually enforcing Trusted Types on this document. Null when a 'default' policy makes the probe unable to tell, and during prerender/SSR." />
     <ApiMember Name="CreatePolicy"
                Signature="ValueTask<bool> CreatePolicy(string name, TrustedTypePolicyOptions? options = null, SanitizerHandle? sanitizer = null)"
                Description="Creates a policy. False when the CSP doesn't list the name, the name is taken, or the runtime has no Trusted Types." />
@@ -137,6 +137,9 @@ _subscription = await trustedTypes.OnViolation(violation =>
     <ApiMember Name="OnViolation"
                Signature="ValueTask<ButilSubscription> OnViolation(Action<TrustedTypeViolation> handler)"
                Description="Reports every Trusted Types violation on the document. Dispose the subscription to stop." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, detaches any violation listener whose subscription was never disposed. The policies themselves are kept: a name cannot be created twice, so dropping them would leave a re-created scope unable to get them back." />
     <ApiMember Name="TrustedTypePolicyOptions"
                Signature="SanitizeHtml | AllowedScriptUrlPrefixes | AllowScript"
                Description="What a policy allows. Sanitizing is on and script URLs are refused by default." />
@@ -162,7 +165,8 @@ _subscription = await trustedTypes.OnViolation(violation =>
         try
         {
             await supportOutput.Success("IsSupported →", await trustedTypes.IsSupported());
-            await supportOutput.Info("IsEnforced →", await trustedTypes.IsEnforced());
+            var enforced = await trustedTypes.IsEnforced();
+            await supportOutput.Info("IsEnforced →", enforced?.ToString() ?? "null - a 'default' policy is registered, so the probe can't tell.");
             await supportOutput.Log("This site does not serve the require-trusted-types-for header, so IsEnforced is false here - the policies below still work.");
         }
         catch (Exception ex)
@@ -174,6 +178,15 @@ _subscription = await trustedTypes.OnViolation(violation =>
     private async Task<bool> EnsurePolicy()
     {
         if (_created) return true;
+
+        // A policy name can only be created once per document, and the ones already created outlive
+        // this component - so coming back to the page finds the policy still there, and re-creating
+        // it would only fail.
+        if (await trustedTypes.HasPolicy(PolicyName))
+        {
+            _created = true;
+            return true;
+        }
 
         _created = await trustedTypes.CreatePolicy(PolicyName, new TrustedTypePolicyOptions
         {

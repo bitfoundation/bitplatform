@@ -20,6 +20,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         for (const prefix of prefixes) {
             let scope: URL;
             try { scope = new URL(prefix, document.baseURI); } catch { continue; }
+            // The protocol is compared as well as the origin, which looks redundant and is not:
+            // a 'blob:' or 'filesystem:' prefix reports the *inner* URL's origin, so a prefix like
+            // 'filesystem:https://example.com/temporary/' would otherwise match a plain https URL
+            // on that origin whose path happens to start the same way.
             if (scope.protocol !== url.protocol || scope.origin !== url.origin) continue;
 
             const path = scope.pathname;
@@ -39,13 +43,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // that says so, so it is asked the only way it can be: assign a plain string to a sink on a
         // detached element - which is a no-op when nothing is enforced, and a TypeError when it is.
         isEnforced() {
-            if (!api()) return false;
+            const types = api();
+            if (!types) return false;
             try {
                 document.createElement('div').innerHTML = '<i></i>';
-                return false;
             } catch {
                 return true;
             }
+            // The probe surviving is only an answer when nothing could have rescued it. A 'default'
+            // policy is exactly what does: under enforcement the browser runs it for any string
+            // assigned to a sink, so the assignment above succeeds either way and there is no longer
+            // anything to tell the two cases apart. Null is that - unknown, not "no".
+            return types.defaultPolicy ? null : false;
         },
 
         // The policy's rules are declared rather than passed as callbacks: a trusted-types transform
@@ -131,10 +140,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // reason to run the CSP in report-only mode first.
         onViolation(dotNetRef: any, method: string, id: string) {
             const handler = (event: any) => {
-                // Every CSP violation lands on this one event; only the trusted-types ones belong here.
+                // Every CSP violation lands on this one event; only the trusted-types ones belong
+                // here. One substring covers both directives that carry them, since
+                // 'require-trusted-types-for' contains 'trusted-types' too.
                 if (typeof event.violatedDirective === 'string'
-                    && event.violatedDirective.indexOf('trusted-types') < 0
-                    && event.violatedDirective.indexOf('require-trusted-types-for') < 0) return;
+                    && event.violatedDirective.indexOf('trusted-types') < 0) return;
 
                 butil.utils.dispatch(dotNetRef, method, id, {
                     directive: event.violatedDirective ?? '',
@@ -144,6 +154,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     disposition: event.disposition ?? ''
                 });
             };
+            // Only one handler per id is ever removable, so a re-registration has to let go of the
+            // one it replaces - otherwise the old listener stays attached with nothing referencing it.
+            const previous = _listeners[id];
+            if (previous) document.removeEventListener('securitypolicyviolation', previous);
             _listeners[id] = handler;
             document.addEventListener('securitypolicyviolation', handler);
         },

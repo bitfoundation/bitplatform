@@ -91,6 +91,9 @@ await _trail!.SetStyle("#c50f1f", diameter: 8);
     <ApiMember Name="StartTrail"
                Signature="ValueTask<InkTrailHandle?> StartTrail(ElementReference presentationArea, string color = &quot;black&quot;, double diameter = 3)"
                Description="Starts painting a trail over an element as the pointer moves across it. Null when the API is unavailable or the element can't present ink." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, stops any trail whose handle was never disposed, so an abandoned pointer listener can't outlive the component that started it." />
     <ApiMember Name="InkTrailHandle.SetStyle"
                Signature="ValueTask<bool> SetStyle(string color, double diameter = 0)"
                Description="Changes the trail's colour and width from the next point onwards. Pass 0 to keep the current width." />

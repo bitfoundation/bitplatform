@@ -117,12 +117,18 @@ text += await decoder.Flush();             // emits anything still pending
     <ApiMember Name="CreateDecoder"
                Signature="ValueTask<TextDecoderHandle?> CreateDecoder(string label = &quot;utf-8&quot;, bool fatal = false, bool ignoreBom = false)"
                Description="Opens a streaming decoder for chunked content. Null when the label is unknown. Dispose it when the stream ends." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, drops any streaming decoders whose handle was never disposed." />
     <ApiMember Name="TextDecoderHandle.Decode"
                Signature="ValueTask<string?> Decode(byte[] bytes, bool more = true)"
                Description="Decodes one chunk. Pass more: false for the last one so a trailing partial character is flushed." />
     <ApiMember Name="TextDecoderHandle.Flush"
                Signature="ValueTask<string?> Flush()"
                Description="Ends the stream, emitting whatever partial character was pending." />
+    <ApiMember Name="TextDecoderHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Drops the decoder. Calling it again does nothing." />
 </ApiTable>
 
 @code {

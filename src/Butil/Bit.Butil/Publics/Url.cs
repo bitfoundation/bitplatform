@@ -143,8 +143,11 @@ public class Url(IJSRuntime js)
     /// <c>"/files/:name.:ext"</c>. Named parameters start with <c>:</c>, <c>*</c> is a wildcard, and
     /// a group in <c>{}</c> can be made optional with <c>?</c>.
     /// </param>
-    /// <param name="url">The URL to test.</param>
-    /// <param name="baseUrl">Base the pattern is relative to - required for a path-only pattern like <c>"/books/:id"</c>.</param>
+    /// <param name="url">The URL to test. A relative one is resolved against <paramref name="baseUrl"/>.</param>
+    /// <param name="baseUrl">
+    /// Base the pattern is relative to - required for a path-only pattern like <c>"/books/:id"</c> -
+    /// and what a relative <paramref name="url"/> is resolved against. An absolute URL ignores it.
+    /// </param>
     /// <returns>False when the pattern is invalid or <c>URLPattern</c> isn't supported, as well as when it simply doesn't match.</returns>
     public ValueTask<bool> TestPattern(string pattern, string url, string? baseUrl = null)
         => js.Invoke<bool>("BitButil.url.patternTest", pattern, baseUrl, url);
@@ -154,8 +157,11 @@ public class Url(IJSRuntime js)
     /// case: <c>"/books/:id"</c> against <c>"/books/42"</c> gives <c>id = "42"</c>.
     /// </summary>
     /// <param name="pattern">The pattern - see <see cref="TestPattern"/>.</param>
-    /// <param name="url">The URL to match.</param>
-    /// <param name="baseUrl">Base the pattern is relative to - required for a path-only pattern.</param>
+    /// <param name="url">The URL to match. A relative one is resolved against <paramref name="baseUrl"/>.</param>
+    /// <param name="baseUrl">
+    /// Base the pattern is relative to - required for a path-only pattern - and what a relative
+    /// <paramref name="url"/> is resolved against. An absolute URL ignores it.
+    /// </param>
     /// <returns>The match, or null when the URL doesn't match, the pattern is invalid, or <c>URLPattern</c> isn't supported.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UrlPatternMatch))]
     public ValueTask<UrlPatternMatch?> MatchPattern(string pattern, string url, string? baseUrl = null)

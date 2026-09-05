@@ -35,13 +35,16 @@ public class UrlPatternMatch
 
     /// <summary>
     /// What the pattern's parameters captured: <c>"/books/:id"</c> against <c>"/books/42"</c> gives
-    /// <c>id = "42"</c>. Unnamed groups (a bare <c>*</c> or a parenthesised group) are keyed by their
-    /// position - <c>"0"</c>, <c>"1"</c> - and an optional group that didn't participate has a null value.
+    /// <c>id = "42"</c>. Unnamed groups (a bare <c>*</c> or a parenthesised group) are keyed by the
+    /// component and their position within it - <c>"pathname.0"</c>, <c>"hostname.0"</c> - and an
+    /// optional group that didn't participate has a null value.
     /// </summary>
     /// <remarks>
     /// The groups of every component are merged into this one map. A pattern names a parameter once
-    /// across the whole URL, so nothing is lost; positional keys repeat per component, and the
-    /// left-most component's wins.
+    /// across the whole URL, so a named group keeps its bare name; positional groups are numbered
+    /// from zero again in every component, which is why those carry their component as a prefix -
+    /// otherwise a hostname's <c>*</c> and a pathname's <c>*</c> would both be <c>"0"</c> and one
+    /// would be lost.
     /// </remarks>
     public Dictionary<string, string?> Groups { get; set; } = [];
 }

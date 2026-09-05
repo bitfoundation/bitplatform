@@ -72,6 +72,18 @@ public class TextUrlAndSelectionTests : ButilPageTest
     }
 
     [TestMethod]
+    public async Task UrlPattern_Resolves_A_Relative_Url_Against_The_Base()
+    {
+        await ClickAndExpectAsync("url-pattern-relative", "url:relative:True/42");
+    }
+
+    [TestMethod]
+    public async Task UrlPattern_Keeps_Every_Components_Unnamed_Group()
+    {
+        await ClickAndExpectAsync("url-pattern-wildcards", "url:wildcards:cdn/logo.svg");
+    }
+
+    [TestMethod]
     public async Task Selection_Selects_An_Elements_Contents()
     {
         await ClickAndExpectAsync("sel-select", "sel:select:butil selection target");

@@ -114,8 +114,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // the answer to "is this element really allowed", which a hand-written config never gives.
         getConfig(id: string | null) {
             const sanitizer = resolve(id);
-            if (sanitizer === MISSING || !sanitizer?.get) return null;
-            try { return sanitizer.get(); } catch { return null; }
+            // Through configOf rather than sanitizer.get directly: the method has carried two names,
+            // and build() already trusts configOf to decide whether a configuration was understood.
+            // Reading it back under only one of the two names would report "no configuration" on a
+            // browser this module otherwise supports.
+            if (sanitizer === MISSING) return null;
+            return configOf(sanitizer);
         },
 
         sanitize(html: string, id: string | null) {

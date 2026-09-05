@@ -200,7 +200,9 @@ public class Speculation(IJSRuntime js) : IAsyncDisposable
         for (var i = 0; i < urls.Length; i++)
         {
             if (i > 0) builder.Append(',');
-            builder.Append('"').Append(JsonEncodedText.Encode(urls[i] ?? string.Empty)).Append('"');
+            // .Value rather than the JsonEncodedText itself: StringBuilder has no overload for the
+            // struct, so appending it directly binds to Append(object) and boxes it per URL.
+            builder.Append('"').Append(JsonEncodedText.Encode(urls[i] ?? string.Empty).Value).Append('"');
         }
 
         builder.Append("],\"eagerness\":\"").Append(ToName(eagerness)).Append("\"}]}");

@@ -127,6 +127,8 @@
     <button id="url-query" @onclick="UrlQuery">repeated query values</button>
     <button id="url-pattern" @onclick="UrlPattern">URLPattern</button>
     <button id="url-pattern-credentials" @onclick="UrlPatternCredentials">URLPattern credentials</button>
+    <button id="url-pattern-relative" @onclick="UrlPatternRelative">URLPattern relative</button>
+    <button id="url-pattern-wildcards" @onclick="UrlPatternWildcards">URLPattern wildcards</button>
 </section>
 
 <section>
@@ -557,6 +559,27 @@
         // The two components a URL rarely carries - and the ones a pattern has to report when it does.
         var match = await url.MatchPattern("https://:user::pass@example.com/*", "https://ada:secret@example.com/x");
         Set($"url:credentials:{match?.Username}/{match?.Password}");
+    }
+
+    private async Task UrlPatternRelative()
+    {
+        if (await url.IsPatternSupported() is false) { Set("url:relative:unsupported"); return; }
+
+        // The base resolves the candidate too, not only the pattern - a router matches the path it
+        // has, not a URL it had to build first.
+        var tested = await url.TestPattern("/books/:id", "/books/42", "https://example.com");
+        var match = await url.MatchPattern("/books/:id", "/books/42", "https://example.com");
+        Set($"url:relative:{tested}/{match?.Groups.GetValueOrDefault("id")}");
+    }
+
+    private async Task UrlPatternWildcards()
+    {
+        if (await url.IsPatternSupported() is false) { Set("url:wildcards:unsupported"); return; }
+
+        // Two unnamed groups, one per component: both are numbered '0' by URLPattern, so only the
+        // component prefix keeps them apart.
+        var match = await url.MatchPattern("https://*.example.com/assets/*", "https://cdn.example.com/assets/logo.svg");
+        Set($"url:wildcards:{match?.Groups.GetValueOrDefault("hostname.0")}/{match?.Groups.GetValueOrDefault("pathname.0")}");
     }
 
     // ─── Selection ──────────────────────────────────────────────────────────────
