@@ -15,7 +15,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     const _audio: { [id: string]: any } = {};
 
     butil.webCodecs = {
-        isSupported() { return 'VideoEncoder' in window || 'VideoDecoder' in window || 'AudioEncoder' in window; },
+        isSupported() { return 'VideoEncoder' in window || 'VideoDecoder' in window || 'AudioEncoder' in window || 'AudioDecoder' in window; },
         isKindSupported(kind: string) { return !!constructorFor(kind); },
         isConfigSupported,
         create,

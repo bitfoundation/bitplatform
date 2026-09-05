@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace Bit.Butil;
 
 /// <summary>
@@ -19,18 +21,31 @@ public class MediaCapabilitiesKeySystemConfiguration
     /// <summary>The initialization-data type the content uses, e.g. <c>"cenc"</c>.</summary>
     public string? InitDataType { get; set; }
 
-    /// <summary>Whether a distinctive identifier is required: <c>"required"</c>, <c>"optional"</c> or <c>"not-allowed"</c>.</summary>
-    public string? DistinctiveIdentifier { get; set; }
+    /// <summary>Whether a distinctive identifier is required, the same values
+    /// <see cref="MediaKeySystemConfiguration.DistinctiveIdentifier"/> takes.</summary>
+    public MediaKeysRequirement? DistinctiveIdentifier { get; set; }
 
-    /// <summary>Whether persistent state is required: <c>"required"</c>, <c>"optional"</c> or <c>"not-allowed"</c>.</summary>
-    public string? PersistentState { get; set; }
+    /// <summary>Whether persistent state is required, the same values
+    /// <see cref="MediaKeySystemConfiguration.PersistentState"/> takes.</summary>
+    public MediaKeysRequirement? PersistentState { get; set; }
 
-    /// <summary>The session types the content needs, e.g. a single <c>temporary</c>.</summary>
-    public string[]? SessionTypes { get; set; }
+    /// <summary>The session types the content needs, e.g. a single <see cref="MediaKeySessionType.Temporary"/>.</summary>
+    public MediaKeySessionType[]? SessionTypes { get; set; }
 
-    /// <summary>The robustness level asked of the audio track, e.g. <c>"SW_SECURE_CRYPTO"</c>.</summary>
+    /// <summary>The robustness level asked of the audio track, e.g. <c>"SW_SECURE_CRYPTO"</c>. Key-system specific, so a string.</summary>
     public string? AudioRobustness { get; set; }
 
-    /// <summary>The robustness level asked of the video track, e.g. <c>"HW_SECURE_ALL"</c>.</summary>
+    /// <summary>The robustness level asked of the video track, e.g. <c>"HW_SECURE_ALL"</c>. Key-system specific, so a string.</summary>
     public string? VideoRobustness { get; set; }
+
+    internal MediaCapabilitiesKeySystemJsConfiguration ToJsObject() => new()
+    {
+        KeySystem = KeySystem,
+        InitDataType = InitDataType,
+        DistinctiveIdentifier = MediaKeySystemConfiguration.ToName(DistinctiveIdentifier),
+        PersistentState = MediaKeySystemConfiguration.ToName(PersistentState),
+        SessionTypes = SessionTypes?.Select(MediaKeySystemConfiguration.ToName).ToArray(),
+        AudioRobustness = AudioRobustness,
+        VideoRobustness = VideoRobustness
+    };
 }

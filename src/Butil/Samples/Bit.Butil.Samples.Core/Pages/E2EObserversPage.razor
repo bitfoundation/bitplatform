@@ -807,7 +807,12 @@
                     $$"""{"keys":[{"kty":"oct","kid":"{{Base64Url(keyId)}}","k":"{{Base64Url(key)}}"}],"type":"temporary"}""");
                 await session!.Update(licence);
             },
-            onKeyStatusesChange: statuses => licensed.TrySetResult(statuses.Any(s => s.Status == MediaKeyStatus.Usable)));
+            // Only a usable key settles it: an earlier status change carrying no usable key is a
+            // step on the way, not a verdict, and completing on it would lock in a false negative.
+            onKeyStatusesChange: statuses =>
+            {
+                if (statuses.Any(s => s.Status == MediaKeyStatus.Usable)) licensed.TrySetResult(true);
+            });
 
         if (session is null)
         {

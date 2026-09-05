@@ -34,6 +34,6 @@ public class MediaDecodingConfiguration
         },
         Video = Video,
         Audio = Audio,
-        KeySystemConfiguration = KeySystemConfiguration
+        KeySystemConfiguration = KeySystemConfiguration?.ToJsObject()
     };
 }

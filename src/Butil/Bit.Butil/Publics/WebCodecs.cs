@@ -119,8 +119,20 @@ public class WebCodecs(IJSRuntime js) : IAsyncDisposable
 
         var id = Guid.NewGuid();
         var handle = new VideoEncoderHandle(js, id, onChunk, onError);
-        var created = await js.Invoke<bool>("BitButil.webCodecs.create", "video-encoder", id, config,
+        bool created;
+        try
+        {
+            created = await js.Invoke<bool>("BitButil.webCodecs.create", "video-encoder", id, config,
                                             handle.CallbackRef, VideoEncoderHandle.ChunkMethodName, VideoEncoderHandle.ErrorMethodName);
+        }
+        catch
+        {
+            // The handle owns a DotNetObjectReference from the moment it is constructed, so a throw
+            // that never returns it to the caller has to release it here.
+            await handle.DisposeAsync();
+            throw;
+        }
+
         if (created is false)
         {
             await handle.DisposeAsync();
@@ -150,8 +162,18 @@ public class WebCodecs(IJSRuntime js) : IAsyncDisposable
 
         var id = Guid.NewGuid();
         var handle = new VideoDecoderHandle(js, id, onFrame, onError);
-        var created = await js.Invoke<bool>("BitButil.webCodecs.create", "video-decoder", id, config,
+        bool created;
+        try
+        {
+            created = await js.Invoke<bool>("BitButil.webCodecs.create", "video-decoder", id, config,
                                             handle.CallbackRef, VideoDecoderHandle.FrameMethodName, VideoDecoderHandle.ErrorMethodName);
+        }
+        catch
+        {
+            await handle.DisposeAsync();   // as in CreateVideoEncoder: the callback ref is already live
+            throw;
+        }
+
         if (created is false)
         {
             await handle.DisposeAsync();
@@ -178,8 +200,18 @@ public class WebCodecs(IJSRuntime js) : IAsyncDisposable
 
         var id = Guid.NewGuid();
         var handle = new AudioEncoderHandle(js, id, onChunk, onError);
-        var created = await js.Invoke<bool>("BitButil.webCodecs.create", "audio-encoder", id, config,
+        bool created;
+        try
+        {
+            created = await js.Invoke<bool>("BitButil.webCodecs.create", "audio-encoder", id, config,
                                             handle.CallbackRef, AudioEncoderHandle.ChunkMethodName, AudioEncoderHandle.ErrorMethodName);
+        }
+        catch
+        {
+            await handle.DisposeAsync();   // as in CreateVideoEncoder: the callback ref is already live
+            throw;
+        }
+
         if (created is false)
         {
             await handle.DisposeAsync();
@@ -206,8 +238,18 @@ public class WebCodecs(IJSRuntime js) : IAsyncDisposable
 
         var id = Guid.NewGuid();
         var handle = new AudioDecoderHandle(js, id, onData, onError);
-        var created = await js.Invoke<bool>("BitButil.webCodecs.create", "audio-decoder", id, config,
+        bool created;
+        try
+        {
+            created = await js.Invoke<bool>("BitButil.webCodecs.create", "audio-decoder", id, config,
                                             handle.CallbackRef, AudioDecoderHandle.DataMethodName, AudioDecoderHandle.ErrorMethodName);
+        }
+        catch
+        {
+            await handle.DisposeAsync();   // as in CreateVideoEncoder: the callback ref is already live
+            throw;
+        }
+
         if (created is false)
         {
             await handle.DisposeAsync();

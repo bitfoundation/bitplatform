@@ -94,10 +94,22 @@ public class WebXr(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         var handle = new XrSessionHandle(js, id, onEnd, onInput, onPose);
 
-        var info = await js.Invoke<XrSessionJsInfo?>("BitButil.webXr.requestSession",
+        XrSessionJsInfo? info;
+        try
+        {
+            info = await js.Invoke<XrSessionJsInfo?>("BitButil.webXr.requestSession",
                                                      id, ToName(mode), (options ?? new XrSessionOptions()).ToJsObject(),
                                                      handle.CallbackRef,
                                                      XrSessionHandle.EndMethodName, XrSessionHandle.InputMethodName, XrSessionHandle.PoseMethodName);
+        }
+        catch
+        {
+            // The handle owns a DotNetObjectReference from the moment it is constructed, so a throw
+            // that never returns it to the caller has to release it here.
+            await handle.DisposeAsync();
+            throw;
+        }
+
         if (info is null)
         {
             await handle.DisposeAsync();

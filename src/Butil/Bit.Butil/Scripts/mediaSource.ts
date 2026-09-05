@@ -94,7 +94,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // fires sourceopen, and a caller left awaiting forever is worse than one told it failed.
             setTimeout(() => {
                 if (settled) return;
-                close(id);
+                // A later open() under the same id has already torn this one down and put its own
+                // source in its place; closing by id now would kill that newer source instead.
+                if (_sources[id] === entry) close(id);
                 done(false);
             }, 10000);
         });
@@ -204,10 +206,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const buffer = _sources[id]?.buffers[bufferId];
         if (!buffer) return false;
         try {
-            // Order matters: a start that is not below the current end is rejected, so the window is
-            // widened at the end first and only then moved at the start.
-            buffer.sb.appendWindowEnd = end;
-            buffer.sb.appendWindowStart = start;
+            // Order matters: neither bound may be set past the other, so which one moves first
+            // depends on the direction. Widening (or moving right) needs the end raised before the
+            // start; narrowing to a window that ends at or below the current start needs the start
+            // lowered first, or the new end is rejected against the old start.
+            if (end <= buffer.sb.appendWindowStart) {
+                buffer.sb.appendWindowStart = start;
+                buffer.sb.appendWindowEnd = end;
+            } else {
+                buffer.sb.appendWindowEnd = end;
+                buffer.sb.appendWindowStart = start;
+            }
             return true;
         } catch {
             return false;
@@ -234,10 +243,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return (typeof value === 'number' && isFinite(value)) ? value : null;
     }
 
-    function setDuration(id: string, value: number) {
+    function setDuration(id: string, value: number | null) {
         const entry = _sources[id];
         if (!entry) return false;
-        try { entry.ms.duration = value; return true; } catch { return false; }
+        // Infinity has no JSON representation, so a live stream of unknown length crosses as null.
+        const duration = (value === null || value === undefined) ? Infinity : value;
+        try { entry.ms.duration = duration; return true; } catch { return false; }
     }
 
     function endOfStream(id: string, error: string | null) {

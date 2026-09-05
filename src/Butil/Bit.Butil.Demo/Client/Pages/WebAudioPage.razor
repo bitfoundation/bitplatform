@@ -458,6 +458,9 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
     private double stereoPan;
 
     private AudioNodeHandle? elementSource;
+    // The low-pass RouteElement inserted, kept so CaptureGraph can tap the processed signal rather
+    // than the raw element. Owned by transientNodes, which is what disposes it.
+    private AudioNodeHandle? elementFilter;
     private MediaStreamAudioDestinationHandle? streamDestination;
 
     private AudioWorkletNodeHandle? workletNode;
@@ -1078,6 +1081,7 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
             await elementSource.Connect(filter!);
             await filter!.ConnectToDestination();
             transientNodes.Add(filter);
+            elementFilter = filter;
 
             await routingOutput.Success("the element now plays through a 800 Hz low-pass - press play and hear it muffled");
         }
@@ -1101,10 +1105,17 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
                 return;
             }
 
-            if (elementSource is not null) await elementSource.Connect(streamDestination);
+            // Tap the end of the routed chain, not the element: connecting the source directly would
+            // capture the raw audio and record something other than what the page is playing.
+            var tap = elementFilter ?? elementSource;
+            if (tap is not null) await tap.Connect(streamDestination);
 
             var stream = streamDestination.GetStream();
-            await routingOutput.Success($"CreateMediaStreamDestination → stream {stream.Id} - hand it to MediaRecorder to record the processed signal");
+            var what = elementFilter is not null
+                ? "the filtered signal"
+                : tap is not null ? "the unfiltered element (route it through the filter first to capture that)"
+                                  : "nothing yet - route the element first, or the stream stays silent";
+            await routingOutput.Success($"CreateMediaStreamDestination → stream {stream.Id} carrying {what} - hand it to MediaRecorder");
         }
         catch (Exception ex)
         {

@@ -52,7 +52,7 @@ public class MediaCapabilities(IJSRuntime js)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaCapabilitiesJsConfiguration))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VideoConfiguration))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AudioConfiguration))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaCapabilitiesKeySystemConfiguration))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaCapabilitiesKeySystemJsConfiguration))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaCapabilitiesInfo))]
     public ValueTask<MediaCapabilitiesInfo?> DecodingInfo(MediaDecodingConfiguration configuration)
         => js.Invoke<MediaCapabilitiesInfo?>("BitButil.mediaCapabilities.decodingInfo", configuration.ToJsObject());

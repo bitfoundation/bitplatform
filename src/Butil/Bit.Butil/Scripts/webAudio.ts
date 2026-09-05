@@ -8,6 +8,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     const _playbacks: { [id: string]: { source: AudioScheduledSourceNode, gain: GainNode } } = {};
     // Graph nodes .NET built explicitly, keyed by their handle's id.
     const _nodes: { [id: string]: any } = {};
+    // The mediaDevices stream a MediaStreamAudioDestination node was registered under, so releasing
+    // the node can take the stream back out of that registry too.
+    const _nodeStreams: { [id: string]: string } = {};
     const _buffers: { [id: string]: AudioBuffer } = {};
 
     butil.webAudio = {
@@ -316,6 +319,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Handing the stream to the mediaDevices registry is what lets .NET treat it like any other
         // stream - attach it to an element, or record it with MediaRecorder.
         butil.mediaDevices.registerStream(streamId, node.stream);
+        _nodeStreams[id] = streamId;
         return true;
     }
 
@@ -515,6 +519,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         try { node.disconnect(); } catch { /* already disconnected */ }
         if (node.port) {
             try { node.port.onmessage = null; node.port.close(); } catch { /* already closed */ }
+        }
+        const streamId = _nodeStreams[id];
+        if (streamId !== undefined) {
+            delete _nodeStreams[id];
+            // The node's stream was parked in the mediaDevices registry; leaving it there after the
+            // node is gone keeps a live stream nothing in .NET has a handle to stop any more.
+            butil.mediaDevices.stop(streamId);
         }
     }
 

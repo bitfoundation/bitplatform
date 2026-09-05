@@ -59,7 +59,7 @@ public class MediaKeySystemConfiguration
     internal static string ToName(MediaKeySessionType type)
         => type == MediaKeySessionType.PersistentLicense ? "persistent-license" : "temporary";
 
-    private static string? ToName(MediaKeysRequirement? requirement) => requirement switch
+    internal static string? ToName(MediaKeysRequirement? requirement) => requirement switch
     {
         MediaKeysRequirement.Required => "required",
         MediaKeysRequirement.Optional => "optional",

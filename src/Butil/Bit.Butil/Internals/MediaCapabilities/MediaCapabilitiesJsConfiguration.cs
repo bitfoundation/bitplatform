@@ -12,5 +12,5 @@ internal class MediaCapabilitiesJsConfiguration
 
     public AudioConfiguration? Audio { get; set; }
 
-    public MediaCapabilitiesKeySystemConfiguration? KeySystemConfiguration { get; set; }
+    public MediaCapabilitiesKeySystemJsConfiguration? KeySystemConfiguration { get; set; }
 }

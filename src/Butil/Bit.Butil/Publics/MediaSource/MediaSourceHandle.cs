@@ -89,7 +89,9 @@ public sealed class MediaSourceHandle : IAsyncDisposable
     /// player normally sets this once from the manifest.
     /// </remarks>
     public ValueTask<bool> SetDuration(double seconds)
-        => _js.Invoke<bool>("BitButil.mediaSource.setDuration", _id, seconds);
+        // Infinity is not a JSON number - serializing it throws rather than reaching the browser -
+        // so a live stream's duration crosses as null and the script turns it back into Infinity.
+        => _js.Invoke<bool>("BitButil.mediaSource.setDuration", _id, double.IsPositiveInfinity(seconds) ? null : (double?)seconds);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/endOfStream">MediaSource.endOfStream()</see>:

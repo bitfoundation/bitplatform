@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -19,6 +20,9 @@ public sealed class MediaKeysHandle : IAsyncDisposable
 {
     private readonly IJSRuntime _js;
     private readonly Guid _id;
+    // Every session this handle opened, so disposal can release the DotNetObjectReference each one
+    // holds - closing them in JS does not, and a caller who let a session handle go never will.
+    private readonly ConcurrentDictionary<Guid, MediaKeySessionHandle> _sessions = new();
     private bool _disposed;
 
     internal MediaKeysHandle(IJSRuntime js, Guid id, MediaKeySystemAccessInfo access)
@@ -99,6 +103,7 @@ public sealed class MediaKeysHandle : IAsyncDisposable
             return null;
         }
 
+        _sessions[sessionId] = handle;
         return handle;
     }
 
@@ -112,5 +117,12 @@ public sealed class MediaKeysHandle : IAsyncDisposable
         _disposed = true;
         try { await _js.InvokeVoid("BitButil.encryptedMedia.dispose", _id); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        finally
+        {
+            // After the sessions are closed in JS: each handle's disposal is idempotent, and is the
+            // only thing that releases its callback reference.
+            foreach (var session in _sessions.Values) await session.DisposeAsync();
+            _sessions.Clear();
+        }
     }
 }

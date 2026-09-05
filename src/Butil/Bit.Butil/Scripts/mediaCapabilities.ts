@@ -15,11 +15,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!capabilities?.[method]) return null;
 
         const request: any = { type: config?.type };
-        // A configuration carrying an empty `video`/`audio` member is not the same as one carrying
-        // none: the spec requires at least one of them, and rejects an entry whose contentType is
-        // missing. Only the ones the caller actually filled in are sent.
-        if (config?.video?.contentType) request.video = butil.utils.pick(config.video, VIDEO_KEYS);
-        if (config?.audio?.contentType) request.audio = butil.utils.pick(config.audio, AUDIO_KEYS);
+        // Only the members the caller actually set are sent - the spec requires at least one of
+        // them. A member that is present but missing its contentType is still forwarded: dropping it
+        // would silently turn a malformed query into a valid audio- or video-only one and answer a
+        // question nobody asked, where forwarding it gets the TypeError the caller should see.
+        if (config?.video) request.video = butil.utils.pick(config.video, VIDEO_KEYS);
+        if (config?.audio) request.audio = butil.utils.pick(config.audio, AUDIO_KEYS);
         if (config?.keySystemConfiguration?.keySystem) {
             request.keySystemConfiguration = butil.utils.pick(config.keySystemConfiguration,
                 ['keySystem', 'initDataType', 'distinctiveIdentifier', 'persistentState', 'sessionTypes']);

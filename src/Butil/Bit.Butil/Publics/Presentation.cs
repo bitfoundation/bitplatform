@@ -91,8 +91,19 @@ public class Presentation(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         Register(id, onMessage, onStateChange);
 
-        var info = await js.Invoke<PresentationConnectionJsInfo?>("BitButil.presentation.start",
+        PresentationConnectionJsInfo? info;
+        try
+        {
+            info = await js.Invoke<PresentationConnectionJsInfo?>("BitButil.presentation.start",
                                                                   id, urls, DotNetRef, MessageMethodName, StateMethodName);
+        }
+        catch
+        {
+            // The handlers are registered before the call, since JS can dispatch to them the moment
+            // it has them; a throw leaves nobody holding a handle that could ever unregister them.
+            Unregister(id);
+            throw;
+        }
 
         return ToHandle(id, info);
     }
@@ -119,8 +130,17 @@ public class Presentation(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         Register(id, onMessage, onStateChange);
 
-        var info = await js.Invoke<PresentationConnectionJsInfo?>("BitButil.presentation.reconnect",
+        PresentationConnectionJsInfo? info;
+        try
+        {
+            info = await js.Invoke<PresentationConnectionJsInfo?>("BitButil.presentation.reconnect",
                                                                   id, urls, presentationId, DotNetRef, MessageMethodName, StateMethodName);
+        }
+        catch
+        {
+            Unregister(id);   // same as Start: nothing else would ever release the handlers
+            throw;
+        }
 
         return ToHandle(id, info);
     }

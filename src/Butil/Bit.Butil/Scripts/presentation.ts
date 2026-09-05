@@ -12,6 +12,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     const _connections: { [id: string]: ConnectionEntry } = {};
     const _availability: { [listenerId: string]: AvailabilityEntry } = {};
     let _receiverWatch: { list: any, handler: () => void } | null = null;
+    // Bumped by every watchReceiver and by disposeAll: connectionList is a promise, so a setup that
+    // is still awaiting it has to be able to tell that it has been superseded before it attaches.
+    let _receiverToken = 0;
 
     butil.presentation = {
         isSupported() { return !!(navigator as any).presentation && !!(window as any).PresentationRequest; },
@@ -170,8 +173,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     async function watchReceiver(dotNetRef: any, connectionMethod: string, messageMethod: string, changeMethod: string) {
         const receiver = (navigator as any).presentation?.receiver;
         if (!receiver) return false;
+
+        // A second call replaces the first rather than stacking on it: the previous listener is
+        // dropped before the new one is attached, so a connection is still reported exactly once.
+        unwatchReceiver();
+        const token = ++_receiverToken;
+
         try {
             const list = await receiver.connectionList;
+            // disposeAll - or another watchReceiver - may have run while that promise was pending.
+            // Attaching now would leave a listener nothing can remove any more.
+            if (token !== _receiverToken) return false;
+
             const seen = new WeakSet<any>();
             const handler = () => {
                 // The list holds every connection, not only the new one, so already-registered
@@ -193,6 +206,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         }
     }
 
+    function unwatchReceiver() {
+        if (!_receiverWatch) return;
+        try { _receiverWatch.list.removeEventListener('connectionavailable', _receiverWatch.handler); } catch { /* already gone */ }
+        _receiverWatch = null;
+    }
+
     function newId() {
         const uuid = (crypto as any).randomUUID?.();
         if (uuid) return uuid;
@@ -205,9 +224,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function disposeAll() {
         for (const id of Object.keys(_connections)) close(id);
         for (const listenerId of Object.keys(_availability)) cancelWatch(listenerId);
-        if (_receiverWatch) {
-            try { _receiverWatch.list.removeEventListener('connectionavailable', _receiverWatch.handler); } catch { /* already gone */ }
-            _receiverWatch = null;
-        }
+        _receiverToken++;   // invalidates a watchReceiver still awaiting connectionList
+        unwatchReceiver();
     }
 }(BitButil));
