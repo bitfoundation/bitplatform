@@ -3,14 +3,55 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     butil.utils = {
         arrayToBuffer,
-        dispatch
+        dispatch,
+        encodeMessage,
+        randomUUID
     };
+
+    // crypto.randomUUID is only exposed in a secure context, while crypto.getRandomValues is
+    // available everywhere - so an id generated here works on plain http too. It lives in utils
+    // rather than in the crypto module because every module that needs an id (dom, dataTransfer,
+    // windowMessaging, ...) would otherwise drag the whole crypto module in as a dependency.
+    function randomUUID(): string {
+        if (typeof crypto?.randomUUID === 'function') return crypto.randomUUID();
+
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+        bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10
+        const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+        return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    }
 
     function arrayToBuffer(array: Uint8Array) {
         if (!array) return undefined;
         // Slice covers exactly the [byteOffset, byteOffset + byteLength) range so that
         // a Uint8Array view over a larger buffer doesn't leak extra bytes.
         return array.buffer.slice(array.byteOffset, array.byteOffset + array.byteLength);
+    }
+
+    // Flattens whatever a structured-clone channel delivered - a worker, a MessagePort, another
+    // window - into the three values .NET's message DTOs are made of: [isBinary, json, bytes].
+    //
+    // Structured clone carries far more than JSON does (Map, Set, Date, cyclic graphs, ArrayBuffers),
+    // and none of the extra survives a trip through .NET's JSON interop. So the contract is drawn
+    // here, in one place, and stated in the C# docs: binary payloads stay binary, and everything
+    // else becomes JSON. Non-binary data is ALWAYS stringified, including a plain string, so that
+    // the .NET side can deserialize any message without first asking what shape it is.
+    function encodeMessage(data: any): [boolean, string | null, Uint8Array | null] {
+        if (data instanceof ArrayBuffer) return [true, null, new Uint8Array(data)];
+        if (ArrayBuffer.isView(data)) {
+            const view = data as ArrayBufferView;
+            return [true, null, new Uint8Array(view.buffer, view.byteOffset, view.byteLength)];
+        }
+
+        try {
+            return [false, JSON.stringify(data ?? null), null];
+        } catch {
+            // A cyclic graph, or a value JSON cannot represent (a function, a BigInt). Losing the
+            // message entirely would be worse than losing its shape.
+            return [false, JSON.stringify(String(data)), null];
+        }
     }
 
     // Fire-and-forget dispatch into a .NET [JSInvokable] callback. The returned promise is not

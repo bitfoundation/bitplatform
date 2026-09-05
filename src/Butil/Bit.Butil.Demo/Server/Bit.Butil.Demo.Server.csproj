@@ -37,6 +37,7 @@
     </EmbeddedResource>
 
     <EmbeddedResource Include="Program.cs" LogicalName="ButilSource/Demo/Server/Program.cs" />
+    <EmbeddedResource Include="Endpoints\WebSocketEcho.cs" LogicalName="ButilSource/Demo/Server/Endpoints/WebSocketEcho.cs" />
 
     <!-- The Components\ and wwwroot\ prefixes are written out: %(RecursiveDir) only captures what
          the '**' matched, so it starts below the folder and would drop the folder itself. -->
@@ -47,6 +48,18 @@
     <!-- The service worker the ServiceWorker, BackgroundSync and Push pages register against - the
          one piece of this demo that is neither C# nor Razor and that those APIs cannot work without. -->
     <EmbeddedResource Include="wwwroot\sw.js" LogicalName="ButilSource/Demo/Server/wwwroot/sw.js" />
+
+    <!-- Same reasoning for the worker scripts: a worker runs a script you supply, so these are the
+         other half of the Worker page and reading the C# without them explains nothing. -->
+    <EmbeddedResource Include="wwwroot\workers\*.js">
+      <LogicalName>ButilSource/Demo/Server/wwwroot/workers/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- And the embedded document the WindowMessaging page talks to: cross-document messaging needs
+         a second document, so this is the other half of that page. -->
+    <EmbeddedResource Include="wwwroot\frames\*.html">
+      <LogicalName>ButilSource/Demo/Server/wwwroot/frames/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
 
     <!-- The minimal hosting samples - standalone WebAssembly and Hybrid (MAUI). Their pages are
          left out on purpose: they are a smaller copy of this demo's pages, and the demo itself is

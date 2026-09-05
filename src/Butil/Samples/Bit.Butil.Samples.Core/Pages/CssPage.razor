@@ -1,0 +1,124 @@
+@page "/css"
+@implements IAsyncDisposable
+@inject Bit.Butil.Css css
+
+<PageTitle>Butil - Css Samples</PageTitle>
+
+<PageHeader Category="DOM"
+            Title="Css"
+            Lead="What an element is actually rendered with, what the browser understands, a stylesheet you can edit, and highlights painted over text without touching the DOM."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model" />
+
+<pre>
+@@inject Bit.Butil.Css css
+
+var values = await css.GetComputedStyle(_sample, ["color", "font-size"]);
+var grid = await css.Supports("display", "grid");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Computed, not inline" Api="GetComputedStyle"
+              Description="The element extensions read what an element was told; this reads what it actually is - after the cascade, inheritance, and relative units resolved into pixels.">
+        <button @onclick="ReadComputed">Read a few properties</button>
+        <div @ref="_sample" class="css-sample" style="margin-top:.75rem;padding:.75rem 1rem;border:1px solid #cbd5e1;border-radius:.5rem;font-size:1.05em">
+            A sample element.
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Ask the parser" Api="Supports / Escape"
+              Description="The honest way to feature-detect CSS. Escape is the other half: an id that starts with a digit or contains a dot is legal HTML and illegal in a selector without it.">
+        <div class="controls">
+            <button @onclick="CheckSupports">Supports</button>
+            <button @onclick="EscapeIt">Escape "1st.item"</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="A stylesheet, and a highlight" Api="CreateStyleSheet / HighlightText"
+              Description="Rules here reach the whole page through selectors. Highlighting paints over text rather than wrapping it in elements - so nothing in the DOM changes, and a Blazor diff is not disturbed.">
+        <div class="controls">
+            <input @bind="_search" placeholder="search" />
+            <button @onclick="Highlight">Highlight</button>
+            <button class="danger" @onclick="Clear">Clear</button>
+        </div>
+        <p @ref="_prose" style="margin-top:.75rem">
+            The Custom Highlight API paints ranges over text without adding a single element to the
+            document. Search this text for a word and the markup underneath stays exactly as it was.
+        </p>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="css output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference _sample;
+    private ElementReference _prose;
+    private StyleSheetHandle? _sheet;
+    private string _search = "text";
+
+    private async Task ReadComputed()
+    {
+        var values = await css.GetComputedStyle(_sample, ["color", "font-size", "padding-left", "border-radius"]);
+        if (values is null)
+        {
+            await output.Warn("GetComputedStyle returned null.");
+            return;
+        }
+
+        foreach (var (property, value) in values) await output.Success($"{property} →", value);
+    }
+
+    private async Task CheckSupports()
+    {
+        await output.Success("Supports(display, grid) →", await css.Supports("display", "grid"));
+        await output.Success("Supports(display, nonsense) →", await css.Supports("display", "not-a-real-value"));
+    }
+
+    private async Task EscapeIt()
+    {
+        var escaped = await css.Escape("1st.item");
+        await output.Success("Escape →", $"#{escaped} - usable in a selector, unlike #1st.item");
+    }
+
+    private async Task Highlight()
+    {
+        if (await css.IsHighlightAvailable() is false)
+        {
+            await output.Warn("This engine has no Custom Highlight API.");
+            return;
+        }
+
+        // Nothing is painted until a ::highlight() rule exists.
+        if (_sheet is null)
+        {
+            _sheet = await css.CreateStyleSheet();
+            if (_sheet is null)
+            {
+                await output.Warn("CreateStyleSheet returned null.");
+                return;
+            }
+
+            await _sheet.InsertRule("::highlight(butil-sample) { background: gold; color: black }");
+        }
+
+        var count = await css.HighlightText("butil-sample", _prose, _search);
+        await output.Success("HighlightText →", $"{count} occurrence(s), and not one element added");
+    }
+
+    private async Task Clear()
+    {
+        await css.ClearHighlight("butil-sample");
+        await output.Log("Cleared.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await css.ClearHighlight("butil-sample");
+            if (_sheet is not null) await _sheet.DisposeAsync();
+        }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}

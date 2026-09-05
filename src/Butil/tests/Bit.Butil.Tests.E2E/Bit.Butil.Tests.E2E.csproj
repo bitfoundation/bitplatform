@@ -22,6 +22,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- For WebSocketEchoFixture: the WebSocket tests need a real socket endpoint, and the sample
+         app under test is a standalone WebAssembly host with no server side to add one to. This is
+         the framework the repo already ships, not a new dependency to download. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
+    <!-- The echo protocol itself, compiled from the demo server's copy rather than restated here.
+         The suite asserts on this protocol and the demo page is what ships it, so two
+         implementations of it would drift and the tests would go on passing against the stale one. -->
+    <Compile Include="..\..\Bit.Butil.Demo\Server\Endpoints\WebSocketEcho.cs"
+             Link="Infrastructure\WebSocketEcho.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Playwright itself, without a per-framework integration package: the suite drives the browser
          from ButilHarnessTestBase rather than from a PageTest base class - see the comment there. -->
     <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />

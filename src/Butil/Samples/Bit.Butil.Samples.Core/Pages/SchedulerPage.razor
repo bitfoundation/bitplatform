@@ -1,0 +1,126 @@
+@page "/scheduler"
+@implements IAsyncDisposable
+@inject Bit.Butil.Scheduler scheduler
+
+<PageTitle>Butil - Scheduler Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Scheduler"
+            Lead="Animation frames, idle callbacks, prioritized tasks, and yielding so a long loop stops freezing the page."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Prioritized_Task_Scheduling_API" />
+
+<pre>
+@@inject Bit.Butil.Scheduler scheduler
+
+var loop = await scheduler.OnAnimationFrame(timestamp => { /* position from the timestamp */ });
+await loop.DisposeAsync();
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="A frame loop" Api="OnAnimationFrame"
+              Description="Runs at the browser's cadence, and stops entirely in a background tab. Drive motion from the timestamp, never from a count of frames - 60Hz and 120Hz displays deliver a different number of them.">
+        <div class="controls">
+            <button @onclick="StartLoop">Start</button>
+            <button class="danger" @onclick="StopLoop">Stop</button>
+        </div>
+        <div style="height:2.5rem;position:relative;margin-top:.75rem">
+            <div style="@($"position:absolute;left:{_offset.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}%;width:2rem;height:2rem;border-radius:.4rem;background:#6366f1")"></div>
+        </div>
+        <p style="margin-top:0.5rem"><span class="result-pill">@_frames frame(s)</span></p>
+    </DemoCard>
+
+    <DemoCard Title="Work in the gaps" Api="RequestIdleCallback"
+              Description="Runs when the browser has nothing better to do. Without a timeout, work on a page that is never idle never runs at all.">
+        <button @onclick="RunIdle">RequestIdleCallback</button>
+    </DemoCard>
+
+    <DemoCard Title="Letting the page breathe" Api="PostTask / Yield / IsInputPending"
+              Description="A long loop in C# freezes the page as thoroughly as one in JavaScript. Yield hands the thread back; IsInputPending is the cheap question about whether anyone is waiting.">
+        <div class="controls">
+            <button @onclick="RunBlocking">Run without yielding</button>
+            <button @onclick="RunYielding">Run yielding</button>
+            <button class="secondary" @onclick="() => _clicks++">Click me while it runs: @_clicks</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="scheduler output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ButilSubscription? _loop;
+    private double _offset;
+    private int _frames;
+    private int _clicks;
+
+    private async Task StartLoop()
+    {
+        await StopLoop();
+        _frames = 0;
+
+        _loop = await scheduler.OnAnimationFrame(timestamp => InvokeAsync(() =>
+        {
+            _frames++;
+            _offset = (Math.Sin(timestamp / 400) + 1) * 45;
+            StateHasChanged();
+        }));
+    }
+
+    private async Task StopLoop()
+    {
+        if (_loop is null) return;
+        await _loop.DisposeAsync();
+        _loop = null;
+        await output.Log($"Stopped after {_frames} frame(s).");
+    }
+
+    private async Task RunIdle()
+    {
+        var subscription = await scheduler.RequestIdleCallback(deadline => InvokeAsync(() =>
+            output.Success("Idle →", $"DidTimeout {deadline.DidTimeout}, {deadline.TimeRemaining:0.##}ms of slack")),
+            TimeSpan.FromSeconds(2));
+
+        if (subscription is null) await output.Warn("This engine has no requestIdleCallback.");
+    }
+
+    private async Task RunBlocking()
+    {
+        await output.Log("40 chunks without yielding - the counter will not respond.");
+        var started = DateTime.UtcNow;
+        for (var i = 0; i < 40; i++) Burn(10);
+        await output.Warn("Done →", $"{(DateTime.UtcNow - started).TotalMilliseconds:0}ms frozen");
+    }
+
+    private async Task RunYielding()
+    {
+        await output.Log("The same 40 chunks, yielding when input is waiting - keep clicking.");
+        var started = DateTime.UtcNow;
+        var yields = 0;
+
+        for (var i = 0; i < 40; i++)
+        {
+            Burn(10);
+            if (await scheduler.IsInputPending() || i % 10 == 0)
+            {
+                await scheduler.Yield();
+                yields++;
+            }
+        }
+
+        await output.Success("Done →", $"{(DateTime.UtcNow - started).TotalMilliseconds:0}ms, yielded {yields} time(s)");
+    }
+
+    /// <summary>Burns roughly <paramref name="milliseconds"/> of CPU, so there is real work to schedule around.</summary>
+    private static void Burn(int milliseconds)
+    {
+        var until = DateTime.UtcNow.AddMilliseconds(milliseconds);
+        while (DateTime.UtcNow < until) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { if (_loop is not null) await _loop.DisposeAsync(); }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}

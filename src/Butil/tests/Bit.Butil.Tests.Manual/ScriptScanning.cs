@@ -10,10 +10,12 @@ namespace ButilTests.Manual;
 /// <remarks>
 /// <see cref="ScriptTrimming"/> checks the trimmed publish's signal - the interop identifiers ILLink leaves
 /// behind - against <see cref="ScriptTrimming.MustSurviveModules"/>, the modules
-/// <see cref="ConsumerComponent"/>'s five injected services need. That list is this file's ground truth too,
-/// and that is the whole point: the map and the scan are meant to reach the same answer about the same code
-/// without ILLink having run, so the check that matters is that they do. If they ever diverge, an untrimmed
-/// consumer publishes a bundle missing JavaScript their app calls, and finds out in a browser.
+/// <see cref="ConsumerComponent"/>'s injected services call. This file's ground truth is
+/// <see cref="ScriptTrimming.ScanReachableModules"/>: the same set plus the two the reference closure reaches
+/// without the code calling them. That is the whole point - the map and the scan are meant to reach the same
+/// answer about the same code without ILLink having run, erring only towards <em>more</em>. If they ever
+/// diverge downwards, an untrimmed consumer publishes a bundle missing JavaScript their app calls, and finds
+/// out in a browser.
 /// <br/>
 /// Only run untrimmed. Everything here starts from the <em>untrimmed</em> Bit.Butil.dll - the map says which
 /// module each class needs, which is a question about the library as shipped, not about what survived one
@@ -76,7 +78,9 @@ internal static class ScriptScanning
 
     /// <summary>
     /// The check this file exists for: the map, asked about exactly the classes
-    /// <see cref="ConsumerComponent"/> injects, must answer what ILLink concludes about exactly that code.
+    /// <see cref="ConsumerComponent"/> injects, must answer what a reference closure over exactly that code
+    /// reaches - which is what ILLink concludes plus the two modules named in
+    /// <see cref="ScriptTrimming.ScanReachableModules"/>.
     /// </summary>
     /// <remarks>
     /// It is a real test of the closure and not a restatement of it. <c>LocalStorage</c> carries no interop
@@ -95,15 +99,15 @@ internal static class ScriptScanning
             foreach (var module in modules) actual.Add(module);
         }
 
-        Compare(checks, ScriptTrimming.MustSurviveModules, actual,
-            "the classes ConsumerComponent injects map to exactly the modules ILLink leaves in a trimmed build of them",
+        Compare(checks, ScriptTrimming.ScanReachableModules, actual,
+            "the classes ConsumerComponent injects map to exactly the modules a reference closure over them reaches",
             missing => $"the map does not lead from any injected class to [{missing}], so an untrimmed publish would drop JavaScript the app calls",
-            extra => $"the map leads to [{extra}], which trimming the same code does not keep - the closure is reaching further than the code does");
+            extra => $"the map leads to [{extra}], which nothing in this project reaches even by reference - the closure is following something it should not");
     }
 
     /// <summary>
-    /// The scan, over this harness's own assembly, has to reach the same set: it is the same five classes,
-    /// named the way a consumer's assembly names them.
+    /// The scan, over this harness's own assembly, has to reach the same set: it is the same classes, named
+    /// the way a consumer's assembly names them.
     /// </summary>
     private static void CheckScanFindsTheSameModules(ScriptBundling.Checks checks, ButilTypeModules map)
     {
@@ -113,10 +117,10 @@ internal static class ScriptScanning
         var references = ButilConsumerScan.Scan([self], map, ButilScanMode.TypeReferences);
         checks.That(references.Scanned.Count == 1, "an assembly that references Bit.Butil is recognised as one to read", $"{references.Scanned.Count} of 1 assemblies were read");
 
-        Compare(checks, ScriptTrimming.MustSurviveModules, references.Modules,
-            "TypeReferences over this assembly finds exactly the modules its Butil classes need",
+        Compare(checks, ScriptTrimming.ScanReachableModules, references.Modules,
+            "TypeReferences over this assembly finds exactly the modules its Butil classes reach",
             missing => $"the scan missed [{missing}] - an untrimmed publish of this app would ship a bundle without it",
-            extra => $"the scan added [{extra}], which nothing here calls");
+            extra => $"the scan added [{extra}], which nothing here reaches even by reference");
 
         // TypeNames matches on the bare name, so it cannot miss what TypeReferences found and may well find
         // more - that is the trade the mode exists to make, and the direction of it is what is asserted.

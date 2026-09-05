@@ -1,0 +1,560 @@
+@page "/worker"
+@using System.Text.Json.Serialization
+@implements IAsyncDisposable
+@inject Bit.Butil.Worker worker
+@inject Bit.Butil.MessageChannel messageChannel
+
+<PageTitle>Worker - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network &amp; Workers"
+            Title="Worker"
+            Lead="JavaScript on a thread of its own, so long work stops freezing the page - dedicated workers you own, shared workers every tab of the origin talks to, and the ports that carry the conversation."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Worker"
+            InjectAs="Worker worker" />
+
+<Callout Type="warning" Title="A worker runs a script you supply">
+    There is no second .NET runtime behind this. The URL you pass is fetched and run as JavaScript,
+    and the conversation with it is messages rather than method calls - which is why the payload
+    type is <code>ButilMessage</code> and not something typed. This page talks to
+    <a href="/workers/demo-worker.js" target="_blank" rel="noopener">demo-worker.js</a> and
+    <a href="/workers/demo-shared-worker.js" target="_blank" rel="noopener">demo-shared-worker.js</a>,
+    both served by the demo site. The script must be same-origin, or a <code>blob:</code> URL the
+    page made.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsSharedSupported"
+                 Description="Dedicated workers are supported everywhere. SharedWorker is not - shipping engines have dropped and re-added it, so check before relying on it. During prerender/SSR both checks return false rather than throwing, so defer them to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Worker worker
+
+var supported = await worker.IsSupported();
+var shared = await worker.IsSharedSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Start one and talk to it"
+                 Api="Create / PostMessage / ButilMessage"
+                 Description="A script that 404s or throws while loading does not fail Create - the constructor returns before the script has been fetched, so those arrive through onError instead. Messages are JSON in both directions: what survives is what System.Text.Json can write and JSON.parse can read, not a structured clone of a .NET object."
+                 Code=@("""
+private WorkerHandle? _worker;
+
+_worker = await worker.Create("/workers/demo-worker.js",
+    onMessage: m => InvokeAsync(() =>
+    {
+        // m.Json is always valid JSON - even a plain string arrives quoted
+        var reply = m.Deserialize<Reply>();
+        StateHasChanged();
+    }),
+    options: new WorkerOptions { Name = "butil-demo" },
+    onError: e => InvokeAsync(StateHasChanged));
+
+await _worker!.PostMessage(new { op = "echo", payload = "hello" });
+""")>
+        <div class="controls">
+            <button @onclick="StartWorker">Create</button>
+            <input @bind="_payload" placeholder="payload" aria-label="payload to echo" />
+            <button @onclick="EchoWorker">PostMessage(echo)</button>
+            <button class="danger" @onclick="TerminateWorker">Terminate</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Worker</span>
+            <span>@_workerState</span>
+        </div>
+        <DemoConsole @ref="workerOutput" Title="worker output" />
+    </DemoSection>
+
+    <DemoSection Title="The reason workers exist"
+                 Api="PostMessage"
+                 Description="The worker computes fib(n) with the naive recursion, which blocks its thread for seconds. Press the counter button while it runs: the page keeps counting. Run the same loop on the main thread and nothing would repaint until it finished."
+                 Code=@("""
+await _worker!.PostMessage(new { op = "fib", n = 38 });
+
+// the reply carries the value and how long the worker's thread was blocked
+""")>
+        <div class="controls">
+            <button @onclick="() => RunFib(38)">fib(38)</button>
+            <button @onclick="() => RunFib(42)">fib(42)</button>
+            <button class="secondary" @onclick="() => _clicks++">The page is still alive: @_clicks</button>
+        </div>
+        <DemoConsole @ref="cpuOutput" Title="offload output" />
+    </DemoSection>
+
+    <DemoSection Title="Binary, without a copy"
+                 Api="PostBytes"
+                 Description="Transferring moves the ArrayBuffer to the worker instead of copying it, which is why bytes rather than JSON is the right shape for anything large: a copy of a hundred megabytes costs a hundred megabytes and a transfer costs nothing. The demo worker increments each byte and transfers the buffer straight back."
+                 Code=@("""
+await _worker!.PostBytes([1, 2, 3, 4], transfer: true);
+
+// the reply is binary too: m.IsBinary is true and m.Data holds [2, 3, 4, 5]
+""")>
+        <div class="controls">
+            <button @onclick="SendBytes">PostBytes([1, 2, 3, 4])</button>
+        </div>
+        <DemoConsole @ref="binaryOutput" Title="binary output" />
+    </DemoSection>
+
+    <DemoSection Title="Errors do not stop a worker"
+                 Api="WorkerError"
+                 Description="An uncaught throw inside the worker reaches onError and the worker carries on answering messages. If that is not what you want, terminate it yourself. A cross-origin script is reported as the bare string 'Script error.' with no location - the browser withholds the detail rather than leak it."
+                 Code=@("""
+onError: e => { /* e.Message, e.FileName, e.LineNumber, e.ColumnNumber */ }
+
+await _worker!.PostMessage(new { op = "throw" });
+// ... and then this still works:
+await _worker.PostMessage(new { op = "echo", payload = "still here" });
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="MakeItThrow">Make it throw</button>
+            <button class="secondary" @onclick="EchoWorker">Then echo again</button>
+        </div>
+        <DemoConsole @ref="errorOutput" Title="error output" />
+    </DemoSection>
+
+    <DemoSection Title="Handing the worker a private line"
+                 Api="PostWithPorts / MessagePortHandle"
+                 Description="A channel has two ends. Give one to the worker and keep the other, and the two of them talk directly - the code that brokered the introduction is not part of the conversation. Ports are transferred rather than copied: once sent, the handle on this side stops working, which is what makes the line private."
+                 Code=@("""
+var channel = await messageChannel.Create();
+await channel!.Port2.OnMessage(m => InvokeAsync(StateHasChanged));
+await channel.Port2.Start();
+
+// Port1 goes to the worker - and stops working here
+await _worker!.PostWithPorts(new { op = "takePort" }, [channel.Port1]);
+
+await channel.Port2.PostMessage(new { hello = "worker" });
+""")>
+        <div class="controls">
+            <button @onclick="GiveWorkerAPort">Create a channel and hand one end over</button>
+            <button class="secondary" @onclick="SendOverPort">Send over the port</button>
+        </div>
+        <DemoConsole @ref="portOutput" Title="port output" />
+    </DemoSection>
+
+    <DemoSection Title="One worker, every tab"
+                 Api="CreateShared / SharedWorkerHandle"
+                 Description="A shared worker is one instance for every page of the origin naming the same script and name - so the name is part of its identity here rather than being cosmetic. Everything goes through its Port, which delivers nothing until Start is called. No page can terminate it for the others: disposing drops this page's connection, and the worker ends when the last one goes. Open this page in a second tab to see the connection count."
+                 Code=@("""
+var shared = await worker.CreateShared("/workers/demo-shared-worker.js",
+    new WorkerOptions { Name = "butil-demo-shared" });
+
+await shared!.Port.OnMessage(m => InvokeAsync(StateHasChanged));
+await shared.Port.Start();
+
+await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other tabs" });
+""")>
+        <div class="controls">
+            <button @onclick="ConnectShared">Connect</button>
+            <button class="secondary" @onclick="CountShared">How many tabs?</button>
+            <input @bind="_broadcast" placeholder="broadcast" aria-label="text to broadcast" />
+            <button @onclick="BroadcastShared">Broadcast</button>
+            <button class="danger" @onclick="DisconnectShared">Disconnect</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_sharedState</span>
+        </div>
+        <DemoConsole @ref="sharedOutput" Title="shared worker output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Terminate is not a shutdown">
+    <code>Terminate</code> stops the worker mid-statement. Nothing inside it gets a chance to run, so
+    if it holds something that needs closing, tell it to close it and wait for the reply first. As a
+    safety net the <code>Worker</code> service terminates any dedicated worker left behind when its
+    scope is torn down.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes Worker. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsSharedSupported"
+               Signature="ValueTask<bool> IsSharedSupported()"
+               Description="True when the runtime exposes SharedWorker, which is not universal." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<WorkerHandle?> Create(string scriptUrl, Action<ButilMessage> onMessage, WorkerOptions? options = null, Action<WorkerError>? onError = null)"
+               Description="Starts a dedicated worker. Null when Worker is missing or the URL was refused. A script that 404s or throws surfaces through onError instead." />
+    <ApiMember Name="CreateShared"
+               Signature="ValueTask<SharedWorkerHandle?> CreateShared(string scriptUrl, WorkerOptions? options = null)"
+               Description="Connects to a shared worker, starting it if this is the first page to ask. Script URL and name together decide which worker that is." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, terminates any dedicated worker whose handle was never disposed." />
+    <ApiMember Name="WorkerHandle.PostMessage"
+               Signature="ValueTask<bool> PostMessage<T>(T value, JsonSerializerOptions? options = null)"
+               Description="Posts a message as JSON. False when the worker has been terminated." />
+    <ApiMember Name="WorkerHandle.PostBytes"
+               Signature="ValueTask<bool> PostBytes(byte[] data, bool transfer = true)"
+               Description="Posts raw bytes. Transferring moves the buffer to the worker instead of copying it." />
+    <ApiMember Name="WorkerHandle.PostWithPorts"
+               Signature="ValueTask<bool> PostWithPorts<T>(T value, MessagePortHandle[] ports, JsonSerializerOptions? options = null)"
+               Description="Posts a message that hands ports to the worker. The ports are transferred, so the handles passed here stop working." />
+    <ApiMember Name="WorkerHandle.Terminate"
+               Signature="ValueTask Terminate()"
+               Description="Stops the worker immediately, mid-statement. Idempotent." />
+    <ApiMember Name="SharedWorkerHandle.Port"
+               Signature="MessagePortHandle Port"
+               Description="The port this page talks to the worker over. Delivers nothing until Start is called." />
+    <ApiMember Name="SharedWorkerHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Drops this page's connection. The worker lives on for whoever else is connected." />
+    <ApiMember Name="WorkerOptions"
+               Signature="class { string? Name; bool Module; string? Credentials; }"
+               Description="Name (part of a shared worker's identity), Module to run the script as an ES module, and Credentials for a module script's fetch." />
+    <ApiMember Name="WorkerError"
+               Signature="record (string Message, string FileName, int LineNumber, int ColumnNumber)"
+               Description="An uncaught failure inside the worker. A cross-origin script is reported as 'Script error.' with no location." />
+    <ApiMember Name="ButilMessage"
+               Signature="record (bool IsBinary, string? Json, byte[]? Data) { T? Deserialize<T>() }"
+               Description="One message. Binary payloads stay binary; everything else is JSON - always valid JSON, so a plain string arrives quoted." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole workerOutput = default!;
+    private DemoConsole cpuOutput = default!;
+    private DemoConsole binaryOutput = default!;
+    private DemoConsole errorOutput = default!;
+    private DemoConsole portOutput = default!;
+    private DemoConsole sharedOutput = default!;
+
+    private WorkerHandle? _worker;
+    private string _workerState = "Not started.";
+    private string _payload = "hello";
+    private int _clicks;
+
+    private MessageChannelHandle? _channel;
+    private ButilSubscription? _portSubscription;
+    private bool _portHandedOver;
+
+    private SharedWorkerHandle? _shared;
+    private ButilSubscription? _sharedSubscription;
+    private string _sharedState = "Not connected.";
+    private string _broadcast = "hello, other tabs";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await worker.IsSupported());
+            await supportOutput.Success("IsSharedSupported →", await worker.IsSharedSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task StartWorker()
+    {
+        await TerminateWorker();
+
+        try
+        {
+            _worker = await worker.Create("/workers/demo-worker.js",
+                onMessage: m => InvokeAsync(async () =>
+                {
+                    if (m.IsBinary)
+                    {
+                        await binaryOutput.Success("Binary reply →", $"[{string.Join(", ", m.Data ?? [])}]");
+                    }
+                    else
+                    {
+                        await Route(m);
+                    }
+                    StateHasChanged();
+                }),
+                options: new WorkerOptions { Name = "butil-demo" },
+                onError: e => InvokeAsync(async () =>
+                {
+                    await errorOutput.Error("onError →", $"{e.Message} ({e.FileName}:{e.LineNumber}:{e.ColumnNumber})");
+                }));
+
+            if (_worker is null)
+            {
+                _workerState = "Could not start.";
+                await workerOutput.Warn("Create returned null - Worker is unavailable, or the script URL was refused.");
+                return;
+            }
+
+            _workerState = "Running.";
+            await workerOutput.Success("Create → /workers/demo-worker.js");
+        }
+        catch (Exception ex)
+        {
+            await workerOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// The demo worker tags every reply with an <c>op</c>, so one message callback can feed the
+    /// section that asked for it rather than every section sharing one console.
+    /// </summary>
+    private async Task Route(ButilMessage message)
+    {
+        // Read as JSON rather than searched as text: an echoed payload containing the word "fib" is
+        // not a fib reply, and the tag is the one thing the worker promises to put in every message.
+        string? op;
+        try
+        {
+            op = message.Deserialize<WorkerReply>()?.Op;
+        }
+        catch (JsonException)
+        {
+            op = null;
+        }
+
+        var console = op switch
+        {
+            "fib" => cpuOutput,
+            "tookPort" => portOutput,
+            _ => workerOutput
+        };
+
+        await console.Success("Worker →", message.Json);
+    }
+
+    /// <summary>Just the routing tag - the rest of each reply is shown as the JSON it arrived as.</summary>
+    private sealed record WorkerReply
+    {
+        [JsonPropertyName("op")]
+        public string? Op { get; init; }
+    }
+
+    private async Task EchoWorker()
+    {
+        if (await RequireWorker(workerOutput) is false) return;
+
+        try
+        {
+            var sent = await _worker!.PostMessage(new { op = "echo", payload = _payload });
+            if (sent is false) await workerOutput.Warn("PostMessage returned false - the worker has been terminated.");
+        }
+        catch (Exception ex)
+        {
+            await workerOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task RunFib(int n)
+    {
+        if (await RequireWorker(cpuOutput) is false) return;
+
+        try
+        {
+            await cpuOutput.Log($"Asked the worker for fib({n}) - keep clicking the counter.");
+            await _worker!.PostMessage(new { op = "fib", n });
+        }
+        catch (Exception ex)
+        {
+            await cpuOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task SendBytes()
+    {
+        if (await RequireWorker(binaryOutput) is false) return;
+
+        try
+        {
+            await _worker!.PostBytes([1, 2, 3, 4]);
+            await binaryOutput.Log("PostBytes([1, 2, 3, 4]) - transferred, not copied.");
+        }
+        catch (Exception ex)
+        {
+            await binaryOutput.Error("PostBytes failed →", ex.Message);
+        }
+    }
+
+    private async Task MakeItThrow()
+    {
+        if (await RequireWorker(errorOutput) is false) return;
+
+        try
+        {
+            await _worker!.PostMessage(new { op = "throw" });
+            await errorOutput.Log("Asked the worker to throw - it stays alive afterwards.");
+        }
+        catch (Exception ex)
+        {
+            await errorOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task GiveWorkerAPort()
+    {
+        if (await RequireWorker(portOutput) is false) return;
+
+        try
+        {
+            await DisposeChannel();
+
+            _channel = await messageChannel.Create();
+            if (_channel is null)
+            {
+                await portOutput.Warn("Create returned null - the runtime has no MessageChannel.");
+                return;
+            }
+
+            _portSubscription = await _channel.Port2.OnMessage(m => InvokeAsync(async () =>
+            {
+                await portOutput.Success("Over the port →", m.Json);
+            }));
+            await _channel.Port2.Start();
+
+            var sent = await _worker!.PostWithPorts(new { op = "takePort" }, [_channel.Port1]);
+            _portHandedOver = sent;
+
+            if (sent) await portOutput.Success("Port1 transferred to the worker - it no longer works on this side.");
+            else await portOutput.Warn("PostWithPorts returned false - the worker is gone, or the port was already released.");
+        }
+        catch (Exception ex)
+        {
+            await portOutput.Error("PostWithPorts failed →", ex.Message);
+        }
+    }
+
+    private async Task SendOverPort()
+    {
+        if (_channel is null || _portHandedOver is false)
+        {
+            await portOutput.Warn("Hand a port over first.");
+            return;
+        }
+
+        try
+        {
+            await _channel.Port2.PostMessage(new { hello = "worker", at = DateTime.Now.ToString("HH:mm:ss") });
+        }
+        catch (Exception ex)
+        {
+            await portOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task ConnectShared()
+    {
+        await DisconnectShared();
+
+        try
+        {
+            _shared = await worker.CreateShared("/workers/demo-shared-worker.js",
+                new WorkerOptions { Name = "butil-demo-shared" });
+
+            if (_shared is null)
+            {
+                _sharedState = "Unavailable.";
+                await sharedOutput.Warn("CreateShared returned null - this engine has no SharedWorker, or the URL was refused.");
+                return;
+            }
+
+            _sharedSubscription = await _shared.Port.OnMessage(m => InvokeAsync(async () =>
+            {
+                await sharedOutput.Success("Shared worker →", m.Json);
+            }));
+
+            // Nothing arrives until the port is started; the welcome message is queued until then.
+            await _shared.Port.Start();
+
+            _sharedState = "Connected.";
+            await sharedOutput.Success("Connected to the shared worker.");
+        }
+        catch (Exception ex)
+        {
+            await sharedOutput.Error("CreateShared failed →", ex.Message);
+        }
+    }
+
+    private async Task CountShared()
+    {
+        if (_shared is null)
+        {
+            await sharedOutput.Warn("Connect first.");
+            return;
+        }
+
+        await _shared.Port.PostMessage(new { op = "count" });
+    }
+
+    private async Task BroadcastShared()
+    {
+        if (_shared is null)
+        {
+            await sharedOutput.Warn("Connect first.");
+            return;
+        }
+
+        await _shared.Port.PostMessage(new { op = "broadcast", payload = _broadcast });
+    }
+
+    private async Task DisconnectShared()
+    {
+        // A shared worker is never told that a page has gone: say so before the port closes, or it
+        // keeps counting a connection nobody is holding.
+        if (_shared is not null) await _shared.Port.PostMessage(new { op = "disconnect" });
+
+        if (_sharedSubscription is not null)
+        {
+            await _sharedSubscription.DisposeAsync();
+            _sharedSubscription = null;
+        }
+
+        if (_shared is null) return;
+
+        await _shared.DisposeAsync();
+        _shared = null;
+        _sharedState = "Disconnected - the worker lives on for any other tab.";
+    }
+
+    private async Task<bool> RequireWorker(DemoConsole console)
+    {
+        if (_worker is not null) return true;
+        await console.Warn("Create the worker first.");
+        return false;
+    }
+
+    private async Task TerminateWorker()
+    {
+        await DisposeChannel();
+
+        if (_worker is null) return;
+
+        await _worker.Terminate();
+        _worker = null;
+        _workerState = "Terminated.";
+    }
+
+    private async Task DisposeChannel()
+    {
+        if (_portSubscription is not null)
+        {
+            await _portSubscription.DisposeAsync();
+            _portSubscription = null;
+        }
+
+        if (_channel is null) return;
+
+        await _channel.DisposeAsync();
+        _channel = null;
+        _portHandedOver = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await TerminateWorker();
+            await DisconnectShared();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}
