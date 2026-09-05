@@ -80,7 +80,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         try { request = build(methods, details, options); }
         catch { return null; }
 
-        _requests[id] = request;
+        // The handle is per .NET instance and the services are scoped, so two components sharing one
+        // instance can overlap even though the sheet is modal. The second show() rejects at once, so
+        // it must neither evict the first, still-open sheet's request nor delete it on the way out -
+        // abort() has to keep reaching the sheet that is actually up.
+        if (_requests[id] === undefined) _requests[id] = request;
+
         try {
             const response = await request.show();
             const responseId = newId();
@@ -102,7 +107,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // without a gesture - all of them "no payment", which is what null says.
             return null;
         } finally {
-            delete _requests[id];
+            if (_requests[id] === request) delete _requests[id];
         }
     }
 

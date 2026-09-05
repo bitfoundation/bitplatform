@@ -103,6 +103,11 @@ if (code is not null)
 
     private async Task Receive()
     {
+        // Raised before the first await: Blazor renders when the handler yields and again when it
+        // returns, so a flag set after the first await leaves the Abort button disabled for the
+        // whole wait - the very wait that button exists to end.
+        _waiting = true;
+
         try
         {
             if (!await webOtp.IsSupported())
@@ -111,7 +116,6 @@ if (code is not null)
                 return;
             }
 
-            _waiting = true;
             await receiveOutput.Info("Receive →", "waiting for an SMS ending in \"@" + "this origin #code\"...");
 
             var timeout = _timeoutSeconds > 0 ? TimeSpan.FromSeconds(_timeoutSeconds) : (TimeSpan?)null;
