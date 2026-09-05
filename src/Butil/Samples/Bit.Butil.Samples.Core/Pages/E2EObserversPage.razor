@@ -19,6 +19,15 @@
 @inject Bit.Butil.Location butilLocation
 @inject Bit.Butil.Document butilDocument
 @inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.MediaCapabilities mediaCapabilities
+@inject Bit.Butil.MediaSource mediaSource
+@inject Bit.Butil.WebCodecs webCodecs
+@inject Bit.Butil.WebAudio webAudio
+@inject Bit.Butil.EncryptedMedia encryptedMedia
+@inject Bit.Butil.DocumentPictureInPicture documentPictureInPicture
+@inject Bit.Butil.RemotePlayback remotePlayback
+@inject Bit.Butil.Presentation presentation
+@inject Bit.Butil.WebXr webXr
 @inject IJSRuntime js
 
 @*
@@ -105,9 +114,26 @@
     <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
 </section>
 
+<section>
+    @* The media APIs that can be exercised without a prompt, a device or a network fetch. The
+       video element below is the attachment point for the MediaSource check; it stays muted and
+       is never played, so nothing here needs an autoplay gesture. *@
+    <h3>Media</h3>
+    <video id="media-target" @ref="_mediaTarget" muted preload="auto" width="80" height="60"></video>
+    <button id="mediacaps-decoding" @onclick="MediaCapabilitiesDecoding">mediaCapabilities.decodingInfo</button>
+    <button id="mediasource-types" @onclick="MediaSourceTypes">mediaSource.isTypeSupported</button>
+    <button id="mediasource-open" @onclick="MediaSourceOpen">mediaSource.open + addSourceBuffer</button>
+    <button id="webcodecs-roundtrip" @onclick="WebCodecsRoundTrip">webCodecs encode + decode</button>
+    <button id="webaudio-graph" @onclick="WebAudioGraph">webAudio graph + analyser</button>
+    <button id="webaudio-decode" @onclick="WebAudioDecode">webAudio.decodeAudioData</button>
+    <button id="eme-clearkey" @onclick="EmeClearKey">encryptedMedia clear key</button>
+    <button id="media-support" @onclick="MediaSupport">support probes</button>
+</section>
+
 @code {
     private string _status = "ready";
     private ElementReference _target;
+    private ElementReference _mediaTarget;
 
     private ButilSubscription? _intersectionSub;
     private ButilSubscription? _resizeSub;
@@ -621,6 +647,256 @@
         public int Id { get; set; }
         public string Group { get; set; } = "";
         public string Text { get; set; } = "";
+    }
+
+    // ─── Media ───────────────────────────────────────────────────────────────────
+    private async Task MediaCapabilitiesDecoding()
+    {
+        // VP8 in WebM at a modest size: the one combination every Chromium build can decode, so the
+        // answer is deterministic in a headless run.
+        var info = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+        {
+            Type = MediaDecodingType.MediaSource,
+            Video = new VideoConfiguration
+            {
+                ContentType = "video/webm;codecs=vp8",
+                Width = 640,
+                Height = 360,
+                Bitrate = 800_000,
+                Framerate = 30
+            }
+        });
+
+        // Opus in WebM, with the Boolean spatial-rendering member set: as universally decodable as
+        // VP8, and the one query that carries AudioConfiguration.SpatialRendering over the boundary.
+        var audio = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+        {
+            Type = MediaDecodingType.MediaSource,
+            Audio = new AudioConfiguration
+            {
+                ContentType = "audio/webm;codecs=opus",
+                Channels = "2",
+                Samplerate = 48000,
+                SpatialRendering = false
+            }
+        });
+
+        Set($"mediacaps:decoding:{info is not null}/{info?.Supported}/{audio is not null}/{audio?.Supported}");
+    }
+
+    private async Task MediaSourceTypes()
+    {
+        var supported = await mediaSource.IsSupported();
+        var typeOk = await mediaSource.IsTypeSupported("video/webm;codecs=\"vp8\"");
+        Set($"mediasource:types:{supported}/{typeOk}");
+    }
+
+    private async Task MediaSourceOpen()
+    {
+        await using var source = await mediaSource.Open(_mediaTarget);
+        if (source is null)
+        {
+            Set("mediasource:open:null/False");
+            return;
+        }
+
+        var buffer = await source.AddSourceBuffer("video/webm;codecs=\"vp8\"");
+        var state = await source.GetReadyState();
+        var buffered = buffer is null ? 0 : (await buffer.GetBuffered()).Length;
+        if (buffer is not null) await buffer.DisposeAsync();
+
+        // Open, a buffer created, and nothing buffered yet because nothing has been appended.
+        Set($"mediasource:open:{state}/{buffer is not null}/{buffered}");
+    }
+
+    private async Task WebCodecsRoundTrip()
+    {
+        var config = new VideoEncoderConfig { Codec = "vp8", Width = 64, Height = 48, Bitrate = 100_000, Framerate = 10 };
+        if (await webCodecs.IsConfigSupported(config) is false)
+        {
+            Set("webcodecs:roundtrip:unsupported");
+            return;
+        }
+
+        var chunks = new List<EncodedVideoChunk>();
+        var encoder = await webCodecs.CreateVideoEncoder(config, chunk => chunks.Add(chunk));
+        if (encoder is null)
+        {
+            Set("webcodecs:roundtrip:no-encoder");
+            return;
+        }
+
+        await using (encoder)
+        {
+            var pixels = new byte[64 * 48 * 4];
+            for (var i = 0; i < pixels.Length; i++) pixels[i] = (byte)(i % 251);
+
+            await using var frame = await webCodecs.CreateFrame(pixels, "RGBA", 64, 48, 0);
+            await encoder.Encode(frame!, keyFrame: true);
+            await encoder.Flush();
+        }
+
+        var frames = 0;
+        var decoder = await webCodecs.CreateVideoDecoder(
+            new VideoDecoderConfig { Codec = "vp8", CodedWidth = 64, CodedHeight = 48, Description = chunks.FirstOrDefault()?.DecoderDescription },
+            async decoded => { frames++; await decoded.DisposeAsync(); });
+
+        if (decoder is null)
+        {
+            Set($"webcodecs:roundtrip:{chunks.Count > 0}/no-decoder");
+            return;
+        }
+
+        await using (decoder)
+        {
+            foreach (var chunk in chunks) await decoder.Decode(chunk);
+            await decoder.Flush();
+        }
+
+        Set($"webcodecs:roundtrip:{chunks.Count > 0}/{frames > 0}");
+    }
+
+    private async Task WebAudioGraph()
+    {
+        // An analyser reports its buffer even while the context is suspended, so this needs no
+        // autoplay gesture - which is what makes it safe in a headless run.
+        var oscillator = await webAudio.CreateOscillator(AudioOscillatorType.Sine, 440);
+        var analyser = await webAudio.CreateAnalyser(fftSize: 512);
+        if (oscillator is null || analyser is null)
+        {
+            Set("webaudio:graph:null");
+            return;
+        }
+
+        await oscillator.Connect(analyser);
+        await analyser.ConnectToDestination();
+
+        var wave = await analyser.GetByteTimeDomainData();
+        var spectrum = await analyser.GetByteFrequencyData();
+        var rate = await webAudio.GetSampleRate();
+
+        await analyser.DisposeAsync();
+        await oscillator.DisposeAsync();
+
+        Set($"webaudio:graph:{wave?.Length}/{spectrum?.Length}/{rate > 0}");
+    }
+
+    private async Task WebAudioDecode()
+    {
+        await using var buffer = await webAudio.DecodeAudioData(BuildWav());
+        if (buffer is null)
+        {
+            Set("webaudio:decode:null");
+            return;
+        }
+
+        Set($"webaudio:decode:{buffer.NumberOfChannels}/{buffer.Duration > 0.4 && buffer.Duration < 0.6}");
+    }
+
+    private async Task EmeClearKey()
+    {
+        // Clear Key is the key system every engine has, and its licence is a JSON document this page
+        // can produce itself - so the whole exchange runs with no server and no user interaction.
+        var keyId = new byte[] { 0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x70, 0x81, 0x92, 0xa3, 0xb4, 0xc5, 0xd6, 0xe7, 0xf8, 0x09 };
+        var key = new byte[] { 0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x87, 0x96, 0xa5, 0xb4, 0xc3, 0xd2, 0xe1, 0xf0 };
+
+        await using var keys = await encryptedMedia.CreateMediaKeys("org.w3.clearkey", new MediaKeySystemConfiguration
+        {
+            InitDataTypes = ["keyids"],
+            VideoCapabilities = [new MediaKeySystemMediaCapability { ContentType = "video/webm;codecs=\"vp8\"" }]
+        });
+
+        if (keys is null)
+        {
+            Set("eme:clearkey:no-keys");
+            return;
+        }
+
+        var licensed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        MediaKeySessionHandle? session = null;
+        session = await keys.CreateSession(
+            onMessage: async message =>
+            {
+                var licence = System.Text.Encoding.UTF8.GetBytes(
+                    $$"""{"keys":[{"kty":"oct","kid":"{{Base64Url(keyId)}}","k":"{{Base64Url(key)}}"}],"type":"temporary"}""");
+                await session!.Update(licence);
+            },
+            // Only a usable key settles it: an earlier status change carrying no usable key is a
+            // step on the way, not a verdict, and completing on it would lock in a false negative.
+            onKeyStatusesChange: statuses =>
+            {
+                if (statuses.Any(s => s.Status == MediaKeyStatus.Usable)) licensed.TrySetResult(true);
+            });
+
+        if (session is null)
+        {
+            Set("eme:clearkey:no-session");
+            return;
+        }
+
+        await using (session)
+        {
+            var requested = await session.GenerateRequest("keyids",
+                System.Text.Encoding.UTF8.GetBytes($$"""{"kids":["{{Base64Url(keyId)}}"]}"""));
+
+            var usable = await Task.WhenAny(licensed.Task, Task.Delay(5000)) == licensed.Task && licensed.Task.Result;
+            Set($"eme:clearkey:{requested}/{usable}");
+        }
+    }
+
+    private async Task MediaSupport()
+    {
+        // Support probes for the APIs whose answer depends on the engine: what matters here is that
+        // every call completes and reports something, not which way it goes.
+        var docPip = await documentPictureInPicture.IsSupported();
+        var remote = await remotePlayback.IsSupported();
+        var present = await presentation.IsSupported();
+        var xr = await webXr.IsSupported();
+        var inlineXr = await webXr.IsSessionSupported(XrSessionMode.Inline);
+        var eme = await encryptedMedia.IsSupported();
+        var codecs = await webCodecs.IsSupported();
+        var caps = await mediaCapabilities.IsSupported();
+
+        Set($"media:support:{docPip}/{remote}/{present}/{xr}/{inlineXr}/{eme}/{codecs}/{caps}");
+    }
+
+    private static string Base64Url(byte[] value)
+        => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    /// <summary>Half a second of 8-bit mono silence-ish tone as a wav, for the decode check.</summary>
+    private static byte[] BuildWav()
+    {
+        const int sampleRate = 8000;
+        const int samples = sampleRate / 2;
+        var data = new byte[44 + samples];
+
+        void WriteAscii(int offset, string text)
+        {
+            for (var i = 0; i < text.Length; i++) data[offset + i] = (byte)text[i];
+        }
+
+        void WriteInt32(int offset, int value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+        void WriteInt16(int offset, short value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+
+        WriteAscii(0, "RIFF");
+        WriteInt32(4, 36 + samples);
+        WriteAscii(8, "WAVEfmt ");
+        WriteInt32(16, 16);
+        WriteInt16(20, 1);
+        WriteInt16(22, 1);
+        WriteInt32(24, sampleRate);
+        WriteInt32(28, sampleRate);
+        WriteInt16(32, 1);
+        WriteInt16(34, 8);
+        WriteAscii(36, "data");
+        WriteInt32(40, samples);
+
+        for (var i = 0; i < samples; i++)
+        {
+            data[44 + i] = (byte)(128 + Math.Sin(2 * Math.PI * 440 * i / sampleRate) * 30);
+        }
+
+        return data;
     }
 
     public async ValueTask DisposeAsync()

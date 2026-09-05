@@ -177,8 +177,9 @@ await using var session = await speechRecognition.Start(
                 }),
                 onEnd: () => _ = InvokeAsync(async () =>
                 {
-                    recognizing = false;
-                    recognitionHandle = null;
+                    // The engine stopped on its own, but the service still holds this session's listener
+                    // entry - dropping the handle without disposing would orphan it for good.
+                    await StopRecognitionInternal();
                     await sessionOutput.Info("Recognition ended.");
                 }));
 

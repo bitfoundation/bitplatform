@@ -48,6 +48,11 @@
          one piece of this demo that is neither C# nor Razor and that those APIs cannot work without. -->
     <EmbeddedResource Include="wwwroot\sw.js" LogicalName="ButilSource/Demo/Server/wwwroot/sw.js" />
 
+    <!-- Same reasoning for the AudioWorklet processor the WebAudio page loads: a worklet processor
+         has to be a JavaScript file (it runs on the audio thread), so it is the other piece of this
+         demo that its API cannot be shown without. -->
+    <EmbeddedResource Include="wwwroot\js\butil-gain-processor.js" LogicalName="ButilSource/Demo/Server/wwwroot/js/butil-gain-processor.js" />
+
     <!-- The minimal hosting samples - standalone WebAssembly and Hybrid (MAUI). Their pages are
          left out on purpose: they are a smaller copy of this demo's pages, and the demo itself is
          embedded above. The shared service registration is the exception - it is the piece the

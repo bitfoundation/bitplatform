@@ -104,6 +104,7 @@ registering everything.
 | `MutationObserver` | DOM tree, attribute and character-data mutations |
 | `ResizeObserver` | Element size changes with box-model detail |
 | `PictureInPicture` | Float a `<video>` in an always-on-top window |
+| `DocumentPictureInPicture` | Put arbitrary DOM in an always-on-top window - not just a video |
 | `ViewTransition` | Animate between two states of the page, the browser doing the work |
 | Media element extensions | Play, pause, seek, volume and rate on any `<audio>`/`<video>` |
 
@@ -173,9 +174,16 @@ registering everything.
 | --- | --- |
 | `SpeechSynthesis` | Text-to-speech with voices, pitch and rate |
 | `SpeechRecognition` | Speech-to-text with interim results and events |
-| `WebAudio` | Play and control audio buffers |
+| `WebAudio` | The Web Audio graph: buffers, oscillators, filters, analysers, reverb, spatial panning and worklets |
 | `MediaRecorder` | Record a camera, microphone or screen share to a file |
 | `MediaSession` | Lock-screen metadata and hardware media-key handlers |
+| `MediaSource` | Media Source Extensions: feed a media element with segments you fetched yourself |
+| `MediaCapabilities` | Whether a codec will decode smoothly and power-efficiently, before you commit to it |
+| `EncryptedMedia` | DRM playback: key systems, key sessions and licence exchange |
+| `WebCodecs` | The browser's own codecs, frame by frame - no element, no container |
+| `RemotePlayback` | Hand a media element to a TV, a speaker or a cast receiver |
+| `Presentation` | Open one of your own pages on a second display, with a message channel to it |
+| `WebXr` | VR and AR sessions: lifecycle, poses, controllers and input |
 
 ---
 

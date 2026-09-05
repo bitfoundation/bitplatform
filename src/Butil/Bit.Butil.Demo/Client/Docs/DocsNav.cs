@@ -46,6 +46,7 @@ public static class DocsNav
             new("Animation", "animation", "Run and control Web Animations on any element, straight from C#.", typeof(AnimationPage), ApiSupport.Broad, ApiNeeds.None,
                 ["ElementReferenceAnimationExtensions", "AnimationHandle"]),
             new("PictureInPicture", "picture-in-picture", "Float a video in an always-on-top window outside the page.", typeof(PictureInPicturePage), ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("DocumentPictureInPicture", "document-picture-in-picture", "Put arbitrary DOM - custom controls, a live chart - in an always-on-top window.", typeof(DocumentPictureInPicturePage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
             new("ViewTransition", "view-transition", "Let the browser animate between two states of the page.", typeof(ViewTransitionPage), ApiSupport.Partial),
             new("Keyboard", "keyboard", "App-wide keyboard shortcuts with modifier support.", typeof(KeyboardPage)),
             new("IntersectionObserver", "intersection-observer", "Observe element visibility inside the viewport or a scroll container.", typeof(IntersectionObserverPage), ApiSupport.Broad, ApiNeeds.None,
@@ -113,6 +114,13 @@ public static class DocsNav
             new("WebAudio", "web-audio", "Play and control audio buffers with the Web Audio API.", typeof(WebAudioPage), ApiSupport.Broad, ApiNeeds.UserGesture),
             new("MediaRecorder", "media-recorder", "Record a camera, microphone or screen share to a file.", typeof(MediaRecorderPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
             new("MediaSession", "media-session", "Lock-screen metadata and hardware media-key handlers.", typeof(MediaSessionPage), ApiSupport.Partial),
+            new("MediaSource", "media-source", "Media Source Extensions: feed a video element with segments you fetched yourself.", typeof(MediaSourcePage)),
+            new("MediaCapabilities", "media-capabilities", "Will this codec play smoothly, and on hardware? Ask before committing to it.", typeof(MediaCapabilitiesPage), ApiSupport.Partial),
+            new("EncryptedMedia", "encrypted-media", "DRM playback: key systems, key sessions, and licence requests.", typeof(EncryptedMediaPage), ApiSupport.Broad, ApiNeeds.SecureContext),
+            new("WebCodecs", "web-codecs", "The browser's own codecs, frame by frame - no element, no container.", typeof(WebCodecsPage), ApiSupport.Partial, ApiNeeds.SecureContext),
+            new("RemotePlayback", "remote-playback", "Hand a media element to a TV, a speaker or a cast receiver.", typeof(RemotePlaybackPage), ApiSupport.Partial, ApiNeeds.UserGesture),
+            new("Presentation", "presentation", "Open one of your own pages on a second display, with a message channel to it.", typeof(PresentationPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
+            new("WebXr", "web-xr", "VR and AR sessions: poses, controllers and session lifecycle.", typeof(WebXrPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
         ]),
     ];
 
