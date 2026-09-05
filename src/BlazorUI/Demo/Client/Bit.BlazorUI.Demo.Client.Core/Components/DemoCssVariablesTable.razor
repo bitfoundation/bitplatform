@@ -1,0 +1,18 @@
+@* Same hand-written cells as DemoParametersTable, for the same reason: a span with one class on it
+   is what BitText would render, at a fraction of the cost per row. *@
+<BitText Element="h3" Typography="BitTypography.H6" Gutter Class="params-title"><b>@Name</b> CSS variables</BitText>
+<table class="table-view css-vars-table">
+    <tr class="th-row">
+        <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Name</span></th>
+        <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Default value</span></th>
+        <th class="th-cell"><span class="bit-txt-subtitle1 bit-txt">Description</span></th>
+    </tr>
+    @foreach (var variable in Variables)
+    {
+        <tr class="tdata-row">
+            <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@variable.Name</span></td>
+            <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@variable.DefaultValue</span></td>
+            <td class="td-cell"><span class="bit-txt-caption1 bit-txt">@variable.Description</span></td>
+        </tr>
+    }
+</table>

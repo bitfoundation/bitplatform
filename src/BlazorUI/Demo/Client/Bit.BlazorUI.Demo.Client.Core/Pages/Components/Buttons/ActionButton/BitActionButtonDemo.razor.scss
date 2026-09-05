@@ -1,9 +1,10 @@
-﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .example-content {
     gap: 0.5rem;
     display: flex;
     flex-flow: row wrap;
+    align-items: center;
 
     &.column {
         flex-flow: column nowrap;
@@ -29,11 +30,22 @@
 
 .form-container {
     max-width: 20rem;
+}
 
-    div {
-        display: flex;
-        justify-content: space-between;
-    }
+.form-actions {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.full-width-container {
+    gap: 0.25rem;
+    display: flex;
+    max-width: 18rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    flex-flow: column nowrap;
+    border: 1px solid $bit-color-border-secondary;
 }
 
 ::deep {

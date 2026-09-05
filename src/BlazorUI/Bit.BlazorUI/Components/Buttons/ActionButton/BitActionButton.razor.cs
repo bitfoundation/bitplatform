@@ -9,7 +9,6 @@ namespace Bit.BlazorUI;
 public partial class BitActionButton : BitComponentBase
 {
     private string? _rel;
-    private string? _tabIndex;
     private bool _showLoading;
     private BitButtonType _buttonType;
     private CancellationTokenSource? _loadingDelayCts;
@@ -53,6 +52,11 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
+    /// If true, the action button automatically receives focus when the page renders (rendered as the <c>autofocus</c> attribute).
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
     /// If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.
     /// </summary>
     [Parameter] public bool AutoLoading { get; set; }
@@ -78,7 +82,8 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public BitActionButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The general color of the button that applies to the icon and text of the action button.
+    /// The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral
+    /// foreground; on hover and press it takes over the text as well, and it also picks the focus ring color.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -91,7 +96,13 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public string? Download { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the component should expand to occupy the full available width.
+    /// The id of the form element that the action button is associated with (rendered as the <c>form</c> attribute).
+    /// Allows a submit/reset button to be placed outside of its form element.
+    /// </summary>
+    [Parameter] public string? FormId { get; set; }
+
+    /// <summary>
+    /// Stretches the action button across the full available width and spreads its icon and content to the two ends.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
@@ -149,6 +160,11 @@ public partial class BitActionButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitIconPosition? IconPosition { get; set; }
+
+    /// <summary>
+    /// The url of a custom image to render as the icon of the action button, used when neither <see cref="Icon"/> nor <see cref="IconName"/> is set.
+    /// </summary>
+    [Parameter] public string? IconUrl { get; set; }
 
     /// <summary>
     /// Determines whether the action button is in loading mode or not.
@@ -247,7 +263,7 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
-    /// Adds an underline to the action button text, useful for link-style buttons.
+    /// Underlines the text of the action button, which thickens on hover, for the link-style use inside running text.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
@@ -309,10 +325,6 @@ public partial class BitActionButton : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        _tabIndex = IsEnabled
-            ? TabIndex
-            : AllowDisabledFocus ? TabIndex : "-1";
-
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
         UpdateLoadingVisuals();
@@ -370,6 +382,27 @@ public partial class BitActionButton : BitComponentBase
     }
 
 
+
+    private string? GetTabIndex()
+    {
+        // A control hidden from assistive technologies must not be reachable by Tab either, or a keyboard
+        // user lands on something a screen reader has nothing to say about.
+        if (AriaHidden) return "-1";
+
+        if (IsEnabled is false)
+        {
+            if (AllowDisabledFocus is false) return "-1";
+
+            // The disabled anchor has no href, and an anchor without one is only focusable with an explicit tabindex.
+            return Href.HasValue() ? TabIndex ?? "0" : TabIndex;
+        }
+
+        // The href is dropped while loading, so the anchor needs an explicit tabindex to keep the focus a keyboard
+        // user gave it - otherwise it jumps to the document the moment the click starts the loading state.
+        if (IsLoading && Href.HasValue()) return TabIndex ?? "0";
+
+        return TabIndex;
+    }
 
     private void UpdateLoadingVisuals()
     {
