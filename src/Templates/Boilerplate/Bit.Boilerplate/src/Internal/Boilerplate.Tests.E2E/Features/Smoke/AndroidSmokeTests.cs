@@ -1,6 +1,4 @@
-using Boilerplate.Tests.E2E.Features.Core;
-
-namespace Boilerplate.Tests.E2E.Features.Android;
+namespace Boilerplate.Tests.E2E.Features.Smoke;
 
 /// <summary>
 /// Not parallelized: both apps run on the single connected device/emulator, and launching one backgrounds the other.
