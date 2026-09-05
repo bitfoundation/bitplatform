@@ -186,7 +186,11 @@ await subscription!.DisposeAsync();
             onClose: async () =>
             {
                 panelMoved = false;
+                // The window is gone, but the handle still holds the DotNetObjectReference it dispatches
+                // this callback through - dropping the field without disposing would pin it forever.
+                var closed = pipWindow;
                 pipWindow = null;
+                if (closed is not null) await closed.DisposeAsync();
                 await windowOutput.Log("the window closed - everything moved has been put back");
                 await InvokeAsync(StateHasChanged);
             });

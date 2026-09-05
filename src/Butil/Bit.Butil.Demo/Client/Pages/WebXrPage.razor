@@ -208,8 +208,12 @@ foreach (var source in await session.GetInputSources())
                 },
                 onEnd: async () =>
                 {
+                    // The session is over, but the handle still holds the DotNetObjectReference it dispatches
+                    // this callback through - dropping the field without disposing would pin it forever.
+                    var ended = session;
                     session = null;
                     lastPose = null;
+                    if (ended is not null) await ended.DisposeAsync();
                     await sessionOutput.Log("the session ended (the user took the headset off, or the runtime closed it)");
                     await InvokeAsync(StateHasChanged);
                 },

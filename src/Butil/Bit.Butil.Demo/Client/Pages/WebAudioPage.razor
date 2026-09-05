@@ -1339,8 +1339,11 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
             await StopMeterInternal();
             await StopWorkletInternal();
 
-            foreach (var node in transientNodes) await node.DisposeAsync();
+            // A DisposeAfter still counting down removes from this list while the loop below awaits,
+            // so tear down a snapshot - enumerating the live list would throw and strand the rest.
+            var pending = transientNodes.ToArray();
             transientNodes.Clear();
+            foreach (var node in pending) await node.DisposeAsync();
 
             if (elementSource is not null) await elementSource.DisposeAsync();
             if (streamDestination is not null) await streamDestination.DisposeAsync();

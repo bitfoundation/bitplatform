@@ -84,8 +84,9 @@ var decoder = await webCodecs.CreateVideoDecoder(
     new VideoDecoderConfig { Codec = "vp8", Description = firstChunk.DecoderDescription },
     onFrame: async frame =>
     {
-        await frame.DrawTo(canvasElement);
-        await frame.DisposeAsync();   // required - the decoder stalls without it
+        // onFrame is an Action, so this lambda is async void: a throw would be unobserved
+        try { await frame.DrawTo(canvasElement); }
+        finally { await frame.DisposeAsync(); }   // required - the decoder stalls without it
     });
 
 foreach (var chunk in chunks) await decoder!.Decode(chunk);
@@ -317,9 +318,25 @@ await encoder.Flush();
                 new VideoDecoderConfig { Codec = encodeCodec, Description = encodedChunks[0].DecoderDescription, CodedWidth = Width, CodedHeight = Height },
                 onFrame: async frame =>
                 {
-                    drawn++;
-                    await frame.DrawTo(canvasElement);
-                    await frame.DisposeAsync();
+                    // onFrame is an Action, so this lambda is async void: an exception escaping it is
+                    // unobserved and leaves the VideoFrame open, and the decoder's output pool then
+                    // stalls every Decode after it. Closing the frame is not optional.
+                    try
+                    {
+                        try
+                        {
+                            drawn++;
+                            await frame.DrawTo(canvasElement);
+                        }
+                        finally
+                        {
+                            await frame.DisposeAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = decodeOutput.Error("drawing a frame failed →", ex.Message);
+                    }
                 },
                 onError: message => _ = decodeOutput.Error("decoder error →", message));
 

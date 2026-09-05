@@ -75,6 +75,9 @@ await osc.Start();
 
             if (oscillator is null || filter is null || gain is null || analyser is null)
             {
+                // A half-built graph would leave the buttons gated on a non-null oscillator enabled
+                // over null nodes, so the partial build goes back out the way it came in.
+                await Teardown();
                 await output.Warn("the graph could not be built (no audio context?)");
                 return;
             }

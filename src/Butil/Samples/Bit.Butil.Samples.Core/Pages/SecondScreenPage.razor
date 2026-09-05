@@ -179,7 +179,11 @@ var window = await documentPictureInPicture.RequestWindow(); // then MoveElement
                 new DocumentPictureInPictureOptions { Width = 320, Height = 180 },
                 onClose: async () =>
                 {
+                    // The window is gone, but the handle still holds the DotNetObjectReference it dispatches
+                    // this callback through - dropping the field without disposing would pin it forever.
+                    var closed = pipWindow;
                     pipWindow = null;
+                    if (closed is not null) await closed.DisposeAsync();
                     await output.Log("the floating window closed - the panel is back in the page");
                     await InvokeAsync(StateHasChanged);
                 });
@@ -235,7 +239,11 @@ var window = await documentPictureInPicture.RequestWindow(); // then MoveElement
                 new XrSessionOptions { ReferenceSpaceType = XrReferenceSpaceType.Viewer },
                 onEnd: async () =>
                 {
+                    // The session is over, but the handle still holds the DotNetObjectReference it dispatches
+                    // this callback through - dropping the field without disposing would pin it forever.
+                    var ended = session;
                     session = null;
+                    if (ended is not null) await ended.DisposeAsync();
                     await output.Log("the XR session ended");
                     await InvokeAsync(StateHasChanged);
                 });
