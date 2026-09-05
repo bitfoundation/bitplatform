@@ -79,7 +79,7 @@ registering everything.
 | `History` | Session history: back/forward, `pushState`/`replaceState`, `popstate` |
 | `Navigation` | The Navigation API: read the history entry list, traverse to a key, and know whether you can go back |
 | `Location` | Read and mutate the current URL, reload, navigate |
-| `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory |
+| `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory, `isInputPending` |
 | `UserAgent` | Parsed user-agent brands, platform and mobile-ness (UA Client Hints) |
 
 ### Screen & diagnostics
@@ -89,7 +89,7 @@ registering everything.
 | `Screen` | Physical screen metrics, colour depth, availability |
 | `ScreenOrientation` | Read, lock and observe the screen orientation |
 | `VisualViewport` | The visual viewport: scale, offsets, resize and scroll events |
-| `Performance` | High-resolution timing, marks, measures, `PerformanceObserver` |
+| `Performance` | High-resolution timing, marks, measures, `PerformanceObserver`, typed navigation / resource / long-task entries, Web Vitals |
 | `Reporting` | `ReportingObserver`: deprecation, intervention and crash reports |
 | `Console` | The full browser console API: log, table, group, time, count, profile |
 
@@ -127,8 +127,8 @@ registering everything.
 | `FileSystem` | The File System Access API: pick real files/folders and write back to them |
 | `ObjectUrls` | Create and revoke `blob:` object URLs from C# data |
 | `Clipboard` | Read and write text and typed items on the system clipboard |
-| `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
-| `Fetch` | The fetch API with full request/response control and progress |
+| `Crypto` | SubtleCrypto: encryption, hashing, signatures, key generation, import/export (raw / PKCS#8 / SPKI / JWK), ECDH, HKDF, key wrapping, random values |
+| `Fetch` | The fetch API: a `Request` / `Response` / `Headers` object model, download progress, streamed uploads |
 | `Compression` | Gzip and deflate through the browser's native codec |
 
 ### Network & workers

@@ -196,6 +196,94 @@ bool ecOk = await crypto.VerifyEcdsa(ec.PublicKey, ecSig, data, "P-256");
         </div>
         <DemoConsole @ref="signatureOutput" Title="signatures output" />
     </DemoSection>
+
+    <DemoSection Title="Key import & export"
+                 Api="ExportKey / ExportJsonWebKey / ImportJsonWebKey"
+                 Description="Re-expresses key material between the four WebCrypto formats, which is how a key that came from a server becomes bytes the methods above accept. CryptoKeyAlgorithm says what the key is - the browser rejects a key imported under the wrong algorithm even when its bytes are right. The demo generates an AES key, publishes it as a JWK, and imports the JWK back to raw bytes."
+                 Code=@("""
+byte[] key = await crypto.GenerateAesKey(256);
+
+// raw bytes → the JWK a server publishes
+CryptoJsonWebKey? jwk = await crypto.ExportJsonWebKey(key, CryptoKeyFormat.Raw, CryptoKeyAlgorithm.AesGcm(256));
+
+// and back again
+byte[] roundTripped = await crypto.ImportJsonWebKey(jwk, CryptoKeyAlgorithm.AesGcm(256), CryptoKeyFormat.Raw);
+
+// the same conversion between two byte formats - here a public key from SPKI to JWK's cousin
+RsaKeyPair rsa = await crypto.GenerateRsaKeyPair();
+CryptoJsonWebKey? publicJwk = await crypto.ExportJsonWebKey(rsa.PublicKey, CryptoKeyFormat.Spki, CryptoKeyAlgorithm.RsaOaep());
+""")>
+        <div class="controls">
+            <button @onclick="AesJwkRoundTrip">AES key → JWK → key</button>
+            <button @onclick="RsaPublicJwk">RSA public key → JWK</button>
+        </div>
+        <DemoConsole @ref="importExportOutput" Title="import/export output" />
+    </DemoSection>
+
+    <DemoSection Title="Key agreement (ECDH)"
+                 Api="GenerateEcdhKeyPair / DeriveEcdhBits / DeriveEcdhKey"
+                 Description="Two parties each generate a key pair, exchange public keys, and arrive at the same secret without ever sending it. DeriveEcdhBits gives the raw agreement - the x coordinate of a point, not a uniform key - while DeriveEcdhKey runs it through to a usable AES key in one step. The demo plays both sides and checks that they agree."
+                 Code=@("""
+EcKeyPair alice = await crypto.GenerateEcdhKeyPair("P-256");
+EcKeyPair bob = await crypto.GenerateEcdhKeyPair("P-256");
+
+// each side derives from its own private key and the other's public key
+byte[] aliceKey = await crypto.DeriveEcdhKey(alice.PrivateKey, bob.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+byte[] bobKey = await crypto.DeriveEcdhKey(bob.PrivateKey, alice.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+// aliceKey and bobKey are the same 32 bytes
+
+// or take the raw agreement and derive from it yourself
+byte[] shared = await crypto.DeriveEcdhBits(alice.PrivateKey, bob.PublicKey, 256);
+""")>
+        <div class="controls">
+            <button @onclick="EcdhAgreement">Generate two pairs and agree</button>
+        </div>
+        <DemoConsole @ref="ecdhOutput" Title="ECDH output" />
+    </DemoSection>
+
+    <DemoSection Title="Deriving keys"
+                 Api="DeriveHkdfBits / DeriveHkdfKey / DerivePbkdf2Key"
+                 Description="HKDF turns one high-entropy secret into as many purpose-bound keys as you need - the info parameter is what keeps the encryption key and the signing key different. PBKDF2 is the one for passwords: it stretches, HKDF does not. Both have a Key form that hands back a key of a stated algorithm rather than loose bits."
+                 Code=@("""
+byte[] secret = await crypto.GetRandomValues(32);
+byte[] salt = await crypto.GetRandomValues(16);
+
+// two keys from one secret, kept apart by their info string
+byte[] encryptionKey = await crypto.DeriveHkdfKey(secret, salt, Encoding.UTF8.GetBytes("encryption"), CryptoKeyAlgorithm.AesGcm(256));
+byte[] signingKey = await crypto.DeriveHkdfKey(secret, salt, Encoding.UTF8.GetBytes("signing"), CryptoKeyAlgorithm.Hmac());
+
+// passwords go through PBKDF2, never HKDF
+byte[] fromPassword = await crypto.DerivePbkdf2Key(
+    Encoding.UTF8.GetBytes(password), salt, iterations: 100_000, CryptoKeyAlgorithm.AesGcm(256));
+""")>
+        <div class="controls">
+            <button @onclick="HkdfDerive">HKDF: two keys from one secret</button>
+            <button @onclick="Pbkdf2DeriveKey">PBKDF2 → AES-256 key</button>
+        </div>
+        <DemoConsole @ref="hkdfOutput" Title="derivation output" />
+    </DemoSection>
+
+    <DemoSection Title="Key wrapping"
+                 Api="GenerateAesKwKey / WrapKey / UnwrapKey"
+                 Description="Encrypts one key with another, so key material can be stored or sent without ever being in the clear. AES-KW exists only for this and needs no IV; AES-GCM works too and takes one. The demo wraps a freshly generated AES key, then unwraps it and checks the bytes came back identical."
+                 Code=@("""
+byte[] keyToProtect = await crypto.GenerateAesKey(256);
+byte[] wrappingKey = await crypto.GenerateAesKwKey(256);
+
+byte[] wrapped = await crypto.WrapKey(
+    keyToProtect, CryptoKeyFormat.Raw, CryptoKeyAlgorithm.AesGcm(256),
+    wrappingKey, new AesKwCryptoAlgorithmParams());
+
+// wrapped is safe to store; only the wrapping key opens it
+byte[] recovered = await crypto.UnwrapKey(
+    wrapped, CryptoKeyFormat.Raw, CryptoKeyAlgorithm.AesGcm(256),
+    wrappingKey, new AesKwCryptoAlgorithmParams());
+""")>
+        <div class="controls">
+            <button @onclick="WrapUnwrap">Wrap and unwrap an AES key</button>
+        </div>
+        <DemoConsole @ref="wrapOutput" Title="key wrapping output" />
+    </DemoSection>
 </div>
 
 <Callout Type="warning" Title="Secure context and key handling">
@@ -224,6 +312,18 @@ bool ecOk = await crypto.VerifyEcdsa(ec.PublicKey, ecSig, data, "P-256");
     <ApiMember Name="Encrypt" Signature="ValueTask<byte[]> Encrypt(CryptoAlgorithm algorithm, byte[] key, byte[] data, byte[]? iv = null, CryptoKeyHash? keyHash = null)" Description="Convenience overload selecting the algorithm via the CryptoAlgorithm enum; iv feeds the AES IV/counter." />
     <ApiMember Name="Decrypt<T>" Signature="ValueTask<byte[]> Decrypt<T>(T algorithm, byte[] key, byte[] data, CryptoKeyHash? keyHash = null) where T : ICryptoAlgorithmParams" Description="Decrypts data with a typed algorithm parameter object." />
     <ApiMember Name="Decrypt" Signature="ValueTask<byte[]> Decrypt(CryptoAlgorithm algorithm, byte[] key, byte[] data, byte[]? iv = null, CryptoKeyHash? keyHash = null)" Description="Convenience overload selecting the algorithm via the CryptoAlgorithm enum." />
+    <ApiMember Name="ExportKey" Signature="ValueTask<byte[]> ExportKey(byte[] key, CryptoKeyFormat sourceFormat, CryptoKeyFormat targetFormat, CryptoKeyAlgorithm algorithm)" Description="Re-expresses key material between the raw, pkcs8 and spki formats." />
+    <ApiMember Name="ExportJsonWebKey" Signature="ValueTask<CryptoJsonWebKey?> ExportJsonWebKey(byte[] key, CryptoKeyFormat sourceFormat, CryptoKeyAlgorithm algorithm)" Description="Exports key material as a JSON Web Key - the format a server publishes and consumes." />
+    <ApiMember Name="ImportJsonWebKey" Signature="ValueTask<byte[]> ImportJsonWebKey(CryptoJsonWebKey jwk, CryptoKeyAlgorithm algorithm, CryptoKeyFormat targetFormat = CryptoKeyFormat.Raw)" Description="Imports a JWK and hands back its bytes, ready for the encrypt, sign and derive methods." />
+    <ApiMember Name="GenerateEcdhKeyPair" Signature='ValueTask<EcKeyPair> GenerateEcdhKeyPair(string curve = "P-256")' Description="Generates an ECDH key pair for deriving a shared secret with someone else's public key." />
+    <ApiMember Name="DeriveEcdhBits" Signature='ValueTask<byte[]> DeriveEcdhBits(byte[] privateKey, byte[] publicKey, int outputLengthBits, string curve = "P-256")' Description="Derives the raw ECDH agreement. Not a uniform key - run it through HKDF." />
+    <ApiMember Name="DeriveEcdhKey" Signature='ValueTask<byte[]> DeriveEcdhKey(byte[] privateKey, byte[] publicKey, CryptoKeyAlgorithm derivedKeyAlgorithm, string curve = "P-256")' Description="Derives a usable key from an ECDH agreement in one step." />
+    <ApiMember Name="DeriveHkdfBits" Signature="ValueTask<byte[]> DeriveHkdfBits(byte[] keyMaterial, byte[]? salt, byte[]? info, int outputLengthBits, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)" Description="Derives raw bytes from existing high-entropy key material using HKDF. Not for passwords." />
+    <ApiMember Name="DeriveHkdfKey" Signature="ValueTask<byte[]> DeriveHkdfKey(byte[] keyMaterial, byte[]? salt, byte[]? info, CryptoKeyAlgorithm derivedKeyAlgorithm, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)" Description="Derives a usable key from existing key material using HKDF; info binds it to a purpose." />
+    <ApiMember Name="DerivePbkdf2Key" Signature="ValueTask<byte[]> DerivePbkdf2Key(byte[] password, byte[] salt, int iterations, CryptoKeyAlgorithm derivedKeyAlgorithm, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)" Description="Stretches a password into a key of a stated algorithm rather than into loose bits." />
+    <ApiMember Name="GenerateAesKwKey" Signature="ValueTask<byte[]> GenerateAesKwKey(int bits = 256)" Description="Generates an AES-KW key - the algorithm whose only job is encrypting other keys." />
+    <ApiMember Name="WrapKey<T>" Signature="ValueTask<byte[]> WrapKey<T>(byte[] key, CryptoKeyFormat format, CryptoKeyAlgorithm keyAlgorithm, byte[] wrappingKey, T wrapAlgorithm, CryptoKeyHash? wrappingKeyHash = null) where T : ICryptoAlgorithmParams" Description="Encrypts key material with another key so it can be stored or sent without appearing in the clear." />
+    <ApiMember Name="UnwrapKey<T>" Signature="ValueTask<byte[]> UnwrapKey<T>(byte[] wrappedKey, CryptoKeyFormat format, CryptoKeyAlgorithm unwrappedKeyAlgorithm, byte[] unwrappingKey, T unwrapAlgorithm, CryptoKeyHash? unwrappingKeyHash = null) where T : ICryptoAlgorithmParams" Description="Reverses WrapKey: decrypts wrapped key material and hands back its bytes." />
 </ApiTable>
 
 @code {
@@ -235,6 +335,10 @@ bool ecOk = await crypto.VerifyEcdsa(ec.PublicKey, ecSig, data, "P-256");
     private DemoConsole keyGenOutput = default!;
     private DemoConsole deriveOutput = default!;
     private DemoConsole signatureOutput = default!;
+    private DemoConsole importExportOutput = default!;
+    private DemoConsole ecdhOutput = default!;
+    private DemoConsole hkdfOutput = default!;
+    private DemoConsole wrapOutput = default!;
 
     private string _hashInput = "Bit.Butil";
     private string _plainText = "The quick brown fox";
@@ -491,6 +595,155 @@ bool ecOk = await crypto.VerifyEcdsa(ec.PublicKey, ecSig, data, "P-256");
         catch (Exception ex)
         {
             await signatureOutput.Error("RSA-PSS failed:", ex.Message);
+        }
+    }
+
+    private async Task AesJwkRoundTrip()
+    {
+        try
+        {
+            var key = await crypto.GenerateAesKey(256);
+            var algorithm = CryptoKeyAlgorithm.AesGcm(256);
+
+            var jwk = await crypto.ExportJsonWebKey(key, CryptoKeyFormat.Raw, algorithm);
+            if (jwk is null)
+            {
+                // Only reachable during prerender/SSR, where there is no JS runtime to export with.
+                await importExportOutput.Info("ExportJsonWebKey → no JS runtime yet; run this after the first render.");
+                return;
+            }
+
+            await importExportOutput.Success("ExportJsonWebKey →", $"kty={jwk.Kty}, alg={jwk.Alg}, k={jwk.K}");
+
+            var roundTripped = await crypto.ImportJsonWebKey(jwk, algorithm, CryptoKeyFormat.Raw);
+            await importExportOutput.Success("ImportJsonWebKey →", $"{roundTripped.Length * 8} bits, identical to the original: {roundTripped.SequenceEqual(key)}");
+        }
+        catch (Exception ex)
+        {
+            await importExportOutput.Error("JWK round-trip failed:", ex.Message);
+        }
+    }
+
+    private async Task RsaPublicJwk()
+    {
+        try
+        {
+            await importExportOutput.Info("Generating RSA-2048 key pair...");
+            _rsaPair ??= await crypto.GenerateRsaKeyPair(2048, CryptoKeyHash.Sha256);
+
+            var jwk = await crypto.ExportJsonWebKey(_rsaPair.PublicKey, CryptoKeyFormat.Spki, CryptoKeyAlgorithm.RsaOaep());
+            if (jwk is null)
+            {
+                // Only reachable during prerender/SSR, where there is no JS runtime to export with.
+                await importExportOutput.Info("ExportJsonWebKey → no JS runtime yet; run this after the first render.");
+                return;
+            }
+
+            await importExportOutput.Success("ExportJsonWebKey (SPKI → JWK) →", $"kty={jwk.Kty}, alg={jwk.Alg}, e={jwk.E}, n={jwk.N?[..24]}...");
+
+            var spki = await crypto.ImportJsonWebKey(jwk, CryptoKeyAlgorithm.RsaOaep(), CryptoKeyFormat.Spki);
+            await importExportOutput.Success("ImportJsonWebKey (JWK → SPKI) →", $"{spki.Length} bytes, identical to the original: {spki.SequenceEqual(_rsaPair.PublicKey)}");
+        }
+        catch (Exception ex)
+        {
+            await importExportOutput.Error("RSA JWK export failed:", ex.Message);
+        }
+    }
+
+    private async Task EcdhAgreement()
+    {
+        try
+        {
+            var alice = await crypto.GenerateEcdhKeyPair("P-256");
+            var bob = await crypto.GenerateEcdhKeyPair("P-256");
+            await ecdhOutput.Log("Generated a P-256 pair for each side.");
+
+            var aliceKey = await crypto.DeriveEcdhKey(alice.PrivateKey, bob.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+            var bobKey = await crypto.DeriveEcdhKey(bob.PrivateKey, alice.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+
+            await ecdhOutput.Success("DeriveEcdhKey (Alice) →", Convert.ToHexString(aliceKey));
+            await ecdhOutput.Success("DeriveEcdhKey (Bob) →", Convert.ToHexString(bobKey));
+            await ecdhOutput.Success("Both sides agree →", aliceKey.SequenceEqual(bobKey));
+
+            var shared = await crypto.DeriveEcdhBits(alice.PrivateKey, bob.PublicKey, 256);
+            await ecdhOutput.Log($"DeriveEcdhBits → {shared.Length} raw bytes of agreement (feed these to HKDF, don't encrypt with them)");
+        }
+        catch (Exception ex)
+        {
+            await ecdhOutput.Error("ECDH failed:", ex.Message);
+        }
+    }
+
+    private async Task HkdfDerive()
+    {
+        try
+        {
+            var secret = await crypto.GetRandomValues(32);
+            var salt = await crypto.GetRandomValues(16);
+
+            var encryptionKey = await crypto.DeriveHkdfKey(secret, salt, Encoding.UTF8.GetBytes("encryption"), CryptoKeyAlgorithm.AesGcm(256));
+            var signingKey = await crypto.DeriveHkdfKey(secret, salt, Encoding.UTF8.GetBytes("signing"), CryptoKeyAlgorithm.Hmac());
+
+            await hkdfOutput.Success("DeriveHkdfKey (info: encryption) →", Convert.ToHexString(encryptionKey));
+            await hkdfOutput.Success("DeriveHkdfKey (info: signing) →", Convert.ToHexString(signingKey));
+            await hkdfOutput.Log($"Same secret, different purposes, different keys: {!encryptionKey.SequenceEqual(signingKey)}");
+
+            var bits = await crypto.DeriveHkdfBits(secret, salt, Encoding.UTF8.GetBytes("encryption"), 256);
+            await hkdfOutput.Log($"DeriveHkdfBits with the same inputs reproduces the key: {bits.SequenceEqual(encryptionKey)}");
+        }
+        catch (Exception ex)
+        {
+            await hkdfOutput.Error("HKDF failed:", ex.Message);
+        }
+    }
+
+    private async Task Pbkdf2DeriveKey()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_password))
+            {
+                await hkdfOutput.Warn("Enter a password in the PBKDF2 section above first.");
+                return;
+            }
+
+            var salt = await crypto.GetRandomValues(16);
+            await hkdfOutput.Info("Deriving with 100,000 PBKDF2 iterations...");
+
+            var key = await crypto.DerivePbkdf2Key(Encoding.UTF8.GetBytes(_password), salt, 100_000, CryptoKeyAlgorithm.AesGcm(256));
+            await hkdfOutput.Success("DerivePbkdf2Key →", $"{key.Length * 8}-bit AES key: {Convert.ToHexString(key)}");
+        }
+        catch (Exception ex)
+        {
+            await hkdfOutput.Error("DerivePbkdf2Key failed:", ex.Message);
+        }
+    }
+
+    private async Task WrapUnwrap()
+    {
+        try
+        {
+            var keyToProtect = await crypto.GenerateAesKey(256);
+            var wrappingKey = await crypto.GenerateAesKwKey(256);
+            var algorithm = CryptoKeyAlgorithm.AesGcm(256);
+
+            var wrapped = await crypto.WrapKey(keyToProtect, CryptoKeyFormat.Raw, algorithm, wrappingKey, new AesKwCryptoAlgorithmParams());
+            await wrapOutput.Success("WrapKey (AES-KW) →", $"{wrapped.Length} bytes: {Convert.ToHexString(wrapped)}");
+
+            var recovered = await crypto.UnwrapKey(wrapped, CryptoKeyFormat.Raw, algorithm, wrappingKey, new AesKwCryptoAlgorithmParams());
+            await wrapOutput.Success("UnwrapKey →", $"recovered the original key: {recovered.SequenceEqual(keyToProtect)}");
+
+            // AES-GCM wraps too, and unlike AES-KW takes an IV - the same IV has to come back for the unwrap.
+            var iv = await crypto.GetRandomValues(12);
+            var gcmWrapped = await crypto.WrapKey(keyToProtect, CryptoKeyFormat.Raw, algorithm, wrappingKey,
+                new AesGcmCryptoAlgorithmParams { Iv = iv });
+            var gcmRecovered = await crypto.UnwrapKey(gcmWrapped, CryptoKeyFormat.Raw, algorithm, wrappingKey,
+                new AesGcmCryptoAlgorithmParams { Iv = iv });
+            await wrapOutput.Success("WrapKey/UnwrapKey (AES-GCM) →", $"{gcmWrapped.Length} wrapped bytes, recovered: {gcmRecovered.SequenceEqual(keyToProtect)}");
+        }
+        catch (Exception ex)
+        {
+            await wrapOutput.Error("Key wrapping failed:", ex.Message);
         }
     }
 

@@ -35,6 +35,7 @@ await navigator.Share(new ShareData { Title = "Bit.Butil", Url = "https://bitpla
             <button @onclick="@GetIsPdfViewerEnabled">IsPdfViewerEnabled</button>
             <button @onclick="@GetIsWebDriver">IsWebDriver</button>
             <button @onclick="@GetCanShare">CanShare</button>
+            <button @onclick="@GetIsInputPending">IsInputPending</button>
         </div>
     </DemoCard>
 
@@ -115,6 +116,13 @@ await navigator.Share(new ShareData { Title = "Bit.Butil", Url = "https://bitpla
     private async Task GetIsPdfViewerEnabled()
     {
         await output.Success("IsPdfViewerEnabled →", await navigator.IsPdfViewerEnabled());
+    }
+
+    private async Task GetIsInputPending()
+    {
+        // Chromium-only; elsewhere it answers false, which is what keeps a loop built around it
+        // running instead of yielding forever.
+        await output.Success("IsInputPending →", await navigator.IsInputPending());
     }
 
     private async Task GetUserAgent()

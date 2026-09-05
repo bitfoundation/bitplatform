@@ -59,6 +59,24 @@ var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
             <button @onclick="HmacSignVerify">Sign + verify HMAC</button>
         </div>
     </DemoCard>
+
+    <DemoCard Title="Key import & export" Api="ExportJsonWebKey / ImportJsonWebKey"
+              Description="Publish a key as the JWK a server understands, then import it back to raw bytes - the round trip that makes a key from elsewhere usable here.">
+        <button @onclick="JwkRoundTrip">AES key → JWK → key</button>
+    </DemoCard>
+
+    <DemoCard Title="Key agreement" Api="GenerateEcdhKeyPair / DeriveEcdhKey"
+              Description="Two ECDH pairs exchange public keys and arrive at the same AES key without ever sending it.">
+        <button @onclick="EcdhAgreement">Generate two pairs and agree</button>
+    </DemoCard>
+
+    <DemoCard Title="Derivation & wrapping" Api="DeriveHkdfKey / GenerateAesKwKey / WrapKey / UnwrapKey"
+              Description="HKDF splits one secret into purpose-bound keys; AES-KW encrypts a key with another so it can be stored without ever being in the clear.">
+        <div class="controls">
+            <button @onclick="HkdfDerive">HKDF: two keys from one secret</button>
+            <button @onclick="WrapUnwrap">Wrap and unwrap a key</button>
+        </div>
+    </DemoCard>
 </div>
 
 <DemoConsole @ref="output" Title="crypto output" />
@@ -146,5 +164,61 @@ var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
         var signature = await crypto.SignHmac(CryptoKeyHash.Sha256, key, data);
         var valid = await crypto.VerifyHmac(CryptoKeyHash.Sha256, key, signature, data);
         await output.Success("HMAC verify →", valid);
+    }
+
+    private async Task JwkRoundTrip()
+    {
+        var algorithm = CryptoKeyAlgorithm.AesGcm(256);
+        var aesKey = await crypto.GenerateAesKey(256);
+
+        var jwk = await crypto.ExportJsonWebKey(aesKey, CryptoKeyFormat.Raw, algorithm);
+        if (jwk is null)
+        {
+            // Only reachable during prerender/SSR, where there is no JS runtime to export with.
+            await output.Info("ExportJsonWebKey →", "no JS runtime yet; run this after the first render.");
+            return;
+        }
+
+        await output.Success("ExportJsonWebKey →", $"kty={jwk.Kty}, alg={jwk.Alg}, k={jwk.K}");
+
+        var roundTripped = await crypto.ImportJsonWebKey(jwk, algorithm, CryptoKeyFormat.Raw);
+        await output.Success("ImportJsonWebKey →", $"same key back: {roundTripped.SequenceEqual(aesKey)}");
+    }
+
+    private async Task EcdhAgreement()
+    {
+        var alice = await crypto.GenerateEcdhKeyPair("P-256");
+        var bob = await crypto.GenerateEcdhKeyPair("P-256");
+
+        var aliceKey = await crypto.DeriveEcdhKey(alice.PrivateKey, bob.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+        var bobKey = await crypto.DeriveEcdhKey(bob.PrivateKey, alice.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+
+        await output.Success("DeriveEcdhKey →", BitConverter.ToString(aliceKey));
+        await output.Success("Both sides agree →", aliceKey.SequenceEqual(bobKey));
+    }
+
+    private async Task HkdfDerive()
+    {
+        var secret = await crypto.GetRandomValues(32);
+        var salt = await crypto.GetRandomValues(16);
+
+        var encryptionKey = await crypto.DeriveHkdfKey(secret, salt, System.Text.Encoding.UTF8.GetBytes("encryption"), CryptoKeyAlgorithm.AesGcm(256));
+        var signingKey = await crypto.DeriveHkdfKey(secret, salt, System.Text.Encoding.UTF8.GetBytes("signing"), CryptoKeyAlgorithm.Hmac());
+
+        await output.Success("DeriveHkdfKey (encryption) →", BitConverter.ToString(encryptionKey));
+        await output.Success("Different info, different key →", !encryptionKey.SequenceEqual(signingKey));
+    }
+
+    private async Task WrapUnwrap()
+    {
+        var algorithm = CryptoKeyAlgorithm.AesGcm(256);
+        var keyToProtect = await crypto.GenerateAesKey(256);
+        var wrappingKey = await crypto.GenerateAesKwKey(256);
+
+        var wrapped = await crypto.WrapKey(keyToProtect, CryptoKeyFormat.Raw, algorithm, wrappingKey, new AesKwCryptoAlgorithmParams());
+        await output.Success("WrapKey →", BitConverter.ToString(wrapped));
+
+        var recovered = await crypto.UnwrapKey(wrapped, CryptoKeyFormat.Raw, algorithm, wrappingKey, new AesKwCryptoAlgorithmParams());
+        await output.Success("UnwrapKey →", $"recovered the original key: {recovered.SequenceEqual(keyToProtect)}");
     }
 }
