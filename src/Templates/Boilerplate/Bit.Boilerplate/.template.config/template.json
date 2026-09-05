@@ -615,7 +615,9 @@
                         // Needs ProductController (Admin module) and ProductViewController + the product page (Sales
                         // module) at once, and "module" is a single choice, so it can only ever run against the
                         // template's own source tree.
-                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs"
+                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
+                        // Only that test uses it.
+                        "src/Tests/Features/Caching/ReplayCountingOutputCacheStore.cs"
                     ]
                 },
                 {
