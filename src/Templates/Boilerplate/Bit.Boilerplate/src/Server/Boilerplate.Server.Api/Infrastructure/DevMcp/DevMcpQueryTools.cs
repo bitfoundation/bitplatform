@@ -28,7 +28,7 @@ public sealed class DevMcpQueryTools(AppDbContext db, DevMcpAuditContext audit)
     public async Task<string> QueryEntity(
         [Required, Description("CLR type name, e.g. User or Product")] string entity,
         [Description("Columns to return. Required. Scalar properties of the entity only.")] string[]? select = null,
-        [Description("Dynamic LINQ filter, e.g. Email == \"a@b.c\" && CreatedOn > DateTime(2024,1,1). Query filters still apply.")] string? filter = null,
+        [Description("Dynamic LINQ filter, e.g. Email == \"a@b.c\" && CreatedOn > DateTime(2024,1,1). Evaluated with global query filters ignored, so it is matched against every tenant's rows; add a TenantId term to narrow it to one.")] string? filter = null,
         [Description("Dynamic LINQ order, e.g. CreatedOn desc. Defaults to the primary key.")] string? orderBy = null,
         [Description("Rows to skip")] int skip = 0,
         [Description("Page size, 1-100")] int take = 25,
