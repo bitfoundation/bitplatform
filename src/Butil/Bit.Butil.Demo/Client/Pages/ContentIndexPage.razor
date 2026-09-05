@@ -56,7 +56,7 @@ var added = await contentIndex.Add(new ContentIndexEntry
     Description = "One line about it, shown under the title.",
     Url = "/articles/42",
     Category = "article",
-    Icons = [new ContentIndexIcon { Src = "/icon-192.png", Sizes = "192x192", Type = "image/png" }]
+    Icons = [new ContentIndexIcon { Src = "/icon-512.png", Sizes = "512x512", Type = "image/png" }]
 });
 """)>
         <div class="field-row">
@@ -176,7 +176,9 @@ await contentIndex.Delete("article-42");
                 Description = description,
                 Url = url,
                 Category = category,
-                Icons = [new Bit.Butil.ContentIndexIcon { Src = "/favicon.png", Sizes = "192x192", Type = "image/png" }]
+                // An icon Chromium cannot fetch fails the whole add(), so this points at a file the
+                // site really serves rather than at a conventional-looking name.
+                Icons = [new Bit.Butil.ContentIndexIcon { Src = "/icon-512.png", Sizes = "512x512", Type = "image/png" }]
             });
 
             if (added) await addOutput.Success($"Add(\"{entryId}\") → indexed, and \"{url}\" is in the cache.");

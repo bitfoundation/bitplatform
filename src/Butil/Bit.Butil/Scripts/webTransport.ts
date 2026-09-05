@@ -32,6 +32,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // The stream was reset or the session went away; the closed callback reports the why.
         } finally {
             try { reader.releaseLock(); } catch { /* already released */ }
+
+            // The read side is finished for good, so a stream with nothing left to write on is
+            // dropped here - otherwise a long-lived session grows its map by one entry for every
+            // unidirectional stream the server ever opened. One that still has a writer stays
+            // until closeStream/close, since .NET can go on answering on it after the peer has
+            // finished sending. The identity check keeps a later stream reusing the id safe.
+            const stream = _sessions[id]?.streams[streamId];
+            if (stream && stream.readable === readable && !stream.writer) delete _sessions[id].streams[streamId];
+
             butil.utils.dispatch(dotNetRef, 'InvokeWebTransportStreamEnd', id, streamId);
         }
     }
@@ -100,9 +109,22 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const session: Session = { transport, dotNetRef, streams: {}, nextStream: 1, closed: false };
             _sessions[id] = session;
 
-            // A session the peer or the network ended is never closed through close(), so this is
-            // the only place it leaves _sessions - guarded on identity, since the same id could
-            // already have been replaced by a later connect.
+            try {
+                await transport.ready;
+            } catch (e: any) {
+                if (_sessions[id] === session) delete _sessions[id];
+                // transport.closed rejects alongside ready for a connection that never came up.
+                // Nothing observes it yet - the closed callback is only attached below, once the
+                // session is established - so swallow it here rather than leave it unhandled.
+                try { transport.closed?.catch?.(() => { }); } catch { /* no closed promise */ }
+                return { connected: false, error: String(e?.message ?? e) };
+            }
+
+            // Attached only after ready resolved, so onClosed reports the end of a session that
+            // existed and never doubles as a failed-connect callback - Connect's own return value
+            // is what reports that. A session the peer or the network ended is never closed through
+            // close(), so this is also the only place it leaves _sessions - guarded on identity,
+            // since the same id could already have been replaced by a later connect.
             const forget = () => { if (_sessions[id] === session) delete _sessions[id]; };
 
             transport.closed
@@ -116,13 +138,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     butil.utils.dispatch(dotNetRef, 'InvokeWebTransportClosed', id, 0, '', String(e?.message ?? e));
                     forget();
                 });
-
-            try {
-                await transport.ready;
-            } catch (e: any) {
-                delete _sessions[id];
-                return { connected: false, error: String(e?.message ?? e) };
-            }
 
             pumpDatagrams(dotNetRef, id, transport);
             pumpIncomingStreams(dotNetRef, id, session, transport.incomingUnidirectionalStreams, false);

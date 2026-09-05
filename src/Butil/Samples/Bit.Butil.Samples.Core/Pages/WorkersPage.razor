@@ -161,7 +161,9 @@ var clients = await serviceWorker.MatchAllClients(includeUncontrolled: true);
             Description = "The samples app, registered as offline-available content.",
             Url = "/workers",
             Category = "article",
-            Icons = [new ContentIndexIcon { Src = "/favicon.ico", Sizes = "32x32", Type = "image/x-icon" }]
+            // Served out of this library's own wwwroot, so the icon is fetchable under every
+            // hosting model - an icon that 404s makes Chromium reject the whole add().
+            Icons = [new ContentIndexIcon { Src = "_content/Bit.Butil.Samples.Core/icon-512.png", Sizes = "512x512", Type = "image/png" }]
         });
 
         if (added) await output.Success($"Add(\"{EntryId}\") → indexed");

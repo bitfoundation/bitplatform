@@ -66,10 +66,12 @@ public class StorageBuckets(IJSRuntime js)
 
     /// <summary>Reads a bucket's current state without changing any of it.</summary>
     /// <param name="name">The bucket name.</param>
-    /// <returns>The bucket's state, or null when the API is absent.</returns>
+    /// <returns>The bucket's state, or null when there is no such bucket or the API is absent.</returns>
     /// <remarks>
-    /// Opening a bucket is what creates it, so asking about a name that was never used creates an
-    /// empty bucket under that name. Check <see cref="Keys"/> first when that matters.
+    /// The browser's own <c>open()</c> is create-or-get, so a naive read would bring a bucket into
+    /// existence just by asking about it. This one doesn't: a name that isn't in <see cref="Keys"/>
+    /// comes back null, and nothing is created. <see cref="Open"/> is the only member that creates
+    /// a bucket, along with the writing members (<see cref="WriteText"/>, <see cref="WriteBytes"/>).
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageBucketInfo))]
     public ValueTask<StorageBucketInfo?> Get(string name)
@@ -93,6 +95,8 @@ public class StorageBuckets(IJSRuntime js)
     /// <summary>Asks the browser to make this bucket persistent. The user agent decides whether to grant.</summary>
     /// <param name="name">The bucket name.</param>
     /// <remarks>
+    /// False for a bucket that doesn't exist - this doesn't create one. Call <see cref="Open"/> first.
+    /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
@@ -102,6 +106,8 @@ public class StorageBuckets(IJSRuntime js)
     /// <summary>True when this bucket is exempt from eviction.</summary>
     /// <param name="name">The bucket name.</param>
     /// <remarks>
+    /// False for a bucket that doesn't exist - this doesn't create one.
+    /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
@@ -115,6 +121,8 @@ public class StorageBuckets(IJSRuntime js)
     /// <remarks>
     /// <see cref="StorageEstimate.UsageDetails"/> is always empty here - a bucket reports one number
     /// for itself, with no per-API breakdown.
+    /// <br/>
+    /// A bucket that doesn't exist reports nulls rather than being created.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageEstimate))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageUsageDetail))]
@@ -130,6 +138,8 @@ public class StorageBuckets(IJSRuntime js)
     /// An expiry is permission to delete, not a scheduled deletion: the data usually survives past
     /// it, and reading it back afterwards is not something to rely on.
     /// <br/>
+    /// False for a bucket that doesn't exist - this doesn't create one. Call <see cref="Open"/> first.
+    /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
@@ -139,6 +149,7 @@ public class StorageBuckets(IJSRuntime js)
 
     /// <summary>Reads the bucket's expiry, or null when it has none.</summary>
     /// <param name="name">The bucket name.</param>
+    /// <remarks>Null for a bucket that doesn't exist too - this doesn't create one.</remarks>
     public async ValueTask<DateTimeOffset?> GetExpires(string name)
     {
         var expires = await js.Invoke<long?>("BitButil.storageBuckets.getExpires", name);
@@ -150,6 +161,7 @@ public class StorageBuckets(IJSRuntime js)
     /// </summary>
     /// <param name="name">The bucket name.</param>
     /// <param name="path">A directory path inside the bucket, or empty for its root.</param>
+    /// <remarks>Empty for a bucket that doesn't exist - this doesn't create one.</remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(OpfsEntry))]
     public ValueTask<OpfsEntry[]> List(string name, string path = "")
         => js.Invoke<OpfsEntry[]>("BitButil.storageBuckets.list", name, path);
@@ -157,7 +169,8 @@ public class StorageBuckets(IJSRuntime js)
     /// <summary>Reads a file inside the bucket as text.</summary>
     /// <param name="name">The bucket name.</param>
     /// <param name="path">A file path inside the bucket.</param>
-    /// <returns>The text, or null when there is no file there.</returns>
+    /// <returns>The text, or null when there is no file - or no bucket - there.</returns>
+    /// <remarks>Reading through a name that isn't a bucket yet doesn't create one.</remarks>
     public ValueTask<string?> ReadText(string name, string path)
         => js.Invoke<string?>("BitButil.storageBuckets.readText", name, path);
 
@@ -166,6 +179,8 @@ public class StorageBuckets(IJSRuntime js)
     /// <param name="path">A file path inside the bucket.</param>
     /// <param name="text">The contents to write.</param>
     /// <remarks>
+    /// Creates the bucket too when it isn't there: a write names what it wants to exist.
+    /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
@@ -178,6 +193,8 @@ public class StorageBuckets(IJSRuntime js)
     /// <param name="path">A file path inside the bucket.</param>
     /// <param name="data">The contents to write.</param>
     /// <remarks>
+    /// Creates the bucket too when it isn't there: a write names what it wants to exist.
+    /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
@@ -190,6 +207,8 @@ public class StorageBuckets(IJSRuntime js)
     /// <param name="path">The path inside the bucket to delete.</param>
     /// <param name="recursive">Required to delete a directory that isn't empty.</param>
     /// <remarks>
+    /// False for a bucket that doesn't exist - a delete has no reason to create one.
+    /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.

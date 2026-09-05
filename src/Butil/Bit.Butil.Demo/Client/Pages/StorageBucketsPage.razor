@@ -163,15 +163,20 @@ await storageBuckets.Delete("drafts");
         <DemoConsole @ref="deleteOutput" Title="delete output" />
     </DemoSection>
 
-    <Callout Type="info" Title="Opening is creating">
-        There is no "does this bucket exist" call: <code>Open</code> and <code>Get</code> both create
-        the bucket when the name is unused. Read <code>Keys</code> first when the difference matters.
+    <Callout Type="info" Title="Only Open and the writes create">
+        The browser's own <code>open()</code> is create-or-get, so reaching for a bucket by name is
+        what brings it into existence. Butil keeps that to the members where it is the point:
+        <code>Open</code>, <code>WriteText</code> and <code>WriteBytes</code>. Everything else -
+        <code>Get</code>, <code>Persisted</code>, <code>Estimate</code>, <code>GetExpires</code>,
+        <code>List</code>, <code>ReadText</code>, <code>Persist</code>, <code>SetExpires</code>,
+        <code>Remove</code> - answers null/false/empty for a name that is not in <code>Keys</code>,
+        and creates nothing.
     </Callout>
 
     <ApiTable Title="API reference">
         <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.storageBuckets." />
         <ApiMember Name="Open" Signature="ValueTask<StorageBucketInfo?> Open(string name, bool persisted = false, StorageBucketDurability durability = Default, long? quota = null, DateTimeOffset? expires = null)" Description="Opens the named bucket, creating it when it is not there. The options apply only at creation." />
-        <ApiMember Name="Get" Signature="ValueTask<StorageBucketInfo?> Get(string name)" Description="Reads a bucket's current state. Also creates the bucket when the name is unused." />
+        <ApiMember Name="Get" Signature="ValueTask<StorageBucketInfo?> Get(string name)" Description="Reads a bucket's current state, or null when there is no such bucket. Creates nothing." />
         <ApiMember Name="Keys" Signature="ValueTask<string[]> Keys()" Description="Lists the names of every bucket this origin has, alphabetically." />
         <ApiMember Name="Delete" Signature="ValueTask<bool> Delete(string name)" Description="Deletes a bucket and everything in it - files, databases and caches." />
         <ApiMember Name="Persist" Signature="ValueTask<bool> Persist(string name)" Description="Asks the browser to exempt this bucket from eviction. The user agent decides." />
@@ -250,7 +255,7 @@ await storageBuckets.Delete("drafts");
         try
         {
             var bucket = await storageBuckets.Get(bucketName);
-            if (bucket is null) await openOutput.Warn($"Get(\"{bucketName}\") → null.");
+            if (bucket is null) await openOutput.Warn($"Get(\"{bucketName}\") → null - no bucket under that name (Open creates one; Get doesn't).");
             else await openOutput.Info($"Get(\"{bucket.Name}\") → persisted: {bucket.Persisted}, usage: {FormatBytes(bucket.Usage)}");
         }
         catch (Exception ex)
