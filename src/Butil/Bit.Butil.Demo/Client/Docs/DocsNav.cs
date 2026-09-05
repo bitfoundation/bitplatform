@@ -45,7 +45,7 @@ public static class DocsNav
             new("Animation", "animation", "Run and control Web Animations on any element, straight from C#.", typeof(AnimationPage), ApiSupport.Broad, ApiNeeds.None,
                 ["ElementReferenceAnimationExtensions", "AnimationHandle"]),
             new("PictureInPicture", "picture-in-picture", "Float a video in an always-on-top window outside the page.", typeof(PictureInPicturePage), ApiSupport.Broad, ApiNeeds.UserGesture),
-            new("DocumentPictureInPicture", "document-picture-in-picture", "Put arbitrary DOM - custom controls, a live chart - in an always-on-top window.", typeof(DocumentPictureInPicturePage), ApiSupport.Chromium, ApiNeeds.UserGesture),
+            new("DocumentPictureInPicture", "document-picture-in-picture", "Put arbitrary DOM - custom controls, a live chart - in an always-on-top window.", typeof(DocumentPictureInPicturePage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
             new("ViewTransition", "view-transition", "Let the browser animate between two states of the page.", typeof(ViewTransitionPage), ApiSupport.Partial),
             new("Keyboard", "keyboard", "App-wide keyboard shortcuts with modifier support.", typeof(KeyboardPage)),
             new("IntersectionObserver", "intersection-observer", "Observe element visibility inside the viewport or a scroll container.", typeof(IntersectionObserverPage), ApiSupport.Broad, ApiNeeds.None,

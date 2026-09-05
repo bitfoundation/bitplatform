@@ -128,7 +128,18 @@ public sealed class XrSessionHandle : IAsyncDisposable
     {
         if (id != _id) return;
 
-        _onEnd?.Invoke();
+        try
+        {
+            _onEnd?.Invoke();
+        }
+        finally
+        {
+            // The session is over and JS has dropped its entry, so nothing will dispatch here again -
+            // and a handle the user never disposes would otherwise hold the reference for the
+            // lifetime of the circuit.
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
     }
 
     /// <summary>

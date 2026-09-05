@@ -14,8 +14,9 @@ public class MediaTests : ButilObserversPageTest
     [TestMethod]
     public async Task MediaCapabilities_DecodingInfo_Answers_For_A_Known_Codec()
     {
-        // A configuration the engine can satisfy: an answer object (not null), and supported.
-        await ClickAndExpectAsync("mediacaps-decoding", "mediacaps:decoding:True/True");
+        // A configuration the engine can satisfy: an answer object (not null), and supported - for
+        // the video query, and for the audio one that carries the Boolean SpatialRendering member.
+        await ClickAndExpectAsync("mediacaps-decoding", "mediacaps:decoding:True/True/True/True");
     }
 
     [TestMethod]

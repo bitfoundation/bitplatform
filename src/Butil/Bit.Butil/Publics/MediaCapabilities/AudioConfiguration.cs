@@ -21,6 +21,6 @@ public class AudioConfiguration
     /// <summary>Sample rate in samples per second, e.g. 48000.</summary>
     public int? Samplerate { get; set; }
 
-    /// <summary>Spatial rendering request, e.g. <c>"dolbyAtmos"</c>. Only meaningful for a decoding query.</summary>
-    public string? SpatialRendering { get; set; }
+    /// <summary>Whether the audio is to be rendered spatially. Only meaningful for a decoding query.</summary>
+    public bool? SpatialRendering { get; set; }
 }

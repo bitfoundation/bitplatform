@@ -10,6 +10,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         encodingInfo(config: any) { return query('encodingInfo', config); }
     };
 
+    function trackConfiguration(robustness: any, encryptionScheme: any) {
+        if (!robustness && !encryptionScheme) return null;
+        const track: any = {};
+        if (robustness) track.robustness = robustness;
+        if (encryptionScheme) track.encryptionScheme = encryptionScheme;
+        return track;
+    }
+
     async function query(method: string, config: any) {
         const capabilities = (navigator as any).mediaCapabilities;
         if (!capabilities?.[method]) return null;
@@ -24,8 +32,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (config?.keySystemConfiguration?.keySystem) {
             request.keySystemConfiguration = butil.utils.pick(config.keySystemConfiguration,
                 ['keySystem', 'initDataType', 'distinctiveIdentifier', 'persistentState', 'sessionTypes']);
-            if (config.keySystemConfiguration.audioRobustness) request.keySystemConfiguration.audio = { robustness: config.keySystemConfiguration.audioRobustness };
-            if (config.keySystemConfiguration.videoRobustness) request.keySystemConfiguration.video = { robustness: config.keySystemConfiguration.videoRobustness };
+            // The spec nests both the robustness and the encryption scheme in one track object per
+            // track, so each is only created when something was asked about that track.
+            const audio = trackConfiguration(config.keySystemConfiguration.audioRobustness, config.keySystemConfiguration.audioEncryptionScheme);
+            const video = trackConfiguration(config.keySystemConfiguration.videoRobustness, config.keySystemConfiguration.videoEncryptionScheme);
+            if (audio) request.keySystemConfiguration.audio = audio;
+            if (video) request.keySystemConfiguration.video = video;
         }
 
         try {

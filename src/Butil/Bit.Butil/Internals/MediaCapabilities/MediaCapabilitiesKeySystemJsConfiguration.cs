@@ -21,4 +21,8 @@ internal class MediaCapabilitiesKeySystemJsConfiguration
     public string? AudioRobustness { get; set; }
 
     public string? VideoRobustness { get; set; }
+
+    public string? AudioEncryptionScheme { get; set; }
+
+    public string? VideoEncryptionScheme { get; set; }
 }

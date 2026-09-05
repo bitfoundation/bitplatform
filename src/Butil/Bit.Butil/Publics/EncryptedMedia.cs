@@ -139,7 +139,17 @@ public class EncryptedMedia(IJSRuntime js) : IAsyncDisposable
 
         var id = Guid.NewGuid();
         _handlers[id] = handler;
-        await js.InvokeVoid("BitButil.encryptedMedia.subscribeEncrypted", id, mediaElement, DotNetRef, EncryptedMethodName);
+        try
+        {
+            await js.InvokeVoid("BitButil.encryptedMedia.subscribeEncrypted", id, mediaElement, DotNetRef, EncryptedMethodName);
+        }
+        catch
+        {
+            // Nothing is listening, so the handler that was registered ahead of the call has to go
+            // back out rather than sit in the dictionary until disposal.
+            _handlers.TryRemove(id, out _);
+            throw;
+        }
 
         return new ButilSubscription(id, async () =>
         {

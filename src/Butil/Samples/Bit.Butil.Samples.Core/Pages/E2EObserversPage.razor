@@ -667,7 +667,21 @@
             }
         });
 
-        Set($"mediacaps:decoding:{info is not null}/{info?.Supported}");
+        // Opus in WebM, with the Boolean spatial-rendering member set: as universally decodable as
+        // VP8, and the one query that carries AudioConfiguration.SpatialRendering over the boundary.
+        var audio = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+        {
+            Type = MediaDecodingType.MediaSource,
+            Audio = new AudioConfiguration
+            {
+                ContentType = "audio/webm;codecs=opus",
+                Channels = "2",
+                Samplerate = 48000,
+                SpatialRendering = false
+            }
+        });
+
+        Set($"mediacaps:decoding:{info is not null}/{info?.Supported}/{audio is not null}/{audio?.Supported}");
     }
 
     private async Task MediaSourceTypes()

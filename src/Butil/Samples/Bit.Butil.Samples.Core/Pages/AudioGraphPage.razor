@@ -37,7 +37,7 @@ await osc.Start();
         </div>
         @if (peak is not null)
         {
-            <p><span class="result-pill">peak @peak of 255</span></p>
+            <p><span class="result-pill">peak @peak of 128</span></p>
         }
     </DemoCard>
 
@@ -137,7 +137,7 @@ await osc.Start();
 
             // A waveform sits around 128; the distance of the extremes from it is the amplitude.
             peak = data.Max(b => Math.Abs(b - 128));
-            await output.Log($"peak amplitude → {peak} of 127");
+            await output.Log($"peak amplitude → {peak} of 128");
         }
         catch (Exception ex)
         {
@@ -183,6 +183,10 @@ await osc.Start();
             var panner = await webAudio.CreateStereoPanner(-1);
             if (source is null || panner is null)
             {
+                // Half a graph is still a live node on the audio thread, so whichever half was built
+                // goes back out the way it came in.
+                if (source is not null) await source.DisposeAsync();
+                if (panner is not null) await panner.DisposeAsync();
                 await output.Warn("the panner could not be built");
                 return;
             }

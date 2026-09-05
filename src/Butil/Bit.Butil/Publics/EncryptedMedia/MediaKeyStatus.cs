@@ -35,6 +35,12 @@ public enum MediaKeyStatus
     /// <summary>The key system hit an error with this key and it will not become usable.</summary>
     InternalError,
 
+    /// <summary>
+    /// The key is not usable yet but will be - a licence whose validity starts later. Waiting is the
+    /// right response; fetching a new licence is not.
+    /// </summary>
+    UsableInFuture,
+
     /// <summary>A status this version of Butil doesn't know.</summary>
     Unknown
 }

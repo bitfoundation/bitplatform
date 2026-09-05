@@ -74,9 +74,21 @@ public class DocumentPictureInPicture(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         var handle = new DocumentPictureInPictureWindowHandle(js, id, onClose);
 
-        var size = await js.Invoke<DocumentPictureInPictureSize?>("BitButil.documentPictureInPicture.requestWindow",
+        DocumentPictureInPictureSize? size;
+        try
+        {
+            size = await js.Invoke<DocumentPictureInPictureSize?>("BitButil.documentPictureInPicture.requestWindow",
                                                                   id, options ?? new DocumentPictureInPictureOptions(),
                                                                   handle.CallbackRef, DocumentPictureInPictureWindowHandle.CloseMethodName);
+        }
+        catch
+        {
+            // The handle - and the callback reference it holds - exists before the call that would
+            // have given it a window, so a failed call has to take it back out.
+            await handle.DisposeAsync();
+            throw;
+        }
+
         if (size is null)
         {
             await handle.DisposeAsync();

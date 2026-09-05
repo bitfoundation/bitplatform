@@ -94,9 +94,21 @@ public sealed class MediaKeysHandle : IAsyncDisposable
         var sessionId = Guid.NewGuid();
         var handle = new MediaKeySessionHandle(_js, _id, sessionId, onMessage, onKeyStatusesChange);
 
-        var created = await _js.Invoke<bool>("BitButil.encryptedMedia.createSession",
+        bool created;
+        try
+        {
+            created = await _js.Invoke<bool>("BitButil.encryptedMedia.createSession",
                                              _id, sessionId, MediaKeySystemConfiguration.ToName(sessionType), handle.CallbackRef,
                                              MediaKeySessionHandle.MessageMethodName, MediaKeySessionHandle.KeyStatusesMethodName);
+        }
+        catch
+        {
+            // The handle - and the callback reference it holds - exists before the call that would
+            // have given it a session, so a failed call has to take it back out.
+            await handle.DisposeAsync();
+            throw;
+        }
+
         if (created is false)
         {
             await handle.DisposeAsync();

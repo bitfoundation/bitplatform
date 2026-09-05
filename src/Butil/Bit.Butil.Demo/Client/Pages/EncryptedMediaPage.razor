@@ -130,8 +130,9 @@ await restored.Remove();   // releases the licence and deletes the stored copy
 
 <Callout Type="warning" Title="Usable is not the only status that matters">
     A licence can be accepted and still leave its keys unusable: OutputRestricted means the display path has no
-    HDCP, and OutputDownscaled means only a lower resolution is allowed. Watch the key-status callback rather
-    than the return value of Update to know that playback can really start.
+    HDCP, OutputDownscaled means only a lower resolution is allowed, and UsableInFuture means the licence is
+    valid but its window has not opened yet - waiting is the answer there, not a new licence. Watch the
+    key-status callback rather than the return value of Update to know that playback can really start.
 </Callout>
 
 <ApiTable Title="API reference">

@@ -38,6 +38,16 @@ public class MediaCapabilitiesKeySystemConfiguration
     /// <summary>The robustness level asked of the video track, e.g. <c>"HW_SECURE_ALL"</c>. Key-system specific, so a string.</summary>
     public string? VideoRobustness { get; set; }
 
+    /// <summary>The encryption scheme the audio track uses, e.g. <c>"cenc"</c> or <c>"cbcs"</c>.</summary>
+    /// <remarks>
+    /// A different question from robustness: a key system can support the codec at the robustness
+    /// asked for and still not decrypt the scheme the content is packaged with.
+    /// </remarks>
+    public string? AudioEncryptionScheme { get; set; }
+
+    /// <summary>The encryption scheme the video track uses, e.g. <c>"cenc"</c> or <c>"cbcs"</c>.</summary>
+    public string? VideoEncryptionScheme { get; set; }
+
     internal MediaCapabilitiesKeySystemJsConfiguration ToJsObject() => new()
     {
         KeySystem = KeySystem,
@@ -46,6 +56,8 @@ public class MediaCapabilitiesKeySystemConfiguration
         PersistentState = MediaKeySystemConfiguration.ToName(PersistentState),
         SessionTypes = SessionTypes?.Select(MediaKeySystemConfiguration.ToName).ToArray(),
         AudioRobustness = AudioRobustness,
-        VideoRobustness = VideoRobustness
+        VideoRobustness = VideoRobustness,
+        AudioEncryptionScheme = AudioEncryptionScheme,
+        VideoEncryptionScheme = VideoEncryptionScheme
     };
 }

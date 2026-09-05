@@ -69,7 +69,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         };
         _sessions[id] = entry;
 
+        // An explicit end() has already dropped the entry (and disposed the .NET reference), so the
+        // event it raises must not report a second time - only a session still registered under this
+        // id, and still this very entry, is one .NET has not been told about.
         session.addEventListener('end', () => {
+            if (_sessions[id] !== entry) return;
             delete _sessions[id];
             butil.utils.dispatch(dotNetRef, endMethod, id);
         }, { once: true });

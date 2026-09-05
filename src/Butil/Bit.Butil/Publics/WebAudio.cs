@@ -473,9 +473,21 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         var handle = new AudioWorkletNodeHandle(js, id, onMessage);
 
-        var created = await js.Invoke<bool>("BitButil.webAudio.createWorkletNode",
+        bool created;
+        try
+        {
+            created = await js.Invoke<bool>("BitButil.webAudio.createWorkletNode",
                                             id, processorName, options ?? new AudioWorkletNodeOptions(),
                                             handle.CallbackRef, AudioWorkletNodeHandle.MessageMethodName);
+        }
+        catch
+        {
+            // The handle - and the callback reference it holds - exists before the call that would
+            // have given it a node, so a failed call has to take it back out.
+            await handle.DisposeAsync();
+            throw;
+        }
+
         if (created is false)
         {
             await handle.DisposeAsync();

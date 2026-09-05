@@ -78,11 +78,22 @@ public sealed class VideoDecoderHandle : WebCodecsHandle
     /// be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
     /// </summary>
     [JSInvokable(FrameMethodName)]
-    public void InvokeVideoDecoderFrame(Guid id, Guid frameId, long timestamp, long? duration, int width, int height, string format)
+    public async Task InvokeVideoDecoderFrame(Guid id, Guid frameId, long timestamp, long? duration, int width, int height, string format)
     {
         if (id != HandleId) return;
 
-        _onFrame.Invoke(new VideoFrameHandle(Js, frameId, timestamp, duration, width, height, format));
+        var frame = new VideoFrameHandle(Js, frameId, timestamp, duration, width, height, format);
+        try
+        {
+            _onFrame.Invoke(frame);
+        }
+        catch
+        {
+            // A callback that threw never took ownership of the frame, and an undisposed frame is
+            // what stalls the decoder - so it is released here rather than left to the GC.
+            await frame.DisposeAsync();
+            throw;
+        }
     }
 
     /// <summary>

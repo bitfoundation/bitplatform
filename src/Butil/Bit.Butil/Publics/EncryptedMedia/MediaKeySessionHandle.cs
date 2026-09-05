@@ -225,6 +225,7 @@ public sealed class MediaKeySessionHandle : IAsyncDisposable
         "output-restricted" => MediaKeyStatus.OutputRestricted,
         "output-downscaled" => MediaKeyStatus.OutputDownscaled,
         "status-pending" => MediaKeyStatus.StatusPending,
+        "usable-in-future" => MediaKeyStatus.UsableInFuture,
         "internal-error" => MediaKeyStatus.InternalError,
         _ => MediaKeyStatus.Unknown
     };
