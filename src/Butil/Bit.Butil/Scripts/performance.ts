@@ -33,20 +33,34 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // type -> the entries an observer of that type has reported so far, once something has asked.
     const _retained: { [type: string]: any[] } = {};
 
+    // type -> the observer filling _retained[type], so stopRetained() can shut them down. They are
+    // not in _perfObservers: that map is keyed by a subscription id and disconnect() answers to a
+    // caller who asked for one, while these belong to the module rather than to any one caller.
+    const _retainedObservers: { [type: string]: PerformanceObserver } = {};
+
+    // The most recent entries kept per type. These observers run for the life of the document, and
+    // an interaction-heavy page produces 'event' entries without end - so the records are a window
+    // rather than a log, both to bound memory and to bound what each read marshals back to .NET.
+    // 250 matches the resource buffer the platform itself keeps.
+    const RETAINED_MAX = 250;
+
     function supportsEntryType(type: string) {
         const types = (PerformanceObserver as any)?.supportedEntryTypes;
         return Array.isArray(types) && types.indexOf(type) >= 0;
     }
 
-    function observeVital(type: string, handler: (list: PerformanceObserverEntryList) => void, options: any = {}) {
-        if (!supportsEntryType(type)) return false;
+    // Returns the observer it started, or null when the type isn't collectable here - callers test
+    // it for truthiness where all they wanted was "did this metric start".
+    function observeVital(type: string, handler: (list: PerformanceObserverEntryList) => void, options: any = {}): PerformanceObserver | null {
+        if (!supportsEntryType(type)) return null;
         try {
-            new PerformanceObserver(handler).observe({ type, buffered: true, ...options });
-            return true;
+            const observer = new PerformanceObserver(handler);
+            observer.observe({ type, buffered: true, ...options });
+            return observer;
         } catch {
             // The type is advertised but rejected here (a permissions policy, an unsupported
             // option) - leave the metric at null rather than reporting a number nothing feeds.
-            return false;
+            return null;
         }
     }
 
@@ -60,9 +74,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // durationThreshold below the 104ms default so short interactions are counted too, for
             // the same reason the vitals collector lowers it.
             const options = type === 'event' ? { durationThreshold: 16 } : {};
-            observeVital(type, list => {
-                for (const entry of list.getEntries()) _retained[type].push((entry as any).toJSON ? (entry as any).toJSON() : entry);
+            const observer = observeVital(type, list => {
+                const bucket = _retained[type];
+                for (const entry of list.getEntries()) bucket.push((entry as any).toJSON ? (entry as any).toJSON() : entry);
+                if (bucket.length > RETAINED_MAX) bucket.splice(0, bucket.length - RETAINED_MAX);
             }, options);
+            if (observer) _retainedObservers[type] = observer;
         }
 
         const entries = _retained[type];
@@ -217,6 +234,16 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (!observer) return;
             delete _perfObservers[listenerId];
             observer.disconnect();
+        },
+        // Stops the observers behind the observer-only entry types and drops their records. Called
+        // when the Performance service is disposed - the scope owning it is the document's, so the
+        // records have no reader left and the observers have no reason to keep filling them.
+        stopRetained() {
+            for (const type of Object.keys(_retainedObservers)) {
+                _retainedObservers[type].disconnect();
+                delete _retainedObservers[type];
+                delete _retained[type];
+            }
         }
     };
 }(BitButil));

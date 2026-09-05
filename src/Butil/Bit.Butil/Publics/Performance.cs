@@ -138,6 +138,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <remarks>
     /// Long tasks never reach the timeline, so this reads Butil's own observer records: the first
     /// call starts that observer and returns nothing, and a later one returns the long tasks since.
+    /// <br/>
+    /// Those records are the 250 most recent entries of the type - the same window the platform's
+    /// own resource buffer keeps - so read them as you go rather than at the end of a long session.
+    /// The observer stops when this service's scope is disposed.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceLongTaskTiming))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceTaskAttributionTiming))]
@@ -212,6 +216,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// read it again later rather than calling it only at the end.
     /// <br/>
     /// A metric the engine does not implement comes back null, which is not the same as a zero score.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) there is nothing to read and the result itself is
+    /// <c>null</c> rather than an exception - read it from <c>OnAfterRenderAsync</c>, and null-check
+    /// it if you read it anywhere a prerender pass can reach.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebVitals))]
     public ValueTask<WebVitals> GetWebVitals()
@@ -281,6 +289,13 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// An entry type the engine does not support is skipped rather than failing the subscription,
     /// so a handler that is never called is the normal way an unsupported metric presents.
     /// </remarks>
+    // T's own members are preserved by its annotation, but the DTOs hanging off it are not reached
+    // transitively - and unlike the Get* reads, subscribing is a path that can be the only one an
+    // app takes, so the nested types have to be rooted here too or their members deserialize empty.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceTaskAttributionTiming))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceScriptTiming))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftAttribution))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftRect))]
     public async Task<ButilSubscription> SubscribeObserver<[DynamicallyAccessedMembers(JsonSerialized)] T>(
         string[] entryTypes,
         Action<T[]> handler,
@@ -314,7 +329,11 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
 
     private static readonly JsonSerializerOptions EntryJsonOptions = new(JsonSerializerDefaults.Web);
 
-    /// <summary>Disconnects every PerformanceObserver started through this instance and releases its interop reference.</summary>
+    /// <summary>
+    /// Disconnects every PerformanceObserver started through this instance - including the ones
+    /// behind the observer-fed reads such as <see cref="GetLongTasks"/> - and releases its interop
+    /// reference.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         try
@@ -325,6 +344,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
             {
                 await js.InvokeVoid("BitButil.performance.disconnect", id);
             }
+
+            // The observer-fed reads start observers that belong to the module rather than to a
+            // subscription, so they are not in the loop above and would otherwise outlive the scope.
+            await js.InvokeVoid("BitButil.performance.stopRetained");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

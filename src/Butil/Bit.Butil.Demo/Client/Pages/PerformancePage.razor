@@ -333,6 +333,12 @@ await performance.ClearResourceTimings();
         try
         {
             var vitals = await performance.GetWebVitals();
+            if (vitals is null)
+            {
+                // Only reachable during prerender/SSR, where there is no JS runtime to read from.
+                await vitalsOutput.Info("GetWebVitals → no JS runtime yet; read it after the first render.");
+                return;
+            }
 
             await vitalsOutput.Success($"LCP → {Format(vitals.Lcp, "ms")} · CLS → {Format(vitals.Cls, "")} · INP → {Format(vitals.Inp, "ms")}");
             await vitalsOutput.Log($"  FCP {Format(vitals.Fcp, "ms")} · TTFB {Format(vitals.Ttfb, "ms")}");

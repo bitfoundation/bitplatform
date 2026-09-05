@@ -230,6 +230,13 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
         // The first call is what starts CLS and INP accumulating; reading it again later is how the
         // numbers become meaningful.
         var vitals = await performance.GetWebVitals();
+        if (vitals is null)
+        {
+            // Only reachable during prerender/SSR, where there is no JS runtime to read from.
+            await output.Info("Web Vitals →", "no JS runtime yet; read it after the first render.");
+            return;
+        }
+
         await output.Success("Web Vitals →",
             $"LCP {vitals.Lcp?.ToString("F0") ?? "n/a"} ms · CLS {vitals.Cls?.ToString("F3") ?? "n/a"} · INP {vitals.Inp?.ToString("F0") ?? "n/a"} ms");
     }

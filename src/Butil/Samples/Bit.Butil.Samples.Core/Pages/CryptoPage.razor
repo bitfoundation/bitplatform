@@ -172,6 +172,13 @@ var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
         var aesKey = await crypto.GenerateAesKey(256);
 
         var jwk = await crypto.ExportJsonWebKey(aesKey, CryptoKeyFormat.Raw, algorithm);
+        if (jwk is null)
+        {
+            // Only reachable during prerender/SSR, where there is no JS runtime to export with.
+            await output.Info("ExportJsonWebKey →", "no JS runtime yet; run this after the first render.");
+            return;
+        }
+
         await output.Success("ExportJsonWebKey →", $"kty={jwk.Kty}, alg={jwk.Alg}, k={jwk.K}");
 
         var roundTripped = await crypto.ImportJsonWebKey(jwk, algorithm, CryptoKeyFormat.Raw);

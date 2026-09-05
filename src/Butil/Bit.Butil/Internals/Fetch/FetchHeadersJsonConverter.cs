@@ -43,7 +43,12 @@ internal sealed class FetchHeadersJsonConverter : JsonConverter<FetchHeaders>
 
                     // Anything past the second element is not part of the pair; skip to its end so
                     // a longer array is tolerated rather than derailing the rest of the payload.
-                    while (reader.Read() && reader.TokenType != JsonTokenType.EndArray) { }
+                    // Skip() is what steps over a nested array or object whole - reading one token
+                    // at a time would leave the reader inside it and break the next pair.
+                    while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                    {
+                        reader.Skip();
+                    }
                 }
                 return headers;
 

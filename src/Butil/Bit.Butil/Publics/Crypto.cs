@@ -238,7 +238,14 @@ public class Crypto(IJSRuntime js)
     /// <param name="sourceFormat">How <paramref name="key"/> is encoded - raw, pkcs8 or spki.</param>
     /// <param name="algorithm">The algorithm the key belongs to.</param>
     /// <exception cref="ArgumentException"><paramref name="sourceFormat"/> is <see cref="CryptoKeyFormat.Jwk"/>.</exception>
-    /// <remarks>A JWK exported from a private key contains the private half in the clear - see the security note on <see cref="Crypto"/>.</remarks>
+    /// <remarks>
+    /// A JWK exported from a private key contains the private half in the clear - see the security
+    /// note on <see cref="Crypto"/>.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) there is nothing to export and the result itself is
+    /// <c>null</c> rather than an exception - call this from <c>OnAfterRenderAsync</c>, and
+    /// null-check it if you call it anywhere a prerender pass can reach.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CryptoKeyAlgorithmJsOptions))]
     public ValueTask<CryptoJsonWebKey> ExportJsonWebKey(byte[] key, CryptoKeyFormat sourceFormat, CryptoKeyAlgorithm algorithm)
     {

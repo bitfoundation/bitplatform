@@ -276,6 +276,13 @@
         var key = await crypto.GenerateAesKey(256);
 
         var jwk = await crypto.ExportJsonWebKey(key, CryptoKeyFormat.Raw, algorithm);
+        if (jwk is null)
+        {
+            // Prerender only - the harness drives this after the first render, so it is a failure here.
+            Set("crypto:jwk:null");
+            return;
+        }
+
         var roundTripped = await crypto.ImportJsonWebKey(jwk, algorithm, CryptoKeyFormat.Raw);
 
         // kty proves the JWK deserialized as more than an empty object; the byte comparison proves

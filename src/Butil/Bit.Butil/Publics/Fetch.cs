@@ -102,7 +102,10 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
     /// <param name="request">The URL, method and headers to send. <see cref="FetchRequest.Body"/> is ignored - <paramref name="body"/> is the body.</param>
     /// <param name="body">The stream to upload. The caller owns it and is responsible for disposing it once this returns.</param>
     /// <param name="onProgress">Optional callback fired as bytes are handed to the browser - which runs ahead of what the server has received.</param>
-    /// <param name="cancellationToken">When triggered, aborts the request.</param>
+    /// <param name="cancellationToken">When triggered, aborts the request. This returns once the
+    /// browser has let go of <paramref name="body"/> - so an aborted call still yields a
+    /// <see cref="FetchResponse"/> with <see cref="FetchResponse.Aborted"/> set rather than throwing,
+    /// and the stream is safe to dispose the moment it returns.</param>
     /// <remarks>
     /// Check <see cref="SupportsStreamingUpload"/> first: where streaming upload is unsupported the
     /// browser rejects the request outright, which comes back as a failed <see cref="FetchResponse"/>
@@ -123,6 +126,11 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(body);
 
+        // Already cancelled: nothing has been posted to JS yet, so aborting it there would have
+        // nothing to find. Answer with the same aborted response the abort path produces.
+        if (cancellationToken.IsCancellationRequested)
+            return new FetchResponse { Url = request.Url, Aborted = true, Type = "error" };
+
         var id = Guid.NewGuid();
         if (onProgress is not null)
             _progressHandlers.TryAdd(id, onProgress);
@@ -139,8 +147,14 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
 
         try
         {
+            // Deliberately not awaited with the token, unlike Send: the browser is pulling from
+            // streamRef, and returning the moment the token fires would dispose it - and let the
+            // caller dispose their own stream - while a pull is still in flight, which surfaces as
+            // an ObjectDisposedException on the interop pump. The registration above aborts the
+            // request instead, so the wait ends on the aborted response JS hands back once it has
+            // let go of the stream.
             return await js.Invoke<FetchResponse>("BitButil.fetch.sendStream",
-                cancellationToken,
+                CancellationToken.None,
                 id, request, streamRef, onProgress is not null ? DotNetRef : null, onProgress is not null, total);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

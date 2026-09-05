@@ -606,6 +606,13 @@ byte[] recovered = await crypto.UnwrapKey(
             var algorithm = CryptoKeyAlgorithm.AesGcm(256);
 
             var jwk = await crypto.ExportJsonWebKey(key, CryptoKeyFormat.Raw, algorithm);
+            if (jwk is null)
+            {
+                // Only reachable during prerender/SSR, where there is no JS runtime to export with.
+                await importExportOutput.Info("ExportJsonWebKey → no JS runtime yet; run this after the first render.");
+                return;
+            }
+
             await importExportOutput.Success("ExportJsonWebKey →", $"kty={jwk.Kty}, alg={jwk.Alg}, k={jwk.K}");
 
             var roundTripped = await crypto.ImportJsonWebKey(jwk, algorithm, CryptoKeyFormat.Raw);
@@ -625,6 +632,13 @@ byte[] recovered = await crypto.UnwrapKey(
             _rsaPair ??= await crypto.GenerateRsaKeyPair(2048, CryptoKeyHash.Sha256);
 
             var jwk = await crypto.ExportJsonWebKey(_rsaPair.PublicKey, CryptoKeyFormat.Spki, CryptoKeyAlgorithm.RsaOaep());
+            if (jwk is null)
+            {
+                // Only reachable during prerender/SSR, where there is no JS runtime to export with.
+                await importExportOutput.Info("ExportJsonWebKey → no JS runtime yet; run this after the first render.");
+                return;
+            }
+
             await importExportOutput.Success("ExportJsonWebKey (SPKI → JWK) →", $"kty={jwk.Kty}, alg={jwk.Alg}, e={jwk.E}, n={jwk.N?[..24]}...");
 
             var spki = await crypto.ImportJsonWebKey(jwk, CryptoKeyAlgorithm.RsaOaep(), CryptoKeyFormat.Spki);
