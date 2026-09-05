@@ -5,14 +5,38 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // fragment - building a Sanitizer per call is the expensive half of sanitizing a list of items.
     const _sanitizers: { [id: string]: any } = {};
 
+    // Reading a sanitizer's configuration back, under either of the two names the method has
+    // carried. It is also how a configuration is confirmed to have been understood at all.
+    function configOf(sanitizer: any) {
+        for (const name of ['get', 'getConfiguration']) {
+            if (typeof sanitizer?.[name] !== 'function') continue;
+            try { return sanitizer[name](); } catch { return null; }
+        }
+        return null;
+    }
+
+    // A configuration is a WebIDL dictionary, so a member the build does not know is *ignored*, not
+    // rejected: constructing under the wrong spelling succeeds and quietly yields the permissive
+    // default sanitizer. Catching an exception therefore proves nothing - the only evidence that a
+    // spelling was understood is the sanitizer echoing those keys back in its own configuration.
+    function applied(sanitizer: any, keys: string[]) {
+        const config = configOf(sanitizer);
+        // Nothing to read the configuration back from: construction is the only signal there is.
+        if (!config || Object.keys(config).length === 0) return true;
+        return keys.some(key => key in config);
+    }
+
+    function construct(config: any) {
+        try { return new ((window as any).Sanitizer)(config); } catch { return null; }
+    }
+
     function build(config: any) {
         const ctor = (window as any).Sanitizer;
         if (typeof ctor !== 'function') return null;
         if (!config) return new ctor();
 
-        // Only the keys the caller actually set are passed on: a runtime that doesn't know a key
-        // rejects the whole configuration, so sending nulls for everything unset would fail on the
-        // very browsers this has to work in.
+        // Only the keys the caller actually set are passed on: null is not a value any of these
+        // members accepts, so sending one for everything left unset would be rejected outright.
         const cleaned: any = {};
         for (const key of Object.keys(config)) {
             const value = config[key];
@@ -23,21 +47,26 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // nothing, which strips every element. A caller who set no property means the default.
         if (Object.keys(cleaned).length === 0) return new ctor();
 
-        try { return new ctor(cleaned); } catch { /* fall through to the older spelling */ }
+        const candidate = construct(cleaned);
+        if (candidate && applied(candidate, Object.keys(cleaned))) return candidate;
 
         // Chrome shipped `allowElements`/`allowAttributes` before the names were settled; retrying
-        // under the old spelling keeps a configuration working on those builds instead of silently
-        // falling back to the default (more permissive) sanitizer.
-        const legacy: any = {};
+        // under the old spelling keeps a configuration working on those builds.
         const renamed: { [key: string]: string } = {
             elements: 'allowElements',
             attributes: 'allowAttributes',
             comments: 'allowComments',
             dataAttributes: 'allowDataAttributes'
         };
+        const legacy: any = {};
         for (const key of Object.keys(cleaned)) legacy[renamed[key] ?? key] = cleaned[key];
 
-        try { return new ctor(legacy); } catch { return null; }
+        const fallback = construct(legacy);
+        if (fallback && applied(fallback, Object.keys(legacy))) return fallback;
+
+        // Neither spelling took. Handing back a sanitizer built from no configuration at all would
+        // let through exactly the markup the caller's allow-list excludes, so this is a failure.
+        return null;
     }
 
     // An id that isn't in the registry - disposed, or never created because the browser has no

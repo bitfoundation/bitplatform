@@ -98,6 +98,14 @@ public class TextUrlAndSelectionTests : ButilPageTest
     }
 
     [TestMethod]
+    public async Task Selection_Places_A_Caret_In_An_Element_With_No_Text()
+    {
+        // Counting offsets over text nodes leaves an empty element with none to land on, but the
+        // start of it is a valid caret position - and the one GetRangeIn reports for it.
+        await ClickAndExpectAsync("sel-empty-range", "sel:empty:True/0/0");
+    }
+
+    [TestMethod]
     public async Task Selection_Refuses_Negative_Offsets()
     {
         // Both of these would reach Range.setStart with a negative offset, which throws.

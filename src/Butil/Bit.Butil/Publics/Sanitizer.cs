@@ -74,8 +74,10 @@ public class Sanitizer(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <param name="config">Which elements and attributes to allow or remove.</param>
     /// <returns>
-    /// A handle to sanitize with, or null when the runtime has no configurable <c>Sanitizer</c> or
-    /// the configuration is invalid (an allow-list and a deny-list for the same thing, for instance).
+    /// A handle to sanitize with, or null when the runtime has no configurable <c>Sanitizer</c>, the
+    /// configuration is invalid (an allow-list and a deny-list for the same thing, for instance), or
+    /// the runtime is too old to understand it. Never a handle backed by a sanitizer the
+    /// configuration didn't reach - that would let through exactly what the allow-list excludes.
     /// </returns>
     /// <remarks>
     /// Worth creating once and keeping: building a sanitizer is the expensive half of sanitizing one

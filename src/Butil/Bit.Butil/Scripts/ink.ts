@@ -3,8 +3,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     const _trails: { [id: string]: { element: Element, handler: (event: PointerEvent) => void, style: any } } = {};
     // Requesting a presenter is asynchronous, so a stop() can land while one is still being
-    // requested. The counter says which start is still the current one for an id.
-    const _starts: { [id: string]: number } = {};
+    // requested. The token says which start is still the current one for an id - an identity rather
+    // than a counter, so that stop() can remove the entry outright instead of keeping a number
+    // alive for every id the page has ever drawn with.
+    const _starts: { [id: string]: object } = {};
 
     butil.ink = {
         isSupported() { return typeof (window.navigator as any).ink?.requestPresenter === 'function'; },
@@ -18,13 +20,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
             butil.ink.stop(id);
 
-            const token = _starts[id] = (_starts[id] ?? 0) + 1;
+            const token = _starts[id] = {};
 
             let presenter: any;
             try {
                 presenter = await ink.requestPresenter({ presentationArea: element });
             } catch {
-                // Delegated ink is off, or the element is not a valid presentation area.
+                // Delegated ink is off, or the element is not a valid presentation area. Nothing is
+                // in flight for this id any more unless a newer start has already claimed it.
+                if (_starts[id] === token) delete _starts[id];
                 return false;
             }
 
@@ -53,9 +57,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         stop(id: string) {
-            // Bumped even with no trail to remove: a start still awaiting its presenter has to see
-            // that it was stopped.
-            if (_starts[id]) _starts[id]++;
+            // Dropped even with no trail to remove: a start still awaiting its presenter compares
+            // its own token against this entry, and finding it gone is how it sees it was stopped.
+            delete _starts[id];
 
             const trail = _trails[id];
             if (!trail) return;

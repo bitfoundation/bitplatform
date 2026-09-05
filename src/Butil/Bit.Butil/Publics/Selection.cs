@@ -106,7 +106,8 @@ public class Selection(IJSRuntime js) : IAsyncDisposable
     /// <remarks>
     /// Offsets count the element's text only, walking its text nodes in order - element boundaries
     /// are not characters. So the numbers survive markup changing around the text, which is exactly
-    /// what makes them usable across a re-render.
+    /// what makes them usable across a re-render. An element with no text has one valid position,
+    /// 0 to 0, so an emptied editor can still have its caret put back.
     /// </remarks>
     public ValueTask<bool> SelectRange(ElementReference element, int start, int end)
         => js.Invoke<bool>("BitButil.selection.selectRange", element, start, end);

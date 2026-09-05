@@ -133,9 +133,12 @@
     <h3>Selection</h3>
     @* Fixed, never re-rendered text so the offsets below are stable across runs. *@
     <span @ref="_selectionTarget" id="sel-target">butil selection target</span>
+    @* No text at all, so the one position in it is the only one there is to restore a caret to. *@
+    <span @ref="_selectionEmptyTarget" id="sel-empty-target"></span>
     <button id="sel-select" @onclick="SelectionSelectContents">select contents</button>
     <button id="sel-range" @onclick="SelectionSelectRange">select range 0-5</button>
     <button id="sel-offsets" @onclick="SelectionOffsets">offsets in element</button>
+    <button id="sel-empty-range" @onclick="SelectionEmptyRange">caret in an empty element</button>
     <button id="sel-content-offsets" @onclick="SelectionContentsOffsets">offsets of a whole element</button>
     <button id="sel-bad-range" @onclick="SelectionNegativeRange">negative range</button>
     <button id="sel-replace" @onclick="SelectionReplace">replace with text</button>
@@ -558,6 +561,7 @@
 
     // ─── Selection ──────────────────────────────────────────────────────────────
     private ElementReference _selectionTarget;
+    private ElementReference _selectionEmptyTarget;
 
     private async Task SelectionSelectContents()
     {
@@ -584,6 +588,14 @@
         await selection.SelectElementContents(_selectionTarget);
         var offsets = await selection.GetRangeIn(_selectionTarget);
         Set($"sel:contents:{offsets?.Start}/{offsets?.End}");
+    }
+    private async Task SelectionEmptyRange()
+    {
+        // The round trip an emptied editor needs: an element with no text reports {0,0}, and the
+        // caret has to go back to exactly that.
+        var placed = await selection.SelectRange(_selectionEmptyTarget, 0, 0);
+        var offsets = await selection.GetRangeIn(_selectionEmptyTarget);
+        Set($"sel:empty:{placed}/{offsets?.Start}/{offsets?.End}");
     }
     private async Task SelectionNegativeRange()
     {

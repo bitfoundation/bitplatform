@@ -31,8 +31,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // out-of-range offset is a "false", not an exception, everywhere else in this module.
         if (!(offset >= 0)) return null;
 
+        // An element with no text at all still has one valid position - the start of it. Without
+        // this, the round trip an empty editor needs (getRangeIn reports {0,0}, the content is
+        // re-rendered, selectRange puts the caret back) would fail on the way back.
+        const nodes = textNodesOf(element);
+        if (nodes.length === 0) return offset === 0 ? [element, 0] : null;
+
         let remaining = offset;
-        for (const node of textNodesOf(element)) {
+        for (const node of nodes) {
             const length = node.data.length;
             if (remaining <= length) return [node, remaining];
             remaining -= length;
