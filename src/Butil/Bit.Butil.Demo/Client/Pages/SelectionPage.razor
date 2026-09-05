@@ -190,7 +190,7 @@ await _subscription.DisposeAsync();   // stops listening
                Description="Selects a character range inside one element. False when the offsets fall outside its text." />
     <ApiMember Name="GetRangeIn"
                Signature="ValueTask<SelectionOffsets?> GetRangeIn(ElementReference element)"
-               Description="Where the selection sits inside one element, in characters. Null when there is no selection." />
+               Description="Where the selection sits inside one element, in characters. Null when there is no selection, or when it isn't inside this element." />
     <ApiMember Name="RemoveAll"
                Signature="ValueTask RemoveAll()"
                Description="Clears the selection." />
@@ -352,7 +352,7 @@ await _subscription.DisposeAsync();   // stops listening
         {
             _saved = await selection.GetRangeIn(_editor);
 
-            if (_saved is null) await restoreOutput.Warn("GetRangeIn →", "nothing is selected.");
+            if (_saved is null) await restoreOutput.Warn("GetRangeIn →", "nothing is selected inside the editor.");
             else await restoreOutput.Success("GetRangeIn →", $"{_saved.Start} to {_saved.End}.");
         }
         catch (Exception ex)

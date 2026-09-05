@@ -27,6 +27,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function pointAt(element: Node, offset: number): [Node, number] | null {
+        // A negative offset would otherwise be handed to Range.setStart, which throws - and an
+        // out-of-range offset is a "false", not an exception, everywhere else in this module.
+        if (!(offset >= 0)) return null;
+
         let remaining = offset;
         for (const node of textNodesOf(element)) {
             const length = node.data.length;
@@ -36,15 +40,21 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return null;
     }
 
-    function offsetOf(element: Node, node: Node, nodeOffset: number): number {
-        let total = 0;
-        for (const text of textNodesOf(element)) {
-            if (text === node) return total + nodeOffset;
-            total += text.data.length;
+    // The boundary may sit on the element itself or on any element inside it - selectNodeContents
+    // leaves both ends on the element, with a child index rather than a character offset. Measuring
+    // the text between the start of the element and the boundary handles every shape of boundary at
+    // once, and counts exactly the text nodes textNodesOf walks.
+    function offsetOf(element: Node, node: Node, nodeOffset: number): number | null {
+        if (node !== element && !element.contains(node)) return null;
+
+        const range = document.createRange();
+        try {
+            range.selectNodeContents(element);
+            range.setEnd(node, nodeOffset);
+        } catch {
+            return null;
         }
-        // The boundary is outside the element (or on an element node): report the end of its text
-        // rather than a negative, so a caller reading a pair of offsets always gets a usable range.
-        return total;
+        return range.toString().length;
     }
 
     butil.selection = {
@@ -126,10 +136,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         getRangeIn(element: Node) {
             const range = firstRange();
             if (!range || !element) return null;
-            return {
-                start: offsetOf(element, range.startContainer, range.startOffset),
-                end: offsetOf(element, range.endContainer, range.endOffset)
-            };
+            const start = offsetOf(element, range.startContainer, range.startOffset);
+            const end = offsetOf(element, range.endContainer, range.endOffset);
+            // A selection that isn't inside this element has no offsets in it - reporting the end of
+            // its text would read as a caret the caller never placed.
+            if (start === null || end === null) return null;
+            return { start, end };
         },
         removeAll() {
             selection()?.removeAllRanges();
@@ -157,7 +169,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const range = firstRange();
             if (!range) return false;
             range.deleteContents();
-            range.insertNode(document.createTextNode(text ?? ''));
+            const inserted = document.createTextNode(text ?? '');
+            range.insertNode(inserted);
+            // insertNode leaves the range spanning what was just inserted, so the replacement would
+            // come back selected. Replacing text reads as typing it: the caret goes after it.
+            range.setStartAfter(inserted);
+            range.collapse(true);
             return true;
         },
         deleteContents() {

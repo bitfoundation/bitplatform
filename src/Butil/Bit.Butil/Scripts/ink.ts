@@ -2,6 +2,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     const _trails: { [id: string]: { element: Element, handler: (event: PointerEvent) => void, style: any } } = {};
+    // Requesting a presenter is asynchronous, so a stop() can land while one is still being
+    // requested. The counter says which start is still the current one for an id.
+    const _starts: { [id: string]: number } = {};
 
     butil.ink = {
         isSupported() { return typeof (window.navigator as any).ink?.requestPresenter === 'function'; },
@@ -15,6 +18,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
             butil.ink.stop(id);
 
+            const token = _starts[id] = (_starts[id] ?? 0) + 1;
+
             let presenter: any;
             try {
                 presenter = await ink.requestPresenter({ presentationArea: element });
@@ -22,6 +27,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 // Delegated ink is off, or the element is not a valid presentation area.
                 return false;
             }
+
+            // A stop() - or another start() - ran while the presenter was on its way: this one is
+            // stale, and registering its listener would draw a trail nobody asked for any more.
+            if (_starts[id] !== token) return false;
 
             const style = { color: color || 'black', diameter: diameter > 0 ? diameter : 3 };
             const handler = (event: PointerEvent) => {
@@ -44,12 +53,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         stop(id: string) {
+            // Bumped even with no trail to remove: a start still awaiting its presenter has to see
+            // that it was stopped.
+            if (_starts[id]) _starts[id]++;
+
             const trail = _trails[id];
             if (!trail) return;
             delete _trails[id];
             trail.element.removeEventListener('pointermove', trail.handler as EventListener);
         },
         disposeAll() {
+            for (const id of Object.keys(_starts)) butil.ink.stop(id);
             for (const id of Object.keys(_trails)) butil.ink.stop(id);
         }
     };

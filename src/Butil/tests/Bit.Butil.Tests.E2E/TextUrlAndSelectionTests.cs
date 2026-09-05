@@ -66,6 +66,12 @@ public class TextUrlAndSelectionTests : ButilPageTest
     }
 
     [TestMethod]
+    public async Task UrlPattern_Reports_Credentials()
+    {
+        await ClickAndExpectAsync("url-pattern-credentials", "url:credentials:ada/secret");
+    }
+
+    [TestMethod]
     public async Task Selection_Selects_An_Elements_Contents()
     {
         await ClickAndExpectAsync("sel-select", "sel:select:butil selection target");
@@ -81,6 +87,27 @@ public class TextUrlAndSelectionTests : ButilPageTest
     public async Task Selection_Reports_Offsets_Within_An_Element()
     {
         await ClickAndExpectAsync("sel-offsets", "sel:offsets:6/15");
+    }
+
+    [TestMethod]
+    public async Task Selection_Reports_Offsets_Of_A_Whole_Element()
+    {
+        // selectNodeContents leaves both boundaries on the element itself. Reading them back has to
+        // say "all of the text", not the caret-at-the-end an element boundary looks like.
+        await ClickAndExpectAsync("sel-content-offsets", "sel:contents:0/22");
+    }
+
+    [TestMethod]
+    public async Task Selection_Refuses_Negative_Offsets()
+    {
+        // Both of these would reach Range.setStart with a negative offset, which throws.
+        await ClickAndExpectAsync("sel-bad-range", "sel:badrange:False/False");
+    }
+
+    [TestMethod]
+    public async Task Selection_Replaces_And_Leaves_A_Caret_After_The_Text()
+    {
+        await ClickAndExpectAsync("sel-replace", "sel:replace:True/BUTIL selection target");
     }
 
     [TestMethod]

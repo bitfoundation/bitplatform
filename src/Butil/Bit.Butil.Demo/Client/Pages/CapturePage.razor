@@ -55,12 +55,18 @@ await elementCapture.RestrictTo(_stream!, _target); // by content
 
 await regionCapture.Clear(_stream!);                // back to the whole tab
 """)>
-        <div class="demo-box dashed" @ref="_target" style="position:relative;isolation:isolate;max-width:24rem">
-            <b>This box is the capture target.</b>
-            <p>Everything outside it disappears from the share once you crop or restrict.</p>
+        @* The overlay is a sibling of the target, not a child of it: a restriction captures the
+           target's own subtree, so an occluder inside it would be captured too - and the difference
+           between the two calls is the whole point of this section. The crop, being a rectangle over
+           the tab, takes it either way. *@
+        <div style="position:relative;max-width:24rem">
+            <div class="demo-box dashed" @ref="_target" style="isolation:isolate">
+                <b>This box is the capture target.</b>
+                <p>Everything outside it disappears from the share once you crop or restrict.</p>
+            </div>
             @if (_overlayVisible)
             {
-                <div class="demo-marker" style="position:absolute;inset:auto 0 0 0">
+                <div class="demo-marker" style="position:absolute;inset:auto 0 0 0;z-index:1">
                     An overlay covering the box - shared under a crop, invisible under a restriction.
                 </div>
             }

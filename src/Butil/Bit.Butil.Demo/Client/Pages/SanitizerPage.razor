@@ -72,7 +72,10 @@ await using var comments = await sanitizer.Create(new SanitizerConfig
     Comments = false,
 });
 
-var clean = await comments!.Sanitize(userHtml);
+// Null when the browser has no configurable Sanitizer - the unconfigured sink is still there:
+var clean = comments is null
+    ? await sanitizer.Sanitize(userHtml)
+    : await comments.Sanitize(userHtml);
 """)>
         <div class="controls">
             <button @onclick="SanitizeStrictly">Sanitize with the comment policy</button>

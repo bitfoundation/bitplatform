@@ -7,11 +7,32 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // The query answers per feature: a runtime that supports handwriting at all still says no to
         // a language it has no model for, and no to hints it doesn't implement.
         async querySupport(languages: string[], alternatives: boolean, textContext: boolean) {
-            const query = (window.navigator as any).queryHandwritingRecognizerSupport;
-            if (typeof query !== 'function') return null;
+            const requested = languages?.length ? languages : ['en'];
+
+            // The shipped spelling: it takes the languages alone and answers with a descriptor -
+            // null when there is no model for them - whose `hints` say which hints are honoured.
+            const query = (window.navigator as any).queryHandwritingRecognizer;
+            if (typeof query === 'function') {
+                try {
+                    const result = await query.call(window.navigator, { languages: requested });
+                    if (!result) return { languages: false, alternatives: false, textContext: false };
+                    return {
+                        languages: true,
+                        alternatives: result.hints?.alternatives === true,
+                        textContext: result.hints?.textContext === true
+                    };
+                } catch {
+                    return null;
+                }
+            }
+
+            // The earlier draft's spelling, which asked per feature and answered per feature. Still
+            // what a build predating the rename exposes.
+            const legacy = (window.navigator as any).queryHandwritingRecognizerSupport;
+            if (typeof legacy !== 'function') return null;
             try {
-                const result = await query.call(window.navigator, {
-                    languages: languages?.length ? languages : ['en'],
+                const result = await legacy.call(window.navigator, {
+                    languages: requested,
                     alternatives,
                     textContext
                 });
@@ -57,8 +78,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 for (const stroke of strokes) {
                     const handwritingStroke = new StrokeCtor();
                     for (const point of stroke.points ?? []) {
-                        // t is the milliseconds since the stroke started. It is optional in the spec
-                        // but materially improves the result, so it is passed whenever it is there.
+                        // t is the milliseconds since the whole drawing started - one clock across
+                        // every stroke, so the pauses between strokes are part of what the recognizer
+                        // sees. It is optional in the spec but materially improves the result, so it
+                        // is passed through whenever it is there.
                         handwritingStroke.addPoint(point.t === null || point.t === undefined
                             ? { x: point.x, y: point.y }
                             : { x: point.x, y: point.y, t: point.t });

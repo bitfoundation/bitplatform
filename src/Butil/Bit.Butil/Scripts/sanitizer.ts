@@ -19,6 +19,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (value !== null && value !== undefined) cleaned[key] = value;
         }
 
+        // An empty configuration object is not "no configuration": it is an allow-list allowing
+        // nothing, which strips every element. A caller who set no property means the default.
+        if (Object.keys(cleaned).length === 0) return new ctor();
+
         try { return new ctor(cleaned); } catch { /* fall through to the older spelling */ }
 
         // Chrome shipped `allowElements`/`allowAttributes` before the names were settled; retrying
@@ -36,9 +40,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         try { return new ctor(legacy); } catch { return null; }
     }
 
+    // An id that isn't in the registry - disposed, or never created because the browser has no
+    // configurable Sanitizer - is not the same as "no configuration": sanitizing under the default
+    // instead would quietly ignore the configuration the caller asked for. It is reported as the
+    // failure the API documents rather than substituted for.
+    const MISSING = {};
+
     function resolve(id: string | null) {
         if (!id) return build(null);
-        return _sanitizers[id] ?? null;
+        return _sanitizers[id] ?? MISSING;
     }
 
     // setHTML is the only sanitizing entry point in the platform, and it writes into an element -
@@ -75,12 +85,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // the answer to "is this element really allowed", which a hand-written config never gives.
         getConfig(id: string | null) {
             const sanitizer = resolve(id);
-            if (!sanitizer?.get) return null;
+            if (sanitizer === MISSING || !sanitizer?.get) return null;
             try { return sanitizer.get(); } catch { return null; }
         },
 
         sanitize(html: string, id: string | null) {
             const sanitizer = resolve(id);
+            if (sanitizer === MISSING) return null;
             const container = document.createElement('div');
             try {
                 if (into(container, html, sanitizer) === false) return null;
@@ -92,6 +103,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         sanitizeInto(element: Element, html: string, id: string | null) {
             if (!element) return false;
             const sanitizer = resolve(id);
+            if (sanitizer === MISSING) return false;
             try { return into(element, html, sanitizer); } catch { return false; }
         }
     };

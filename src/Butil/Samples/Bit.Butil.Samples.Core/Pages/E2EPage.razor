@@ -126,6 +126,7 @@
     <button id="url-parse" @onclick="UrlParse">URL parts</button>
     <button id="url-query" @onclick="UrlQuery">repeated query values</button>
     <button id="url-pattern" @onclick="UrlPattern">URLPattern</button>
+    <button id="url-pattern-credentials" @onclick="UrlPatternCredentials">URLPattern credentials</button>
 </section>
 
 <section>
@@ -135,6 +136,9 @@
     <button id="sel-select" @onclick="SelectionSelectContents">select contents</button>
     <button id="sel-range" @onclick="SelectionSelectRange">select range 0-5</button>
     <button id="sel-offsets" @onclick="SelectionOffsets">offsets in element</button>
+    <button id="sel-content-offsets" @onclick="SelectionContentsOffsets">offsets of a whole element</button>
+    <button id="sel-bad-range" @onclick="SelectionNegativeRange">negative range</button>
+    <button id="sel-replace" @onclick="SelectionReplace">replace with text</button>
     <button id="sel-clear" @onclick="SelectionClear">remove all</button>
 </section>
 
@@ -543,6 +547,15 @@
         Set($"url:pattern:{match?.Groups.GetValueOrDefault("id")}");
     }
 
+    private async Task UrlPatternCredentials()
+    {
+        if (await url.IsPatternSupported() is false) { Set("url:credentials:unsupported"); return; }
+
+        // The two components a URL rarely carries - and the ones a pattern has to report when it does.
+        var match = await url.MatchPattern("https://:user::pass@example.com/*", "https://ada:secret@example.com/x");
+        Set($"url:credentials:{match?.Username}/{match?.Password}");
+    }
+
     // ─── Selection ──────────────────────────────────────────────────────────────
     private ElementReference _selectionTarget;
 
@@ -563,6 +576,32 @@
         await selection.SelectRange(_selectionTarget, 6, 15);
         var offsets = await selection.GetRangeIn(_selectionTarget);
         Set($"sel:offsets:{offsets?.Start}/{offsets?.End}");
+    }
+    private async Task SelectionContentsOffsets()
+    {
+        // selectNodeContents leaves both ends on the element itself rather than in its text, which
+        // still has to read as "all of it" - 0 to the text's length.
+        await selection.SelectElementContents(_selectionTarget);
+        var offsets = await selection.GetRangeIn(_selectionTarget);
+        Set($"sel:contents:{offsets?.Start}/{offsets?.End}");
+    }
+    private async Task SelectionNegativeRange()
+    {
+        // Out-of-range offsets are a false, not an exception - a negative one included.
+        var start = await selection.SelectRange(_selectionTarget, -1, 5);
+        var end = await selection.SelectRange(_selectionTarget, 0, -5);
+        Set($"sel:badrange:{start}/{end}");
+    }
+    private async Task SelectionReplace()
+    {
+        // The replacement leaves a caret after the text, not the text selected.
+        await selection.SelectRange(_selectionTarget, 0, 5);
+        await selection.ReplaceWithText("BUTIL");
+        var collapsed = (await selection.Get())?.IsCollapsed;
+
+        // Selecting all of it is how its text is read back from here.
+        await selection.SelectElementContents(_selectionTarget);
+        Set($"sel:replace:{collapsed}/{await selection.GetText()}");
     }
     private async Task SelectionClear()
     {

@@ -287,7 +287,7 @@ text += await decoder.Flush();             // emits anything still pending
             }
 
             await streamOutput.Warn("Per-chunk decode →", text);
-            await streamOutput.Log("The character straddling the split became replacement characters - the whole reason CreateDecoder exists.");
+            await streamOutput.Log("The character straddling the split is gone: its first byte became a replacement character, and its second was decoded on its own as something else entirely - the whole reason CreateDecoder exists.");
         }
         catch (Exception ex)
         {

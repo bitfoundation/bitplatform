@@ -44,6 +44,12 @@ public class HandwritingRecognition(IJSRuntime js)
     /// <param name="alternatives">Ask whether more than one candidate can be returned.</param>
     /// <param name="textContext">Ask whether preceding text can inform the recognition.</param>
     /// <returns>What is supported, or null when the runtime has no handwriting recognition at all.</returns>
+    /// <remarks>
+    /// The shipped query takes the languages alone and answers with what the model honours, so
+    /// <paramref name="alternatives"/> and <paramref name="textContext"/> are only read by builds
+    /// predating that rename; either way the result says whether each hint is honoured. A device with
+    /// the API but no model for these languages answers false to all three rather than null.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HandwritingSupport))]
     public ValueTask<HandwritingSupport?> QuerySupport(string[]? languages = null, bool alternatives = true, bool textContext = false)
         => js.Invoke<HandwritingSupport?>("BitButil.handwritingRecognition.querySupport", languages ?? ["en"], alternatives, textContext);

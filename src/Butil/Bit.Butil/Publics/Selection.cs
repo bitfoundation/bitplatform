@@ -112,7 +112,8 @@ public class Selection(IJSRuntime js) : IAsyncDisposable
         => js.Invoke<bool>("BitButil.selection.selectRange", element, start, end);
 
     /// <summary>
-    /// Where the selection sits inside one element, in characters. Null when there is no selection.
+    /// Where the selection sits inside one element, in characters. Null when there is no selection,
+    /// or when it isn't inside this element.
     /// </summary>
     /// <remarks>Save this before re-rendering an editable element, then hand it back to <see cref="SelectRange"/>.</remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SelectionOffsets))]

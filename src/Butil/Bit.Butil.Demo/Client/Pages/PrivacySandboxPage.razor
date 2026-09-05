@@ -68,6 +68,10 @@ if (await privacySandbox.HasRedemptionRecord(issuer) is false)
 {
     await privacySandbox.RequestToken(issuerUrl, PrivateStateTokenOperation.TokenRedemption);
 }
+
+// Attaching the record needs the issuers it may come from - nothing else says whose:
+await privacySandbox.RequestToken(apiUrl, PrivateStateTokenOperation.SendRedemptionRecord,
+                                  issuers: [issuer]);
 """)>
         <div class="controls">
             <button @onclick="CheckTokensSupport">IsPrivateStateTokensSupported</button>
@@ -121,8 +125,8 @@ if (await privacySandbox.IsInFencedFrame())
                Signature="ValueTask<bool> HasRedemptionRecord(string issuer)"
                Description="Whether this browser already holds a redemption record from an issuer for this site." />
     <ApiMember Name="RequestToken"
-               Signature="ValueTask<bool> RequestToken(string url, PrivateStateTokenOperation operation, int version = 1)"
-               Description="Runs one token operation as a fetch: requesting, redeeming, or attaching the record." />
+               Signature="ValueTask<bool> RequestToken(string url, PrivateStateTokenOperation operation, int version = 1, string[]? issuers = null)"
+               Description="Runs one token operation as a fetch: requesting, redeeming, or attaching the record. SendRedemptionRecord needs issuers; the other two ignore it." />
     <ApiMember Name="IsFencedFrameSupported"
                Signature="ValueTask<bool> IsFencedFrameSupported()"
                Description="True when the runtime supports &lt;fencedframe&gt;." />

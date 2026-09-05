@@ -44,6 +44,7 @@ if (support?.Languages is true)
                  Description="Collect the strokes yourself from pointer events - one stroke per pointer-down to pointer-up, because stroke boundaries carry meaning: a 't' is two strokes and an 'l' is one. Then hand the whole lot over. Passing each point's timestamp is optional but materially improves the result, since writing speed and pauses are part of how the recognizer separates characters."
                  Code=@("""
 var strokes = new List<HandwritingStroke>();   // filled from pointer events
+// milliseconds since the first point of the first stroke - one clock for the whole drawing:
 // new HandwritingPoint(e.OffsetX, e.OffsetY, elapsedMilliseconds)
 
 var candidates = await handwriting.Recognize(
@@ -118,7 +119,9 @@ var best = candidates.FirstOrDefault();
 
     private readonly List<HandwritingStroke> _strokes = [];
     private List<HandwritingPoint>? _current;
-    private DateTime _strokeStarted;
+    // One clock for the whole drawing: the pause between two strokes is part of what the recognizer
+    // reads, and a per-stroke clock would tell it every stroke started at zero.
+    private DateTime? _drawingStarted;
 
     private IEnumerable<HandwritingStroke> AllStrokes()
     {
@@ -131,16 +134,18 @@ var best = candidates.FirstOrDefault();
 
     private void StartStroke(PointerEventArgs e)
     {
-        _strokeStarted = DateTime.UtcNow;
-        _current = [new HandwritingPoint(e.OffsetX, e.OffsetY, 0)];
+        _drawingStarted ??= DateTime.UtcNow;
+        _current = [new HandwritingPoint(e.OffsetX, e.OffsetY, SinceDrawingStarted())];
     }
 
     private void ExtendStroke(PointerEventArgs e)
     {
         if (_current is null) return;
 
-        _current.Add(new HandwritingPoint(e.OffsetX, e.OffsetY, (DateTime.UtcNow - _strokeStarted).TotalMilliseconds));
+        _current.Add(new HandwritingPoint(e.OffsetX, e.OffsetY, SinceDrawingStarted()));
     }
+
+    private double SinceDrawingStarted() => (DateTime.UtcNow - (_drawingStarted ?? DateTime.UtcNow)).TotalMilliseconds;
 
     private void EndStroke(PointerEventArgs e)
     {
@@ -156,6 +161,7 @@ var best = candidates.FirstOrDefault();
         _strokes.Clear();
         _current = null;
         _candidates = [];
+        _drawingStarted = null;
     }
 
     private async Task CheckSupported()

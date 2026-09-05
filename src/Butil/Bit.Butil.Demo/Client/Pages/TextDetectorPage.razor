@@ -129,7 +129,19 @@ var everything = string.Join("\n", blocks.Select(b => b.RawValue));
                 return;
             }
 
-            await _stream.AttachTo(_video);
+            try
+            {
+                await _stream.AttachTo(_video);
+            }
+            catch
+            {
+                // The camera is live even though nothing is showing it: let go of it, so "start" is
+                // something the reader can press again.
+                await _stream.DisposeAsync();
+                _stream = null;
+                throw;
+            }
+
             await cameraOutput.Success("Camera started - point it at something printed.");
         }
         catch (Exception ex)

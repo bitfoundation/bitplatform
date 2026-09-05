@@ -122,6 +122,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (!result) return null;
             return {
                 protocol: result.protocol?.input ?? '',
+                username: result.username?.input ?? '',
+                password: result.password?.input ?? '',
                 hostname: result.hostname?.input ?? '',
                 port: result.port?.input ?? '',
                 pathname: result.pathname?.input ?? '',

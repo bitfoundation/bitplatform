@@ -71,11 +71,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
         // One fetch carrying a token operation. 'token-request' asks the issuer for tokens,
         // 'token-redemption' spends one, and 'send-redemption-record' attaches the proof.
-        async requestToken(url: string, operation: string, version: number) {
+        async requestToken(url: string, operation: string, version: number, issuers: string[] | null) {
             try {
-                await fetch(url, {
-                    privateToken: { version: version > 0 ? version : 1, operation }
-                } as any);
+                const privateToken: any = { version: version > 0 ? version : 1, operation };
+                // send-redemption-record carries no record of its own: the issuers are what say whose
+                // record to attach, and the fetch is rejected without at least one.
+                if (issuers?.length) privateToken.issuers = issuers;
+
+                await fetch(url, { privateToken } as any);
                 return true;
             } catch {
                 return false;

@@ -117,9 +117,15 @@ public class PrivacySandbox(IJSRuntime js)
     /// <param name="url">The issuer endpoint to fetch.</param>
     /// <param name="operation">Which step of the token lifecycle this is.</param>
     /// <param name="version">The protocol version. 1 unless the issuer says otherwise.</param>
+    /// <param name="issuers">
+    /// The issuer origins whose redemption records may be attached, e.g.
+    /// <c>["https://issuer.example"]</c>. Required by
+    /// <see cref="PrivateStateTokenOperation.SendRedemptionRecord"/> - which has no other way to know
+    /// whose record to send - and ignored by the other two operations.
+    /// </param>
     /// <returns>False when the request failed. As with attribution, the token exchange itself is deliberately not observable from script.</returns>
-    public ValueTask<bool> RequestToken(string url, PrivateStateTokenOperation operation, int version = 1)
-        => js.Invoke<bool>("BitButil.privacySandbox.requestToken", url, ToName(operation), version);
+    public ValueTask<bool> RequestToken(string url, PrivateStateTokenOperation operation, int version = 1, string[]? issuers = null)
+        => js.Invoke<bool>("BitButil.privacySandbox.requestToken", url, ToName(operation), version, issuers);
 
     /// <summary>True when the runtime supports <c>&lt;fencedframe&gt;</c>.</summary>
     public ValueTask<bool> IsFencedFrameSupported() => js.Invoke<bool>("BitButil.privacySandbox.isFencedFrameSupported");

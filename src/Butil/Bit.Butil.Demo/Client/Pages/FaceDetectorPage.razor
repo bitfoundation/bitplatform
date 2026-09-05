@@ -102,10 +102,10 @@ var found = await faceDetector.DetectImage(bytes, "image/jpeg", maxFaces: 10);
                Description="True when the runtime exposes FaceDetector. Returns default (false) during prerender/SSR instead of throwing." />
     <ApiMember Name="Detect"
                Signature="ValueTask<DetectedFace[]> Detect(ElementReference element, int maxFaces = 0, bool fastMode = false)"
-               Description="Scans one frame of a video, image or canvas element. Empty when there is nothing to find, or no frame yet." />
+               Description="Scans one frame of a video, image or canvas element. Empty when there is nothing to find, or no frame yet. maxFaces is 0 to 65535 - the spec's own range - and throws outside it." />
     <ApiMember Name="DetectImage"
                Signature="ValueTask<DetectedFace[]> DetectImage(byte[] imageBytes, string mimeType = &quot;image/png&quot;, int maxFaces = 0, bool fastMode = false)"
-               Description="Scans an encoded image's bytes. Empty when the image couldn't be decoded." />
+               Description="Scans an encoded image's bytes. Empty when the image couldn't be decoded. maxFaces is 0 to 65535 - the spec's own range - and throws outside it." />
     <ApiMember Name="DetectedFace"
                Signature="X | Y | Width | Height | Landmarks"
                Description="One face's bounding box in source pixels, plus whatever features the platform located." />
@@ -150,7 +150,19 @@ var found = await faceDetector.DetectImage(bytes, "image/jpeg", maxFaces: 10);
                 return;
             }
 
-            await _stream.AttachTo(_video);
+            try
+            {
+                await _stream.AttachTo(_video);
+            }
+            catch
+            {
+                // The camera is live even though nothing is showing it: let go of it, so "start" is
+                // something the reader can press again.
+                await _stream.DisposeAsync();
+                _stream = null;
+                throw;
+            }
+
             await cameraOutput.Success("Camera started.");
         }
         catch (Exception ex)

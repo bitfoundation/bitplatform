@@ -247,6 +247,12 @@ var id = match?.Groups["id"];   // "42"
 
             await patternOutput.Success("MatchPattern →", $"pathname '{match.Pathname}'.");
 
+            // The two components a URL rarely carries, and never silently: worth showing when it does.
+            if (match.Username.Length > 0 || match.Password.Length > 0)
+            {
+                await patternOutput.Info("  credentials =", $"{match.Username}:{match.Password}");
+            }
+
             foreach (var group in match.Groups)
             {
                 await patternOutput.Info($"  {group.Key} =", group.Value ?? "(null)");

@@ -27,6 +27,14 @@ public class TrustedTypePolicyOptions
     /// <c>["https://cdn.example.com/", "/_content/"]</c>. Anything else is refused.
     /// Empty - the default - refuses every script URL.
     /// </summary>
+    /// <remarks>
+    /// A prefix is matched as a scope, not as text: the URL is resolved against the document, has to
+    /// carry the same scheme and origin, and its path has to match on a segment boundary. So
+    /// <c>"https://cdn.example.com"</c> does not admit <c>https://cdn.example.com.evil.test/x</c>, and
+    /// <c>"/_content/"</c> does not admit <c>/_content/../evil.js</c>. Only <c>http</c> and
+    /// <c>https</c> URLs can be allowed - the schemes with an origin to compare - and what the policy
+    /// hands back is the resolved URL, so what the sink loads is what was checked.
+    /// </remarks>
     public string[] AllowedScriptUrlPrefixes { get; set; } = [];
 
     /// <summary>

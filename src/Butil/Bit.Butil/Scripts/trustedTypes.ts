@@ -6,6 +6,32 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function api() { return (window as any).trustedTypes; }
 
+    // A prefix match on the raw string is not a scope check: 'https://cdn.example.com' also matches
+    // 'https://cdn.example.com.evil.test/x', and '/assets/' matches '/assets/../../evil.js'. So both
+    // sides are parsed, compared by origin, and the path is matched on a segment boundary - which is
+    // also what makes the escapes and dot segments in the raw string irrelevant.
+    function withinScope(value: string, prefixes: string[]): string | null {
+        let url: URL;
+        try { url = new URL(value, document.baseURI); } catch { return null; }
+        // Only the two schemes that fetch a script over the network. javascript:, data: and blob:
+        // have no origin to compare, so nothing could authorize them.
+        if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+
+        for (const prefix of prefixes) {
+            let scope: URL;
+            try { scope = new URL(prefix, document.baseURI); } catch { continue; }
+            if (scope.protocol !== url.protocol || scope.origin !== url.origin) continue;
+
+            const path = scope.pathname;
+            // A prefix ending in '/' is a directory; anything else is a file, or a directory the
+            // caller wrote without its slash - both of which only match on a segment boundary.
+            if (path.endsWith('/')
+                ? url.pathname.startsWith(path)
+                : url.pathname === path || url.pathname.startsWith(path + '/')) return url.href;
+        }
+        return null;
+    }
+
     butil.trustedTypes = {
         isSupported() { return !!api()?.createPolicy; },
 
@@ -43,7 +69,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     },
                     createScriptURL: (value: string) => {
                         const allowed: string[] = rules.allowedScriptUrlPrefixes ?? [];
-                        if (allowed.some(prefix => value.startsWith(prefix))) return value;
+                        // The normalized URL is what comes back, so what the sink loads is what was
+                        // checked - not a string that only looked like it.
+                        const scoped = withinScope(value, allowed);
+                        if (scoped) return scoped;
                         throw new Error(`BitButil: policy '${name}' does not allow the script URL '${value}'.`);
                     },
                     createScript: (value: string) => {

@@ -12,6 +12,12 @@ public class UrlPatternMatch
     /// <summary>The matched scheme including its colon, e.g. <c>https:</c>.</summary>
     public string Protocol { get; set; } = string.Empty;
 
+    /// <summary>The matched username, or an empty string. A URL rarely carries one.</summary>
+    public string Username { get; set; } = string.Empty;
+
+    /// <summary>The matched password, or an empty string. A URL rarely carries one.</summary>
+    public string Password { get; set; } = string.Empty;
+
     /// <summary>The matched host without the port.</summary>
     public string Hostname { get; set; } = string.Empty;
 
