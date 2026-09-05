@@ -1,0 +1,100 @@
+using System.ComponentModel;
+using Microsoft.EntityFrameworkCore.Metadata;
+using ModelContextProtocol.Server;
+
+namespace Boilerplate.Server.Api.Infrastructure.DevMcp;
+
+[Authorize(Policy = AppFeatures.System.DevMcp)]
+public sealed class DevMcpSchemaTools(AppDbContext db)
+{
+    [McpServerTool(Name = nameof(GetDatabaseSchema))]
+    [Description("Describes the EF Core model this process is running, not information_schema. Includes entity CLR names, table and schema, properties (CLR and column types, nullability, keys), indexes, foreign keys, navigations and query filters. Query filters (tenant, and any others) stay in force on QueryEntity: rows this schema says are filtered will not appear unless they match the filter. Hangfire's jobs schema is listed so you can see it exists; query those rows with the Hangfire tools, not QueryEntity. Optional entityName limits the result to one CLR type.")]
+    public async Task<string> GetDatabaseSchema(
+        [Description("Optional CLR type name, e.g. User or Product")] string? entityName = null,
+        CancellationToken cancellationToken = default)
+    {
+        await using var _ = await DevMcpReadOnly.BeginAsync(db, cancellationToken);
+
+        var entities = db.Model.GetEntityTypes()
+            .Where(entity => entity.ClrType is not null && entity.IsOwned() is false)
+            .Where(entity => string.IsNullOrWhiteSpace(entityName) || string.Equals(entity.ClrType.Name, entityName, StringComparison.OrdinalIgnoreCase))
+            .Select(Describe)
+            .ToArray();
+
+        if (string.IsNullOrWhiteSpace(entityName) is false && entities.Length == 0)
+            return DevMcpJson.Serialize(new { Error = $"Unknown entity '{entityName}'." });
+
+        return DevMcpJson.Serialize(new
+        {
+            EntityCount = entities.Length,
+            QueryFiltersAlwaysOn = true,
+            IgnoreQueryFiltersOffered = false,
+            Entities = entities
+        });
+    }
+
+    [McpServerTool(Name = nameof(GetAppliedMigrations))]
+    [Description("Lists EF Core migrations applied to this database, with the latest one first. Pending migrations (in the assembly but not applied) are listed separately. This is what 'did that migration actually run in production' is answered with.")]
+    public async Task<string> GetAppliedMigrations(CancellationToken cancellationToken)
+    {
+        await using var _ = await DevMcpReadOnly.BeginAsync(db, cancellationToken);
+
+        var applied = (await db.Database.GetAppliedMigrationsAsync(cancellationToken)).Reverse().ToArray();
+        var pending = (await db.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
+
+        return DevMcpJson.Serialize(new
+        {
+            CanConnect = await db.Database.CanConnectAsync(cancellationToken),
+            Latest = applied.FirstOrDefault(),
+            AppliedCount = applied.Length,
+            Applied = applied,
+            Pending = pending,
+            Note = "EnsureCreated deployments have an empty applied list even though the schema exists."
+        });
+    }
+
+    private static object Describe(IEntityType entity)
+    {
+        var primaryKey = entity.FindPrimaryKey();
+        return new
+        {
+            Entity = entity.ClrType.Name,
+            ClrType = entity.ClrType.FullName,
+            Table = entity.GetTableName(),
+            Schema = entity.GetSchema(),
+            HangfireStorage = DevMcpForbiddenColumns.IsHangfireStorage(entity),
+            QueryFilters = entity.GetDeclaredQueryFilters().Select(filter => filter.Expression?.ToString()).Where(expression => expression is not null),
+            Properties = entity.GetProperties().Select(property => new
+            {
+                property.Name,
+                ClrType = property.ClrType.Name,
+                Column = property.GetColumnName(),
+                ColumnType = property.GetColumnType(),
+                property.IsNullable,
+                IsKey = property.IsKey(),
+                IsPrimaryKey = primaryKey?.Properties.Contains(property) is true,
+                IsConcurrencyToken = property.IsConcurrencyToken,
+                IsShadowProperty = property.IsShadowProperty()
+            }),
+            Indexes = entity.GetIndexes().Select(index => new
+            {
+                Properties = index.Properties.Select(property => property.Name),
+                index.IsUnique,
+                Name = index.GetDatabaseName()
+            }),
+            ForeignKeys = entity.GetForeignKeys().Select(fk => new
+            {
+                Properties = fk.Properties.Select(property => property.Name),
+                PrincipalEntity = fk.PrincipalEntityType.ClrType.Name,
+                PrincipalProperties = fk.PrincipalKey.Properties.Select(property => property.Name),
+                DeleteBehavior = fk.DeleteBehavior.ToString()
+            }),
+            Navigations = entity.GetNavigations().Select(navigation => new
+            {
+                navigation.Name,
+                Target = navigation.TargetEntityType.ClrType.Name,
+                navigation.IsCollection
+            })
+        };
+    }
+}

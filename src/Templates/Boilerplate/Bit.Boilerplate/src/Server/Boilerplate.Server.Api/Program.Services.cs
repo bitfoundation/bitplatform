@@ -98,11 +98,11 @@ public static partial class Program
         services.AddPersonalDataServices();
         //#if (signalR == true)
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
-        // Add MCP server with chatbot tools
-        services.AddMcpServer()
-            .WithHttpTransport()
-            .WithToolsFromAssembly();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
+        //#endif
+        var mcp = services.AddDevMcp();
+        //#if (signalR == true)
+        mcp.WithToolsFromAssembly();
         //#endif
         //#if (module == "Sales" || module == "Admin")
         //#if (database == "PostgreSQL" || database == "SqlServer")

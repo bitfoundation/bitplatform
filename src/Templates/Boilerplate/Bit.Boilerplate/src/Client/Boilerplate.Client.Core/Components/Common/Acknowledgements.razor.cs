@@ -32,6 +32,7 @@ public partial class Acknowledgements
         new(".NET Aspire", "https://aspire.dev", "https://github.com/dotnet/aspire", "MIT"),
         //#endif
         new("Entity Framework Core", "https://learn.microsoft.com/ef", "https://github.com/dotnet/efcore", "MIT"),
+        new("System.Linq.Dynamic.Core", "https://dynamic-linq.net", "https://github.com/zzzprojects/System.Linq.Dynamic.Core", "Apache-2.0"),
         new(".NET MAUI", "https://dotnet.microsoft.com/apps/maui", "https://github.com/dotnet/maui", "MIT"),
         new("OpenTelemetry .NET", "https://opentelemetry.io", "https://github.com/open-telemetry/opentelemetry-dotnet", "Apache-2.0"),
         new("Hangfire", "https://www.hangfire.io", "https://github.com/HangfireIO/Hangfire", "LGPL-3.0 / Commercial"),
@@ -110,8 +111,8 @@ public partial class Acknowledgements
         //#if (aspire == true && cloudflare == true)
         new("Shirubasoft.Aspire.CloudflareTunnels", "https://github.com/Shirubasoft/aspire-extensions", "https://github.com/Shirubasoft/aspire-extensions", "MIT"),
         //#endif
-        //#if (signalR == true)
         new("Model Context Protocol (C# SDK)", "https://modelcontextprotocol.io", "https://github.com/modelcontextprotocol/csharp-sdk", "MIT"),
+        //#if (signalR == true)
         new("Azure SignalR Service", "https://azure.microsoft.com/products/signalr-service", "https://github.com/Azure/azure-signalr", "MIT"),
         //#endif
         // Third-party scripts that run in the visitor's own browser, so they belong here rather than in Deployment.
