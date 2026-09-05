@@ -24,8 +24,7 @@ public class DevMcpSchemaTests
         Assert.AreEqual("User", user["entity"]!.GetValue<string>());
         Assert.AreEqual("Users", user["table"]!.GetValue<string>());
         Assert.Contains(property => property!["name"]!.GetValue<string>() == "Email", user["properties"]!.AsArray());
-        Assert.IsTrue(json["queryFiltersAlwaysOn"]!.GetValue<bool>());
-        Assert.IsFalse(json["ignoreQueryFiltersOffered"]!.GetValue<bool>());
+        Assert.IsNotNull(user["queryFilters"], "The filters QueryEntity bypasses are what this field is for.");
     }
 
     [TestMethod]
@@ -62,6 +61,5 @@ public class DevMcpSchemaTests
         var all = JsonNode.Parse(await DevMcpTestUtils.CallText(client, "GetDatabaseSchema", new() { ["entityName"] = (string?)null }, TestContext.CancellationToken))!;
         Assert.Contains(entity => entity!["hangfireStorage"]?.GetValue<bool>() is true, all["entities"]!.AsArray(),
             "Hangfire's jobs schema must be listed so the assistant uses the Hangfire tools instead of QueryEntity.");
-        Assert.IsFalse(all["ignoreQueryFiltersOffered"]!.GetValue<bool>());
     }
 }

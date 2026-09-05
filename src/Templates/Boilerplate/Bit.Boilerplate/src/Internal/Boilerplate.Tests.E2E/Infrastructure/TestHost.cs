@@ -1,3 +1,4 @@
+using OtpNet;
 using Npgsql;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +38,10 @@ public static class TestHost
     private static volatile TestBackend? backend;
 
     public static IServiceProvider Services => host.Value.Services;
+
+    // Where Identity stores the authenticator shared key (UserStore's InternalLoginProvider / AuthenticatorKeyTokenName).
+    private const string AuthenticatorLoginProvider = "[AspNetUserStore]";
+    private const string AuthenticatorKeyName = "AuthenticatorKey";
 
     /// <summary>
     /// The run-long AdminPanel session. First caller signs in as the configured global admin and keeps the resulting
@@ -194,13 +199,29 @@ public static class TestHost
                 throw new InvalidOperationException($"GlobalAdminEmail '{email}' is not in the deployment's database.");
 
             // The live account has to match the secrets this host signs in with: confirmed, unlocked, password hash
-            // equal to GlobalAdminPassword, and holding g-admin so /dev-mcp authorizes AppFeatures.System.DevMcp.
-            await EnsureUserCanSignIn(db, admin.Id, password, grantGlobalAdmin: true);
+            // equal to GlobalAdminPassword, holding g-admin for AppFeatures.System.DevMcp, and on two-factor with the
+            // key from secrets - /dev-mcp requires AuthPolicies.TFA_ENABLED as well, and both must pass.
+            var authenticatorKey = configuration["GlobalAdminAuthenticatorKey"]
+                ?? throw new InvalidOperationException(
+                    "User secrets / env are missing GlobalAdminAuthenticatorKey. /dev-mcp requires a two-factor session, " +
+                    "so this host needs the account's base32 authenticator key to answer the challenge. Any base32 secret " +
+                    "will do - it is written to the account, not read from it.");
+
+            await EnsureUserCanSignIn(db, admin.Id, password, authenticatorKey, grantGlobalAdmin: true);
 
             var authManager = sp.GetRequiredService<AuthManager>();
             var requiresTwoFactor = await authManager.SignIn(new() { Email = email, Password = password, RememberMe = true }, CancellationToken.None);
-            if (requiresTwoFactor)
-                throw new InvalidOperationException("GlobalAdminEmail is not expected to require two-factor authentication.");
+            if (requiresTwoFactor is false)
+                throw new InvalidOperationException("The global admin was just put on two-factor, so the first step must ask for the second.");
+
+            // Playing the authenticator app, from the same key that was just written to the account.
+            await authManager.SignIn(new()
+            {
+                Email = email,
+                Password = password,
+                RememberMe = true,
+                TwoFactorCode = new Totp(Base32Encoding.ToBytes(authenticatorKey)).ComputeTotp()
+            }, CancellationToken.None);
 
             var httpClient = sp.GetRequiredService<HttpClient>();
             mcp = await ConnectMcp(httpClient, sp.GetRequiredService<ILoggerFactory>());
@@ -218,10 +239,12 @@ public static class TestHost
     }
 
     /// <summary>
-    /// Aligns a live user with the password in secrets so a test can sign in: confirmed, unlocked, no 2FA, hash
-    /// matching <paramref name="password"/>. Optionally grants <see cref="AppRoles.GlobalAdmin"/>.
+    /// Aligns a live user with the secrets so a test can sign in: confirmed, unlocked, hash matching
+    /// <paramref name="password"/>. Pass <paramref name="authenticatorKey"/> (base32) to put the account on
+    /// two-factor with that key, which is what lets this host answer the challenge itself; null turns 2FA off.
+    /// Optionally grants <see cref="AppRoles.GlobalAdmin"/>.
     /// </summary>
-    public static async Task EnsureUserCanSignIn(AppDbContext db, Guid userId, string password, bool grantGlobalAdmin = false)
+    public static async Task EnsureUserCanSignIn(AppDbContext db, Guid userId, string password, string? authenticatorKey = null, bool grantGlobalAdmin = false)
     {
         // The backend DbContext lives for the whole run; a previous attempt or a live SignIn can have
         // changed ConcurrencyStamp, so never mutate a tracked instance from an earlier query.
@@ -229,10 +252,33 @@ public static class TestHost
         var user = await db.Users.IgnoreQueryFilters().SingleAsync(item => item.Id == userId);
 
         user.EmailConfirmed = true;
-        user.TwoFactorEnabled = false;
+        user.TwoFactorEnabled = authenticatorKey is not null;
         user.LockoutEnd = null;
         user.AccessFailedCount = 0;
         user.PasswordHash = new PasswordHasher<User>().HashPassword(user, password);
+
+        if (authenticatorKey is not null)
+        {
+            // Where Identity keeps the shared key (UserStore.SetAuthenticatorKeyAsync), written directly because this
+            // host has no UserManager - and it has to be the key from secrets, not a fresh random one.
+            var token = await db.UserTokens.SingleOrDefaultAsync(item =>
+                item.UserId == userId && item.LoginProvider == AuthenticatorLoginProvider && item.Name == AuthenticatorKeyName);
+
+            if (token is null)
+            {
+                await db.UserTokens.AddAsync(new UserToken
+                {
+                    UserId = userId,
+                    LoginProvider = AuthenticatorLoginProvider,
+                    Name = AuthenticatorKeyName,
+                    Value = authenticatorKey
+                });
+            }
+            else
+            {
+                token.Value = authenticatorKey;
+            }
+        }
 
         if (grantGlobalAdmin)
         {

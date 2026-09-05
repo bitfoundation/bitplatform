@@ -27,6 +27,50 @@ public class DevMcpEndpointTests
             "/dev-mcp is a System feature, so a signed-in non-admin must be refused.");
     }
 
+    /// <summary>
+    /// The endpoint names two policies, and naming two must mean AND, not OR: a global admin who has not turned 2FA on
+    /// is exactly the power user this endpoint is being kept away from, and 2FA alone grants nothing.
+    /// </summary>
+    [TestMethod]
+    public async Task DevMcp_Should_RequireTheFeatureAndTwoFactorTogether()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        await using (var featureOnlyScope = server.WebApp.Services.CreateAsyncScope())
+        {
+            var (_, userId) = await TestAccountUtils.CreateAndSignIn(server, featureOnlyScope, TestContext.CancellationToken);
+            await using var grant = await TestAccountUtils.MakeGlobalAdmin(server, featureOnlyScope, userId, TestContext.CancellationToken);
+
+            Assert.AreEqual(HttpStatusCode.Forbidden,
+                await DevMcpTestUtils.ProbeInitialize(server.WebAppServerAddress, "dev-mcp",
+                    await DevMcpTestUtils.AccessToken(featureOnlyScope), TestContext.CancellationToken),
+                "A global admin without 2FA holds the feature and must still be refused; two policies on one endpoint are ANDed.");
+        }
+
+        await using (var twoFactorOnlyScope = server.WebApp.Services.CreateAsyncScope())
+        {
+            var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, twoFactorOnlyScope, TestContext.CancellationToken);
+            await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, twoFactorOnlyScope, email, userId, TestContext.CancellationToken);
+
+            Assert.AreEqual(HttpStatusCode.Forbidden,
+                await DevMcpTestUtils.ProbeInitialize(server.WebAppServerAddress, "dev-mcp",
+                    await DevMcpTestUtils.AccessToken(twoFactorOnlyScope), TestContext.CancellationToken),
+                "2FA on its own grants nothing; the System feature is still required.");
+        }
+
+        await using (var bothScope = server.WebApp.Services.CreateAsyncScope())
+        {
+            var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(server, bothScope, TestContext.CancellationToken);
+            await using var _ = grant;
+
+            await using var client = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(bothScope), "dev-mcp", TestContext.CancellationToken);
+            var tools = await client.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
+
+            Assert.IsNotEmpty(tools, "Holding both must actually get in, or the two assertions above pass for the wrong reason.");
+        }
+    }
+
     [TestMethod]
     public async Task DevMcp_Should_NotAdvertiseChatbotTools_AndChatbotMcpShouldNotAdvertiseDevTools()
     {

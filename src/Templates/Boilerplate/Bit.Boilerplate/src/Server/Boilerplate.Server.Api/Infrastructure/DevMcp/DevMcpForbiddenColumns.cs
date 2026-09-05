@@ -30,9 +30,6 @@ public static class DevMcpForbiddenColumns
 
     public static string? RejectEntity(IEntityType entityType)
     {
-        if (IsHangfireStorage(entityType))
-            return $"Entity '{entityType.ClrType.Name}' is Hangfire storage. Use the Hangfire tools instead.";
-
         if (ForbiddenEntities.Contains(entityType.ClrType.Name))
             return $"Entity '{entityType.ClrType.Name}' is credential-shaped and cannot be queried.";
 

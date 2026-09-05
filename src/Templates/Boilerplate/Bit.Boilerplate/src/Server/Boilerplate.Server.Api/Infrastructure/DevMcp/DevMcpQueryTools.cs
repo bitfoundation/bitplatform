@@ -24,7 +24,7 @@ public sealed class DevMcpQueryTools(AppDbContext db, DevMcpAuditContext audit)
     };
 
     [McpServerTool(Name = nameof(QueryEntity))]
-    [Description("Read-only Dynamic LINQ over the EF Core model, not SQL. Name an entity (CLR type, e.g. User, Product), a required projection (column names of that entity; selecting everything is refused), an optional filter expression, optional orderBy, skip and take. The provider generates SQL and query filters stay on: tenant-filtered and any other global filters are applied, so a result set is not 'all rows in the table'. IgnoreQueryFilters is not offered. Password hashes, security stamps, tokens, WebAuthn credentials, data-protection keys and other credential-shaped properties are rejected as a projection, filter operand or ordering key. take is capped at 100. Command timeout is 15 seconds. Results larger than 256KB are refused. Hangfire's jobs schema cannot be queried here.")]
+    [Description("Read-only Dynamic LINQ over the EF Core model, not SQL. Name an entity (CLR type, e.g. User, Product), a required projection (column names of that entity; selecting everything is refused), an optional filter expression, optional orderBy, skip and take. Global query filters are IGNORED, tenant filters included: the caller is a global admin who has no tenant selected - and signing in through an external provider leaves no way to switch into one - so a filtered read would quietly answer for a single tenant, or for none. Rows therefore span every tenant; project TenantId when that matters. Password hashes, security stamps, tokens, WebAuthn credentials, data-protection keys and other credential-shaped properties are rejected as a projection, filter operand or ordering key. take is capped at 100. Command timeout is 15 seconds. Results larger than 256KB are refused. Hangfire's own tables are queryable here, but GetHangfireStats and ListHangfireJobs read them through Hangfire's monitoring API and are correct on isolated storage too.")]
     public async Task<string> QueryEntity(
         [Required, Description("CLR type name, e.g. User or Product")] string entity,
         [Description("Columns to return. Required. Scalar properties of the entity only.")] string[]? select = null,
@@ -74,8 +74,6 @@ public sealed class DevMcpQueryTools(AppDbContext db, DevMcpAuditContext audit)
                     Entity = entityType.ClrType.Name,
                     Table = entityType.GetTableName(),
                     Schema = entityType.GetSchema(),
-                    QueryFiltersApplied = true,
-                    IgnoreQueryFilters = false,
                     skip,
                     take,
                     Count = rows.Count,
@@ -106,5 +104,8 @@ public sealed class DevMcpQueryTools(AppDbContext db, DevMcpAuditContext audit)
             .MakeGenericMethod(entityType.ClrType)
             .Invoke(this, null)!;
 
-    private IQueryable<TEntity> SetOfCore<TEntity>() where TEntity : class => db.Set<TEntity>().AsNoTracking();
+    // IgnoreQueryFilters: a global admin has no tenant selected, so the tenant filter would answer for the fallback
+    // tenant or for nothing at all - and an external sign-in cannot switch tenant to work around it.
+    private IQueryable<TEntity> SetOfCore<TEntity>() where TEntity : class
+        => db.Set<TEntity>().AsNoTracking().IgnoreQueryFilters();
 }

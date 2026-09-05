@@ -15,6 +15,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Playwright.MSTest.v4" />
         <PackageReference Include="ModelContextProtocol" />
+        <PackageReference Include="Otp.NET" />
         <PackageReference Include="MSTest" />
     </ItemGroup>
 

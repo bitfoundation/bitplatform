@@ -197,7 +197,13 @@ public sealed class DevMcpConfigurationTools(
             //#if (captcha == "reCaptcha")
             Recaptcha = string.IsNullOrWhiteSpace(settings.GoogleRecaptchaSecretKey) is false,
             //#endif
-            ApplicationInsights = string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false,
+            //#if (appInsights == true)
+            // What is actually wired is the Azure Monitor OpenTelemetry exporter, off the same connection string the
+            // client's Application Insights JS SDK binds (See AddOpenTelemetryExporters).
+            AzureMonitorExporter = string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false,
+            //#endif
+            OtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
+                           || string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false,
             Sentry = string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false,
             Smtp = string.IsNullOrWhiteSpace(configuration.GetConnectionString("smtp")) is false,
             Google = string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false,

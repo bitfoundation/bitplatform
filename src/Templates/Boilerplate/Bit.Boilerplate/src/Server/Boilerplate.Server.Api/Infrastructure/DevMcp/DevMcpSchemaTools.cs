@@ -8,7 +8,7 @@ namespace Boilerplate.Server.Api.Infrastructure.DevMcp;
 public sealed class DevMcpSchemaTools(AppDbContext db)
 {
     [McpServerTool(Name = nameof(GetDatabaseSchema))]
-    [Description("Describes the EF Core model this process is running, not information_schema. Includes entity CLR names, table and schema, properties (CLR and column types, nullability, keys), indexes, foreign keys, navigations and query filters. Query filters (tenant, and any others) stay in force on QueryEntity: rows this schema says are filtered will not appear unless they match the filter. Hangfire's jobs schema is listed so you can see it exists; query those rows with the Hangfire tools, not QueryEntity. Optional entityName limits the result to one CLR type.")]
+    [Description("Describes the EF Core model this process is running, not information_schema. Includes entity CLR names, table and schema, properties (CLR and column types, nullability, keys), indexes, foreign keys, navigations and query filters. The queryFilters listed for an entity are what QueryEntity bypasses, since it reads with IgnoreQueryFilters - they tell you which column (TenantId, usually) the rows would otherwise have been narrowed by. hangfireStorage marks the entities backing Hangfire's own tables: they are queryable, but GetHangfireStats and ListHangfireJobs read them through Hangfire's monitoring API and stay correct on isolated storage. Optional entityName limits the result to one CLR type.")]
     public async Task<string> GetDatabaseSchema(
         [Description("Optional CLR type name, e.g. User or Product")] string? entityName = null,
         CancellationToken cancellationToken = default)
@@ -28,8 +28,6 @@ public sealed class DevMcpSchemaTools(AppDbContext db)
         return DevMcpJson.Serialize(new
         {
             EntityCount = entities.Length,
-            QueryFiltersAlwaysOn = true,
-            IgnoreQueryFiltersOffered = false,
             Entities = entities
         });
     }

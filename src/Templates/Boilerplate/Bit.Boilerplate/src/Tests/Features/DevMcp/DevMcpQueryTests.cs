@@ -85,8 +85,6 @@ public class DevMcpQueryTests
         var json = JsonNode.Parse(text)!;
 
         Assert.AreEqual("User", json["entity"]!.GetValue<string>());
-        Assert.IsTrue(json["queryFiltersApplied"]!.GetValue<bool>());
-        Assert.IsFalse(json["ignoreQueryFilters"]!.GetValue<bool>());
         Assert.IsGreaterThan(0, json["count"]!.GetValue<int>());
         Assert.IsTrue(json["rows"]![0]!["Email"] is not null || json["rows"]![0]!["email"] is not null);
 
@@ -105,7 +103,7 @@ public class DevMcpQueryTests
     }
 
     [TestMethod]
-    public async Task QueryEntity_Should_RefuseUnknownHangfireAndCredentialEntities()
+    public async Task QueryEntity_Should_RefuseUnknownAndCredentialEntities_ButAllowHangfireStorage()
     {
         await using var server = new AppTestServer();
         await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
@@ -138,12 +136,14 @@ public class DevMcpQueryTests
             ?["entity"]?.GetValue<string>();
         Assert.IsFalse(string.IsNullOrWhiteSpace(hangfireEntity), "The EF model includes Hangfire's jobs schema.");
 
-        var hangfire = await DevMcpTestUtils.CallText(client, "QueryEntity", new()
+        // Refusing these protected nothing: the Hangfire tools hand the same caller the job arguments themselves.
+        var hangfire = JsonNode.Parse(await DevMcpTestUtils.CallText(client, "QueryEntity", new()
         {
             ["entity"] = hangfireEntity,
             ["select"] = new[] { "Id" }
-        }, TestContext.CancellationToken);
-        Assert.Contains("Hangfire", hangfire, StringComparison.OrdinalIgnoreCase);
+        }, TestContext.CancellationToken))!;
+        Assert.IsNull(hangfire["error"], $"Hangfire's own tables are queryable. Result: {hangfire}");
+        Assert.AreEqual(hangfireEntity, hangfire["entity"]!.GetValue<string>());
     }
 
     [TestMethod]
@@ -182,8 +182,13 @@ public class DevMcpQueryTests
     }
 
     //#if (multitenant == true)
+    /// <summary>
+    /// A global admin has no tenant selected, so a tenant-filtered read would answer for the fallback tenant or for
+    /// nothing - and an external sign-in gives her no way to switch tenant. A diagnostic tool that quietly hides rows
+    /// is worse than useless, so QueryEntity reads with IgnoreQueryFilters.
+    /// </summary>
     [TestMethod]
-    public async Task QueryEntity_Should_KeepTheTenantQueryFilterOn()
+    public async Task QueryEntity_Should_IgnoreTheTenantQueryFilter()
     {
         await using var server = new AppTestServer();
         await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
@@ -221,11 +226,16 @@ public class DevMcpQueryTests
         {
             ["entity"] = "Category",
             ["select"] = new[] { "Name", "TenantId" },
+            ["filter"] = $"Name == \"{hiddenName}\"",
             ["take"] = 100
         }, TestContext.CancellationToken);
 
-        Assert.DoesNotContain(hiddenName, text,
-            "QueryEntity must not return another tenant's Category. Query filters stay on and IgnoreQueryFilters is not offered.");
+        Assert.Contains(hiddenName, text,
+            "A Category belonging to a tenant the caller is not in must still be returned; the tenant filter is what " +
+            "would otherwise hide every row from a global admin who has no tenant selected.");
+
+        Assert.Contains(otherTenantId.ToString(), text, StringComparison.OrdinalIgnoreCase,
+            "The row must carry the other tenant's id, so the caller can see which tenant it came from.");
     }
     //#endif
 }

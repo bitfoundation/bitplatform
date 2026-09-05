@@ -85,7 +85,8 @@ public static partial class Program
         app.MapMcp("/mcp").RequireAuthorization(); // Chatbot tools. Isolated from /dev-mcp.
         //#endif
 
-        app.MapMcp("/dev-mcp").RequireAuthorization(AppFeatures.System.DevMcp);
+        // Both policies, so both must pass: /dev-mcp is for global admins who have turned 2FA on, not either-or.
+        app.MapMcp("/dev-mcp").RequireAuthorization(AppFeatures.System.DevMcp, AuthPolicies.TFA_ENABLED);
 
         app.MapOpenIdConfiguration();
 
