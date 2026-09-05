@@ -44,8 +44,10 @@
       <LogicalName>ButilSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 
-    <!-- The service worker the ServiceWorker, BackgroundSync and Push pages register against - the
-         one piece of this demo that is neither C# nor Razor and that those APIs cannot work without. -->
+    <!-- The service worker the ServiceWorker, BackgroundSync, BackgroundFetch, ContentIndex and Push
+         pages register against - the one piece of this demo that is neither C# nor Razor and that
+         those APIs cannot work without. It also carries the message protocol behind
+         ServiceWorker.SkipWaiting / Claim / MatchAllClients, which is worth reading alongside them. -->
     <EmbeddedResource Include="wwwroot\sw.js" LogicalName="ButilSource/Demo/Server/wwwroot/sw.js" />
 
     <!-- The minimal hosting samples - standalone WebAssembly and Hybrid (MAUI). Their pages are

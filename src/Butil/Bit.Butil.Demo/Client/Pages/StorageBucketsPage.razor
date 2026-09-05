@@ -1,0 +1,435 @@
+﻿@page "/storage-buckets"
+@inject Bit.Butil.StorageBuckets storageBuckets
+
+<PageTitle>StorageBuckets - Bit.Butil</PageTitle>
+
+<PageHeader Category="Storage"
+            Title="StorageBuckets"
+            Lead="Split the origin's storage into named compartments, each with its own quota, persistence, durability and expiry - so the browser can evict the thumbnail cache without taking the draft the user has not sent yet."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Storage_Buckets_API"
+            InjectAs="StorageBuckets storageBuckets" />
+
+<div class="stack">
+
+    <Callout Type="warning" Title="Chromium only">
+        <code>navigator.storageBuckets</code> ships in Chromium-based browsers and is not implemented
+        in Firefox or Safari. Every member here degrades to a false/null/empty answer where the API is
+        absent, so nothing throws - it simply does nothing. Feature-detect with
+        <code>IsSupported</code> and keep <a href="storage-manager">StorageManager</a> as the fallback.
+    </Callout>
+
+    <DemoSection Title="Check for support"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.storageBuckets."
+                 Code=@("""
+@inject Bit.Butil.StorageBuckets storageBuckets
+
+if (await storageBuckets.IsSupported())
+{
+    // safe to open buckets
+}
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="CheckSupport">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Open a bucket"
+                 Api="Open / Get / Keys"
+                 Description="Open creates the bucket when it is not there and returns it as it is when it is - so it is safe to call on every start-up. The options only apply at creation. Names are lower-case letters, digits, dash and underscore, not starting with a dash or underscore."
+                 Code=@("""
+StorageBucketInfo? bucket = await storageBuckets.Open("drafts",
+    persisted: true,
+    durability: StorageBucketDurability.Strict,
+    quota: 50 * 1024 * 1024,
+    expires: DateTimeOffset.UtcNow.AddDays(30));
+
+// asking for persistence does not grant it - read the answer back
+var isPersisted = bucket?.Persisted;
+
+string[] names = await storageBuckets.Keys();
+""")>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Bucket name</label>
+                <input @bind="bucketName" />
+            </div>
+            <div class="field">
+                <label class="field-label">Quota (bytes, 0 = none)</label>
+                <input type="number" @bind="quota" />
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Durability</label>
+                <select @bind="durability">
+                    <option value="@Bit.Butil.StorageBucketDurability.Default">Default</option>
+                    <option value="@Bit.Butil.StorageBucketDurability.Relaxed">Relaxed</option>
+                    <option value="@Bit.Butil.StorageBucketDurability.Strict">Strict</option>
+                </select>
+            </div>
+            <div class="field">
+                <label class="field-label">Ask for persistence</label>
+                <input type="checkbox" @bind="askPersisted" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="OpenBucket">Open</button>
+            <button class="secondary" @onclick="GetBucket">Get</button>
+            <button class="secondary" @onclick="ListBuckets">Keys</button>
+        </div>
+        <DemoConsole @ref="openOutput" Title="bucket output" />
+    </DemoSection>
+
+    <DemoSection Title="Persistence and quota"
+                 Api="Persist / Persisted / Estimate"
+                 Description="Persistence is per bucket here rather than per origin: mark the one bucket holding data you cannot re-fetch, and leave the caches evictable. Estimate reports that bucket's own usage and quota."
+                 Code=@("""
+var granted = await storageBuckets.Persist("drafts");
+var isPersisted = await storageBuckets.Persisted("drafts");
+
+StorageEstimate estimate = await storageBuckets.Estimate("drafts");
+// estimate.Usage / estimate.Quota, in bytes
+""")>
+        <div class="controls">
+            <button @onclick="PersistBucket">Persist</button>
+            <button class="secondary" @onclick="CheckPersisted">Persisted</button>
+            <button class="secondary" @onclick="EstimateBucket">Estimate</button>
+        </div>
+        <DemoConsole @ref="persistOutput" Title="persistence output" />
+    </DemoSection>
+
+    <DemoSection Title="Expiry"
+                 Api="SetExpires / GetExpires"
+                 Description="An expiry is permission to delete, not a scheduled deletion: the browser may drop the bucket any time after it, and usually keeps it for a while longer. Useful for a bucket holding a season's worth of downloaded content."
+                 Code=@("""
+await storageBuckets.SetExpires("drafts", DateTimeOffset.UtcNow.AddDays(7));
+
+DateTimeOffset? expires = await storageBuckets.GetExpires("drafts");
+""")>
+        <div class="field">
+            <label class="field-label">Expires in (days)</label>
+            <input type="number" @bind="expiryDays" />
+        </div>
+        <div class="controls">
+            <button @onclick="SetExpires">SetExpires</button>
+            <button class="secondary" @onclick="GetExpires">GetExpires</button>
+        </div>
+        <DemoConsole @ref="expiryOutput" Title="expiry output" />
+    </DemoSection>
+
+    <DemoSection Title="Files inside a bucket"
+                 Api="WriteText / WriteBytes / ReadText / List / Remove"
+                 Description="Each bucket owns a whole file system of its own - the same origin private file system, rooted in the bucket rather than in the origin. That is what makes a bucket a real compartment rather than a label: deleting it takes its files with it."
+                 Code=@("""
+await storageBuckets.WriteText("drafts", "letters/draft.txt", "unsent");
+
+string? text = await storageBuckets.ReadText("drafts", "letters/draft.txt");
+
+OpfsEntry[] entries = await storageBuckets.List("drafts", "letters");
+
+await storageBuckets.Remove("drafts", "letters", recursive: true);
+""")>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Path inside the bucket</label>
+                <input @bind="filePath" />
+            </div>
+            <div class="field">
+                <label class="field-label">Contents</label>
+                <input @bind="fileText" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="WriteFile">WriteText</button>
+            <button class="secondary" @onclick="ReadFile">ReadText</button>
+            <button class="secondary" @onclick="ListFiles">List</button>
+            <button class="danger" @onclick="RemoveFile">Remove</button>
+        </div>
+        <DemoConsole @ref="fileOutput" Title="bucket file output" />
+    </DemoSection>
+
+    <DemoSection Title="Delete a bucket"
+                 Api="Delete"
+                 Description="Deletes the bucket and everything in it - its files, its IndexedDB databases and its caches. This is the operation the whole API exists for: one call that throws away a category of data without touching the rest."
+                 Code=@("""
+await storageBuckets.Delete("drafts");
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="DeleteBucket">Delete bucket</button>
+        </div>
+        <DemoConsole @ref="deleteOutput" Title="delete output" />
+    </DemoSection>
+
+    <Callout Type="info" Title="Only Open and the writes create">
+        The browser's own <code>open()</code> is create-or-get, so reaching for a bucket by name is
+        what brings it into existence. Butil keeps that to the members where it is the point:
+        <code>Open</code>, <code>WriteText</code> and <code>WriteBytes</code>. Everything else -
+        <code>Get</code>, <code>Persisted</code>, <code>Estimate</code>, <code>GetExpires</code>,
+        <code>List</code>, <code>ReadText</code>, <code>Persist</code>, <code>SetExpires</code>,
+        <code>Remove</code> - answers null/false/empty for a name that is not in <code>Keys</code>,
+        and creates nothing.
+    </Callout>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.storageBuckets." />
+        <ApiMember Name="Open" Signature="ValueTask<StorageBucketInfo?> Open(string name, bool persisted = false, StorageBucketDurability durability = Default, long? quota = null, DateTimeOffset? expires = null)" Description="Opens the named bucket, creating it when it is not there. The options apply only at creation." />
+        <ApiMember Name="Get" Signature="ValueTask<StorageBucketInfo?> Get(string name)" Description="Reads a bucket's current state, or null when there is no such bucket. Creates nothing." />
+        <ApiMember Name="Keys" Signature="ValueTask<string[]> Keys()" Description="Lists the names of every bucket this origin has, alphabetically." />
+        <ApiMember Name="Delete" Signature="ValueTask<bool> Delete(string name)" Description="Deletes a bucket and everything in it - files, databases and caches." />
+        <ApiMember Name="Persist" Signature="ValueTask<bool> Persist(string name)" Description="Asks the browser to exempt this bucket from eviction. The user agent decides." />
+        <ApiMember Name="Persisted" Signature="ValueTask<bool> Persisted(string name)" Description="True when this bucket is exempt from eviction." />
+        <ApiMember Name="Estimate" Signature="ValueTask<StorageEstimate> Estimate(string name)" Description="This bucket's own quota and usage in bytes. UsageDetails is always empty here." />
+        <ApiMember Name="SetExpires" Signature="ValueTask<bool> SetExpires(string name, DateTimeOffset expires)" Description="Sets the point after which the browser may delete the bucket." />
+        <ApiMember Name="GetExpires" Signature="ValueTask<DateTimeOffset?> GetExpires(string name)" Description="Reads the bucket's expiry, or null when it has none." />
+        <ApiMember Name="List" Signature="ValueTask<OpfsEntry[]> List(string name, string path = &quot;&quot;)" Description="Lists a directory inside the bucket's own file system. Not recursive." />
+        <ApiMember Name="ReadText" Signature="ValueTask<string?> ReadText(string name, string path)" Description="Reads a file inside the bucket as text; null when there is no file there." />
+        <ApiMember Name="WriteText" Signature="ValueTask<bool> WriteText(string name, string path, string text)" Description="Writes text to a file inside the bucket, creating what is missing along the path." />
+        <ApiMember Name="WriteBytes" Signature="ValueTask<bool> WriteBytes(string name, string path, byte[] data)" Description="Writes bytes to a file inside the bucket, creating what is missing along the path." />
+        <ApiMember Name="Remove" Signature="ValueTask<bool> Remove(string name, string path, bool recursive = false)" Description="Deletes a file or directory inside the bucket." />
+        <ApiMember Name="StorageBucketInfo" Signature="class StorageBucketInfo { string Name; bool Persisted; string? Durability; long? Expires; long? Quota; long? Usage; }" Description="A bucket's state, gathered from its several individual promises into one payload." />
+        <ApiMember Name="StorageBucketDurability" Signature="enum StorageBucketDurability { Default, Relaxed, Strict }" Description="How hard the browser tries not to lose the latest writes. Fixed when the bucket is created." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole openOutput = default!;
+    private DemoConsole persistOutput = default!;
+    private DemoConsole expiryOutput = default!;
+    private DemoConsole fileOutput = default!;
+    private DemoConsole deleteOutput = default!;
+
+    private string bucketName = "butil-demo";
+    private long quota = 0;
+    private bool askPersisted;
+    private Bit.Butil.StorageBucketDurability durability = Bit.Butil.StorageBucketDurability.Default;
+    private int expiryDays = 7;
+    private string filePath = "letters/draft.txt";
+    private string fileText = "unsent";
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await storageBuckets.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported() → true");
+            else await supportOutput.Warn("IsSupported() → false - this browser has no navigator.storageBuckets.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task OpenBucket()
+    {
+        try
+        {
+            var bucket = await storageBuckets.Open(bucketName,
+                persisted: askPersisted,
+                durability: durability,
+                quota: quota > 0 ? quota : null,
+                expires: expiryDays > 0 ? DateTimeOffset.UtcNow.AddDays(expiryDays) : null);
+
+            if (bucket is null)
+            {
+                await openOutput.Warn($"Open(\"{bucketName}\") → null - unsupported, or the name was rejected.");
+                return;
+            }
+
+            await openOutput.Success($"Open(\"{bucket.Name}\") → persisted: {bucket.Persisted}, durability: {bucket.Durability ?? "(unreported)"}, " +
+                $"quota: {FormatBytes(bucket.Quota)}, usage: {FormatBytes(bucket.Usage)}");
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetBucket()
+    {
+        try
+        {
+            var bucket = await storageBuckets.Get(bucketName);
+            if (bucket is null) await openOutput.Warn($"Get(\"{bucketName}\") → null - no bucket under that name (Open creates one; Get doesn't).");
+            else await openOutput.Info($"Get(\"{bucket.Name}\") → persisted: {bucket.Persisted}, usage: {FormatBytes(bucket.Usage)}");
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListBuckets()
+    {
+        try
+        {
+            var names = await storageBuckets.Keys();
+            if (names.Length == 0) await openOutput.Warn("Keys() → no buckets.");
+            else await openOutput.Success($"Keys() → {string.Join(", ", names)}");
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task PersistBucket()
+    {
+        try
+        {
+            var granted = await storageBuckets.Persist(bucketName);
+            if (granted) await persistOutput.Success($"Persist(\"{bucketName}\") → true - this bucket will not be evicted.");
+            else await persistOutput.Warn($"Persist(\"{bucketName}\") → false - the browser declined, or the API is absent.");
+        }
+        catch (Exception ex)
+        {
+            await persistOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CheckPersisted()
+    {
+        try
+        {
+            await persistOutput.Info($"Persisted(\"{bucketName}\") →", await storageBuckets.Persisted(bucketName));
+        }
+        catch (Exception ex)
+        {
+            await persistOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task EstimateBucket()
+    {
+        try
+        {
+            var estimate = await storageBuckets.Estimate(bucketName);
+            await persistOutput.Success($"Estimate(\"{bucketName}\") → using {FormatBytes(estimate.Usage)} of {FormatBytes(estimate.Quota)}");
+        }
+        catch (Exception ex)
+        {
+            await persistOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task SetExpires()
+    {
+        try
+        {
+            var expires = DateTimeOffset.UtcNow.AddDays(expiryDays);
+            var set = await storageBuckets.SetExpires(bucketName, expires);
+            if (set) await expiryOutput.Success($"SetExpires(\"{bucketName}\", {expires.LocalDateTime:g}) → set.");
+            else await expiryOutput.Warn($"SetExpires(\"{bucketName}\") → false.");
+        }
+        catch (Exception ex)
+        {
+            await expiryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetExpires()
+    {
+        try
+        {
+            var expires = await storageBuckets.GetExpires(bucketName);
+            if (expires is null) await expiryOutput.Warn($"GetExpires(\"{bucketName}\") → null - no expiry.");
+            else await expiryOutput.Success($"GetExpires(\"{bucketName}\") → {expires.Value.LocalDateTime:g}");
+        }
+        catch (Exception ex)
+        {
+            await expiryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task WriteFile()
+    {
+        try
+        {
+            var written = await storageBuckets.WriteText(bucketName, filePath, fileText);
+            if (written) await fileOutput.Success($"WriteText(\"{bucketName}\", \"{filePath}\") → wrote {fileText.Length} characters.");
+            else await fileOutput.Warn("WriteText → false - the bucket has no file system, or the API is absent.");
+        }
+        catch (Exception ex)
+        {
+            await fileOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ReadFile()
+    {
+        try
+        {
+            var read = await storageBuckets.ReadText(bucketName, filePath);
+            if (read is null) await fileOutput.Warn($"ReadText(\"{bucketName}\", \"{filePath}\") → null.");
+            else await fileOutput.Success($"ReadText → \"{read}\"");
+        }
+        catch (Exception ex)
+        {
+            await fileOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListFiles()
+    {
+        try
+        {
+            var entries = await storageBuckets.List(bucketName);
+            if (entries.Length == 0) await fileOutput.Warn($"List(\"{bucketName}\") → empty.");
+            else await fileOutput.Success($"List(\"{bucketName}\") → {string.Join(", ", entries.Select(e => e.IsDirectory ? $"{e.Name}/" : e.Name))}");
+        }
+        catch (Exception ex)
+        {
+            await fileOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RemoveFile()
+    {
+        try
+        {
+            var removed = await storageBuckets.Remove(bucketName, filePath, recursive: true);
+            await (removed
+                ? fileOutput.Success($"Remove(\"{bucketName}\", \"{filePath}\") → removed.")
+                : fileOutput.Warn($"Remove(\"{bucketName}\", \"{filePath}\") → false - nothing there."));
+        }
+        catch (Exception ex)
+        {
+            await fileOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteBucket()
+    {
+        try
+        {
+            var deleted = await storageBuckets.Delete(bucketName);
+            if (deleted) await deleteOutput.Success($"Delete(\"{bucketName}\") → the bucket and its contents are gone.");
+            else await deleteOutput.Warn($"Delete(\"{bucketName}\") → false - the API is absent.");
+        }
+        catch (Exception ex)
+        {
+            await deleteOutput.Error(ex.Message);
+        }
+    }
+
+    private static string FormatBytes(long? bytes)
+    {
+        if (bytes is null) return "(unknown)";
+
+        double value = bytes.Value;
+        string[] units = ["B", "KB", "MB", "GB", "TB"];
+        var unit = 0;
+        while (value >= 1024 && unit < units.Length - 1)
+        {
+            value /= 1024;
+            unit++;
+        }
+
+        return $"{value:0.##} {units[unit]}";
+    }
+}

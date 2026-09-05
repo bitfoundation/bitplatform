@@ -1,0 +1,208 @@
+@page "/workers"
+@inject Bit.Butil.ServiceWorker serviceWorker
+@inject Bit.Butil.BackgroundFetch backgroundFetch
+@inject Bit.Butil.ContentIndex contentIndex
+@inject Bit.Butil.WebTransport webTransport
+
+<PageTitle>Butil - Service Worker Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Workers"
+            Lead="The APIs that hang off a service worker registration - navigation preload, the Clients API, background fetches and the content index - plus WebTransport, the HTTP/3 connection that is not a WebSocket."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API" />
+
+<pre>
+@@inject Bit.Butil.ServiceWorker serviceWorker
+
+await serviceWorker.Register("/sw.js");
+await serviceWorker.EnableNavigationPreload();
+
+var clients = await serviceWorker.MatchAllClients(includeUncontrolled: true);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Register the worker" Api="Register / Ready"
+              Description="Everything else on this page needs an active registration first.">
+        <div class="controls">
+            <button @onclick="RegisterWorker">Register /sw.js</button>
+            <button class="secondary" @onclick="UnregisterWorker">Unregister</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Navigation preload" Api="EnableNavigationPreload / GetNavigationPreloadState"
+              Description="Lets the browser issue the navigation request while the worker is still booting.">
+        <div class="controls">
+            <button @onclick="EnablePreload">Enable</button>
+            <button class="secondary" @onclick="ReadPreloadState">Get state</button>
+            <button class="danger" @onclick="DisablePreload">Disable</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Clients, claim and skipWaiting" Api="MatchAllClients / Claim / SkipWaiting"
+              Description="These three live on the worker's global scope, so the page asks over a MessageChannel and the worker answers - see the handler in /sw.js.">
+        <div class="controls">
+            <button @onclick="ListClients">MatchAllClients</button>
+            <button class="secondary" @onclick="ClaimClients">Claim</button>
+            <button class="secondary" @onclick="SkipWaiting">SkipWaiting</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Background fetch" Api="Fetch / GetIds / Abort"
+              Description="Chromium only. A download the browser owns: it survives the tab closing and shows its own progress UI.">
+        <div class="controls">
+            <button @onclick="StartFetch">Fetch</button>
+            <button class="secondary" @onclick="ListFetches">GetIds</button>
+            <button class="danger" @onclick="AbortFetch">Abort</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Content index" Api="Add / GetAll / Delete"
+              Description="Chromium only. Registers a page as offline-available so the browser can offer it to the user itself.">
+        <div class="controls">
+            <button @onclick="AddEntry">Add</button>
+            <button class="secondary" @onclick="ListEntries">GetAll</button>
+            <button class="danger" @onclick="DeleteEntry">Delete</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="WebTransport" Api="IsSupported / Connect"
+              Description="Needs an HTTP/3 server that speaks WebTransport - there is none here, so a connect attempt reports why it failed.">
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input @bind="_transportUrl" placeholder="https://localhost:4433/echo" />
+        </div>
+        <div class="controls">
+            <button @onclick="CheckTransport">IsSupported</button>
+            <button class="secondary" @onclick="ConnectTransport">Connect</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="workers output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private const string FetchId = "butil-samples-fetch";
+    private const string EntryId = "butil-samples-entry";
+
+    private string _transportUrl = "https://localhost:4433/echo";
+
+    private async Task RegisterWorker()
+    {
+        var registration = await serviceWorker.Register("/sw.js");
+        await serviceWorker.Ready();
+        await output.Success($"Register(\"/sw.js\") → registered: {registration.IsRegistered}, scope: {registration.Scope}");
+    }
+
+    private async Task UnregisterWorker()
+    {
+        await output.Info("Unregister() →", await serviceWorker.Unregister());
+    }
+
+    private async Task EnablePreload()
+    {
+        await output.Info("EnableNavigationPreload() →", await serviceWorker.EnableNavigationPreload());
+    }
+
+    private async Task DisablePreload()
+    {
+        await output.Info("DisableNavigationPreload() →", await serviceWorker.DisableNavigationPreload());
+    }
+
+    private async Task ReadPreloadState()
+    {
+        var state = await serviceWorker.GetNavigationPreloadState();
+        await output.Info($"GetNavigationPreloadState() → supported: {state.IsSupported}, enabled: {state.Enabled}, header: \"{state.HeaderValue}\"");
+    }
+
+    private async Task ListClients()
+    {
+        var clients = await serviceWorker.MatchAllClients(includeUncontrolled: true);
+        if (clients.Length == 0) await output.Warn("MatchAllClients() → empty - no active worker, or it does not answer.");
+        else await output.Success($"MatchAllClients() → {string.Join(", ", clients.Select(c => c.Url))}");
+    }
+
+    private async Task ClaimClients()
+    {
+        await output.Info("Claim() →", await serviceWorker.Claim());
+    }
+
+    private async Task SkipWaiting()
+    {
+        await output.Info("SkipWaiting() →", await serviceWorker.SkipWaiting());
+    }
+
+    private async Task StartFetch()
+    {
+        // The library's own script, at the path static web assets serve it from under every hosting
+        // model - a URL that 404s starts the fetch and then fails it as a browser download.
+        var registration = await backgroundFetch.Fetch(FetchId, ["/_content/Bit.Butil/bit-butil.js"], "Bit.Butil sample download");
+        if (registration is null) await output.Warn("Fetch → null (Chromium only, and a worker must be registered)");
+        else await output.Success($"Fetch(\"{registration.Id}\") → started");
+    }
+
+    private async Task ListFetches()
+    {
+        var ids = await backgroundFetch.GetIds();
+        if (ids.Length == 0) await output.Warn("GetIds() → nothing running");
+        else await output.Success($"GetIds() → {string.Join(", ", ids)}");
+    }
+
+    private async Task AbortFetch()
+    {
+        await output.Info($"Abort(\"{FetchId}\") →", await backgroundFetch.Abort(FetchId));
+    }
+
+    private async Task AddEntry()
+    {
+        var added = await contentIndex.Add(new ContentIndexEntry
+        {
+            Id = EntryId,
+            Title = "Bit.Butil samples",
+            Description = "The samples app, registered as offline-available content.",
+            Url = "/workers",
+            Category = "article",
+            // Served out of this library's own wwwroot, so the icon is fetchable under every
+            // hosting model - an icon that 404s makes Chromium reject the whole add().
+            Icons = [new ContentIndexIcon { Src = "_content/Bit.Butil.Samples.Core/icon-512.png", Sizes = "512x512", Type = "image/png" }]
+        });
+
+        if (added) await output.Success($"Add(\"{EntryId}\") → indexed");
+        else await output.Warn("Add → false (Chromium only; the icon and URL must be fetchable and in scope)");
+    }
+
+    private async Task ListEntries()
+    {
+        var entries = await contentIndex.GetAll();
+        if (entries.Length == 0) await output.Warn("GetAll() → nothing indexed");
+        else await output.Success($"GetAll() → {string.Join(", ", entries.Select(e => e.Id))}");
+    }
+
+    private async Task DeleteEntry()
+    {
+        await output.Info($"Delete(\"{EntryId}\") →", await contentIndex.Delete(EntryId));
+    }
+
+    private async Task CheckTransport()
+    {
+        await output.Info("WebTransport.IsSupported() →", await webTransport.IsSupported());
+    }
+
+    private async Task ConnectTransport()
+    {
+        var result = await webTransport.Connect(_transportUrl,
+            onDatagram: data => _ = InvokeAsync(() => output.Info($"datagram → {data.Length} bytes")),
+            onClosed: info => _ = InvokeAsync(() => output.Warn($"closed → {info.CloseCode} {info.Reason} {info.Error}")));
+
+        if (result.Session is null)
+        {
+            await output.Error($"Connect(\"{_transportUrl}\") → {result.Error}");
+            return;
+        }
+
+        await output.Success("Connected. Sending one datagram, then closing.");
+        await result.Session.SendDatagram(System.Text.Encoding.UTF8.GetBytes("ping"));
+        await result.Session.DisposeAsync();
+    }
+}
