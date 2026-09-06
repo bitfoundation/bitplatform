@@ -8,7 +8,7 @@ namespace Bit.Butil.Demo.Server.Services;
 /// resource template, filtered by what has been typed so far.
 /// <para>
 /// Every one of those arguments is drawn from a closed set this server already holds - four hosting
-/// models, sixty-odd docs slugs, the public type names, the guide's own headings, the embedded
+/// models, seventy-odd docs slugs, the public type names, the guide's own headings, the embedded
 /// source paths - and without this handler a client has no way to learn any of them except by
 /// calling a listing tool and reading it. That is fine for an agent and useless for the person
 /// picking "add Butil to an app" out of a menu in their editor, who is then asked to type a hosting

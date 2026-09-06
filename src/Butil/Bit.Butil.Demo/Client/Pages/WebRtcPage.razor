@@ -2,6 +2,7 @@
 @implements IAsyncDisposable
 @inject Bit.Butil.WebRtc webRtc
 @inject Bit.Butil.MediaDevices mediaDevices
+@inject Bit.Butil.BroadcastChannel broadcastChannel
 
 <PageTitle>WebRtc - Bit.Butil</PageTitle>
 
@@ -16,8 +17,10 @@
     stream of ICE candidates have to be carried between them by something else - your own server over
     <a href="web-socket">WebSocket</a>, a shared document, a QR code. That exchange is
     <em>signalling</em>, it is not part of the API, and it is the part people are surprised to have to
-    build. This page plays both peers in one tab and hands the messages straight across, which is
-    exactly what a real signalling channel would do more slowly.
+    build. The sections below play both peers in one tab and hand the messages straight across, which
+    is exactly what a real signalling channel would do more slowly - and
+    <a href="#two-real-windows">Two real windows</a> does the same thing between two actual browser windows,
+    with <a href="broadcast-channel">BroadcastChannel</a> standing in for the server.
 </Callout>
 
 <div class="stack">
@@ -93,6 +96,53 @@ await channel.SendBytes([1, 2, 3, 4]);
             </div>
         }
         <DemoConsole @ref="channelOutput" Title="data channel output" />
+    </DemoSection>
+
+    <DemoSection Title="Two real windows"
+                 Api="CreatePeerConnection / CreateOffer / CreateAnswer / AddIceCandidate + BroadcastChannel"
+                 Description="The sections above are a loopback: both peers live in this tab, so nothing is ever signalled. Here the two peers are in two different browser windows and the offer, the answer and every ICE candidate travel between them over BroadcastChannel - which reaches every same-origin window in this browser and is the smallest thing that can stand in for a signalling server. Open this page in a second window, press Host in one and Join in the other, and the chat below is a real peer connection. Two notes that bite every first WebRTC implementation are handled here: the joiner announces itself so the host makes its offer to somebody who is listening (an offer posted before the second window exists is simply lost), and candidates that arrive before the remote description is set are queued rather than added, because addIceCandidate rejects them until there is a description to attach them to."
+                 Code=@("""
+// Signalling: anything that reaches the other side will do. Here, other windows of this browser.
+_signalling = await broadcastChannel.Subscribe("butil-webrtc-demo", OnSignal);
+
+_peer = await webRtc.CreatePeerConnection(
+    iceServers: [new RtcIceServer { Urls = ["stun:stun.l.google.com:19302"] }],
+    onIceCandidate: json => InvokeAsync(() => broadcastChannel.Post("butil-webrtc-demo",
+                                                new { type = "candidate", candidate = json }).AsTask()),
+    onRemoteChannel: channel => { _channel = channel; channel.Listen(onMessage: Show); });
+
+// Host, once the other window says it is there:
+var offer = await _peer.CreateOffer();
+await _peer.SetLocalDescription(offer!);
+await broadcastChannel.Post("butil-webrtc-demo", new { type = "offer", sdp = offer!.Sdp });
+
+// Joiner, on that offer:
+await _peer.SetRemoteDescription(new RtcSessionDescription("offer", sdp, null));
+var answer = await _peer.CreateAnswer();
+await _peer.SetLocalDescription(answer!);
+await broadcastChannel.Post("butil-webrtc-demo", new { type = "answer", sdp = answer!.Sdp });
+""")>
+        <div class="controls">
+            <button @onclick="Host">Host in this window</button>
+            <button @onclick="Join">Join from this window</button>
+            <button class="danger" @onclick="LeaveRoom">Leave</button>
+        </div>
+        <div class="field">
+            <span class="field-label">This window</span>
+            <span>@_liveRole - @_liveState</span>
+        </div>
+        <div class="controls">
+            <input @bind="_liveMessage" placeholder="message to the other window" aria-label="message to the other window" />
+            <button @onclick="SendLive">Send to the peer</button>
+        </div>
+        @if (_liveChat.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Chat</span>
+                <span>@string.Join(" | ", _liveChat)</span>
+            </div>
+        }
+        <DemoConsole @ref="liveOutput" Title="two-window output" />
     </DemoSection>
 
     <DemoSection Title="What is actually happening on the wire"
@@ -198,6 +248,12 @@ await b!.AttachRemoteMedia(_remoteVideo);
     private DemoConsole channelOutput = default!;
     private DemoConsole statsOutput = default!;
     private DemoConsole mediaOutput = default!;
+    private DemoConsole liveOutput = default!;
+
+    // Any channel that reaches the other side would do here - a WebSocket to your own server, a
+    // shared document, a QR code. BroadcastChannel is the one that needs no server at all, at the
+    // price of only reaching other windows of the same browser and origin.
+    private const string SignallingChannel = "butil-webrtc-demo";
 
     private ElementReference _localVideo;
     private ElementReference _remoteVideo;
@@ -212,6 +268,16 @@ await b!.AttachRemoteMedia(_remoteVideo);
     private string _stateA = "Not created.";
     private string _stateB = "Not created.";
     private string _message = "hello, other browser";
+
+    private PeerConnectionHandle? _live;
+    private RtcDataChannelHandle? _liveChannel;
+    private ButilSubscription? _signalling;
+    private readonly List<string> _liveChat = [];
+    private readonly List<string?> _pendingCandidates = [];
+    private bool _remoteDescriptionSet;
+    private string _liveRole = "not in the room";
+    private string _liveState = "idle";
+    private string _liveMessage = "hello, other window";
 
     private async Task CheckSupported()
     {
@@ -378,6 +444,190 @@ await b!.AttachRemoteMedia(_remoteVideo);
         }
     }
 
+    private Task Host() => EnterRoom(host: true);
+
+    private Task Join() => EnterRoom(host: false);
+
+    private async Task EnterRoom(bool host)
+    {
+        await LeaveRoom();
+
+        try
+        {
+            _liveRole = host ? "host" : "joiner";
+            _signalling = await broadcastChannel.Subscribe(SignallingChannel, OnSignal);
+
+            _live = await webRtc.CreatePeerConnection(
+                iceServers: [new RtcIceServer { Urls = ["stun:stun.l.google.com:19302"] }],
+                onIceCandidate: json => InvokeAsync(async () =>
+                    await broadcastChannel.Post(SignallingChannel, new { type = "candidate", candidate = json })),
+                onConnectionState: state => InvokeAsync(() => { _liveState = state; StateHasChanged(); }),
+                // Only the host creates a channel, so this fires on the joiner - and the channel is
+                // already open by then, which is why it is listened to here rather than after an await.
+                onRemoteChannel: channel => { _liveChannel = channel; ListenLive(channel); });
+
+            if (_live is null)
+            {
+                await liveOutput.Warn("CreatePeerConnection returned null - this runtime has no RTCPeerConnection.");
+                return;
+            }
+
+            if (host)
+            {
+                // Everything the offer must describe has to exist before the offer is made.
+                _liveChannel = await _live.CreateDataChannel("chat");
+                if (_liveChannel is not null) ListenLive(_liveChannel);
+                await liveOutput.Success("Hosting. Open this page in a second window and press Join there.");
+            }
+            else
+            {
+                // The host cannot offer to a window that did not exist yet, and an offer posted
+                // before the second window opened is simply gone - so the joiner announces itself.
+                await broadcastChannel.Post(SignallingChannel, new { type = "join" });
+                await liveOutput.Success("Joined. Asking the hosting window for an offer.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await liveOutput.Error("Entering the room failed →", ex.Message);
+        }
+    }
+
+    private void ListenLive(RtcDataChannelHandle channel) => channel.Listen(
+        onMessage: m => InvokeAsync(async () =>
+        {
+            _liveChat.Add($"peer: {(m.IsBinary ? $"binary [{string.Join(",", m.Data ?? [])}]" : m.Deserialize<string>())}");
+            await liveOutput.Success("Received from the other window →", _liveChat[^1]);
+            StateHasChanged();
+        }),
+        onOpen: () => InvokeAsync(async () => await liveOutput.Success("The channel is open - this is a real connection between two windows.")),
+        onClose: () => InvokeAsync(async () => await liveOutput.Log("The channel closed.")));
+
+    // Signalling messages carry only what the other side has to be told; the shape is entirely this
+    // application's business, since the API has no opinion about how these strings travel.
+    private void OnSignal(JsonElement data)
+    {
+        var type = data.TryGetProperty("type", out var t) ? t.GetString() : null;
+        if (type is null) return;
+
+        var sdp = data.TryGetProperty("sdp", out var s) ? s.GetString() : null;
+        var candidate = data.TryGetProperty("candidate", out var c) ? c.GetString() : null;
+
+        InvokeAsync(() => HandleSignal(type, sdp, candidate));
+    }
+
+    private async Task HandleSignal(string type, string? sdp, string? candidate)
+    {
+        if (_live is null) return;
+
+        try
+        {
+            switch (type)
+            {
+                case "join" when _liveRole == "host":
+                    var offer = await _live.CreateOffer();
+                    if (offer?.Sdp is null)
+                    {
+                        await liveOutput.Error("CreateOffer failed →", offer?.Error);
+                        return;
+                    }
+                    await _live.SetLocalDescription(offer);
+                    await broadcastChannel.Post(SignallingChannel, new { type = "offer", sdp = offer.Sdp });
+                    await liveOutput.Success("The other window is there - offer sent.");
+                    break;
+
+                case "offer" when _liveRole == "joiner" && sdp is not null:
+                    await _live.SetRemoteDescription(new RtcSessionDescription("offer", sdp, null));
+                    await DrainCandidates();
+                    var answer = await _live.CreateAnswer();
+                    if (answer?.Sdp is null)
+                    {
+                        await liveOutput.Error("CreateAnswer failed →", answer?.Error);
+                        return;
+                    }
+                    await _live.SetLocalDescription(answer);
+                    await broadcastChannel.Post(SignallingChannel, new { type = "answer", sdp = answer.Sdp });
+                    await liveOutput.Success("Answered the host's offer.");
+                    break;
+
+                case "answer" when _liveRole == "host" && sdp is not null:
+                    await _live.SetRemoteDescription(new RtcSessionDescription("answer", sdp, null));
+                    await DrainCandidates();
+                    await liveOutput.Success("The joiner answered - candidates are flowing.");
+                    break;
+
+                case "candidate":
+                    // A candidate has nowhere to go until there is a remote description to attach it
+                    // to, and they start arriving before the answer does - so hold them until then.
+                    if (_remoteDescriptionSet) await _live.AddIceCandidate(candidate);
+                    else _pendingCandidates.Add(candidate);
+                    break;
+
+                case "bye":
+                    await liveOutput.Warn("The other window left the room.");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            await liveOutput.Error("Signalling failed →", ex.Message);
+        }
+    }
+
+    private async Task DrainCandidates()
+    {
+        _remoteDescriptionSet = true;
+        foreach (var pending in _pendingCandidates) await _live!.AddIceCandidate(pending);
+        _pendingCandidates.Clear();
+    }
+
+    private async Task SendLive()
+    {
+        if (_liveChannel is null)
+        {
+            await liveOutput.Warn("Host or join first.");
+            return;
+        }
+
+        try
+        {
+            var sent = await _liveChannel.SendText(_liveMessage);
+            if (sent is false)
+            {
+                await liveOutput.Warn("SendText returned false - the channel is not open yet.");
+                return;
+            }
+
+            _liveChat.Add($"me: {_liveMessage}");
+        }
+        catch (Exception ex)
+        {
+            await liveOutput.Error("SendText failed →", ex.Message);
+        }
+    }
+
+    private async Task LeaveRoom()
+    {
+        if (_signalling is not null)
+        {
+            // Best effort: the other window is told, but a closing tab may not get this far.
+            try { await broadcastChannel.Post(SignallingChannel, new { type = "bye" }); }
+            catch (Exception) { }
+
+            await _signalling.DisposeAsync();
+            _signalling = null;
+        }
+
+        if (_liveChannel is not null) { await _liveChannel.DisposeAsync(); _liveChannel = null; }
+        if (_live is not null) { await _live.DisposeAsync(); _live = null; }
+
+        _pendingCandidates.Clear();
+        _liveChat.Clear();
+        _remoteDescriptionSet = false;
+        _liveRole = "not in the room";
+        _liveState = "idle";
+    }
+
     private async Task ReadStats()
     {
         if (_a is null)
@@ -422,6 +672,7 @@ await b!.AttachRemoteMedia(_remoteVideo);
         try
         {
             await Disconnect();
+            await LeaveRoom();
         }
         catch (Exception)
         {
