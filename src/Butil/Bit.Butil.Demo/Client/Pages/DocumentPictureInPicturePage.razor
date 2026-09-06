@@ -154,11 +154,25 @@ await subscription!.DisposeAsync();
     protected override void OnInitialized()
     {
         // Proof that a moved component is still live: the counter keeps running while it floats.
-        timer = new System.Threading.Timer(_ => InvokeAsync(() =>
+        // TimerCallback is void, so the dispatch has to be observed here rather than handed back.
+        timer = new System.Threading.Timer(_ => _ = Tick(), null, 1000, 1000);
+    }
+
+    private async Task Tick()
+    {
+        try
         {
-            ticks++;
-            StateHasChanged();
-        }), null, 1000, 1000);
+            await InvokeAsync(() =>
+            {
+                ticks++;
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException)
+        {
+            // The component - or, on Server, the circuit - went away between the tick and the
+            // dispatch; an unobserved exception out of a timer thread is the alternative.
+        }
     }
 
     private async Task CheckSupported()
@@ -344,7 +358,8 @@ await subscription!.DisposeAsync();
     {
         try
         {
-            timer?.Dispose();
+            // DisposeAsync, unlike Dispose, does not come back until a tick already running has finished.
+            if (timer is not null) await timer.DisposeAsync();
             if (enterSubscription is not null) await enterSubscription.DisposeAsync();
             // Closing also moves the panel back into the page before the document goes away.
             if (pipWindow is not null) await pipWindow.DisposeAsync();

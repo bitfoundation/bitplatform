@@ -1,7 +1,7 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    interface AvailabilityEntry { remote: any; callbackId: number | null; }
+    interface AvailabilityEntry { remote: any; callbackId: number | null; cancelled: boolean; }
     interface StateEntry { remote: any; handler: () => void; }
 
     const _availability: { [listenerId: string]: AvailabilityEntry } = {};
@@ -26,17 +26,26 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (!remote?.watchAvailability) return false;
 
             butil.remotePlayback.cancelWatch(listenerId);
-            const entry: AvailabilityEntry = { remote, callbackId: null };
+            const entry: AvailabilityEntry = { remote, callbackId: null, cancelled: false };
             _availability[listenerId] = entry;
             try {
                 // The callback fires immediately with the current answer as well as on every change,
                 // so .NET never has to ask separately whether a device is around right now.
-                entry.callbackId = await remote.watchAvailability((available: boolean) =>
-                    butil.utils.dispatch(dotNetRef, method, listenerId, !!available));
+                const callbackId = await remote.watchAvailability((available: boolean) => {
+                    if (entry.cancelled) return;
+                    butil.utils.dispatch(dotNetRef, method, listenerId, !!available);
+                });
+                // A cancel that landed while that promise was pending had no id to cancel with yet,
+                // so it is cancelled here instead - otherwise the device scan runs for the page's life.
+                if (entry.cancelled) {
+                    try { remote.cancelWatchAvailability(callbackId); } catch { /* element already gone */ }
+                    return false;
+                }
+                entry.callbackId = callbackId;
                 return true;
             } catch {
                 // Blocked by permissions policy, or the element opted out of remote playback.
-                delete _availability[listenerId];
+                if (_availability[listenerId] === entry) delete _availability[listenerId];
                 return false;
             }
         },
@@ -44,6 +53,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const entry = _availability[listenerId];
             if (!entry) return;
             delete _availability[listenerId];
+            entry.cancelled = true;
+            // Still awaiting watchAvailability; the await path sees the flag and cancels for us.
             if (entry.callbackId === null) return;
             try { entry.remote.cancelWatchAvailability(entry.callbackId); } catch { /* element already gone */ }
         },

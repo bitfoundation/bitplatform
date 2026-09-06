@@ -86,6 +86,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     element.src = entry.objectUrl;
                 }
             } catch {
+                // Nothing is attached, so nothing will ever fire sourceopen; leaving the entry in
+                // place would keep the MediaSource - and its object URL - alive for the page's life.
+                if (_sources[id] === entry) close(id);
                 done(false);
                 return;
             }

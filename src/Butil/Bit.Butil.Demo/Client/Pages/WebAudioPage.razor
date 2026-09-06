@@ -900,6 +900,7 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
             var panner = await webAudio.CreateStereoPanner(stereoPan);
             if (source is null || panner is null)
             {
+                await DisposePartial(source, panner);
                 await spaceOutput.Warn("CreateStereoPanner → null (this engine does not implement it)");
                 return;
             }
@@ -938,6 +939,7 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
 
             if (source is null || panner is null)
             {
+                await DisposePartial(source, panner);
                 await spaceOutput.Warn("the spatial graph could not be built (no audio context?)");
                 return;
             }
@@ -972,6 +974,7 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
             var feedback = await webAudio.CreateGain(0.45);
             if (source is null || delay is null || feedback is null)
             {
+                await DisposePartial(source, delay, feedback);
                 await effectOutput.Warn("the echo graph could not be built (no audio context?)");
                 return;
             }
@@ -1005,6 +1008,7 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
             var compressor = await webAudio.CreateDynamicsCompressor(threshold: -30, ratio: 12);
             if (source is null || shaper is null || compressor is null)
             {
+                await DisposePartial(source, shaper, compressor);
                 await effectOutput.Warn("the distortion graph could not be built (no audio context?)");
                 return;
             }
@@ -1045,6 +1049,7 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
             var wet = await webAudio.CreateGain(0.8);
             if (source is null || reverb is null || wet is null)
             {
+                await DisposePartial(source, reverb, wet);
                 await effectOutput.Warn("the reverb graph could not be built (no audio context?)");
                 return;
             }
@@ -1219,6 +1224,19 @@ await node.PostMessage("mute");        // a command - whenever the thread gets t
         decodedBuffer ??= await webAudio.DecodeAudioData(chimeWav);
 
         return decodedBuffer;
+    }
+
+    /// <summary>
+    /// Releases whatever part of a graph was built when a later node came back null. Half a graph is
+    /// still a live node on the audio thread, and one that never reached DisposeAfter has no owner
+    /// at all - so it would stay registered for the page's lifetime.
+    /// </summary>
+    private static async Task DisposePartial(params AudioNodeHandle?[] nodes)
+    {
+        foreach (var node in nodes)
+        {
+            if (node is not null) await node.DisposeAsync();
+        }
     }
 
     /// <summary>Plays for a while, then releases the nodes - a one-shot graph has no other owner.</summary>

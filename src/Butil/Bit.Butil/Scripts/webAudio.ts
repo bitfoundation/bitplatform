@@ -383,7 +383,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function param(id: string, name: string) {
         const node = _nodes[id];
-        const value = node?.[name];
+        if (!node) return null;
+        // A worklet's declared parameters live in an AudioParamMap rather than on the node itself,
+        // so they are only reachable through parameters.get() - the node's own properties are
+        // still looked at first, since a built-in node keeps its params there.
+        let value = node[name];
+        if (!value && node.parameters?.get) {
+            try { value = node.parameters.get(name); } catch { /* not a param of this worklet */ }
+        }
         // An AudioParam is distinguished from a plain number property by having a setValueAtTime.
         return value && typeof value.setValueAtTime === 'function' ? value : null;
     }

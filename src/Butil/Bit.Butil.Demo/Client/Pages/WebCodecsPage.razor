@@ -183,6 +183,9 @@ await encoder.Flush();
     private double frameCount = 10;
 
     private readonly List<EncodedVideoChunk> encodedChunks = [];
+    // The codec the chunks in that list were actually produced with: the dropdown is two-way bound,
+    // so decoding against encodeCodec would build a decoder for whatever is selected now instead.
+    private string encodedChunksCodec = "";
     private VideoEncoderHandle? encoder;
     private VideoDecoderHandle? decoder;
 
@@ -248,6 +251,7 @@ await encoder.Flush();
         {
             await TeardownCodecs();
             encodedChunks.Clear();
+            encodedChunksCodec = encodeCodec;
 
             var config = new VideoEncoderConfig
             {
@@ -315,7 +319,7 @@ await encoder.Flush();
 
             var drawn = 0;
             decoder = await webCodecs.CreateVideoDecoder(
-                new VideoDecoderConfig { Codec = encodeCodec, Description = encodedChunks[0].DecoderDescription, CodedWidth = Width, CodedHeight = Height },
+                new VideoDecoderConfig { Codec = encodedChunksCodec, Description = encodedChunks[0].DecoderDescription, CodedWidth = Width, CodedHeight = Height },
                 onFrame: async frame =>
                 {
                     // onFrame is an Action, so this lambda is async void: an exception escaping it is

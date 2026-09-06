@@ -7,7 +7,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         change: () => void;
     }
 
-    interface AvailabilityEntry { availability: any; handler: () => void; }
+    interface AvailabilityEntry { availability: any; handler: (() => void) | null; cancelled: boolean; }
 
     const _connections: { [id: string]: ConnectionEntry } = {};
     const _availability: { [listenerId: string]: AvailabilityEntry } = {};
@@ -44,10 +44,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (!request?.getAvailability) return false;
 
         cancelWatch(listenerId);
+        // Registered before the await so a cancel landing during it has something to mark:
+        // getAvailability is a promise, and attaching afterwards would leave a listener nothing
+        // can remove any more.
+        const entry: AvailabilityEntry = { availability: null, handler: null, cancelled: false };
+        _availability[listenerId] = entry;
         try {
             const availability = await request.getAvailability();
+            if (entry.cancelled) return false;
             const handler = () => butil.utils.dispatch(dotNetRef, method, listenerId, !!availability.value);
-            _availability[listenerId] = { availability, handler };
+            entry.availability = availability;
+            entry.handler = handler;
             availability.addEventListener('change', handler);
             // The object holds the current answer as soon as it exists, and only reports changes
             // afterwards - so the first value has to be pushed by hand or .NET waits for a change
@@ -57,6 +64,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         } catch {
             // NotSupportedError where the engine cannot monitor availability continuously; the
             // documented fallback is to call start() and let the picker report the truth.
+            if (_availability[listenerId] === entry) delete _availability[listenerId];
             return false;
         }
     }
@@ -65,6 +73,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const entry = _availability[listenerId];
         if (!entry) return;
         delete _availability[listenerId];
+        entry.cancelled = true;
+        // Still awaiting getAvailability; that path sees the flag and never attaches the listener.
+        if (!entry.handler) return;
         try { entry.availability.removeEventListener('change', entry.handler); } catch { /* already gone */ }
     }
 
