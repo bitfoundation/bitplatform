@@ -232,7 +232,21 @@ await contentIndex.Delete("article-42");
     {
         try
         {
+            // Read the entry's URL before deleting it: afterwards nothing maps the id back to a
+            // URL, and the cached response has to go too. Leaving it behind means the worker's
+            // fetch handler keeps answering navigations to a page that is no longer indexed, from
+            // a cache no code path ever writes to again.
+            var entries = await contentIndex.GetAll();
+            var cachedUrl = entries.FirstOrDefault(entry => entry.Id == entryId)?.Url;
+
             var deleted = await contentIndex.Delete(entryId);
+
+            if (deleted && cachedUrl is not null)
+            {
+                var evicted = await cacheStorage.DeleteEntry("butil-content-index", cachedUrl);
+                if (evicted) await listOutput.Info($"Also removed \"{cachedUrl}\" from the butil-content-index cache.");
+            }
+
             await (deleted
                 ? listOutput.Success($"Delete(\"{entryId}\") → removed.")
                 : listOutput.Warn($"Delete(\"{entryId}\") → false - the API is absent."));

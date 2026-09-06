@@ -123,11 +123,18 @@ public class StorageBuckets(IJSRuntime js)
     /// for itself, with no per-API breakdown.
     /// <br/>
     /// A bucket that doesn't exist reports nulls rather than being created.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this reports nulls too rather than throwing, so the
+    /// result can't be distinguished from a genuine value. If you branch on it, defer the read to
+    /// <c>OnAfterRenderAsync</c>.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageEstimate))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageUsageDetail))]
-    public ValueTask<StorageEstimate> Estimate(string name)
-        => js.Invoke<StorageEstimate>("BitButil.storageBuckets.estimate", name);
+    public async ValueTask<StorageEstimate> Estimate(string name)
+        // The prerender safe default is null for anything but strings and arrays, and this member
+        // promises a non-null estimate - so the empty one is built here rather than dereferenced
+        // by the caller.
+        => await js.Invoke<StorageEstimate?>("BitButil.storageBuckets.estimate", name) ?? new();
 
     /// <summary>
     /// Sets the point after which the browser may delete the bucket.
@@ -173,6 +180,19 @@ public class StorageBuckets(IJSRuntime js)
     /// <remarks>Reading through a name that isn't a bucket yet doesn't create one.</remarks>
     public ValueTask<string?> ReadText(string name, string path)
         => js.Invoke<string?>("BitButil.storageBuckets.readText", name, path);
+
+    /// <summary>Reads a file inside the bucket as bytes.</summary>
+    /// <param name="name">The bucket name.</param>
+    /// <param name="path">A file path inside the bucket.</param>
+    /// <returns>The bytes, or null when there is no file - or no bucket - there.</returns>
+    /// <remarks>
+    /// The counterpart to <see cref="WriteBytes"/>. <see cref="ReadText"/> UTF-8 decodes what it
+    /// reads, which does not survive arbitrary bytes, so anything that isn't text comes back here.
+    /// <br/>
+    /// Reading through a name that isn't a bucket yet doesn't create one.
+    /// </remarks>
+    public ValueTask<byte[]?> ReadBytes(string name, string path)
+        => js.Invoke<byte[]?>("BitButil.storageBuckets.readBytes", name, path);
 
     /// <summary>Writes text to a file inside the bucket, creating what's missing along the path.</summary>
     /// <param name="name">The bucket name.</param>

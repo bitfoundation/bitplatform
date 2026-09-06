@@ -77,6 +77,7 @@
     <h3>Origin private file system</h3>
     <button id="opfs-roundtrip" @onclick="OpfsRoundTrip">write + read + list + remove</button>
     <button id="opfs-sync" @onclick="OpfsSyncAccess">sync access handle (worker)</button>
+    <button id="opfs-sync-aliases" @onclick="OpfsSyncPathAliases">sync access handle (aliased paths)</button>
 </section>
 
 <section>
@@ -486,6 +487,41 @@
         Set($"opfs:sync:True/{written}/{appended}/{size}/{text}");
     }
 
+    // The worker serializes sync operations per file, and a sync access handle is an exclusive lock -
+    // so two overlapping appends to one file only survive if both take the same queue. These three
+    // spellings are one file, and a queue keyed on the raw string would give them three queues and
+    // have the later handles fail with NoModificationAllowedError.
+    private async Task OpfsSyncPathAliases()
+    {
+        const string directory = "butil-e2e-alias";
+
+        await opfs.Remove(directory, recursive: true);
+
+        if (await opfs.IsSyncAccessSupported() is false)
+        {
+            Set("opfs:aliases:unsupported");
+            return;
+        }
+
+        // Created up front: three concurrent creates of the same missing file is a different race
+        // than the one under test.
+        await opfs.SyncWrite($"{directory}/log.bin", []);
+
+        var record = System.Text.Encoding.UTF8.GetBytes("abc");
+        var appends = await Task.WhenAll(
+            opfs.SyncAppend($"{directory}/log.bin", record).AsTask(),
+            opfs.SyncAppend($"./{directory}/log.bin", record).AsTask(),
+            opfs.SyncAppend($"{directory}//log.bin", record).AsTask());
+
+        // -1 is what the interop reports for a failed sync operation, so a bypassed queue shows up
+        // as a negative here rather than only as a short file.
+        var failures = appends.Count(count => count < 0);
+        var size = await opfs.SyncSize($"{directory}/log.bin");
+        await opfs.Remove(directory, recursive: true);
+
+        Set($"opfs:aliases:{failures}/{size}");
+    }
+
     // ─── Storage buckets ───────────────────────────────────────────────────────
     private async Task StorageBucketsRoundTrip()
     {
@@ -503,10 +539,18 @@
         var opened = await storageBuckets.Open(bucket);
         var written = await storageBuckets.WriteText(bucket, "letters/draft.txt", "unsent");
         var read = await storageBuckets.ReadText(bucket, "letters/draft.txt");
+
+        // Not valid UTF-8 on purpose: these four bytes are what tells ReadBytes apart from
+        // ReadText, which would decode 0xC3 0x28 into replacement characters and lose them.
+        byte[] payload = [0x00, 0xC3, 0x28, 0xFF];
+        var wroteBytes = await storageBuckets.WriteBytes(bucket, "letters/seal.bin", payload);
+        var readBytes = await storageBuckets.ReadBytes(bucket, "letters/seal.bin");
+        var bytesMatch = readBytes is not null && readBytes.SequenceEqual(payload);
+
         var keys = await storageBuckets.Keys();
         var deleted = await storageBuckets.Delete(bucket);
 
-        Set($"buckets:roundtrip:{opened?.Name}/{written}/{read}/{keys.Contains(bucket)}/{deleted}");
+        Set($"buckets:roundtrip:{opened?.Name}/{written}/{read}/{wroteBytes}/{bytesMatch}/{keys.Contains(bucket)}/{deleted}");
     }
 
     // ─── Web Locks ─────────────────────────────────────────────────────────────

@@ -18,6 +18,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 // queue at all; different paths never share one, so they still run concurrently.
 var _queues = {};
 
+// The queue key has to name the same file the operation resolves to, or two spellings of one path
+// take different queues and defeat the serialization outright. Same normalization handle() walks
+// with: 'a/b', './a/b' and 'a//b' are one file, so they are one key.
+function pathKey(path) {
+    return String(path || '').split('/').filter(function (p) { return p && p !== '.'; }).join('/');
+}
+
 self.onmessage = function (e) {
     var m = e.data, id = m.id;
 
@@ -31,7 +38,7 @@ self.onmessage = function (e) {
         return;
     }
 
-    var key = String(m.path || '');
+    var key = pathKey(m.path);
     var run = function () { return handle(m, id); };
     // Both arms are the same call: run() never rejects, but a queue is only a queue if a failure
     // in front of it still lets the rest through.

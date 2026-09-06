@@ -1,6 +1,7 @@
 // Minimal service worker used by the ServiceWorker / Push / BackgroundSync / BackgroundFetch /
 // ContentIndex demo pages. It exists so registration-based APIs have something real to register and
-// inspect, and it fills no cache of its own - the one cache it reads is filled by a page.
+// inspect. The one cache it touches - butil-content-index - is filled by the ContentIndex page;
+// the worker only refreshes and prunes what is already in there.
 
 // Deliberately no self.skipWaiting() here. A first registration activates immediately anyway
 // (nothing is controlling the page yet), while a worker installed over a running one waits - which
@@ -28,7 +29,29 @@ self.addEventListener('fetch', event => {
             // ignoreSearch so a query string the browser appends on its way to an indexed page
             // does not turn a hit into a miss.
             .then(cache => cache.match(event.request, { ignoreSearch: true }))
-            .then(cached => cached || fetch(event.request)));
+            // A cache that cannot be opened or read must not take the navigation down with it.
+            // Without this, one rejected caches.open() breaks every navigation on the site - and
+            // since this worker never skips waiting on its own, a fixed sw.js could not take over
+            // to undo that while a tab stayed open. Any failure here falls back to the network
+            // path the page would have had with no worker at all.
+            .catch(() => undefined)
+            .then(cached => {
+                if (!cached) return fetch(event.request);
+
+                // Cache-first, then refresh in the background: an entry that stays indexed would
+                // otherwise be served as it was the day it was added forever, since nothing else
+                // ever writes to this cache again. The navigation answers from the cache now; the
+                // network copy replaces it for next time.
+                // A redirected response is refused when a service worker hands it to a navigation,
+                // so one is left out of the cache rather than stored to break the next visit.
+                event.waitUntil(fetch(event.request)
+                    .then(response => response.ok && !response.redirected
+                        ? caches.open('butil-content-index').then(cache => cache.put(event.request, response))
+                        : undefined)
+                    .catch(() => undefined));
+
+                return cached;
+            }));
 });
 
 // The protocol Bit.Butil's ServiceWorker.SkipWaiting / Claim / MatchAllClients speak. Those three
@@ -97,7 +120,36 @@ self.addEventListener('backgroundfetchabort', event => {
 // telling the app that its offline content is no longer being advertised.
 self.addEventListener('contentdelete', event => {
     console.log('[sw] content index entry deleted:', event.id);
+    // An entry leaving the index has to take its cached response with it, or the fetch handler
+    // above goes on serving a page nothing advertises any more. The event carries only the id, so
+    // the cache is reconciled against what is still indexed rather than against the URL that just
+    // went away. ContentIndexPage does the same from the page side for its own delete.
+    event.waitUntil(reconcileContentIndexCache());
 });
+
+// Drops every cached response whose URL is no longer in the content index. Compared without the
+// query string, matching the ignoreSearch the fetch handler looks entries up with.
+async function reconcileContentIndexCache() {
+    if (!self.registration.index) return;
+
+    const [cache, entries] = await Promise.all([
+        caches.open('butil-content-index'),
+        self.registration.index.getAll()
+    ]);
+
+    const withoutSearch = url => {
+        const parsed = new URL(url, self.location.href);
+        parsed.search = '';
+        return parsed.href;
+    };
+
+    const indexed = new Set(entries.map(entry => withoutSearch(entry.url)));
+    const requests = await cache.keys();
+
+    await Promise.all(requests
+        .filter(request => !indexed.has(withoutSearch(request.url)))
+        .map(request => cache.delete(request)));
+}
 
 self.addEventListener('push', event => {
     const text = event.data ? event.data.text() : '(no payload)';

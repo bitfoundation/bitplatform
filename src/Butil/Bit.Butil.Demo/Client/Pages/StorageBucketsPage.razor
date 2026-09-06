@@ -121,12 +121,16 @@ DateTimeOffset? expires = await storageBuckets.GetExpires("drafts");
     </DemoSection>
 
     <DemoSection Title="Files inside a bucket"
-                 Api="WriteText / WriteBytes / ReadText / List / Remove"
+                 Api="WriteText / WriteBytes / ReadText / ReadBytes / List / Remove"
                  Description="Each bucket owns a whole file system of its own - the same origin private file system, rooted in the bucket rather than in the origin. That is what makes a bucket a real compartment rather than a label: deleting it takes its files with it."
                  Code=@("""
 await storageBuckets.WriteText("drafts", "letters/draft.txt", "unsent");
 
 string? text = await storageBuckets.ReadText("drafts", "letters/draft.txt");
+
+// Anything that isn't text goes through the byte pair - ReadText would UTF-8 decode it away.
+await storageBuckets.WriteBytes("drafts", "letters/seal.bin", [0x00, 0xC3, 0x28, 0xFF]);
+byte[]? bytes = await storageBuckets.ReadBytes("drafts", "letters/seal.bin");
 
 OpfsEntry[] entries = await storageBuckets.List("drafts", "letters");
 
@@ -145,6 +149,8 @@ await storageBuckets.Remove("drafts", "letters", recursive: true);
         <div class="controls">
             <button @onclick="WriteFile">WriteText</button>
             <button class="secondary" @onclick="ReadFile">ReadText</button>
+            <button @onclick="WriteFileBytes">WriteBytes</button>
+            <button class="secondary" @onclick="ReadFileBytes">ReadBytes</button>
             <button class="secondary" @onclick="ListFiles">List</button>
             <button class="danger" @onclick="RemoveFile">Remove</button>
         </div>
@@ -168,7 +174,7 @@ await storageBuckets.Delete("drafts");
         what brings it into existence. Butil keeps that to the members where it is the point:
         <code>Open</code>, <code>WriteText</code> and <code>WriteBytes</code>. Everything else -
         <code>Get</code>, <code>Persisted</code>, <code>Estimate</code>, <code>GetExpires</code>,
-        <code>List</code>, <code>ReadText</code>, <code>Persist</code>, <code>SetExpires</code>,
+        <code>List</code>, <code>ReadText</code>, <code>ReadBytes</code>, <code>Persist</code>, <code>SetExpires</code>,
         <code>Remove</code> - answers null/false/empty for a name that is not in <code>Keys</code>,
         and creates nothing.
     </Callout>
@@ -186,6 +192,7 @@ await storageBuckets.Delete("drafts");
         <ApiMember Name="GetExpires" Signature="ValueTask<DateTimeOffset?> GetExpires(string name)" Description="Reads the bucket's expiry, or null when it has none." />
         <ApiMember Name="List" Signature="ValueTask<OpfsEntry[]> List(string name, string path = &quot;&quot;)" Description="Lists a directory inside the bucket's own file system. Not recursive." />
         <ApiMember Name="ReadText" Signature="ValueTask<string?> ReadText(string name, string path)" Description="Reads a file inside the bucket as text; null when there is no file there." />
+        <ApiMember Name="ReadBytes" Signature="ValueTask<byte[]?> ReadBytes(string name, string path)" Description="Reads a file inside the bucket as bytes; null when there is no file there. The counterpart to WriteBytes - ReadText would UTF-8 decode binary content away." />
         <ApiMember Name="WriteText" Signature="ValueTask<bool> WriteText(string name, string path, string text)" Description="Writes text to a file inside the bucket, creating what is missing along the path." />
         <ApiMember Name="WriteBytes" Signature="ValueTask<bool> WriteBytes(string name, string path, byte[] data)" Description="Writes bytes to a file inside the bucket, creating what is missing along the path." />
         <ApiMember Name="Remove" Signature="ValueTask<bool> Remove(string name, string path, bool recursive = false)" Description="Deletes a file or directory inside the bucket." />
@@ -373,6 +380,39 @@ await storageBuckets.Delete("drafts");
             await fileOutput.Error(ex.Message);
         }
     }
+
+    private async Task WriteFileBytes()
+    {
+        try
+        {
+            // Deliberately not valid UTF-8: 0xC3 0x28 is an invalid sequence, so a round trip
+            // through ReadText would come back with replacement characters instead of these bytes.
+            byte[] data = [0x00, 0xC3, 0x28, 0xFF];
+            var written = await storageBuckets.WriteBytes(bucketName, filePath, data);
+            if (written) await fileOutput.Success($"WriteBytes(\"{bucketName}\", \"{filePath}\") → wrote {data.Length} bytes: {Hex(data)}");
+            else await fileOutput.Warn("WriteBytes → false - the bucket has no file system, or the API is absent.");
+        }
+        catch (Exception ex)
+        {
+            await fileOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ReadFileBytes()
+    {
+        try
+        {
+            var read = await storageBuckets.ReadBytes(bucketName, filePath);
+            if (read is null) await fileOutput.Warn($"ReadBytes(\"{bucketName}\", \"{filePath}\") → null.");
+            else await fileOutput.Success($"ReadBytes → {read.Length} bytes: {Hex(read)}");
+        }
+        catch (Exception ex)
+        {
+            await fileOutput.Error(ex.Message);
+        }
+    }
+
+    private static string Hex(byte[] data) => string.Join(" ", data.Select(b => b.ToString("X2")));
 
     private async Task ListFiles()
     {

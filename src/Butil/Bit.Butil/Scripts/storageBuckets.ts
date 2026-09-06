@@ -130,6 +130,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             try { return await butil.originPrivateFileSystem.readTextUnder(await bucketRoot(name, false), path); }
             catch { return null; }
         },
+        async readBytes(name: string, path: string) {
+            try { return await butil.originPrivateFileSystem.readBytesUnder(await bucketRoot(name, false), path); }
+            catch { return null; }
+        },
         async write(name: string, path: string, text: string | null, bytes: Uint8Array | null) {
             // The one file member that creates: a write names what it wants to exist, so the bucket
             // is created along with the directories on the path when it isn't there yet.

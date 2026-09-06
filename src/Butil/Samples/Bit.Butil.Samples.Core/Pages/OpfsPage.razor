@@ -58,7 +58,7 @@ await storageBuckets.Open("drafts", persisted: true);
         </div>
     </DemoCard>
 
-    <DemoCard Title="Storage buckets" Api="Open / Keys / Estimate / Delete"
+    <DemoCard Title="Storage buckets" Api="Open / Keys / Estimate / WriteText / ReadText / WriteBytes / ReadBytes / Delete"
               Description="Chromium only. A bucket is the unit the browser evicts, so put re-fetchable data in one and irreplaceable data in another.">
         <div class="field">
             <span class="field-label">Bucket name</span>
@@ -67,7 +67,7 @@ await storageBuckets.Open("drafts", persisted: true);
         <div class="controls">
             <button @onclick="OpenBucket">Open</button>
             <button class="secondary" @onclick="ListBuckets">Keys</button>
-            <button class="secondary" @onclick="BucketFile">Write + read a file in it</button>
+            <button class="secondary" @onclick="BucketFile">Write + read files in it (text and bytes)</button>
             <button class="danger" @onclick="DeleteBucket">Delete</button>
         </div>
     </DemoCard>
@@ -163,6 +163,12 @@ await storageBuckets.Open("drafts", persisted: true);
         var written = await storageBuckets.WriteText(_bucket, "letters/draft.txt", "unsent");
         var read = await storageBuckets.ReadText(_bucket, "letters/draft.txt");
         await output.Info($"WriteText → {written}, ReadText → {read ?? "null"}");
+
+        // The byte pair, on content ReadText could not carry: 0xC3 0x28 is not valid UTF-8.
+        byte[] payload = [0x00, 0xC3, 0x28, 0xFF];
+        var wroteBytes = await storageBuckets.WriteBytes(_bucket, "letters/seal.bin", payload);
+        var readBytes = await storageBuckets.ReadBytes(_bucket, "letters/seal.bin");
+        await output.Info($"WriteBytes → {wroteBytes}, ReadBytes → {(readBytes is null ? "null" : string.Join(" ", readBytes.Select(b => b.ToString("X2"))))}");
     }
 
     private async Task DeleteBucket()

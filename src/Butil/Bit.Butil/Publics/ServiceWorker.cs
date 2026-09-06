@@ -187,9 +187,17 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>Reads whether navigation preload is enabled, and with what header value.</summary>
     /// <param name="scope">Which registration, or null for the one matching the document URL.</param>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns an empty state - <see cref="NavigationPreloadState.IsSupported"/>
+    /// false - rather than throwing, so the result can't be distinguished from a genuine value. If
+    /// you branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NavigationPreloadState))]
-    public ValueTask<NavigationPreloadState> GetNavigationPreloadState(string? scope = null)
-        => js.Invoke<NavigationPreloadState>("BitButil.serviceWorker.navigationPreloadState", scope);
+    public async ValueTask<NavigationPreloadState> GetNavigationPreloadState(string? scope = null)
+        // The prerender safe default is null for anything but strings and arrays, and this member
+        // promises a non-null state - so the empty one is built here rather than dereferenced by
+        // the caller.
+        => await js.Invoke<NavigationPreloadState?>("BitButil.serviceWorker.navigationPreloadState", scope) ?? new();
 
     /// <summary>
     /// Asks a waiting worker to call <c>skipWaiting()</c> - the "reload to update" button, without
