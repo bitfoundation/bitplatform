@@ -93,7 +93,7 @@ public static class McpPrompts
             1. Inventory what is there: every `IJSRuntime.InvokeAsync`/`InvokeVoidAsync` call site, every `.js` file
                under wwwroot that exists only to be called from C#, and every `IJSObjectReference` module.
             2. For each one, call `SearchButil` with what the JavaScript does (not with its function name) to find
-               the wrapper that covers it. Butil wraps around sixty browser APIs; most bespoke interop in a Blazor
+               the wrapper that covers it. Butil wraps around seventy browser APIs; most bespoke interop in a Blazor
                app is one of them.
             3. Call `GetButilApiDetails` for each replacement before rewriting the call site, and
                `PlanButilFeature` for anything gated on a permission, a gesture or a secure context - the hand-written
