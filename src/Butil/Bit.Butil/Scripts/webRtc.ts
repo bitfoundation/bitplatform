@@ -4,29 +4,53 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     interface PeerEntry { pc: any; remoteStream: MediaStream; }
     // The peer a channel belongs to is kept here because closing a connection has to announce its
     // channels itself - see close().
-    interface ChannelEntry { channel: any; peerId: string; dotNetRef: any; }
+    // queued is set only while a channel is waiting to be announced to .NET - see wireChannel.
+    interface ChannelEntry { channel: any; peerId: string; dotNetRef: any; queued?: (() => void)[]; }
 
     const _peers: { [id: string]: PeerEntry } = {};
     const _channels: { [id: string]: ChannelEntry } = {};
 
     function channelOf(channelId: string) { return _channels[channelId]?.channel; }
 
-    function wireChannel(dotNetRef: any, peerId: string, channelId: string, channel: any) {
-        _channels[channelId] = { channel, peerId, dotNetRef };
+    // defer holds every event of this channel until flushChannel is called. A channel the peer
+    // created exists here before .NET has heard of it, and .NET cannot register handlers for it
+    // until the announcement round trip has returned - so its open, and the peer's first messages,
+    // would be dispatched to a channel id .NET does not know and dropped. Holding them is the same
+    // bargain a MessagePort makes by queueing until start().
+    function wireChannel(dotNetRef: any, peerId: string, channelId: string, channel: any, defer: boolean = false) {
+        const entry: ChannelEntry = { channel, peerId, dotNetRef };
+        if (defer) entry.queued = [];
+        _channels[channelId] = entry;
         // Binary arrives as an ArrayBuffer rather than a Blob, for the same reason as on a
         // WebSocket: a Blob would need an extra asynchronous read per message.
         channel.binaryType = 'arraybuffer';
 
-        channel.addEventListener('open', () => butil.utils.dispatch(dotNetRef, 'InvokeChannelOpen', channelId));
-        channel.addEventListener('close', () => {
+        // Queued in arrival order, so the flush replays open before the messages that followed it.
+        const emit = (send: () => void) => entry.queued ? entry.queued.push(send) : send();
+
+        channel.addEventListener('open', () => emit(() => butil.utils.dispatch(dotNetRef, 'InvokeChannelOpen', channelId)));
+        channel.addEventListener('close', () => emit(() => {
             delete _channels[channelId];
             butil.utils.dispatch(dotNetRef, 'InvokeChannelClose', channelId);
-        });
+        }));
         // Through the shared encoder, so a data-channel message keeps the ButilMessage contract the
         // ports and workers already keep: binary stays binary and everything else is valid JSON,
         // which is what makes Deserialize<T>() work on a payload the peer sent as a plain string.
-        channel.addEventListener('message', (e: MessageEvent) =>
-            butil.utils.dispatch(dotNetRef, 'InvokeChannelMessage', channelId, ...butil.utils.encodeMessage(e.data)));
+        // Encoded on arrival rather than at flush time, because a queued event holds its data for as
+        // long as it waits and an ArrayBuffer is the one payload worth not holding twice.
+        channel.addEventListener('message', (e: MessageEvent) => {
+            const encoded = butil.utils.encodeMessage(e.data);
+            emit(() => butil.utils.dispatch(dotNetRef, 'InvokeChannelMessage', channelId, ...encoded));
+        });
+    }
+
+    function flushChannel(channelId: string) {
+        const entry = _channels[channelId];
+        if (!entry?.queued) return;
+
+        const queued = entry.queued;
+        entry.queued = undefined;   // anything arriving from here on goes straight out
+        for (const send of queued) send();
     }
 
     butil.webRtc = {
@@ -65,8 +89,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // value, which is why this needs a callback at all.
             pc.addEventListener('datachannel', (e: any) => {
                 const channelId = butil.utils.randomUUID();
-                wireChannel(dotNetRef, id, channelId, e.channel);
-                butil.utils.dispatch(dotNetRef, 'InvokeRemoteChannel', id, channelId, e.channel.label);
+                // Deferred until the announcement has been *handled*: the .NET callback registers
+                // this channel's handlers before it returns, so the promise settling is the moment
+                // there is somebody to deliver to. It settles either way - a rejected announcement
+                // means nothing will ever be listening, and holding the events then would only make
+                // the queue grow for the life of the channel.
+                wireChannel(dotNetRef, id, channelId, e.channel, true);
+                Promise.resolve(butil.utils.dispatch(dotNetRef, 'InvokeRemoteChannel', id, channelId, e.channel.label))
+                    .then(() => flushChannel(channelId), () => flushChannel(channelId));
             });
 
             return true;

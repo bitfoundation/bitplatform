@@ -129,6 +129,7 @@
     <button id="wm-frame-port" @onclick="MessagingFramePort">hand the frame a port</button>
     <button id="wm-self" @onclick="MessagingSelf">post to Parent (this page)</button>
     <button id="wm-origin-filter" @onclick="MessagingOriginFilter">origin filter drops it</button>
+    <button id="wm-port-owner" @onclick="MessagingPortOwner">one port, one owner</button>
 </section>
 
 <section>
@@ -615,6 +616,10 @@
         await RtcClose();
 
         var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        // A remote channel is already open by the time the callback that hands it over runs, so its
+        // open event has happened before anything could have listened for it. Subscribing inside the
+        // callback still has to see it.
+        var remoteOpened = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         _peerA = await webRtc.CreatePeerConnection(
             onIceCandidate: json => InvokeAsync(async () => { if (_peerB is not null) await _peerB.AddIceCandidate(json); }));
@@ -625,7 +630,8 @@
             onRemoteChannel: channel => channel.Listen(
                 // Deserialize rather than reading Json raw: a data channel keeps the ButilMessage
                 // contract, so text sent as a plain string arrives as quoted JSON.
-                onMessage: m => received.TrySetResult(m.IsBinary ? $"[{string.Join(",", m.Data ?? [])}]" : m.Deserialize<string>() ?? string.Empty)));
+                onMessage: m => received.TrySetResult(m.IsBinary ? $"[{string.Join(",", m.Data ?? [])}]" : m.Deserialize<string>() ?? string.Empty),
+                onOpen: () => remoteOpened.TrySetResult("remote-open")));
 
         if (_peerA is null || _peerB is null) { Set("rtc:connect:unsupported"); return; }
 
@@ -650,8 +656,9 @@
 
         await _rtcChannel!.SendText("ping");
         var message = await AwaitAbort(received);
+        var remote = await AwaitAbort(remoteOpened);
 
-        Set($"rtc:connect:{await _peerA.GetConnectionState()}/{await _rtcChannel.GetState()}/{message ?? "(timed out)"}");
+        Set($"rtc:connect:{await _peerA.GetConnectionState()}/{await _rtcChannel.GetState()}/{message ?? "(timed out)"}/{remote ?? "(remote open missed)"}");
     }
 
     private async Task RtcStats()
@@ -1312,6 +1319,55 @@
             m => true, origins: ["https://not-this-origin.example"], seconds: 2);
 
         Set($"wm:origin-filter:{reply is null}");
+    }
+
+    private async Task MessagingPortOwner()
+    {
+        // Two listeners accept the same self-posted message, and it carries a port. A port has one
+        // owner, so it goes to the listener that registered first and the second is told the message
+        // arrived without it - a handle each over the one port would let the first disposal close it
+        // under the other.
+        var channel = await messageChannel.Create();
+        if (channel is null) { Set("wm:port-owner:unsupported"); return; }
+
+        var first = new TaskCompletionSource<WindowMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var second = new TaskCompletionSource<WindowMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var firstSubscription = await windowMessaging.Listen(m => { if (m.Json?.Contains("\"owner\"") is true) first.TrySetResult(m); }, [Origin]);
+        var secondSubscription = await windowMessaging.Listen(m => { if (m.Json?.Contains("\"owner\"") is true) second.TrySetResult(m); }, [Origin]);
+
+        try
+        {
+            await windowMessaging.Parent().PostWithPorts(new { owner = "ports" }, Origin, [channel.Port2]);
+
+            var one = await AwaitCallback(first);
+            var two = await AwaitCallback(second);
+            if (one is null || two is null) { Set("wm:port-owner:(timed out)"); return; }
+
+            // The port the first listener was handed is a working one and not merely an id: Port2
+            // came back into this document as a new handle, so Port1 can talk to it.
+            var overThePort = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var adopted = one.Ports.FirstOrDefault();
+            if (adopted is not null)
+            {
+                await adopted.OnMessage(m => overThePort.TrySetResult(m));
+                await adopted.Start();
+                await channel.Port1.PostMessage(new { over = "the port" });
+            }
+
+            var echo = adopted is null ? null : await AwaitCallback(overThePort);
+            Set($"wm:port-owner:{one.Ports.Length}/{two.Ports.Length}/{echo?.Json ?? "(timed out)"}");
+
+            // The adopted port arrived under an id of its own, so the channel's disposal below does
+            // not reach it.
+            if (adopted is not null) await adopted.DisposeAsync();
+        }
+        finally
+        {
+            await firstSubscription.DisposeAsync();
+            await secondSubscription.DisposeAsync();
+            await channel.DisposeAsync();
+        }
     }
 
     // ─── Worker & MessageChannel ────────────────────────────────────────────────

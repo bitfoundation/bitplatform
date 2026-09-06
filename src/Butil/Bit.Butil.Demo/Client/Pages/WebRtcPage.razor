@@ -153,7 +153,7 @@ await b!.AttachRemoteMedia(_remoteVideo);
                Description="True when the runtime exposes RTCPeerConnection. Returns default (false) during prerender/SSR instead of throwing." />
     <ApiMember Name="CreatePeerConnection"
                Signature="ValueTask<PeerConnectionHandle?> CreatePeerConnection(RtcIceServer[]? iceServers = null, Action<string?>? onIceCandidate = null, Action<string>? onConnectionState = null, Action<string>? onTrack = null, Action<RtcDataChannelHandle>? onRemoteChannel = null)"
-               Description="Creates a connection. onIceCandidate fires per candidate and once with null when gathering ends; onRemoteChannel fires when the other side opens a channel." />
+               Description="Creates a connection. onIceCandidate fires per candidate and once with null when gathering ends; onRemoteChannel fires when the other side opens a channel - subscribe to that channel before the callback returns, since it is already open by then." />
     <ApiMember Name="PeerConnectionHandle.CreateDataChannel"
                Signature="ValueTask<RtcDataChannelHandle?> CreateDataChannel(string label, bool ordered = true, int maxRetransmits = -1)"
                Description="Opens a channel - before the offer. maxRetransmits of 0 is the lowest-latency, least-guaranteed mode, which TCP cannot do at all." />
@@ -177,7 +177,7 @@ await b!.AttachRemoteMedia(_remoteVideo);
                Description="Everything the browser knows about the connection, flattened to strings." />
     <ApiMember Name="RtcDataChannelHandle.Listen"
                Signature="void Listen(Action<ButilMessage>? onMessage = null, Action? onOpen = null, Action? onClose = null)"
-               Description="Attaches the callbacks. Call it before the handshake completes, or the open has already been missed." />
+               Description="Attaches the callbacks. For a channel you created, call it before the handshake completes or the open has already been missed. For one the peer created, call it inside onRemoteChannel before that callback returns - the channel's events are held for exactly that long." />
     <ApiMember Name="RtcDataChannelHandle.SendText / SendBytes"
                Signature="ValueTask<bool> SendText(string text), SendBytes(byte[] data)"
                Description="False when the channel is not open. Incoming binary arrives as bytes rather than a Blob." />
@@ -249,7 +249,9 @@ await b!.AttachRemoteMedia(_remoteVideo);
                 onTrack: kind => InvokeAsync(async () => await mediaOutput.Success("Track arrived →", kind)),
                 // The channel B receives is the one A created - it arrives as an event, which is
                 // why this needs a callback rather than a return value.
-                onRemoteChannel: channel => InvokeAsync(() =>
+                // Listening happens here and now, not in a continuation: a channel that arrives this
+                // way is already open, and its events are held only for the length of this callback.
+                onRemoteChannel: channel =>
                 {
                     _channelB = channel;
                     channel.Listen(
@@ -262,7 +264,7 @@ await b!.AttachRemoteMedia(_remoteVideo);
                             StateHasChanged();
                         }),
                         onOpen: () => InvokeAsync(() => channelOutput.Log("B's end of the channel is open.")));
-                }));
+                });
 
             if (_a is null || _b is null)
             {

@@ -163,7 +163,13 @@ public class WebRtc(IJSRuntime js) : IAsyncDisposable
     /// <c>"failed"</c> does not, and means renegotiating or giving up.
     /// </param>
     /// <param name="onTrack">Called with <c>"audio"</c> or <c>"video"</c> as the peer's tracks arrive. Attach them with <see cref="PeerConnectionHandle.AttachRemoteMedia"/>.</param>
-    /// <param name="onRemoteChannel">Called when the <em>other</em> side opens a data channel - which arrives as an event rather than as a return value.</param>
+    /// <param name="onRemoteChannel">
+    /// Called when the <em>other</em> side opens a data channel - which arrives as an event rather
+    /// than as a return value. Call <see cref="RtcDataChannelHandle.Listen"/> on it here, before
+    /// returning: the channel is already open, and its events are held only until this callback
+    /// returns - which is what keeps the open, and the peer's first messages, from being lost to the
+    /// round trip that delivered the channel. Anything attached after an <c>await</c> is too late.
+    /// </param>
     /// <returns>A handle, or null when the runtime has no <c>RTCPeerConnection</c>.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RtcIceServer))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilMessage))]

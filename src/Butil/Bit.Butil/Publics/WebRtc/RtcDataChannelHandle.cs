@@ -9,7 +9,8 @@ namespace Bit.Butil;
 /// </summary>
 /// <remarks>
 /// Nothing can be sent until the channel opens, which happens once the connection is established;
-/// subscribe with <see cref="Listen"/> before the handshake so the open is not missed.
+/// subscribe with <see cref="Listen"/> before the handshake - or, for a channel the peer created,
+/// from inside the <c>onRemoteChannel</c> callback - so the open is not missed.
 /// <br/>
 /// The reason to use one rather than a <see cref="WebSocket"/> is what it can give up: an unordered,
 /// non-retransmitting channel delivers what is current rather than what is complete, which no
@@ -42,8 +43,14 @@ public sealed class RtcDataChannelHandle : IAsyncDisposable
     /// <param name="onOpen">Called when the channel is ready to send. Sending before this fails.</param>
     /// <param name="onClose">Called when it closes, from either end.</param>
     /// <remarks>
-    /// Call this before the handshake completes. A channel that opens before anything is listening
-    /// still opens - and the callback for it has already been missed.
+    /// For a channel you created, call this before the handshake completes: it opens as soon as the
+    /// connection is established, and a callback attached after that has already been missed.
+    /// <br/>
+    /// For a channel the peer created - one handed to <c>onRemoteChannel</c> - the channel is
+    /// already open by the time you see it, so its events are held until that callback returns and
+    /// are delivered afterwards. Calling this inside <c>onRemoteChannel</c> therefore misses nothing,
+    /// not even the open, as long as it is called before the callback returns; calling it later,
+    /// after an <c>await</c> or from another turn, still misses whatever arrived in between.
     /// </remarks>
     public void Listen(Action<ButilMessage>? onMessage = null, Action? onOpen = null, Action? onClose = null)
         => _owner.SetChannelHandlers(Id, onOpen, onClose, onMessage);

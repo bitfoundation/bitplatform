@@ -31,10 +31,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             portIds.push(portId);
         }
 
+        // A port has one owner. Handing the same id to every listener would build a handle each over
+        // one port, where the first disposal closes and releases it under all the others - the very
+        // thing the single window listener above exists to prevent. So the ports go to the first
+        // listener that accepts the origin, in registration order, and everyone else is told the
+        // message arrived without them.
+        const noPorts: string[] = [];
         const encoded = butil.utils.encodeMessage(e.data);
-        for (const id of targets) {
+        for (let i = 0; i < targets.length; i++) {
+            const id = targets[i];
             butil.utils.dispatch(_listeners[id].dotNetRef, 'InvokeWindowMessage',
-                id, e.origin ?? '', ...encoded, portIds);
+                id, e.origin ?? '', ...encoded, i === 0 ? portIds : noPorts);
         }
     }
 

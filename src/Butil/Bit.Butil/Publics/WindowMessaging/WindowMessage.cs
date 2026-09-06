@@ -22,6 +22,10 @@ namespace Bit.Butil;
 /// Ports the sender transferred along with the message, or an empty array. They belong to this
 /// document now, and deliver nothing until <see cref="MessagePortHandle.Start"/> is called - which
 /// is the usual way a cross-document handshake turns into a private channel.
+/// <br/>
+/// A port has one owner, so when several listeners accept the same message only the first of them -
+/// in registration order - is given the ports; the rest see an empty array. Handing every listener a
+/// handle over the same port would mean the first disposal closing it under all the others.
 /// </param>
 public record WindowMessage(string Origin, bool IsBinary, string? Json, byte[]? Data, MessagePortHandle[] Ports)
 {

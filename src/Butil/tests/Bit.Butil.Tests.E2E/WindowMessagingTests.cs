@@ -42,4 +42,13 @@ public class WindowMessagingTests : ButilPageTest
         // The same self-post as above, with a listener that trusts a different origin.
         await ClickAndExpectAsync("wm-origin-filter", "wm:origin-filter:True");
     }
+
+    [TestMethod]
+    public async Task A_Transferred_Port_Goes_To_One_Listener_Only()
+    {
+        // Two listeners accept the message; the first one registered gets the port and the second
+        // gets none, so there is never more than one handle over a port. The echo proves the one
+        // that was handed over is live.
+        await ClickAndExpectAsync("wm-port-owner", """wm:port-owner:1/0/{"over":"the port"}""");
+    }
 }

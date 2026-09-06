@@ -48,8 +48,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             catch (e: any) { cleanup(); return { ok: false, status: 0, error: e?.message ?? String(e) }; }
 
             // A 204, a HEAD, or an opaque no-cors response has no body at all - which is not an
-            // error, but there is no stream to hand back either.
-            if (!response.body) return { ok: false, status: response.status, error: 'The response has no body.' };
+            // error, but there is no stream to hand back either. Nothing gets registered, so the
+            // listener the request put on a shared signal has to be let go of right here - there
+            // will be no entry for cancel() or release() to do it through later.
+            if (!response.body) {
+                cleanup();
+                return { ok: false, status: response.status, error: 'The response has no body.' };
+            }
 
             trackReadable(id, response.body);
             _readables[id].fetch = controller;

@@ -61,7 +61,8 @@ public class WindowMessaging(IJSRuntime js, MessageChannel messageChannel) : IAs
     /// <param name="onMessage">
     /// Called for every message that passes the origin filter. Messages that arrived carrying
     /// <see cref="MessagePortHandle"/>s hand them over in <see cref="WindowMessage.Ports"/> - they
-    /// are yours now, and delivering nothing until started.
+    /// are yours now, and delivering nothing until started. Where more than one listener accepts a
+    /// message, only the first one registered receives its ports; see <see cref="WindowMessage.Ports"/>.
     /// </param>
     /// <param name="allowedOrigins">
     /// The origins to accept, as <c>"https://example.com"</c>. Anything from elsewhere is dropped

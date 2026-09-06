@@ -14,8 +14,8 @@ public class WebRtcTests : ButilPageTest
     [TestMethod]
     public async Task Two_Peers_Connect_And_A_Message_Crosses_The_Data_Channel()
     {
-        // connection state / channel state / what the other peer received
-        await ClickAndExpectAsync("rtc-connect", "rtc:connect:connected/open/ping", 30_000);
+        // connection state / channel state / what the other peer received / the remote channel's open
+        await ClickAndExpectAsync("rtc-connect", "rtc:connect:connected/open/ping/remote-open", 30_000);
     }
 
     [TestMethod]
