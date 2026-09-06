@@ -30,7 +30,7 @@ public class ToolBehaviourTests : McpTestBase
         using (Assert.Scope())
         {
             Assert.IsNotEmpty(types);
-            Assert.IsGreaterThan(100, types.Length, "Butil is roughly sixty services plus their option types and enums.");
+            Assert.IsGreaterThan(100, types.Length, "Butil is roughly seventy services plus their option types and enums.");
 
             // Reflected off the assembly, so these are here unless the library dropped them.
             foreach (var expected in new[] { "Clipboard", "LocalStorage", "Geolocation", "ButilSubscription", "ButilEvents" })

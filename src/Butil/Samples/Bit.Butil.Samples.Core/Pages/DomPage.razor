@@ -1,0 +1,150 @@
+@page "/dom"
+@implements IAsyncDisposable
+@inject Bit.Butil.Dom dom
+@inject Bit.Butil.ShadowDom shadowDom
+
+<PageTitle>Butil - Dom Samples</PageTitle>
+
+<PageHeader Category="DOM"
+            Title="Dom &amp; ShadowDom"
+            Lead="Finding and creating elements Blazor did not render, and attaching a shadow root the page's CSS cannot reach into."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector" />
+
+<pre>
+@@inject Bit.Butil.Dom dom
+
+var box = await dom.Create("div");
+await box!.SetText("built from C#");
+await box.AppendTo(_host);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Find and build" Api="Query / Create / AppendTo / AsElementReference"
+              Description="Not for reaching into your own components - Blazor will re-render over whatever you changed. This is for a third-party widget, something a script put there, or an element you are building. AsElementReference bridges back to every element extension in the library.">
+        <div class="controls">
+            <button @onclick="Find">Query the sample</button>
+            <button @onclick="Build">Create and append</button>
+            <button @onclick="Bridge">Bridge to an ElementReference</button>
+            <button class="danger" @onclick="RemoveBuilt">Remove</button>
+        </div>
+        <div id="dom-sample" data-role="sample" style="margin-top:.75rem">
+            <span id="dom-span">a span with an id</span>
+        </div>
+        <div @ref="_host" style="min-height:2.5rem;margin-top:.5rem"></div>
+    </DemoCard>
+
+    <DemoCard Title="Style isolation" Api="AttachShadow / AddStyle / SetHtml"
+              Description="The page rule below turns every .card crimson. The shadow root's contents do not obey it, and its own styles do not escape - the only reliable style isolation the platform has.">
+        <style>
+            .sample-shadow .card { color: crimson; border: 1px solid crimson; padding: .4rem; border-radius: .3rem; }
+        </style>
+        <button @onclick="AttachRoot">Attach a shadow root</button>
+        <div class="sample-shadow" style="display:flex;gap:1rem;margin-top:.75rem;flex-wrap:wrap">
+            <div class="card">ordinary element</div>
+            <div @ref="_shadowHost" style="min-height:2rem"></div>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="dom output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference _host;
+    private ElementReference _shadowHost;
+    private readonly List<DomHandle> _built = [];
+    private ShadowRootHandle? _root;
+
+    private async Task Find()
+    {
+        await using var span = await dom.ById("dom-span");
+        if (span is null)
+        {
+            await output.Warn("Nothing found.");
+            return;
+        }
+
+        await using var parent = await span.GetParent();
+        await output.Success("Found →", $"<{span.TagName}> \"{await span.GetText()}\" inside <{parent?.TagName}>");
+    }
+
+    private async Task Build()
+    {
+        var box = await dom.Create("div");
+        if (box is null)
+        {
+            await output.Warn("Create returned null.");
+            return;
+        }
+
+        await box.SetText($"built from C# at {DateTime.Now:HH:mm:ss}");
+        await box.AppendTo(_host);
+        _built.Add(box);
+
+        await output.Success("Created and appended →", $"connected: {await box.IsConnected()}");
+    }
+
+    private async Task Bridge()
+    {
+        if (_built.Count == 0)
+        {
+            await output.Warn("Build one first.");
+            return;
+        }
+
+        var reference = await _built[^1].AsElementReference();
+        if (reference is null)
+        {
+            await output.Warn("AsElementReference returned null.");
+            return;
+        }
+
+        // From here it is an ordinary ElementReference: the whole element surface applies.
+        await reference.Value.SetStyleProperty("outline", "2px solid #6366f1");
+        await output.Success("Bridged →", "styled through the element extensions.");
+    }
+
+    private async Task RemoveBuilt()
+    {
+        foreach (var handle in _built)
+        {
+            await handle.Remove();
+            await handle.DisposeAsync();
+        }
+
+        await output.Log($"Removed {_built.Count} element(s).");
+        _built.Clear();
+    }
+
+    private async Task AttachRoot()
+    {
+        if (_root is not null)
+        {
+            await output.Warn("Already attached - a root cannot be attached twice, or detached.");
+            return;
+        }
+
+        _root = await shadowDom.AttachShadow(_shadowHost);
+        if (_root is null)
+        {
+            await output.Warn("AttachShadow returned null - the element already has a root, or cannot have one.");
+            return;
+        }
+
+        await _root.AddStyle(".card { color: seagreen; border: 1px solid seagreen; padding: .4rem; border-radius: .3rem; }");
+        await _root.SetHtml("<div class=\"card\">inside a shadow root</div>");
+
+        await output.Success("Attached →", "the page's crimson rule cannot reach this one.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            foreach (var handle in _built) await handle.DisposeAsync();
+            if (_root is not null) await _root.DisposeAsync();
+        }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}

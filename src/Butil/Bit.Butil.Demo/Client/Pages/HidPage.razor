@@ -1,0 +1,543 @@
+@page "/hid"
+@implements IAsyncDisposable
+@inject Bit.Butil.Hid hid
+
+<PageTitle>Hid - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Hid"
+            Lead="Talk to a human-interface device the operating system's drivers do not fully expose - a macro pad, a flight yoke, a vendor-defined control surface."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API"
+            InjectAs="Hid hid" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    WebHID ships in Chromium-based browsers. Firefox and Safari do not implement it.
+    <code>RequestDevice</code> must run inside a user gesture.
+</Callout>
+
+<Callout Type="info" Title="Not for keyboards and mice">
+    The browser blocks the usage pages that would let a page impersonate the user's own input -
+    keyboards and mice among them. WebHID is for the long tail, and what a report's bytes mean comes
+    from the device's own documentation, not from this API.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.hid. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Hid hid
+
+var supported = await hid.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Pick a device"
+                 Api="RequestDevice / GetDevices"
+                 Description="RequestDevice returns an array, because one physical device can present as several collections and the chooser can hand back more than one. GetDevices returns what this origin was already granted, without a prompt."
+                 Code=@("""
+private HidDevice? _device;
+
+var devices = await hid.RequestDevice(new HidDeviceFilter { VendorId = 0x054c });
+_device = devices.FirstOrDefault();
+
+var granted = await hid.GetDevices();
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Vendor id (hex, blank for any)</span>
+                <input type="text" @bind="_vendorId" placeholder="054c" />
+            </div>
+            <div class="field">
+                <span class="field-label">Usage page (hex, optional)</span>
+                <input type="text" @bind="_usagePage" placeholder="ff00" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="RequestDevice">RequestDevice</button>
+            <button class="secondary" @onclick="GetDevices">GetDevices</button>
+            <button class="danger" @onclick="ReleaseDevice">Dispose handle</button>
+        </div>
+        @if (_device is not null)
+        {
+            <div class="field">
+                <span class="field-label">Selected</span>
+                <span>@(_device.ProductName ?? "(unnamed)") - @_device.Info.VendorId.ToString("x4"):@_device.Info.ProductId.ToString("x4")</span>
+            </div>
+        }
+        <DemoConsole @ref="deviceOutput" Title="device output" />
+    </DemoSection>
+
+    <DemoSection Title="Open and inspect"
+                 Api="Open / Close / IsOpened / GetInfo"
+                 Description="A device has to be opened before any report crosses. GetInfo re-reads its collections - the report ids it will accept, which is what a protocol implementation needs first."
+                 Code=@("""
+await _device.Open();
+
+var info = await _device.GetInfo();
+foreach (var collection in info!.Collections)
+{
+    // collection.UsagePage, collection.Usage
+    // collection.InputReports / OutputReports / FeatureReports
+}
+""")>
+        <div class="controls">
+            <button @onclick="Open">Open</button>
+            <button class="secondary" @onclick="Close">Close</button>
+            <button @onclick="CheckOpened">IsOpened</button>
+            <button @onclick="DescribeDevice">GetInfo</button>
+        </div>
+        <DemoConsole @ref="openOutput" Title="open output" />
+    </DemoSection>
+
+    <DemoSection Title="Input reports"
+                 Api="SubscribeInputReports"
+                 Description="The device's unprompted events: buttons, axes, whatever its report descriptor declares. Open the device first - a closed device sends nothing."
+                 Code=@("""
+await using var reports = await _device.SubscribeInputReports(report =>
+{
+    // report.ReportId, report.Data
+});
+""")>
+        <div class="controls">
+            <button @onclick="StartInputReports">SubscribeInputReports</button>
+            <button class="danger" @onclick="StopInputReports">Stop</button>
+        </div>
+        <DemoConsole @ref="inputOutput" Title="input report output" />
+    </DemoSection>
+
+    <DemoSection Title="Output and feature reports"
+                 Api="SendReport / SendFeatureReport / ReceiveFeatureReport"
+                 Description="Output reports drive the device - an LED, a rumble motor, a display. Feature reports are read and written on demand and carry configuration rather than events."
+                 Code=@("""
+await _device.SendReport(reportId: 0x01, [0x00, 0xff]);
+
+await _device.SendFeatureReport(reportId: 0x02, [0x01]);
+var feature = await _device.ReceiveFeatureReport(reportId: 0x02);
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Report id</span>
+                <input type="number" min="0" max="255" @bind="_reportId" />
+            </div>
+            <div class="field">
+                <span class="field-label">Payload (hex, space separated)</span>
+                <input type="text" @bind="_payloadHex" placeholder="00 ff" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="SendReport">SendReport</button>
+            <button @onclick="SendFeatureReport">SendFeatureReport</button>
+            <button @onclick="ReceiveFeatureReport">ReceiveFeatureReport</button>
+        </div>
+        <DemoConsole @ref="reportOutput" Title="report output" />
+    </DemoSection>
+
+    <DemoSection Title="Plug and unplug"
+                 Api="SubscribeConnection"
+                 Description="Watches devices appearing and disappearing. Only devices this origin already has permission for raise these."
+                 Code=@("""
+await using var watch = await hid.SubscribeConnection(
+    onConnected: device => Console.WriteLine($"+ {device.ProductName}"),
+    onDisconnected: device => Console.WriteLine($"- {device.ProductName}"));
+""")>
+        <div class="controls">
+            <button @onclick="StartWatching">SubscribeConnection</button>
+            <button class="danger" @onclick="StopWatching">Stop watching</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="connection output" />
+    </DemoSection>
+
+    <DemoSection Title="Revoke the grant"
+                 Api="Forget"
+                 Description="Drops this origin's permission for the device, so it stops appearing in GetDevices until the user picks it again."
+                 Code=@("""
+var revoked = await _device.Forget();
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="ForgetDevice">Forget</button>
+        </div>
+        <DemoConsole @ref="forgetOutput" Title="forget output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.hid. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="RequestDevice"
+               Signature="ValueTask<HidDevice[]> RequestDevice(params HidDeviceFilter[] filters)"
+               Description="Opens the device chooser and returns the picked devices - an array, since one unit can present as several. Needs a user gesture." />
+    <ApiMember Name="GetDevices"
+               Signature="ValueTask<HidDevice[]> GetDevices()"
+               Description="The devices this origin has already been granted, without a prompt." />
+    <ApiMember Name="SubscribeConnection"
+               Signature="ValueTask<ButilSubscription> SubscribeConnection(Action<HidDevice>? onConnected = null, Action<HidDevice>? onDisconnected = null)"
+               Description="Watches permitted devices being plugged in and unplugged." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes every device this service handed out, detaches listeners and releases the JS callback reference." />
+    <ApiMember Name="InvokeHidInputReport"
+               Signature="void InvokeHidInputReport(Guid id, HidInputReport report)"
+               Description="JSInvokable interop plumbing for input reports - not intended for app code." />
+    <ApiMember Name="InvokeHidConnected"
+               Signature="void InvokeHidConnected(Guid id, HidDeviceInfo info)"
+               Description="JSInvokable interop plumbing for the connect event - not intended for app code." />
+    <ApiMember Name="InvokeHidDisconnected"
+               Signature="void InvokeHidDisconnected(Guid id, HidDeviceInfo info)"
+               Description="JSInvokable interop plumbing for the disconnect event - not intended for app code." />
+    <ApiMember Name="HidDevice.Info / ProductName"
+               Signature="HidDeviceInfo Info { get; } / string? ProductName { get; }"
+               Description="The device as it was when the handle was created, including its collections." />
+    <ApiMember Name="HidDevice.Open / Close / IsOpened"
+               Signature="ValueTask<bool> Open() / ValueTask Close() / ValueTask<bool> IsOpened()"
+               Description="Opens, closes and reports the device's open state." />
+    <ApiMember Name="HidDevice.GetInfo"
+               Signature="ValueTask<HidDeviceInfo?> GetInfo()"
+               Description="Re-reads the device's state; Info is only the snapshot from when the handle was created." />
+    <ApiMember Name="HidDevice.SendReport"
+               Signature="ValueTask<bool> SendReport(byte reportId, byte[] data)"
+               Description="Sends an output report." />
+    <ApiMember Name="HidDevice.SendFeatureReport / ReceiveFeatureReport"
+               Signature="ValueTask<bool> SendFeatureReport(byte reportId, byte[] data) / ValueTask<byte[]?> ReceiveFeatureReport(byte reportId)"
+               Description="Writes and reads a feature report." />
+    <ApiMember Name="HidDevice.SubscribeInputReports"
+               Signature="ValueTask<ButilSubscription> SubscribeInputReports(Action<HidInputReport> handler)"
+               Description="Subscribes to the device's input reports. Dispose the subscription to detach." />
+    <ApiMember Name="HidDevice.Forget"
+               Signature="ValueTask<bool> Forget()"
+               Description="Revokes this origin's permission for the device." />
+    <ApiMember Name="HidDevice.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes the device, detaches its listeners and releases the browser-side reference." />
+    <ApiMember Name="HidDeviceFilter"
+               Signature="class HidDeviceFilter { ushort? VendorId; ushort? ProductId; ushort? UsagePage; ushort? Usage; }"
+               Description="One chooser filter." />
+    <ApiMember Name="HidDeviceInfo"
+               Signature="class HidDeviceInfo { string Id; ushort VendorId; ushort ProductId; string? ProductName; bool Opened; HidCollectionInfo[] Collections; }"
+               Description="A granted device and its top-level collections." />
+    <ApiMember Name="HidCollectionInfo / HidReportInfo"
+               Signature="class HidCollectionInfo { ushort UsagePage; ushort Usage; HidReportInfo[] InputReports; HidReportInfo[] OutputReports; HidReportInfo[] FeatureReports; }"
+               Description="One logical device inside the physical one, and the reports it declares." />
+    <ApiMember Name="HidInputReport"
+               Signature="class HidInputReport { byte ReportId; byte[] Data; }"
+               Description="One input report: its id and its payload, without the leading id byte." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole deviceOutput = default!;
+    private DemoConsole openOutput = default!;
+    private DemoConsole inputOutput = default!;
+    private DemoConsole reportOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private DemoConsole forgetOutput = default!;
+
+    private HidDevice? _device;
+    private ButilSubscription? _inputReports;
+    private ButilSubscription? _watch;
+
+    private string _vendorId = "";
+    private string _usagePage = "";
+    private int _reportId = 0;
+    private string _payloadHex = "00";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await hid.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestDevice()
+    {
+        try
+        {
+            if (!await hid.IsSupported())
+            {
+                await deviceOutput.Warn("WebHID is not supported in this browser.");
+                return;
+            }
+
+            var filters = new List<HidDeviceFilter>();
+            var filter = new HidDeviceFilter();
+            if (TryHex(_vendorId, out var vendor)) filter.VendorId = vendor;
+            if (TryHex(_usagePage, out var usagePage)) filter.UsagePage = usagePage;
+            if (filter.VendorId is not null || filter.UsagePage is not null) filters.Add(filter);
+
+            var devices = await hid.RequestDevice([.. filters]);
+            var requested = devices.FirstOrDefault();
+
+            if (requested is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await deviceOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it - and the input
+            // report subscription taken through it - rather than leaving the device open. Re-picking
+            // the same device hands back the handle already in play, and disposing that one would
+            // release the device this page is about to use.
+            if (ReferenceEquals(_device, requested) is false)
+            {
+                await StopInputReports();
+                if (_device is not null) await _device.DisposeAsync();
+            }
+
+            _device = requested;
+            await deviceOutput.Success("RequestDevice →",
+                $"{devices.Length} device(s); using {_device.ProductName ?? "(unnamed)"}");
+        }
+        catch (Exception ex)
+        {
+            await deviceOutput.Error("RequestDevice failed →", ex.Message);
+        }
+    }
+
+    private async Task GetDevices()
+    {
+        try
+        {
+            var devices = await hid.GetDevices();
+            await deviceOutput.Success("GetDevices →", $"{devices.Length} granted device(s)");
+            foreach (var device in devices)
+            {
+                await deviceOutput.Log($"  {device.ProductName ?? "(unnamed)"}",
+                    $"{device.Info.VendorId:x4}:{device.Info.ProductId:x4}, collections={device.Info.Collections.Length}");
+            }
+            _device ??= devices.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            await deviceOutput.Error("GetDevices failed →", ex.Message);
+        }
+    }
+
+    private async Task ReleaseDevice()
+    {
+        if (_device is null) return;
+        await StopInputReports();
+        await _device.DisposeAsync();
+        _device = null;
+        await deviceOutput.Log("Handle disposed - the device is closed but still granted.");
+    }
+
+    private async Task Open()
+    {
+        if (await RequireDevice(openOutput) is false) return;
+
+        try
+        {
+            await openOutput.Success("Open →", await _device!.Open());
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task Close()
+    {
+        if (await RequireDevice(openOutput) is false) return;
+        await StopInputReports();
+        await _device!.Close();
+        await openOutput.Log("Closed.");
+    }
+
+    private async Task CheckOpened()
+    {
+        if (await RequireDevice(openOutput) is false) return;
+        await openOutput.Success("IsOpened →", await _device!.IsOpened());
+    }
+
+    private async Task DescribeDevice()
+    {
+        if (await RequireDevice(openOutput) is false) return;
+
+        var info = await _device!.GetInfo();
+        if (info is null)
+        {
+            await openOutput.Warn("GetInfo → the handle no longer resolves to a device.");
+            return;
+        }
+
+        await openOutput.Success("GetInfo →", $"opened={info.Opened}, collections={info.Collections.Length}");
+        foreach (var collection in info.Collections)
+        {
+            await openOutput.Log($"  usage {collection.UsagePage:x4}:{collection.Usage:x4}",
+                $"in={collection.InputReports.Length}, out={collection.OutputReports.Length}, feature={collection.FeatureReports.Length}");
+        }
+    }
+
+    private async Task StartInputReports()
+    {
+        if (await RequireDevice(inputOutput) is false) return;
+
+        await StopInputReports();
+
+        try
+        {
+            _inputReports = await _device!.SubscribeInputReports(report =>
+                _ = InvokeAsync(() => inputOutput.Log($"Report {report.ReportId} →",
+                    report.Data.Length == 0 ? "(empty)" : Convert.ToHexString(report.Data))));
+
+            await inputOutput.Log("Subscribed - use the device to see its reports.");
+        }
+        catch (Exception ex)
+        {
+            await inputOutput.Error("SubscribeInputReports failed →", ex.Message);
+        }
+    }
+
+    private async Task StopInputReports()
+    {
+        if (_inputReports is null) return;
+        await _inputReports.DisposeAsync();
+        _inputReports = null;
+        await inputOutput.Log("Input reports stopped.");
+    }
+
+    private async Task SendReport()
+    {
+        if (await RequireDevice(reportOutput) is false) return;
+        if (await RequireByte(reportOutput, "Report id", _reportId) is false) return;
+
+        try
+        {
+            await reportOutput.Success("SendReport →", await _device!.SendReport((byte)_reportId, ParseHex(_payloadHex)));
+        }
+        catch (Exception ex)
+        {
+            await reportOutput.Error("SendReport failed →", ex.Message);
+        }
+    }
+
+    private async Task SendFeatureReport()
+    {
+        if (await RequireDevice(reportOutput) is false) return;
+        if (await RequireByte(reportOutput, "Report id", _reportId) is false) return;
+
+        try
+        {
+            await reportOutput.Success("SendFeatureReport →",
+                await _device!.SendFeatureReport((byte)_reportId, ParseHex(_payloadHex)));
+        }
+        catch (Exception ex)
+        {
+            await reportOutput.Error("SendFeatureReport failed →", ex.Message);
+        }
+    }
+
+    private async Task ReceiveFeatureReport()
+    {
+        if (await RequireDevice(reportOutput) is false) return;
+        if (await RequireByte(reportOutput, "Report id", _reportId) is false) return;
+
+        try
+        {
+            var data = await _device!.ReceiveFeatureReport((byte)_reportId);
+            await reportOutput.Success("ReceiveFeatureReport →",
+                data is null ? "(refused)" : Convert.ToHexString(data));
+        }
+        catch (Exception ex)
+        {
+            await reportOutput.Error("ReceiveFeatureReport failed →", ex.Message);
+        }
+    }
+
+    private async Task StartWatching()
+    {
+        await StopWatching();
+
+        try
+        {
+            _watch = await hid.SubscribeConnection(
+                onConnected: device => _ = InvokeAsync(() => watchOutput.Success("Connected →", device.ProductName ?? device.Id)),
+                onDisconnected: device => _ = InvokeAsync(() => watchOutput.Warn("Disconnected →", device.ProductName ?? device.Id)));
+
+            await watchOutput.Log("Watching - plug or unplug a device you have already granted.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("SubscribeConnection failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        if (_watch is null) return;
+        await _watch.DisposeAsync();
+        _watch = null;
+        await watchOutput.Log("Stopped watching.");
+    }
+
+    private async Task ForgetDevice()
+    {
+        if (await RequireDevice(forgetOutput) is false) return;
+
+        try
+        {
+            var revoked = await _device!.Forget();
+            await forgetOutput.Success("Forget →", revoked ? "permission revoked." : "not supported by this browser.");
+            if (revoked) _device = null;
+        }
+        catch (Exception ex)
+        {
+            await forgetOutput.Error("Forget failed →", ex.Message);
+        }
+    }
+
+    private async Task<bool> RequireDevice(DemoConsole output)
+    {
+        if (_device is not null) return true;
+        await output.Warn("Pick a device first with RequestDevice.");
+        return false;
+    }
+
+    // The report id input is an int, so an out-of-range value would wrap on the cast to byte and
+    // silently address a different report - 300 would go out as 44.
+    private async Task<bool> RequireByte(DemoConsole output, string name, int value)
+    {
+        if (value is >= byte.MinValue and <= byte.MaxValue) return true;
+
+        await output.Warn($"{name} must be between 0 and 255 - got {value}.");
+        return false;
+    }
+
+    private static bool TryHex(string text, out ushort value) =>
+        ushort.TryParse(text?.Replace("0x", "", StringComparison.OrdinalIgnoreCase),
+            System.Globalization.NumberStyles.HexNumber, null, out value);
+
+    // A token that is not a hex byte is a typo, not something to quietly drop: "00 zz ff" has to be
+    // rejected rather than reach the device as the two bytes that happened to parse.
+    private static byte[] ParseHex(string text)
+    {
+        var parts = text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var bytes = new byte[parts.Length];
+
+        for (var index = 0; index < parts.Length; index++)
+        {
+            if (byte.TryParse(parts[index], System.Globalization.NumberStyles.HexNumber, null, out bytes[index]) is false)
+                throw new FormatException($"'{parts[index]}' is not a hexadecimal byte.");
+        }
+
+        return bytes;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_inputReports is not null) await _inputReports.DisposeAsync();
+        if (_watch is not null) await _watch.DisposeAsync();
+        if (_device is not null) await _device.DisposeAsync();
+    }
+}

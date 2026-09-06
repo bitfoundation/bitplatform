@@ -705,6 +705,7 @@ public static partial class BitCss
         public static class Typography
         {
             public const string FontFamily = "--bit-tpg-font-family";
+            public const string MonoFontFamily = "--bit-tpg-font-family-mono";
             public const string FontWeight = "--bit-tpg-font-weight";
             public const string LineHeight = "--bit-tpg-line-height";
             public const string GutterSize = "--bit-tpg-gutter-size";

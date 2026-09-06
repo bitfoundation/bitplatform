@@ -585,6 +585,8 @@ svg {
 .app-root {
     width: 100%;
     min-height: 100%;
+    /* The header is fixed, so it is the shell that reserves its band. */
+    padding-top: var(--headerHeight);
     display: flex;
     flex-flow: column nowrap;
     color: var(--colorNeutralForeground1);
@@ -604,6 +606,12 @@ svg {
     display: flex;
     flex-flow: column nowrap;
     min-height: calc(100vh - var(--headerHeight));
+}
+
+/* The nav panel is out of flow, so the column it used to occupy is reserved here
+   instead - and only on the pages that have one, which the home page has not. */
+.layout:has(.nav-panel) .main {
+    padding-inline-start: var(--navWidth);
 }
 
 .site-content {
@@ -641,11 +649,19 @@ svg {
    rather than reading as a second page.
    --------------------------------------------------------------------------- */
 
+/* Fixed rather than sticky, which is the same band in the same place but not the
+   same thing to the engine: Chromium and WebKit ignore a sticky ancestor's offset
+   when they scroll a focused field into view, so every keystroke in the header's
+   search box scrolled the page towards where the bar would sit unstuck - the top
+   of the document. Firefox accounts for it; the other two walk the page up a step
+   per key. Out of flow the bar has no unstuck position to be scrolled to, and
+   .app-root pads for the height it no longer occupies. */
 .header {
     top: 0;
+    left: 0;
     z-index: 1000;
     width: 100%;
-    position: sticky;
+    position: fixed;
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
     background-color: color-mix(in srgb, var(--colorNeutralBackground1) 80%, transparent);
@@ -1046,11 +1062,16 @@ svg {
    6. Navigation panel
    --------------------------------------------------------------------------- */
 
+/* Fixed for the same reason the header is - the filter field in it is typed into,
+   and a sticky ancestor makes Chromium and WebKit walk the page up a step per
+   keystroke towards where the panel would sit unstuck. Below lg it is already
+   fixed, as the off-canvas drawer. */
 .nav-panel {
     z-index: 900;
     flex: none;
     display: flex;
-    position: sticky;
+    position: fixed;
+    inset-inline-start: 0;
     flex-flow: column nowrap;
     width: var(--navWidth);
     top: var(--headerHeight);
@@ -3422,6 +3443,12 @@ label.check {
     .nav-panel.open {
         transform: none;
         visibility: visible;
+    }
+
+    /* A drawer covers the content rather than standing beside it, so nothing is
+       reserved for it here. */
+    .layout:has(.nav-panel) .main {
+        padding-inline-start: 0;
     }
 
     .nav-scrim {

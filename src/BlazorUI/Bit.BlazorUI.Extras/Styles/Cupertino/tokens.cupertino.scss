@@ -118,6 +118,9 @@
     // devices (and without a locally installed SF Pro) this lands on Helvetica / Arial - which is
     // what apple.com itself renders there.
     --bit-tpg-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    // ui-monospace resolves to SF Mono on Apple's platforms without naming a face the system does not
+    // expose by name; Menlo is the older one there, and the rest is the fallback for everywhere else.
+    --bit-tpg-font-family-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     // iOS sets the label of a control it wants tapped - a filled button, the selected segment, an
     // alert's default action - in semibold, where Fluent uses medium. This is the same weight the
     // BitText button variant takes below.

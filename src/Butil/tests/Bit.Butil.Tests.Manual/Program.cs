@@ -29,14 +29,17 @@ internal static class Program
     /// </summary>
     /// <remarks>
     /// Two sources, and both are references a trimmer has to honour: <see cref="ConsumerComponent"/> injects
-    /// the first five the way a razor <c>@inject</c> would, and <see cref="CancellationContract"/> constructs
+    /// nine of them the way a razor <c>@inject</c> would, and <see cref="CancellationContract"/> constructs
     /// <c>DigitalCredentials</c>, <c>Fetch</c> and <c>WebOtp</c> directly to check the handles they put on the
-    /// wire. So the trimmed run measures a slightly larger consumer than the injected five alone - the
+    /// wire. So the trimmed run measures a slightly larger consumer than the injected nine alone - the
     /// alternative, checking that contract from a project that does not reference the library, is not a thing
     /// that exists.
     /// </remarks>
     private static readonly string[] MustSurvive =
-        ["Clipboard", "Cookie", "DigitalCredentials", "Fetch", "Geolocation", "LocalStorage", "WebOtp", "Window"];
+    [
+        "Canvas", "Clipboard", "Cookie", "DigitalCredentials", "Dom", "Fetch", "Geolocation", "LocalStorage",
+        "Streams", "WebOtp", "WebRtc", "Window"
+    ];
 
     /// <summary>
     /// Where the untrimmed run records the service roster and the interop contract for the trimmed run to
@@ -254,9 +257,20 @@ internal static class Program
     /// Types the trimmer removed entirely are skipped, because that is the point of the exercise - only a
     /// type that survived while losing members it is reflected over is a defect.
     /// </remarks>
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Looking a type up by name and finding it gone is exactly the outcome this harness measures.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2057",
+        Justification = "Looking a type up by name and finding it gone is exactly the outcome this harness measures.")]
     private static void VerifyInteropContract(Assembly assembly, bool trimmed, InteropManifest? manifest, string? manifestError, string[] serviceNames, List<string> failures)
     {
-        var contracts = InteropContract.Capture(assembly, ConsumerComponent.ExercisedPayloadTypes);
+        // The internal payload roots are looked up by name because nothing outside Bit.Butil can name them,
+        // and one that is simply gone from a trimmed assembly is dropped rather than reported: a type the
+        // trimmer removed outright is the feature working, the same rule Verify applies below.
+        var internalRoots = ConsumerComponent.ExercisedInternalPayloadTypeNames
+            .Select(assembly.GetType)
+            .OfType<Type>();
+
+        var contracts = InteropContract.Capture(assembly, [.. ConsumerComponent.ExercisedPayloadTypes, .. internalRoots]);
 
         if (trimmed is false)
         {

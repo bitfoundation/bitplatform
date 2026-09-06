@@ -1,13 +1,19 @@
-﻿using Bit.Butil.Demo.Client.Docs;
+﻿using System.Threading.RateLimiting;
+using Bit.Butil.Demo.Client.Docs;
 using ModelContextProtocol.Protocol;
 using Bit.Butil.Demo.Server.Components;
 using Bit.Butil.Demo.Server.Controllers;
 using Bit.Butil.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http.Timeouts;
+using Microsoft.AspNetCore.RateLimiting;
 
 // The CORS policy the two MCP routes opt into, defined here and named on the controller so the
 // GET mirror carries it as endpoint metadata rather than inheriting it from MapControllers().
 const string McpCorsPolicy = McpController.CorsPolicy;
+
+// The name the streaming demos' concurrency limit and their deadline are both registered under.
+const string StreamingPolicy = "streaming";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,6 +73,33 @@ builder.Services.AddCors(options => options.AddPolicy(McpCorsPolicy, policy => p
 // an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.
 builder.Services.AddScoped<HtmlRenderer>();
 
+// The three streaming demos below hold a connection open on purpose - that is what they are
+// demonstrating - which on a public site is also how a handful of clients can hold every thread
+// this app has. Two limits make that bounded rather than open-ended: how many such requests one
+// client may have at once, and how long any of them may last. Both are the framework's own
+// middleware, so the endpoints keep answering their own cancellation token and nothing else.
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(StreamingPolicy, context => RateLimitPartition.GetConcurrencyLimiter(
+        // The connection's address, not a header a caller writes: X-Forwarded-For is the caller's
+        // to invent, and a partition key anyone can change is not a limit.
+        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        // Eight at once, queueing none: the pages themselves open at most a handful (the shared-signal
+        // demo alone starts three), so this is well clear of what the site does and far short of what
+        // holding the connections is worth to anyone else. A refusal is immediate rather than queued,
+        // because a queued slot on a five-minute stream is a connection held for the same reason.
+        factory: _ => new ConcurrencyLimiterOptions { PermitLimit = 8, QueueLimit = 0 }));
+
+    // A rejected client is told to come back rather than left to guess, and 429 is the answer a
+    // fetch() or an EventSource can act on.
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
+// A stream that is never read still ends: the token these handlers already watch is cancelled at
+// the deadline, so they finish the way they do when the client goes away.
+builder.Services.AddRequestTimeouts(options =>
+    options.AddPolicy(StreamingPolicy, new RequestTimeoutPolicy { Timeout = TimeSpan.FromMinutes(5) }));
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -91,6 +124,14 @@ app.UseHttpsRedirection();
 app.UseCors();
 
 app.UseAntiforgery();
+
+// Both only act on the endpoints that ask for them by name - the streaming demos below.
+app.UseRateLimiter();
+app.UseRequestTimeouts();
+
+// For the WebSocket page's echo endpoint below. Off by default in ASP.NET Core, and the upgrade
+// handshake happens in middleware, so this has to be in the pipeline before the endpoint runs.
+app.UseWebSockets();
 
 app.MapStaticAssets();
 
@@ -131,7 +172,7 @@ app.MapGet("/sitemap.xml", (HttpContext context) =>
 });
 
 // https://llmstxt.org - an H1, a blockquote summary, then H2-delimited lists of links. The point
-// is to hand an assistant the map of the site without making it scrape 68 pages of chrome to
+// is to hand an assistant the map of the site without making it scrape 79 pages of chrome to
 // rebuild one.
 app.MapGet("/llms.txt", (HttpContext context) =>
 {
@@ -201,9 +242,78 @@ app.MapGet("/sse/ticks", async (HttpContext context, CancellationToken cancellat
     }
     catch (OperationCanceledException)
     {
-        // The client closed the stream (or navigated away) - the normal way this ends.
+        // The client closed the stream (or navigated away), or the deadline came - the normal ways
+        // this ends.
     }
-});
+})
+.RequireRateLimiting(StreamingPolicy)
+.WithRequestTimeout(StreamingPolicy);
+
+// A real socket for the WebSocket page to talk to. The handler lives in WebSocketEcho because the
+// E2E suite hosts the same one on a loopback port and asserts on this protocol - see that file.
+app.MapGet("/ws/echo", Bit.Butil.Demo.Server.Endpoints.WebSocketEcho.Handle);
+
+// Something worth streaming, for the Streams page: a body that arrives in visible instalments
+// rather than all at once, with a Content-Length so progress has a denominator. The pause between
+// chunks is what makes "read it as it arrives" observably different from "wait, then read it".
+app.MapGet("/api/stream", async (HttpContext context, CancellationToken cancellationToken, int chunks = 20, int chunkSize = 4096, int delayMs = 100) =>
+{
+    var count = Math.Clamp(chunks, 1, 200);
+    var size = Math.Clamp(chunkSize, 1, 64 * 1024);
+    // Clamped like the other two, and for a sharper reason: Task.Delay(-1) waits for ever.
+    var delay = Math.Clamp(delayMs, 0, 5_000);
+
+    context.Response.Headers.ContentType = "application/octet-stream";
+    context.Response.Headers.CacheControl = "no-store";
+    context.Response.Headers["X-Accel-Buffering"] = "no";
+    context.Response.ContentLength = (long)count * size;
+
+    // Repeating text rather than random bytes: it compresses, which is what makes the page's
+    // "pipe it through the browser's gzip codec" section show a number worth looking at.
+    var chunk = System.Text.Encoding.UTF8.GetBytes(new string('x', size));
+
+    try
+    {
+        for (var i = 0; i < count && cancellationToken.IsCancellationRequested is false; i++)
+        {
+            await context.Response.Body.WriteAsync(chunk, cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+            await Task.Delay(delay, cancellationToken);
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        // The reader cancelled - which is one of the things the page demonstrates.
+    }
+})
+.RequireRateLimiting(StreamingPolicy)
+.WithRequestTimeout(StreamingPolicy);
+
+// A request that takes its time, so the AbortController page has something real to cancel. It
+// streams a byte a second rather than sleeping and then answering: a response that has not started
+// can be aborted by anything, while one already streaming proves the abort reaches the transfer.
+app.MapGet("/api/slow", async (HttpContext context, CancellationToken cancellationToken, int seconds = 10) =>
+{
+    context.Response.Headers.ContentType = "text/plain";
+    context.Response.Headers.CacheControl = "no-store";
+    context.Response.Headers["X-Accel-Buffering"] = "no";
+
+    try
+    {
+        for (var second = 0; second < Math.Clamp(seconds, 1, 60); second++)
+        {
+            await context.Response.WriteAsync($"{second}\n", cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        // The client aborted - which is what the page is demonstrating, not a failure.
+    }
+})
+.RequireRateLimiting(StreamingPolicy)
+.WithRequestTimeout(StreamingPolicy);
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()

@@ -30,4 +30,8 @@ echo ================================== Windows app tests ======================
 dotnet test --filter "TestCategory=Windows" --no-build
 if errorlevel 1 set EXIT_CODE=1
 
+echo =============================== API and database tests ===============================
+dotnet test --filter "TestCategory=Api" --no-build
+if errorlevel 1 set EXIT_CODE=1
+
 exit /b %EXIT_CODE%

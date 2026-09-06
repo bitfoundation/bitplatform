@@ -734,16 +734,38 @@
             } catch (e) { console.error("BitBlazorUI.Utils.scrollToChild:", e); }
         }
 
-        public static scrollElementIntoView(targetElementId: string) {
+        // Brings the element with the given id into view. The smooth scroll is a courtesy rather than a
+        // requirement, so it is dropped for a reader who has asked for less motion - a page that slides
+        // under someone with a vestibular disorder is worse than one that simply arrives. Passing focus
+        // moves the keyboard along with the viewport, which is what an in-page link owes a reader who is
+        // not looking at the scrollbar.
+        public static scrollElementIntoView(targetElementId: string, focus: boolean = false) {
             const element = document.getElementById(targetElementId);
             if (!element) return;
 
             try {
+                const reduced = typeof window.matchMedia === "function"
+                    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
                 element.scrollIntoView({
-                    behavior: "smooth",
+                    behavior: reduced ? "auto" : "smooth",
                     block: "start",
                     inline: "nearest"
                 });
+
+                if (!focus) return;
+
+                // An element that cannot take focus of its own is given a tab stop that only code can
+                // reach, so the destination becomes focusable without becoming one more stop for everyone
+                // tabbing through the page. One that is already focusable, or that was already given a
+                // tabindex of its own, is left exactly as it is.
+                if (element.tabIndex < 0 && !element.hasAttribute("tabindex")) {
+                    element.setAttribute("tabindex", "-1");
+                }
+
+                // The scroll above has already put the element where it belongs; letting the focus scroll
+                // to it as well would undo the alignment it was just given.
+                element.focus({ preventScroll: true });
             } catch (e) { console.error("BitBlazorUI.Utils.scrollElementIntoView:", e); }
         }
 
@@ -1031,16 +1053,16 @@
         // The older shape of the hold above, for the components that take a scroller for as long as they
         // are open and want its scroll offset back. It goes through the same counted registry, so one of
         // these can no longer hand back a scroller that a lock - or another one of these - is still
-        // holding. The scrollbar room is not compensated for here, which is what these callers have
-        // always done.
-        public static toggleOverflow(key: string, selector: string | HTMLElement, isOpen: boolean) {
+        // holding. The scrollbar room is only compensated for where the caller asks for it, so the callers
+        // that have always let the page shift by the width of the scrollbar carry on doing exactly that.
+        public static toggleOverflow(key: string, selector: string | HTMLElement, isOpen: boolean, compensate?: boolean) {
             const element = Utils.resolveScroller(selector);
 
             if (!element) return 0;
 
             try {
                 if (isOpen) {
-                    Utils.holdScroll(key, element, false);
+                    Utils.holdScroll(key, element, compensate === true);
                 } else {
                     Utils.releaseScroll(key);
                 }
