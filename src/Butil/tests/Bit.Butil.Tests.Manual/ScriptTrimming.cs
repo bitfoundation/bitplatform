@@ -26,7 +26,21 @@ internal static class ScriptTrimming
     /// internal <c>DomEventsInterop</c>). Dependencies (<c>butil</c>, <c>utils</c>) are added by the manifest,
     /// not listed here, so this stays a statement about what the C# side calls.
     /// </summary>
-    internal static readonly string[] MustSurviveModules = ["clipboard", "cookie", "events", "geolocation", "storage", "window"];
+    internal static readonly string[] MustSurviveModules = ["canvas", "clipboard", "cookie", "dom", "events", "geolocation", "storage", "streams", "webRtc", "window"];
+
+    /// <summary>
+    /// The same question asked of the <em>untrimmed</em> signals - the class-to-module map and the scan
+    /// built on it - which reach two modules more.
+    /// </summary>
+    /// <remarks>
+    /// The map follows type references, while ILLink follows call sites, so a type a class merely mentions
+    /// pulls its module in here and not there: <c>Streams</c> hands out a <c>FetchRequest</c> carrying an
+    /// abort signal, and <c>WebRtc</c> names the media-stream types, without this project calling either.
+    /// That direction is the safe one - an untrimmed publish shipping a module the app never calls costs
+    /// bytes, while missing one breaks it in the browser - so the two lists are compared exactly and kept
+    /// separately, rather than the check being loosened to a subset test that would stop noticing either.
+    /// </remarks>
+    internal static readonly string[] ScanReachableModules = [.. MustSurviveModules, "abortController", "mediaDevices"];
 
     /// <summary>
     /// Modules no C# code calls directly and that are legitimately only ever pulled in as a dependency of
@@ -114,7 +128,7 @@ internal static class ScriptTrimming
                 failures.Add($"JavaScript module '{orphan}' is not called by any 'BitButil.{orphan}.*' identifier in the C# side - dead script, or a module that should be listed as dependency-only.");
             }
 
-            foreach (var name in MustSurviveModules.Where(name => manifest.Dependencies.ContainsKey(name) is false))
+            foreach (var name in MustSurviveModules.Concat(ScanReachableModules).Distinct(StringComparer.Ordinal).Where(name => manifest.Dependencies.ContainsKey(name) is false))
             {
                 failures.Add($"'{name}' is an expected module name but no such module exists - the name here is stale.");
             }

@@ -1,1 +1,13 @@
-﻿<BitSticky data-val-test="bit">I'm a sticky</BitSticky>
+﻿@* The splatted attributes have to survive the ones the component writes itself, including the two it
+   only writes while they carry a value. The two of those go through a dictionary rather than being
+   written on the tag, since razor reads a "dir" written there as the Dir parameter of the component. *@
+
+<BitSticky data-val-test="bit" @attributes="_splatted">I'm a sticky</BitSticky>
+
+@code {
+    private readonly Dictionary<string, object> _splatted = new()
+    {
+        ["aria-label"] = "splatted label",
+        ["dir"] = "rtl"
+    };
+}

@@ -70,5 +70,36 @@ public enum BitLinkRels
     /// <summary>
     /// A tag (keyword) for the current document.
     /// </summary>
-    Tag = 4096
+    Tag = 4096,
+
+    /// <summary>
+    /// Indicates that the linked document represents the person who owns the current content. (used for identity verification)
+    /// </summary>
+    Me = 8192,
+
+    /// <summary>
+    /// Requires that any browsing context created by following the hyperlink keeps its opener browsing context.
+    /// (reverses the implicit noopener modern browsers apply to _blank targets)
+    /// </summary>
+    Opener = 16384,
+
+    /// <summary>
+    /// Links to the privacy policy that applies to the current document. (rendered as privacy-policy)
+    /// </summary>
+    PrivacyPolicy = 32768,
+
+    /// <summary>
+    /// Marks the link as an advertisement or paid placement, so search engines do not count it as an organic endorsement.
+    /// </summary>
+    Sponsored = 65536,
+
+    /// <summary>
+    /// Links to the terms of service that apply to the current document. (rendered as terms-of-service)
+    /// </summary>
+    TermsOfService = 131072,
+
+    /// <summary>
+    /// Marks the link as user-generated content, like forum posts or comments, for search engines.
+    /// </summary>
+    Ugc = 262144
 }

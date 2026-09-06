@@ -1,0 +1,384 @@
+@page "/window-messaging"
+@implements IAsyncDisposable
+@inject Bit.Butil.WindowMessaging windowMessaging
+@inject Bit.Butil.MessageChannel messageChannel
+@inject Bit.Butil.Window window
+
+<PageTitle>WindowMessaging - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network &amp; Workers"
+            Title="WindowMessaging"
+            Lead="window.postMessage: talking to an embedded iframe, the page that embedded you, or a window you opened - across origins, where nothing else can reach."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage"
+            InjectAs="WindowMessaging windowMessaging" />
+
+<Callout Type="warning" Title="Both origin checks are yours to make">
+    Anyone holding a reference to your window can post to it, and a message says nothing trustworthy
+    about who sent it except <code>Origin</code> - which the browser sets and nobody can forge. So
+    pass the origins you trust to <code>Listen</code>, and name the origin you expect when sending
+    rather than <code>"*"</code>: a frame may not still contain the document you loaded into it.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="window.postMessage has existed since forever; the check is here so this API has the same shape as the rest. During prerender/SSR it returns false rather than throwing."
+                 Code=@("""
+@inject Bit.Butil.WindowMessaging windowMessaging
+
+var supported = await windowMessaging.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Talking to an iframe"
+                 Api="Listen / Frame / PostMessage"
+                 Description="The document in the frame below is a real separate document, so what crosses between them are real cross-document messages. A target is a description rather than a reference: the window behind an iframe is replaced on every navigation, so it is looked up on each send - which is also why a message sent before the frame has loaded goes nowhere rather than being queued."
+                 Code=@("""
+private ElementReference _frame;
+
+// receive - the allowed origins are the security boundary
+_subscription = await windowMessaging.Listen(
+    m => InvokeAsync(() => { /* m.Origin, m.Deserialize<T>() */ }),
+    allowedOrigins: [new Uri(navManager.BaseUri).GetLeftPart(UriPartial.Authority)]);
+
+// send
+await windowMessaging.Frame(_frame)
+    .PostMessage(new { hello = "frame" }, targetOrigin: "https://example.com");
+""")>
+        <div class="controls">
+            <input @bind="_payload" placeholder="message" aria-label="message to send" />
+            <button @onclick="SendToFrame">Post to the frame</button>
+            <button class="secondary" @onclick="SendBytesToFrame">Post 4 bytes</button>
+        </div>
+        <iframe @ref="_frame" src="/frames/echo.html" title="Butil messaging frame"
+                style="width:100%;height:9rem;border:1px solid var(--border, #d4d4d8);border-radius:.5rem;margin-top:.75rem"></iframe>
+        <DemoConsole @ref="frameOutput" Title="frame output" />
+    </DemoSection>
+
+    <DemoSection Title="From messaging to a private channel"
+                 Api="PostWithPorts / WindowMessage.Ports"
+                 Description="This is the handshake worth knowing: post once with a port attached, and everything after that goes over the port instead - no origin argument on every message, and nobody else listening in. The ports are transferred, so the handles you pass stop working on this side. A message that arrives carrying ports hands them over in WindowMessage.Ports, and they deliver nothing until started."
+                 Code=@("""
+var channel = await messageChannel.Create();
+await channel!.Port1.OnMessage(m => InvokeAsync(StateHasChanged));
+await channel.Port1.Start();
+
+// Port2 goes to the frame, and stops working here
+await windowMessaging.Frame(_frame)
+    .PostWithPorts(new { op = "here is a line" }, origin, [channel.Port2]);
+
+await channel.Port1.PostMessage(new { over = "the port" });
+""")>
+        <div class="controls">
+            <button @onclick="HandOverAPort">Hand the frame a port</button>
+            <button class="secondary" @onclick="SendOverPort">Send over the port</button>
+        </div>
+        <DemoConsole @ref="portOutput" Title="port output" />
+    </DemoSection>
+
+    <DemoSection Title="A window you opened"
+                 Api="OpenedWindow"
+                 Description="Window.Open hands back an id; this addresses the popup behind it. Only while it is open - a closed one, or an id from a NoOpener open (which deliberately hands back no reference at all), posts nothing and returns false. That is the feature working, not a failure to report."
+                 Code=@("""
+var id = await window.Open("/frames/echo.html", "_blank", "popup=yes,width=420,height=320");
+
+await windowMessaging.OpenedWindow(id!)
+    .PostMessage(new { hello = "popup" }, targetOrigin: origin);
+""")>
+        <div class="controls">
+            <button @onclick="OpenPopup">Open a popup</button>
+            <button @onclick="SendToPopup">Post to it</button>
+            <button class="danger" @onclick="ClosePopup">Close it</button>
+        </div>
+        <DemoConsole @ref="popupOutput" Title="popup output" />
+    </DemoSection>
+
+    <DemoSection Title="Upwards"
+                 Api="Parent / Top / Opener"
+                 Description="Parent is the document that embedded this one, Top the outermost of the frame tree, Opener the window that opened this one. In a top-level page opened by nobody, Parent and Top are this page itself - so a message posted there comes straight back to your own listener, which is what happens here."
+                 Code=@("""
+await windowMessaging.Parent().PostMessage(new { up = true }, origin);
+await windowMessaging.Top().PostMessage(new { up = true }, origin);
+
+// null on the other side of a NoOpener open, where posting is a no-op
+await windowMessaging.Opener().PostMessage(new { back = true }, origin);
+""")>
+        <div class="controls">
+            <button @onclick='() => PostUpwards("parent")'>Post to Parent</button>
+            <button @onclick='() => PostUpwards("top")'>Post to Top</button>
+            <button @onclick='() => PostUpwards("opener")'>Post to Opener</button>
+        </div>
+        <DemoConsole @ref="upwardsOutput" Title="upwards output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.postMessage. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Listen"
+               Signature="ValueTask<ButilSubscription> Listen(Action<WindowMessage> onMessage, string[]? allowedOrigins = null)"
+               Description="Listens for messages posted to this window. Anything from an origin not in the list is dropped before the callback sees it; an empty list accepts everything, which is almost never right." />
+    <ApiMember Name="Frame"
+               Signature="WindowMessageTarget Frame(ElementReference iframe)"
+               Description="A target for the document inside an iframe, looked up on each send rather than held." />
+    <ApiMember Name="OpenedWindow"
+               Signature="WindowMessageTarget OpenedWindow(string windowId)"
+               Description="A target for a window opened through Window.Open, addressed by the id it returned." />
+    <ApiMember Name="Parent / Top / Opener"
+               Signature="WindowMessageTarget Parent(), Top(), Opener()"
+               Description="The embedding document, the outermost document of the frame tree, and the window that opened this one." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, removes every listener whose subscription was never disposed." />
+    <ApiMember Name="WindowMessageTarget.PostMessage"
+               Signature="ValueTask<bool> PostMessage<T>(T value, string targetOrigin, JsonSerializerOptions? options = null)"
+               Description="Posts a message as JSON. False when the target window is not there - an unloaded frame, a closed popup, a withheld opener." />
+    <ApiMember Name="WindowMessageTarget.PostBytes"
+               Signature="ValueTask<bool> PostBytes(byte[] data, string targetOrigin, bool transfer = true)"
+               Description="Posts raw bytes, moving the buffer to the receiver rather than copying it when transfer is true." />
+    <ApiMember Name="WindowMessageTarget.PostWithPorts"
+               Signature="ValueTask<bool> PostWithPorts<T>(T value, string targetOrigin, MessagePortHandle[] ports, JsonSerializerOptions? options = null)"
+               Description="Posts a message carrying ports. They are transferred, so the handles passed here stop working." />
+    <ApiMember Name="WindowMessage"
+               Signature="record (string Origin, bool IsBinary, string? Json, byte[]? Data, MessagePortHandle[] Ports) { T? Deserialize<T>() }"
+               Description="A received message. Origin is set by the browser and cannot be forged - it is the only thing identifying the sender. Ports carries whatever the sender transferred; where several listeners accept the same message, only the first one registered is given them, because a port has one owner." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole frameOutput = default!;
+    private DemoConsole portOutput = default!;
+    private DemoConsole popupOutput = default!;
+    private DemoConsole upwardsOutput = default!;
+
+    private ElementReference _frame;
+    private ButilSubscription? _subscription;
+    private MessageChannelHandle? _channel;
+    private ButilSubscription? _portSubscription;
+    private bool _portHandedOver;
+    private string? _popupId;
+    private string _payload = "hello, frame";
+
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+
+    /// <summary>
+    /// The one origin this page trusts. Everything here is same-origin - the frame and the popup are
+    /// documents of this site - so the allow-list has exactly one entry, which is what an allow-list
+    /// should look like.
+    /// </summary>
+    private string Origin => new Uri(NavManager.BaseUri).GetLeftPart(UriPartial.Authority);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        try
+        {
+            _subscription = await windowMessaging.Listen(m => InvokeAsync(async () =>
+            {
+                var console = m.Json?.Contains("frameReady") is true || m.Json?.Contains("\"echo\"") is true
+                    ? frameOutput
+                    : m.Json?.Contains("tookPort") is true ? portOutput
+                    : m.Json?.Contains("\"sum\"") is true ? frameOutput
+                    : upwardsOutput;
+
+                await console.Success($"From {m.Origin} →", m.IsBinary ? $"binary [{string.Join(", ", m.Data ?? [])}]" : m.Json);
+
+                // A message can arrive carrying ports. Nothing here sends us one, but a real
+                // integration would start them and hold on to them from this point.
+                foreach (var port in m.Ports) await port.Start();
+            }), [Origin]);
+        }
+        catch (Exception ex)
+        {
+            await frameOutput.Error("Listen failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await windowMessaging.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task SendToFrame()
+    {
+        try
+        {
+            var sent = await windowMessaging.Frame(_frame).PostMessage(new { text = _payload }, Origin);
+            if (sent) await frameOutput.Log("Posted to the frame.");
+            else await frameOutput.Warn("Returned false - the frame has no document yet.");
+        }
+        catch (Exception ex)
+        {
+            await frameOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task SendBytesToFrame()
+    {
+        try
+        {
+            var sent = await windowMessaging.Frame(_frame).PostBytes([10, 20, 30, 40], Origin);
+            if (sent) await frameOutput.Log("Posted 4 bytes - the frame sums them and replies.");
+            else await frameOutput.Warn("Returned false - the frame has no document yet.");
+        }
+        catch (Exception ex)
+        {
+            await frameOutput.Error("PostBytes failed →", ex.Message);
+        }
+    }
+
+    private async Task HandOverAPort()
+    {
+        try
+        {
+            await DisposeChannel();
+
+            _channel = await messageChannel.Create();
+            if (_channel is null)
+            {
+                await portOutput.Warn("Create returned null - the runtime has no MessageChannel.");
+                return;
+            }
+
+            _portSubscription = await _channel.Port1.OnMessage(m => InvokeAsync(async () =>
+            {
+                await portOutput.Success("Over the port →", m.Json);
+            }));
+            await _channel.Port1.Start();
+
+            var sent = await windowMessaging.Frame(_frame)
+                .PostWithPorts(new { op = "here is a line" }, Origin, [_channel.Port2]);
+
+            _portHandedOver = sent;
+            if (sent) await portOutput.Success("Port2 transferred to the frame - it no longer works on this side.");
+            else await portOutput.Warn("Returned false - the frame has no document yet, or the port was already released.");
+        }
+        catch (Exception ex)
+        {
+            await portOutput.Error("PostWithPorts failed →", ex.Message);
+        }
+    }
+
+    private async Task SendOverPort()
+    {
+        if (_channel is null || _portHandedOver is false)
+        {
+            await portOutput.Warn("Hand the frame a port first.");
+            return;
+        }
+
+        try
+        {
+            await _channel.Port1.PostMessage(new { over = "the port", at = DateTime.Now.ToString("HH:mm:ss") });
+        }
+        catch (Exception ex)
+        {
+            await portOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenPopup()
+    {
+        try
+        {
+            _popupId = await window.Open("/frames/echo.html", "_blank", "popup=yes,width=420,height=320");
+            if (_popupId is null) await popupOutput.Warn("The popup was blocked - browsers only allow this from a user gesture.");
+            else await popupOutput.Success("Opened →", _popupId);
+        }
+        catch (Exception ex)
+        {
+            await popupOutput.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task SendToPopup()
+    {
+        if (_popupId is null)
+        {
+            await popupOutput.Warn("Open a popup first.");
+            return;
+        }
+
+        try
+        {
+            var sent = await windowMessaging.OpenedWindow(_popupId).PostMessage(new { hello = "popup" }, Origin);
+            if (sent) await popupOutput.Log("Posted to the popup.");
+            else await popupOutput.Warn("Returned false - the popup was closed, or opened with NoOpener.");
+        }
+        catch (Exception ex)
+        {
+            await popupOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task ClosePopup()
+    {
+        if (_popupId is null) return;
+        await window.Close(_popupId);
+        _popupId = null;
+        await popupOutput.Log("Closed - posting to it now returns false.");
+    }
+
+    private async Task PostUpwards(string which)
+    {
+        try
+        {
+            var target = which switch
+            {
+                "parent" => windowMessaging.Parent(),
+                "top" => windowMessaging.Top(),
+                _ => windowMessaging.Opener()
+            };
+
+            var sent = await target.PostMessage(new { up = which }, Origin);
+            if (sent) await upwardsOutput.Log($"Posted to {which}.");
+            else await upwardsOutput.Warn($"Returned false - there is no {which} window.");
+        }
+        catch (Exception ex)
+        {
+            await upwardsOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task DisposeChannel()
+    {
+        if (_portSubscription is not null)
+        {
+            await _portSubscription.DisposeAsync();
+            _portSubscription = null;
+        }
+
+        if (_channel is null) return;
+
+        await _channel.DisposeAsync();
+        _channel = null;
+        _portHandedOver = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            await DisposeChannel();
+            if (_popupId is not null) await window.Close(_popupId);
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

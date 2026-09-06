@@ -46,13 +46,13 @@
 ## Rules
 
 **RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
-or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Besql`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
-you **MUST** use the deepwiki's `ask_question` mcp tool to find the correct implementation and usage patterns of `bitfoundation/bitplatform` deep wiki before writing or changing any code.
+or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Brouter`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
+you **MUST** use the `bitplatform` MCP server's tools - start with the matching `Search<Library>` tool (e.g. `SearchBitBlazorUI`, `SearchBswup`, `SearchButil`, `SearchBmotion`, `SearchBrouter`) and follow the calls it names - to find the correct implementation and usage patterns before writing or changing any code.
 
 **End of RULE 1**
 
 **RULE 2:** If a task (question, code modification, or review) involves Microsoft technologies such as C#, F#, ASP.NET Core, Microsoft.Extensions, NuGet, Entity Framework, Blazor or the `dotnet` runtime,
-you **MUST** use the `microsoft.docs.mcp` server to search Microsoft's latest official documentation for detailed and up-to-date information before responding to specific or narrowly defined questions.
+you **MUST** use the `microsoft_docs_search`, `microsoft_docs_fetch` and `microsoft_code_sample_search` tools of the `bitplatform` MCP server to search Microsoft's latest official documentation for detailed and up-to-date information before responding to specific or narrowly defined questions.
 
 **End of RULE 2**
 

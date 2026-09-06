@@ -362,8 +362,8 @@ Run the project and walk through these - it is faster than reading:
 password and OTP sign-in, 2FA, session management and revocation, password reset, roles and permissions, external
 providers, privileged sessions and elevated access.
 
-### AI Wiki: answered questions
+### AI Wiki
 
-Ask your own question [here](https://wiki.bitplatform.dev).
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

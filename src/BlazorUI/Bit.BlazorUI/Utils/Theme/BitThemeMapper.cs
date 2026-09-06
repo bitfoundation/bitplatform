@@ -451,6 +451,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
 
         addCssVar(BitCss.Var.Typography.FontFamily, bitTheme.Typography.FontFamily);
+        addCssVar(BitCss.Var.Typography.MonoFontFamily, bitTheme.Typography.MonoFontFamily);
         addCssVar(BitCss.Var.Typography.FontWeight, bitTheme.Typography.FontWeight);
         addCssVar(BitCss.Var.Typography.LineHeight, bitTheme.Typography.LineHeight);
         addCssVar(BitCss.Var.Typography.GutterSize, bitTheme.Typography.GutterSize);
@@ -778,6 +779,7 @@ internal static class BitThemeMapper
         return new BitThemeTypography
         {
             FontFamily = src.FontFamily,
+            MonoFontFamily = src.MonoFontFamily,
             FontWeight = src.FontWeight,
             LineHeight = src.LineHeight,
             GutterSize = src.GutterSize,
@@ -1219,6 +1221,7 @@ internal static class BitThemeMapper
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;
 
         result.Typography.FontFamily = bitTheme.Typography.FontFamily ?? other.Typography.FontFamily;
+        result.Typography.MonoFontFamily = bitTheme.Typography.MonoFontFamily ?? other.Typography.MonoFontFamily;
         result.Typography.FontWeight = bitTheme.Typography.FontWeight ?? other.Typography.FontWeight;
         result.Typography.LineHeight = bitTheme.Typography.LineHeight ?? other.Typography.LineHeight;
         result.Typography.GutterSize = bitTheme.Typography.GutterSize ?? other.Typography.GutterSize;

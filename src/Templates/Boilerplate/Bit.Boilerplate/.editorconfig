@@ -126,11 +126,13 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 dotnet_diagnostic.NonAsyncEFCoreMethodsUsageAnalyzer.severity = error
-# MSTest ships its assert rules as IDE-only suggestions, easy to scroll past. Each has a mechanical fix towards the
-# newer Assert API, so they fail the build instead: 0017 arg order, 0023 negated bool assert, 0025 always-false
-# condition, 0026 conditional access in assert args, 0032 always-true condition, 0037 proper assert method, 0038
-# AreSame on value types, 0039 newer Assert.Throws, 0044 TestMethod over DataTestMethod, 0046 StringAssert, 0064 async
-# assert methods, 0065 AreEqual on collections, 0068 CollectionAssert.
+# A failing assert has to say what broke, and a passing one has to mean the test really ran and really checked.
+# MSTest ships most of these as IDE-only suggestions, easy to scroll past, so they fail the build instead:
+# Assert.IsTrue(a == b) only ever reports "expected true, actual false", where Assert.AreEqual(a, b) prints both;
+# a test whose body starts with `if (OperatingSystem.IsWindows() is false) return;` reports as passed, not skipped.
+# The rest of MSTest's rules were tried and left out on purpose, not missed: they either only fire on features this
+# template does not use, or flagged deliberate code as a defect.
+# Each rule is documented at https://learn.microsoft.com/dotnet/core/testing/mstest-analyzers/mstest0017 and siblings.
 dotnet_diagnostic.MSTEST0017.severity = error
 dotnet_diagnostic.MSTEST0023.severity = error
 dotnet_diagnostic.MSTEST0025.severity = error
@@ -140,10 +142,25 @@ dotnet_diagnostic.MSTEST0037.severity = error
 dotnet_diagnostic.MSTEST0038.severity = error
 dotnet_diagnostic.MSTEST0039.severity = error
 dotnet_diagnostic.MSTEST0044.severity = error
+dotnet_diagnostic.MSTEST0045.severity = error
 dotnet_diagnostic.MSTEST0046.severity = error
+dotnet_diagnostic.MSTEST0051.severity = error
+dotnet_diagnostic.MSTEST0053.severity = error
+dotnet_diagnostic.MSTEST0054.severity = error
+dotnet_diagnostic.MSTEST0055.severity = error
+dotnet_diagnostic.MSTEST0061.severity = error
 dotnet_diagnostic.MSTEST0064.severity = error
 dotnet_diagnostic.MSTEST0065.severity = error
+dotnet_diagnostic.MSTEST0067.severity = error
 dotnet_diagnostic.MSTEST0068.severity = error
+dotnet_diagnostic.MSTEST0074.severity = error
+dotnet_diagnostic.MSTEST0075.severity = error
+dotnet_diagnostic.MSTEST0076.severity = error
+dotnet_diagnostic.MSTEST0077.severity = error
+dotnet_diagnostic.MSTEST0079.severity = error
+dotnet_diagnostic.MSTEST0080.severity = error
+dotnet_diagnostic.MSTEST0082.severity = error
+dotnet_diagnostic.MSTEST0083.severity = error
 ###############################
 # VB Coding Conventions       #
 ###############################

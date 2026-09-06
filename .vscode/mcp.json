@@ -1,12 +1,8 @@
 {
     "servers": {
-        "DeepWiki": {
-            "type": "sse",
-            "url": "https://mcp.deepwiki.com/mcp"
-        },
-        "microsoft.docs.mcp": {
+        "bitplatform": {
             "type": "http",
-            "url": "https://learn.microsoft.com/api/mcp"
+            "url": "https://bitplatform.dev/mcp"
         },
         "github": {
             "type": "http",

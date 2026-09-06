@@ -6,12 +6,52 @@ env:
   SERVER_WEB_ADDRESS: 'https://adminpanel.bitplatform.dev'
   SERVER_API_ADDRESS: 'https://adminpanel-api.bitplatform.dev'
   APP_SERVICE_NAME: 'bit-adminpanel'
+  R2_BUCKET: 'adminpanel'
+  APP_BUNDLE_ID: 'com.bitplatform.AdminPanel.Template'
   OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
   OpenAI__Endpoint: ${{ secrets.OpenAI__Endpoint }}
   OPENAI__MODEL: ${{ secrets.OPENAI__MODEL }}
 
 on:
   workflow_dispatch:
+    inputs:
+      server:
+        description: Server web + api
+        type: boolean
+        default: true
+      wasm:
+        description: Blazor WASM standalone
+        type: boolean
+        default: true
+      windows:
+        description: Windows app
+        type: boolean
+        default: true
+      android:
+        description: Android app
+        type: boolean
+        default: true
+      ios:
+        description: iOS app
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      server:
+        type: boolean
+        default: true
+      wasm:
+        type: boolean
+        default: true
+      windows:
+        type: boolean
+        default: true
+      android:
+        type: boolean
+        default: true
+      ios:
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -20,6 +60,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
+    if: inputs.server
     runs-on: windows-2025
 
     steps:
@@ -80,6 +121,15 @@ jobs:
     - name: Publish Server API
       run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Api/AdminPanel.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}"
 
+    # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
+    - name: Strip server-owned files from bundles
+      shell: pwsh
+      run: |
+        foreach ($bundle in 'server-web', 'server-api') {
+          Get-ChildItem $bundle -File -Include 'appsettings*.json', 'AppCertificate.*', 'AppleAuthKey.p8', '*.pfx' -Recurse |
+            ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
+        }
+
     - name: Upload server web artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
@@ -94,8 +144,65 @@ jobs:
         path: server-api
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
+  deploy_server_web:
+    name: deploy server web
+    needs: build_api_blazor
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://adminpanel.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: AdminPanel
+        app-pool: AdminPanel
+        site-path: C:\inetpub\AdminPanel
+        sentinel-file: AdminPanel.Server.Web.dll
+        health-check-url: 'https://adminpanel.bitplatform.dev/health'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
+
+  deploy_server_api:
+    name: deploy server api
+    needs: build_api_blazor
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://adminpanel-api.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: AdminPanelApi
+        app-pool: AdminPanelApi
+        site-path: C:\inetpub\AdminPanelApi
+        sentinel-file: AdminPanel.Server.Api.dll
+        health-check-url: 'https://adminpanel-api.bitplatform.dev/health'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
+
   deploy_blazor_wasm_standalone:
     name: build blazor wasm standalone
+    if: inputs.wasm
     runs-on: ubuntu-24.04
 
     steps:
@@ -147,6 +254,7 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
+    if: inputs.windows
     runs-on: windows-2025
   
     steps:
@@ -192,21 +300,30 @@ jobs:
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
+    # Needed for delta packages. Fails on the first run, when the bucket is empty.
+    - name: Download previous releases from R2
+      continue-on-error: true
+      run: |
+          cd AdminPanel\src\Client\AdminPanel.Client.Windows\
+          dotnet tool restore
+          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+
     - name: Publish
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
           dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APP_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
           dotnet tool restore
           dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
-  
-    - name: Upload artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: WinAdminPanel
-        path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
-  
+
+    # The update feed behind WindowsUpdate.FilesUrl.
+    - name: Upload releases to R2
+      run: |
+          cd AdminPanel\src\Client\AdminPanel.Client.Windows\
+          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
+    if: inputs.android
     runs-on: ubuntu-24.04
   
     steps:
@@ -274,16 +391,28 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Publish aab
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net10.0-android
-  
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
+
     - name: Upload artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: android-bundle
-        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net10.0-android/*-Signed.*
-  
+        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
+
+    # versionCode derives from APP_VERSION; bump it or Play rejects the bundle.
+    - name: Upload to Google Play (internal track)
+      uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        packageName: ${{ env.APP_BUNDLE_ID }}
+        releaseFiles: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net10.0-android/*-Signed.aab
+        releaseName: ${{ vars.APP_VERSION }}
+        track: internal
+        status: completed
+
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
+    if: inputs.ios
     runs-on: macOS-26
   
     steps:
@@ -341,7 +470,7 @@ jobs:
     - name: Download Apple Provisioning Profiles
       uses: Apple-Actions/download-provisioning-profiles@2126b5f86a0e2863cbf4d2d312112b22b943a594 # v6.1.0
       with:
-        bundle-id: 'com.bitplatform.AdminPanel.Template'
+        bundle-id: ${{ env.APP_BUNDLE_ID }}
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
@@ -352,10 +481,19 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Build ipa
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net10.0-ios
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+    - name: Locate ipa
+      id: ipa
+      run: echo "path=$(ls AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+
+    # App Store submission stays manual.
+    - name: Upload to TestFlight
+      uses: apple-actions/upload-testflight-build@5e75ff58276689011512ba87a381d93dc67dbcf8 # v5.3.0
       with:
-        name: ios-bundle
-        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa
+        app-path: ${{ steps.ipa.outputs.path }}
+        app-type: ios
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+        uses-non-exempt-encryption: 'false'

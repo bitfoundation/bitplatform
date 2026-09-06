@@ -1,0 +1,100 @@
+@page "/canvas"
+@inject Bit.Butil.Canvas canvas
+
+<PageTitle>Butil - Canvas Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Canvas"
+            Lead="Getting a picture in and bytes out: draw an image or a video frame onto a canvas, then export it as a data URL or a byte[]."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement" />
+
+<pre>
+@@inject Bit.Butil.Canvas canvas
+
+await canvas.DrawImage(_canvas, _image);
+var png = await canvas.ToBytes(_canvas);
+var thumbnail = await canvas.Capture(_image, width: 120, type: "image/jpeg", quality: 0.7);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Draw and export" Api="DrawImage / ToBytes / ToDataUrl"
+              Description="A canvas that has drawn a cross-origin image cannot be read back at all - every export answers null in that case rather than throwing.">
+        <div class="controls">
+            <button @onclick="Draw">Draw</button>
+            <button @onclick="ExportPng">ToBytes (PNG)</button>
+            <button @onclick="ExportJpeg">ToBytes (JPEG 0.7)</button>
+            <button class="danger" @onclick="Clear">Clear</button>
+        </div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem;align-items:flex-start">
+            <img @ref="_image" src="@SampleImage" alt="sample" width="200" height="100"
+                 style="border:1px solid #cbd5e1;border-radius:.4rem" />
+            <canvas @ref="_canvas" width="320" height="160"
+                    style="border:1px solid #cbd5e1;border-radius:.4rem;max-width:100%"></canvas>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="A thumbnail with no canvas of your own" Api="Capture / CaptureToDataUrl"
+              Description="Give one dimension and leave the other at 0 to keep the aspect ratio. The source's intrinsic size is what gets captured, not the size CSS shows it at.">
+        <div class="controls">
+            <button @onclick="() => Thumbnail(120)">120px wide</button>
+            <button @onclick="() => Thumbnail(48)">48px wide</button>
+        </div>
+        @if (_thumbnail is not null)
+        {
+            <img src="@_thumbnail" alt="thumbnail" style="margin-top:.75rem;border:1px solid #cbd5e1;border-radius:.4rem" />
+        }
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="canvas output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference _canvas;
+    private ElementReference _image;
+    private string? _thumbnail;
+
+    /// <summary>Inline so the sample needs no asset. A data: URL does not taint the canvas.</summary>
+    private const string SampleImage =
+        "data:image/svg+xml;utf8," +
+        "%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E" +
+        "%3Crect width='200' height='100' fill='%236366f1'/%3E" +
+        "%3Ccircle cx='50' cy='50' r='28' fill='white' fill-opacity='.85'/%3E" +
+        "%3C/svg%3E";
+
+    private async Task Draw()
+    {
+        var drawn = await canvas.DrawImage(_canvas, _image);
+        if (drawn is false) await output.Warn("DrawImage returned false - the source has nothing to draw yet.");
+    }
+
+    private async Task ExportPng()
+    {
+        var bytes = await canvas.ToBytes(_canvas);
+        if (bytes is null) await output.Warn("ToBytes returned null - the canvas is tainted, or not a canvas.");
+        else await output.Success("PNG →", $"{bytes.Length} bytes");
+    }
+
+    private async Task ExportJpeg()
+    {
+        var bytes = await canvas.ToBytes(_canvas, "image/jpeg", 0.7);
+        if (bytes is null) await output.Warn("ToBytes returned null - the canvas is tainted, or not a canvas.");
+        else await output.Success("JPEG 0.7 →", $"{bytes.Length} bytes");
+    }
+
+    private async Task Clear()
+    {
+        await canvas.Clear(_canvas);
+        await output.Log("Cleared.");
+    }
+
+    private async Task Thumbnail(int width)
+    {
+        _thumbnail = await canvas.CaptureToDataUrl(_image, width, type: "image/jpeg", quality: 0.7);
+        var bytes = await canvas.Capture(_image, width, type: "image/jpeg", quality: 0.7);
+
+        if (bytes is null) await output.Warn("Capture returned null - the source has nothing to show, or is cross-origin.");
+        else await output.Success($"Captured at {width}px wide →", $"{bytes.Length} bytes");
+    }
+}
