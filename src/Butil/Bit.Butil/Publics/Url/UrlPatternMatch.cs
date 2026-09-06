@@ -9,7 +9,11 @@ namespace Bit.Butil;
 /// </summary>
 public class UrlPatternMatch
 {
-    /// <summary>The matched scheme including its colon, e.g. <c>https:</c>.</summary>
+    /// <summary>
+    /// The matched scheme <i>without</i> its colon, e.g. <c>https</c>. This is the input the pattern
+    /// matched against rather than a parsed URL component, which is why it differs from
+    /// <see cref="UrlParts.Protocol"/> - that one carries the trailing colon.
+    /// </summary>
     public string Protocol { get; set; } = string.Empty;
 
     /// <summary>The matched username, or an empty string. A URL rarely carries one.</summary>

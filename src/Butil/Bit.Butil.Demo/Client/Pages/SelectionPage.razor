@@ -37,6 +37,7 @@ var html = await selection.GetHtml();
         <div class="controls">
             <button @onclick="ReadSelection">Get / GetText</button>
             <button class="secondary" @onclick="ReadHtml">GetHtml</button>
+            <button class="secondary" @onclick="CheckSupport">IsSupported</button>
         </div>
         <DemoConsole @ref="readOutput" Title="read output" />
     </DemoSection>
@@ -59,12 +60,14 @@ var inside = await selection.ContainsElement(element, partly: true);
                  Api="SelectElement / SelectElementContents / SelectRange / RemoveAll / Collapse"
                  Description="Selecting an element's contents is the 'select all in this box' primitive. SelectRange takes character offsets within one element, which is how a caret is restored after re-rendering."
                  Code=@("""
-await selection.SelectElementContents(element);
+await selection.SelectElement(element);           // the element itself, tags and all
+await selection.SelectElementContents(element);   // only what is inside it
 await selection.SelectRange(element, 0, 12);
 await selection.Collapse(toStart: true);
 await selection.RemoveAll();
 """)>
         <div class="controls">
+            <button @onclick="SelectWholeElement">SelectElement</button>
             <button @onclick="SelectContents">SelectElementContents</button>
             <button @onclick="SelectFirstWords">SelectRange(0, 24)</button>
             <button class="secondary" @onclick="@(() => Collapse(true))">Collapse to start</button>
@@ -256,6 +259,18 @@ await _subscription.DisposeAsync();   // stops listening
         }
     }
 
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await readOutput.Info("IsSupported →", (await selection.IsSupported()).ToString());
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
     private async Task ReadHtml()
     {
         try
@@ -295,6 +310,28 @@ await _subscription.DisposeAsync();   // stops listening
         catch (Exception ex)
         {
             await measureOutput.Error("Measure failed →", ex.Message);
+        }
+    }
+
+    private async Task SelectWholeElement()
+    {
+        try
+        {
+            var ok = await selection.SelectElement(_sample);
+
+            if (ok is false)
+            {
+                await changeOutput.Warn("SelectElement →", "refused - the element has no parent to be selected within.");
+                return;
+            }
+
+            // The difference from SelectElementContents only shows in the markup: this one has the
+            // <p> itself in it, so a Surround around it would have to wrap the paragraph.
+            await changeOutput.Success("SelectElement →", await selection.GetHtml());
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("SelectElement failed →", ex.Message);
         }
     }
 

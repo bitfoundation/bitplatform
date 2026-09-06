@@ -42,6 +42,9 @@ foreach (var topic in topics)
                  Api="IsAttributionReportingSupported / RegisterAttribution / RegisterAttributionImage"
                  Description="The registration lives in the response headers of a URL you fetch, not in its body - the browser reads them and stores what it read, and nothing comes back to your code. Which is the design: measurement without the site learning who converted. The image form is what an ad creative uses; the fetch form suits an app that is already making the request."
                  Code=@("""
+// what an ad creative does - the image itself is never displayed:
+await privacySandbox.RegisterAttributionImage("https://reporter.example/pixel.png");
+
 // a source - an impression or a click that may later convert:
 await privacySandbox.RegisterAttribution("https://reporter.example/source",
                                          eventSourceEligible: true);
@@ -56,6 +59,7 @@ await privacySandbox.RegisterAttribution("https://reporter.example/trigger",
                 <input @bind="_attributionUrl" style="min-width:18rem" />
             </label>
             <button class="secondary" @onclick="RegisterSource">RegisterAttribution</button>
+            <button class="secondary" @onclick="RegisterSourceImage">RegisterAttributionImage</button>
         </div>
         <DemoConsole @ref="attributionOutput" Title="attribution output" />
     </DemoSection>
@@ -79,6 +83,7 @@ await privacySandbox.RequestToken(apiUrl, PrivateStateTokenOperation.SendRedempt
                 <input @bind="_issuer" style="min-width:18rem" />
             </label>
             <button class="secondary" @onclick="CheckTokens">HasPrivateToken / HasRedemptionRecord</button>
+            <button class="secondary" @onclick="RunTokenOperations">RequestToken (all three operations)</button>
         </div>
         <DemoConsole @ref="tokensOutput" Title="tokens output" />
     </DemoSection>
@@ -209,6 +214,21 @@ if (await privacySandbox.IsInFencedFrame())
         }
     }
 
+    private async Task RegisterSourceImage()
+    {
+        try
+        {
+            var ok = await privacySandbox.RegisterAttributionImage(_attributionUrl);
+
+            await attributionOutput.Info("RegisterAttributionImage →", ok);
+            await attributionOutput.Log("False here means the image failed to load, which the placeholder endpoint above will. A registration that did load reports nothing either way - the headers are read by the browser, not by you.");
+        }
+        catch (Exception ex)
+        {
+            await attributionOutput.Error("RegisterAttributionImage failed →", ex.Message);
+        }
+    }
+
     private async Task CheckTokensSupport()
     {
         try
@@ -232,6 +252,29 @@ if (await privacySandbox.IsInFencedFrame())
         catch (Exception ex)
         {
             await tokensOutput.Error("Token check failed →", ex.Message);
+        }
+    }
+
+    private async Task RunTokenOperations()
+    {
+        try
+        {
+            // All three, because each maps to a different privateToken option and only the last one
+            // carries issuers - the mapping is the part worth seeing exercised.
+            await tokensOutput.Info("TokenRequest →",
+                await privacySandbox.RequestToken(_issuer, PrivateStateTokenOperation.TokenRequest));
+
+            await tokensOutput.Info("TokenRedemption →",
+                await privacySandbox.RequestToken(_issuer, PrivateStateTokenOperation.TokenRedemption));
+
+            await tokensOutput.Info("SendRedemptionRecord →",
+                await privacySandbox.RequestToken(_issuer, PrivateStateTokenOperation.SendRedemptionRecord, issuers: [_issuer]));
+
+            await tokensOutput.Log("False from all three against a placeholder issuer: the origin is not enrolled, so the fetch never reaches an issuer that could answer.");
+        }
+        catch (Exception ex)
+        {
+            await tokensOutput.Error("RequestToken failed →", ex.Message);
         }
     }
 

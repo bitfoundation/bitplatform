@@ -23,7 +23,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const config = configOf(sanitizer);
         // Nothing to read the configuration back from: construction is the only signal there is.
         if (!config || Object.keys(config).length === 0) return true;
-        return keys.some(key => key in config);
+        // Every key, not any of them: a build that echoed back half of a configuration ignored the
+        // other half in silence, and a deny-list dropped that way is markup the caller was told had
+        // been removed. Falling through to the legacy spelling is the only honest answer.
+        return keys.every(key => key in config);
     }
 
     function construct(config: any) {
@@ -75,8 +78,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // failure the API documents rather than substituted for.
     const MISSING = {};
 
+    // No id means the default sanitizer, and that is exactly what setHTML applies when it is handed
+    // no configuration at all - so the default is a null instance rather than one built per call.
     function resolve(id: string | null) {
-        if (!id) return build(null);
+        if (!id) return null;
         return _sanitizers[id] ?? MISSING;
     }
 
@@ -113,12 +118,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // What a configuration actually expands to once the browser has merged it with its baseline -
         // the answer to "is this element really allowed", which a hand-written config never gives.
         getConfig(id: string | null) {
-            const sanitizer = resolve(id);
+            // The one caller that does need an instance for the default case: a configuration is
+            // read back off a Sanitizer, where sanitizing under the default needs no object at all.
+            const sanitizer = id ? resolve(id) : build(null);
             // Through configOf rather than sanitizer.get directly: the method has carried two names,
             // and build() already trusts configOf to decide whether a configuration was understood.
             // Reading it back under only one of the two names would report "no configuration" on a
             // browser this module otherwise supports.
-            if (sanitizer === MISSING) return null;
+            if (!sanitizer || sanitizer === MISSING) return null;
             return configOf(sanitizer);
         },
 

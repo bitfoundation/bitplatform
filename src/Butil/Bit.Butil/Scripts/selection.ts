@@ -110,7 +110,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const current = selection();
             if (!current || !element) return false;
             const range = document.createRange();
-            range.selectNode(element);
+            // Selecting a node means selecting it *within its parent*, so a detached node - or one
+            // whose parent is the document itself - throws where every other member here returns
+            // false. The refusal is reported the same way the rest of the module reports one.
+            try { range.selectNode(element); } catch { return false; }
             current.removeAllRanges();
             current.addRange(range);
             return true;

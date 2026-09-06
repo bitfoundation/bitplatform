@@ -23,6 +23,8 @@
                  Code=@("""
 @inject Bit.Butil.Url url
 
+if (await url.CanParse("https://example.com:8080/docs/a") is false) return;
+
 var parts = await url.Parse("https://example.com:8080/docs/a?x=1#top");
 // parts.Origin, parts.Pathname, parts.Search, ...
 
@@ -32,6 +34,7 @@ var absolute = await url.Resolve("../b", "https://example.com/docs/a");
         <div class="controls">
             <input @bind="_url" placeholder="URL" style="min-width:24rem" />
             <button @onclick="ParseUrl">Parse</button>
+            <button class="secondary" @onclick="CheckSupportAndParsing">IsSupported / CanParse</button>
             <button class="secondary" @onclick="ResolveSamples">Resolve a few references</button>
         </div>
         @if (_parts is not null)
@@ -52,6 +55,9 @@ var absolute = await url.Resolve("../b", "https://example.com/docs/a");
 var parameters = await url.ParseQuery("?tag=a&tag=b&page=2");
 var values = await url.GetQueryValues("?tag=a&tag=b", "tag");   // ["a", "b"]
 
+var query = await url.BuildQuery([new("q", "a b&c"), new("tag", "x")]);
+var replaced = await url.SetQuery(current, [new("page", "1")]);
+
 var next = await url.AppendQuery(current, [new("page", "3")]);
 var clean = await url.RemoveQuery(current, "utm_source", "utm_medium");
 var key = await url.SortQuery(current);
@@ -59,6 +65,7 @@ var key = await url.SortQuery(current);
         <div class="controls">
             <input @bind="_queryUrl" placeholder="URL with a query" style="min-width:24rem" />
             <button @onclick="ShowQuery">Parse its query</button>
+            <button class="secondary" @onclick="BuildAndSetQuery">Build and set a query</button>
             <button class="secondary" @onclick="EditQuery">Append, remove, sort</button>
         </div>
         <DemoConsole @ref="queryOutput" Title="query output" />
@@ -162,6 +169,30 @@ var id = match?.Groups["id"];   // "42"
         }
     }
 
+    private async Task CheckSupportAndParsing()
+    {
+        try
+        {
+            await parseOutput.Info("IsSupported →", (await url.IsSupported()).ToString());
+
+            // The second one is what CanParse is for: it is a question, where Parse would be an
+            // exception in the browser and a null here.
+            foreach (var candidate in new[] { _url, "not a url", "//cdn.example.net/x" })
+            {
+                var can = await url.CanParse(candidate);
+                await parseOutput.Info($"CanParse(\"{candidate}\") →", can.ToString());
+            }
+
+            await parseOutput.Success("CanParse(\"//cdn.example.net/x\", base) →",
+                                      (await url.CanParse("//cdn.example.net/x", "https://example.com")).ToString());
+            await parseOutput.Log("A scheme-relative reference only parses once it has a base to take a scheme from.");
+        }
+        catch (Exception ex)
+        {
+            await parseOutput.Error("CanParse failed →", ex.Message);
+        }
+    }
+
     private async Task ResolveSamples()
     {
         try
@@ -199,6 +230,31 @@ var id = match?.Groups["id"];   // "42"
         catch (Exception ex)
         {
             await queryOutput.Error("ParseQuery failed →", ex.Message);
+        }
+    }
+
+    private async Task BuildAndSetQuery()
+    {
+        try
+        {
+            // Values that need encoding, so the difference between this and string concatenation
+            // is visible rather than theoretical.
+            UrlQueryParameter[] parameters =
+            [
+                new("q", "a b & c"),
+                new("path", "/docs/guide?x=1"),
+                new("tag", "café"),
+            ];
+
+            await queryOutput.Info("BuildQuery →", await url.BuildQuery(parameters));
+
+            var replaced = await url.SetQuery(_queryUrl, parameters);
+            await queryOutput.Success("SetQuery →", replaced ?? "(null)");
+            await queryOutput.Log("SetQuery replaces the whole query - the parameters that were there are gone.");
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("BuildQuery failed →", ex.Message);
         }
     }
 
