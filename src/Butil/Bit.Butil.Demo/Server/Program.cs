@@ -172,7 +172,7 @@ app.MapGet("/sitemap.xml", (HttpContext context) =>
 });
 
 // https://llmstxt.org - an H1, a blockquote summary, then H2-delimited lists of links. The point
-// is to hand an assistant the map of the site without making it scrape 79 pages of chrome to
+// is to hand an assistant the map of the site without making it scrape 97 pages of chrome to
 // rebuild one.
 app.MapGet("/llms.txt", (HttpContext context) =>
 {

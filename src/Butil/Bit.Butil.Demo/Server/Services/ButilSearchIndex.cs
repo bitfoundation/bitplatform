@@ -8,7 +8,7 @@ namespace Bit.Butil.Demo.Server.Services;
 /// One searchable index over everything this MCP server knows: the reference guide, the docs
 /// pages, every public type and member, the browser-support matrix and the demo's source files.
 /// <para>
-/// Butil wraps around seventy browser APIs, and the name a caller reaches for is rarely the name the
+/// Butil wraps around ninety browser APIs, and the name a caller reaches for is rarely the name the
 /// platform chose - "copy to clipboard" is <c>Clipboard.WriteText</c>, "am I online" is
 /// <c>NetworkInformation</c>, "keep the screen on" is <c>WakeLock</c>. Guessing which of the
 /// corpora holds the answer, and what it is called there, is the actual work; this does it once.

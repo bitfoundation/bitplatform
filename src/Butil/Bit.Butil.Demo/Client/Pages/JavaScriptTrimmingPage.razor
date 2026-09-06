@@ -6,7 +6,7 @@
 
 <PageHeader Category="Overview"
             Title="JavaScript trimming"
-            Lead="Butil's bridge script carries 65 JavaScript modules - every browser API on this site - and almost no app calls all of them. A published app can rebuild that bundle from only the modules it can still reach - tree-shaking the JavaScript, the same way the IL trimming the C# side already gets shakes out the wrappers you never inject. This page is the whole feature: the one switch that turns it on, the three signals it works from, where the properties go, and what it cannot see." />
+            Lead="Butil's bridge script carries 97 JavaScript modules - every browser API on this site - and almost no app calls all of them. A published app can rebuild that bundle from only the modules it can still reach - tree-shaking the JavaScript, the same way the IL trimming the C# side already gets shakes out the wrappers you never inject. This page is the whole feature: the one switch that turns it on, the three signals it works from, where the properties go, and what it cannot see." />
 
 <Callout Type="success" Title="One property, and the rest is defaults">
     <code>&lt;BitButilTrimScripts&gt;true&lt;/BitButilTrimScripts&gt;</code> is all an app writes, and a
@@ -37,7 +37,7 @@
 
     <DemoSection Title="What this app actually downloaded"
                  Api="Fetch"
-                 Description="Every chunk in the bundle opens with a guard naming the module it registers, so the bundle is self-describing: fetch it, count the guards, and you have the exact list the browser sees - which is the check to run against your own published app when you want to know whether the trimming did anything. Run it here and it reports on this documentation site, which has a page for every API in the library and does not turn the trimming on, so it is the full 65 and a baseline rather than a success story. The second button asks the app for one per-module file, which is the other half of the same question: a 200 means this app publishes the per-module files as well as the bundle, and a 404 means it is in plain bundle mode, where the modules/ folder is dropped from its static web assets entirely - a file that cannot be requested is one more thing that cannot 404 in production."
+                 Description="Every chunk in the bundle opens with a guard naming the module it registers, so the bundle is self-describing: fetch it, count the guards, and you have the exact list the browser sees - which is the check to run against your own published app when you want to know whether the trimming did anything. Run it here and it reports on this documentation site, which has a page for every API in the library and does not turn the trimming on, so it is the full 97 and a baseline rather than a success story. The second button asks the app for one per-module file, which is the other half of the same question: a 200 means this app publishes the per-module files as well as the bundle, and a 404 means it is in plain bundle mode, where the modules/ folder is dropped from its static web assets entirely - a file that cannot be requested is one more thing that cannot 404 in production."
                  Code=@("""
 var url = navManager.ToAbsoluteUri("_content/Bit.Butil/bit-butil.js");
 var response = await fetch.Send(new FetchRequest { Url = url.ToString(), Cache = "no-store" });
@@ -195,7 +195,7 @@ for (var at = script.IndexOf(anchor); at >= 0; at = script.IndexOf(anchor, at + 
 dotnet publish -c Release -v:n
 
 # Bit.Butil: scanned 2 assembly(s) referencing Bit.Butil and found 48 Bit.Butil type(s): ...
-# Bit.Butil: bit-butil.js trimmed to 44 of 65 modules (81,227 bytes): butil, utils, battery, ...
+# Bit.Butil: bit-butil.js trimmed to 44 of 97 modules (81,227 bytes): butil, utils, battery, ...
 """)
                  Language="shell" />
 

@@ -2,42 +2,56 @@
 @inject Bit.Butil.Window window
 @inject Bit.Butil.UserAgent userAgent
 @inject Bit.Butil.AbortController abortController
+@inject Bit.Butil.AudioOutput audioOutput
 @inject Bit.Butil.BackgroundSync backgroundSync
 @inject Bit.Butil.BarcodeDetector barcodeDetector
 @inject Bit.Butil.Battery battery
+@inject Bit.Butil.Bluetooth bluetooth
 @inject Bit.Butil.BroadcastChannel broadcastChannel
 @inject Bit.Butil.CacheStorage cacheStorage
 @inject Bit.Butil.Canvas canvas
 @inject Bit.Butil.Clipboard clipboard
 @inject Bit.Butil.Compression compression
+@inject Bit.Butil.ComputePressure computePressure
 @inject Bit.Butil.ContactPicker contactPicker
 @inject Bit.Butil.CookieStore cookieStore
+@inject Bit.Butil.Credentials credentials
 @inject Bit.Butil.Crypto crypto
 @inject Bit.Butil.Css css
 @inject Bit.Butil.DataTransfer dataTransfer
 @inject Bit.Butil.DeviceOrientation deviceOrientation
+@inject Bit.Butil.DevicePosture devicePosture
+@inject Bit.Butil.DigitalCredentials digitalCredentials
+@inject Bit.Butil.DigitalGoods digitalGoods
 @inject Bit.Butil.Dom dom
 @inject Bit.Butil.EventSource eventSource
 @inject Bit.Butil.EyeDropper eyeDropper
+@inject Bit.Butil.FedCm fedCm
 @inject Bit.Butil.FileSystem fileSystem
 @inject Bit.Butil.Gamepad gamepad
 @inject Bit.Butil.Geolocation geolocation
+@inject Bit.Butil.Hid hid
 @inject Bit.Butil.IdleDetector idleDetector
 @inject Bit.Butil.IndexedDb indexedDb
+@inject Bit.Butil.LocalFonts localFonts
 @inject Bit.Butil.MediaDevices mediaDevices
 @inject Bit.Butil.MediaRecorder mediaRecorder
 @inject Bit.Butil.MediaSession mediaSession
 @inject Bit.Butil.MessageChannel messageChannel
+@inject Bit.Butil.Midi midi
 @inject Bit.Butil.Navigation navigation
 @inject Bit.Butil.NetworkInformation networkInformation
 @inject Bit.Butil.Nfc nfc
 @inject Bit.Butil.Notification notification
+@inject Bit.Butil.PaymentRequest paymentRequest
 @inject Bit.Butil.Permissions permissions
 @inject Bit.Butil.PictureInPicture pictureInPicture
 @inject Bit.Butil.Push push
 @inject Bit.Butil.Reporting reporting
 @inject Bit.Butil.Scheduler scheduler
 @inject Bit.Butil.ScreenOrientation screenOrientation
+@inject Bit.Butil.Sensors sensors
+@inject Bit.Butil.Serial serial
 @inject Bit.Butil.ServiceWorker serviceWorker
 @inject Bit.Butil.ShadowDom shadowDom
 @inject Bit.Butil.SpeechRecognition speechRecognition
@@ -45,14 +59,17 @@
 @inject Bit.Butil.StorageAccess storageAccess
 @inject Bit.Butil.StorageManager storageManager
 @inject Bit.Butil.Streams streams
+@inject Bit.Butil.Usb usb
 @inject Bit.Butil.ViewTransition viewTransition
 @inject Bit.Butil.VisualViewport visualViewport
 @inject Bit.Butil.WakeLock wakeLock
 @inject Bit.Butil.WebAudio webAudio
 @inject Bit.Butil.WebAuthn webAuthn
 @inject Bit.Butil.WebLocks webLocks
+@inject Bit.Butil.WebOtp webOtp
 @inject Bit.Butil.WebRtc webRtc
 @inject Bit.Butil.WebSocket webSocket
+@inject Bit.Butil.WindowManagement windowManagement
 @inject Bit.Butil.WindowMessaging windowMessaging
 @inject Bit.Butil.Worker worker
 
@@ -309,7 +326,7 @@ _canPickContacts = await contactPicker.IsSupported();
     private record BrowserEnvironment(string Brands, string Platform, bool IsMobile, bool IsSecureContext);
 
     // Built once: the table asks whether a row is probeable on every render, and rebuilding a
-    // fifty-five-entry dictionary of closures per row per render is a lot of garbage for a lookup.
+    // seventy-two-entry dictionary of closures per row per render is a lot of garbage for a lookup.
     // Every class that ships an IsSupported() is here - the keys are DocsNav urls, so a typo shows
     // up as a row that never fills rather than as a compile error. What is left out is the baseline
     // platform that has been in every engine for a decade (window, document, history, storage and
@@ -317,42 +334,58 @@ _canPickContacts = await contactPicker.IsSupported();
     protected override void OnInitialized() => _detectors = new()
     {
         ["abort-controller"] = () => abortController.IsSupported(),
+        ["audio-output"] = () => audioOutput.IsSupported(),
         ["background-sync"] = () => backgroundSync.IsSupported(),
         ["barcode-detector"] = () => barcodeDetector.IsSupported(),
         ["battery"] = () => battery.IsSupported(),
+        ["bluetooth"] = () => bluetooth.IsSupported(),
         ["broadcast-channel"] = () => broadcastChannel.IsSupported(),
         ["cache-storage"] = () => cacheStorage.IsSupported(),
         ["canvas"] = () => canvas.IsSupported(),
         ["clipboard"] = () => clipboard.IsSupported(),
         ["compression"] = () => compression.IsSupported(),
+        ["compute-pressure"] = () => computePressure.IsSupported(),
         ["contact-picker"] = () => contactPicker.IsSupported(),
         ["cookie-store"] = () => cookieStore.IsSupported(),
+        ["credentials"] = () => credentials.IsSupported(),
         ["crypto"] = () => crypto.IsSupported(),
         ["css"] = () => css.IsSupported(),
         ["data-transfer"] = () => dataTransfer.IsSupported(),
         ["device-orientation"] = () => deviceOrientation.IsSupported(),
+        ["device-posture"] = () => devicePosture.IsSupported(),
+        ["digital-credentials"] = () => digitalCredentials.IsSupported(),
+        ["digital-goods"] = () => digitalGoods.IsSupported(),
         ["dom"] = () => dom.IsSupported(),
         ["event-source"] = () => eventSource.IsSupported(),
         ["eye-dropper"] = () => eyeDropper.IsSupported(),
+        ["fed-cm"] = () => fedCm.IsSupported(),
         ["file-system"] = () => fileSystem.IsSupported(),
         ["gamepad"] = () => gamepad.IsSupported(),
         ["geolocation"] = () => geolocation.IsSupported(),
+        ["hid"] = () => hid.IsSupported(),
         ["idle-detector"] = () => idleDetector.IsSupported(),
         ["indexed-db"] = () => indexedDb.IsSupported(),
+        ["local-fonts"] = () => localFonts.IsSupported(),
         ["media-devices"] = () => mediaDevices.IsSupported(),
         ["media-recorder"] = () => mediaRecorder.IsSupported(),
         ["media-session"] = () => mediaSession.IsSupported(),
         ["message-channel"] = () => messageChannel.IsSupported(),
+        ["midi"] = () => midi.IsSupported(),
         ["navigation"] = () => navigation.IsSupported(),
         ["network-information"] = () => networkInformation.IsSupported(),
         ["nfc"] = () => nfc.IsSupported(),
         ["notification"] = () => notification.IsSupported(),
+        ["payment-request"] = () => paymentRequest.IsSupported(),
         ["permissions"] = () => permissions.IsSupported(),
         ["picture-in-picture"] = () => pictureInPicture.IsSupported(),
         ["push"] = () => push.IsSupported(),
         ["reporting"] = () => reporting.IsSupported(),
         ["scheduler"] = () => scheduler.IsSupported(),
         ["screen-orientation"] = () => screenOrientation.IsSupported(),
+        // Sensors is one wrapper over several constructors, so the row is probed with the one every
+        // engine shipping the Generic Sensor API ships first - a false means none of them exist.
+        ["sensors"] = () => sensors.IsSupported(Bit.Butil.SensorType.Accelerometer),
+        ["serial"] = () => serial.IsSupported(),
         ["service-worker"] = () => serviceWorker.IsSupported(),
         ["shadow-dom"] = () => shadowDom.IsSupported(),
         ["speech-recognition"] = () => speechRecognition.IsSupported(),
@@ -360,6 +393,7 @@ _canPickContacts = await contactPicker.IsSupported();
         ["storage-access"] = () => storageAccess.IsSupported(),
         ["storage-manager"] = () => storageManager.IsSupported(),
         ["streams"] = () => streams.IsSupported(),
+        ["usb"] = () => usb.IsSupported(),
         ["user-agent"] = () => userAgent.IsSupported(),
         ["view-transition"] = () => viewTransition.IsSupported(),
         ["visual-viewport"] = () => visualViewport.IsSupported(),
@@ -367,8 +401,10 @@ _canPickContacts = await contactPicker.IsSupported();
         ["web-audio"] = () => webAudio.IsSupported(),
         ["web-authn"] = () => new ValueTask<bool>(webAuthn.IsSupported()),
         ["web-locks"] = () => webLocks.IsSupported(),
+        ["web-otp"] = () => webOtp.IsSupported(),
         ["web-rtc"] = () => webRtc.IsSupported(),
         ["web-socket"] = () => webSocket.IsSupported(),
+        ["window-management"] = () => windowManagement.IsSupported(),
         ["window-messaging"] = () => windowMessaging.IsSupported(),
         ["worker"] = () => worker.IsSupported(),
     };

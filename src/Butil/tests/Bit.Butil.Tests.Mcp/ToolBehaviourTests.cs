@@ -30,7 +30,7 @@ public class ToolBehaviourTests : McpTestBase
         using (Assert.Scope())
         {
             Assert.IsNotEmpty(types);
-            Assert.IsGreaterThan(100, types.Length, "Butil is roughly seventy services plus their option types and enums.");
+            Assert.IsGreaterThan(100, types.Length, "Butil is roughly ninety services plus their option types and enums.");
 
             // Reflected off the assembly, so these are here unless the library dropped them.
             foreach (var expected in new[] { "Clipboard", "LocalStorage", "Geolocation", "ButilSubscription", "ButilEvents" })
@@ -96,7 +96,7 @@ public class ToolBehaviourTests : McpTestBase
     public async Task No_type_reference_exceeds_the_documented_cap()
     {
         // The same promise the document tools keep, on the tool that answers with data. A handful of
-        // types are enormous - the extension classes are sixty members with their remarks - and one
+        // types are enormous - the extension classes are seventy-odd members with their remarks - and one
         // of them uncapped was 30,000 characters. The members are the answer, so the remarks are
         // what goes, and the reference says where they went.
         foreach (var typeName in new[] { "ElementReferenceExtensions", "ElementReferenceAriaExtensions", "Window", "ButilKeyCodes", "Clipboard" })

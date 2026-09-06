@@ -279,7 +279,8 @@ refuses come back as `false`/`null` rather than as exceptions where dismissal is
 ### Optional fast invoke
 
 On Blazor WebAssembly, the handful of APIs backed by genuinely synchronous JS functions -
-`LocalStorage`, `SessionStorage`, `Cookie`, `Console`, `Location` - can skip the async marshalling:
+`LocalStorage`, `SessionStorage`, `Cookie`, `Console`, `Location`, `History` - can skip the async
+marshalling:
 
 ```csharp
 BitButil.UseFastInvoke();

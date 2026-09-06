@@ -12,7 +12,7 @@ namespace Bit.Butil.Demo.Server.Services;
 /// The corpus behind the site's own search box: every documentation page broken into the pieces a
 /// reader actually looks for - the page, each of its sections, and each row of its API reference.
 /// <para>
-/// The site used to search nothing but the nav taxonomy - ninety-one titles and ninety-one
+/// The site used to search nothing but the nav taxonomy - ninety-seven titles and ninety-seven
 /// one-line summaries - which finds a page only for someone who already knows what it is called.
 /// The words a reader types are in the pages: "unsanitized" is a sentence on the Clipboard page,
 /// keeping the screen awake is a section on WakeLock, <c>ReadText</c> is a row of a table. This

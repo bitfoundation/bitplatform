@@ -13,7 +13,7 @@ namespace Bit.Butil.Demo.Server.Services;
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the
 /// shipped library - a new wrapper shows up the moment it is written, with the exact signature it
 /// actually has instead of one someone remembered to copy into a document. It matters more here
-/// than in a smaller library: Butil is roughly seventy services over a thousand members, and the
+/// than in a smaller library: Butil is roughly ninety services over two thousand members, and the
 /// members are precisely what an agent otherwise invents.
 /// </para>
 /// </summary>
@@ -110,7 +110,7 @@ public static class ButilApiCatalog
     /// <summary>
     /// The same reference, held to what one answer may cost a client's context window.
     /// <para>
-    /// A handful of types are enormous - the extension classes carry sixty members, each with the
+    /// A handful of types are enormous - the extension classes carry seventy-odd members, each with the
     /// XML remarks that explain its caveats - and a document tool truncates for exactly this reason.
     /// Cutting mid-member would be the wrong cut here: the members ARE the answer, and the last one
     /// is as likely to be the one asked about as the first. The remarks are what the size is, so
