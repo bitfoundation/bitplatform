@@ -1,6 +1,6 @@
 //+:cnd:noEmit
 using Microsoft.AspNetCore.OutputCaching;
-using Boilerplate.Shared.Features.Attachments;
+using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Shared.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
@@ -29,10 +29,19 @@ public partial class ResponseCacheService
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     //#endif
 
+    /// <summary>For responses tagged by their path, which is the default.</summary>
     public async Task PurgeCache(params string[] relativePaths)
     {
-        // Both the output cache entry and the CDN edge entry are stored under this tag (See AppResponseCachePolicy).
-        var tags = relativePaths.Select(AppResponseCachePolicy.CreateCacheTag).Distinct().ToArray();
+        await PurgeCacheTags([.. relativePaths.Select(AppResponseCachePolicy.CreateCacheTag)]);
+    }
+
+    /// <summary>
+    /// For responses tagged by an <see cref="AppResponseCacheAttribute.CacheTagTemplate"/>. Both the output cache
+    /// entry and the CDN edge entry are stored under the tag (See <see cref="AppResponseCachePolicy"/>).
+    /// </summary>
+    public async Task PurgeCacheTags(params string[] cacheTags)
+    {
+        var tags = cacheTags.Distinct().ToArray();
 
         foreach (var tag in tags)
         {
@@ -53,20 +62,37 @@ public partial class ResponseCacheService
         //#endif
     }
 
-    public async Task PurgeUserProfileImagesCache(Guid userId)
+    /// <summary>
+    /// The template <see cref="AttachmentController.GetAttachment"/> is tagged by: one tag per attachment rather than
+    /// per url, so every kind and every <c>?v=</c> of it is purged together and the tag survives an api version bump.
+    /// </summary>
+    public const string AttachmentCacheTagTemplate = "Attachment-{attachmentId}";
+
+    /// <summary>Every response of one attachment, product image and profile picture alike.</summary>
+    public async Task PurgeAttachmentCache(Guid attachmentId)
     {
-        await PurgeCache($"/api/v1/Attachment/GetAttachment/{userId}/{AttachmentKind.UserProfileImageSmall}",
-                         $"/api/v1/Attachment/GetAttachment/{userId}/{AttachmentKind.UserProfileImageOriginal}");
+        await PurgeCacheTags(AttachmentCacheTagTemplate.Replace("{attachmentId}", attachmentId.ToString()).ToLowerInvariant());
     }
 
     //#if (module == "Sales" || module == "Admin")
-    public async Task PurgeProductCache(int shortId)
+    /// <summary>
+    /// Everything whose body embeds this one product. <paramref name="catalogChanged"/> adds what describes the
+    /// catalogue as a set - <c>/products.xml</c> and the collection it is built from - and belongs to a create or a
+    /// delete. An edit needs neither: a product url is built from its ShortId alone, so <c>products.xml</c> is
+    /// unchanged. A tag drops the host, so one purge clears every tenant's copy.
+    /// </summary>
+    public async Task PurgeProductCache(int shortId, bool catalogChanged = false)
     {
-        await PurgeCache("/", $"/product/{shortId}", $"/api/v1/ProductView/Get/{shortId}");
-    }
-    public async Task PurgeHomePage()
-    {
-        await PurgeCache("/");
+        List<string> paths = ["/", $"/product/{shortId}", $"/api/v1/ProductView/Get/{shortId}"];
+
+        if (catalogChanged)
+        {
+            // products.xml is rebuilt by calling the collection back through the edge, so a stale collection would be
+            // written straight into the fresh sitemap.
+            paths.AddRange(["/api/v1/ProductView/Get", "/products.xml"]);
+        }
+
+        await PurgeCache([.. paths]);
     }
     //#endif
 

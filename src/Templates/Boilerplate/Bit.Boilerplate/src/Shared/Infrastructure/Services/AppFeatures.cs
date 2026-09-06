@@ -37,14 +37,14 @@ public class AppFeatures
     public class System
     {
         /// <summary>
-        /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
-        /// </summary>
-        public const string Logs_View = "2.0";
-
-        /// <summary>
         /// Manage background jobs using hangfire's dashboard.
         /// </summary>
         public const string Jobs_Manage = "2.1";
+
+        /// <summary>
+        /// Read-only inspection of a running deployment via /dev-mcp. Not 2.0: that value used to mean Logs_View.
+        /// </summary>
+        public const string DevMcp = "2.2";
     }
 
     public class AdminPanel
@@ -84,7 +84,7 @@ public class AppFeatures
     private static (string Name, string Value, Type Group)[]? tenantAdminFeatures;
     /// <summary>
     /// Tenant admins have access to all features except <see cref="Management.Tenants_Manage_Global"/> and the <see cref="System"/>
-    /// features (Logs/Jobs), because those aren't scoped to a tenant and are for global admins only.
+    /// features (Dev MCP / Jobs), because those aren't scoped to a tenant and are for global admins only.
     /// </summary>
     public static (string Name, string Value, Type Group)[] GetTenantAdminFeatures()
     {

@@ -19,6 +19,24 @@
 @inject Bit.Butil.Location butilLocation
 @inject Bit.Butil.Document butilDocument
 @inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.Bluetooth bluetooth
+@inject Bit.Butil.Usb usb
+@inject Bit.Butil.Serial serial
+@inject Bit.Butil.Hid hid
+@inject Bit.Butil.Midi midi
+@inject Bit.Butil.Sensors sensors
+@inject Bit.Butil.ComputePressure computePressure
+@inject Bit.Butil.DevicePosture devicePosture
+@inject Bit.Butil.WindowManagement windowManagement
+@inject Bit.Butil.LocalFonts localFonts
+@inject Bit.Butil.AudioOutput audioOutput
+@inject Bit.Butil.Credentials credentials
+@inject Bit.Butil.FedCm fedCm
+@inject Bit.Butil.WebOtp webOtp
+@inject Bit.Butil.DigitalCredentials digitalCredentials
+@inject Bit.Butil.PaymentRequest paymentRequest
+@inject Bit.Butil.PaymentHandler paymentHandler
+@inject Bit.Butil.DigitalGoods digitalGoods
 @inject IJSRuntime js
 
 @*
@@ -42,6 +60,16 @@
     <h3>Storage Manager + Network</h3>
     <button id="storage-estimate" @onclick="StorageEstimate">storage.estimate</button>
     <button id="network-status" @onclick="NetworkStatus">connection status</button>
+</section>
+
+<section>
+    @* Hardware buses only ever get as far as a support probe here: every device they reach needs a
+       chooser the user has to click through, which is exactly what this suite must not depend on.
+       What is testable is that the whole surface resolves and answers - see the demo pages for the
+       parts that need real hardware. *@
+    <h3>Hardware buses</h3>
+    <button id="hw-support" @onclick="HardwareSupport">support probe</button>
+    <button id="hw-reads" @onclick="HardwareReads">permissionless reads</button>
 </section>
 
 <section>
@@ -105,6 +133,17 @@
     <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
 </section>
 
+@* Identity and commerce, headless-safe: every call here either only reads a feature-detection
+   flag or asks for something the browser answers with "nothing" - no sheet, no chooser, no
+   prompt, and nothing that waits on a service worker or the network. *@
+<section>
+    <h3>Identity &amp; commerce</h3>
+    <button id="identity-support" @onclick="IdentitySupport">identity support checks</button>
+    <button id="identity-quiet" @onclick="IdentityQuiet">silent get + aborts</button>
+    <button id="commerce-support" @onclick="CommerceSupport">commerce support checks</button>
+    <button id="commerce-quiet" @onclick="CommerceQuiet">abort + store queries</button>
+</section>
+
 @code {
     private string _status = "ready";
     private ElementReference _target;
@@ -155,6 +194,40 @@
     {
         var status = await networkInformation.GetStatus();
         Set($"network:online:{status.Online}");
+    }
+
+    // ─── Hardware buses ─────────────────────────────────────────────────────────
+    // Whether a given bus is implemented depends on the browser the suite happens to run, so these
+    // assert that the calls resolve and answer, not what they answer.
+    private async Task HardwareSupport()
+    {
+        _ = await bluetooth.IsSupported();
+        _ = await usb.IsSupported();
+        _ = await serial.IsSupported();
+        _ = await hid.IsSupported();
+        _ = await midi.IsSupported();
+        _ = await sensors.IsSupported(SensorType.Accelerometer);
+        _ = await computePressure.IsSupported();
+        _ = await devicePosture.IsSupported();
+        _ = await windowManagement.IsSupported();
+        _ = await localFonts.IsSupported();
+        _ = await audioOutput.IsSupported();
+        Set("hw:support:ok");
+    }
+
+    // The reads that need no permission and no device, so they have one right answer everywhere:
+    // a non-foldable is "continuous", and the two listings come back empty rather than refusing.
+    // LocalFonts.Query() is deliberately not here - it prompts for the local-fonts permission, which
+    // a headless run has nothing to answer with. QueryPermission only reads state, so it stays.
+    private async Task HardwareReads()
+    {
+        var posture = await devicePosture.GetPosture();
+        _ = await windowManagement.IsExtended();
+        _ = await sensors.QueryPermission(SensorType.Accelerometer);
+        var sources = await computePressure.GetKnownSources();
+        var outputs = await audioOutput.GetDevices();
+        var ports = await midi.GetPorts();
+        Set($"hw:reads:{posture}:{sources is not null}/{outputs is not null}/{ports is null}");
     }
 
     // ─── Observers ───────────────────────────────────────────────────────────────
@@ -596,6 +669,51 @@
         var height = await screen.GetHeight();
         var depth = await screen.GetColorDepth();
         Set($"screen:metrics:{width > 0 && height > 0 && depth > 0}");
+    }
+
+    // ─── Identity & commerce ─────────────────────────────────────────────────────
+    // The support checks assert only that every identifier resolves and returns a bool: which
+    // engine implements what is the browser's business, and asserting an engine's answer here
+    // would make the suite fail on the next engine that ships one of these.
+    private async Task IdentitySupport()
+    {
+        _ = await credentials.IsSupported();
+        _ = await credentials.IsPasswordSupported();
+        _ = await credentials.IsFederatedSupported();
+        _ = await fedCm.IsSupported();
+        _ = await fedCm.IsLoginStatusSupported();
+        _ = await webOtp.IsSupported();
+        _ = await digitalCredentials.IsSupported();
+        _ = await digitalCredentials.IsProtocolSupported("openid4vp");
+        Set("identity:support:ok");
+    }
+
+    private async Task IdentityQuiet()
+    {
+        // Silent mediation is the one that shows no UI at all: with nothing stored it answers
+        // with no credential rather than opening a chooser.
+        var credential = await credentials.Get(new CredentialRequestOptions { Mediation = CredentialMediation.Silent });
+        var otpAborted = await webOtp.Abort();
+        var walletAborted = await digitalCredentials.Abort();
+        Set($"identity:quiet:{(credential is null ? "none" : credential.Type)}/{otpAborted}/{walletAborted}");
+    }
+
+    private async Task CommerceSupport()
+    {
+        _ = await paymentRequest.IsSupported();
+        _ = await paymentHandler.IsSupported();
+        _ = await digitalGoods.IsSupported();
+        Set("commerce:support:ok");
+    }
+
+    private async Task CommerceQuiet()
+    {
+        // No sheet has been opened and no app store is behind a test browser, so all three are
+        // the "nothing to do" answers rather than anything engine-specific.
+        var aborted = await paymentRequest.Abort();
+        var consumed = await digitalGoods.Consume("butil-e2e-token");
+        var purchases = await digitalGoods.ListPurchases();
+        Set($"commerce:quiet:{aborted}/{consumed}/{purchases.Length}");
     }
 
     private static async Task<bool> WaitFor(TaskCompletionSource<bool> tcs, int timeoutMs)

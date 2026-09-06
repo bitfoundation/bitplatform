@@ -448,13 +448,114 @@ public partial class ProductResponseCacheTests
             // ProductPage's HeadContent - the part that is lost when AppPageData's replaces it.
             Assert.Contains($"property=\"og:title\" content=\"{productName}\"", html,
                 "ProductPage's HeadContent did not reach the document: a second HeadContent on the page replaced it.");
-            Assert.Contains("type=\"application/ld+json\"", html, "The Product schema is emitted by ProductPage's HeadContent.");
+            // The renderer html-encodes attribute values, so the "+" arrives as &#x2B; - a browser reads it back as "+".
+            var hasProductSchema = html.Contains("type=\"application/ld+json\"") || html.Contains("type=\"application/ld&#x2B;json\"");
+            Assert.IsTrue(hasProductSchema, "The Product schema is emitted by ProductPage's head fragment.");
             Assert.Contains($"\"name\":\"{productName}\"", html, "The Product schema names the product.");
         }
         finally
         {
             await DeleteProduct(server, productId);
         }
+    }
+
+    /// <summary>
+    /// Creating or deleting a product must evict <c>products.xml</c> and the collection it is rebuilt from -
+    /// <c>UseSiteMap</c> re-reads that collection through the same caches, so purging the document alone would write
+    /// the stale catalogue straight back. <c>sitemap.xml</c> is not part of this: it lists pages, never products.
+    /// </summary>
+    [TestMethod]
+    public async Task OutputCache_Should_PurgeTheProductsSiteMap_WhenTheCatalogChanges()
+    {
+        await using var server = new AppTestServer();
+
+        var replays = new ReplayCountingOutputCacheStore.Counter();
+
+        await server.Build(
+            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics().CountOutputCacheReplays(replays),
+            configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
+            .Start(TestContext.CancellationToken);
+
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+
+        // Both fetches happen before the product exists, so the entry the assertions below have to defeat is in place:
+        // whatever the second one returned is what a cache would keep replaying.
+        var warmUp = await GetProductsSiteMap(visitorHttpClient, assertOutputCachingIsActive: true);
+        var cachedBeforeTheCreate = await GetProductsSiteMap(visitorHttpClient);
+        Assert.AreEqual(warmUp, cachedBeforeTheCreate,
+            "products.xml is not being replayed from the output cache, so this test cannot tell a purge from a natural miss.");
+
+        // Equal bodies prove nothing on their own: products.xml is deterministic, so two live reads match too. The
+        // store having actually answered one of them is what makes every assertion below non-vacuous.
+        Assert.IsGreaterThan(0, replays.Count,
+            "The output cache never replayed a stored entry, so a purge and a plain cache miss are indistinguishable here.");
+
+        var marker = Guid.NewGuid().ToString("N");
+        ProductDto? created = null;
+
+        try
+        {
+            await using var tenantAdminScope = server.WebApp.Services.CreateAsyncScope();
+            await SignIn(tenantAdminScope, TenantAdminEmail);
+            var products = tenantAdminScope.ServiceProvider.GetRequiredService<IProductController>();
+
+            // IgnoreQueryFilters because a bare DI scope has no HttpContext for TenantProvider to read the tenant from.
+            var dbContext = tenantAdminScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var categoryId = await dbContext.Products
+                .IgnoreQueryFilters()
+                .Where(p => p.TenantId == TenantConfiguration.FallbackTenantId)
+                .Select(p => p.CategoryId)
+                .FirstAsync(TestContext.CancellationToken);
+
+            // A real authenticated POST, so the purge under test is the one ProductController.Create performs itself.
+            created = await products.Create(new()
+            {
+                Name = $"sitemap-product-{marker}",
+                Price = 12_345M,
+                CategoryId = categoryId,
+                DescriptionText = $"description-{marker}"
+            }, TestContext.CancellationToken);
+
+            // Delimited by the closing angle bracket of <loc>, so a product whose ShortId merely starts with these
+            // digits cannot satisfy it.
+            var productUrl = $"{PageUrls.Product}/{created.ShortId}<";
+
+            Assert.DoesNotContain(productUrl, cachedBeforeTheCreate, "The cached document predates the product.");
+
+            var afterTheCreate = await GetProductsSiteMap(visitorHttpClient);
+            Assert.Contains(productUrl, afterTheCreate,
+                "products.xml still advertises the catalogue as it was before the product was created.");
+
+            // And the other direction: a delete has to take the url back out, or the sitemap keeps sending crawlers to a 404.
+            var toDelete = await products.Get(created.Id, TestContext.CancellationToken);
+            await products.Delete(created.Id, toDelete.Version, TestContext.CancellationToken);
+            var deletedProduct = created;
+            created = null;
+
+            var afterTheDelete = await GetProductsSiteMap(visitorHttpClient);
+            Assert.DoesNotContain(productUrl, afterTheDelete,
+                $"products.xml still lists the deleted product '{deletedProduct.ShortId}', whose page now answers 404.");
+        }
+        finally
+        {
+            if (created is not null)
+                await DeleteProduct(server, created.Id);
+        }
+    }
+
+    private async Task<string> GetProductsSiteMap(HttpClient httpClient, bool assertOutputCachingIsActive = false)
+    {
+        using var response = await httpClient.GetAsync("/products.xml", TestContext.CancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        if (assertOutputCachingIsActive)
+        {
+            Assert.IsTrue(response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse));
+            Assert.DoesNotContain("Output:-1", string.Concat(appCacheResponse!),
+                "Output caching should be active for products.xml, or there is no stale entry for the purge to clear.");
+        }
+
+        return await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
     }
 
     private async Task<(Guid Id, int ShortId)> CreateProduct(AppTestServer server, string name, string description)

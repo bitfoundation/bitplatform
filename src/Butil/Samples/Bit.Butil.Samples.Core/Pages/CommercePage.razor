@@ -1,0 +1,183 @@
+@page "/commerce"
+@inject Bit.Butil.PaymentRequest paymentRequest
+@inject Bit.Butil.PaymentHandler paymentHandler
+@inject Bit.Butil.DigitalGoods digitalGoods
+
+<PageTitle>Butil - Commerce Samples</PageTitle>
+
+<PageHeader Category="Commerce"
+            Title="Commerce"
+            Lead="The browser's payment sheet, the payment-handler registration behind it, and an app store's catalogue inside an installed PWA. The sheet needs a real payment method identifier; the store needs an app installed from that store."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Payment_Request_API" />
+
+<pre>
+@@inject Bit.Butil.PaymentRequest paymentRequest
+
+var response = await paymentRequest.Show(methods, details);
+if (response is not null) await paymentRequest.Complete(response.Id, PaymentCompleteResult.Success);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Support checks" Api="IsSupported"
+              Description="Whether this browser has the payment sheet, the payment handler and a store service.">
+        <button @onclick="CheckSupport">Check</button>
+    </DemoCard>
+
+    <DemoCard Title="Can the browser pay?" Api="CanMakePayment"
+              Description="Asks about the payment methods without showing anything. Browsers rate-limit it.">
+        <button @onclick="CanMakePayment">CanMakePayment</button>
+    </DemoCard>
+
+    <DemoCard Title="Show the sheet" Api="Show / Complete"
+              Description="Opens the sheet for a $19.99 order, then dismisses it as a success. Uses basic-card, which most engines have retired.">
+        <button @onclick="Show">Show</button>
+    </DemoCard>
+
+    <DemoCard Title="Payment handler" Api="PaymentHandler.SetUserHint"
+              Description="What other sites see beneath your app's name in their payment sheet. Needs an active service worker.">
+        <button @onclick="SetUserHint">SetUserHint</button>
+        <button class="secondary" @onclick="GetUserHint">GetUserHint</button>
+    </DemoCard>
+
+    <DemoCard Title="Store catalogue" Api="DigitalGoods.Connect / GetDetails"
+              Description="Connects to Google Play billing and looks up two item ids. False in a browser tab, which is the expected answer.">
+        <button @onclick="Connect">Connect</button>
+        <button class="secondary" @onclick="GetDetails">GetDetails</button>
+    </DemoCard>
+
+    <DemoCard Title="Purchases" Api="DigitalGoods.ListPurchases"
+              Description="What the store has on file for this user. Verify every token on the server before unlocking anything.">
+        <button @onclick="ListPurchases">ListPurchases</button>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="commerce output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private static PaymentMethod[] Methods => [new PaymentMethod { SupportedMethods = "basic-card" }];
+
+    private static PaymentDetails Details => new()
+    {
+        Total = new PaymentItem
+        {
+            Label = "Butil sample order",
+            Amount = new PaymentCurrencyAmount { Currency = "USD", Value = "19.99" }
+        }
+    };
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await output.Success("PaymentRequest →", await paymentRequest.IsSupported());
+            await output.Success("PaymentHandler →", await paymentHandler.IsSupported());
+            await output.Success("DigitalGoods →", await digitalGoods.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task CanMakePayment()
+    {
+        try
+        {
+            await output.Success("CanMakePayment →", await paymentRequest.CanMakePayment(Methods, Details));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("CanMakePayment failed →", ex.Message);
+        }
+    }
+
+    private async Task Show()
+    {
+        try
+        {
+            var response = await paymentRequest.Show(Methods, Details, new PaymentOptions { RequestPayerName = true });
+
+            if (response is null)
+            {
+                await output.Warn("Show →", "no payment (dismissed, or the method was refused).");
+                return;
+            }
+
+            await output.Success("Show →", response.MethodName);
+
+            // A real app posts response.Details to the server first and completes with the answer.
+            await paymentRequest.Complete(response.Id);
+            await output.Success("Complete →", "the sheet is dismissed.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Show failed →", ex.Message);
+        }
+    }
+
+    private async Task SetUserHint()
+    {
+        try
+        {
+            await paymentHandler.SetUserHint("user@example.com");
+            await output.Success("SetUserHint →", "user@example.com");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("SetUserHint failed →", ex.Message);
+        }
+    }
+
+    private async Task GetUserHint()
+    {
+        try
+        {
+            var hint = await paymentHandler.GetUserHint();
+            await output.Success("GetUserHint →", string.IsNullOrEmpty(hint) ? "(none)" : hint);
+        }
+        catch (Exception ex)
+        {
+            await output.Error("GetUserHint failed →", ex.Message);
+        }
+    }
+
+    private async Task Connect()
+    {
+        try
+        {
+            await output.Success("Connect →", await digitalGoods.Connect());
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Connect failed →", ex.Message);
+        }
+    }
+
+    private async Task GetDetails()
+    {
+        try
+        {
+            var items = await digitalGoods.GetDetails(["coins_100", "pro_monthly"]);
+            await output.Success("GetDetails →", items.Length == 0 ? "nothing (no store here)" : string.Join(", ", items.Select(i => i.Title)));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("GetDetails failed →", ex.Message);
+        }
+    }
+
+    private async Task ListPurchases()
+    {
+        try
+        {
+            var purchases = await digitalGoods.ListPurchases();
+            await output.Success("ListPurchases →", purchases.Length == 0 ? "none" : string.Join(", ", purchases.Select(p => p.ItemId)));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("ListPurchases failed →", ex.Message);
+        }
+    }
+}

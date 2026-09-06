@@ -272,12 +272,6 @@ public partial class AppClientCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
-        hubConnection.Remove(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
-        {
-            return DiagnosticLogger.Store.ToArray();
-        }));
-
         hubConnection.Remove(SharedAppMessages.NAVIGATE_TO);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.NAVIGATE_TO, async (string url) =>
         {

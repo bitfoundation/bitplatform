@@ -239,7 +239,7 @@
 
     <!--
     Drops the shape of the JavaScript the app does not use from its static web assets, so a bundle-mode app
-    does not carry 65 module files it never requests and a lazy-mode app does not carry a bundle it never
+    does not carry 97 module files it never requests and a lazy-mode app does not carry a bundle it never
     loads. Runs once the SDK has gathered the assets from every source (see the DependsOn properties above)
     and long before the build manifest is written, so the removed items reach neither the build output nor
     that manifest.
@@ -294,7 +294,7 @@
     correct, and is where the removals above did land - and then asks every referenced project for its own
     *publish* assets and merges those back in wholesale. Bit.Butil, asked that question, answers with the whole
     of its wwwroot: it has no idea which shape the consuming app chose. So a bundle-mode app that references
-    Bit.Butil as a project ends up publishing all 65 module files, and a lazy-scripts app publishes the bundle
+    Bit.Butil as a project ends up publishing all 97 module files, and a lazy-scripts app publishes the bundle
     it never loads, even though neither is in its build output or its build manifest.
 
     Written out twice rather than shared: a target runs at most once per project build, so one target hooked

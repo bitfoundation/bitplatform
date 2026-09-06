@@ -1,0 +1,520 @@
+@page "/hardware"
+@implements IAsyncDisposable
+@inject Bit.Butil.Bluetooth bluetooth
+@inject Bit.Butil.Usb usb
+@inject Bit.Butil.Serial serial
+@inject Bit.Butil.Hid hid
+@inject Bit.Butil.Midi midi
+@inject Bit.Butil.Sensors sensors
+@inject Bit.Butil.ComputePressure computePressure
+@inject Bit.Butil.DevicePosture devicePosture
+@inject Bit.Butil.WindowManagement windowManagement
+@inject Bit.Butil.LocalFonts localFonts
+@inject Bit.Butil.AudioOutput audioOutput
+
+<PageTitle>Butil - Hardware Bus Samples</PageTitle>
+
+<PageHeader Category="Browser & Device"
+            Title="Hardware Buses"
+            Lead="Bluetooth, USB, serial, HID and MIDI devices, the Generic Sensor API, compute pressure, device posture, multi-screen window management, installed fonts and audio output routing."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API" />
+
+<pre>
+@@inject Bit.Butil.Bluetooth bluetooth
+@@inject Bit.Butil.Serial serial
+@@inject Bit.Butil.Sensors sensors
+
+var device = await bluetooth.RequestDevice();      // needs a user gesture
+var port   = await serial.RequestPort();
+await using var _ = await sensors.Subscribe(SensorType.Accelerometer, r => { });
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Support" Api="IsSupported"
+              Description="Every API here is Chromium-only and most need HTTPS, so the first thing an app does is ask.">
+        <button @onclick="CheckSupport">Check all</button>
+    </DemoCard>
+
+    <DemoCard Title="Bluetooth" Api="RequestDevice / Connect / GetServices"
+              Description="Pick a BLE device and list the primary services the grant covers.">
+        <div class="controls">
+            <button @onclick="PickBluetooth">RequestDevice</button>
+            <button @onclick="BluetoothServices">Connect + GetServices</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="USB" Api="RequestDevice / Open / GetInfo"
+              Description="Pick a USB device the OS has not claimed, open it and read its descriptor tree.">
+        <div class="controls">
+            <button @onclick="PickUsb">RequestDevice</button>
+            <button @onclick="UsbInfo">Open + GetInfo</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Serial" Api="RequestPort / Open / SubscribeData / WriteText"
+              Description="Open a port at 9600 baud, echo what arrives, and send a line.">
+        <div class="controls">
+            <button @onclick="PickSerial">RequestPort</button>
+            <button @onclick="OpenSerial">Open + read</button>
+            <button @onclick="WriteSerial">WriteText</button>
+            <button class="danger" @onclick="CloseSerial">Close</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="HID" Api="RequestDevice / Open / SubscribeInputReports"
+              Description="Pick a HID device and watch its input reports.">
+        <div class="controls">
+            <button @onclick="PickHid">RequestDevice</button>
+            <button @onclick="ReadHid">Open + subscribe</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="MIDI" Api="RequestAccess / SubscribeMessages / SendNoteOn"
+              Description="Request access, listen to every input, and play middle C on the first output.">
+        <div class="controls">
+            <button @onclick="RequestMidi">RequestAccess</button>
+            <button @onclick="ListenMidi">SubscribeMessages</button>
+            <button @onclick="PlayNote">SendNoteOn</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Sensors" Api="IsSupported / Subscribe"
+              Description="Start the accelerometer at 5 Hz and log its readings.">
+        <div class="controls">
+            <button @onclick="StartAccelerometer">Subscribe</button>
+            <button class="danger" @onclick="StopAccelerometer">Stop</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Compute pressure & posture" Api="Observe / GetPosture"
+              Description="Watch CPU pressure, and read whether a foldable is flat or folded.">
+        <div class="controls">
+            <button @onclick="ObservePressure">Observe pressure</button>
+            <button class="danger" @onclick="StopPressure">Stop</button>
+            <button @onclick="ReadPosture">GetPosture</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Screens, fonts and audio output" Api="GetScreenDetails / Query / GetDevices"
+              Description="Enumerate the attached screens, the installed fonts, and the audio output devices.">
+        <div class="controls">
+            <button @onclick="ReadScreens">GetScreenDetails</button>
+            <button @onclick="ReadFonts">Query fonts</button>
+            <button @onclick="ReadAudioOutputs">GetDevices</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="hardware output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private BluetoothDevice? _bluetoothDevice;
+    private UsbDevice? _usbDevice;
+    private SerialPort? _serialPort;
+    private HidDevice? _hidDevice;
+
+    private ButilSubscription? _serialData;
+    private ButilSubscription? _hidReports;
+    private ButilSubscription? _midiMessages;
+    private ButilSubscription? _accelerometer;
+    private ButilSubscription? _pressure;
+
+    private string? _midiOutputId;
+
+    private async Task CheckSupport()
+    {
+        await output.Success("Bluetooth →", await bluetooth.IsSupported());
+        await output.Success("Usb →", await usb.IsSupported());
+        await output.Success("Serial →", await serial.IsSupported());
+        await output.Success("Hid →", await hid.IsSupported());
+        await output.Success("Midi →", await midi.IsSupported());
+        await output.Success("Sensors (accelerometer) →", await sensors.IsSupported(SensorType.Accelerometer));
+        await output.Success("ComputePressure →", await computePressure.IsSupported());
+        await output.Success("DevicePosture →", await devicePosture.IsSupported());
+        await output.Success("WindowManagement →", await windowManagement.IsSupported());
+        await output.Success("LocalFonts →", await localFonts.IsSupported());
+        await output.Success("AudioOutput →", await audioOutput.IsSupported());
+    }
+
+    private async Task PickBluetooth()
+    {
+        try
+        {
+            var picked = await bluetooth.RequestDevice(new BluetoothRequestOptions
+            {
+                AcceptAllDevices = true,
+                OptionalServices = ["battery_service", "device_information"]
+            });
+
+            if (picked is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await output.Success("Bluetooth.RequestDevice →", "(dismissed)");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it rather than
+            // leaving the device connected. Re-picking the same device hands back the handle already
+            // in play, and disposing that one would release the device this page is about to use.
+            if (_bluetoothDevice is not null && ReferenceEquals(_bluetoothDevice, picked) is false)
+            {
+                await _bluetoothDevice.DisposeAsync();
+            }
+
+            _bluetoothDevice = picked;
+            await output.Success("Bluetooth.RequestDevice →", _bluetoothDevice.Name ?? "(unnamed)");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Bluetooth.RequestDevice failed →", ex.Message);
+        }
+    }
+
+    private async Task BluetoothServices()
+    {
+        if (_bluetoothDevice is null)
+        {
+            await output.Warn("Pick a Bluetooth device first.");
+            return;
+        }
+
+        try
+        {
+            await _bluetoothDevice.Connect();
+            var services = await _bluetoothDevice.GetServices();
+            await output.Success("Bluetooth.GetServices →", $"{services.Length}: {string.Join(", ", services.Select(s => s.Uuid))}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Bluetooth.GetServices failed →", ex.Message);
+        }
+    }
+
+    private async Task PickUsb()
+    {
+        try
+        {
+            var picked = await usb.RequestDevice();
+
+            if (picked is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await output.Success("Usb.RequestDevice →", "(dismissed)");
+                return;
+            }
+
+            // See PickBluetooth: release the handle the replacement makes unreachable, unless the
+            // user re-picked the same device and got that very handle back.
+            if (_usbDevice is not null && ReferenceEquals(_usbDevice, picked) is false)
+            {
+                await _usbDevice.DisposeAsync();
+            }
+
+            _usbDevice = picked;
+            await output.Success("Usb.RequestDevice →", _usbDevice.Info.ProductName ?? "(unnamed)");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Usb.RequestDevice failed →", ex.Message);
+        }
+    }
+
+    private async Task UsbInfo()
+    {
+        if (_usbDevice is null)
+        {
+            await output.Warn("Pick a USB device first.");
+            return;
+        }
+
+        try
+        {
+            await _usbDevice.Open();
+            var info = await _usbDevice.GetInfo();
+            await output.Success("Usb.GetInfo →",
+                $"opened={info?.Opened}, configurations={info?.Configurations.Length}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Usb.GetInfo failed →", ex.Message);
+        }
+    }
+
+    private async Task PickSerial()
+    {
+        try
+        {
+            var picked = await serial.RequestPort();
+
+            if (picked is null)
+            {
+                // A dismissed chooser is not a reason to throw away the port already in hand.
+                await output.Success("Serial.RequestPort →", "(dismissed)");
+                return;
+            }
+
+            // See PickBluetooth, plus the read loop: the data subscription was taken through the
+            // port being replaced, so it goes first - exactly as PickHid drops its input reports.
+            if (ReferenceEquals(_serialPort, picked) is false)
+            {
+                if (_serialData is not null) await _serialData.DisposeAsync();
+                _serialData = null;
+                if (_serialPort is not null) await _serialPort.DisposeAsync();
+            }
+
+            _serialPort = picked;
+            await output.Success("Serial.RequestPort →", _serialPort.Id);
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Serial.RequestPort failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenSerial()
+    {
+        if (_serialPort is null)
+        {
+            await output.Warn("Pick a serial port first.");
+            return;
+        }
+
+        try
+        {
+            // A port carries one read loop, so the second click has to let go of the first
+            // subscription before taking another - otherwise the new reader finds the stream locked.
+            if (_serialData is not null)
+            {
+                await _serialData.DisposeAsync();
+                _serialData = null;
+            }
+
+            await _serialPort.Open(new SerialOptions { BaudRate = 9600 });
+            _serialData = await _serialPort.SubscribeData(
+                bytes => _ = InvokeAsync(() => output.Log("Serial read →", System.Text.Encoding.ASCII.GetString(bytes))),
+                message => _ = InvokeAsync(() => output.Error("Serial error →", message)));
+
+            await output.Log("Serial port open and reading.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Serial.Open failed →", ex.Message);
+        }
+    }
+
+    private async Task WriteSerial()
+    {
+        if (_serialPort is null)
+        {
+            await output.Warn("Pick a serial port first.");
+            return;
+        }
+
+        await output.Success("Serial.WriteText →", await _serialPort.WriteText("hello\r\n"));
+    }
+
+    private async Task CloseSerial()
+    {
+        if (_serialData is not null)
+        {
+            await _serialData.DisposeAsync();
+            _serialData = null;
+        }
+
+        if (_serialPort is not null) await _serialPort.Close();
+        await output.Log("Serial port closed.");
+    }
+
+    private async Task PickHid()
+    {
+        try
+        {
+            var devices = await hid.RequestDevice();
+            var picked = devices.FirstOrDefault();
+
+            if (picked is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await output.Success("Hid.RequestDevice →", "(dismissed)");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it - and the input
+            // reports subscribed through it - rather than leaving the device open. Re-picking the
+            // same device hands back the handle already in play, and disposing that one would
+            // release the device this page is about to use.
+            if (ReferenceEquals(_hidDevice, picked) is false)
+            {
+                if (_hidReports is not null) await _hidReports.DisposeAsync();
+                _hidReports = null;
+                if (_hidDevice is not null) await _hidDevice.DisposeAsync();
+            }
+
+            _hidDevice = picked;
+            await output.Success("Hid.RequestDevice →", _hidDevice.ProductName ?? "(unnamed)");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Hid.RequestDevice failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadHid()
+    {
+        if (_hidDevice is null)
+        {
+            await output.Warn("Pick a HID device first.");
+            return;
+        }
+
+        try
+        {
+            await _hidDevice.Open();
+
+            if (_hidReports is not null) await _hidReports.DisposeAsync();
+            _hidReports = await _hidDevice.SubscribeInputReports(report =>
+                _ = InvokeAsync(() => output.Log($"HID report {report.ReportId} →", Convert.ToHexString(report.Data))));
+
+            await output.Log("HID device open - use it to see its reports.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Hid.Open failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestMidi()
+    {
+        try
+        {
+            var access = await midi.RequestAccess();
+            _midiOutputId = access?.Outputs.FirstOrDefault()?.Id;
+            await output.Success("Midi.RequestAccess →",
+                access is null ? "(refused)" : $"inputs={access.Inputs.Length}, outputs={access.Outputs.Length}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Midi.RequestAccess failed →", ex.Message);
+        }
+    }
+
+    private async Task ListenMidi()
+    {
+        if (_midiMessages is not null) await _midiMessages.DisposeAsync();
+
+        try
+        {
+            _midiMessages = await midi.SubscribeMessages(message =>
+                _ = InvokeAsync(() => output.Log("MIDI →", Convert.ToHexString(message.Data))));
+
+            await output.Log("Listening to every MIDI input.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Midi.SubscribeMessages failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayNote()
+    {
+        if (_midiOutputId is null)
+        {
+            await output.Warn("Request MIDI access first.");
+            return;
+        }
+
+        await output.Success("Midi.SendNoteOn →", await midi.SendNoteOn(_midiOutputId, note: 60));
+    }
+
+    private async Task StartAccelerometer()
+    {
+        await StopAccelerometer();
+
+        try
+        {
+            _accelerometer = await sensors.Subscribe(SensorType.Accelerometer,
+                reading => _ = InvokeAsync(() => output.Log("Accelerometer →", $"{reading.X:F2}, {reading.Y:F2}, {reading.Z:F2}")),
+                new SensorOptions { Frequency = 5 },
+                message => _ = InvokeAsync(() => output.Error("Sensor error →", message)));
+
+            await output.Log("Accelerometer started.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Sensors.Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task StopAccelerometer()
+    {
+        if (_accelerometer is null) return;
+        await _accelerometer.DisposeAsync();
+        _accelerometer = null;
+        await output.Log("Accelerometer stopped.");
+    }
+
+    private async Task ObservePressure()
+    {
+        await StopPressure();
+
+        try
+        {
+            _pressure = await computePressure.Observe(records => _ = InvokeAsync(() =>
+                output.Log("Pressure →", string.Join(", ", records.Select(r => $"{r.Source}={r.State}")))));
+
+            await output.Log("Observing CPU pressure.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("ComputePressure.Observe failed →", ex.Message);
+        }
+    }
+
+    private async Task StopPressure()
+    {
+        if (_pressure is null) return;
+        await _pressure.DisposeAsync();
+        _pressure = null;
+        await output.Log("Pressure observer disconnected.");
+    }
+
+    private async Task ReadPosture()
+    {
+        await output.Success("DevicePosture.GetPosture →", await devicePosture.GetPosture());
+    }
+
+    private async Task ReadScreens()
+    {
+        var details = await windowManagement.GetScreenDetails();
+        await output.Success("WindowManagement.GetScreenDetails →",
+            details is null ? "(no permission)" : $"{details.Screens.Length} screen(s), current {details.CurrentScreenIndex}");
+    }
+
+    private async Task ReadFonts()
+    {
+        var fonts = await localFonts.Query();
+        await output.Success("LocalFonts.Query →", $"{fonts.Length} face(s)");
+    }
+
+    private async Task ReadAudioOutputs()
+    {
+        var devices = await audioOutput.GetDevices();
+        await output.Success("AudioOutput.GetDevices →", $"{devices.Length} output device(s)");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_serialData is not null) await _serialData.DisposeAsync();
+        if (_hidReports is not null) await _hidReports.DisposeAsync();
+        if (_midiMessages is not null) await _midiMessages.DisposeAsync();
+        if (_accelerometer is not null) await _accelerometer.DisposeAsync();
+        if (_pressure is not null) await _pressure.DisposeAsync();
+
+        if (_bluetoothDevice is not null) await _bluetoothDevice.DisposeAsync();
+        if (_usbDevice is not null) await _usbDevice.DisposeAsync();
+        if (_serialPort is not null) await _serialPort.DisposeAsync();
+        if (_hidDevice is not null) await _hidDevice.DisposeAsync();
+    }
+}

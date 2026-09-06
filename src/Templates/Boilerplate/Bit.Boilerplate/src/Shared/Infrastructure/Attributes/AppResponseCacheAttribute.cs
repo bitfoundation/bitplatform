@@ -29,6 +29,14 @@ public class AppResponseCacheAttribute : Attribute
     public bool SkipOutputCache { get; set; }
 
     /// <summary>
+    /// The tag both caches store this response under, with <c>{routeValue}</c> placeholders filled from the request's
+    /// route values - <c>"Attachment-{attachmentId}"</c> on <c>[HttpGet("{attachmentId}/{kind}")]</c> tags every kind
+    /// and every query string of one attachment alike, so a single purge clears them all.
+    /// Unset means the tag is the request path, which is the right default: one url, one tag.
+    /// </summary>
+    public string? CacheTagTemplate { get; set; }
+
+    /// <summary>
     /// If the current request is authenticated, the pre-rendered HTML response might include the user's name,
     /// or the JSON content of API calls might be based on the user's roles or tenant.
     /// Caching such a response on a CDN's edge or in the output cache of ASP.NET Core

@@ -4,6 +4,7 @@ using FluentStorage.Storage;
 using System.Diagnostics.Metrics;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Shared.Features.Attachments;
+using Boilerplate.Server.Shared.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.Attachments;
 
@@ -24,17 +25,18 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
-    //#if (module == "Sales" || module == "Admin")
     [AutoInject] private ResponseCacheService responseCacheService = default!;
-    //#endif
 
     [AutoInject] private IConfiguration configuration = default!;
+
+    /// <summary>The largest upload every endpoint here accepts; the Dev MCP reports this value rather than a copy of it.</summary>
+    public const int MaxUploadSizeBytes = 11 * 1024 * 1024;
 
     // For open telemetry metrics
     private static readonly Histogram<double> updateResizeDurationHistogram = Meter.Current.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
 
     [HttpPost]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     public async Task<IActionResult> UploadUserProfilePicture(IFormFile? file, CancellationToken cancellationToken)
     {
         return await UploadAttachment(
@@ -46,7 +48,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     //#if (module == "Sales" || module == "Admin")
     [HttpPost("{productId}")]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
     [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
     //#if (multitenant == true)
@@ -77,7 +79,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// </para>
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     public async Task<IActionResult> UploadAiChatImage(IFormFile? file, CancellationToken cancellationToken)
     {
         var attachmentId = Guid.CreateSequentialGuid();
@@ -90,7 +92,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     [AllowAnonymous]
     [HttpGet("{attachmentId}/{kind}")]
-    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true, SkipOutputCache = true)]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true, SkipOutputCache = true, CacheTagTemplate = ResponseCacheService.AttachmentCacheTagTemplate)]
     public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken = default)
     {
         // If the backend is hosted behind a CDN (which is recommended for production), the GetAttachment method's returned stream will be cached on CDN edge servers.
@@ -215,6 +217,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             DbContext.Attachments.Remove(attachment);
             await DbContext.SaveChangesAsync(cancellationToken);
         }
+
+        // After the loop: every kind shares one tag, and by now no blob is left for a racing read to re-cache.
+        await responseCacheService.PurgeAttachmentCache(attachmentId);
     }
 
     private async Task<IActionResult> UploadAttachment(Guid attachmentId, AttachmentKind[] kinds, IFormFile? file, CancellationToken cancellationToken)
@@ -376,19 +381,32 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             await DbContext.SaveChangesAsync(cancellationToken);
         }
 
-        foreach (var (attachment, storedBytes) in preparedUploads)
+        var wroteAnyBlob = false;
+
+        try
         {
-            await blobStorage.SetBytes(attachment.Path, storedBytes, cancellationToken: cancellationToken);
+            foreach (var (attachment, storedBytes) in preparedUploads)
+            {
+                await blobStorage.SetBytes(attachment.Path, storedBytes, cancellationToken: cancellationToken);
+                wroteAnyBlob = true;
+            }
+        }
+        finally
+        {
+            // The replacement is stored under the very key the old bytes were (See GetFilePath), so nothing else
+            // invalidates the copies already on the edge and in browsers. In the finally because a second kind that
+            // fails still leaves the first one replaced, and the edge still holding what it replaced.
+            if (wroteAnyBlob)
+            {
+                await responseCacheService.PurgeAttachmentCache(attachmentId);
+            }
         }
 
         //#if (module == "Sales" || module == "Admin")
         if (kinds.Contains(AttachmentKind.ProductPrimaryImageMedium))
         {
-            // Written server-side, mirroring DeleteAttachment. Previously the upload path returned Ok(altText)
-            // and left the client to PUT HasPrimaryImage/PrimaryImageAltText back on a later Update. On an
-            // image-only replacement that changed no property, EF issued no UPDATE, Product.Version never
-            // moved, and the ?v={Version} cache-buster on the attachment URL stayed byte-identical - so
-            // anyone holding the old copy kept it for the full 7-day max-age.
+            // Written server-side: an image-only replacement changes no property, so without this EF issues no
+            // UPDATE, Product.Version never moves, and every document keeps naming the same ?v= url.
             var product = await DbContext.Products.FindAsync([attachmentId], cancellationToken);
             if (product is not null) // else means product is being added to the database.
             {

@@ -1,9 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
-//#if (signalR == true)
-using Boilerplate.Shared.Features.Diagnostic;
-//#endif
-
 namespace Boilerplate.Client.Core.Components.Pages.Management;
 
 public partial class UsersPage
@@ -30,9 +25,6 @@ public partial class UsersPage
     [AutoInject] HttpClient httpClient = default!;
     [AutoInject] FileSaveService fileSaveService = default!;
     [AutoInject] IUserManagementController userManagementController = default!;
-    //#if (signalR == true)
-    [AutoInject] HubConnection hubConnection = default!;
-    //#endif
 
     protected override async Task OnInitAsync()
     {
@@ -223,19 +215,6 @@ public partial class UsersPage
             filteredUserSessions = [.. allUserSessions.Where(us => string.Join('|', us.IP, us.Address, us.DeviceInfo, TimeZoneService.ToLocalTime(us.RenewedOnDateTimeOffset), us.Id).Contains(t, StringComparison.InvariantCultureIgnoreCase))];
         }
     }
-
-    //#if (signalR == true)
-    /// <summary>
-    /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
-    /// </summary>
-    private async Task ReadUserSessionLogs(Guid userSessionId)
-    {
-        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>(SharedAppMessages.GetUserSessionLogs, userSessionId, CurrentCancellationToken);
-
-        PubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, logs);
-    }
-    //#endif
-
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

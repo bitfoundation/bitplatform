@@ -8,6 +8,21 @@
 @inject Bit.Butil.Window window
 @inject Bit.Butil.History history
 @inject Bit.Butil.Location location
+@inject Bit.Butil.AbortController abortController
+@inject Bit.Butil.WebSocket webSocket
+@inject Bit.Butil.Worker worker
+@inject Bit.Butil.MessageChannel messageChannel
+@inject Bit.Butil.WindowMessaging windowMessaging
+@inject Bit.Butil.Streams streams
+@inject Bit.Butil.Scheduler scheduler
+@inject Bit.Butil.Canvas canvas
+@inject Bit.Butil.Dom dom
+@inject Bit.Butil.ShadowDom shadowDom
+@inject Bit.Butil.DataTransfer dataTransfer
+@inject Bit.Butil.Css css
+@inject Bit.Butil.WebRtc webRtc
+@inject NavigationManager navManager
+@implements IAsyncDisposable
 
 @*
     Deterministic end-to-end harness for Playwright. Every interactive element exposes
@@ -79,6 +94,151 @@
     <button id="window-base64" @onclick="WindowBase64">btoa/atob roundtrip</button>
     <button id="window-metrics" @onclick="WindowMetrics">inner size + secure ctx</button>
     <button id="window-matchmedia" @onclick="WindowMatchMedia">matchMedia</button>
+</section>
+
+<section>
+    <h3>AbortController</h3>
+    <button id="abort-roundtrip" @onclick="AbortRoundTrip">create + abort + reason</button>
+    <button id="abort-listener" @onclick="AbortListener">OnAbort listener</button>
+    <button id="abort-late-listener" @onclick="AbortLateListener">OnAbort after abort</button>
+    <button id="abort-shared" @onclick="AbortShared">one signal, two listeners</button>
+    <button id="abort-any" @onclick="AbortAny">Any composition</button>
+    <button id="abort-timeout" @onclick="AbortTimeout">Timeout</button>
+    <button id="abort-release" @onclick="AbortRelease">dispose does not abort</button>
+</section>
+
+<section>
+    @* Both worker scripts live in Bit.Butil.Samples.Web/wwwroot/workers - a worker runs a script
+       you supply, so the harness has to supply one. *@
+    <h3>Worker</h3>
+    <button id="worker-echo" @onclick="WorkerEcho">create + echo</button>
+    <button id="worker-binary" @onclick="WorkerBinary">transfer bytes</button>
+    <button id="worker-error" @onclick="WorkerError">throw, then still answer</button>
+    <button id="worker-port" @onclick="WorkerPort">hand over a port</button>
+    <button id="worker-shared" @onclick="WorkerShared">shared worker</button>
+    <button id="worker-terminate" @onclick="WorkerTerminate">terminate</button>
+</section>
+
+<section>
+    @* The frame document lives in Bit.Butil.Samples.Web/wwwroot/frames - cross-document messaging
+       needs a second document, so the harness has to have one. *@
+    <h3>WindowMessaging</h3>
+    <iframe @ref="_e2eFrame" id="wm-frame" src="/frames/e2e-frame.html" title="e2e frame" style="width:1px;height:1px;border:0"></iframe>
+    <button id="wm-frame-post" @onclick="MessagingFrame">post to the frame</button>
+    <button id="wm-frame-bytes" @onclick="MessagingFrameBytes">post bytes to the frame</button>
+    <button id="wm-frame-port" @onclick="MessagingFramePort">hand the frame a port</button>
+    <button id="wm-self" @onclick="MessagingSelf">post to Parent (this page)</button>
+    <button id="wm-origin-filter" @onclick="MessagingOriginFilter">origin filter drops it</button>
+    <button id="wm-port-owner" @onclick="MessagingPortOwner">one port, one owner</button>
+</section>
+
+<section>
+    <h3>Dom</h3>
+    @* Two containers this page renders once and never re-renders, so a Blazor diff cannot undo what
+       the interop puts in them between the click and the assertion. *@
+    <div id="dom-sample" data-role="sample"><span id="dom-span">found me</span><b>bold</b><i>italic</i></div>
+    <div @ref="_domHost" id="dom-host"></div>
+    <button id="dom-query" @onclick="DomQuery">query + queryAll</button>
+    <button id="dom-create" @onclick="DomCreate">create + append</button>
+    <button id="dom-traverse" @onclick="DomTraverse">traverse</button>
+    <button id="dom-bridge" @onclick="DomBridge">AsElementReference bridge</button>
+    <button id="dom-text" @onclick="DomText">SetText does not parse</button>
+</section>
+
+<section>
+    @* Both peers live in this page and hand each other their candidates directly, so the whole
+       handshake happens over loopback - no network, no camera, no signalling server. *@
+    <h3>WebRtc</h3>
+    <button id="rtc-connect" @onclick="RtcConnect">connect two peers + round trip</button>
+    <button id="rtc-stats" @onclick="RtcStats">stats</button>
+    <button id="rtc-close" @onclick="RtcClose">close</button>
+</section>
+
+<section>
+    <h3>Css</h3>
+    <div @ref="_cssTarget" id="css-target" class="e2e-css-target" style="color: rgb(255, 0, 0); font-size: 20px">highlight me, and me</div>
+    <button id="css-computed" @onclick="CssComputed">computed style</button>
+    <button id="css-supports" @onclick="CssSupports">supports + escape</button>
+    <button id="css-sheet" @onclick="CssSheet">a stylesheet of our own</button>
+    <button id="css-highlight" @onclick="CssHighlight">custom highlight</button>
+</section>
+
+<section>
+    @* The drop is dispatched by the test through a synthetic DragEvent carrying a real DataTransfer:
+       a headless browser has no mouse to drag with, but the payload path is the same one. *@
+    <h3>DataTransfer</h3>
+    <div @ref="_dropTarget" id="dt-target" style="width:6rem;height:2rem;border:1px dashed #888"></div>
+    <div @ref="_dragSource" id="dt-source">drag me</div>
+    <button id="dt-listen" @onclick="DataTransferListen">listen for drops</button>
+    <button id="dt-read" @onclick="DataTransferRead">read the dropped file</button>
+    <button id="dt-source-config" @onclick="DataTransferSource">configure a drag source</button>
+</section>
+
+<section>
+    <h3>ShadowDom</h3>
+    <div @ref="_shadowHost" id="shadow-host"></div>
+    <div @ref="_closedHost" id="closed-host"></div>
+    <button id="shadow-attach" @onclick="ShadowAttach">attach + query inside</button>
+    <button id="shadow-isolated" @onclick="ShadowIsolated">the document cannot see in</button>
+    <button id="shadow-closed" @onclick="ShadowClosed">a closed root is unreachable</button>
+</section>
+
+<section>
+    @* The source is an inline SVG data URL with an explicit 200x100, so the intrinsic size the
+       capture maths works from is a known number. A data: URL does not taint the canvas. *@
+    <h3>Canvas</h3>
+    <img @ref="_canvasSource" id="canvas-source" width="200" height="100" alt="source"
+         src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%236366f1'/%3E%3C/svg%3E" />
+    <canvas @ref="_canvasTarget" id="canvas-target" width="10" height="10"></canvas>
+    <button id="canvas-size" @onclick="CanvasSize">set + get size</button>
+    <button id="canvas-export" @onclick="CanvasExport">draw + export PNG</button>
+    <button id="canvas-capture" @onclick="CanvasCapture">capture, aspect preserved</button>
+    <button id="canvas-dataurl" @onclick="CanvasDataUrl">toDataURL</button>
+    <button id="canvas-clear" @onclick="CanvasClear">clear</button>
+</section>
+
+<section>
+    <h3>Scheduler</h3>
+    <button id="sched-frame" @onclick="SchedulerFrame">one frame</button>
+    <button id="sched-loop" @onclick="SchedulerLoop">frame loop stops on dispose</button>
+    <button id="sched-idle" @onclick="SchedulerIdle">idle callback</button>
+    <button id="sched-idle-timeout" @onclick="SchedulerIdleTimeout">idle timeout on a busy page</button>
+    <button id="sched-task" @onclick="SchedulerTask">post a task</button>
+    <button id="sched-task-abort" @onclick="SchedulerTaskAbort">an aborted task never runs</button>
+    <button id="sched-yield" @onclick="SchedulerYield">yield + isInputPending</button>
+</section>
+
+<section>
+    @* /data/stream-sample.txt is exactly 1024 bytes of 'x' in the sample host's wwwroot, so every
+       assertion here is an exact number rather than a shape. *@
+    <h3>Streams</h3>
+    <button id="stream-read" @onclick="StreamRead">read a response</button>
+    <button id="stream-locked" @onclick="StreamLocked">reading locks it</button>
+    <button id="stream-tee" @onclick="StreamTee">tee</button>
+    <button id="stream-roundtrip" @onclick="StreamRoundTrip">gzip, then gunzip</button>
+    <button id="stream-write" @onclick="StreamWrite">write into a sink</button>
+    <button id="stream-missing" @onclick="StreamMissing">a 404 has no stream</button>
+</section>
+
+<section>
+    <h3>MessageChannel</h3>
+    <button id="channel-queue" @onclick="ChannelQueueThenStart">queue, then start</button>
+    <button id="channel-binary" @onclick="ChannelBinary">bytes across a port</button>
+    <button id="channel-transfer" @onclick="ChannelTransfer">send a port over a port</button>
+</section>
+
+<section>
+    @* The echo endpoint's URL arrives as ?ws=...- the tests host it themselves, on a port chosen
+       at run time, because this sample is a standalone WebAssembly host with no server side. *@
+    <h3>WebSocket</h3>
+    <button id="ws-open" @onclick="WebSocketOpen">open + negotiate</button>
+    <button id="ws-text" @onclick="WebSocketText">send text</button>
+    <button id="ws-binary" @onclick="WebSocketBinary">send bytes</button>
+    <button id="ws-state" @onclick="WebSocketState">state + url + buffered</button>
+    <button id="ws-server-close" @onclick="WebSocketServerClose">server closes (4001)</button>
+    <button id="ws-close" @onclick="WebSocketClose">close (4000)</button>
+    <button id="ws-replace" @onclick="WebSocketReplace">replace a closing socket</button>
+    <button id="ws-bad-url" @onclick="WebSocketBadUrl">malformed url</button>
 </section>
 
 <section>
@@ -332,6 +492,1230 @@
         var value = await history.GetScrollRestoration();
         await history.SetScrollRestoration(ScrollRestoration.Auto);
         Set($"history:scroll:{value}");
+    }
+
+    // ─── AbortController ────────────────────────────────────────────────────────
+    // Every callback in this file - aborts, frames, ports, workers, sockets - arrives through
+    // invokeMethodAsync, so asserting straight after the call that causes it would race the
+    // dispatch. They all wait on a completion source instead of a delay, which is what keeps the
+    // suite headless and free of timing flakes; the timeout is only there so a case that never
+    // fires fails as a reported miss rather than as a hung run.
+    private static async Task<T?> AwaitCallback<T>(TaskCompletionSource<T> source, int seconds = 10) where T : class
+    {
+        var finished = await Task.WhenAny(source.Task, Task.Delay(TimeSpan.FromSeconds(seconds)));
+        return finished == source.Task ? await source.Task : null;
+    }
+
+    private async Task AbortRoundTrip()
+    {
+        await using var handle = await abortController.Create();
+        if (handle is null) { Set("abort:unsupported"); return; }
+
+        var before = await handle.Signal.GetAborted();
+        await handle.Abort("first");
+        // A signal keeps the first reason it was given - the second abort must change nothing.
+        await handle.Abort("second");
+
+        Set($"abort:roundtrip:{before}/{await handle.Signal.GetAborted()}/{await handle.Signal.GetReason()}");
+    }
+
+    private async Task AbortListener()
+    {
+        await using var handle = await abortController.Create();
+        if (handle is null) { Set("abort:unsupported"); return; }
+
+        var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var subscription = await handle.Signal.OnAbort(reason => received.TrySetResult(reason));
+
+        await handle.Abort("listener-reason");
+        Set($"abort:listener:{await AwaitCallback(received, 5) ?? "(timed out)"}");
+    }
+
+    private async Task AbortLateListener()
+    {
+        await using var handle = await abortController.Create();
+        if (handle is null) { Set("abort:unsupported"); return; }
+
+        await handle.Abort("already-gone");
+
+        // Subscribing after the fact fires immediately rather than never: an abort that raced the
+        // subscription would otherwise be lost silently.
+        var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var subscription = await handle.Signal.OnAbort(reason => received.TrySetResult(reason));
+
+        Set($"abort:late:{await AwaitCallback(received, 5) ?? "(never fired)"}");
+    }
+
+    private async Task AbortShared()
+    {
+        await using var handle = await abortController.Create();
+        if (handle is null) { Set("abort:unsupported"); return; }
+
+        var first = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var second = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var one = await handle.Signal.OnAbort(reason => first.TrySetResult(reason));
+        await using var two = await handle.Signal.OnAbort(reason => second.TrySetResult(reason));
+
+        await handle.Abort("shared");
+        Set($"abort:shared:{await AwaitCallback(first, 5) ?? "(timed out)"}/{await AwaitCallback(second, 5) ?? "(timed out)"}");
+    }
+
+    private async Task AbortAny()
+    {
+        await using var left = await abortController.Create();
+        await using var right = await abortController.Create();
+        if (left is null || right is null) { Set("abort:unsupported"); return; }
+
+        var composite = await abortController.Any(left.Signal, right.Signal);
+        if (composite is null) { Set("abort:any:unsupported"); return; }
+
+        var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var subscription = await composite.OnAbort(reason => received.TrySetResult(reason));
+
+        // The composite carries the reason of whichever source fired, not one of its own.
+        await right.Abort("from-right");
+        var reason = await AwaitCallback(received, 5) ?? "(timed out)";
+
+        Set($"abort:any:{reason}/{await composite.GetAborted()}");
+        // The composite watches the other two, so it goes first.
+        await composite.DisposeAsync();
+    }
+
+    private async Task AbortTimeout()
+    {
+        var deadline = await abortController.Timeout(TimeSpan.FromMilliseconds(150));
+        if (deadline is null) { Set("abort:timeout:unsupported"); return; }
+
+        var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var subscription = await deadline.OnAbort(reason => received.TrySetResult(reason));
+
+        var fired = await AwaitCallback(received, 5) is not null;
+        Set($"abort:timeout:{fired}/{await deadline.GetAborted()}");
+        await deadline.DisposeAsync();
+    }
+
+    private async Task AbortRelease()
+    {
+        var handle = await abortController.Create();
+        if (handle is null) { Set("abort:unsupported"); return; }
+
+        var beforeRelease = await handle.Signal.GetAborted();
+        await handle.DisposeAsync();
+
+        // Releasing is not aborting, and a released signal is inert rather than broken: reads answer
+        // with defaults and a late Abort is a no-op instead of a throw.
+        await handle.Abort("after-release");
+        Set($"abort:release:{beforeRelease}/{await handle.Signal.GetAborted()}");
+    }
+
+    // ─── WebRtc ─────────────────────────────────────────────────────────────────
+    private PeerConnectionHandle? _peerA;
+    private PeerConnectionHandle? _peerB;
+    private RtcDataChannelHandle? _rtcChannel;
+
+    private async Task RtcConnect()
+    {
+        await RtcClose();
+
+        var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        // A remote channel is already open by the time the callback that hands it over runs, so its
+        // open event has happened before anything could have listened for it. Subscribing inside the
+        // callback still has to see it.
+        var remoteOpened = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        _peerA = await webRtc.CreatePeerConnection(
+            onIceCandidate: json => InvokeAsync(async () => { if (_peerB is not null) await _peerB.AddIceCandidate(json); }));
+
+        _peerB = await webRtc.CreatePeerConnection(
+            onIceCandidate: json => InvokeAsync(async () => { if (_peerA is not null) await _peerA.AddIceCandidate(json); }),
+            // B's channel arrives as an event rather than as a return value.
+            onRemoteChannel: channel => channel.Listen(
+                // Deserialize rather than reading Json raw: a data channel keeps the ButilMessage
+                // contract, so text sent as a plain string arrives as quoted JSON.
+                onMessage: m => received.TrySetResult(m.IsBinary ? $"[{string.Join(",", m.Data ?? [])}]" : m.Deserialize<string>() ?? string.Empty),
+                onOpen: () => remoteOpened.TrySetResult("remote-open")));
+
+        if (_peerA is null || _peerB is null) { Set("rtc:connect:unsupported"); return; }
+
+        // Everything the offer must describe has to exist before the offer is made.
+        _rtcChannel = await _peerA.CreateDataChannel("e2e");
+        var opened = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _rtcChannel?.Listen(onOpen: () => opened.TrySetResult("open"));
+
+        var offer = await _peerA.CreateOffer();
+        if (offer?.Sdp is null) { Set($"rtc:connect:offer-failed:{offer?.Error}"); return; }
+
+        await _peerA.SetLocalDescription(offer);
+        await _peerB.SetRemoteDescription(offer);
+
+        var answer = await _peerB.CreateAnswer();
+        if (answer?.Sdp is null) { Set($"rtc:connect:answer-failed:{answer?.Error}"); return; }
+
+        await _peerB.SetLocalDescription(answer);
+        await _peerA.SetRemoteDescription(answer);
+
+        if (await AwaitCallback(opened, 5) is null) { Set("rtc:connect:channel-never-opened"); return; }
+
+        await _rtcChannel!.SendText("ping");
+        var message = await AwaitCallback(received, 5);
+        var remote = await AwaitCallback(remoteOpened, 5);
+
+        Set($"rtc:connect:{await _peerA.GetConnectionState()}/{await _rtcChannel.GetState()}/{message ?? "(timed out)"}/{remote ?? "(remote open missed)"}");
+    }
+
+    private async Task RtcStats()
+    {
+        if (_peerA is null) { Set("rtc:stats:not-connected"); return; }
+
+        var stats = await _peerA.GetStats();
+        // A connected peer always reports at least a transport and a candidate pair.
+        Set($"rtc:stats:{stats.Length > 0}/{stats.Any(s => s.Type == "candidate-pair")}");
+    }
+
+    private async Task RtcClose()
+    {
+        if (_rtcChannel is not null) { await _rtcChannel.DisposeAsync(); _rtcChannel = null; }
+        if (_peerA is not null) { await _peerA.DisposeAsync(); _peerA = null; }
+        if (_peerB is not null) { await _peerB.DisposeAsync(); _peerB = null; }
+        Set("rtc:closed");
+    }
+
+    // ─── Css ────────────────────────────────────────────────────────────────────
+    private ElementReference _cssTarget;
+
+    private async Task CssComputed()
+    {
+        // The inline style is in px and rgb() already, so what comes back is exactly what went in -
+        // the point being that it comes back resolved rather than as whatever was written.
+        var values = await css.GetComputedStyle(_cssTarget, ["color", "font-size"]);
+        var one = await css.GetComputedStyleValue(_cssTarget, "font-size");
+
+        Set($"css:computed:{values?["color"]}/{values?["font-size"]}/{one}");
+    }
+
+    private async Task CssSupports()
+    {
+        var grid = await css.Supports("display", "grid");
+        var nonsense = await css.Supports("display", "not-a-real-value");
+        var condition = await css.SupportsCondition("(display: grid)");
+        // A dot in an id is legal HTML and illegal in a selector without escaping.
+        var escaped = await css.Escape("a.b");
+
+        Set($"css:supports:{grid}/{nonsense}/{condition}/{escaped}");
+    }
+
+    private async Task CssSheet()
+    {
+        await using var sheet = await css.CreateStyleSheet();
+        if (sheet is null) { Set("css:sheet:null"); return; }
+
+        var index = await sheet.InsertRule(".e2e-css-target { letter-spacing: 3px }");
+        var applied = await css.GetComputedStyleValue(_cssTarget, "letter-spacing");
+
+        // A rule the parser rejects is refused rather than silently dropped.
+        var rejected = await sheet.InsertRule("this is not css");
+        var rules = await sheet.GetRules();
+
+        await sheet.DeleteRule(index);
+        var afterDelete = await css.GetComputedStyleValue(_cssTarget, "letter-spacing");
+
+        Set($"css:sheet:{index}/{applied}/{rejected}/{rules.Length}/{afterDelete}");
+    }
+
+    private async Task CssHighlight()
+    {
+        if (await css.IsHighlightAvailable() is false) { Set("css:highlight:unsupported"); return; }
+
+        // "me" occurs twice in the target's text; nothing in the DOM changes to mark them.
+        var count = await css.HighlightText("e2e-highlight", _cssTarget, "me");
+        await css.ClearHighlight("e2e-highlight");
+
+        Set($"css:highlight:{count}");
+    }
+
+    // ─── DataTransfer ───────────────────────────────────────────────────────────
+    private ElementReference _dropTarget;
+    private ElementReference _dragSource;
+    private DropPayload? _lastDrop;
+
+    private async Task DataTransferListen()
+    {
+        await dataTransfer.OnDrop(_dropTarget, payload => InvokeAsync(() =>
+        {
+            _lastDrop = payload;
+            Set($"dt:drop:{payload.Files.Length}/{payload.Files.FirstOrDefault()?.Name}/{payload.Files.FirstOrDefault()?.Size}/{payload.Text}");
+        }));
+
+        Set("dt:listening");
+    }
+
+    private async Task DataTransferRead()
+    {
+        var file = _lastDrop?.Files.FirstOrDefault();
+        if (file is null) { Set("dt:read:nothing-dropped"); return; }
+
+        // Read after the event, not inside it: the file object outlives the drop that delivered it.
+        var bytes = await dataTransfer.ReadFile(file.Id);
+        var text = await dataTransfer.ReadFileText(file.Id);
+
+        await dataTransfer.ReleaseFile(file.Id);
+        var afterRelease = await dataTransfer.ReadFile(file.Id);
+
+        Set($"dt:read:{bytes?.Length}/{text}/{afterRelease is null}");
+    }
+
+    private async Task DataTransferSource()
+    {
+        var subscription = await dataTransfer.ConfigureDragSource(_dragSource,
+            new Dictionary<string, string> { ["text/plain"] = "dragged", ["application/x-butil"] = "custom" });
+
+        if (subscription is null) { Set("dt:source:not-configured"); return; }
+
+        // Configuring makes the element draggable; disposing has to undo that rather than leave it.
+        await using var handle = await dom.ById("dt-source");
+        var whileConfigured = await handle!.GetAttribute("draggable");
+
+        await subscription.DisposeAsync();
+        var afterDispose = await handle.GetAttribute("draggable");
+
+        Set($"dt:source:{whileConfigured}/{afterDispose is null}");
+    }
+
+    // ─── Dom & ShadowDom ────────────────────────────────────────────────────────
+    private ElementReference _domHost;
+    private ElementReference _shadowHost;
+    private ElementReference _closedHost;
+    private ShadowRootHandle? _shadowRoot;
+
+    private async Task DomQuery()
+    {
+        await using var span = await dom.ById("dom-span");
+        await using var first = await dom.Query("#dom-sample > *");
+        var all = await dom.QueryAll("#dom-sample > *");
+        // An invalid selector is an input error, not an exception: it answers with nothing.
+        var invalid = await dom.Query("#not a valid selector[[");
+
+        Set($"dom:query:{span?.TagName}/{await span!.GetText()}/{first?.TagName}/{all.Length}/{invalid is null}");
+
+        foreach (var handle in all) await handle.DisposeAsync();
+    }
+
+    private async Task DomCreate()
+    {
+        var box = await dom.Create("div");
+        if (box is null) { Set("dom:create:null"); return; }
+
+        await box.SetAttribute("data-made-by", "butil");
+        await box.SetText("built");
+
+        // Created but not placed: connected has to be false until something appends it.
+        var before = await box.IsConnected();
+        await box.AppendTo(_domHost);
+        var after = await box.IsConnected();
+
+        var attribute = await box.GetAttribute("data-made-by");
+        await box.Remove();
+        var afterRemove = await box.IsConnected();
+
+        Set($"dom:create:{before}/{after}/{attribute}/{afterRemove}");
+        await box.DisposeAsync();
+    }
+
+    private async Task DomTraverse()
+    {
+        await using var span = await dom.ById("dom-span");
+        if (span is null) { Set("dom:traverse:null"); return; }
+
+        await using var parent = await span.GetParent();
+        await using var next = await span.GetNextSibling();
+        await using var previous = await span.GetPreviousSibling();
+        await using var closest = await span.Closest("[data-role]");
+
+        Set($"dom:traverse:{parent?.TagName}/{next?.TagName}/{previous is null}/{closest?.TagName}/{await span.Matches("span")}");
+    }
+
+    private async Task DomBridge()
+    {
+        // The canary for the one Blazor internal Butil leans on: element references resolve through
+        // an attribute lookup, and this proves a handle can produce one that the element extensions
+        // then resolve. If Blazor ever changes that convention, this fails here rather than in an app.
+        var box = await dom.Create("div");
+        if (box is null) { Set("dom:bridge:null"); return; }
+
+        await box.AppendTo(_domHost);
+
+        var reference = await box.AsElementReference();
+        if (reference is null) { Set("dom:bridge:no-reference"); return; }
+
+        // The stamp is made once: a second call has to hand back the same id rather than pile
+        // another reference attribute onto the element.
+        var again = await box.AsElementReference();
+        if (again?.Id != reference.Value.Id) { Set("dom:bridge:unstable"); return; }
+
+        // Round trip through an ordinary ElementReference extension, read back through the handle.
+        await reference.Value.AddClass("bridged");
+        var classAttribute = await box.GetAttribute("class");
+
+        await box.Remove();
+        await box.DisposeAsync();
+
+        Set($"dom:bridge:{classAttribute}");
+    }
+
+    private async Task DomText()
+    {
+        var box = await dom.Create("div");
+        if (box is null) { Set("dom:text:null"); return; }
+
+        await box.AppendTo(_domHost);
+        // Markup in the text has to come back escaped: SetText inserts characters, not elements.
+        await box.SetText("<b>x</b>");
+        var html = await box.GetHtml();
+        var children = (await box.GetChildren()).Length;
+
+        await box.Remove();
+        await box.DisposeAsync();
+
+        Set($"dom:text:{html}/{children}");
+    }
+
+    private async Task ShadowAttach()
+    {
+        if (_shadowRoot is null)
+        {
+            _shadowRoot = await shadowDom.AttachShadow(_shadowHost);
+            if (_shadowRoot is null) { Set("shadow:attach:null"); return; }
+
+            await _shadowRoot.AddStyle(".card { color: rgb(46, 139, 87); }");
+            await _shadowRoot.SetHtml("<div class=\"card\">inside</div>");
+        }
+
+        await using var inside = await _shadowRoot.Query(".card");
+        await using var host = await _shadowRoot.GetHost();
+
+        Set($"shadow:attach:{await _shadowRoot.GetMode()}/{inside?.TagName}/{await inside!.GetText()}/{host?.TagName}");
+    }
+
+    private async Task ShadowIsolated()
+    {
+        if (_shadowRoot is null) { Set("shadow:isolated:not-attached"); return; }
+
+        // A selector from the document cannot reach into a shadow root at all - that is the
+        // isolation working, and the number that proves it is zero.
+        var fromDocument = await dom.QueryAll("#shadow-host .card");
+        var fromRoot = await _shadowRoot.QueryAll(".card");
+
+        Set($"shadow:isolated:{fromDocument.Length}/{fromRoot.Length}");
+
+        foreach (var handle in fromDocument) await handle.DisposeAsync();
+        foreach (var handle in fromRoot) await handle.DisposeAsync();
+    }
+
+    private async Task ShadowClosed()
+    {
+        var attached = await shadowDom.AttachShadow(_closedHost, open: false);
+        if (attached is null) { Set("shadow:closed:attach-failed"); return; }
+
+        // Closed is closed to this page too: asking the element for its root answers nothing.
+        var reachable = await shadowDom.GetShadowRoot(_closedHost);
+        // And a second attach on the same element is refused, open or closed.
+        var again = await shadowDom.AttachShadow(_closedHost);
+
+        Set($"shadow:closed:{reachable is null}/{again is null}");
+        await attached.DisposeAsync();
+    }
+
+    // ─── Canvas ─────────────────────────────────────────────────────────────────
+    private ElementReference _canvasSource;
+    private ElementReference _canvasTarget;
+
+    /// <summary>
+    /// A PNG's IHDR carries its dimensions at a fixed offset, so the exported picture can be
+    /// measured without decoding it - which is what turns "some bytes came back" into an assertion.
+    /// </summary>
+    private static string PngSize(byte[]? bytes)
+    {
+        if (bytes is null || bytes.Length < 24) return "not-a-png";
+
+        ReadOnlySpan<byte> signature = [137, 80, 78, 71, 13, 10, 26, 10];
+        if (bytes.AsSpan(0, 8).SequenceEqual(signature) is false) return "not-a-png";
+
+        var width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
+        var height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
+        return $"{width}x{height}";
+    }
+
+    /// <summary>
+    /// Retries until the source image has decoded. An image element reports an intrinsic size of 0
+    /// until then, and a capture from it answers null rather than waiting - so the wait is here.
+    /// </summary>
+    private static async Task<T?> UntilReady<T>(Func<Task<T?>> attempt, int seconds = 5) where T : class
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(seconds);
+        while (DateTime.UtcNow < deadline)
+        {
+            var result = await attempt();
+            if (result is not null) return result;
+            await Task.Delay(100);
+        }
+        return null;
+    }
+
+    private async Task CanvasSize()
+    {
+        await canvas.SetSize(_canvasTarget, 60, 40);
+        var size = await canvas.GetSize(_canvasTarget);
+        Set(size is null ? "canvas:size:null" : $"canvas:size:{size.Width}/{size.Height}");
+    }
+
+    private async Task CanvasExport()
+    {
+        await canvas.SetSize(_canvasTarget, 60, 40);
+
+        // Drawing answers false until the source has decoded, so retry rather than race it.
+        var drawn = await UntilReady<string>(async () =>
+            await canvas.DrawImage(_canvasTarget, _canvasSource) ? "ok" : null);
+
+        var bytes = await canvas.ToBytes(_canvasTarget);
+        Set($"canvas:export:{drawn is not null}/{PngSize(bytes)}");
+    }
+
+    private async Task CanvasCapture()
+    {
+        // The source is 200x100, so 50 wide has to come back 25 tall: one dimension given, the
+        // other from the aspect ratio.
+        var bytes = await UntilReady(async () => await canvas.Capture(_canvasSource, width: 50));
+        Set($"canvas:capture:{PngSize(bytes)}");
+    }
+
+    private async Task CanvasDataUrl()
+    {
+        await canvas.SetSize(_canvasTarget, 20, 20);
+        var url = await canvas.ToDataUrl(_canvasTarget);
+        Set($"canvas:dataurl:{url?.StartsWith("data:image/png;base64,") is true}");
+    }
+
+    private async Task CanvasClear()
+    {
+        var cleared = await canvas.Clear(_canvasTarget);
+        // Clearing an element that is not a canvas has to be reported, not thrown.
+        var onNonCanvas = await canvas.Clear(_elementBox);
+        Set($"canvas:clear:{cleared}/{onNonCanvas}");
+    }
+
+    // ─── Scheduler ──────────────────────────────────────────────────────────────
+    private async Task SchedulerFrame()
+    {
+        var fired = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await scheduler.RequestAnimationFrame(timestamp => fired.TrySetResult(timestamp > 0 ? "yes" : "zero"));
+
+        var result = await AwaitCallback(fired, 5);
+        Set($"sched:frame:{result ?? "(timed out)"}");
+    }
+
+    private async Task SchedulerLoop()
+    {
+        var frames = 0;
+        var enough = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var loop = await scheduler.OnAnimationFrame(_ =>
+        {
+            frames++;
+            if (frames >= 5) enough.TrySetResult("ok");
+        });
+
+        var reached = await AwaitCallback(enough, 5) is not null;
+        await loop.DisposeAsync();
+
+        // Disposing has to stop the loop, not merely detach the handler: count again after a pause
+        // and the number must not have moved.
+        var afterDispose = frames;
+        await Task.Delay(300);
+
+        Set($"sched:loop:{reached}/{frames == afterDispose}");
+    }
+
+    private async Task SchedulerIdle()
+    {
+        if (await scheduler.IsIdleCallbackSupported() is false) { Set("sched:idle:unsupported"); return; }
+
+        var fired = new TaskCompletionSource<IdleDeadline>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var subscription = await scheduler.RequestIdleCallback(deadline => fired.TrySetResult(deadline), TimeSpan.FromSeconds(2));
+        if (subscription is null) { Set("sched:idle:null"); return; }
+
+        var deadline = await AwaitCallback(fired);
+        // An idle page reports slack rather than a timeout.
+        Set(deadline is null ? "sched:idle:(timed out)" : $"sched:idle:{deadline.DidTimeout}/{deadline.TimeRemaining > 0}");
+    }
+
+    private async Task SchedulerIdleTimeout()
+    {
+        if (await scheduler.IsIdleCallbackSupported() is false) { Set("sched:idle-timeout:unsupported"); return; }
+
+        var fired = new TaskCompletionSource<IdleDeadline>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var subscription = await scheduler.RequestIdleCallback(deadline => fired.TrySetResult(deadline), TimeSpan.FromMilliseconds(200));
+        if (subscription is null) { Set("sched:idle-timeout:null"); return; }
+
+        // Blocking on purpose: the page never goes idle, so the callback can only run because its
+        // timeout expired - which is what DidTimeout reports.
+        var until = DateTime.UtcNow.AddMilliseconds(700);
+        while (DateTime.UtcNow < until) { }
+
+        var deadline = await AwaitCallback(fired);
+        Set(deadline is null ? "sched:idle-timeout:(timed out)" : $"sched:idle-timeout:{deadline.DidTimeout}");
+    }
+
+    private async Task SchedulerTask()
+    {
+        var ran = false;
+        var error = await scheduler.PostTask(() => ran = true, SchedulerPriority.UserBlocking);
+        Set($"sched:task:{error is null}/{ran}");
+    }
+
+    private async Task SchedulerTaskAbort()
+    {
+        await using var handle = await abortController.Create();
+        if (handle is null) { Set("sched:task-abort:unsupported"); return; }
+
+        // Aborted before it is posted, so it can never have run - whichever of the real scheduler
+        // and the timeout fallback is in play.
+        await handle.Abort("not today");
+
+        var ran = false;
+        var error = await scheduler.PostTask(() => ran = true, SchedulerPriority.Background,
+            TimeSpan.FromMilliseconds(50), handle.Signal);
+
+        Set($"sched:task-abort:{error is not null}/{ran}");
+    }
+
+    private async Task SchedulerYield()
+    {
+        // Nothing to assert about the timing - only that it returns, and that isInputPending
+        // answers with a bool rather than throwing where the API is missing.
+        await scheduler.Yield();
+        var pending = await scheduler.IsInputPending();
+        Set($"sched:yield:ok/{pending is true or false}");
+    }
+
+    // ─── Streams ────────────────────────────────────────────────────────────────
+    private const string SampleUrl = "/data/stream-sample.txt";   // exactly 1024 bytes of 'x'
+
+    /// <summary>
+    /// Waits for a writable sink's close callback, bounded. Reported as "did it arrive" rather than
+    /// as the reason it carried: a clean close reports no reason at all, so a null result cannot
+    /// double as the timeout signal here the way it does for the callbacks above.
+    /// </summary>
+    private static async Task<bool> AwaitSinkClose(TaskCompletionSource<string?> source, int seconds = 10)
+        => await Task.WhenAny(source.Task, Task.Delay(TimeSpan.FromSeconds(seconds))) == source.Task;
+
+    private static async Task<long> DrainStream(ReadableStreamHandle stream)
+    {
+        var total = 0L;
+        while (true)
+        {
+            var chunk = await stream.Read();
+            if (chunk.Done) return total;
+            total += chunk.Data!.Length;
+        }
+    }
+
+    private async Task StreamRead()
+    {
+        var response = await streams.FromResponse(new FetchRequest { Url = SampleUrl });
+        if (response.Stream is null) { Set($"stream:read:no-stream:{response.Error}"); return; }
+
+        var read = await DrainStream(response.Stream);
+        // The decoded byte count is the assertable number. TotalBytes is the Content-Length header,
+        // which describes the transfer rather than the stream - a server that compresses the
+        // response reports the encoded size, and one that chunks it reports nothing at all.
+        Set($"stream:read:{response.Status}/{read}/{response.TotalBytes is not null}");
+    }
+
+    private async Task StreamLocked()
+    {
+        var response = await streams.FromResponse(new FetchRequest { Url = SampleUrl });
+        if (response.Stream is null) { Set("stream:locked:no-stream"); return; }
+
+        var before = await response.Stream.GetLocked();
+        await response.Stream.Read();
+        var after = await response.Stream.GetLocked();
+
+        // Locked means it can no longer be split: Tee has to refuse rather than half-work.
+        var teed = await response.Stream.Tee();
+        Set($"stream:locked:{before}/{after}/{teed is null}");
+
+        await response.Stream.Cancel();
+    }
+
+    private async Task StreamTee()
+    {
+        var response = await streams.FromResponse(new FetchRequest { Url = SampleUrl });
+        if (response.Stream is null) { Set("stream:tee:no-stream"); return; }
+
+        var split = await response.Stream.Tee();
+        if (split is null) { Set("stream:tee:null"); return; }
+
+        // Both branches together: draining one to the end first would make the browser buffer
+        // everything for the other.
+        var counts = await Task.WhenAll(DrainStream(split.Value.First), DrainStream(split.Value.Second));
+        Set($"stream:tee:{counts[0]}/{counts[1]}");
+    }
+
+    private async Task StreamRoundTrip()
+    {
+        if (await streams.IsTransformSupported() is false) { Set("stream:roundtrip:unsupported"); return; }
+
+        var response = await streams.FromResponse(new FetchRequest { Url = SampleUrl });
+        if (response.Stream is null) { Set("stream:roundtrip:no-stream"); return; }
+
+        await using var gzip = await streams.CreateCompression();
+        await using var gunzip = await streams.CreateDecompression();
+        if (gzip is null || gunzip is null) { Set("stream:roundtrip:unsupported"); return; }
+
+        var received = 0L;
+        var finished = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var sink = await streams.CreateWritable(bytes => received += bytes.Length, reason => finished.TrySetResult(reason));
+        if (sink is null) { Set("stream:roundtrip:no-sink"); return; }
+
+        // Through both codecs and out into C#: what arrives has to be the original 1024 bytes.
+        var compressed = await response.Stream.PipeThrough(gzip);
+        var restored = compressed is null ? null : await compressed.PipeThrough(gunzip);
+        if (restored is null) { Set("stream:roundtrip:pipe-failed"); return; }
+
+        var error = await restored.PipeTo(sink);
+        if (error is not null) { Set($"stream:roundtrip:error:{error}"); return; }
+
+        if (await AwaitSinkClose(finished) is false) { Set("stream:roundtrip:(timed out)"); return; }
+
+        Set($"stream:roundtrip:{received}");
+    }
+
+    private async Task StreamWrite()
+    {
+        var received = 0L;
+        var chunks = 0;
+        var finished = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using var sink = await streams.CreateWritable(
+            bytes => { received += bytes.Length; chunks++; },
+            reason => finished.TrySetResult(reason));
+
+        if (sink is null) { Set("stream:write:unsupported"); return; }
+
+        for (var i = 1; i <= 3; i++) await sink.Write(new byte[i * 10]);
+        await sink.Close();
+
+        if (await AwaitSinkClose(finished) is false) { Set("stream:write:(timed out)"); return; }
+
+        var reason = await finished.Task;
+        // A clean close reports no reason - that is what tells it apart from an abort.
+        Set($"stream:write:{chunks}/{received}/{reason is null}");
+    }
+
+    private async Task StreamMissing()
+    {
+        // A 404 still has a body, so this proves the status reaches C# rather than being swallowed.
+        var response = await streams.FromResponse(new FetchRequest { Url = "/data/does-not-exist.bin" });
+        Set($"stream:missing:{response.Status}");
+        if (response.Stream is not null) await response.Stream.Cancel();
+    }
+
+    // ─── WindowMessaging ────────────────────────────────────────────────────────
+    private ElementReference _e2eFrame;
+
+    private string Origin => new Uri(navManager.BaseUri).GetLeftPart(UriPartial.Authority);
+
+    /// <summary>
+    /// Listens, sends, waits for the first message that satisfies <paramref name="wanted"/>, and
+    /// detaches. Every case here needs exactly one round trip, and a listener left attached would
+    /// see the next case's traffic.
+    /// </summary>
+    /// <param name="resend">
+    /// True to send again every 150ms until an answer arrives. A message posted to an iframe whose
+    /// document has not loaded goes nowhere rather than being queued, so a frame that is still
+    /// loading is a race unless the send is repeated - it is not something the page can wait on.
+    /// </param>
+    private async Task<WindowMessage?> RoundTrip(Func<Task> send, Func<WindowMessage, bool> wanted,
+                                                 string[]? origins = null, int seconds = 10, bool resend = false)
+    {
+        var received = new TaskCompletionSource<WindowMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var subscription = await windowMessaging.Listen(m => { if (wanted(m)) received.TrySetResult(m); }, origins ?? [Origin]);
+
+        try
+        {
+            await send();
+            if (resend is false) return await AwaitCallback(received, seconds);
+
+            var deadline = DateTime.UtcNow.AddSeconds(seconds);
+            while (DateTime.UtcNow < deadline)
+            {
+                if (received.Task.IsCompleted) return await received.Task;
+                await Task.Delay(150);
+                await send();
+            }
+
+            return await AwaitCallback(received, 1);
+        }
+        finally
+        {
+            await subscription.DisposeAsync();
+        }
+    }
+
+    private async Task MessagingFrame()
+    {
+        var reply = await RoundTrip(async () => await windowMessaging.Frame(_e2eFrame).PostMessage(new { text = "ping" }, Origin),
+            m => m.Json?.Contains("\"echo\"") is true, resend: true);
+
+        Set(reply is null ? "wm:frame:(timed out)" : $"wm:frame:{reply.Origin == Origin}/{reply.Json}");
+    }
+
+    private async Task MessagingFrameBytes()
+    {
+        var reply = await RoundTrip(async () => await windowMessaging.Frame(_e2eFrame).PostBytes([10, 20, 30], Origin),
+            m => m.Json?.Contains("\"sum\"") is true, resend: true);
+
+        Set(reply is null ? "wm:frame-bytes:(timed out)" : $"wm:frame-bytes:{reply.Json}");
+    }
+
+    private async Task MessagingFramePort()
+    {
+        // A port can only be transferred once, so the send cannot be retried: make sure the frame's
+        // document is there with a retryable echo first.
+        var ready = await RoundTrip(async () => await windowMessaging.Frame(_e2eFrame).PostMessage(new { text = "ready?" }, Origin),
+            m => m.Json?.Contains("\"echo\"") is true, resend: true);
+
+        if (ready is null) { Set("wm:frame-port:(frame never loaded)"); return; }
+
+        var channel = await messageChannel.Create();
+        if (channel is null) { Set("wm:frame-port:unsupported"); return; }
+
+        var overThePort = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await channel.Port1.OnMessage(m => overThePort.TrySetResult(m));
+        await channel.Port1.Start();
+
+        var handed = await windowMessaging.Frame(_e2eFrame)
+            .PostWithPorts(new { op = "line" }, Origin, [channel.Port2]);
+
+        await channel.Port1.PostMessage(new { over = "the port" });
+        var reply = await AwaitCallback(overThePort);
+
+        Set(reply is null ? $"wm:frame-port:{handed}/(timed out)" : $"wm:frame-port:{handed}/{reply.Json}");
+        await channel.DisposeAsync();
+    }
+
+    private async Task MessagingSelf()
+    {
+        // A top-level page is its own parent, so this arrives back at this page's own listener.
+        var reply = await RoundTrip(async () => await windowMessaging.Parent().PostMessage(new { up = "parent" }, Origin),
+            m => m.Json?.Contains("\"up\"") is true);
+
+        Set(reply is null ? "wm:self:(timed out)" : $"wm:self:{reply.Origin == Origin}/{reply.Json}");
+    }
+
+    private async Task MessagingOriginFilter()
+    {
+        // The same self-post, but the listener only trusts an origin this page does not have: the
+        // message has to be dropped before the callback ever sees it.
+        var reply = await RoundTrip(async () => await windowMessaging.Parent().PostMessage(new { up = "parent" }, Origin),
+            m => true, origins: ["https://not-this-origin.example"], seconds: 2);
+
+        Set($"wm:origin-filter:{reply is null}");
+    }
+
+    private async Task MessagingPortOwner()
+    {
+        // Two listeners accept the same self-posted message, and it carries a port. A port has one
+        // owner, so it goes to the listener that registered first and the second is told the message
+        // arrived without it - a handle each over the one port would let the first disposal close it
+        // under the other.
+        var channel = await messageChannel.Create();
+        if (channel is null) { Set("wm:port-owner:unsupported"); return; }
+
+        var first = new TaskCompletionSource<WindowMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var second = new TaskCompletionSource<WindowMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var firstSubscription = await windowMessaging.Listen(m => { if (m.Json?.Contains("\"owner\"") is true) first.TrySetResult(m); }, [Origin]);
+        var secondSubscription = await windowMessaging.Listen(m => { if (m.Json?.Contains("\"owner\"") is true) second.TrySetResult(m); }, [Origin]);
+
+        try
+        {
+            await windowMessaging.Parent().PostWithPorts(new { owner = "ports" }, Origin, [channel.Port2]);
+
+            var one = await AwaitCallback(first);
+            var two = await AwaitCallback(second);
+            if (one is null || two is null) { Set("wm:port-owner:(timed out)"); return; }
+
+            // The port the first listener was handed is a working one and not merely an id: Port2
+            // came back into this document as a new handle, so Port1 can talk to it.
+            var overThePort = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var adopted = one.Ports.FirstOrDefault();
+            if (adopted is not null)
+            {
+                await adopted.OnMessage(m => overThePort.TrySetResult(m));
+                await adopted.Start();
+                await channel.Port1.PostMessage(new { over = "the port" });
+            }
+
+            var echo = adopted is null ? null : await AwaitCallback(overThePort);
+            Set($"wm:port-owner:{one.Ports.Length}/{two.Ports.Length}/{echo?.Json ?? "(timed out)"}");
+
+            // The adopted port arrived under an id of its own, so the channel's disposal below does
+            // not reach it.
+            if (adopted is not null) await adopted.DisposeAsync();
+        }
+        finally
+        {
+            await firstSubscription.DisposeAsync();
+            await secondSubscription.DisposeAsync();
+            await channel.DisposeAsync();
+        }
+    }
+
+    // ─── Worker & MessageChannel ────────────────────────────────────────────────
+    // Worker replies and port messages arrive through invokeMethodAsync, so every case here waits
+    // on a completion source rather than a delay - the same rule as the abort callbacks above.
+    private WorkerHandle? _worker;
+    private SharedWorkerHandle? _sharedWorker;
+    private TaskCompletionSource<ButilMessage>? _fromWorker;
+    private TaskCompletionSource<WorkerError>? _workerError;
+
+    private async Task<bool> EnsureWorker()
+    {
+        if (_worker is not null) return true;
+
+        _workerError = new TaskCompletionSource<WorkerError>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _worker = await worker.Create("/workers/e2e-worker.js",
+            onMessage: m => _fromWorker?.TrySetResult(m),
+            options: new WorkerOptions { Name = "butil-e2e" },
+            onError: e => _workerError?.TrySetResult(e));
+
+        return _worker is not null;
+    }
+
+    private async Task WorkerEcho()
+    {
+        if (await EnsureWorker() is false) { Set("worker:unsupported"); return; }
+
+        _fromWorker = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _worker!.PostMessage(new { op = "echo", payload = "ping" });
+
+        var reply = await AwaitCallback(_fromWorker);
+        // The name comes back from self.name inside the worker, which is what WorkerOptions.Name set.
+        Set(reply is null ? "worker:echo:(timed out)" : $"worker:echo:{reply.IsBinary}/{reply.Json}");
+    }
+
+    private async Task WorkerBinary()
+    {
+        if (await EnsureWorker() is false) { Set("worker:unsupported"); return; }
+
+        _fromWorker = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _worker!.PostBytes([1, 2, 3, 4]);
+
+        var reply = await AwaitCallback(_fromWorker);
+        Set(reply is null ? "worker:binary:(timed out)" : $"worker:binary:{reply.IsBinary}/[{string.Join(",", reply.Data ?? [])}]");
+    }
+
+    private async Task WorkerError()
+    {
+        if (await EnsureWorker() is false) { Set("worker:unsupported"); return; }
+
+        _workerError = new TaskCompletionSource<WorkerError>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _worker!.PostMessage(new { op = "throw" });
+        var error = await AwaitCallback(_workerError);
+
+        // An error does not terminate a worker: it has to still answer afterwards.
+        _fromWorker = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _worker.PostMessage(new { op = "echo", payload = "still here" });
+        var reply = await AwaitCallback(_fromWorker);
+
+        Set($"worker:error:{error?.Message.Contains("threw") is true}/{reply is not null}");
+    }
+
+    private async Task WorkerPort()
+    {
+        if (await EnsureWorker() is false) { Set("worker:unsupported"); return; }
+
+        var channel = await messageChannel.Create();
+        if (channel is null) { Set("worker:port:unsupported"); return; }
+
+        var overThePort = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await channel.Port2.OnMessage(m => overThePort.TrySetResult(m));
+        await channel.Port2.Start();
+
+        // Transferring Port1 to the worker: it stops working on this side, and the worker answers
+        // on it directly from then on.
+        var handed = await _worker!.PostWithPorts(new { op = "takePort" }, [channel.Port1]);
+        await channel.Port2.PostMessage(new { hello = "worker" });
+
+        var reply = await AwaitCallback(overThePort);
+        Set(reply is null ? $"worker:port:{handed}/(timed out)" : $"worker:port:{handed}/{reply.Json}");
+
+        await channel.DisposeAsync();
+    }
+
+    private async Task WorkerShared()
+    {
+        if (await worker.IsSharedSupported() is false) { Set("worker:shared:unsupported"); return; }
+
+        _sharedWorker = await worker.CreateShared("/workers/e2e-shared-worker.js",
+            new WorkerOptions { Name = "butil-e2e-shared" });
+
+        if (_sharedWorker is null) { Set("worker:shared:null"); return; }
+
+        var reply = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _sharedWorker.Port.OnMessage(m => reply.TrySetResult(m));
+        await _sharedWorker.Port.Start();
+        await _sharedWorker.Port.PostMessage(new { op = "count" });
+
+        var counted = await AwaitCallback(reply);
+        Set(counted is null ? "worker:shared:(timed out)" : $"worker:shared:{counted.Json}");
+    }
+
+    private async Task WorkerTerminate()
+    {
+        if (_worker is null) { Set("worker:terminate:nothing"); return; }
+
+        await _worker.Terminate();
+        // Posting to a terminated worker is reported rather than thrown.
+        var sent = await _worker.PostMessage(new { op = "echo", payload = "gone" });
+        _worker = null;
+        Set($"worker:terminate:{sent}");
+    }
+
+    private async Task ChannelQueueThenStart()
+    {
+        var channel = await messageChannel.Create();
+        if (channel is null) { Set("channel:unsupported"); return; }
+
+        var received = new List<string>();
+        var both = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await channel.Port2.OnMessage(m =>
+        {
+            received.Add(m.Json ?? string.Empty);
+            if (received.Count == 2) both.TrySetResult(string.Join("|", received));
+        });
+
+        // Nothing is delivered before Start - these are queued, not lost, and arrive in order.
+        await channel.Port1.PostMessage(new { queued = 1 });
+        await channel.Port1.PostMessage(new { queued = 2 });
+        await channel.Port2.Start();
+
+        var order = await AwaitCallback(both);
+        Set($"channel:queue:{order ?? "(timed out)"}");
+
+        await channel.DisposeAsync();
+    }
+
+    private async Task ChannelBinary()
+    {
+        var channel = await messageChannel.Create();
+        if (channel is null) { Set("channel:unsupported"); return; }
+
+        var received = new TaskCompletionSource<ButilMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await channel.Port2.OnMessage(m => received.TrySetResult(m));
+        await channel.Port2.Start();
+        await channel.Port1.PostBytes([9, 8, 7]);
+
+        var message = await AwaitCallback(received);
+        Set(message is null ? "channel:binary:(timed out)" : $"channel:binary:{message.IsBinary}/[{string.Join(",", message.Data ?? [])}]");
+
+        await channel.DisposeAsync();
+    }
+
+    private async Task ChannelTransfer()
+    {
+        var carrier = await messageChannel.Create();
+        var introduced = await messageChannel.Create();
+        if (carrier is null || introduced is null) { Set("channel:unsupported"); return; }
+
+        // Port2 of the introduced channel travels over the carrier. Whoever receives it owns it, so
+        // the handle here stops working - the point of the transfer.
+        var sent = await carrier.Port1.PostWithPorts(new { op = "line" }, [introduced.Port2]);
+
+        // And the transferred port is gone from this side: posting to it is reported, not thrown.
+        var stillUsable = await introduced.Port2.PostMessage(new { late = true });
+
+        Set($"channel:transfer:{sent}/{stillUsable}");
+
+        await carrier.DisposeAsync();
+        await introduced.DisposeAsync();
+    }
+
+    // ─── WebSocket ──────────────────────────────────────────────────────────────
+    private WebSocketHandle? _socket;
+    private TaskCompletionSource<string>? _nextMessage;
+    private TaskCompletionSource<WebSocketClose>? _closed;
+    private string _negotiatedProtocol = string.Empty;
+
+    /// <summary>The echo endpoint the test session is hosting, handed over as ?ws=...</summary>
+    private string? EchoUrl
+    {
+        get
+        {
+            var query = new Uri(navManager.Uri).Query;
+            foreach (var pair in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var parts = pair.Split('=', 2);
+                if (parts.Length == 2 && parts[0] == "ws") return Uri.UnescapeDataString(parts[1]);
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Opens the socket the rest of this section works with and waits for its open event, leaving it
+    /// in <c>_socket</c>. Returns the negotiated protocol, or null for a socket that never opened.
+    /// </summary>
+    private async Task<string?> OpenCurrent(string url)
+    {
+        var opened = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _closed = new TaskCompletionSource<WebSocketClose>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        _socket = await webSocket.Open(url,
+            onMessage: m => _nextMessage?.TrySetResult(m.IsBinary ? $"[{string.Join(",", m.Data ?? [])}]" : m.Text ?? string.Empty),
+            protocols: ["butil-echo"],
+            onOpen: (protocol, _) => { _negotiatedProtocol = protocol; opened.TrySetResult(protocol); },
+            onClose: close => _closed?.TrySetResult(close));
+
+        return _socket is null ? null : await AwaitCallback(opened);
+    }
+
+    private async Task WebSocketOpen()
+    {
+        await CloseSocket();
+
+        var url = EchoUrl;
+        if (url is null) { Set("ws:no-endpoint"); return; }
+
+        var protocol = await OpenCurrent(url);
+        if (_socket is null) { Set("ws:open:null"); return; }
+
+        Set($"ws:open:{protocol ?? "(timed out)"}");
+    }
+
+    /// <summary>
+    /// A socket closed while its replacement is already open. The close callback belongs to the
+    /// socket that raised it, so a page that tracks "the current socket" must not let the old one's
+    /// news reach through to the new one - the replacement has to still be usable afterwards.
+    /// </summary>
+    private async Task WebSocketReplace()
+    {
+        await CloseSocket();
+
+        var url = EchoUrl;
+        if (url is null) { Set("ws:no-endpoint"); return; }
+
+        var firstOpened = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstClosed = new TaskCompletionSource<WebSocketClose>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using var first = await webSocket.Open(url, _ => { },
+            protocols: ["butil-echo"],
+            onOpen: (protocol, _) => firstOpened.TrySetResult(protocol),
+            onClose: close => firstClosed.TrySetResult(close));
+
+        if (first is null || await AwaitCallback(firstOpened) is null) { Set("ws:replace:no-first"); return; }
+
+        // Closing is a handshake, so the callback is still in flight while the replacement opens -
+        // which is the whole point: the two overlap rather than happening one cleanly after the other.
+        await first.Close(4000, "replaced");
+
+        _nextMessage = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (await OpenCurrent(url) is null) { Set("ws:replace:no-second"); return; }
+
+        var closed = await AwaitCallback(firstClosed);
+        var sent = await _socket!.SendText("after");
+        var echo = await AwaitCallback(_nextMessage);
+
+        Set($"ws:replace:{closed?.Code.ToString() ?? "(timed out)"}/{sent}/{echo ?? "(timed out)"}");
+    }
+
+    private async Task WebSocketText()
+    {
+        if (_socket is null) { Set("ws:no-socket"); return; }
+
+        _nextMessage = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var sent = await _socket.SendText("ping");
+        Set($"ws:text:{sent}/{await AwaitCallback(_nextMessage) ?? "(timed out)"}");
+    }
+
+    private async Task WebSocketBinary()
+    {
+        if (_socket is null) { Set("ws:no-socket"); return; }
+
+        _nextMessage = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        // The endpoint increments every byte, so [1,2,3,4] proves a real round trip rather than the
+        // page having simply kept its own array.
+        var sent = await _socket.SendBytes([1, 2, 3, 4]);
+        Set($"ws:binary:{sent}/{await AwaitCallback(_nextMessage) ?? "(timed out)"}");
+    }
+
+    private async Task WebSocketState()
+    {
+        if (_socket is null) { Set("ws:no-socket"); return; }
+
+        var state = await _socket.GetState();
+        var url = await _socket.GetUrl();
+        var buffered = await _socket.GetBufferedAmount();
+        Set($"ws:state:{state}/{url.EndsWith("/echo")}/{buffered}/{_negotiatedProtocol}");
+    }
+
+    private async Task WebSocketServerClose()
+    {
+        if (_socket is null || _closed is null) { Set("ws:no-socket"); return; }
+
+        await _socket.SendText("close");
+        var close = await AwaitCallback(_closed);
+        _socket = null;
+        Set(close is null ? "ws:server-close:(timed out)" : $"ws:server-close:{close.Code}/{close.WasClean}/{close.Reason}");
+    }
+
+    private async Task WebSocketClose()
+    {
+        if (_socket is null || _closed is null) { Set("ws:no-socket"); return; }
+
+        await _socket.Close(4000, "done");
+        var close = await AwaitCallback(_closed);
+        _socket = null;
+        Set(close is null ? "ws:close:(timed out)" : $"ws:close:{close.Code}/{close.WasClean}");
+    }
+
+    private async Task WebSocketBadUrl()
+    {
+        // A scheme the constructor refuses outright. Note that http:/https: would NOT fail - the
+        // constructor rewrites those to ws:/wss: - so a wrong-scheme test needs a scheme that is
+        // neither. This is the failure Open reports as null rather than through onError.
+        var handle = await webSocket.Open("ftp://example.com/", _ => { });
+        Set($"ws:bad-url:{handle is null}");
+    }
+
+    private async Task CloseSocket()
+    {
+        if (_socket is null) return;
+        var socket = _socket;
+        _socket = null;
+        await socket.DisposeAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await CloseSocket();
+            await RtcClose();
+            if (_shadowRoot is not null) { await _shadowRoot.DisposeAsync(); _shadowRoot = null; }
+            if (_worker is not null) { await _worker.DisposeAsync(); _worker = null; }
+            if (_sharedWorker is not null)
+            {
+                // A shared worker outlives the page, so it is told this port is going before the
+                // port is closed - otherwise it counts a connection that no longer exists.
+                await _sharedWorker.Port.PostMessage(new { op = "disconnect" });
+                await _sharedWorker.DisposeAsync();
+                _sharedWorker = null;
+            }
+        }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
     }
 
     // ─── Element extensions ─────────────────────────────────────────────────────

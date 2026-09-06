@@ -24,12 +24,17 @@
     <ItemGroup>
         <Using Include="System.Net" />
         <Using Include="System.Text.RegularExpressions" />
+        <Using Include="System.Text.Json.Nodes" />
         <Using Include="Boilerplate.Shared.Features.Identity" />
         <Using Include="Boilerplate.Shared.Features.Identity.Dtos" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.Data" />
         <Using Include="Boilerplate.Server.Api.Features.Identity.Models" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
         <Using Include="Boilerplate.Tests.Infrastructure" />
+        <Using Include="Boilerplate.Tests.Infrastructure.Services" />
         <Using Include="Boilerplate.Tests.E2E.Infrastructure" />
+        <Using Include="ModelContextProtocol.Client" />
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.Extensions.Hosting" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />

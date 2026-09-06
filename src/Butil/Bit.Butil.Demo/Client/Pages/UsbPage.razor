@@ -1,0 +1,647 @@
+@page "/usb"
+@implements IAsyncDisposable
+@inject Bit.Butil.Usb usb
+
+<PageTitle>Usb - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Usb"
+            Lead="Pick a USB device, claim one of its interfaces, and run control, bulk or interrupt transfers against it from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API"
+            InjectAs="Usb usb" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    WebUSB ships in Chromium-based browsers. Firefox and Safari do not implement it.
+    <code>RequestDevice</code> must run inside a user gesture.
+</Callout>
+
+<Callout Type="info" Title="The operating system gets first claim">
+    A device the OS already has a driver for - keyboards, mice, mass storage, most webcams - is
+    blocked outright, and interfaces its driver holds cannot be claimed. WebUSB is for the devices
+    no driver has taken: microcontroller boards, instruments, programmers.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.usb. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Usb usb
+
+var supported = await usb.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Pick a device"
+                 Api="RequestDevice / GetDevices"
+                 Description="RequestDevice opens the browser's chooser, optionally narrowed by vendor and product id. GetDevices returns what this origin was already granted, without a prompt."
+                 Code=@("""
+private UsbDevice? _device;
+
+_device = await usb.RequestDevice();                       // every device the browser will show
+_device = await usb.RequestDevice(new UsbDeviceFilter { VendorId = 0x2341 });
+
+var granted = await usb.GetDevices();
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Vendor id (hex, blank for any)</span>
+                <input type="text" @bind="_vendorId" placeholder="2341" />
+            </div>
+            <div class="field">
+                <span class="field-label">Product id (hex, optional)</span>
+                <input type="text" @bind="_productId" placeholder="0043" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="RequestDevice">RequestDevice</button>
+            <button class="secondary" @onclick="GetDevices">GetDevices</button>
+            <button class="danger" @onclick="ReleaseDevice">Dispose handle</button>
+        </div>
+        @if (_device is not null)
+        {
+            <div class="field">
+                <span class="field-label">Selected</span>
+                <span>@(_device.Info.ProductName ?? "(unnamed)") - @_device.Info.VendorId.ToString("x4"):@_device.Info.ProductId.ToString("x4")</span>
+            </div>
+        }
+        <DemoConsole @ref="deviceOutput" Title="device output" />
+    </DemoSection>
+
+    <DemoSection Title="Open, configure, claim"
+                 Api="Open / SelectConfiguration / ClaimInterface / SelectAlternateInterface / ReleaseInterface / Close / IsOpened / GetInfo"
+                 Description="The order is fixed: open, select a configuration, claim an interface, and only then transfer. Skipping a step fails with an InvalidStateError rather than a hint about which step was missed."
+                 Code=@("""
+await _device.Open();
+await _device.SelectConfiguration(1);
+await _device.ClaimInterface(0);
+
+// ... transfers ...
+
+await _device.ReleaseInterface(0);
+await _device.Close();
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Configuration value</span>
+                <input type="number" min="1" @bind="_configurationValue" />
+            </div>
+            <div class="field">
+                <span class="field-label">Interface number</span>
+                <input type="number" min="0" @bind="_interfaceNumber" />
+            </div>
+            <div class="field">
+                <span class="field-label">Alternate setting</span>
+                <input type="number" min="0" @bind="_alternateSetting" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="Open">Open</button>
+            <button @onclick="SelectConfiguration">SelectConfiguration</button>
+            <button @onclick="ClaimInterface">ClaimInterface</button>
+            <button @onclick="SelectAlternate">SelectAlternateInterface</button>
+            <button class="secondary" @onclick="ReleaseInterface">ReleaseInterface</button>
+            <button class="secondary" @onclick="Close">Close</button>
+        </div>
+        <div class="controls">
+            <button @onclick="CheckOpened">IsOpened</button>
+            <button @onclick="DescribeDevice">GetInfo</button>
+        </div>
+        <DemoConsole @ref="setupOutput" Title="setup output" />
+    </DemoSection>
+
+    <DemoSection Title="Transfers"
+                 Api="ControlTransferIn / ControlTransferOut / TransferIn / TransferOut / ClearHalt / Reset"
+                 Description="Control transfers carry a setup packet and address the device itself; bulk and interrupt transfers address an endpoint number taken from the claimed interface's descriptor. A 'stall' status means the endpoint halted - ClearHalt is the way out."
+                 Code=@("""
+var read = await _device.TransferIn(endpointNumber: 1, length: 64);
+var text = read?.Data is null ? "" : System.Text.Encoding.UTF8.GetString(read.Data);
+
+await _device.TransferOut(endpointNumber: 2, "ping"u8.ToArray());
+
+await _device.ControlTransferOut(new UsbControlTransferParameters
+{
+    RequestType = "vendor",
+    Recipient = "device",
+    Request = 0x01,
+    Value = 0x0001,
+    Index = 0
+});
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">IN endpoint</span>
+                <input type="number" min="1" @bind="_inEndpoint" />
+            </div>
+            <div class="field">
+                <span class="field-label">Read length</span>
+                <input type="number" min="1" @bind="_readLength" />
+            </div>
+            <div class="field">
+                <span class="field-label">OUT endpoint</span>
+                <input type="number" min="1" @bind="_outEndpoint" />
+            </div>
+        </div>
+        <div class="field">
+            <span class="field-label">Bytes to send (hex, space separated)</span>
+            <input type="text" @bind="_writeHex" placeholder="01 02 ff" />
+        </div>
+        <div class="controls">
+            <button @onclick="TransferIn">TransferIn</button>
+            <button @onclick="TransferOut">TransferOut</button>
+            <button @onclick="ControlIn">ControlTransferIn</button>
+            <button @onclick="ControlOut">ControlTransferOut</button>
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="ClearHalt">ClearHalt (in)</button>
+            <button class="danger" @onclick="ResetDevice">Reset</button>
+        </div>
+        <DemoConsole @ref="transferOutput" Title="transfer output" />
+    </DemoSection>
+
+    <DemoSection Title="Plug and unplug"
+                 Api="SubscribeConnection"
+                 Description="Watches devices appearing and disappearing. Only devices this origin already has permission for raise these - plugging in a stranger's device is not something the page is told about."
+                 Code=@("""
+await using var watch = await usb.SubscribeConnection(
+    onConnected: device => Console.WriteLine($"+ {device.Info.ProductName}"),
+    onDisconnected: device => Console.WriteLine($"- {device.Info.ProductName}"));
+""")>
+        <div class="controls">
+            <button @onclick="StartWatching">SubscribeConnection</button>
+            <button class="danger" @onclick="StopWatching">Stop watching</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="connection output" />
+    </DemoSection>
+
+    <DemoSection Title="Revoke the grant"
+                 Api="Forget"
+                 Description="Drops this origin's permission for the device, so it stops appearing in GetDevices until the user picks it again."
+                 Code=@("""
+var revoked = await _device.Forget();
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="ForgetDevice">Forget</button>
+        </div>
+        <DemoConsole @ref="forgetOutput" Title="forget output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.usb. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="RequestDevice"
+               Signature="ValueTask<UsbDevice?> RequestDevice(params UsbDeviceFilter[] filters)"
+               Description="Opens the device chooser and returns the picked device, or null when dismissed. Needs a user gesture." />
+    <ApiMember Name="GetDevices"
+               Signature="ValueTask<UsbDevice[]> GetDevices()"
+               Description="The devices this origin has already been granted, without a prompt." />
+    <ApiMember Name="SubscribeConnection"
+               Signature="ValueTask<ButilSubscription> SubscribeConnection(Action<UsbDevice>? onConnected = null, Action<UsbDevice>? onDisconnected = null)"
+               Description="Watches permitted devices being plugged in and unplugged." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes every device this service handed out, detaches listeners and releases the JS callback reference." />
+    <ApiMember Name="InvokeUsbConnected"
+               Signature="void InvokeUsbConnected(Guid id, UsbDeviceInfo info)"
+               Description="JSInvokable interop plumbing for the connect event - not intended for app code." />
+    <ApiMember Name="InvokeUsbDisconnected"
+               Signature="void InvokeUsbDisconnected(Guid id, UsbDeviceInfo info)"
+               Description="JSInvokable interop plumbing for the disconnect event - not intended for app code." />
+    <ApiMember Name="UsbDevice.Info"
+               Signature="UsbDeviceInfo Info { get; }"
+               Description="The device as it was when the handle was created, including its descriptor tree." />
+    <ApiMember Name="UsbDevice.Open / Close / IsOpened"
+               Signature="ValueTask<bool> Open() / ValueTask Close() / ValueTask<bool> IsOpened()"
+               Description="Opens, closes and reports the device's open state." />
+    <ApiMember Name="UsbDevice.GetInfo"
+               Signature="ValueTask<UsbDeviceInfo?> GetInfo()"
+               Description="Re-reads the device's state; Info is only the snapshot from when the handle was created." />
+    <ApiMember Name="UsbDevice.SelectConfiguration"
+               Signature="ValueTask<bool> SelectConfiguration(byte configurationValue)"
+               Description="Selects a configuration by its value." />
+    <ApiMember Name="UsbDevice.ClaimInterface / ReleaseInterface"
+               Signature="ValueTask<bool> ClaimInterface(byte interfaceNumber) / ValueTask<bool> ReleaseInterface(byte interfaceNumber)"
+               Description="Takes and gives back exclusive use of an interface." />
+    <ApiMember Name="UsbDevice.SelectAlternateInterface"
+               Signature="ValueTask<bool> SelectAlternateInterface(byte interfaceNumber, byte alternateSetting)"
+               Description="Switches a claimed interface to one of its alternate settings." />
+    <ApiMember Name="UsbDevice.ControlTransferIn / ControlTransferOut"
+               Signature="ValueTask<UsbTransferResult?> ControlTransferIn(UsbControlTransferParameters parameters, ushort length) / ControlTransferOut(UsbControlTransferParameters parameters, byte[]? data = null)"
+               Description="Sends a control request, with an optional data stage in either direction." />
+    <ApiMember Name="UsbDevice.TransferIn / TransferOut"
+               Signature="ValueTask<UsbTransferResult?> TransferIn(byte endpointNumber, uint length) / TransferOut(byte endpointNumber, byte[] data)"
+               Description="Reads from and writes to a bulk or interrupt endpoint." />
+    <ApiMember Name="UsbDevice.ClearHalt"
+               Signature="ValueTask<bool> ClearHalt(string direction, byte endpointNumber)"
+               Description="Clears a halted endpoint - the only way out of a 'stall' status." />
+    <ApiMember Name="UsbDevice.Reset"
+               Signature="ValueTask<bool> Reset()"
+               Description="Resets the device, abandoning every pending transfer." />
+    <ApiMember Name="UsbDevice.Forget"
+               Signature="ValueTask<bool> Forget()"
+               Description="Revokes this origin's permission for the device." />
+    <ApiMember Name="UsbDevice.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes the device and releases the browser-side reference." />
+    <ApiMember Name="UsbDeviceFilter"
+               Signature="class UsbDeviceFilter { ushort? VendorId; ushort? ProductId; byte? ClassCode; byte? SubclassCode; byte? ProtocolCode; string? SerialNumber; }"
+               Description="One chooser filter." />
+    <ApiMember Name="UsbDeviceInfo"
+               Signature="class UsbDeviceInfo { string Id; ushort VendorId; ushort ProductId; byte DeviceClass; byte DeviceSubclass; byte DeviceProtocol; string? ManufacturerName; string? ProductName; string? SerialNumber; bool Opened; byte? ConfigurationValue; UsbConfigurationInfo[] Configurations; }"
+               Description="A granted device and its descriptor tree." />
+    <ApiMember Name="UsbConfigurationInfo / UsbInterfaceInfo / UsbAlternateInterfaceInfo / UsbEndpointInfo"
+               Signature="class UsbConfigurationInfo { ... UsbInterfaceInfo[] Interfaces; } etc."
+               Description="The descriptor tree: configurations hold interfaces, interfaces hold alternate settings, settings hold endpoints." />
+    <ApiMember Name="UsbControlTransferParameters"
+               Signature="class UsbControlTransferParameters { string RequestType; string Recipient; byte Request; ushort Value; ushort Index; }"
+               Description="The setup packet of a control transfer." />
+    <ApiMember Name="UsbTransferResult"
+               Signature="class UsbTransferResult { string Status; uint BytesWritten; byte[]? Data; }"
+               Description="The outcome of a transfer: 'ok', 'stall' or 'babble', plus whichever of data/bytes-written applies." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole deviceOutput = default!;
+    private DemoConsole setupOutput = default!;
+    private DemoConsole transferOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private DemoConsole forgetOutput = default!;
+
+    private UsbDevice? _device;
+    private ButilSubscription? _watch;
+
+    private string _vendorId = "";
+    private string _productId = "";
+    private int _configurationValue = 1;
+    private int _interfaceNumber = 0;
+    private int _alternateSetting = 0;
+    private int _inEndpoint = 1;
+    private int _outEndpoint = 2;
+    private int _readLength = 64;
+    private string _writeHex = "01";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await usb.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestDevice()
+    {
+        try
+        {
+            if (!await usb.IsSupported())
+            {
+                await deviceOutput.Warn("WebUSB is not supported in this browser.");
+                return;
+            }
+
+            var filters = new List<UsbDeviceFilter>();
+            if (TryHex(_vendorId, out var vendor))
+            {
+                var filter = new UsbDeviceFilter { VendorId = vendor };
+                if (TryHex(_productId, out var product)) filter.ProductId = product;
+                filters.Add(filter);
+            }
+
+            var requested = await usb.RequestDevice([.. filters]);
+
+            if (requested is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await deviceOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it rather than leaving
+            // an opened, interface-claimed device with nothing able to close it. Re-picking the same
+            // device hands back the handle already in play, and disposing that one would release the
+            // device this page is about to use.
+            if (_device is not null && ReferenceEquals(_device, requested) is false)
+            {
+                await _device.DisposeAsync();
+            }
+
+            _device = requested;
+            await deviceOutput.Success("RequestDevice →",
+                $"{_device.Info.ProductName ?? "(unnamed)"} {_device.Info.VendorId:x4}:{_device.Info.ProductId:x4}");
+        }
+        catch (Exception ex)
+        {
+            await deviceOutput.Error("RequestDevice failed →", ex.Message);
+        }
+    }
+
+    private async Task GetDevices()
+    {
+        try
+        {
+            var devices = await usb.GetDevices();
+            await deviceOutput.Success("GetDevices →", $"{devices.Length} granted device(s)");
+            foreach (var device in devices)
+            {
+                await deviceOutput.Log($"  {device.Info.ProductName ?? "(unnamed)"}",
+                    $"{device.Info.VendorId:x4}:{device.Info.ProductId:x4}");
+            }
+            _device ??= devices.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            await deviceOutput.Error("GetDevices failed →", ex.Message);
+        }
+    }
+
+    private async Task ReleaseDevice()
+    {
+        if (_device is null) return;
+        await _device.DisposeAsync();
+        _device = null;
+        await deviceOutput.Log("Handle disposed - the device is closed but still granted.");
+    }
+
+    private async Task Open() => await Run(setupOutput, "Open", async d => await d.Open());
+
+    private async Task Close()
+    {
+        if (await RequireDevice(setupOutput) is false) return;
+        await _device!.Close();
+        await setupOutput.Log("Closed.");
+    }
+
+    private async Task CheckOpened() => await Run(setupOutput, "IsOpened", async d => await d.IsOpened());
+
+    private async Task SelectConfiguration()
+    {
+        if (await RequireByte(setupOutput, "Configuration value", _configurationValue) is false) return;
+
+        await Run(setupOutput, "SelectConfiguration", async d => await d.SelectConfiguration((byte)_configurationValue));
+    }
+
+    private async Task ClaimInterface()
+    {
+        if (await RequireByte(setupOutput, "Interface number", _interfaceNumber) is false) return;
+
+        await Run(setupOutput, "ClaimInterface", async d => await d.ClaimInterface((byte)_interfaceNumber));
+    }
+
+    private async Task ReleaseInterface()
+    {
+        if (await RequireByte(setupOutput, "Interface number", _interfaceNumber) is false) return;
+
+        await Run(setupOutput, "ReleaseInterface", async d => await d.ReleaseInterface((byte)_interfaceNumber));
+    }
+
+    private async Task SelectAlternate()
+    {
+        if (await RequireByte(setupOutput, "Interface number", _interfaceNumber) is false) return;
+        if (await RequireByte(setupOutput, "Alternate setting", _alternateSetting) is false) return;
+
+        await Run(setupOutput, "SelectAlternateInterface",
+            async d => await d.SelectAlternateInterface((byte)_interfaceNumber, (byte)_alternateSetting));
+    }
+
+    private async Task DescribeDevice()
+    {
+        if (await RequireDevice(setupOutput) is false) return;
+
+        try
+        {
+            var info = await _device!.GetInfo();
+            if (info is null)
+            {
+                await setupOutput.Warn("GetInfo → the handle no longer resolves to a device.");
+                return;
+            }
+
+            await setupOutput.Success("GetInfo →",
+                $"opened={info.Opened}, configuration={info.ConfigurationValue?.ToString() ?? "none"}, configurations={info.Configurations.Length}");
+
+            foreach (var configuration in info.Configurations)
+            {
+                foreach (var usbInterface in configuration.Interfaces)
+                {
+                    var endpoints = usbInterface.Alternates.SelectMany(a => a.Endpoints)
+                        .Select(e => $"{e.EndpointNumber}{e.Direction[..1]}({e.Type})");
+
+                    await setupOutput.Log($"  config {configuration.ConfigurationValue} / interface {usbInterface.InterfaceNumber}",
+                        $"claimed={usbInterface.Claimed}, endpoints={string.Join(' ', endpoints)}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await setupOutput.Error("GetInfo failed →", ex.Message);
+        }
+    }
+
+    private async Task TransferIn()
+    {
+        if (await RequireDevice(transferOutput) is false) return;
+        if (await RequireByte(transferOutput, "IN endpoint", _inEndpoint) is false) return;
+
+        if (_readLength < 0)
+        {
+            await transferOutput.Warn($"Read length must not be negative - got {_readLength}.");
+            return;
+        }
+
+        try
+        {
+            var result = await _device!.TransferIn((byte)_inEndpoint, (uint)_readLength);
+            await transferOutput.Success("TransferIn →",
+                $"status={result?.Status}, bytes={(result?.Data is null ? "(none)" : Convert.ToHexString(result.Data))}");
+        }
+        catch (Exception ex)
+        {
+            await transferOutput.Error("TransferIn failed →", ex.Message);
+        }
+    }
+
+    private async Task TransferOut()
+    {
+        if (await RequireDevice(transferOutput) is false) return;
+        if (await RequireByte(transferOutput, "OUT endpoint", _outEndpoint) is false) return;
+
+        try
+        {
+            var result = await _device!.TransferOut((byte)_outEndpoint, ParseHex(_writeHex));
+            await transferOutput.Success("TransferOut →", $"status={result?.Status}, written={result?.BytesWritten}");
+        }
+        catch (Exception ex)
+        {
+            await transferOutput.Error("TransferOut failed →", ex.Message);
+        }
+    }
+
+    private async Task ControlIn()
+    {
+        if (await RequireDevice(transferOutput) is false) return;
+
+        try
+        {
+            // A standard GET_DESCRIPTOR for the device descriptor: the one control request every
+            // USB device must answer, so it works as a round-trip check on any of them.
+            var result = await _device!.ControlTransferIn(new UsbControlTransferParameters
+            {
+                RequestType = "standard",
+                Recipient = "device",
+                Request = 0x06,
+                Value = 0x0100,
+                Index = 0
+            }, 18);
+
+            await transferOutput.Success("ControlTransferIn →",
+                $"status={result?.Status}, bytes={(result?.Data is null ? "(none)" : Convert.ToHexString(result.Data))}");
+        }
+        catch (Exception ex)
+        {
+            await transferOutput.Error("ControlTransferIn failed →", ex.Message);
+        }
+    }
+
+    private async Task ControlOut()
+    {
+        if (await RequireDevice(transferOutput) is false) return;
+
+        try
+        {
+            var result = await _device!.ControlTransferOut(new UsbControlTransferParameters
+            {
+                RequestType = "vendor",
+                Recipient = "device",
+                Request = 0x01,
+                Value = 0x0001,
+                Index = 0
+            }, ParseHex(_writeHex));
+
+            await transferOutput.Success("ControlTransferOut →", $"status={result?.Status}, written={result?.BytesWritten}");
+        }
+        catch (Exception ex)
+        {
+            await transferOutput.Error("ControlTransferOut failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearHalt()
+    {
+        if (await RequireByte(transferOutput, "IN endpoint", _inEndpoint) is false) return;
+
+        await Run(transferOutput, "ClearHalt", async d => await d.ClearHalt("in", (byte)_inEndpoint));
+    }
+
+    private async Task ResetDevice() => await Run(transferOutput, "Reset", async d => await d.Reset());
+
+    private async Task StartWatching()
+    {
+        await StopWatching();
+
+        try
+        {
+            _watch = await usb.SubscribeConnection(
+                onConnected: device => _ = InvokeAsync(() =>
+                    watchOutput.Success("Connected →", device.Info.ProductName ?? $"{device.Info.VendorId:x4}:{device.Info.ProductId:x4}")),
+                onDisconnected: device => _ = InvokeAsync(() =>
+                    watchOutput.Warn("Disconnected →", device.Info.ProductName ?? $"{device.Info.VendorId:x4}:{device.Info.ProductId:x4}")));
+
+            await watchOutput.Log("Watching - plug or unplug a device you have already granted.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("SubscribeConnection failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        if (_watch is null) return;
+        await _watch.DisposeAsync();
+        _watch = null;
+        await watchOutput.Log("Stopped watching.");
+    }
+
+    private async Task ForgetDevice()
+    {
+        if (await RequireDevice(forgetOutput) is false) return;
+
+        try
+        {
+            var revoked = await _device!.Forget();
+            await forgetOutput.Success("Forget →", revoked ? "permission revoked." : "not supported by this browser.");
+            if (revoked) _device = null;
+        }
+        catch (Exception ex)
+        {
+            await forgetOutput.Error("Forget failed →", ex.Message);
+        }
+    }
+
+    private async Task Run(DemoConsole output, string name, Func<UsbDevice, Task<bool>> action)
+    {
+        if (await RequireDevice(output) is false) return;
+
+        try
+        {
+            await output.Success($"{name} →", await action(_device!));
+        }
+        catch (Exception ex)
+        {
+            await output.Error($"{name} failed →", ex.Message);
+        }
+    }
+
+    private async Task<bool> RequireDevice(DemoConsole output)
+    {
+        if (_device is not null) return true;
+        await output.Warn("Pick a device first with RequestDevice.");
+        return false;
+    }
+
+    // The number inputs are ints, so anything at all can be typed into them - and an unchecked cast
+    // would wrap 256 round to 0 and send the device a command nobody asked for.
+    private async Task<bool> RequireByte(DemoConsole output, string name, int value)
+    {
+        if (value is >= byte.MinValue and <= byte.MaxValue) return true;
+
+        await output.Warn($"{name} must be between 0 and 255 - got {value}.");
+        return false;
+    }
+
+    private static bool TryHex(string text, out ushort value) =>
+        ushort.TryParse(text?.Replace("0x", "", StringComparison.OrdinalIgnoreCase),
+            System.Globalization.NumberStyles.HexNumber, null, out value);
+
+    // A token that is not a hex byte is a typo, not something to quietly drop: "00 zz ff" has to be
+    // rejected rather than reach the device as the two bytes that happened to parse.
+    private static byte[] ParseHex(string text)
+    {
+        var parts = text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var bytes = new byte[parts.Length];
+
+        for (var index = 0; index < parts.Length; index++)
+        {
+            if (byte.TryParse(parts[index], System.Globalization.NumberStyles.HexNumber, null, out bytes[index]) is false)
+                throw new FormatException($"'{parts[index]}' is not a hexadecimal byte.");
+        }
+
+        return bytes;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_watch is not null) await _watch.DisposeAsync();
+        if (_device is not null) await _device.DisposeAsync();
+    }
+}

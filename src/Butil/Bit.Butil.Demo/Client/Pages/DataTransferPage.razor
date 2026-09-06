@@ -1,0 +1,362 @@
+@page "/data-transfer"
+@implements IAsyncDisposable
+@inject Bit.Butil.DataTransfer dataTransfer
+@inject Bit.Butil.ObjectUrls objectUrls
+
+<PageTitle>DataTransfer - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files &amp; Data"
+            Title="DataTransfer"
+            Lead="What a drag is actually carrying: the files, the text, the effect and the drag image - the payload Blazor's DragEventArgs leaves out of reach."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer"
+            InjectAs="DataTransfer dataTransfer" />
+
+<Callout Type="info" Title="Two rules, handled for you">
+    A <code>drop</code> only fires on an element whose <code>dragover</code> handler called
+    <code>preventDefault</code>, and <code>dropEffect</code> has to be set on <em>every</em> dragover
+    because the browser resets it between events. Getting either wrong produces a drop target that
+    silently never fires - so <code>OnDrop</code> wires both up, and there is nothing else to add.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="DataTransfer is in every engine. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.DataTransfer dataTransfer
+
+var supported = await dataTransfer.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Accepting a drop"
+                 Api="OnDrop / DropPayload"
+                 Description="Drag files from your file manager onto the box below - or drag text, or a link from another tab. Items are read during the event and handed over whole, because getData outside the drop event answers with an empty string. Files are the other way round: their contents stay readable afterwards, so the handler does not have to do the reading."
+                 Code=@("""
+private ElementReference _target;
+
+_subscription = await dataTransfer.OnDrop(_target, payload => InvokeAsync(() =>
+{
+    // payload.Files - each with Name, Size, Type, LastModified and an Id to read by
+    // payload.Text  - "text/plain", when the drag carried some
+    // payload.Uri   - "text/uri-list", when a link or an image was dragged in
+    StateHasChanged();
+}), dropEffect: "copy");
+""")>
+        <div @ref="_target" class="playground" style="min-height:6rem;display:flex;align-items:center;justify-content:center;border:2px dashed var(--border, #d4d4d8);border-radius:.5rem;text-align:center">
+            @if (_payload is null)
+            {
+                <span>Drop files, text or a link here.</span>
+            }
+            else
+            {
+                <span>@_payload.Files.Length file(s), @_payload.Items.Count item type(s).</span>
+            }
+        </div>
+        @if (_payload is not null)
+        {
+            <div class="field">
+                <span class="field-label">Text</span>
+                <span>@(_payload.Text ?? "(none)")</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Link</span>
+                <span>@(_payload.Uri ?? "(none)")</span>
+            </div>
+            @foreach (var file in _payload.Files)
+            {
+                <div class="field">
+                    <span class="field-label">@file.Name</span>
+                    <span>@file.Size bytes, @(string.IsNullOrEmpty(file.Type) ? "unknown type" : file.Type), modified @file.LastModified.LocalDateTime</span>
+                </div>
+            }
+        }
+        <DemoConsole @ref="dropOutput" Title="drop output" />
+    </DemoSection>
+
+    <DemoSection Title="Reading what was dropped"
+                 Api="ReadFile / ReadFileText / CreateObjectUrl / ReleaseFile"
+                 Description="A dropped file is readable long after the event that delivered it - the file object is held for you, so there is no need to do the work inside the handler. CreateObjectUrl skips .NET entirely for the case where all you want is to show the picture. Release the files when you are done, or they stay in memory for the life of the page."
+                 Code=@("""
+var bytes = await dataTransfer.ReadFile(file.Id);          // upload this
+var text = await dataTransfer.ReadFileText(file.Id);       // for text files
+
+// or show it without reading it at all:
+var url = await dataTransfer.CreateObjectUrl(file.Id);     // <img src="@url">
+
+await dataTransfer.ReleaseFile(file.Id);
+""")>
+        <div class="controls">
+            <button @onclick="ReadFirst">Read the first file</button>
+            <button class="secondary" @onclick="PreviewFirst">Preview it as an image</button>
+            <button class="danger" @onclick="ReleaseAll">Release them</button>
+        </div>
+        @if (_previewUrl is not null)
+        {
+            <div class="field">
+                <span class="field-label">Preview</span>
+                <img src="@_previewUrl" alt="dropped" style="max-width:240px;border:1px solid var(--border, #d4d4d8);border-radius:.4rem" />
+            </div>
+        }
+        <DemoConsole @ref="readOutput" Title="read output" />
+    </DemoSection>
+
+    <DemoSection Title="Being the drag source"
+                 Api="ConfigureDragSource"
+                 Description="The payload is settled up front rather than produced by a callback, because dragstart has to set its data synchronously and a round trip to .NET is not. A custom MIME type is how a drop target of your own recognises its own drags; text/plain is what other applications read. A drag image has to be rendered and visible when the drag starts - a display:none element produces no image at all, which is the usual reason a custom one does not appear."
+                 Code=@("""
+_source = await dataTransfer.ConfigureDragSource(_chip,
+    new Dictionary<string, string>
+    {
+        ["text/plain"] = "a chip from the demo",
+        ["application/x-butil-demo"] = "{\"id\":42}"
+    },
+    effectAllowed: "copyMove",
+    dragImage: _dragImage);
+""")>
+        <div class="controls">
+            <button @onclick="MakeDraggable">Make the chip draggable</button>
+            <button class="danger" @onclick="StopDragging">Stop</button>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:center;margin-top:.75rem;flex-wrap:wrap">
+            <span @ref="_chip" class="result-pill">@(_draggable ? "drag me onto the box above" : "not draggable yet")</span>
+            <span @ref="_dragImage" class="result-pill" style="background:var(--accent, #6366f1);color:white">the drag image</span>
+        </div>
+        <DemoConsole @ref="sourceOutput" Title="drag source output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="A dropped file's type is a guess">
+    The MIME type comes from the file's name, not from looking inside it - so it is a hint, never a
+    check. A page also never learns where a dropped file lives: the name has no path, by design.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes DataTransfer. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="OnDrop"
+               Signature='ValueTask&lt;ButilSubscription?&gt; OnDrop(ElementReference target, Action&lt;DropPayload&gt; onDrop, string dropEffect = "copy")'
+               Description="Makes an element a drop target, including the dragover handling that makes a drop possible at all. dropEffect chooses the cursor: copy, move, link or none." />
+    <ApiMember Name="ConfigureDragSource"
+               Signature='ValueTask&lt;ButilSubscription?&gt; ConfigureDragSource(ElementReference source, Dictionary&lt;string, string&gt; items, string effectAllowed = "all", ElementReference? dragImage = null, int dragImageX = 0, int dragImageY = 0)'
+               Description="Makes an element draggable and decides what it carries. Disposing the subscription makes it undraggable again." />
+    <ApiMember Name="ReadFile"
+               Signature="ValueTask<byte[]?> ReadFile(Guid fileId)"
+               Description="A dropped file's bytes, readable long after the drop. Null once released." />
+    <ApiMember Name="ReadFileText"
+               Signature="ValueTask<string?> ReadFileText(Guid fileId)"
+               Description="The same file as UTF-8 text." />
+    <ApiMember Name="CreateObjectUrl"
+               Signature="ValueTask<string?> CreateObjectUrl(Guid fileId)"
+               Description="A blob: URL for the file, for showing it without reading its bytes into .NET. You own it - revoke it through ObjectUrls." />
+    <ApiMember Name="ReleaseFile"
+               Signature="ValueTask ReleaseFile(Guid fileId)"
+               Description="Forgets a dropped file. Reading it afterwards answers null." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, detaches every target and source whose subscription was never disposed, and forgets every held file." />
+    <ApiMember Name="DropPayload"
+               Signature="record (DroppedFile[] Files, Dictionary<string, string> Items) { string? Text; string? Uri; }"
+               Description="What the drop carried. Items are keyed by MIME type; Text and Uri are the two everyone wants." />
+    <ApiMember Name="DroppedFile"
+               Signature="record (Guid Id, string Name, long Size, string Type, long LastModifiedMilliseconds) { DateTimeOffset LastModified; }"
+               Description="One file. Name has no path - a page never learns where a dropped file lives - and Type is guessed from the name." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole dropOutput = default!;
+    private DemoConsole readOutput = default!;
+    private DemoConsole sourceOutput = default!;
+
+    private ElementReference _target;
+    private ElementReference _chip;
+    private ElementReference _dragImage;
+
+    private ButilSubscription? _dropSubscription;
+    private ButilSubscription? _sourceSubscription;
+    private DropPayload? _payload;
+    private string? _previewUrl;
+    private bool _draggable;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        try
+        {
+            _dropSubscription = await dataTransfer.OnDrop(_target, payload => InvokeAsync(async () =>
+            {
+                // The previous drop's files are held by the browser until they are let go of, so a
+                // second drop that only overwrote the payload would leak every file before it.
+                await ReleasePayload();
+
+                _payload = payload;
+                await dropOutput.Success("Dropped →",
+                    $"{payload.Files.Length} file(s); item types: {(payload.Items.Count == 0 ? "(none)" : string.Join(", ", payload.Items.Keys))}");
+                StateHasChanged();
+            }));
+
+            if (_dropSubscription is null)
+                await dropOutput.Warn("OnDrop returned null - the target was not wired up, so nothing will be dropped on it.");
+        }
+        catch (Exception ex)
+        {
+            await dropOutput.Error("OnDrop failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await dataTransfer.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadFirst()
+    {
+        var file = _payload?.Files.FirstOrDefault();
+        if (file is null)
+        {
+            await readOutput.Warn("Drop a file first.");
+            return;
+        }
+
+        try
+        {
+            var bytes = await dataTransfer.ReadFile(file.Id);
+            await readOutput.Success($"ReadFile(\"{file.Name}\") →", $"{bytes?.Length ?? 0} bytes");
+
+            if (file.Type.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
+            {
+                var text = await dataTransfer.ReadFileText(file.Id);
+                await readOutput.Success("As text →", text is null ? "(unreadable)" : Preview(text));
+            }
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("ReadFile failed →", ex.Message);
+        }
+    }
+
+    private async Task PreviewFirst()
+    {
+        var file = _payload?.Files.FirstOrDefault();
+        if (file is null)
+        {
+            await readOutput.Warn("Drop a file first.");
+            return;
+        }
+
+        try
+        {
+            if (_previewUrl is not null) await objectUrls.Revoke(_previewUrl);
+            _previewUrl = await dataTransfer.CreateObjectUrl(file.Id);
+
+            await readOutput.Success("CreateObjectUrl →",
+                _previewUrl is null ? "(released)" : "shown without reading a byte into .NET");
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("CreateObjectUrl failed →", ex.Message);
+        }
+    }
+
+    private async Task ReleaseAll()
+    {
+        if (_payload is null) return;
+
+        var count = _payload.Files.Length;
+        await ReleasePayload();
+
+        await readOutput.Log($"Released {count} file(s) - reading them now answers null.");
+    }
+
+    /// <summary>
+    /// Lets go of everything the current payload is holding: the dropped files, which the browser
+    /// keeps until they are released, and the preview URL, which keeps one of them alive by itself.
+    /// </summary>
+    private async Task ReleasePayload()
+    {
+        if (_previewUrl is not null)
+        {
+            await objectUrls.Revoke(_previewUrl);
+            _previewUrl = null;
+        }
+
+        if (_payload is null) return;
+
+        foreach (var file in _payload.Files) await dataTransfer.ReleaseFile(file.Id);
+        _payload = null;
+    }
+
+    private async Task MakeDraggable()
+    {
+        await StopDragging();
+
+        try
+        {
+            _sourceSubscription = await dataTransfer.ConfigureDragSource(_chip,
+                new Dictionary<string, string>
+                {
+                    ["text/plain"] = "a chip from the Bit.Butil demo",
+                    ["application/x-butil-demo"] = """{"id":42}"""
+                },
+                effectAllowed: "copyMove",
+                dragImage: _dragImage);
+
+            if (_sourceSubscription is null)
+            {
+                await sourceOutput.Warn("ConfigureDragSource returned null - the element was not made draggable.");
+                return;
+            }
+
+            _draggable = true;
+            await sourceOutput.Success("Configured →", "drag the chip onto the box above, or into a text editor.");
+        }
+        catch (Exception ex)
+        {
+            await sourceOutput.Error("ConfigureDragSource failed →", ex.Message);
+        }
+    }
+
+    private async Task StopDragging()
+    {
+        if (_sourceSubscription is null) return;
+
+        await _sourceSubscription.DisposeAsync();
+        _sourceSubscription = null;
+        _draggable = false;
+        await sourceOutput.Log("Stopped - the element is not draggable any more.");
+    }
+
+    private static string Preview(string text)
+        => text.Length > 200 ? text[..200] + "…" : text;
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_dropSubscription is not null) await _dropSubscription.DisposeAsync();
+            if (_sourceSubscription is not null) await _sourceSubscription.DisposeAsync();
+
+            // The whole payload, not just the preview URL: the retained file ids are held on the JS
+            // side until they are released, and navigating away is not a release.
+            await ReleasePayload();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

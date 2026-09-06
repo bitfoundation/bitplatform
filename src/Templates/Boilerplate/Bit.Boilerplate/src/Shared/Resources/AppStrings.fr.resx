@@ -1699,9 +1699,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>
   </data>
-  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
-    <value>Lire les journaux de session de l'utilisateur</value>
-  </data>
   <!--#endif -->
   <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">

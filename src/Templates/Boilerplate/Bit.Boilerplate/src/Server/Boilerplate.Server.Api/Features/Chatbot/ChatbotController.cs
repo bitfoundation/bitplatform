@@ -13,6 +13,9 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     [AutoInject] private IFusionCache cache = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
 
+    /// <summary>The largest recording the speech endpoints accept; the Dev MCP reports this value rather than a copy of it.</summary>
+    public const int MaxSpeechUploadSizeBytes = 2 * 1024 * 1024;
+
     // For open telemetry metrics. Both providers bill by characters spoken and seconds heard rather than by request,
     // so a request count says nothing about what speech costs - these are what any limit worth setting is chosen
     // from, and what shows a bill running away before the invoice does.
@@ -64,7 +67,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     /// Turns a recording made by the AI chat panel's microphone into the text it puts in the message box.
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(2 * 1024 * 1024 /*2MB*/)]
+    [RequestSizeLimit(MaxSpeechUploadSizeBytes)]
     [EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]
     public async Task<TranscribeSpeechResponseDto> TranscribeSpeech(IFormFile? file, CancellationToken cancellationToken)
     {
@@ -114,7 +117,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     /// </para>
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(2 * 1024 * 1024 /*2MB*/)]
+    [RequestSizeLimit(MaxSpeechUploadSizeBytes)]
     [EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]
     public async Task<IActionResult> SynthesizeSpeech(SynthesizeSpeechRequestDto request, CancellationToken cancellationToken)
     {
