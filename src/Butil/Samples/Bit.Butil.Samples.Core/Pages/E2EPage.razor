@@ -679,7 +679,10 @@
     {
         var supported = await languageModel.IsSupported();
         var plain = await languageModel.Availability();
-        var withOptions = await languageModel.Availability(new LanguageModelOptions { Temperature = 0.5 });
+        // Temperature and TopK are a pair: the Prompt API rejects a probe that carries one without
+        // the other, which ai.ts reports as Unavailable - so an option set meant to be accepted
+        // sends both.
+        var withOptions = await languageModel.Availability(new LanguageModelOptions { Temperature = 0.5, TopK = 1 });
         var modelParams = await languageModel.GetParams();
 
         Set($"plat:ai:{supported}/{plain}/{withOptions}/{modelParams is not null}");

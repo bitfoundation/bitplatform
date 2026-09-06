@@ -51,6 +51,7 @@ _session = await languageModel.Create(
     {
         SystemPrompt = "You answer in one short sentence.",
         Temperature = 0.7,
+        TopK = 3,
     },
     onDownloadProgress: fraction =>
     {

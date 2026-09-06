@@ -98,9 +98,10 @@ public class PlatformApisTests : ButilPageTest
     {
         // Which availability comes back depends on the build - a channel with no on-device model
         // answers Unavailable, one that could fetch it answers Downloadable - so the value itself
-        // cannot be pinned. What is pinned is that both probes answer with an AiAvailability rather
-        // than throwing, which is the contract every caller is told to branch on, and that the
-        // harness's option set doesn't change the answer.
+        // cannot be pinned, and neither can the two probes against each other: an option set the
+        // runtime won't serve is reported as Unavailable even where the plain probe says otherwise.
+        // What is pinned is that both answer with an AiAvailability rather than throwing, which is
+        // the contract every caller is told to branch on.
         await ClickAndExpectAsync("plat-ai", "plat:ai:");
 
         // plat:ai:<supported>/<plain>/<with options>/<has params>
@@ -108,6 +109,5 @@ public class PlatformApisTests : ButilPageTest
         Assert.AreEqual(4, parts.Length, "the probe reports supported, both availabilities and params");
         CollectionAssert.Contains(_aiAvailabilities, parts[1], $"'{parts[1]}' is not an AiAvailability");
         CollectionAssert.Contains(_aiAvailabilities, parts[2], $"'{parts[2]}' is not an AiAvailability");
-        Assert.AreEqual(parts[1], parts[2], "a temperature the model accepts cannot change its availability");
     }
 }

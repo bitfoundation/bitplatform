@@ -7,6 +7,10 @@ namespace Bit.Butil;
 /// <remarks>
 /// The same options also decide the answer from <see cref="LanguageModel.Availability(LanguageModelOptions)"/> -
 /// probe with the options you intend to create with, not with none.
+/// <para>
+/// <see cref="Temperature"/> and <see cref="TopK"/> are a pair: an option set carrying one without the
+/// other is refused, which surfaces as a failed creation and as an Unavailable availability.
+/// </para>
 /// </remarks>
 public class LanguageModelOptions
 {
