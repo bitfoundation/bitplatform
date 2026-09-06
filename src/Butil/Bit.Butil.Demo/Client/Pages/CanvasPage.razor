@@ -207,6 +207,7 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
     private ElementReference _video;
 
     private MediaStreamHandle? _stream;
+    private int _cameraGeneration;
     private string? _preview;
     private string? _thumbnail;
     private string? _photo;
@@ -390,15 +391,29 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
     {
         await StopCamera();
 
+        // GetUserMedia can sit on a permission prompt for as long as the user leaves it there, so a
+        // second Start - or a Stop - can land while it is still pending. The generation says which
+        // request the page is still waiting for; anything else has to release the camera it opened
+        // rather than becoming _stream, or the light stays on with nothing holding the handle.
+        var generation = ++_cameraGeneration;
+
         try
         {
-            _stream = await mediaDevices.GetUserMedia(audio: false, video: true);
-            if (_stream is null)
+            var stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+            if (stream is null)
             {
                 await cameraOutput.Warn("GetUserMedia returned null - no camera, or permission was refused.");
                 return;
             }
 
+            if (generation != _cameraGeneration)
+            {
+                await stream.DisposeAsync();
+                await cameraOutput.Log("A camera that was asked for and then abandoned - stopped it rather than leaving it open.");
+                return;
+            }
+
+            _stream = stream;
             await _stream.AttachTo(_video);
             await cameraOutput.Success("Camera started.");
         }
@@ -430,6 +445,10 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
 
     private async Task StopCamera()
     {
+        // Bumped even when there is nothing to stop: a request still in flight is exactly what a
+        // Stop with no stream yet is cancelling.
+        _cameraGeneration++;
+
         if (_stream is null) return;
 
         await _stream.DisposeAsync();
@@ -441,6 +460,10 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
     {
         try
         {
+            // Also invalidates a request still on the permission prompt: after teardown there is
+            // nothing left that would stop the camera it comes back with.
+            _cameraGeneration++;
+
             if (_stream is not null) await _stream.DisposeAsync();
         }
         catch (Exception)

@@ -238,7 +238,13 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
             _messages.Clear();
             _received = 0;
 
-            _socket = await webSocket.Open(EchoUrl,
+            // The close of the socket this call is opening, told from the close of one already
+            // replaced: a callback is an asynchronous dispatch, so the previous socket's close can
+            // land after a newer one is in the field, and clearing it there would leave the page
+            // saying "closed" about a socket that is open.
+            WebSocketHandle? opening = null;
+
+            opening = await webSocket.Open(EchoUrl,
                 onMessage: m => InvokeAsync(() =>
                 {
                     _received++;
@@ -255,6 +261,9 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
                 }),
                 onClose: close => InvokeAsync(async () =>
                 {
+                    // Only this socket's own close touches the field - a later socket is already in it.
+                    if (opening is not null && ReferenceEquals(_socket, opening) is false) return;
+
                     _connectionState = $"Closed ({close.Code}).";
                     _socket = null;
                     await closeOutput.Warn($"Closed → code {close.Code}, clean {close.WasClean}, reason",
@@ -267,13 +276,14 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
                     await socketOutput.Error("Socket error. The close callback that follows carries the code.");
                 }));
 
-            if (_socket is null)
+            if (opening is null)
             {
                 _connectionState = "Could not open.";
                 await socketOutput.Warn("Open returned null - WebSocket is unavailable, the URL is malformed, or mixed content blocked it.");
                 return;
             }
 
+            _socket = opening;
             _connectionState = "Connecting...";
             await socketOutput.Success("Open → connecting to", EchoUrl);
         }

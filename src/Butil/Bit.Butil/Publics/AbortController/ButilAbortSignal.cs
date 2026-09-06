@@ -76,6 +76,13 @@ public class ButilAbortSignal : IAsyncDisposable
 
         try { await _js.InvokeVoid("BitButil.abortController.release", Id); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        finally
+        {
+            // In a finally because the .NET half is ours to clean up whether or not the JS half
+            // could be reached: a released signal never fires, so its listeners are unreachable
+            // either way, and leaving them would hold the callbacks - and whatever they close over.
+            _owner.ForgetSignalListeners(Id);
+        }
 
         GC.SuppressFinalize(this);
     }

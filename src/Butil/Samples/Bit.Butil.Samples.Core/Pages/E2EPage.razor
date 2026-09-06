@@ -495,12 +495,14 @@
     }
 
     // ─── AbortController ────────────────────────────────────────────────────────
-    // Abort callbacks arrive through invokeMethodAsync, so asserting straight after Abort() would
-    // race the dispatch. Every case here waits on a completion source instead of a delay, which is
-    // what keeps the suite headless and free of timing flakes.
-    private static async Task<string?> AwaitAbort(TaskCompletionSource<string> source)
+    // Every callback in this file - aborts, frames, ports, workers, sockets - arrives through
+    // invokeMethodAsync, so asserting straight after the call that causes it would race the
+    // dispatch. They all wait on a completion source instead of a delay, which is what keeps the
+    // suite headless and free of timing flakes; the timeout is only there so a case that never
+    // fires fails as a reported miss rather than as a hung run.
+    private static async Task<T?> AwaitCallback<T>(TaskCompletionSource<T> source, int seconds = 10) where T : class
     {
-        var finished = await Task.WhenAny(source.Task, Task.Delay(TimeSpan.FromSeconds(5)));
+        var finished = await Task.WhenAny(source.Task, Task.Delay(TimeSpan.FromSeconds(seconds)));
         return finished == source.Task ? await source.Task : null;
     }
 
@@ -526,7 +528,7 @@
         await using var subscription = await handle.Signal.OnAbort(reason => received.TrySetResult(reason));
 
         await handle.Abort("listener-reason");
-        Set($"abort:listener:{await AwaitAbort(received) ?? "(timed out)"}");
+        Set($"abort:listener:{await AwaitCallback(received, 5) ?? "(timed out)"}");
     }
 
     private async Task AbortLateListener()
@@ -541,7 +543,7 @@
         var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         await using var subscription = await handle.Signal.OnAbort(reason => received.TrySetResult(reason));
 
-        Set($"abort:late:{await AwaitAbort(received) ?? "(never fired)"}");
+        Set($"abort:late:{await AwaitCallback(received, 5) ?? "(never fired)"}");
     }
 
     private async Task AbortShared()
@@ -555,7 +557,7 @@
         await using var two = await handle.Signal.OnAbort(reason => second.TrySetResult(reason));
 
         await handle.Abort("shared");
-        Set($"abort:shared:{await AwaitAbort(first) ?? "(timed out)"}/{await AwaitAbort(second) ?? "(timed out)"}");
+        Set($"abort:shared:{await AwaitCallback(first, 5) ?? "(timed out)"}/{await AwaitCallback(second, 5) ?? "(timed out)"}");
     }
 
     private async Task AbortAny()
@@ -572,7 +574,7 @@
 
         // The composite carries the reason of whichever source fired, not one of its own.
         await right.Abort("from-right");
-        var reason = await AwaitAbort(received) ?? "(timed out)";
+        var reason = await AwaitCallback(received, 5) ?? "(timed out)";
 
         Set($"abort:any:{reason}/{await composite.GetAborted()}");
         // The composite watches the other two, so it goes first.
@@ -587,7 +589,7 @@
         var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         await using var subscription = await deadline.OnAbort(reason => received.TrySetResult(reason));
 
-        var fired = await AwaitAbort(received) is not null;
+        var fired = await AwaitCallback(received, 5) is not null;
         Set($"abort:timeout:{fired}/{await deadline.GetAborted()}");
         await deadline.DisposeAsync();
     }
@@ -652,11 +654,11 @@
         await _peerB.SetLocalDescription(answer);
         await _peerA.SetRemoteDescription(answer);
 
-        if (await AwaitAbort(opened) is null) { Set("rtc:connect:channel-never-opened"); return; }
+        if (await AwaitCallback(opened, 5) is null) { Set("rtc:connect:channel-never-opened"); return; }
 
         await _rtcChannel!.SendText("ping");
-        var message = await AwaitAbort(received);
-        var remote = await AwaitAbort(remoteOpened);
+        var message = await AwaitCallback(received, 5);
+        var remote = await AwaitCallback(remoteOpened, 5);
 
         Set($"rtc:connect:{await _peerA.GetConnectionState()}/{await _rtcChannel.GetState()}/{message ?? "(timed out)"}/{remote ?? "(remote open missed)"}");
     }
@@ -1007,7 +1009,7 @@
         var fired = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         await scheduler.RequestAnimationFrame(timestamp => fired.TrySetResult(timestamp > 0 ? "yes" : "zero"));
 
-        var result = await AwaitAbort(fired);
+        var result = await AwaitCallback(fired, 5);
         Set($"sched:frame:{result ?? "(timed out)"}");
     }
 
@@ -1022,7 +1024,7 @@
             if (frames >= 5) enough.TrySetResult("ok");
         });
 
-        var reached = await AwaitAbort(enough) is not null;
+        var reached = await AwaitCallback(enough, 5) is not null;
         await loop.DisposeAsync();
 
         // Disposing has to stop the loop, not merely detach the handler: count again after a pause
@@ -1378,12 +1380,6 @@
     private TaskCompletionSource<ButilMessage>? _fromWorker;
     private TaskCompletionSource<WorkerError>? _workerError;
 
-    private static async Task<T?> AwaitCallback<T>(TaskCompletionSource<T> source, int seconds = 10) where T : class
-    {
-        var finished = await Task.WhenAny(source.Task, Task.Delay(TimeSpan.FromSeconds(seconds)));
-        return finished == source.Task ? await source.Task : null;
-    }
-
     private async Task<bool> EnsureWorker()
     {
         if (_worker is not null) return true;
@@ -1568,12 +1564,6 @@
         }
     }
 
-    private static async Task<T?> AwaitSocket<T>(TaskCompletionSource<T> source) where T : class
-    {
-        var finished = await Task.WhenAny(source.Task, Task.Delay(TimeSpan.FromSeconds(10)));
-        return finished == source.Task ? await source.Task : null;
-    }
-
     /// <summary>
     /// Opens the socket the rest of this section works with and waits for its open event, leaving it
     /// in <c>_socket</c>. Returns the negotiated protocol, or null for a socket that never opened.
@@ -1589,7 +1579,7 @@
             onOpen: (protocol, _) => { _negotiatedProtocol = protocol; opened.TrySetResult(protocol); },
             onClose: close => _closed?.TrySetResult(close));
 
-        return _socket is null ? null : await AwaitSocket(opened);
+        return _socket is null ? null : await AwaitCallback(opened);
     }
 
     private async Task WebSocketOpen()
@@ -1625,7 +1615,7 @@
             onOpen: (protocol, _) => firstOpened.TrySetResult(protocol),
             onClose: close => firstClosed.TrySetResult(close));
 
-        if (first is null || await AwaitSocket(firstOpened) is null) { Set("ws:replace:no-first"); return; }
+        if (first is null || await AwaitCallback(firstOpened) is null) { Set("ws:replace:no-first"); return; }
 
         // Closing is a handshake, so the callback is still in flight while the replacement opens -
         // which is the whole point: the two overlap rather than happening one cleanly after the other.
@@ -1634,9 +1624,9 @@
         _nextMessage = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         if (await OpenCurrent(url) is null) { Set("ws:replace:no-second"); return; }
 
-        var closed = await AwaitSocket(firstClosed);
+        var closed = await AwaitCallback(firstClosed);
         var sent = await _socket!.SendText("after");
-        var echo = await AwaitSocket(_nextMessage);
+        var echo = await AwaitCallback(_nextMessage);
 
         Set($"ws:replace:{closed?.Code.ToString() ?? "(timed out)"}/{sent}/{echo ?? "(timed out)"}");
     }
@@ -1647,7 +1637,7 @@
 
         _nextMessage = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         var sent = await _socket.SendText("ping");
-        Set($"ws:text:{sent}/{await AwaitSocket(_nextMessage) ?? "(timed out)"}");
+        Set($"ws:text:{sent}/{await AwaitCallback(_nextMessage) ?? "(timed out)"}");
     }
 
     private async Task WebSocketBinary()
@@ -1658,7 +1648,7 @@
         // The endpoint increments every byte, so [1,2,3,4] proves a real round trip rather than the
         // page having simply kept its own array.
         var sent = await _socket.SendBytes([1, 2, 3, 4]);
-        Set($"ws:binary:{sent}/{await AwaitSocket(_nextMessage) ?? "(timed out)"}");
+        Set($"ws:binary:{sent}/{await AwaitCallback(_nextMessage) ?? "(timed out)"}");
     }
 
     private async Task WebSocketState()
@@ -1676,7 +1666,7 @@
         if (_socket is null || _closed is null) { Set("ws:no-socket"); return; }
 
         await _socket.SendText("close");
-        var close = await AwaitSocket(_closed);
+        var close = await AwaitCallback(_closed);
         _socket = null;
         Set(close is null ? "ws:server-close:(timed out)" : $"ws:server-close:{close.Code}/{close.WasClean}/{close.Reason}");
     }
@@ -1686,7 +1676,7 @@
         if (_socket is null || _closed is null) { Set("ws:no-socket"); return; }
 
         await _socket.Close(4000, "done");
-        var close = await AwaitSocket(_closed);
+        var close = await AwaitCallback(_closed);
         _socket = null;
         Set(close is null ? "ws:close:(timed out)" : $"ws:close:{close.Code}/{close.WasClean}");
     }
@@ -1713,8 +1703,17 @@
         try
         {
             await CloseSocket();
+            await RtcClose();
+            if (_shadowRoot is not null) { await _shadowRoot.DisposeAsync(); _shadowRoot = null; }
             if (_worker is not null) { await _worker.DisposeAsync(); _worker = null; }
-            if (_sharedWorker is not null) { await _sharedWorker.DisposeAsync(); _sharedWorker = null; }
+            if (_sharedWorker is not null)
+            {
+                // A shared worker outlives the page, so it is told this port is going before the
+                // port is closed - otherwise it counts a connection that no longer exists.
+                await _sharedWorker.Port.PostMessage(new { op = "disconnect" });
+                await _sharedWorker.DisposeAsync();
+                _sharedWorker = null;
+            }
         }
         catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
     }

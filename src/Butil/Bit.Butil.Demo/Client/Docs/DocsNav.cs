@@ -48,7 +48,7 @@ public static class DocsNav
                 ["Css", "StyleSheetHandle"]),
             new("Dom", "dom", "Find and create elements Blazor did not render, walk the tree, and bridge back to ElementReference.", typeof(DomPage), ApiSupport.Broad, ApiNeeds.None,
                 ["Dom", "DomHandle"]),
-            new("ShadowDom", "shadow-dom", "Attach a shadow root, style it in isolation, and read into a third-party component's own markup.", typeof(ShadowDomPage), ApiSupport.Broad, ApiNeeds.None,
+            new("ShadowDom", "shadow-dom", "Attach a shadow root, style it in isolation, and read into an open one - your own, or any that was not closed.", typeof(ShadowDomPage), ApiSupport.Broad, ApiNeeds.None,
                 ["ShadowDom", "ShadowRootHandle"]),
             new("Canvas", "canvas", "Draw a video frame or an image onto a canvas, then export it as a data URL or a byte[].", typeof(CanvasPage), ApiSupport.Broad, ApiNeeds.None,
                 ["Canvas", "CanvasSize", "CanvasDrawOptions"]),

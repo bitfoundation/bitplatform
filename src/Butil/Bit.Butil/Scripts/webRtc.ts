@@ -12,11 +12,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function channelOf(channelId: string) { return _channels[channelId]?.channel; }
 
-    // defer holds every event of this channel until flushChannel is called. A channel the peer
+    // defer holds every event of this channel until flushQueued is called. A channel the peer
     // created exists here before .NET has heard of it, and .NET cannot register handlers for it
     // until the announcement round trip has returned - so its open, and the peer's first messages,
     // would be dispatched to a channel id .NET does not know and dropped. Holding them is the same
     // bargain a MessagePort makes by queueing until start().
+    // A channel *this* side created has the same gap the other way round: it exists from the moment
+    // createDataChannel returns, while .NET can only call Listen once the call that made it has
+    // returned - and on a peer that is already connected the open fires inside that window.
     function wireChannel(dotNetRef: any, peerId: string, channelId: string, channel: any, defer: boolean = false) {
         const entry: ChannelEntry = { channel, peerId, dotNetRef };
         if (defer) entry.queued = [];
@@ -44,7 +47,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         });
     }
 
-    function flushChannel(channelId: string) {
+    function flushQueued(channelId: string) {
         const entry = _channels[channelId];
         if (!entry?.queued) return;
 
@@ -96,7 +99,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 // the queue grow for the life of the channel.
                 wireChannel(dotNetRef, id, channelId, e.channel, true);
                 Promise.resolve(butil.utils.dispatch(dotNetRef, 'InvokeRemoteChannel', id, channelId, e.channel.label))
-                    .then(() => flushChannel(channelId), () => flushChannel(channelId));
+                    .then(() => flushQueued(channelId), () => flushQueued(channelId));
             });
 
             return true;
@@ -112,10 +115,21 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 // definition, and passing 0 would mean "never retransmit" rather than "reliable".
                 if (maxRetransmits >= 0) options.maxRetransmits = maxRetransmits;
 
-                wireChannel(dotNetRef, peerId, channelId, entry.pc.createDataChannel(label, options));
+                // Deferred until .NET has registered its handlers - see wireChannel - which is what
+                // the flushChannel below is called for.
+                wireChannel(dotNetRef, peerId, channelId, entry.pc.createDataChannel(label, options), true);
+                // A caller that never listens must not hold events for the life of the channel, so
+                // the wait is bounded: after this the events go out as they always did - to a
+                // channel id nothing is registered for, which is what "never listened" means.
+                setTimeout(() => flushQueued(channelId), 10_000);
                 return true;
             } catch { return false; }
         },
+
+        // Releases the events held since the channel was created. Called when .NET attaches this
+        // channel's handlers (RtcDataChannelHandle.Listen); a channel with nothing held is a no-op,
+        // so calling it twice - or on a channel that has already closed - costs nothing.
+        flushChannel(channelId: string) { flushQueued(channelId); },
 
         async createOffer(id: string) {
             const entry = _peers[id];

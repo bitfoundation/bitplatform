@@ -105,7 +105,7 @@ registering everything.
 | `ResizeObserver` | Element size changes with box-model detail |
 | `Css` | `getComputedStyle`, `CSS.supports`/`escape`/`registerProperty`, stylesheet rules, the CSS Custom Highlight API |
 | `Dom` | `querySelector`, `getElementById`, `createElement` and node traversal for elements Blazor did not render - with a bridge back to `ElementReference` |
-| `ShadowDom` | `attachShadow`, scoped styles, and querying into a third-party component's own markup |
+| `ShadowDom` | `attachShadow`, scoped styles, and querying into any open shadow root - a closed one is closed to you too |
 | `Canvas` | `drawImage` from a video/image/canvas, then `toDataURL`/`toBlob` - screenshots and thumbnails as `byte[]` |
 | `PictureInPicture` | Float a `<video>` in an always-on-top window |
 | `ViewTransition` | Animate between two states of the page, the browser doing the work |

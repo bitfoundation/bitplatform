@@ -51,17 +51,26 @@ var offer = await a.CreateOffer();
     private readonly List<string> _received = [];
     private string _state = "Not connected.";
 
+    // A candidate has nowhere to go until the peer it is meant for has a remote description, and
+    // they start arriving the moment a local description is set - which is before the other side
+    // has been told anything at all. Held per peer, in arrival order, and handed over as soon as
+    // that peer's SetRemoteDescription has succeeded.
+    private readonly List<string?> _forA = [];
+    private readonly List<string?> _forB = [];
+    private bool _remoteSetOnA;
+    private bool _remoteSetOnB;
+
     private async Task Connect()
     {
         await Close();
         _received.Clear();
 
         _a = await webRtc.CreatePeerConnection(
-            onIceCandidate: json => InvokeAsync(async () => { if (_b is not null) await _b.AddIceCandidate(json); }),
+            onIceCandidate: json => InvokeAsync(() => SendCandidate(_b, _remoteSetOnB, _forB, json)),
             onConnectionState: state => InvokeAsync(() => { _state = state; StateHasChanged(); }));
 
         _b = await webRtc.CreatePeerConnection(
-            onIceCandidate: json => InvokeAsync(async () => { if (_a is not null) await _a.AddIceCandidate(json); }),
+            onIceCandidate: json => InvokeAsync(() => SendCandidate(_a, _remoteSetOnA, _forA, json)),
             onRemoteChannel: channel => channel.Listen(onMessage: m => InvokeAsync(async () =>
             {
                 // Text sent as a plain string arrives as quoted JSON, like every other structured
@@ -89,7 +98,17 @@ var offer = await a.CreateOffer();
         }
 
         await _a.SetLocalDescription(offer);
-        await _b.SetRemoteDescription(offer);
+
+        var offerApplied = await _b.SetRemoteDescription(offer);
+        if (offerApplied is not null)
+        {
+            await output.Error("B could not take the offer →", offerApplied);
+            return;
+        }
+        // Flag first, then drain: from here a candidate goes straight over rather than onto a list
+        // that is being emptied.
+        _remoteSetOnB = true;
+        await DrainCandidates(_b, _forB);
 
         var answer = await _b.CreateAnswer();
         if (answer?.Sdp is null)
@@ -99,9 +118,43 @@ var offer = await a.CreateOffer();
         }
 
         await _b.SetLocalDescription(answer);
-        await _a.SetRemoteDescription(answer);
+
+        var answerApplied = await _a.SetRemoteDescription(answer);
+        if (answerApplied is not null)
+        {
+            await output.Error("A could not take the answer →", answerApplied);
+            return;
+        }
+        _remoteSetOnA = true;
+        await DrainCandidates(_a, _forA);
 
         await output.Success("Handshake done.");
+    }
+
+    // Candidates only go over once the peer they are for can take them; until then they are held.
+    private async Task SendCandidate(PeerConnectionHandle? peer, bool remoteDescriptionSet, List<string?> pending, string? candidateJson)
+    {
+        if (peer is null) return;
+
+        if (remoteDescriptionSet is false)
+        {
+            pending.Add(candidateJson);
+            return;
+        }
+
+        var error = await peer.AddIceCandidate(candidateJson);
+        if (error is not null) await output.Warn("AddIceCandidate →", error);
+    }
+
+    private async Task DrainCandidates(PeerConnectionHandle peer, List<string?> pending)
+    {
+        foreach (var candidate in pending)
+        {
+            var error = await peer.AddIceCandidate(candidate);
+            if (error is not null) await output.Warn("AddIceCandidate →", error);
+        }
+
+        pending.Clear();
     }
 
     private async Task Send()
@@ -125,6 +178,12 @@ var offer = await a.CreateOffer();
         if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
         if (_a is not null) { await _a.DisposeAsync(); _a = null; }
         if (_b is not null) { await _b.DisposeAsync(); _b = null; }
+
+        _forA.Clear();
+        _forB.Clear();
+        _remoteSetOnA = false;
+        _remoteSetOnB = false;
+
         _state = "Closed.";
     }
 

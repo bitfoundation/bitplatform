@@ -69,7 +69,7 @@ await socket.Close(1000, "done");
 
         var generation = ++_generation;
 
-        _socket = await webSocket.Open(_url.Trim(),
+        var opening = await webSocket.Open(_url.Trim(),
             onMessage: m => InvokeAsync(async () =>
             {
                 await output.Success("Received →", m.IsBinary ? $"binary [{string.Join(", ", m.Data ?? [])}]" : m.Text);
@@ -94,13 +94,25 @@ await socket.Close(1000, "done");
             // The error event carries nothing by design - the close that follows has the detail.
             onError: () => InvokeAsync(() => output.Error("Socket error.")));
 
-        if (_socket is null)
+        if (opening is null)
         {
             _state = "Could not open.";
             await output.Warn("Open returned null - the URL's scheme was refused, or mixed content blocked it.");
             return;
         }
 
+        // The same generation the callbacks check, for the same reason: opening a socket is
+        // asynchronous, so a second Open - or a Close - can happen while this one is still being
+        // made. A socket nobody is waiting for any more has to be closed rather than dropped, or it
+        // stays connected with nothing holding it.
+        if (generation != _generation)
+        {
+            await opening.DisposeAsync();
+            await output.Warn("A socket that was opened and then abandoned - closed it rather than leaving it connected.");
+            return;
+        }
+
+        _socket = opening;
         _state = "Connecting...";
     }
 
@@ -135,6 +147,10 @@ await socket.Close(1000, "done");
 
     private async Task DisposeSocket()
     {
+        // Bumped before the null check, so this also invalidates a socket still being opened: on
+        // teardown there is nothing else that would ever close it.
+        _generation++;
+
         if (_socket is null) return;
         var socket = _socket;
         _socket = null;

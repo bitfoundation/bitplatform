@@ -48,6 +48,10 @@ await w!.PostMessage(new { op = "fib", n = 38 });
 
     private WorkerHandle? _worker;
     private MessageChannelHandle? _channel;
+    // Which Create the page is still waiting for. Creating a worker is asynchronous, so a second
+    // Create - or a Terminate - can land while one is still being made, and a worker nobody is
+    // waiting for any more has to be terminated rather than dropped: it keeps its thread otherwise.
+    private int _generation;
     private string _state = "Not started.";
     private int _clicks;
 
@@ -55,7 +59,9 @@ await w!.PostMessage(new { op = "fib", n = 38 });
     {
         await TerminateWorker();
 
-        _worker = await worker.Create("/workers/sample-worker.js",
+        var generation = ++_generation;
+
+        var created = await worker.Create("/workers/sample-worker.js",
             onMessage: m => InvokeAsync(async () =>
             {
                 await output.Success("Worker →", m.IsBinary ? $"binary [{m.Data?.Length} bytes]" : m.Json);
@@ -63,13 +69,21 @@ await w!.PostMessage(new { op = "fib", n = 38 });
             options: new WorkerOptions { Name = "butil-sample" },
             onError: e => InvokeAsync(() => output.Error("onError →", $"{e.Message} ({e.FileName}:{e.LineNumber})")));
 
-        if (_worker is null)
+        if (created is null)
         {
             _state = "Could not start - Worker is unavailable, or the script URL was refused.";
             await output.Warn(_state);
             return;
         }
 
+        if (generation != _generation)
+        {
+            await created.Terminate();
+            await output.Warn("A worker that was created and then abandoned - terminated it rather than leaving it running.");
+            return;
+        }
+
+        _worker = created;
         _state = "Running.";
     }
 
@@ -114,6 +128,10 @@ await w!.PostMessage(new { op = "fib", n = 38 });
 
     private async Task TerminateWorker()
     {
+        // Bumped before the null check, so this also invalidates a worker still being created: on
+        // teardown there is nothing else that would ever terminate it.
+        _generation++;
+
         if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
         if (_worker is null) return;
 

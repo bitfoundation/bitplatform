@@ -26,7 +26,9 @@ public class AbortController(IJSRuntime js) : IAsyncDisposable
 {
     internal const string AbortMethodName = nameof(InvokeAbort);
 
-    private readonly ConcurrentDictionary<Guid, Action<string>> _handlers = new();
+    // Keyed by listener id, but carrying the signal it belongs to: releasing a signal has to drop
+    // its listeners, and the listener id is all the abort dispatch itself has to go on.
+    private readonly ConcurrentDictionary<Guid, (Guid SignalId, Action<string> OnAbort)> _handlers = new();
 
     // Per-instance callback reference: signals are isolated per circuit / WASM app and released on
     // disposal - no static state, no cross-circuit leak.
@@ -57,7 +59,7 @@ public class AbortController(IJSRuntime js) : IAsyncDisposable
     [JSInvokable(AbortMethodName)]
     public void InvokeAbort(Guid listenerId, string reason)
     {
-        if (_handlers.TryGetValue(listenerId, out var handler)) handler(reason);
+        if (_handlers.TryGetValue(listenerId, out var handler)) handler.OnAbort(reason);
     }
 
     /// <summary>
@@ -134,7 +136,7 @@ public class AbortController(IJSRuntime js) : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(onAbort);
 
         var listenerId = Guid.NewGuid();
-        _handlers[listenerId] = onAbort;
+        _handlers[listenerId] = (signalId, onAbort);
 
         var added = await js.Invoke<bool>("BitButil.abortController.addListener", DotNetRef, signalId, listenerId);
 
@@ -149,6 +151,17 @@ public class AbortController(IJSRuntime js) : IAsyncDisposable
             _handlers.TryRemove(listenerId, out _);
             await js.InvokeVoid("BitButil.abortController.removeListener", signalId, listenerId);
         });
+    }
+
+    // A released signal can never fire again, so every listener still registered for it is dead
+    // weight: the JS release drops its half, and this drops the .NET half it cannot reach - a
+    // subscription the caller never disposed would otherwise be held for the life of the service.
+    internal void ForgetSignalListeners(Guid signalId)
+    {
+        foreach (var pair in _handlers)
+        {
+            if (pair.Value.SignalId == signalId) _handlers.TryRemove(pair.Key, out _);
+        }
     }
 
     /// <summary>

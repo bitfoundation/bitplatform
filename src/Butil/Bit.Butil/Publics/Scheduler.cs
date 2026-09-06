@@ -119,7 +119,10 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         _frameHandlers[id] = (onFrame, Repeats: false);
 
-        await js.Invoke<bool>("BitButil.scheduler.requestFrame", DotNetRef, id);
+        // False means nothing was scheduled - during prerender/SSR, most often - and the handler
+        // would otherwise sit in the dictionary for the life of the service with no frame to run it.
+        var requested = await js.Invoke<bool>("BitButil.scheduler.requestFrame", DotNetRef, id);
+        if (requested is false) _frameHandlers.TryRemove(id, out _);
 
         return new ButilSubscription(id, async () =>
         {
@@ -149,7 +152,9 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         _frameHandlers[id] = (onFrame, Repeats: true);
 
-        await js.Invoke<bool>("BitButil.scheduler.startFrameLoop", DotNetRef, id);
+        // As for a single frame: a loop that was never started leaves no handler behind.
+        var started = await js.Invoke<bool>("BitButil.scheduler.startFrameLoop", DotNetRef, id);
+        if (started is false) _frameHandlers.TryRemove(id, out _);
 
         return new ButilSubscription(id, async () =>
         {

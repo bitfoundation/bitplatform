@@ -222,6 +222,8 @@ await sink!.Close();
     {
         await CancelRead();
 
+        ReadableStreamHandle? reading = null;
+
         try
         {
             var response = await streams.FromResponse(new FetchRequest { Url = StreamUrl });
@@ -233,7 +235,12 @@ await sink!.Close();
                 return;
             }
 
-            _reading = response.Stream;
+            // Read through this invocation's own handle rather than the field: a Cancel, or a
+            // second Read, replaces the field while this loop is still awaiting a chunk, and the
+            // loop must keep reading the stream it started on rather than following the field.
+            reading = response.Stream;
+            _reading = reading;
+
             await readOutput.Success($"Status {response.Status} →",
                 response.TotalBytes is null ? "no Content-Length" : $"{response.TotalBytes} bytes expected");
 
@@ -242,7 +249,7 @@ await sink!.Close();
 
             while (true)
             {
-                var chunk = await _reading.Read();
+                var chunk = await reading.Read();
                 if (chunk.Error is not null)
                 {
                     await readOutput.Error("Read failed →", chunk.Error);
@@ -260,12 +267,17 @@ await sink!.Close();
                 StateHasChanged();
             }
 
-            _reading = null;
             await readOutput.Success("Done →", $"{received} bytes in {chunks} chunk(s)");
         }
         catch (Exception ex)
         {
             await readOutput.Error("Read failed →", ex.Message);
+        }
+        finally
+        {
+            // Only if the field is still this read's stream: a newer read has already put its own
+            // there, and clearing it would leave Cancel and disposal with nothing to reach.
+            if (ReferenceEquals(_reading, reading)) _reading = null;
         }
     }
 

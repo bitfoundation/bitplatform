@@ -43,8 +43,10 @@ public sealed class RtcDataChannelHandle : IAsyncDisposable
     /// <param name="onOpen">Called when the channel is ready to send. Sending before this fails.</param>
     /// <param name="onClose">Called when it closes, from either end.</param>
     /// <remarks>
-    /// For a channel you created, call this before the handshake completes: it opens as soon as the
-    /// connection is established, and a callback attached after that has already been missed.
+    /// For a channel you created, its events are held from the moment it was made until this call,
+    /// so the open is not lost to the round trip that handed you the handle - which is the ordinary
+    /// case when the connection is already established. They are held for at most ten seconds: a
+    /// channel nobody ever listens to must not queue its messages for ever.
     /// <br/>
     /// For a channel the peer created - one handed to <c>onRemoteChannel</c> - the channel is
     /// already open by the time you see it, so its events are held until that callback returns and
@@ -53,7 +55,22 @@ public sealed class RtcDataChannelHandle : IAsyncDisposable
     /// after an <c>await</c> or from another turn, still misses whatever arrived in between.
     /// </remarks>
     public void Listen(Action<ButilMessage>? onMessage = null, Action? onOpen = null, Action? onClose = null)
-        => _owner.SetChannelHandlers(Id, onOpen, onClose, onMessage);
+    {
+        _owner.SetChannelHandlers(Id, onOpen, onClose, onMessage);
+
+        // Registering the handlers is what releases the events held since the channel was made.
+        // Started rather than awaited, because this has to stay synchronous: called from inside
+        // onRemoteChannel, an await here would return to the caller and let JS flush first, which
+        // is the very loss the deferral exists to prevent. The flush itself is a no-op when there
+        // is nothing held, so a channel that was already flushed pays only the round trip.
+        _ = Flush();
+    }
+
+    private async ValueTask Flush()
+    {
+        try { await _js.InvokeVoid("BitButil.webRtc.flushChannel", Id); }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // the circuit or the channel is already gone
+    }
 
     /// <summary>
     /// Sends text.

@@ -120,8 +120,8 @@ and this repository never does, plus the artifacts the whole feature rests on:
   into the `bit-butil.js` the package ships, each `modules/<name>.js` is byte-for-byte the bundle its own
   dependency closure assembles to, every chunk carries the guard that makes a second evaluation a no-op and
   appears in the bundle exactly once, and the manifest lists every module after the modules it depends on;
-- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 8-module,
-  9 KB one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
+- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 15-module,
+  32,966-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
   evaluated under Node in a browser-like sandbox and has to register exactly the expected `BitButil`
   namespaces, none of them empty, and register nothing a second time (the sentinel each namespace is marked
   with has to survive re-evaluation - a guard that stopped holding would reset a module's listener
