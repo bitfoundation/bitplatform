@@ -275,10 +275,27 @@ var revoked = await _device.Forget();
             if (filter.VendorId is not null || filter.UsagePage is not null) filters.Add(filter);
 
             var devices = await hid.RequestDevice([.. filters]);
-            _device = devices.FirstOrDefault();
+            var requested = devices.FirstOrDefault();
 
-            if (_device is null) await deviceOutput.Warn("The chooser was dismissed.");
-            else await deviceOutput.Success("RequestDevice →",
+            if (requested is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await deviceOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it - and the input
+            // report subscription taken through it - rather than leaving the device open. Re-picking
+            // the same device hands back the handle already in play, and disposing that one would
+            // release the device this page is about to use.
+            if (ReferenceEquals(_device, requested) is false)
+            {
+                await StopInputReports();
+                if (_device is not null) await _device.DisposeAsync();
+            }
+
+            _device = requested;
+            await deviceOutput.Success("RequestDevice →",
                 $"{devices.Length} device(s); using {_device.ProductName ?? "(unnamed)"}");
         }
         catch (Exception ex)

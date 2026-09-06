@@ -7,6 +7,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // At most one read loop per port: the stream lock is exclusive, so a second reader would throw.
     const _readers: { [id: string]: { reader: any, subscriptionId: string, stopping: boolean } } = {};
     const _connectionListeners: { [id: string]: { connect: EventListener, disconnect: EventListener } } = {};
+    // The line settings each open port was opened with. The API exposes no way to read them back and
+    // no way to change them in place, so open() keeps them here to tell a redundant re-open from one
+    // that is asking for different settings.
+    const _openOptions: { [id: string]: any } = {};
 
     // Handle ids are minted here rather than by .NET, through the registry every device module
     // shares: the browser surfaces a port .NET has never seen, so there is nothing for it to key on
@@ -91,6 +95,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function release(id: string) {
         const port = _registry.remove(id);
         if (!port) return;
+        delete _openOptions[id];
         // Fire-and-forget: disposal must not wait on a port whose cable has already been pulled.
         // The read loop still holds the readable stream locked, though, and close() rejects until
         // it lets go - so the close is chained behind stopReading rather than raced with it.
@@ -100,22 +105,40 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     async function open(id: string, options: any) {
         const port = _ports[id];
         if (!port) return false;
-        if (port.readable || port.writable) return true;
 
-        await port.open({
+        const settings = {
             baudRate: options?.baudRate ?? 9600,
             dataBits: options?.dataBits ?? 8,
             stopBits: options?.stopBits ?? 1,
             parity: options?.parity ?? 'none',
             bufferSize: options?.bufferSize ?? 255,
             flowControl: options?.flowControl ?? 'none'
-        });
+        };
+
+        if (port.readable || port.writable) {
+            // Re-opening with the settings already in force is the documented no-op. Different
+            // settings are a real request, and the API cannot apply them to an open port - so the
+            // port is cycled instead of reporting a success it did not deliver. That ends the read
+            // loop exactly as close() does, and any subscription over it stops delivering.
+            if (sameSettings(_openOptions[id], settings)) return true;
+            await close(id);
+        }
+
+        await port.open(settings);
+        _openOptions[id] = settings;
         return true;
+    }
+
+    function sameSettings(a: any, b: any) {
+        if (!a) return false;
+        return a.baudRate === b.baudRate && a.dataBits === b.dataBits && a.stopBits === b.stopBits
+            && a.parity === b.parity && a.bufferSize === b.bufferSize && a.flowControl === b.flowControl;
     }
 
     async function close(id: string) {
         const port = _ports[id];
         if (!port) return;
+        delete _openOptions[id];
         // The read loop holds the readable stream locked; close() throws until it lets go.
         await stopReading(id);
         try { await port.close(); } catch { /* not open, or already gone */ }

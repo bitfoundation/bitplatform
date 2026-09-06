@@ -38,7 +38,13 @@ public sealed class SerialPort : IAsyncDisposable
     /// <summary>The browser-side handle id every operation is routed through.</summary>
     public string Id => Info.Id;
 
-    /// <summary>Opens the port with the given line settings. Already-open is not an error.</summary>
+    /// <summary>
+    /// Opens the port with the given line settings. Already-open is not an error: re-opening with the
+    /// settings already in force does nothing. Re-opening with <em>different</em> settings closes and
+    /// re-opens the port, because the API has no way to change them in place - which ends the read
+    /// loop, so a <see cref="SubscribeData"/> subscription taken before it stops delivering and has to
+    /// be disposed and taken again.
+    /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SerialOpenJsOptions))]
     public ValueTask<bool> Open(SerialOptions? options = null)
     {

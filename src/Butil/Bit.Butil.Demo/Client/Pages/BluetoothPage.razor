@@ -305,9 +305,14 @@ var revoked = await _device.Forget();
             }
 
             // The replacement makes the previous handle unreachable, so release it - and the
-            // subscriptions taken through it - rather than leaving the radio connected.
-            await ReleaseSubscriptions();
-            if (_device is not null) await _device.DisposeAsync();
+            // subscriptions taken through it - rather than leaving the radio connected. Re-picking the
+            // same device hands back the handle already in play, and disposing that one would release
+            // the device this page is about to use.
+            if (ReferenceEquals(_device, requested) is false)
+            {
+                await ReleaseSubscriptions();
+                if (_device is not null) await _device.DisposeAsync();
+            }
 
             _device = requested;
             await deviceOutput.Success("RequestDevice →", $"{_device.Name ?? "(unnamed)"} ({_device.Info.DeviceId})");

@@ -53,6 +53,7 @@ public class Midi(IJSRuntime js) : IAsyncDisposable
     /// different grant, so the browser replaces the access object and every port object under it.
     /// Subscriptions already handed out survive that: they are re-attached to the new ports, so a
     /// handler keeps firing and the <see cref="ButilSubscription"/> stays the way to detach it.
+    /// A refusal leaves an access already granted untouched, subscriptions included.
     /// </remarks>
     /// <param name="sysex">
     /// Request system-exclusive messages as well. A separate and stricter permission - sysex can

@@ -317,10 +317,26 @@ var revoked = await _device.Forget();
                 filters.Add(filter);
             }
 
-            _device = await usb.RequestDevice([.. filters]);
+            var requested = await usb.RequestDevice([.. filters]);
 
-            if (_device is null) await deviceOutput.Warn("The chooser was dismissed.");
-            else await deviceOutput.Success("RequestDevice →",
+            if (requested is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await deviceOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it rather than leaving
+            // an opened, interface-claimed device with nothing able to close it. Re-picking the same
+            // device hands back the handle already in play, and disposing that one would release the
+            // device this page is about to use.
+            if (_device is not null && ReferenceEquals(_device, requested) is false)
+            {
+                await _device.DisposeAsync();
+            }
+
+            _device = requested;
+            await deviceOutput.Success("RequestDevice →",
                 $"{_device.Info.ProductName ?? "(unnamed)"} {_device.Info.VendorId:x4}:{_device.Info.ProductId:x4}");
         }
         catch (Exception ex)

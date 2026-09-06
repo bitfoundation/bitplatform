@@ -70,7 +70,16 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // listener attached through it - is replaced. The subscriptions themselves move across:
         // dropping them would leave .NET holding subscriptions that look live, never fire again, and
         // have nothing on either side able to say so.
-        const access = await (navigator as any).requestMIDIAccess({ sysex, software });
+        let access: any;
+        try {
+            access = await (navigator as any).requestMIDIAccess({ sysex, software });
+        } catch {
+            // A refused prompt - or a policy that blocks MIDI outright - rejects. That is "no access",
+            // not a failure worth throwing across the boundary, and it must not disturb the access
+            // already granted: every listener in _messageListeners is still attached to its ports.
+            return null;
+        }
+
         detachAll();
         _access = access;
         _accessSysex = sysex;

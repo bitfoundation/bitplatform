@@ -65,7 +65,7 @@ var granted = await serial.GetPorts();
 
     <DemoSection Title="Open and close"
                  Api="Open / Close / IsOpen / GetInfo"
-                 Description="The line settings have to match what the device expects - a mismatched baud rate still produces bytes, just not the right ones."
+                 Description="The line settings have to match what the device expects - a mismatched baud rate still produces bytes, just not the right ones. Opening an already-open port with different settings cycles it, which ends any read subscription."
                  Code=@("""
 await _port.Open(new SerialOptions
 {
@@ -307,10 +307,27 @@ var revoked = await _port.Forget();
                 return;
             }
 
-            _port = await serial.RequestPort();
+            var requested = await serial.RequestPort();
 
-            if (_port is null) await portOutput.Warn("The chooser was dismissed.");
-            else await portOutput.Success("RequestPort →", Describe(_port.Info));
+            if (requested is null)
+            {
+                // A dismissed chooser is not a reason to throw away the port already in hand.
+                await portOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it - and the read
+            // subscription holding its readable stream locked - rather than leaving an open port with
+            // an orphaned read loop. Re-picking the same port hands back the handle already in play,
+            // and disposing that one would close the port this page is about to use.
+            if (ReferenceEquals(_port, requested) is false)
+            {
+                await StopReading();
+                if (_port is not null) await _port.DisposeAsync();
+            }
+
+            _port = requested;
+            await portOutput.Success("RequestPort →", Describe(_port.Info));
         }
         catch (Exception ex)
         {
