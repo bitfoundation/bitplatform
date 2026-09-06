@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,583 +7,111 @@ using System.Text.RegularExpressions;
 namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 
 /// <summary>
-/// Best-effort static scan of TypeScript implementation files for static methods that return a Promise.
+/// Finds the static methods of a TypeScript source that return a Promise, reading nothing but their headers.
 ///
 /// <para>
-/// Primary detection is cheap and reliable: <c>async</c> modifier or <c>: Promise&lt;...&gt;</c> return type.
-/// A secondary body scan catches the residual case where a method is neither annotated nor async but returns
-/// <c>fetch(...)</c>, <c>Promise.*</c>, or <c>new Promise(...)</c> at the top level. That scan is intentionally
-/// conservative (false negatives over false positives) because it gates CI.
+/// The contract: every Promise-returning interop method must be declared <c>async</c> or annotated
+/// <c>: Promise&lt;...&gt;</c>. A method that returns a promise without saying so in its header (an unannotated
+/// <c>return fetch(url)</c>, a wrapper that hands back what an async sibling returns) is NOT detected. The header
+/// is what a reader and the compiler see, so it is the one thing the source is asked to keep truthful; in return
+/// this stays a few regexes over comment- and string-stripped text instead of a TypeScript parser.
 /// </para>
 ///
 /// <para>
-/// Same-class delegation (e.g. <c>return Extras.loadResource(...)</c>) is propagated transitively from
-/// explicitly annotated/async callees through multi-hop wrapper chains — body-detected methods do not
-/// participate in the fixpoint, so heuristic false positives cannot compound through delegation chains.
-/// </para>
-///
-/// <para>
-/// Not modeled: cross-file delegation, local-variable indirection (<c>const p = fetch(); return p;</c>),
-/// static getters/setters (<c>static get foo()</c> — the method-header regex requires a parameter list),
-/// regex literals and division in backward token scanning, and nested-closure returns (ignored by design).
-/// </para>
-///
-/// <para>
-/// The riskiest logic is reverse scanning in <see cref="IsNestedFunctionBodyOpen"/>; it exists solely to
-/// support the speculative body scan and does not affect primary async/: Promise detection.
+/// <c>Promise</c> counts only at the top level of the return type: <c>{ p: Promise&lt;void&gt; }</c>,
+/// <c>Array&lt;Promise&lt;void&gt;&gt;</c> and <c>() =&gt; Promise&lt;void&gt;</c> are not methods that return a
+/// Promise themselves. Static getters/setters and arrow-function properties are not methods and are ignored.
 /// </para>
 /// </summary>
 internal static class TsPromiseMethodScanner
 {
-    private static readonly Regex TsClassRegex =
-        new(@"\bclass\s+(?<class>\w+)", RegexOptions.Compiled);
+    private static readonly Regex TsClassRegex = new(@"\bclass\s+(?<class>\w+)", RegexOptions.Compiled);
 
-    // Matches a static method header up to (and including) its opening parameter parenthesis.
-    // Requires "(" so static fields and arrow-function properties like "static foo = () => {}" are excluded,
-    // and static getters/setters ("static get foo()") are not matched.
+    // A static method header up to and including the opening parenthesis of its parameter list. Requiring the
+    // "(" right after the name (and optional type parameters, which may nest one level: "<T extends Map<K, V>>")
+    // keeps static fields, arrow-function properties ("static foo = () => {}") and getters/setters
+    // ("static get foo()") out.
     private static readonly Regex TsStaticMethodHeaderRegex =
-        new(@"\bstatic\s+(?<async>async\s+)?(?<method>\w+)\s*(?:<[^>]+>)?\s*\(", RegexOptions.Compiled);
+        new(@"\bstatic\s+(?<async>async\s+)?(?<method>\w+)\s*(?:<(?:[^<>]|<[^<>]*>)*>)?\s*\(", RegexOptions.Compiled);
 
-    private sealed record TsStaticMethod(string Class, string Method, string Body, bool DeclaredAsync, bool AnnotatedPromise);
+    // Comments and string/template literals. Ordinary strings end at a line break (a stray quote, e.g. inside a
+    // regex literal, blanks at most the rest of its line); template literals may span lines.
+    private static readonly Regex NonCodeRegex =
+        new(@"//[^\n]*|/\*.*?\*/|""(?:\\.|[^""\\\n])*""|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`",
+            RegexOptions.Compiled | RegexOptions.Singleline);
 
     /// <summary>
-    /// Returns every static method in <paramref name="text"/> considered promise-returning.
+    /// Returns every <c>Class.method</c> in <paramref name="text"/> whose header declares it promise-returning.
     /// </summary>
     public static HashSet<string> CollectFromSource(string text)
     {
-        // The class/static-method header regexes run against a copy of the source with all comment and string
-        // content blanked out (positions preserved). This prevents commented-out or quoted signatures like
-        // "// static async foo()" or "'class Bar { static baz() }'" from being matched as real declarations and
-        // adding bogus Class.Method entries. Body extraction below still uses the original text (FindMatching /
-        // SkipReturnAnnotation already skip non-code), and the masked indices map 1:1 onto the original.
-        var scanText = MaskNonCode(text);
+        // Everything runs against a copy with comments and literals blanked out (line breaks kept, so positions
+        // are unchanged): a signature that is quoted or commented out is never read as a declaration, and no
+        // brace or parenthesis inside a literal is ever counted.
+        var masked = NonCodeRegex.Replace(text, m => Regex.Replace(m.Value, @"[^\r\n]", " "));
 
-        var classMatches = TsClassRegex.Matches(scanText)
+        var classes = TsClassRegex.Matches(masked)
             .Select(m => (Name: m.Groups["class"].Value, Index: m.Index))
-            .OrderBy(c => c.Index)
             .ToList();
 
-        var methods = new List<TsStaticMethod>();
+        var result = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach (Match header in TsStaticMethodHeaderRegex.Matches(scanText))
+        var position = 0;
+        while (position < masked.Length)
         {
-            var openParen = header.Index + header.Length - 1;
-            var closeParen = FindMatching(text, openParen, '(', ')');
-            if (closeParen < 0) continue;
+            var header = TsStaticMethodHeaderRegex.Match(masked, position);
+            if (!header.Success) break;
 
-            var bodyOpenBrace = SkipReturnAnnotation(text, closeParen + 1, out var returnAnnotation);
-            if (bodyOpenBrace >= text.Length || text[bodyOpenBrace] != '{') continue;
+            position = header.Index + header.Length;
 
-            var bodyCloseBrace = FindMatching(text, bodyOpenBrace, '{', '}');
-            if (bodyCloseBrace < 0) continue;
+            var closeParen = FindClose(masked, position - 1, '(', ')');
+            if (closeParen < 0) break;
 
-            var declaredAsync = header.Groups["async"].Success;
-            var annotatedPromise = AnnotationHasTopLevelPromise(returnAnnotation);
+            var bodyOpen = SkipReturnAnnotation(masked, closeParen + 1, out var annotation);
+            if (bodyOpen >= masked.Length || masked[bodyOpen] != '{') continue; // a bodiless overload signature
 
-            var owningClass = classMatches.LastOrDefault(c => c.Index < header.Index);
-            if (owningClass.Name is null) continue;
+            var bodyClose = FindClose(masked, bodyOpen, '{', '}');
+            if (bodyClose < 0) break;
 
-            var body = text.Substring(bodyOpenBrace, bodyCloseBrace - bodyOpenBrace + 1);
-            methods.Add(new TsStaticMethod(
-                owningClass.Name,
-                header.Groups["method"].Value,
-                body,
-                declaredAsync,
-                annotatedPromise));
-        }
+            // Resume after the body, so nothing declared inside it is read as the next header.
+            position = bodyClose + 1;
 
-        var promiseMethods = new HashSet<string>(StringComparer.Ordinal);
+            var owningClass = classes.LastOrDefault(c => c.Index < header.Index).Name;
+            if (owningClass is null) continue;
 
-        foreach (var method in methods)
-        {
-            if (!method.DeclaredAsync && !method.AnnotatedPromise) continue;
-
-            var key = $"{method.Class}.{method.Method}";
-            promiseMethods.Add(key);
-        }
-
-        // Propagate delegation transitively from explicit async/: Promise sources (per-file; one class per file
-        // today). The fixpoint checks against the growing promiseMethods set (seeded with explicitPromiseMethods)
-        // so multi-hop wrapper chains rooted at an explicit source are followed across multiple iterations.
-        // Body-scanned methods are still excluded here because they are only added after this loop, so heuristic
-        // false positives cannot compound through delegation chains.
-        var changed = true;
-        while (changed)
-        {
-            changed = false;
-
-            foreach (var method in methods)
+            if (header.Groups["async"].Success || AnnotationHasTopLevelPromise(annotation))
             {
-                var key = $"{method.Class}.{method.Method}";
-                if (promiseMethods.Contains(key)) continue;
-
-                if (!BodyDelegatesToKnownMethods(method.Body, method.Class, promiseMethods)) continue;
-
-                promiseMethods.Add(key);
-                changed = true;
+                result.Add($"{owningClass}.{header.Groups["method"].Value}");
             }
         }
 
-        foreach (var method in methods)
-        {
-            var key = $"{method.Class}.{method.Method}";
-            if (promiseMethods.Contains(key)) continue;
-
-            if (BodyHasDirectTopLevelPromiseReturn(method.Body))
-            {
-                promiseMethods.Add(key);
-            }
-        }
-
-        // promiseMethods is the fully-populated result set; return it directly rather than copying.
-        return promiseMethods;
+        return result;
     }
 
-    /// <summary>
-    /// True when the body has a top-level <c>return fetch(...)</c>, <c>return Promise.*</c>, or
-    /// <c>return new Promise(...)</c>. Returns inside nested functions/closures are ignored.
-    /// </summary>
-    public static bool BodyHasDirectTopLevelPromiseReturn(string body) =>
-        ScanTopLevelReturns(body, expressionStart => IsDirectPromiseReturnExpression(body, expressionStart));
-
-    /// <summary>
-    /// True when the body has a top-level <c>return</c> that delegates to a method in
-    /// <paramref name="knownPromiseMethods"/>. Returns inside nested functions/closures are ignored.
-    /// </summary>
-    public static bool BodyDelegatesToKnownMethods(string body, string className, HashSet<string> knownPromiseMethods) =>
-        ScanTopLevelReturns(body, (expressionStart) =>
-            ReturnExpressionDelegatesToPromiseMethod(body, expressionStart, className, knownPromiseMethods));
-
-    private static bool ScanTopLevelReturns(string body, Func<int, bool> expressionMatches)
-    {
-        var nestedFunctionDepth = 0;
-        var braceStack = new Stack<bool>();
-
-        for (var i = 0; i < body.Length; i++)
-        {
-            i = SkipNonCode(body, i, out var skipped);
-            if (skipped) { i--; continue; }
-            if (i >= body.Length) break;
-
-            var c = body[i];
-
-            if (c == '{')
-            {
-                var isFunctionBody = i > 0 && IsNestedFunctionBodyOpen(body, i);
-                braceStack.Push(isFunctionBody);
-                if (isFunctionBody) nestedFunctionDepth++;
-                continue;
-            }
-
-            if (c == '}')
-            {
-                if (braceStack.Count > 0 && braceStack.Pop())
-                {
-                    nestedFunctionDepth--;
-                }
-
-                continue;
-            }
-
-            if (nestedFunctionDepth > 0) continue;
-
-            if (!IsIdentifierAt(body, i, "return")) continue;
-
-            i += "return".Length;
-
-            // Automatic Semicolon Insertion: in JS/TS a line terminator between `return` and its operand
-            // turns the statement into a bare `return;` (void) - the following token starts a new, separate
-            // (unreachable) statement and is NOT the returned expression. Treat such a return as void so a
-            // promise expression on the next line isn't misclassified as a returned value.
-            var sawLineTerminator = false;
-            while (i < body.Length && char.IsWhiteSpace(body[i]))
-            {
-                if (body[i] is '\r' or '\n') sawLineTerminator = true;
-                i++;
-            }
-            if (i >= body.Length) continue;
-            if (sawLineTerminator)
-            {
-                // Re-scan the next token as an ordinary statement rather than a returned expression
-                // (the for-loop's i++ would otherwise step over its first character).
-                i--;
-                continue;
-            }
-
-            if (expressionMatches(i)) return true;
-
-            // Non-promise return expressions (e.g. object literals) must not leave inner '{' unpaired on the stack.
-            SkipNonMatchingReturnExpression(body, ref i);
-            continue;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Advances <paramref name="index"/> past a non-matching return expression so inner braces/parens are not
-    /// mistaken for method structure during the outer scan.
-    /// </summary>
-    private static void SkipNonMatchingReturnExpression(string body, ref int index)
-    {
-        if (index >= body.Length) return;
-
-        index = SkipNonCode(body, index, out var skipped);
-        if (skipped)
-        {
-            SkipNonMatchingReturnExpression(body, ref index);
-            return;
-        }
-
-        if (index >= body.Length) return;
-
-        if (body[index] == '{')
-        {
-            var closeBrace = FindMatching(body, index, '{', '}');
-            if (closeBrace >= 0) index = closeBrace;
-            return;
-        }
-
-        if (body[index] == '(')
-        {
-            var closeParen = FindMatching(body, index, '(', ')');
-            if (closeParen >= 0) index = closeParen;
-        }
-    }
-
-    private static bool IsDirectPromiseReturnExpression(string body, int expressionStart)
-    {
-        if (IsIdentifierAt(body, expressionStart, "fetch") &&
-            expressionStart + "fetch".Length < body.Length &&
-            body[expressionStart + "fetch".Length] == '(')
-        {
-            return true;
-        }
-
-        if (IsIdentifierAt(body, expressionStart, "Promise") &&
-            expressionStart + "Promise".Length < body.Length &&
-            body[expressionStart + "Promise".Length] == '.')
-        {
-            return true;
-        }
-
-        if (IsIdentifierAt(body, expressionStart, "new"))
-        {
-            var i = expressionStart + "new".Length;
-            while (i < body.Length && char.IsWhiteSpace(body[i])) i++;
-            if (IsIdentifierAt(body, i, "Promise")) return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Heuristically decides whether the <c>{</c> at <paramref name="braceIndex"/> opens a function body
-    /// (arrow <c>=&gt;</c>, <c>function (...)</c>, or <c>async function (...)</c>) rather than an object literal
-    /// or block. This is a secondary check used only to skip returns inside nested closures — it never drives the
-    /// primary async/Promise detection, which relies on explicit annotations.
-    /// <para>
-    /// It scans backward via <see cref="SkipNonCodeBackward"/> and <see cref="FindMatchingBackward"/>, which, as
-    /// documented on <see cref="SkipNonCodeBackward"/>, cannot reliably distinguish regex literals (e.g.
-    /// <c>/pattern/</c>) from division, template literals with embedded <c>${...}</c> expressions, or other
-    /// edge-case token boundaries. Such ambiguity can misclassify a brace here.
-    /// </para>
-    /// <para>
-    /// The tradeoff is deliberate: prefer false negatives (occasionally missing a nested function, so a few inner
-    /// returns get scanned) over false positives (wrongly treating real code as a nested body and silently
-    /// dropping a valid top-level return). Maintainers should not "fix" this with more aggressive backward parsing,
-    /// since that trades safe misses for incorrect matches.
-    /// </para>
-    /// </summary>
-    private static bool IsNestedFunctionBodyOpen(string text, int braceIndex)
-    {
-        var i = braceIndex - 1;
-        while (i >= 0)
-        {
-            i = SkipNonCodeBackward(text, i, out var skipped);
-            if (skipped) continue;
-            break;
-        }
-
-        if (i < 0) return false;
-
-        if (text[i] == '>' && i > 0 && text[i - 1] == '=') return true;
-
-        if (text[i] != ')') return false;
-
-        var openParen = FindMatchingBackward(text, i, '(', ')');
-        if (openParen < 0) return false;
-
-        i = openParen - 1;
-        while (i >= 0)
-        {
-            i = SkipNonCodeBackward(text, i, out var skipped);
-            if (skipped) continue;
-            break;
-        }
-
-        if (i >= 0 && IsIdentifierEndingAt(text, i, "function")) return true;
-
-        if (i >= 0 && IsIdentifierEndingAt(text, i, "async"))
-        {
-            i -= "async".Length;
-            while (i >= 0)
-            {
-                i = SkipNonCodeBackward(text, i, out var skippedBeforeAsync);
-                if (skippedBeforeAsync) continue;
-                break;
-            }
-
-            if (i >= 0 && IsIdentifierEndingAt(text, i, "function")) return true;
-        }
-
-        return false;
-    }
-
-    private static bool ReturnExpressionDelegatesToPromiseMethod(string body, int expressionStart, string className, HashSet<string> knownPromiseMethods)
-    {
-        var i = expressionStart;
-
-        string? qualifier = null;
-        if (char.IsLetter(body[i]) || body[i] == '_')
-        {
-            var identifierStart = i;
-            while (i < body.Length && (char.IsLetterOrDigit(body[i]) || body[i] == '_')) i++;
-
-            if (i < body.Length && body[i] == '.')
-            {
-                qualifier = body.Substring(identifierStart, i - identifierStart);
-                i++;
-                while (i < body.Length && char.IsWhiteSpace(body[i])) i++;
-            }
-            else
-            {
-                i = identifierStart;
-            }
-        }
-
-        if (i >= body.Length || !(char.IsLetter(body[i]) || body[i] == '_')) return false;
-
-        var methodStart = i;
-        while (i < body.Length && (char.IsLetterOrDigit(body[i]) || body[i] == '_')) i++;
-        var methodName = body.Substring(methodStart, i - methodStart);
-
-        while (i < body.Length && char.IsWhiteSpace(body[i])) i++;
-        if (i >= body.Length || body[i] != '(') return false;
-
-        if (qualifier is null)
-        {
-            return knownPromiseMethods.Contains($"{className}.{methodName}");
-        }
-
-        if (string.Equals(qualifier, "this", StringComparison.Ordinal) ||
-            string.Equals(qualifier, className, StringComparison.Ordinal))
-        {
-            return knownPromiseMethods.Contains($"{className}.{methodName}");
-        }
-
-        return false;
-    }
-
-    private static bool IsIdentifierEndingAt(string text, int index, string identifier)
-    {
-        var start = index - identifier.Length + 1;
-        if (start < 0) return false;
-
-        return IsIdentifierAt(text, start, identifier);
-    }
-
-    private static bool IsIdentifierAt(string text, int index, string identifier)
-    {
-        if (index < 0 || index >= text.Length || !text.AsSpan(index).StartsWith(identifier)) return false;
-
-        var end = index + identifier.Length;
-        if (index > 0 && (char.IsLetterOrDigit(text[index - 1]) || text[index - 1] == '_')) return false;
-        if (end < text.Length && (char.IsLetterOrDigit(text[end]) || text[end] == '_')) return false;
-
-        return true;
-    }
-
-    private static int FindMatching(string text, int openIndex, char open, char close)
-    {
-        var depth = 0;
-        for (var i = openIndex; i < text.Length; i++)
-        {
-            i = SkipNonCode(text, i, out var skipped);
-            if (skipped) { i--; continue; }
-            if (i >= text.Length) break;
-
-            var c = text[i];
-            if (c == open) depth++;
-            else if (c == close)
-            {
-                depth--;
-                if (depth == 0) return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private static int FindMatchingBackward(string text, int closeIndex, char open, char close)
-    {
-        var depth = 0;
-        for (var i = closeIndex; i >= 0; i--)
-        {
-            i = SkipNonCodeBackward(text, i, out var skipped);
-            if (skipped) { i++; continue; }
-            if (i < 0) break;
-
-            var c = text[i];
-            if (c == close) depth++;
-            else if (c == open)
-            {
-                depth--;
-                if (depth == 0) return i;
-            }
-        }
-
-        return -1;
-    }
-
-    /// <summary>
-    /// Best-effort backward skip used only by <see cref="IsNestedFunctionBodyOpen"/> (the speculative body scan).
-    /// This is the riskiest part of the scanner: reverse scanning cannot reliably classify comments, string
-    /// literals, regex literals, or division. Misclassification affects nested-function heuristics only —
-    /// explicit <c>async</c> / <c>: Promise&lt;...&gt;</c> annotations are unaffected.
-    /// </summary>
-    private static int SkipNonCodeBackward(string text, int i, out bool skipped)
-    {
-        skipped = false;
-        if (i >= text.Length) return i;
-
-        while (i >= 0 && char.IsWhiteSpace(text[i])) i--;
-        if (i < 0) return i;
-
-        if (i >= 1 && text[i - 1] == '/' && text[i] == '/')
-        {
-            skipped = true;
-            i -= 2;
-            while (i >= 0 && text[i] != '\n') i--;
-            return i;
-        }
-
-        if (i >= 1 && text[i] == '/' && text[i - 1] == '*')
-        {
-            skipped = true;
-            i -= 2;
-            while (i >= 1 && !(text[i - 1] == '/' && text[i] == '*')) i--;
-            return Math.Max(-1, i - 2);
-        }
-
-        var c = text[i];
-        if (c is '"' or '\'' or '`')
-        {
-            skipped = true;
-            var quote = c;
-            i--;
-            while (i >= 0 && text[i] != quote)
-            {
-                if (text[i] == '\\') i--;
-                i--;
-            }
-
-            return i - 1;
-        }
-
-        return i;
-    }
-
-    /// <summary>
-    /// True when the standalone token <c>Promise</c> appears at the top level of the return type — i.e. the
-    /// method itself returns a Promise. Promise tokens nested inside object-literal type members
-    /// (<c>{ p: Promise&lt;void&gt; }</c>), generic arguments (<c>Array&lt;Promise&lt;void&gt;&gt;</c>), or the
-    /// return type of a returned function type (<c>() =&gt; Promise&lt;void&gt;</c>) are intentionally ignored,
-    /// since in those cases the method does not return a Promise itself.
-    /// </summary>
-    private static bool AnnotationHasTopLevelPromise(string annotation)
-    {
-        var depth = 0;
-        for (var i = 0; i < annotation.Length; i++)
-        {
-            i = SkipNonCode(annotation, i, out var skipped);
-            if (skipped) { i--; continue; }
-            if (i >= annotation.Length) break;
-
-            var c = annotation[i];
-
-            if (c is '(' or '[' or '{' or '<')
-            {
-                depth++;
-                continue;
-            }
-
-            if (c is ')' or ']' or '}' or '>')
-            {
-                if (depth > 0) depth--;
-                continue;
-            }
-
-            if (depth != 0) continue;
-
-            // A top-level "=>" means the return type is a function type; whatever it returns (possibly a
-            // Promise) is not this method's own return value, so stop scanning.
-            if (c == '=' && i + 1 < annotation.Length && annotation[i + 1] == '>') break;
-
-            if (IsIdentifierAt(annotation, i, "Promise")) return true;
-        }
-
-        return false;
-    }
-
-    private static int SkipReturnAnnotation(string text, int start, out string annotation)
+    // Returns the index just past the return-type annotation (the body's "{" when the method has one) and the
+    // annotation's text. The nesting of (), [] and <> is tracked so that a "{" belonging to the type - an
+    // object-literal type "{ [id: string]: State }", or one nested in a generic argument "Promise<{ x: number }>" -
+    // is not taken for the body: at depth zero a "{" opens the body unless a type is still expected there (right
+    // after the ":" or a type operator), in which case it is an object-literal type and is skipped whole.
+    private static int SkipReturnAnnotation(string masked, int start, out string annotation)
     {
         annotation = string.Empty;
 
         var i = start;
-        while (i < text.Length && char.IsWhiteSpace(text[i])) i++;
-
-        if (i >= text.Length || text[i] != ':')
-        {
-            return i;
-        }
+        while (i < masked.Length && char.IsWhiteSpace(masked[i])) i++;
+        if (i >= masked.Length || masked[i] != ':') return i;
 
         var annotationStart = ++i;
-
-        // Walk the return-type annotation while tracking the nesting depth of (), [] and <> so that a '{'
-        // belonging to the type rather than the method body is not mistaken for the body's opening brace.
-        // Two cases must be skipped: a top-level object-literal return type (e.g. "{ [id: string]: GlState }")
-        // and a '{' nested inside a generic argument (e.g. "Promise<{ x: number }>"). We use an "expecting type"
-        // flag (true right after ':' and after the type operators '<', '(', '|', '&', ',') to recognize an
-        // object-literal type and skip the whole balanced { ... }; the first '{' reached once a complete type has
-        // been read (at depth zero) is the actual method body.
         var depth = 0;
         var expectingType = true;
-        while (i < text.Length)
+
+        for (; i < masked.Length; i++)
         {
-            i = SkipNonCode(text, i, out var skipped);
-            if (skipped) continue;
-            if (i >= text.Length) break;
+            var c = masked[i];
+            if (char.IsWhiteSpace(c)) continue;
 
-            var c = text[i];
-
-            if (char.IsWhiteSpace(c)) { i++; continue; }
-
-            if (c is '(' or '[' or '<')
-            {
-                depth++;
-                expectingType = true;
-                i++;
-                continue;
-            }
-
-            if (c is ')' or ']' or '>')
-            {
-                if (depth > 0) depth--;
-                expectingType = false;
-                i++;
-                continue;
-            }
+            if (c is '(' or '[' or '<') { depth++; expectingType = true; continue; }
+            if (c is ')' or ']' or '>') { if (depth > 0) depth--; expectingType = false; continue; }
 
             if (depth == 0)
             {
@@ -591,92 +119,56 @@ internal static class TsPromiseMethodScanner
 
                 if (c == '{')
                 {
-                    if (!expectingType) break; // the method body's opening brace
+                    if (!expectingType) break;
 
-                    // Object-literal type in return position: skip the whole balanced { ... } and keep scanning.
-                    var close = FindMatching(text, i, '{', '}');
+                    var close = FindClose(masked, i, '{', '}');
                     if (close < 0) break;
-                    i = close + 1;
+
+                    i = close;
                     expectingType = false;
                     continue;
                 }
             }
 
             expectingType = c is '|' or '&' or ',';
-            i++;
         }
 
-        annotation = text.Substring(annotationStart, Math.Max(0, i - annotationStart));
+        annotation = masked.Substring(annotationStart, i - annotationStart);
         return i;
     }
 
-    /// <summary>
-    /// Returns a copy of <paramref name="text"/> with all comment and string-literal content replaced by spaces
-    /// (line breaks preserved, length and all code-token positions unchanged). Running the structural regexes
-    /// against this masked text keeps commented-out or quoted class/method signatures from being misread as real
-    /// declarations, while the 1:1 index mapping lets body extraction continue against the original source.
-    /// </summary>
-    private static string MaskNonCode(string text)
+    // True when the token "Promise" appears at the top level of the return type, i.e. the method itself returns
+    // a Promise. A top-level "=>" means the return type is a function type, whose own return type is not this
+    // method's; nothing after it counts.
+    private static bool AnnotationHasTopLevelPromise(string annotation)
     {
-        var sb = new StringBuilder(text);
+        var topLevel = new StringBuilder();
+        var depth = 0;
 
-        var i = 0;
-        while (i < text.Length)
+        for (var i = 0; i < annotation.Length; i++)
         {
-            var start = i;
-            i = SkipNonCode(text, i, out var skipped);
-            if (skipped)
-            {
-                for (var j = start; j < i && j < sb.Length; j++)
-                {
-                    if (sb[j] is not ('\n' or '\r')) sb[j] = ' ';
-                }
-            }
-            else
-            {
-                i++;
-            }
+            var c = annotation[i];
+
+            if (depth == 0 && c == '=' && i + 1 < annotation.Length && annotation[i + 1] == '>') break;
+
+            if (c is '(' or '[' or '{' or '<') depth++;
+            else if (c is ')' or ']' or '}' or '>') depth = Math.Max(0, depth - 1);
+            else if (depth == 0) topLevel.Append(c);
         }
 
-        return sb.ToString();
+        return Regex.IsMatch(topLevel.ToString(), @"\bPromise\b");
     }
 
-    private static int SkipNonCode(string text, int i, out bool skipped)
+    // Index of the bracket closing the one at openIndex, or -1. Only valid over masked text.
+    private static int FindClose(string masked, int openIndex, char open, char close)
     {
-        skipped = false;
-        if (i >= text.Length) return i;
-
-        var c = text[i];
-
-        if (c == '/' && i + 1 < text.Length && text[i + 1] == '/')
+        var depth = 0;
+        for (var i = openIndex; i < masked.Length; i++)
         {
-            skipped = true;
-            i += 2;
-            while (i < text.Length && text[i] != '\n') i++;
-            return i;
+            if (masked[i] == open) depth++;
+            else if (masked[i] == close && --depth == 0) return i;
         }
 
-        if (c == '/' && i + 1 < text.Length && text[i + 1] == '*')
-        {
-            skipped = true;
-            i += 2;
-            while (i + 1 < text.Length && !(text[i] == '*' && text[i + 1] == '/')) i++;
-            return Math.Min(text.Length, i + 2);
-        }
-
-        if (c is '"' or '\'' or '`')
-        {
-            skipped = true;
-            var quote = c;
-            i++;
-            while (i < text.Length && text[i] != quote)
-            {
-                if (text[i] == '\\') i++;
-                i++;
-            }
-            return Math.Min(text.Length, i + 1);
-        }
-
-        return i;
+        return -1;
     }
 }

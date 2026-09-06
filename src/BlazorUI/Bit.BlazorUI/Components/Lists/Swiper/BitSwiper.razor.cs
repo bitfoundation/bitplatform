@@ -52,8 +52,6 @@ public partial class BitSwiper : BitComponentBase
     private string _prevButtonStyle = "display:none;";
     private readonly List<BitSwiperItem> _allItems = [];
     private ElementReference _swiperContainer = default!;
-    // Nulled out again once it has been released, so the ownership handoff to the JS side (which disposes
-    // it in BitSwiper.ts) is readable from the field itself and it is never released twice.
     private DotNetObjectReference<BitSwiper>? _dotnetObj;
 
     // The keys the swiper acts on are also the keys the browser scrolls the page with, so they are
@@ -855,27 +853,9 @@ public partial class BitSwiper : BitComponentBase
             _needsSetup = false;
             _laidOutItemsCount = _allItems.Count;
 
-            // The setup hands ownership of the reference to the JS side, so it is only worth creating when
-            // the call can actually reach it: on an invalid runtime InvokeVoid skips the call and returns
-            // without throwing, which would leave a reference nothing on either side owns.
-            if (_js.IsRuntimeInvalid() is false)
-            {
-                _dotnetObj = DotNetObjectReference.Create(this);
+            _dotnetObj = DotNetObjectReference.Create(this);
 
-                try
-                {
-                    await _js.BitSwiperSetup(_Id, RootElement, _swiperContainer, _dotnetObj, GetOptions());
-                }
-                catch
-                {
-                    // The setup didn't complete, so JS never registered this id and never took ownership of
-                    // the reference - and the JS dispose silently no-ops for an unknown id, so DisposeAsync
-                    // can't release it either. Release it here, then rethrow so the failure still surfaces.
-                    _dotnetObj.Dispose();
-                    _dotnetObj = null;
-                    throw;
-                }
-            }
+            await _js.BitSwiperSetup(_Id, RootElement, _swiperContainer, _dotnetObj, GetOptions());
 
             await RegisterPreventKeysAsync();
 
@@ -1271,46 +1251,18 @@ public partial class BitSwiper : BitComponentBase
             _autoPlayTimer = null;
         }
 
-        // Ownership of _dotnetObj is single-sourced to the JS dispose path: BitSwiper.ts disposes the .NET
-        // reference in its dispose(). Disposing it here too would double-dispose the same object. A null
-        // reference means the setup never handed one over, so nothing is registered on the JS side either.
         try
         {
-            if (_dotnetObj is not null)
-            {
-                if (_js.IsRuntimeInvalid())
-                {
-                    // The runtime can no longer service interop at all (a circuit that never initialized or
-                    // is permanently gone, a detached WebView), so InvokeVoid skips the call and returns
-                    // without throwing: the JS dispose that owns _dotnetObj never runs, and neither catch
-                    // below is reached. Release the managed reference here instead of leaking it.
-                    _dotnetObj.Dispose();
-                    _dotnetObj = null;
-                }
-                else
-                {
-                    await _js.BitSwiperDispose(_Id);
-                }
-            }
+            await _js.BitSwiperDispose(_Id);
         }
-        catch (JSDisconnectedException)
-        {
-            // The circuit/browser is gone, so the JS dispose that normally owns _dotnetObj can't run.
-            // Release the managed reference here so it doesn't leak.
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-        }
-        catch
-        {
-            // Any other failure means the JS dispose didn't complete its ownership handoff, so release the
-            // managed reference here to avoid leaking it, then rethrow so the original error still surfaces.
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-            throw;
-        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
         finally
         {
-            // Base cleanup must always run, even when the JS dispose failed and rethrew above.
+            // The reference is owned here: whatever the JS dispose answered (or whether it could run at
+            // all), it is released on this side, after the JS cleanup so its callbacks kept a live target.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+
             await base.DisposeAsync(disposing);
         }
     }

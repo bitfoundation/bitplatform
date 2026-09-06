@@ -4,11 +4,9 @@ namespace Bit.BlazorUI;
 
 internal static class UtilsJsRuntimeExtensions
 {
-    // FastInvoke returns null when the runtime can't service interop or a JSON/JS interop error is
-    // swallowed on the in-process (WASM) path. Nullable distinguishes that from a legitimate 0 width.
-    internal static ValueTask<decimal?> BitUtilsGetBodyWidth(this IJSRuntime jsRuntime)
+    internal static ValueTask<decimal> BitUtilsGetBodyWidth(this IJSRuntime jsRuntime)
     {
-        return jsRuntime.FastInvoke<decimal?>("BitBlazorUI.Utils.getBodyWidth");
+        return jsRuntime.FastInvoke<decimal>("BitBlazorUI.Utils.getBodyWidth");
     }
 
 
@@ -18,9 +16,9 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask<string?> BitUtilsGetProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
+    internal static ValueTask<string> BitUtilsGetProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
     {
-        return jsRuntime.FastInvoke<string?>("BitBlazorUI.Utils.getProperty", element, property);
+        return jsRuntime.FastInvoke<string>("BitBlazorUI.Utils.getProperty", element, property);
     }
 
 
@@ -286,13 +284,13 @@ internal static class UtilsJsRuntimeExtensions
     // The compensation is opt-in so that the callers that have always let the page shift by the width of
     // the scrollbar it took away carry on doing exactly that; the ones that ask for it get the room back
     // as padding, the way the counted lock above gives it back.
-    internal static ValueTask<float?> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, string scrollerSelector, bool isHidden, bool compensate = false)
+    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, string scrollerSelector, bool isHidden, bool compensate = false)
     {
-        return jsRuntime.FastInvoke<float?>("BitBlazorUI.Utils.toggleOverflow", key, scrollerSelector, isHidden, compensate);
+        return jsRuntime.FastInvoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerSelector, isHidden, compensate);
     }
 
-    internal static ValueTask<float?> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, ElementReference scrollerElement, bool isHidden, bool compensate = false)
+    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, ElementReference scrollerElement, bool isHidden, bool compensate = false)
     {
-        return jsRuntime.FastInvoke<float?>("BitBlazorUI.Utils.toggleOverflow", key, scrollerElement, isHidden, compensate);
+        return jsRuntime.FastInvoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerElement, isHidden, compensate);
     }
 }

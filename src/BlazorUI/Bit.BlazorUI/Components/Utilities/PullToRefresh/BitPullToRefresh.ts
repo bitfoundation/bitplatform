@@ -225,9 +225,7 @@
             this.anchorEl.style.touchAction = this.anchorTouchAction;
             this.loadingEl.style.minHeight = '';
 
-            // Let any failure from the .NET handoff surface so the C# DisposeAsync fallback can release
-            // _dotnetObj instead of silently leaking it. Clear the reference only after dispose() succeeds.
-            this.dotnetObj?.dispose();
+            // The .NET reference is owned and disposed by the component itself; it is only let go of here.
             this.dotnetObj = undefined;
         }
 

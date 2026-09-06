@@ -5,7 +5,7 @@
 /// <br />
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API"/>
 /// </summary>
-public class BitPageVisibility(IJSRuntime js) : IAsyncDisposable
+public class BitPageVisibility(IJSRuntime js) : IDisposable, IAsyncDisposable
 {
     private bool _isInitialized;
     private DotNetObjectReference<BitPageVisibility>? _dotnetObj;
@@ -67,37 +67,48 @@ public class BitPageVisibility(IJSRuntime js) : IAsyncDisposable
 
 
 
-    public async ValueTask DisposeAsync()
+    /// <summary>
+    /// The synchronous counterpart of <see cref="DisposeAsync"/>, for a scope that is torn down with
+    /// <c>Dispose</c> rather than <c>DisposeAsync</c> (the DI container throws for a scoped service that
+    /// offers only the asynchronous one). The JS teardown can't be awaited here, so it is started and left
+    /// to finish on its own.
+    /// </summary>
+    public void Dispose()
     {
-        if (_isInitialized)
-        {
-            // Awaits the JS teardown so the global visibilitychange/blur/focus listeners are actually
-            // cleared before this instance goes away, rather than left behind by a fire-and-forget call.
-            // The JS-side init guard is reset too, so a future instance can re-init.
-            try
-            {
-                await js.InvokeVoid("BitBlazorUI.PageVisibility.dispose");
-            }
-            catch (Exception ex) when (ex is JSDisconnectedException or JSException or ObjectDisposedException or OperationCanceledException)
-            {
-                // Disposal must never throw: this runs from the DI container's scope disposal, where an
-                // exception escaping here would abort the disposal of everything else in the scope. Every
-                // exception caught means the same thing - the JS listeners can no longer be reached: the
-                // circuit is already gone (JSDisconnectedException), the teardown itself failed in the
-                // browser (JSException), the runtime has been torn down (ObjectDisposedException), or the
-                // interop call timed out (OperationCanceledException). The local cleanup in the finally
-                // below is then all that is left to do.
-            }
-            finally
-            {
-                // Local cleanup runs in finally so it always executes even if the JS teardown throws
-                // something outside the caught set above (e.g. InvalidOperationException), guaranteeing
-                // deterministic disposal.
-                _isInitialized = false;
-                _dotnetObj?.Dispose();
-            }
-        }
+        _ = DisposeCoreAsync();
 
         GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeCoreAsync();
+
+        GC.SuppressFinalize(this);
+    }
+
+    private async ValueTask DisposeCoreAsync()
+    {
+        if (_isInitialized is false) return;
+
+        _isInitialized = false;
+
+        try
+        {
+            // Removes the global visibilitychange/blur/focus listeners and resets the JS-side init guard,
+            // so a later instance can init again.
+            await js.InvokeVoid("BitBlazorUI.PageVisibility.dispose");
+        }
+        catch
+        {
+            // Disposal never throws: it runs from the DI scope's teardown, where an exception would abort
+            // the disposal of everything else in the scope, and every failure here means the same thing -
+            // the listeners can no longer be reached (the circuit is gone, the runtime torn down, the call
+            // timed out, or the teardown itself failed in the browser).
+        }
+        finally
+        {
+            _dotnetObj?.Dispose();
+        }
     }
 }

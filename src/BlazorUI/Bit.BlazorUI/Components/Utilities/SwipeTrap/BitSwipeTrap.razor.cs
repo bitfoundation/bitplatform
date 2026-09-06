@@ -161,67 +161,41 @@ public partial class BitSwipeTrap : BitComponentBase
             _appliedTouchOnly != touchOnly ||
             _appliedSkipSelector != skipSelector)
         {
-            if (_js.IsRuntimeInvalid())
+            try
             {
-                // The runtime can't service interop, so both interop calls below would be skipped and return
-                // without throwing: the JS side would neither release the reference the previous setup handed
-                // it nor take a new one. Release what is held instead of dropping it, and leave the applied
-                // values untouched so a runtime that becomes usable again is set up on the next render.
-                _dotnetObj?.Dispose();
-                _dotnetObj = null;
-            }
-            else
-            {
-                try
+                if (firstRender is false)
                 {
-                    if (firstRender is false)
-                    {
-                        // The JS dispose owns the reference handed to the previous setup, so it is let go
-                        // of here rather than disposed a second time on this side.
-                        await _js.BitSwipeTrapDispose(UniqueId);
-
-                        _dotnetObj = null;
-                    }
-
-                    // The JS side disposes the .NET reference it is handed when the trap is disposed or
-                    // re-setup, so each setup gets a fresh one instead of a field kept for the component's
-                    // life. Until the setup call has actually handed it over, disposing it is still this
-                    // side's job, and it is held on to afterwards so that a dispose which cannot reach the
-                    // browser - a circuit that is already gone - can still release it rather than leak it.
-                    _dotnetObj = DotNetObjectReference.Create(this);
-                    try
-                    {
-                        await _js.BitSwipeTrapSetup(
-                            UniqueId,
-                            RootElement,
-                            trigger,
-                            triggerVelocity,
-                            threshold,
-                            throttle,
-                            orientationLock,
-                            touchOnly,
-                            skipSelector,
-                            _dotnetObj);
-                    }
-                    catch
-                    {
-                        _dotnetObj.Dispose();
-                        _dotnetObj = null;
-                        throw;
-                    }
-
-                    // What is remembered is what the trap was actually set up with, so a setup that failed
-                    // leaves the previous values in place and the next render tries again.
-                    _appliedTrigger = trigger;
-                    _appliedTriggerVelocity = triggerVelocity;
-                    _appliedThreshold = threshold;
-                    _appliedThrottle = throttle;
-                    _appliedOrientationLock = orientationLock;
-                    _appliedTouchOnly = touchOnly;
-                    _appliedSkipSelector = skipSelector;
+                    await _js.BitSwipeTrapDispose(UniqueId);
                 }
-                catch (JSDisconnectedException) { } // we can ignore this exception here
+
+                // Each setup gets a fresh reference, and the one the previous setup was handed is released
+                // here once the JS side has let go of it - the reference is owned on this side throughout.
+                _dotnetObj?.Dispose();
+                _dotnetObj = DotNetObjectReference.Create(this);
+
+                await _js.BitSwipeTrapSetup(
+                    UniqueId,
+                    RootElement,
+                    trigger,
+                    triggerVelocity,
+                    threshold,
+                    throttle,
+                    orientationLock,
+                    touchOnly,
+                    skipSelector,
+                    _dotnetObj);
+
+                // What is remembered is what the trap was actually set up with, so a setup that failed
+                // leaves the previous values in place and the next render tries again.
+                _appliedTrigger = trigger;
+                _appliedTriggerVelocity = triggerVelocity;
+                _appliedThreshold = threshold;
+                _appliedThrottle = throttle;
+                _appliedOrientationLock = orientationLock;
+                _appliedTouchOnly = touchOnly;
+                _appliedSkipSelector = skipSelector;
             }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -233,42 +207,18 @@ public partial class BitSwipeTrap : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        // Ownership of _dotnetObj is single-sourced to the JS dispose path: BitSwipeTrap.ts disposes the
-        // .NET reference in its dispose(). Disposing it here too would double-dispose the same object.
         try
         {
-            if (_js.IsRuntimeInvalid())
-            {
-                // The runtime can no longer service interop at all (a circuit that never initialized or is
-                // permanently gone, a detached WebView), so InvokeVoid skips the call and returns without
-                // throwing: the JS dispose that owns _dotnetObj never runs, and neither catch below is
-                // reached. Release the managed reference here instead of leaking it.
-                _dotnetObj?.Dispose();
-                _dotnetObj = null;
-            }
-            else
-            {
-                await _js.BitSwipeTrapDispose(UniqueId);
-            }
+            await _js.BitSwipeTrapDispose(UniqueId);
         }
-        catch (JSDisconnectedException)
-        {
-            // The circuit/browser is gone, so the JS dispose that normally owns _dotnetObj can't run.
-            // Release the managed reference here so it doesn't leak.
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-        }
-        catch
-        {
-            // Any other failure means the JS dispose didn't complete its ownership handoff, so release the
-            // managed reference here to avoid leaking it, then rethrow so the original error still surfaces.
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-            throw;
-        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
         finally
         {
-            // Base cleanup must always run, even when the JS dispose failed and rethrew above.
+            // The reference is owned here: whatever the JS dispose answered (or whether it could run at
+            // all), it is released on this side, after the JS cleanup so its callbacks kept a live target.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+
             await base.DisposeAsync(disposing);
         }
     }

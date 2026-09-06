@@ -1,12 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
@@ -20,23 +17,36 @@ namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 /// <see cref="TsPromiseMethodScanner"/> and fails on any match.
 ///
 /// <para>
-/// The scanner prioritizes reliable <c>async</c> / <c>: Promise&lt;...&gt;</c> detection; a conservative body
-/// scan covers only the residual unannotated-direct-return case. See <see cref="TsPromiseMethodScanner"/> for
-/// the full tradeoff and limitations.
+/// Detection is header-only: a TypeScript method counts as promise-returning when it is declared <c>async</c>
+/// or annotated <c>: Promise&lt;...&gt;</c>, so every Promise-returning interop method must say so in its
+/// header. See <see cref="TsPromiseMethodScanner"/>.
 /// </para>
 /// </summary>
 [TestClass]
 public class FastInvokeSyncContractTests
 {
-    // Matches FastInvoke(...) / FastInvokeVoid(...) / FastInvoke<T>(...) capturing the JS identifier passed
-    // as the first argument. The identifier can be either a quoted string literal (captured in 'id') or a
-    // bare variable reference (captured in 'var'), e.g. when a method does
-    // `const string identifier = "BitBlazorUI.X.y"; jsRuntime.FastInvoke<T>(identifier, ...)`. Variable
-    // references are resolved separately via ResolveConstStringIdentifier; anything that doesn't resolve to
-    // a const string (e.g. the 'this'/'jsRuntime' parameters in the extension definitions themselves) is
-    // dropped, so it never produces a false positive.
+    // Matches FastInvoke(...) / FastInvokeVoid(...) / FastInvoke<T>(...) - T may nest one level, as in
+    // FastInvoke<Dictionary<string, string>>(...) - and captures how the JS identifier is passed: a quoted
+    // literal ('id') or a bare identifier ('var') naming a local const string. The optional 'receiver' is the
+    // bare identifier before the first comma: in the static form IJSRuntimeFastExtensions.FastInvoke<T>(js, "id")
+    // that is the runtime and 'id'/'var' still land on the identifier; in the extension form
+    // js.FastInvoke<T>(identifier, arg) it is the identifier itself and 'var' the next argument, which is why
+    // resolution tries 'var' first and falls back to 'receiver'.
     private static readonly Regex FastInvokeCallRegex =
-        new(@"FastInvoke(?:Void)?\s*(?:<[^>]+>)?\s*\(\s*(?:""(?<id>[^""]+)""|(?<var>[A-Za-z_]\w*))", RegexOptions.Compiled);
+        new(@"FastInvoke(?:Void)?\s*(?:<(?:[^<>]|<[^<>]*>)*>)?\s*\(\s*(?:(?<receiver>[A-Za-z_]\w*)\s*,\s*)?(?:""(?<id>[^""]+)""|(?<var>[A-Za-z_]\w*))",
+            RegexOptions.Compiled);
+
+    // The convention for an identifier that is used more than once in an extension method (invoked, then
+    // reported on) is one `const string identifier = "...";` local per extension method. A bare identifier at
+    // a call site resolves to the nearest such declaration of that name that precedes it in the file: a file
+    // holds several extension methods, each with its own local, so the name alone is not unique per file.
+    private static readonly Regex ConstStringRegex =
+        new(@"const\s+string\s+(?<name>\w+)\s*=\s*""(?<value>[^""]+)""\s*;", RegexOptions.Compiled);
+
+    // The FastInvoke definitions themselves (whose first parameter is `this IJSRuntime jsRuntime`) are the
+    // one place a call-shaped FastInvoke( is not a call site to resolve.
+    private static readonly string FastExtensionsDefinitionFile =
+        Path.Combine("Extensions", "JsInterop", "IJSRuntimeFastExtensions.cs");
 
     [TestMethod]
     public void FastInvoke_CallSites_ShouldNotTargetAsyncJavaScriptFunctions()
@@ -60,31 +70,29 @@ public class FastInvokeSyncContractTests
         };
 
         var fastInvokeTargets = new List<(string ClassMethod, string Identifier, string File)>();
+        var unresolved = new List<string>();
+
         foreach (var dir in csharpDirs)
         {
             foreach (var file in EnumerateSourceFiles(dir, "*.cs"))
             {
+                if (file.EndsWith(FastExtensionsDefinitionFile, StringComparison.OrdinalIgnoreCase)) continue;
+
                 var text = File.ReadAllText(file);
 
-                // Parsed lazily and reused for every variable-identifier resolution in this file.
-                CompilationUnitSyntax? syntaxRoot = null;
+                var constStrings = ConstStringRegex.Matches(text)
+                    .Select(m => (m.Index, Name: m.Groups["name"].Value, Value: m.Groups["value"].Value))
+                    .ToList();
 
                 foreach (Match match in FastInvokeCallRegex.Matches(text))
                 {
-                    string? identifier;
-                    if (match.Groups["id"].Success)
-                    {
-                        identifier = match.Groups["id"].Value;
-                    }
-                    else
-                    {
-                        // The identifier was passed as a variable (e.g. `const string identifier = "...";`).
-                        // Resolve it from the const string declaration that is actually visible at the call
-                        // site; skip the call when it can't be resolved (not a contract-relevant literal target).
-                        syntaxRoot ??= CSharpSyntaxTree.ParseText(text).GetCompilationUnitRoot();
-                        identifier = ResolveConstStringIdentifier(syntaxRoot, match.Groups["var"].Value, match.Index);
-                        if (identifier is null) continue;
-                    }
+                    string? Resolve(Group group) => group.Success
+                        ? constStrings.LastOrDefault(c => c.Name == group.Value && c.Index < match.Index).Value
+                        : null;
+
+                    var identifier = match.Groups["id"].Success
+                        ? match.Groups["id"].Value
+                        : Resolve(match.Groups["var"]) ?? Resolve(match.Groups["receiver"]);
 
                     // Reduce "BitBlazorUI.Utils.getBodyWidth" to "Utils.getBodyWidth" for TS class.method lookup.
                     // This assumes TS class names are unique across the scanned sources: two classes with the
@@ -92,13 +100,24 @@ public class FastInvokeSyncContractTests
                     // positive. That's acceptable for the current single-project layout (one class per file,
                     // distinct class names), so the simpler last-two-segments match is preferred over tracking
                     // full namespaces. Revisit if the TypeScript sources ever introduce duplicate class names.
-                    var classMethod = LastTwoSegments(identifier);
-                    if (classMethod is null) continue;
+                    var classMethod = identifier is null ? null : LastTwoSegments(identifier);
+                    if (classMethod is null)
+                    {
+                        var line = text.AsSpan(0, match.Index).Count('\n') + 1;
+                        unresolved.Add($"  - {file}({line}): {match.Value}");
+                        continue;
+                    }
 
-                    fastInvokeTargets.Add((classMethod, identifier, file));
+                    fastInvokeTargets.Add((classMethod, identifier!, file));
                 }
             }
         }
+
+        Assert.AreEqual(0, unresolved.Count,
+            "Every FastInvoke/FastInvokeVoid call site must pass its JS identifier as a \"Class.method\" string " +
+            "literal, or as a local `const string` declared earlier in the same file, so this test can link it " +
+            "to its TypeScript definition. The following call sites could not be resolved:" +
+            Environment.NewLine + string.Join(Environment.NewLine, unresolved));
 
         Assert.IsTrue(fastInvokeTargets.Count > 0,
             "Expected to find FastInvoke call sites to validate, but none were found. " +
@@ -156,95 +175,6 @@ public class FastInvokeSyncContractTests
 
             yield return file;
         }
-    }
-
-    private static string? ResolveConstStringIdentifier(CompilationUnitSyntax root, string variableName, int callPosition)
-    {
-        // Resolve the variable to the 'const string <variableName> = "...";' declaration that is actually
-        // visible at the call site, using the parsed C# syntax tree rather than raw text scanning. Walking the
-        // real syntax ancestry means braces, comments, and string literals can never be miscounted, and a
-        // same-named const declared in an unrelated method or type can never be bound by mistake.
-        var node = root.FindToken(callPosition).Parent;
-
-        for (var current = node; current is not null; current = current.Parent)
-        {
-            // Local consts: visible from their declaration to the end of the enclosing block, so only a
-            // declaration that textually precedes the call site counts.
-            foreach (var statement in EnumerateLocalConstStatements(current))
-            {
-                foreach (var v in statement.Declaration.Variables)
-                {
-                    if (v.Identifier.ValueText != variableName) continue;
-                    if (v.SpanStart >= callPosition) continue;
-
-                    var value = TryGetStringLiteral(v);
-                    if (value is not null) return value;
-                }
-            }
-
-            // Type-level const fields: visible anywhere within the declaring type regardless of source order.
-            // Scoping resolution to the containing type (rather than a file-wide name match) prevents binding a
-            // same-named const from an unrelated type.
-            if (current is TypeDeclarationSyntax typeDecl)
-            {
-                foreach (var field in typeDecl.Members.OfType<FieldDeclarationSyntax>())
-                {
-                    if (!field.Modifiers.Any(SyntaxKind.ConstKeyword)) continue;
-                    if (!IsStringType(field.Declaration.Type)) continue;
-
-                    foreach (var v in field.Declaration.Variables)
-                    {
-                        if (v.Identifier.ValueText != variableName) continue;
-
-                        var value = TryGetStringLiteral(v);
-                        if (value is not null) return value;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private static IEnumerable<LocalDeclarationStatementSyntax> EnumerateLocalConstStatements(SyntaxNode scope)
-    {
-        // Only inspect statements that belong directly to this scope's own statement list (block or
-        // switch-section). Descendant blocks are handled when the walk reaches them as their own scope.
-        var statements = scope switch
-        {
-            BlockSyntax block => block.Statements,
-            SwitchSectionSyntax section => section.Statements,
-            _ => default
-        };
-
-        foreach (var statement in statements)
-        {
-            if (statement is LocalDeclarationStatementSyntax local &&
-                local.IsConst &&
-                IsStringType(local.Declaration.Type))
-            {
-                yield return local;
-            }
-        }
-    }
-
-    private static bool IsStringType(TypeSyntax type) => type switch
-    {
-        PredefinedTypeSyntax predefined => predefined.Keyword.IsKind(SyntaxKind.StringKeyword),
-        IdentifierNameSyntax { Identifier.ValueText: "String" } => true,
-        QualifiedNameSyntax { Right.Identifier.ValueText: "String" } => true,
-        _ => false
-    };
-
-    private static string? TryGetStringLiteral(VariableDeclaratorSyntax declarator)
-    {
-        if (declarator.Initializer?.Value is LiteralExpressionSyntax literal &&
-            literal.IsKind(SyntaxKind.StringLiteralExpression))
-        {
-            return literal.Token.ValueText;
-        }
-
-        return null;
     }
 
     private static string? LastTwoSegments(string identifier)

@@ -46,13 +46,7 @@ namespace BitBlazorUI {
             dotnetObj: DotNetObject,
             options: SwiperOptions) {
 
-            // Nothing is registered for this id, so the dispose that would normally release the .NET
-            // reference handed over here never runs for it. The handover is refused rather than left
-            // half-done: the reference is released right away instead of leaking on the .NET side.
-            if (!root || !container) {
-                dotnetObj?.dispose();
-                return;
-            }
+            if (!root || !container) return;
 
             // A setup that lands on an id that is still registered (a re-render that re-created the
             // element, for one) would leave the previous listeners and observer behind.
@@ -262,7 +256,7 @@ namespace BitBlazorUI {
 
             try { this.ac.abort(); } catch (e) { }
 
-            this.dotnetObj?.dispose();
+            // The .NET reference is owned and disposed by the component itself.
         }
 
 

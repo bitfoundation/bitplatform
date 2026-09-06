@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Bit.BlazorUI;
@@ -36,96 +35,6 @@ public static class IJSRuntimeFastExtensions
     public const DynamicallyAccessedMemberTypes JsonSerialized = JsInteropConstants.JsonSerialized;
 
 
-    /// <summary>
-    /// Optional handler for errors swallowed by the fast (in-process) invocation path on Blazor WebAssembly,
-    /// and for unexpected-null results reported via <see cref="ReportIfUnexpectedNull{T}"/> on any runtime.
-    /// </summary>
-    /// <remarks>
-    /// When a <see cref="JsonException"/> or <see cref="JSException"/> occurs while invoking JavaScript
-    /// synchronously, the call is not re-thrown (the operation returns its default result) so a single bad
-    /// interop call can't tear down the component, and the error is reported here so it remains observable.
-    /// <para>
-    /// Important: <see cref="JSException"/> covers more than a missing/unwired function. A correctly wired
-    /// synchronous JavaScript function whose own body throws (a real logic bug in the script) surfaces as the
-    /// same <see cref="JSException"/> and is therefore swallowed too - the call returns its default result and
-    /// the only signal is this report. Such errors previously propagated and tore down the call loudly; on the
-    /// fast path they no longer do. The default reporter (see <c>ReportError</c>) classifies the cause - a
-    /// missing/unwired function, an error thrown inside the function (a script bug), a serialization issue, or
-    /// an unexpected null - so the distinction is preserved in the message even without a custom handler.
-    /// Because of this, wiring <see cref="OnError"/> to a real logger should be treated as required in
-    /// production, not optional - it is the single channel through which both missing functions and in-body
-    /// logic errors remain visible.
-    /// </para>
-    /// <para>
-    /// This is a <em>process-global</em> hook. Assign it exactly once during application startup (before any
-    /// component renders) to route the report to a real logger (e.g. an <c>ILogger</c>); when left
-    /// <see langword="null"/> the error is written to <see cref="System.Console.Error"/> and a one-time warning
-    /// is emitted recommending that a handler be wired. The setter is not synchronized and the handler is shared
-    /// by every consumer in the process, so on Blazor Server it cannot carry per-circuit/per-user context -
-    /// capture any ambient state inside the handler accordingly. The handler receives the invoked identifier and
-    /// the caught exception, and must not throw (a throwing handler is caught and ignored).
-    /// </para>
-    /// </remarks>
-    public static Action<string, Exception>? OnError { get; set; }
-
-    // Tracks whether the "no OnError handler wired" warning has already been emitted, so the default reporter
-    // nags about observability exactly once instead of flooding the console on every swallowed error.
-    private static int _missingHandlerWarned;
-
-    private static void ReportError(string identifier, Exception exception)
-    {
-        var handler = OnError;
-        if (handler is null)
-        {
-            System.Console.Error.WriteLine(
-                $"Error invoking '{identifier}': {DescribeCause(exception)} {exception.Message}");
-
-            // Emit the "wire up OnError" guidance once. Without a handler these errors (including genuine
-            // in-body script bugs) are only visible on the console, so surface the recommendation a single time.
-            if (Interlocked.Exchange(ref _missingHandlerWarned, 1) == 0)
-            {
-                System.Console.Error.WriteLine(
-                    $"{nameof(IJSRuntimeFastExtensions)}.{nameof(OnError)} is not set. Swallowed fast-invoke interop " +
-                    "errors - including JavaScript functions that throw in their own body - are only reported to the " +
-                    "console. Assign a handler during startup to route them to a real logger.");
-            }
-
-            return;
-        }
-
-        try
-        {
-            handler(identifier, exception);
-        }
-        catch
-        {
-            // A faulty error handler must never escape the interop call and break the caller.
-        }
-    }
-
-    // Classifies a swallowed interop failure so the default console report distinguishes a missing/unwired
-    // function from a real script bug (a present function that threw), a serialization problem, or an
-    // unexpected null. This keeps the most actionable case - an in-body logic error - from hiding behind the
-    // same generic text as a simple typo'd identifier.
-    private static string DescribeCause(Exception exception) => exception switch
-    {
-        JsonException => "a JSON serialization issue occurred:",
-        JSException jsException when IsMissingFunctionError(jsException) => "the JavaScript function is missing or unwired:",
-        JSException => "the JavaScript function threw while executing (a script bug):",
-        InvalidOperationException => "the interop call produced an unexpected result:",
-        _ => "an unexpected error occurred:",
-    };
-
-    // Heuristic that recognizes the framework's "function not found" JSException by the phrasing the
-    // in-process runtime uses. It is intentionally conservative: when it can't tell, the cause is reported as
-    // an in-body script error (the louder, more actionable classification) rather than as a missing function.
-    private static bool IsMissingFunctionError(JSException jsException)
-    {
-        var message = jsException.Message;
-        return message.Contains("is not a function", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("was undefined", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("Could not find", StringComparison.OrdinalIgnoreCase);
-    }
 
     /// <summary>
     /// DEBUG-only guard for the synchronous in-process interop path. On a multithreaded WebAssembly runtime
@@ -152,45 +61,6 @@ public static class IJSRuntimeFastExtensions
                 "preceding ConfigureAwait(false), or use the regular asynchronous invocation instead.");
         }
     }
-
-    /// <summary>
-    /// When a FastInvoke call returns <see langword="null"/> and the runtime can service interop, reports the
-    /// missing result so component setup (drag/drop, pointer handlers, JS disposables, etc.) is not completely
-    /// silent. Skipped when <see cref="IJSRuntimeExtensions.IsRuntimeInvalid"/> is <see langword="true"/> (prerender,
-    /// disconnected circuit) where <see langword="null"/> is expected.
-    /// </summary>
-    /// <remarks>
-    /// Scope (deliberate asymmetry): the <c>where T : class</c> constraint means this only covers reference-type
-    /// results (<see cref="IJSObjectReference"/>, <see cref="string"/>, <c>BitFileInfo[]</c>). Value-type returns
-    /// that call sites request as nullable (<c>bool?</c>, <c>double?</c>, <c>float?</c>, <c>decimal?</c> in
-    /// Splitter, Utils, Chart, MarkdownViewer) are not routed through here; they are coalesced at the call site
-    /// (<c>?? 0</c>, <c>is true</c>), so a valid runtime that returns <see langword="null"/> <em>without</em> an
-    /// exception is silently treated as the default value rather than reported. This gap is narrow: the
-    /// <see cref="IJSRuntimeExtensions.IsRuntimeInvalid"/> case is legitimately silent for both reference and value
-    /// types (the <see langword="null"/> is expected), and a swallowed <see cref="JsonException"/> or
-    /// <see cref="JSException"/> is still reported via <see cref="OnError"/> for both. The only unreported case for
-    /// value types is "valid runtime, no exception, but the result was <see langword="null"/>", which is accepted
-    /// because a nullable value-type return is already distinguishable from a legitimate <c>false</c>/zero at the
-    /// call site (see the <c>FastInvoke</c> return remarks).
-    /// </remarks>
-    /// <remarks>
-    /// Only call this for identifiers whose JavaScript function is expected to <em>always</em> return a non-null
-    /// reference on a healthy runtime (e.g. <c>setup</c>/<c>init</c> helpers that hand back an id or a JS object
-    /// reference). A function that can legitimately return <see langword="null"/> on a valid runtime would be
-    /// reported here as a false positive; route those through a plain <c>FastInvoke</c> without this helper.
-    /// The report is raised as an <see cref="InvalidOperationException"/> so a wired <see cref="OnError"/> handler
-    /// can filter unexpected-null reports apart from <see cref="JSException"/>/<see cref="JsonException"/> ones.
-    /// </remarks>
-    public static T? ReportIfUnexpectedNull<T>(this IJSRuntime jsRuntime, string identifier, T? result)
-        where T : class
-    {
-        if (result is not null || jsRuntime.IsRuntimeInvalid()) return result;
-
-        ReportError(identifier, new InvalidOperationException("The interop call completed without a result."));
-        return null;
-    }
-
-
 
     /// <summary>
     /// Invokes the specified JavaScript function with the fastest speed possible.
@@ -256,9 +126,9 @@ public static class IJSRuntimeFastExtensions
         // interop (prerendering, an uninitialized Blazor Server circuit, or a disposed WebView). The async
         // fallback already guards this inside InvokeVoid; checking here means the synchronous in-process
         // path no-ops too instead of throwing. For a normal WASM runtime this is a cheap, false-returning
-        // check. A missing JS function - and any error thrown inside a present synchronous JS function - then
-        // surfaces as a swallowed <see cref="JSException"/> routed through <see cref="OnError"/> rather than
-        // an unhandled synchronous throw.
+        // check. Only a JSON problem is swallowed below: a missing function, or an error thrown inside the
+        // JavaScript function, propagates as a JSException on this path exactly as it does on the async one,
+        // so a component behaves the same on every host.
         if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
@@ -269,11 +139,9 @@ public static class IJSRuntimeFastExtensions
                 jsInProcessRuntime.Invoke<IJSVoidResult>(identifier, args);
                 return ValueTask.CompletedTask;
             }
-            // Swallows both a missing/unwired function and an error thrown inside a present synchronous JS
-            // function (a real script bug) - they arrive as the same JSException. See OnError remarks.
-            catch (Exception ex) when (ex is JsonException or JSException)
+            catch (JsonException ex)
             {
-                ReportError(identifier, ex);
+                System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
                 return ValueTask.CompletedTask;
             }
         }
@@ -300,10 +168,9 @@ public static class IJSRuntimeFastExtensions
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>
-    /// An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.
-    /// When <typeparamref name="TValue"/> is a non-nullable value type, prefer a nullable form (e.g. <see cref="bool"/> → <see cref="Nullable{T}"/>)
-    /// at call sites so a swallowed interop error (<see langword="default"/>, which is <see langword="null"/> for nullable value types)
-    /// is distinguishable from a legitimate JavaScript return of <see langword="false"/> or zero.
+    /// An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value, or
+    /// <see langword="default"/> when the runtime cannot service interop (prerendering, a circuit that is not
+    /// initialized, a detached WebView) - the same answer the asynchronous invocation gives in that state.
     /// </returns>
     public static ValueTask<TValue> FastInvoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
@@ -369,11 +236,9 @@ public static class IJSRuntimeFastExtensions
             {
                 return ValueTask.FromResult(jsInProcessRuntime.Invoke<TValue>(identifier, args));
             }
-            // Swallows both a missing/unwired function and an error thrown inside a present synchronous JS
-            // function (a real script bug) - they arrive as the same JSException. See OnError remarks.
-            catch (Exception ex) when (ex is JsonException or JSException)
+            catch (JsonException ex)
             {
-                ReportError(identifier, ex);
+                System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
                 return ValueTask.FromResult(default(TValue)!);
             }
         }

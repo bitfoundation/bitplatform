@@ -2,16 +2,9 @@ namespace Bit.BlazorUI;
 
 internal static class BitColorPickerJsRuntimeExtensions
 {
-    // FastInvoke returns default (null) when the runtime can't service interop or a JSON/JS interop
-    // error is swallowed on the in-process (WASM) path. The nullable failure state is preserved (rather
-    // than normalized to an empty id) so DisposeAsync can tell a setup that never registered anything on
-    // the JS side from one that did, and skip the (now pointless) JS dispose call.
-    internal static async ValueTask<string?> BitColorPickerSetup(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, ElementReference saturationPicker, string pointerHandler, string pointerUpHandler)
+    internal static ValueTask<string> BitColorPickerSetup(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, ElementReference saturationPicker, string pointerHandler, string pointerUpHandler)
     {
-        const string identifier = "BitBlazorUI.ColorPicker.setup";
-        var result = await js.FastInvoke<string>(identifier, obj, saturationPicker, pointerHandler, pointerUpHandler);
-        js.ReportIfUnexpectedNull(identifier, result);
-        return result;
+        return js.FastInvoke<string>("BitBlazorUI.ColorPicker.setup", obj, saturationPicker, pointerHandler, pointerUpHandler);
     }
 
     internal static ValueTask<bool> BitColorPickerIsEyeDropperSupported(this IJSRuntime js)

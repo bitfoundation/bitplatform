@@ -1523,9 +1523,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         ResetPickersState();
 
-        // A runtime that can't service the interop reports no width, which is taken as the narrowest
-        // viewport so the callout collapses instead of laying out at a width nothing measured.
-        var bodyWidth = await _js.BitUtilsGetBodyWidth() ?? 0;
+        var bodyWidth = await _js.BitUtilsGetBodyWidth();
 
         // The extra months are the first thing to go on a narrow viewport, and only what is left
         // decides whether the month and time pickers still have to collapse into overlays.

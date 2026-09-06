@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
@@ -10,22 +10,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 
 [TestClass]
-// These tests mutate the process-global IJSRuntimeFastExtensions.OnError hook. The assembly does not opt
-// into MSTest parallelization today, so this is defensive: it keeps the tests serialized (and prevents
-// cross-class bleed) should parallelization ever be enabled. Note that Interlocked/Volatile would NOT make
-// this parallel-safe; reference writes are already atomic and the real issue is a single shared slot.
-// If more global interop state like this accumulates, replace the global with a per-context test seam
-// (e.g. an AsyncLocal overlay exposed via a scoped IDisposable override) and drop this attribute.
-[DoNotParallelize]
 public class IJSRuntimeFastExtensionsTests
 {
-    [TestCleanup]
-    public void ResetErrorHandler()
-    {
-        // OnError is a process-global hook; reset it so tests don't leak into one another.
-        IJSRuntimeFastExtensions.OnError = null;
-    }
-
     [TestMethod]
     public void FastInvokeVoid_WhenInProcessRuntime_ShouldInvokeSynchronously()
     {
@@ -80,135 +66,21 @@ public class IJSRuntimeFastExtensionsTests
     }
 
     [TestMethod]
-    public void FastInvokeVoid_WhenJsonExceptionAndOnErrorSet_ShouldRouteToHandler()
+    public void FastInvokeVoid_WhenInProcessRuntimeThrowsJSException_ShouldPropagate()
     {
-        var reported = new List<(string Identifier, Exception Exception)>();
-        IJSRuntimeFastExtensions.OnError = (identifier, exception) => reported.Add((identifier, exception));
+        // A missing function, or an error thrown inside the JavaScript function, surfaces on the in-process
+        // path exactly as it does on the asynchronous one, so a component behaves the same on every host.
+        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JSException("js error") };
 
-        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JsonException("bad json") };
-
-        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff");
-
-        Assert.IsTrue(task.IsCompleted);
-        Assert.IsFalse(task.IsFaulted);
-        Assert.AreEqual(1, reported.Count);
-        Assert.AreEqual("BitBlazorUI.Test.doStuff", reported[0].Identifier);
-        Assert.IsInstanceOfType(reported[0].Exception, typeof(JsonException));
+        Assert.ThrowsExactly<JSException>(() => jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff"));
     }
 
     [TestMethod]
-    public async Task FastInvoke_WhenJsonExceptionAndOnErrorSet_ShouldRouteToHandlerAndReturnDefault()
-    {
-        var reported = new List<(string Identifier, Exception Exception)>();
-        IJSRuntimeFastExtensions.OnError = (identifier, exception) => reported.Add((identifier, exception));
-
-        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JsonException("bad json") };
-
-        var task = jsRuntime.FastInvoke<bool>("BitBlazorUI.Test.getStuff");
-
-        Assert.IsTrue(task.IsCompleted);
-        Assert.IsFalse(task.IsFaulted);
-        Assert.AreEqual(default, await task);
-        Assert.AreEqual(1, reported.Count);
-        Assert.AreEqual("BitBlazorUI.Test.getStuff", reported[0].Identifier);
-    }
-
-    [TestMethod]
-    public void ReportIfUnexpectedNull_WhenResultIsNullAndRuntimeIsValid_ShouldRouteToOnError()
-    {
-        var reported = new List<(string Identifier, Exception Exception)>();
-        IJSRuntimeFastExtensions.OnError = (identifier, exception) => reported.Add((identifier, exception));
-
-        var jsRuntime = new FakeInProcessJsRuntime();
-
-        var result = jsRuntime.ReportIfUnexpectedNull("BitBlazorUI.Test.getStuff", (string?)null);
-
-        Assert.IsNull(result);
-        Assert.AreEqual(1, reported.Count);
-        Assert.AreEqual("BitBlazorUI.Test.getStuff", reported[0].Identifier);
-        Assert.IsInstanceOfType(reported[0].Exception, typeof(InvalidOperationException));
-    }
-
-    [TestMethod]
-    public void ReportIfUnexpectedNull_WhenRuntimeIsInvalid_ShouldNotReport()
-    {
-        var reported = new List<(string Identifier, Exception Exception)>();
-        IJSRuntimeFastExtensions.OnError = (identifier, exception) => reported.Add((identifier, exception));
-
-        var jsRuntime = new UnsupportedJavaScriptRuntime();
-
-        var result = jsRuntime.ReportIfUnexpectedNull("BitBlazorUI.Test.getStuff", (string?)null);
-
-        Assert.IsNull(result);
-        Assert.AreEqual(0, reported.Count);
-    }
-
-    [TestMethod]
-    public void ReportIfUnexpectedNull_WhenResultIsPresent_ShouldNotReport()
-    {
-        var reported = new List<(string Identifier, Exception Exception)>();
-        IJSRuntimeFastExtensions.OnError = (identifier, exception) => reported.Add((identifier, exception));
-
-        var jsRuntime = new FakeInProcessJsRuntime();
-
-        var result = jsRuntime.ReportIfUnexpectedNull("BitBlazorUI.Test.getStuff", "controller-id");
-
-        Assert.AreEqual("controller-id", result);
-        Assert.AreEqual(0, reported.Count);
-    }
-
-    [TestMethod]
-    public void FastInvokeVoid_WhenOnErrorHandlerThrows_ShouldNotPropagate()
-    {
-        IJSRuntimeFastExtensions.OnError = (_, _) => throw new InvalidOperationException("faulty handler");
-
-        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JsonException("bad json") };
-
-        // A throwing error handler must never escape the interop call.
-        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff");
-
-        Assert.IsTrue(task.IsCompleted);
-        Assert.IsFalse(task.IsFaulted);
-    }
-
-    [TestMethod]
-    public void FastInvokeVoid_WhenInProcessRuntimeThrowsJSException_ShouldSwallowAndComplete()
+    public void FastInvoke_WhenInProcessRuntimeThrowsJSException_ShouldPropagate()
     {
         var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JSException("js error") };
 
-        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff");
-
-        Assert.IsTrue(task.IsCompleted);
-        Assert.IsFalse(task.IsFaulted);
-    }
-
-    [TestMethod]
-    public async Task FastInvoke_WhenInProcessRuntimeThrowsJSException_ShouldReturnDefault()
-    {
-        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JSException("js error") };
-
-        var task = jsRuntime.FastInvoke<bool>("BitBlazorUI.Test.getStuff");
-
-        Assert.IsTrue(task.IsCompleted);
-        Assert.IsFalse(task.IsFaulted);
-        Assert.AreEqual(default, await task);
-    }
-
-    [TestMethod]
-    public void FastInvokeVoid_WhenJSExceptionAndOnErrorSet_ShouldRouteToHandler()
-    {
-        var reported = new List<(string Identifier, Exception Exception)>();
-        IJSRuntimeFastExtensions.OnError = (identifier, exception) => reported.Add((identifier, exception));
-
-        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JSException("js error") };
-
-        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff");
-
-        Assert.IsTrue(task.IsCompleted);
-        Assert.IsFalse(task.IsFaulted);
-        Assert.AreEqual(1, reported.Count);
-        Assert.AreEqual("BitBlazorUI.Test.doStuff", reported[0].Identifier);
-        Assert.IsInstanceOfType(reported[0].Exception, typeof(JSException));
+        Assert.ThrowsExactly<JSException>(() => jsRuntime.FastInvoke<bool>("BitBlazorUI.Test.getStuff"));
     }
 
     [TestMethod]
