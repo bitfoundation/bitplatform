@@ -17,7 +17,9 @@ namespace Bit.Butil;
 /// the sheet your handler collects itself.
 /// <br/>
 /// Chromium only, secure context only, and every member needs an active service worker
-/// registration - each call awaits <c>navigator.serviceWorker.ready</c>.
+/// registration - each call awaits <c>navigator.serviceWorker.ready</c> for up to ten seconds, then
+/// answers as it would with no registration at all rather than waiting on a worker that never
+/// activates.
 /// </remarks>
 [ButilService(typeof(PaymentHandler))]
 public class PaymentHandler(IJSRuntime js)

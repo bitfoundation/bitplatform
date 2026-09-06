@@ -22,14 +22,20 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // null where they would accept an absent key ("null is not a valid enum value" for
     // shippingType, a null displayItems that is not iterable). Dropping them is what makes an
     // optional property optional again.
+    // `data` - on a payment method and on a modifier - is the exception: it is the processor's own
+    // configuration, which the browser hands to the payment app as written, and a null in there can
+    // be one that app reads. It is copied across whole, so only an absent `data` itself is dropped,
+    // which is all an unset DTO member means.
+    const OPAQUE_KEYS = ['data'];
+
     function prune(value: any): any {
-        if (Array.isArray(value)) return value.map(prune);
+        if (Array.isArray(value)) return value.map(item => prune(item));
         if (value === null || typeof value !== 'object') return value;
 
         const out: any = {};
         for (const key of Object.keys(value)) {
             if (value[key] === null || value[key] === undefined) continue;
-            out[key] = prune(value[key]);
+            out[key] = OPAQUE_KEYS.indexOf(key) >= 0 ? value[key] : prune(value[key]);
         }
         return out;
     }

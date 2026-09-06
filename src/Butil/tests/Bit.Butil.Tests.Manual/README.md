@@ -117,8 +117,8 @@ and this repository never does, plus the artifacts the whole feature rests on:
   into the `bit-butil.js` the package ships, each `modules/<name>.js` is byte-for-byte the bundle its own
   dependency closure assembles to, every chunk carries the guard that makes a second evaluation a no-op and
   appears in the bundle exactly once, and the manifest lists every module after the modules it depends on;
-- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 8-module,
-  9 KB one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
+- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 12-module,
+  13 KB one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
   evaluated under Node in a browser-like sandbox and has to register exactly the expected `BitButil`
   namespaces, none of them empty, and register nothing a second time (the sentinel each namespace is marked
   with has to survive re-evaluation - a guard that stopped holding would reset a module's listener
@@ -253,13 +253,13 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 704,512 bytes | 130,560 bytes |
+| `Bit.Butil.dll` | 705,024 bytes | 130,560 bytes |
 | types in assembly | 883 | 167 |
 | `[ButilService]` discovered / registered | 64 / 64 | 8 / 8 |
 | interop contract | 43 types captured | 11 checked, 32 trimmed away, 0 problems |
 | JavaScript modules called | 70 of 73 | 9 of 73 (clipboard, cookie, digitalCredentials, events, fetch, geolocation, storage, webOtp, window) |
-| `bit-butil.js` a publish would ship | 128,484 bytes, all 73 modules | 13,587 bytes, 12 modules (4,490 gzip / 4,001 brotli) - 10.6% |
-| lazy scripts would download | 165,705 bytes over 70 files | 18,157 bytes over 9 files |
+| `bit-butil.js` a publish would ship | 128,840 bytes, all 73 modules | 13,739 bytes, 12 modules (4,556 gzip / 4,058 brotli) - 10.7% |
+| lazy scripts would download | 166,061 bytes over 70 files | 18,309 bytes over 9 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 37 / 37 | not run |
 | script-publishing checks | 26 / 26 (9 publishes, ~19s) | not run |
