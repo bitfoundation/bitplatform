@@ -51,6 +51,10 @@ public class Translator(IJSRuntime js) : IAsyncDisposable
     public async ValueTask<TranslatorSession?> Create(TranslatorOptions options, Action<double>? onDownloadProgress = null)
     {
         ArgumentNullException.ThrowIfNull(options);
+        // A missing tag reaches JS as an omitted option, where `create` fails with a TypeError the
+        // interop reports as "unavailable" - a wrong answer to "can this pair be translated?".
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.SourceLanguage, nameof(options.SourceLanguage));
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.TargetLanguage, nameof(options.TargetLanguage));
 
         var id = await AiApi.Create(js, _interop, AiApi.Translator, options, onDownloadProgress);
         return id is null ? null : new TranslatorSession(js, _interop, id.Value);

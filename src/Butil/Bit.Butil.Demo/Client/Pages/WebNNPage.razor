@@ -70,7 +70,7 @@ if (context?.Info.CanBuildGraph is true)
             </label>
         </div>
         <div class="controls">
-            <button @onclick="CreateContext" disabled="@(_context is not null)">CreateContext</button>
+            <button @onclick="CreateContext" disabled="@(_context is not null || _creating)">CreateContext</button>
             <button class="danger" @onclick="DisposeContext" disabled="@(_context is null)">Dispose context</button>
         </div>
         @if (_context is not null)
@@ -124,6 +124,9 @@ var hasConv = limits.Any(op => op.Name == "conv2d");
     private DemoConsole limitsOutput = default!;
 
     private WebNNContext? _context;
+    // Creating a context is an async round-trip, and the button only knows to disable itself once
+    // _context has been assigned: a second click in between would leak the first context.
+    private bool _creating;
     private string _deviceType = "";
     private string _powerPreference = "";
 
@@ -143,6 +146,9 @@ var hasConv = limits.Any(op => op.Name == "conv2d");
 
     private async Task CreateContext()
     {
+        if (_creating) return;
+
+        _creating = true;
         try
         {
             _context = await webNN.CreateContext(_deviceType, _powerPreference);
@@ -152,6 +158,10 @@ var hasConv = limits.Any(op => op.Name == "conv2d");
         catch (Exception ex)
         {
             await contextOutput.Error("CreateContext failed →", ex.Message);
+        }
+        finally
+        {
+            _creating = false;
         }
     }
 

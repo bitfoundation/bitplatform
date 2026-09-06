@@ -15,10 +15,12 @@
     session</b>. See <a href="/language-model">LanguageModel</a> for the whole story.
 </Callout>
 
-<Callout Type="info" Title="Types and explanations cost extra">
-    <code>IncludeCorrectionTypes</code> and <code>IncludeCorrectionExplanations</code> are off by
-    default because labelling each change is extra work for the model. Turn them on when the UI
-    actually shows the reason.
+<Callout Type="info" Title="Labels and explanations are the runtime's to give">
+    A correction carries <code>Types</code> (<code>"spelling"</code>, <code>"grammar"</code>, and so
+    on) and an <code>Explanation</code> when the runtime supplies them, and both are empty when it
+    doesn't - Chromium currently labels nothing. The explainer's <code>includeCorrectionTypes</code>
+    and <code>includeCorrectionExplanations</code> switches are not exposed, because no
+    implementation honours them.
 </Callout>
 
 <div class="stack">
@@ -43,15 +45,14 @@ var availability = await proofreader.Availability();
                  Code=@("""
 await using var session = await proofreader.Create(new ProofreaderOptions
 {
-    IncludeCorrectionTypes = true,
-    IncludeCorrectionExplanations = true
+    ExpectedInputLanguages = ["en"]
 });
 
-var result = await session!.Proofread(text);
+var result = session is null ? null : await session.Proofread(text);
 
-foreach (var correction in result!.Corrections)
+foreach (var correction in result?.Corrections ?? [])
 {
-    Highlight(correction.StartIndex, correction.EndIndex, correction.Correction, correction.Type);
+    Highlight(correction.StartIndex, correction.EndIndex, correction.Correction, correction.Types);
 }
 """)>
         <div class="field">
@@ -60,12 +61,8 @@ foreach (var correction in result!.Corrections)
         </div>
         <div class="controls">
             <label class="field">
-                <span class="field-label">Include types</span>
-                <input type="checkbox" @bind="_includeTypes" />
-            </label>
-            <label class="field">
-                <span class="field-label">Include explanations</span>
-                <input type="checkbox" @bind="_includeExplanations" />
+                <span class="field-label">ExpectedInputLanguages</span>
+                <input @bind="_inputLanguage" disabled="@(_session is not null)" />
             </label>
         </div>
         <div class="controls">
@@ -86,9 +83,9 @@ foreach (var correction in result!.Corrections)
                     {
                         <div>
                             <code>[@correction.StartIndex..@correction.EndIndex] → @correction.Correction</code>
-                            @if (string.IsNullOrEmpty(correction.Type) is false)
+                            @if (correction.Types.Length > 0)
                             {
-                                <span> · @correction.Type</span>
+                                <span> · @string.Join(", ", correction.Types)</span>
                             }
                             @if (string.IsNullOrEmpty(correction.Explanation) is false)
                             {
@@ -130,14 +127,12 @@ foreach (var correction in result!.Corrections)
     // the first: the button only knows to disable itself once _session has been assigned.
     private bool _creating;
     private ProofreadResult? _result;
-    private bool _includeTypes = true;
-    private bool _includeExplanations = true;
+    private string _inputLanguage = "en";
     private string _input = "I has recieved you're message yesterday, and will responds tommorrow.";
 
     private ProofreaderOptions Options => new()
     {
-        IncludeCorrectionTypes = _includeTypes,
-        IncludeCorrectionExplanations = _includeExplanations
+        ExpectedInputLanguages = string.IsNullOrWhiteSpace(_inputLanguage) ? null : [_inputLanguage]
     };
 
     private async Task CheckSupported()

@@ -25,6 +25,9 @@ public class RewriterOptions
     /// <summary>The languages the input will be in, as BCP 47 tags.</summary>
     public string[]? ExpectedInputLanguages { get; set; }
 
+    /// <summary>The languages <see cref="SharedContext"/> and the per-call context will be in, as BCP 47 tags.</summary>
+    public string[]? ExpectedContextLanguages { get; set; }
+
     /// <summary>The language to write in, as a BCP 47 tag.</summary>
     public string? OutputLanguage { get; set; }
 }

@@ -53,13 +53,32 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return (prompts ?? []).map(p => ({ role: p.role, content: p.content }));
     }
 
+    // The language model states expected languages per input/output type rather than as a flat list;
+    // every other API takes the flat list directly. `availability` is answered from the same option
+    // set as `create`, so it has to be reshaped the same way or the probe answers about other options
+    // than the ones the session will be created with.
+    function toApiOptions(api: string, options: any) {
+        const config = clean(options);
+        if (api !== 'languageModel') return config;
+
+        if (config.expectedInputLanguages) {
+            config.expectedInputs = [{ type: 'text', languages: config.expectedInputLanguages }];
+            delete config.expectedInputLanguages;
+        }
+        if (config.outputLanguage) {
+            config.expectedOutputs = [{ type: 'text', languages: [config.outputLanguage] }];
+            delete config.outputLanguage;
+        }
+        return config;
+    }
+
     butil.ai = {
         isSupported(api: string) { return !!factory(api); },
         async availability(api: string, options: any) {
             const f = factory(api);
             if (!f?.availability) return 'unavailable';
             try {
-                return await f.availability(clean(options)) ?? 'unavailable';
+                return await f.availability(toApiOptions(api, options)) ?? 'unavailable';
             } catch {
                 // An option set the runtime can't serve (an unsupported language pair, say) is
                 // reported as unavailable rather than thrown - it is the same answer.
@@ -86,7 +105,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const f = factory(api);
             if (!f?.create) return 'unavailable';
 
-            const config: any = clean(options);
+            const config: any = toApiOptions(api, options);
 
             // initialPrompts arrive as {role, content} pairs; a system prompt is the first of them,
             // which is how the spec expresses what earlier drafts called `systemPrompt`.
@@ -94,19 +113,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (config.systemPrompt) {
                 config.initialPrompts = [{ role: 'system', content: config.systemPrompt }, ...(config.initialPrompts ?? [])];
                 delete config.systemPrompt;
-            }
-
-            // The language model states expected languages per input/output type rather than as a
-            // flat list; every other API takes the flat list directly.
-            if (api === 'languageModel') {
-                if (config.expectedInputLanguages) {
-                    config.expectedInputs = [{ type: 'text', languages: config.expectedInputLanguages }];
-                    delete config.expectedInputLanguages;
-                }
-                if (config.outputLanguage) {
-                    config.expectedOutputs = [{ type: 'text', languages: [config.outputLanguage] }];
-                    delete config.outputLanguage;
-                }
             }
 
             if (dotNetRef && progressMethod) {
@@ -185,7 +191,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     startIndex: c.startIndex ?? 0,
                     endIndex: c.endIndex ?? 0,
                     correction: c.correction ?? '',
-                    type: c.type ?? c.correctionType ?? '',
+                    // The spec labels a correction with a *sequence* of types; a runtime that only
+                    // ever assigns one is free to hand back the bare string instead.
+                    types: Array.isArray(c.types) ? c.types : (c.type ? [c.type] : []),
                     explanation: c.explanation ?? ''
                 }))
             };

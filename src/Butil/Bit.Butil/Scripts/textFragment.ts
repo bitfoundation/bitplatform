@@ -5,13 +5,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // browser strips out of location.hash before any page code sees it.
     const DELIMITER = ':~:';
 
-    // encodeURIComponent leaves `-`, `,` and `&` alone, and all three are structural inside a text
-    // directive: `-` separates prefix/suffix, `,` separates the parts, `&` separates directives.
+    // encodeURIComponent escapes `,` and `&` but leaves `-` alone, and `-` is structural inside a
+    // text directive: it separates the prefix and suffix from the text they bracket.
     function encodePart(value: string) {
-        return encodeURIComponent(value ?? '')
-            .replace(/-/g, '%2D')
-            .replace(/,/g, '%2C')
-            .replace(/&/g, '%26');
+        return encodeURIComponent(value ?? '').replace(/-/g, '%2D');
     }
 
     function encode(directive: any) {

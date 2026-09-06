@@ -17,14 +17,14 @@ public class ProofreadCorrection
 
     /// <summary>
     /// Why the change was made - <c>"spelling"</c>, <c>"punctuation"</c>, <c>"capitalization"</c>,
-    /// <c>"preposition"</c>, <c>"missing-words"</c>, <c>"grammar"</c>. Empty unless the session was
-    /// created with <see cref="ProofreaderOptions.IncludeCorrectionTypes"/>.
+    /// <c>"preposition"</c>, <c>"missing-words"</c>, <c>"grammar"</c>. A single change can carry more
+    /// than one label, and is empty on a runtime that doesn't label corrections at all.
     /// </summary>
-    public string Type { get; set; } = string.Empty;
+    public string[] Types { get; set; } = [];
 
     /// <summary>
-    /// The change in prose. Empty unless the session was created with
-    /// <see cref="ProofreaderOptions.IncludeCorrectionExplanations"/>.
+    /// The change in prose. Empty unless the runtime explains its corrections, which no shipping
+    /// implementation currently does.
     /// </summary>
     public string Explanation { get; set; } = string.Empty;
 }

@@ -54,7 +54,7 @@ _sub = await pointerTracker.Track(_surface, frame =>
 });
 """)>
         <div class="controls">
-            <button @onclick="StartTracking" disabled="@(_sub is not null)">Track</button>
+            <button @onclick="StartTracking" disabled="@(_sub is not null || _tracking)">Track</button>
             <button class="danger" @onclick="StopTracking" disabled="@(_sub is null)">Stop</button>
             <label class="field">
                 <span class="field-label">Include predicted</span>
@@ -112,6 +112,9 @@ foreach (var sample in frame.Predicted) DrawProvisional(sample);
 
     private ElementReference _surface;
     private ButilSubscription? _sub;
+    // Track is an async round-trip, and the button only knows to disable itself once _sub has been
+    // assigned: a second click in between would register a second tracker and leak the first.
+    private bool _tracking;
     private bool _includePredicted;
 
     private string _lastType = "-";
@@ -147,6 +150,9 @@ foreach (var sample in frame.Predicted) DrawProvisional(sample);
 
     private async Task StartTracking()
     {
+        if (_tracking) return;
+
+        _tracking = true;
         try
         {
             _frames = 0;
@@ -168,6 +174,10 @@ foreach (var sample in frame.Predicted) DrawProvisional(sample);
         catch (Exception ex)
         {
             await trackOutput.Error("Track failed →", ex.Message);
+        }
+        finally
+        {
+            _tracking = false;
         }
     }
 

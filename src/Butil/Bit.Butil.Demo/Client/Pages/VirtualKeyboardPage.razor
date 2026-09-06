@@ -90,7 +90,7 @@ _sub = await virtualKeyboard.OnGeometryChange(geometry =>
 """)>
         <div class="controls">
             <button @onclick="ReadRect">GetBoundingRect</button>
-            <button @onclick="Subscribe" disabled="@(_sub is not null)">Subscribe</button>
+            <button @onclick="Subscribe" disabled="@(_sub is not null || _subscribing)">Subscribe</button>
             <button class="danger" @onclick="Unsubscribe" disabled="@(_sub is null)">Unsubscribe</button>
         </div>
         @if (_geometry is not null)
@@ -139,6 +139,9 @@ _sub = await virtualKeyboard.OnGeometryChange(geometry =>
 
     private ElementReference _editor;
     private ButilSubscription? _sub;
+    // Subscribing is an async round-trip, and the button only knows to disable itself once _sub has
+    // been assigned: a second click in between would add a second listener and leak the first.
+    private bool _subscribing;
     private VirtualKeyboardGeometry? _geometry;
 
     private async Task CheckSupported()
@@ -235,6 +238,9 @@ _sub = await virtualKeyboard.OnGeometryChange(geometry =>
 
     private async Task Subscribe()
     {
+        if (_subscribing) return;
+
+        _subscribing = true;
         try
         {
             _sub = await virtualKeyboard.OnGeometryChange(async geometry => await InvokeAsync(async () =>
@@ -249,6 +255,10 @@ _sub = await virtualKeyboard.OnGeometryChange(geometry =>
         catch (Exception ex)
         {
             await geometryOutput.Error("Subscribe failed →", ex.Message);
+        }
+        finally
+        {
+            _subscribing = false;
         }
     }
 

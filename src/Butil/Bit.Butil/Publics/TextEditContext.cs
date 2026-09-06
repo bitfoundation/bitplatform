@@ -128,9 +128,20 @@ public class TextEditContext(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         _handlers[id] = new Handlers(onTextUpdate, onComposition, onFormatUpdate);
 
-        var attached = await js.Invoke<bool>("BitButil.editContext.attach",
-            element, id, options ?? new TextEditContextOptions(), DotNetRef,
-            TextMethodName, CompositionMethodName, FormatMethodName);
+        bool attached;
+        try
+        {
+            attached = await js.Invoke<bool>("BitButil.editContext.attach",
+                element, id, options ?? new TextEditContextOptions(), DotNetRef,
+                TextMethodName, CompositionMethodName, FormatMethodName);
+        }
+        catch
+        {
+            // No handle reaches the caller, so nothing would ever drop the handlers again.
+            _handlers.TryRemove(id, out _);
+            try { await js.InvokeVoid("BitButil.editContext.detach", id); } catch { /* the attach is what failed */ }
+            throw;
+        }
 
         if (attached is false)
         {

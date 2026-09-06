@@ -6,9 +6,9 @@ namespace Bit.Butil;
 public class CommandEventArgs
 {
     /// <summary>
-    /// The command that was invoked. Built-in ones start with a dash (<c>"show-modal"</c>,
-    /// <c>"close"</c>, <c>"toggle-popover"</c>) and are handled by the browser before the event
-    /// reaches you; custom ones start with <c>--</c> and are yours alone to act on.
+    /// The command that was invoked. Built-in ones (<c>"show-modal"</c>, <c>"close"</c>,
+    /// <c>"toggle-popover"</c>) are handled by the browser before the event reaches you; custom ones
+    /// start with <c>--</c> and are yours alone to act on.
     /// </summary>
     public string Command { get; set; } = string.Empty;
 

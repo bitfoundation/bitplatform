@@ -18,7 +18,7 @@
 @@inject Bit.Butil.CloseWatcher closeWatcher
 
 var watcher = await closeWatcher.Create(onClose: () => _open = false);
-await watcher!.RequestClose();
+if (watcher is not null) await watcher.RequestClose();
 </pre>
 
 <div class="stack" style="margin-top:1.5rem">

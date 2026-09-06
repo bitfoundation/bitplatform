@@ -19,7 +19,7 @@
 
 var availability = await languageModel.Availability();
 await using var session = await languageModel.Create();
-var answer = await session!.Prompt("Name three uses for a paperclip.");
+var answer = session is null ? "No built-in AI here." : await session.Prompt("Name three uses for a paperclip.");
 </pre>
 
 <div class="stack" style="margin-top:1.5rem">
@@ -188,7 +188,7 @@ var answer = await session!.Prompt("Name three uses for a paperclip.");
 
     private async Task Proofread()
     {
-        await using var session = await proofreader.Create(new ProofreaderOptions { IncludeCorrectionTypes = true });
+        await using var session = await proofreader.Create(new ProofreaderOptions { ExpectedInputLanguages = ["en"] });
         if (session is null)
         {
             await output.Warn("Proofreader.Create → null. Not available on this device.");

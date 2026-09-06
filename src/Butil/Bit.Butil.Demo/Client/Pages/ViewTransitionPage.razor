@@ -437,11 +437,25 @@ _revealSub = await viewTransition.OnPageReveal(e => { /* on the new document */ 
     {
         try
         {
-            _swapSub = await viewTransition.OnPageSwap(e =>
+            // Both or neither: the Unsubscribe button is driven by _swapSub, so a half-finished
+            // subscription would leave a listener attached that nothing can detach.
+            var swapSub = await viewTransition.OnPageSwap(e =>
                 _ = InvokeAsync(() => pageEventOutput.Info("pageswap →", e)));
 
-            _revealSub = await viewTransition.OnPageReveal(e =>
-                _ = InvokeAsync(() => pageEventOutput.Info("pagereveal →", e)));
+            ButilSubscription revealSub;
+            try
+            {
+                revealSub = await viewTransition.OnPageReveal(e =>
+                    _ = InvokeAsync(() => pageEventOutput.Info("pagereveal →", e)));
+            }
+            catch
+            {
+                await swapSub.DisposeAsync();
+                throw;
+            }
+
+            _swapSub = swapSub;
+            _revealSub = revealSub;
 
             await pageEventOutput.Success("Subscribed. This document's own pagereveal - it fires before .NET starts - "
                                        + "is replayed above if Butil's script was on the page in time; pageswap fires on the way out.");

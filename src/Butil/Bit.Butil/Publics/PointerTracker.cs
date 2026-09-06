@@ -99,7 +99,17 @@ public class PointerTracker(IJSRuntime js) : IAsyncDisposable
         var id = Guid.NewGuid();
         _handlers.TryAdd(id, handler);
 
-        await js.Invoke<bool>("BitButil.pointerTracker.track", element, id, events, includePredicted, DotNetRef, InvokeMethodName);
+        try
+        {
+            await js.Invoke<bool>("BitButil.pointerTracker.track", element, id, events, includePredicted, DotNetRef, InvokeMethodName);
+        }
+        catch
+        {
+            // No subscription reaches the caller, so nothing would ever drop the handler again.
+            _handlers.TryRemove(id, out _);
+            try { await js.InvokeVoid("BitButil.pointerTracker.untrack", id); } catch { /* the registration is what failed */ }
+            throw;
+        }
 
         return new ButilSubscription(id, async () =>
         {

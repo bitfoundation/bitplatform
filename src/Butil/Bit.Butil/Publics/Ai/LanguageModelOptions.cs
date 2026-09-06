@@ -15,12 +15,16 @@ namespace Bit.Butil;
 public class LanguageModelOptions
 {
     /// <summary>
-    /// How varied the output is. Must not exceed <see cref="AiModelParams.MaxTemperature"/> - a
-    /// higher value fails the creation rather than being clamped.
+    /// How varied the output is. Keep it within <see cref="AiModelParams.MaxTemperature"/>: a higher
+    /// value is clamped to that ceiling rather than honoured, so the session runs at a temperature
+    /// you did not ask for.
     /// </summary>
     public double? Temperature { get; set; }
 
-    /// <summary>How many candidate tokens are sampled from. Must not exceed <see cref="AiModelParams.MaxTopK"/>.</summary>
+    /// <summary>
+    /// How many candidate tokens are sampled from. Keep it within <see cref="AiModelParams.MaxTopK"/>,
+    /// which is clamped the same way as <see cref="Temperature"/>.
+    /// </summary>
     public double? TopK { get; set; }
 
     /// <summary>
