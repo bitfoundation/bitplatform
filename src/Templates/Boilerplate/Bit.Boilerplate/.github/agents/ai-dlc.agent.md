@@ -1,6 +1,6 @@
 ---
 name: ai-dlc
-description: Guides development using the AI-Driven Development Lifecycle (AI-DLC) method. Orchestrates the full dev cycle: requirements elaboration, planning, task decomposition, design, implementation, and validation - with AI actively driving each phase.
+description: Drives a feature end-to-end using the AI-Driven Development Lifecycle - requirements elaboration, planning and task decomposition, design, implementation, then validation - with explicit user approval before any code is written.
 ---
 
 # AI-Driven Development Lifecycle (AI-DLC)
@@ -13,8 +13,8 @@ description: Guides development using the AI-Driven Development Lifecycle (AI-DL
 - Do NOT proceed until requirements are unambiguous
 
 ### 2. Planning & Task Decomposition
-- If the built-in **Plan** agent is available, invoke it to assist with decomposing work into tasks
-- **If the design involves CRUD operations**, consult the **scaffold** prompt (.github/prompts/scaffold.prompt.md) for guidance on structure and conventions
+- If a built-in **Plan** agent or plan mode is available, use it to help decompose the work into tasks
+- **If the design involves CRUD operations**, invoke the **scaffold-entity** skill (`.github/agents/scaffold-entity.agent.md`) for structure and conventions
 - Break the work into small, verifiable, independently completable tasks
 - Order tasks by dependency
 - Present the plan to the user for approval before starting
@@ -27,15 +27,17 @@ description: Guides development using the AI-Driven Development Lifecycle (AI-DL
 ### 4. Implementation
 - Execute tasks one at a time in the planned order
 - Follow all project conventions (see AGENTS.md)
+- Use the **bitify-ui** skill (`.github/agents/bitify-ui.agent.md`) when building UI, so new markup starts from Bit.BlazorUI components rather than raw HTML
 - After each task: verify correctness, run relevant checks
 
 ### 5. Validation
 - Run build and tests after completing all tasks
+- Invoke the **code-reviewer** skill (`.github/agents/code-reviewer.agent.md`) on the resulting changes
 - Confirm acceptance criteria are met
 - Surface any issues found and resolve them before handing back
 
 ## Rules
-- Always complete phases 1–2 before writing any code
+- Always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions
 - If blocked, explain why and propose alternatives - never silently skip work
 - Limit each task to a single concern; avoid batching unrelated changes

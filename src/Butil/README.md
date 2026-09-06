@@ -87,6 +87,7 @@ registering everything.
 | Service | What it wraps |
 | --- | --- |
 | `Screen` | Physical screen metrics, colour depth, availability |
+| `WindowManagement` | Every attached screen, and placing windows or fullscreen content on a chosen one |
 | `ScreenOrientation` | Read, lock and observe the screen orientation |
 | `VisualViewport` | The visual viewport: scale, offsets, resize and scroll events |
 | `Performance` | High-resolution timing, marks, measures, `PerformanceObserver` |
@@ -103,6 +104,10 @@ registering everything.
 | `IntersectionObserver` | Element visibility inside the viewport or a scroll container |
 | `MutationObserver` | DOM tree, attribute and character-data mutations |
 | `ResizeObserver` | Element size changes with box-model detail |
+| `Css` | `getComputedStyle`, `CSS.supports`/`escape`/`registerProperty`, stylesheet rules, the CSS Custom Highlight API |
+| `Dom` | `querySelector`, `getElementById`, `createElement` and node traversal for elements Blazor did not render - with a bridge back to `ElementReference` |
+| `ShadowDom` | `attachShadow`, scoped styles, and querying into any open shadow root - a closed one is closed to you too |
+| `Canvas` | `drawImage` from a video/image/canvas, then `toDataURL`/`toBlob` - screenshots and thumbnails as `byte[]` |
 | `PictureInPicture` | Float a `<video>` in an always-on-top window |
 | `DocumentPictureInPicture` | Put arbitrary DOM in an always-on-top window - not just a video |
 | `ViewTransition` | Animate between two states of the page, the browser doing the work |
@@ -131,6 +136,8 @@ registering everything.
 | `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
 | `Fetch` | The fetch API with full request/response control and progress |
 | `Compression` | Gzip and deflate through the browser's native codec |
+| `DataTransfer` | Drag-and-drop payloads: dropped files, `getData`/`setData` items, `dropEffect`, `setDragImage` |
+| `LocalFonts` | List installed fonts, and read one's raw font file |
 
 ### Network & workers
 
@@ -143,6 +150,19 @@ registering everything.
 | `BroadcastChannel` | Message other tabs and windows of the same origin |
 | `WebLocks` | Cross-tab cooperative resource locking |
 | `EventSource` | Server-sent events, with reconnection built into the browser |
+| `WebRtc` | `RTCPeerConnection`, `RTCDataChannel` and `getStats`: media and data straight between two browsers |
+| `WebSocket` | A two-way connection that stays open: binary frames, close codes, sub-protocol negotiation, `bufferedAmount` |
+| `Worker` | Dedicated and shared workers running a script you supply, with transferable binary payloads |
+| `MessageChannel` | `MessageChannel`/`MessagePort`: a private two-ended pipe, transferable to a worker or an iframe |
+| `WindowMessaging` | `window.postMessage`: cross-document messaging with an embedded iframe, the parent, the opener or a popup |
+
+### Async & scheduling
+
+| Service | What it wraps |
+| --- | --- |
+| `AbortController` | `AbortController`/`AbortSignal`: one signal shared by many operations, plus `AbortSignal.timeout` and `AbortSignal.any` |
+| `Scheduler` | `requestAnimationFrame` (single and looping), `requestIdleCallback`, `scheduler.postTask`/`yield`, `isInputPending` |
+| `Streams` | The Streams API: a fetch body read as it arrives, `tee`, `pipeThrough` the native codecs, and `pipeTo` a C# sink |
 
 ### Device & hardware
 
@@ -154,6 +174,14 @@ registering everything.
 | `Gamepad` | Game controllers: buttons, sticks, triggers and rumble |
 | `DeviceOrientation` | Tilt, acceleration and rotation from the device's own sensors |
 | `Nfc` | Read and write NDEF messages on NFC tags |
+| `Sensors` | The Generic Sensor API: accelerometer, gyroscope, magnetometer, orientation, gravity, linear acceleration, ambient light |
+| `Bluetooth` | Web Bluetooth: pick a BLE device, then read, write or subscribe to its GATT characteristics |
+| `Usb` | WebUSB: claim an interface and run control, bulk or interrupt transfers |
+| `Serial` | Web Serial: open a port with the device's line settings, then read and write bytes |
+| `Hid` | WebHID: input, output and feature reports |
+| `Midi` | Web MIDI: inputs, outputs, incoming messages and note sending |
+| `ComputePressure` | CPU and thermal pressure, for shedding work before the machine stutters |
+| `DevicePosture` | Whether a foldable device is flat or folded across its hinge |
 | `WakeLock` | Keep the screen awake, with an auto-reacquiring persistent mode |
 | `IdleDetector` | User and screen idle-state changes |
 | `ContactPicker` | Let users pick contacts to share with your app |
@@ -165,8 +193,20 @@ registering everything.
 | Service | What it wraps |
 | --- | --- |
 | `WebAuthn` | Passkeys: create credentials and verify assertions |
+| `Credentials` | The password and federated credential store behind `navigator.credentials` |
+| `FedCm` | Federated sign-in the browser mediates, without third-party cookies |
+| `WebOtp` | Autofill the one-time code out of an incoming SMS |
+| `DigitalCredentials` | Present a verifiable credential from the user's wallet |
 | `Permissions` | Query the state of any browser permission |
 | `Notification` | Request permission and show system notifications |
+
+### Commerce
+
+| Service | What it wraps |
+| --- | --- |
+| `PaymentRequest` | The browser's own payment sheet: show it, complete it, abort it |
+| `PaymentHandler` | Registering an installed app as a payment method other sites can pay through |
+| `DigitalGoods` | An app store's catalogue, purchases and entitlements inside an installed PWA |
 
 ### Media & speech
 
@@ -184,6 +224,7 @@ registering everything.
 | `RemotePlayback` | Hand a media element to a TV, a speaker or a cast receiver |
 | `Presentation` | Open one of your own pages on a second display, with a message channel to it |
 | `WebXr` | VR and AR sessions: lifecycle, poses, controllers and input |
+| `AudioOutput` | Route a media element's sound to a chosen speaker or headset |
 
 ---
 
@@ -246,7 +287,8 @@ refuses come back as `false`/`null` rather than as exceptions where dismissal is
 ### Optional fast invoke
 
 On Blazor WebAssembly, the handful of APIs backed by genuinely synchronous JS functions -
-`LocalStorage`, `SessionStorage`, `Cookie`, `Console`, `Location` - can skip the async marshalling:
+`LocalStorage`, `SessionStorage`, `Cookie`, `Console`, `Location`, `History` - can skip the async
+marshalling:
 
 ```csharp
 BitButil.UseFastInvoke();
@@ -278,7 +320,7 @@ through such a literal, so the trimmed assembly is the exact list of modules the
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
 Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
 that injects `Clipboard`, `LocalStorage` and `Window` ships about 8 KB of JavaScript instead of the
-110 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+191 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
 a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
 trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping
@@ -287,8 +329,10 @@ both shapes - only the modules the trimmed assembly can still name are published
 module is gone from the assembly with it. `<BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>`
 in the csproj publishes every module regardless, for an app that reaches them from outside its own interop
 calls. All of this happens in `dotnet publish` only: a build - and `dotnet run` and `dotnet watch` on top of
-it - keeps the full bundle and every module, so what you debug is never the trimmed JavaScript. Opt out with
-`false`, or opt in elsewhere with `true`:
+it - keeps the full bundle and every module, so what you debug is never the trimmed JavaScript. And it
+happens in the project that publishes the app's static web assets only - see
+[where these properties go](#where-these-properties-go). Opt out with `false`, or opt in elsewhere with
+`true`:
 
 ```xml
 <PropertyGroup>
@@ -298,26 +342,32 @@ it - keeps the full bundle and every module, so what you debug is never the trim
 
 **Publishing without trimming?** `BitButilTrimScripts` decides *whether* to trim the JavaScript; what it
 trims against is a separate question, and a publish with `PublishTrimmed` off has no trimmed assembly to
-read. `BitButilScriptScan` answers it from the app's own assemblies instead: an `@inject Clipboard` is a
-reference to `Bit.Butil.Clipboard`, and the package's build logic reads `Bit.Butil.dll` to know which
-JavaScript module answering that class takes - through base classes and internal interop helpers, so
-`LocalStorage` correctly pulls in `storage` and `Window` pulls in `events` as well as `window`. On this
-repository's own trimming harness it reaches exactly the module set ILLink does. It works in every hosting
-model - a WebAssembly app with `PublishTrimmed` off, Blazor Server, a server host that prerenders - and it
-costs the publish one pass over the app's assemblies, tens of milliseconds; a build is untouched either way.
+read. `BitButilScriptScan` answers it from the app's own assemblies instead, and it **defaults to
+`TypeReferences` wherever `BitButilTrimScripts` is `true`** - so turning the trimming on is all an app
+writes, and the switch is never on with nothing behind it. An `@inject Clipboard` is a reference to
+`Bit.Butil.Clipboard`, and the package's build logic reads `Bit.Butil.dll` to know which JavaScript module
+answering that class takes - through base classes and internal interop helpers, so `LocalStorage` correctly
+pulls in `storage` and `Window` pulls in `events` as well as `window`. On this repository's own trimming
+harness it reaches exactly the module set ILLink does. It works in every hosting model - a WebAssembly app
+with `PublishTrimmed` off, Blazor Server, a server host that prerenders - and it costs the publish one pass
+over the app's assemblies, tens of milliseconds; a build is untouched either way. It reads the app's own
+assembly and its copy-local references by default - override with `BitButilScriptScanAssembly` if the code
+calling Bit.Butil lives elsewhere, and with `BitButilUntrimmedAssembly` in the rare layout where the
+reference to `Bit.Butil.dll` itself cannot be resolved from those.
 
 ```xml
+<!-- The whole of it for an app published untrimmed: the scan comes with the switch -->
 <PropertyGroup>
   <BitButilTrimScripts>true</BitButilTrimScripts>
-  <BitButilScriptScan>TypeReferences</BitButilScriptScan>
 </PropertyGroup>
 ```
 
 `TypeNames` is the other mode: it matches the library's type names against the names in each assembly, with
 no metadata tables read at all. It is coarser - an app with a class of its own called `Window`, `Console` or
-`Storage` pulls in that module too - and it over-includes rather than missing anything, so prefer
-`TypeReferences` unless you have a reason not to. Either is ignored when `PublishTrimmed` is `true`: the
-trimmed assembly answers the same question more precisely.
+`Storage` pulls in that module too - and it over-includes rather than missing anything, so the default stays
+`TypeReferences`. Either is ignored when `PublishTrimmed` is `true`: the trimmed assembly answers the same
+question more precisely. `None` is the third value, and the way to publish the full bundle from one project
+while `BitButilTrimScripts` stays `true` for the rest.
 
 **Keeping a module none of that can see.** `BitButilScriptModule` names modules, or the Bit.Butil classes
 behind them, that must survive whatever the scan or the trimmer concluded - for an API reached by reflection,
@@ -330,8 +380,41 @@ that is neither a module nor a Bit.Butil class fails the build rather than being
 </ItemGroup>
 ```
 
-With none of the three in play - no `PublishTrimmed`, no `BitButilScriptScan`, no `BitButilScriptModule` -
-there is nothing to trim against, and the full bundle is published.
+With none of the three in play - no `PublishTrimmed`, `BitButilScriptScan` set to `None`, no
+`BitButilScriptModule` - there is nothing to trim against, and the full bundle is published.
+
+<a id="where-these-properties-go"></a>
+**Where these properties go.** On the project you publish - the Blazor WebAssembly head, or the server
+project of a Blazor Web App - and **not** in a shared `Directory.Build.props`. From there they also reach
+every Razor class library and every MAUI/Blazor Hybrid head in the solution, and none of those publish the
+app's static web assets: a class library asked what JavaScript "the app" uses would answer from its own
+references, which are not the app's, and hand the head a bundle short of the modules only the head names.
+
+The trimming knows this and stands down in those projects rather than trimming against the wrong reference
+closure - what it decides on is the SDK the project loaded, which is the Web SDK or the Blazor WebAssembly
+SDK for every project that publishes an app and neither of those for a class library or a hybrid head.
+Where what reached such a project describes what the app calls - a `BitButilScriptScan` written out by hand, or a
+`BitButilScriptModule` list - it says so in the build output. So a shared props file is no longer a broken
+build, but it is still not where the answer comes from. Put the
+properties on the head, one per app you publish:
+
+```xml
+<!-- Boilerplate.Server.Web.csproj - the project that publishes the Blazor Web App -->
+<PropertyGroup>
+  <BitButilTrimScripts>true</BitButilTrimScripts>
+</PropertyGroup>
+
+<ItemGroup>
+  <BitButilScriptModule Include="WebAuthn" />
+</ItemGroup>
+```
+
+`BitButilTrimScripts` on its own is the exception worth keeping shared, since it is only a switch and
+already defaults to `true` exactly where it applies. The scan comes with it wherever it lands, but only the
+project that publishes the app ever acts on one, so sharing the switch is still just sharing a switch.
+
+The demo site has a page of its own for all of this - **JavaScript trimming**, under Overview - including a
+live check that reads back which modules the app you are looking at actually downloaded.
 
 **Lazy scripts.** No script tag at all: the first call into an API `import()`s that API's module
 (`_content/Bit.Butil/modules/clipboard.js` for `Clipboard`), so only the JavaScript for the APIs the

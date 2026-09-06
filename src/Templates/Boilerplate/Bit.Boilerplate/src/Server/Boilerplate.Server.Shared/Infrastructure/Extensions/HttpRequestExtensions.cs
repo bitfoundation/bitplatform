@@ -4,6 +4,17 @@ namespace Microsoft.AspNetCore.Http;
 
 public static partial class HttpRequestExtensions
 {
+    private static readonly string[] CrawlerUserAgentTokens =
+    [
+        "googlebot", "storebot-google", "google-inspectiontool", "googleother", "google-extended",
+        "adsbot-google", "mediapartners-google",
+        "bingbot", "adidxbot", "msnbot", "bingpreview",
+        "slurp", // Yahoo
+        "duckduckbot", "duckassistbot",
+        "yandexbot", "yandexmobilebot", "yandeximages",
+        "baiduspider", "applebot", "petalbot", "seznambot"
+    ];
+
     extension(HttpRequest request)
     {
         public Uri GetUri()
@@ -39,17 +50,7 @@ public static partial class HttpRequestExtensions
         {
             var agent = GetLoweredUserAgent(request);
 
-            if (agent.Contains("google")) return true;
-
-            if (agent.Contains("bing")) return true;
-
-            if (agent.Contains("yahoo")) return true;
-
-            if (agent.Contains("duckduck")) return true;
-
-            if (agent.Contains("yandex")) return true;
-
-            return false;
+            return CrawlerUserAgentTokens.Any(agent.Contains);
         }
 
         public string GetLoweredUserAgent()

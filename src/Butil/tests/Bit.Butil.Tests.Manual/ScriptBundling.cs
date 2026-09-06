@@ -664,7 +664,7 @@ internal static class ScriptBundling
     /// <remarks>
     /// The duplication is forced - a target runs at most once per project build, so a single target hooked
     /// into both stages runs at the first and is skipped at the second - and it is the kind that rots: a fix
-    /// made to one body and not the other leaves a publish shipping 65 module files an app never requests,
+    /// made to one body and not the other leaves a publish shipping 72 module files an app never requests,
     /// or a bundle a lazy-scripts app never loads, and neither shows up in a build. So the two bodies are
     /// compared here, and each is checked to be hooked into the stage it exists for.
     /// </remarks>

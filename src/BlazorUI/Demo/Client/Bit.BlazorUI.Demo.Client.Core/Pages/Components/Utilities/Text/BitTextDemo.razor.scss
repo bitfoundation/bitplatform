@@ -1,0 +1,54 @@
+﻿// The examples put loose runs of text of every variant next to each other, so they need a container that keeps a
+// consistent gap between them and stops the inline ones (a caption, an overline, a span) from sharing a line.
+.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+
+    // Every BitText is a component, so the scope attribute of this stylesheet never lands on it; the container that
+    // carries the attribute is what reaches them. An inline variant is given a line of its own here rather than a
+    // display of its own, so that the Block parameter still has something to demonstrate.
+    > ::deep .bit-txt {
+        max-width: 100%;
+    }
+
+    // A rule is a block element with no content of its own, so in a column that sizes its items to their content
+    // it would come out zero pixels wide and stay invisible.
+    > ::deep hr.bit-txt {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+// A caption over the run of text it names. The width that the truncation, the clamp and the alignment all need
+// before there is anything to see is on the text itself rather than here, so that the source of the example is
+// what a reader can copy out and get the same result from.
+.demo-group {
+    gap: 0.25rem;
+    display: flex;
+    max-width: 100%;
+    flex-flow: column;
+    align-items: flex-start;
+}
+
+// The two columns of figures sit side by side so that the ragged edge of the proportional ones and the aligned
+// edge of the tabular ones can be compared at a glance. The container is a column, so the row is one of its own.
+.demo-row {
+    gap: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.demo-figures {
+    gap: 0.25rem;
+    display: flex;
+    flex-flow: column;
+}
+
+// A visible box around a group, so that a bottom margin and a class applied through a parameter can be seen.
+.demo-boxed,
+::deep .demo-boxed {
+    padding: 0.5rem;
+    border: 1px solid gray;
+}

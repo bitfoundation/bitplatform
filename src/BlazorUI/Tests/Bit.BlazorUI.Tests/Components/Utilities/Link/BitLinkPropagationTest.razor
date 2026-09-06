@@ -1,0 +1,14 @@
+@* A BitLink inside a clickable container, so what a click on the link does to that container can be observed. *@
+<div id="container" @onclick="() => ContainerClickCount++">
+    <BitLink Href="@Href" StopPropagation="StopPropagation" OnClick="() => LinkClickCount++">A link</BitLink>
+</div>
+
+@code {
+    [Parameter] public string? Href { get; set; }
+
+    [Parameter] public bool StopPropagation { get; set; }
+
+    public int LinkClickCount { get; set; }
+
+    public int ContainerClickCount { get; set; }
+}

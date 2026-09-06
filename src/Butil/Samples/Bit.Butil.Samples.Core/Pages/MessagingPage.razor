@@ -1,0 +1,98 @@
+@page "/messaging"
+@implements IAsyncDisposable
+@inject Bit.Butil.WindowMessaging windowMessaging
+@inject Bit.Butil.MessageChannel messageChannel
+@inject NavigationManager navManager
+
+<PageTitle>Butil - WindowMessaging Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="WindowMessaging"
+            Lead="window.postMessage: talking to an embedded iframe across the same-origin policy - and turning that into a private channel."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage" />
+
+<pre>
+@@inject Bit.Butil.WindowMessaging windowMessaging
+
+await windowMessaging.Listen(m => { /* m.Origin, m.Deserialize&lt;T&gt;() */ }, allowedOrigins: [origin]);
+await windowMessaging.Frame(_frame).PostMessage(new { hello = "frame" }, origin);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Post to an iframe" Api="Listen / Frame / PostMessage"
+              Description="Both origin checks are yours: pass the origins you trust to Listen, and name the origin you expect when sending rather than '*'.">
+        <div class="field">
+            <span class="field-label">Message</span>
+            <input @bind="_text" />
+        </div>
+        <button @onclick="PostToFrame">Post to the frame</button>
+        <iframe @ref="_frame" src="/frames/sample-frame.html" title="sample frame"
+                style="width:100%;height:8rem;border:1px solid #cbd5e1;border-radius:.5rem;margin-top:.75rem"></iframe>
+    </DemoCard>
+
+    <DemoCard Title="Hand it a port" Api="PostWithPorts"
+              Description="Post once with a port attached and everything after that goes over the port instead - no origin argument on every message, and nobody else listening in. The port is transferred, so the handle passed here stops working.">
+        <button @onclick="HandOverAPort">Transfer a port to the frame</button>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="messaging output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference _frame;
+    private ButilSubscription? _subscription;
+    private MessageChannelHandle? _channel;
+    private string _text = "hello, frame";
+
+    private string Origin => new Uri(navManager.BaseUri).GetLeftPart(UriPartial.Authority);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _subscription = await windowMessaging.Listen(m => InvokeAsync(async () =>
+        {
+            await output.Success($"From {m.Origin} →", m.IsBinary ? $"binary [{m.Data?.Length} bytes]" : m.Json);
+        }), [Origin]);
+    }
+
+    private async Task PostToFrame()
+    {
+        var sent = await windowMessaging.Frame(_frame).PostMessage(new { text = _text }, Origin);
+        if (sent is false) await output.Warn("Returned false - the frame has no document yet.");
+    }
+
+    private async Task HandOverAPort()
+    {
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+
+        _channel = await messageChannel.Create();
+        if (_channel is null)
+        {
+            await output.Warn("Create returned null - the runtime has no MessageChannel.");
+            return;
+        }
+
+        await _channel.Port1.OnMessage(m => InvokeAsync(() => output.Success("Over the port →", m.Json)));
+        await _channel.Port1.Start();
+
+        // The sample frame does not answer on ports, so this shows the transfer itself: Port2 is the
+        // frame's now, and posting to it here is reported rather than thrown.
+        var sent = await windowMessaging.Frame(_frame).PostWithPorts(new { op = "line" }, Origin, [_channel.Port2]);
+        var stillUsable = await _channel.Port2.PostMessage(new { late = true });
+
+        await output.Success("PostWithPorts →", $"sent {sent}, still usable here: {stillUsable}");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            if (_channel is not null) await _channel.DisposeAsync();
+        }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}

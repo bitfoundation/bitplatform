@@ -435,9 +435,9 @@ bit-resx
 ```json
 {
     "servers": {
-        "DeepWiki": {
-            "type": "sse",
-            "url": "https://mcp.deepwiki.com/mcp"
+        "bitplatform": {
+            "type": "http",
+            "url": "https://bitplatform.dev/mcp"
         }
     }
 }
@@ -445,17 +445,18 @@ bit-resx
 
 **What is MCP?**:
 - **Model Context Protocol**: A standardized way to connect AI assistants (like GitHub Copilot) to external data sources and tools
-- **Server-Sent Events (SSE)**: The communication protocol used to stream data from the MCP server
 
-**DeepWiki Server**:
-- **Purpose**: Provides GitHub Copilot with deep knowledge about specific repositories
-- **In this project**: Configured to access the `bitfoundation/bitplatform` and `riok/mapperly` repositories
-- **How it helps**: When you ask Copilot questions about Bit.BlazorUI components, Mapperly, or other bitplatform features, it can query the DeepWiki server for accurate, up-to-date documentation
+**Configured Servers**:
+- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil/Bswup/Bmotion/Brouter tools, the `ask_question` tool for the third-party libraries this project builds on, and the Microsoft Docs tools - all answering from the shipped assemblies and documentation rather than from the model's memory
+- **aspire**: The .NET Aspire CLI's own MCP server, for inspecting the running application's resources, logs and traces
+- **playwright**: Browser automation, so the agent can drive and verify the running app
 
 **Example Usage**:
 - Ask: *"How do I use BitDataGrid with server-side paging?"*
-- Copilot uses the DeepWiki MCP server to fetch relevant information from the bitplatform repository
+- Copilot uses the bitplatform MCP server to fetch the component's real API reference and examples
 - You get accurate answers based on the actual source code and documentation
+
+**One config per tool**: this same server list is mirrored where each AI tool expects it - `.vscode/mcp.json` (VS Code), `.mcp.json` (Claude Code and Visual Studio), `.cursor/mcp.json` (Cursor), `.gemini/settings.json` (Gemini CLI / Gemini Code Assist) and `.junie/mcp/mcp.json` (JetBrains Junie). When adding or changing a server, update all of them.
 
 **Adding More MCP Servers**:
 You can add additional MCP servers to extend Copilot's capabilities further. For example:
@@ -503,8 +504,6 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 ```json
 {
     "recommendations": [
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
         "ms-dotnettools.csharp",
         "ms-dotnettools.csdevkit",
         "ms-dotnettools.dotnet-maui",
@@ -731,5 +730,11 @@ slnf
 3. Click "Reopen in Container" when prompted
 4. Wait for the container to build
 5. Start developing!
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

@@ -1,17 +1,48 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
+// The Overlay stays in the page while it is closed so that it fades out rather than vanishing in one
+// frame. It is hidden rather than removed, and a hidden element takes neither the clicks of the page nor
+// a place in the accessibility tree, so a closed Overlay leaves the page untouched. The durations
+// collapse to nothing under reduced motion, which the motion tokens take care of.
+// The layer is a flex container and lays its content out no further than that: what it hosts stretches
+// over the whole of it until the stylesheet of the consumer aligns it, which is two properties for the
+// scrim that centers a loader and a decision the Overlay has none of its own to make.
 .bit-ovl {
     inset: 0;
+    opacity: 0;
     width: 100%;
     height: 100%;
-    display: none;
+    display: flex;
     position: fixed;
+    visibility: hidden;
+    z-index: $zindex-overlay;
+    transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
 }
 
 .bit-ovl-opn {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity $mot-duration-short $mot-easing-decelerate, visibility 0s linear 0s;
 }
 
+// The box the content is given so that its clicks are told apart from the layer's. display:contents takes
+// it out of the box tree altogether, so what the consumer wrote is still laid out by the Overlay's own
+// flex container - the box is there for the events, and for nothing else.
+.bit-ovl-cnt {
+    display: contents;
+}
+
+// ModeFull: the Overlay dims what it covers instead of only catching the clicks meant for it. It is a
+// transparent catcher of clicks otherwise, so that an overlay used as a click catcher does not darken the
+// page it is meant to leave readable.
+.bit-ovl-mfl {
+    background-color: $clr-bg-overlay;
+}
+
+// An Overlay placed over the element it was declared inside of rather than over the screen. The z-index
+// goes with the screen-level layer: inside a container the Overlay only has to cover its own siblings,
+// and lifting it to the library's overlay layer would raise it over the chrome of the page as well.
 .bit-ovl-abs {
     position: absolute;
+    z-index: unset;
 }

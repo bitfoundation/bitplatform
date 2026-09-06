@@ -1,0 +1,426 @@
+@page "/scheduler"
+@implements IAsyncDisposable
+@inject Bit.Butil.Scheduler scheduler
+@inject Bit.Butil.AbortController abortController
+
+<PageTitle>Scheduler - Bit.Butil</PageTitle>
+
+<PageHeader Category="Async &amp; Scheduling"
+            Title="Scheduler"
+            Lead="The browser's answer to 'when should this run?' - a frame loop in step with the compositor, work that fills the gaps, and tasks that can say how urgent they are."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Prioritized_Task_Scheduling_API"
+            InjectAs="Scheduler scheduler" />
+
+<Callout Type="warning" Title="A frame loop is not a timer">
+    Frames stop entirely while the tab is in the background, and their spacing follows the display -
+    16.7ms at 60Hz, 8.3ms at 120Hz. Drive animation from the timestamp you are handed, never from a
+    count of frames, or the same code runs at half speed on one machine and double on another.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsIdleCallbackSupported / IsPostTaskSupported / IsYieldSupported / IsInputPendingSupported"
+                 Description="requestAnimationFrame is universal. requestIdleCallback is nearly so. postTask, yield and isInputPending are newer and not everywhere - PostTask and Yield still work where they are missing, by falling back. During prerender/SSR every check returns false rather than throwing."
+                 Code=@("""
+@inject Bit.Butil.Scheduler scheduler
+
+var frames = await scheduler.IsSupported();
+var idle = await scheduler.IsIdleCallbackSupported();
+var postTask = await scheduler.IsPostTaskSupported();
+var yields = await scheduler.IsYieldSupported();
+var inputPending = await scheduler.IsInputPendingSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="A frame loop"
+                 Api="OnAnimationFrame"
+                 Description="The next frame is requested before your callback is told about this one, so the loop runs at the browser's cadence rather than at the speed of the interop round trip. A callback slower than a frame causes frames to be skipped rather than queued - which is what an animation wants, and why the box below is positioned from the timestamp rather than from a frame count."
+                 Code=@("""
+_loop = await scheduler.OnAnimationFrame(timestamp => InvokeAsync(() =>
+{
+    // position from the timestamp, never from a count of calls
+    _offset = (Math.Sin(timestamp / 400) + 1) * 50;
+    StateHasChanged();
+}));
+
+await _loop.DisposeAsync();   // stops the loop
+""")>
+        <div class="controls">
+            <button @onclick="StartLoop">Start</button>
+            <button class="danger" @onclick="StopLoop">Stop</button>
+        </div>
+        <div style="height:2.5rem;position:relative;margin-top:.75rem">
+            <div style="@($"position:absolute;left:{_offset.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}%;width:2rem;height:2rem;border-radius:.4rem;background:var(--accent, #6366f1)")"></div>
+        </div>
+        <div class="field">
+            <span class="field-label">Frames</span>
+            <span>@_frames rendered, roughly @_fps per second</span>
+        </div>
+        <DemoConsole @ref="frameOutput" Title="frame loop output" />
+    </DemoSection>
+
+    <DemoSection Title="One frame, once"
+                 Api="RequestAnimationFrame"
+                 Description="A single callback just before the next paint - for measuring an element after a change, or for batching a write so it lands with the frame rather than between two. The timestamp is the same value every callback in that frame receives, which is what keeps animations driven from different places in step."
+                 Code=@("""
+await scheduler.RequestAnimationFrame(timestamp => InvokeAsync(() =>
+{
+    // runs once, just before the next paint
+}));
+""")>
+        <div class="controls">
+            <button @onclick="OneFrame">RequestAnimationFrame</button>
+        </div>
+        <DemoConsole @ref="onceOutput" Title="single frame output" />
+    </DemoSection>
+
+    <DemoSection Title="Work that fills the gaps"
+                 Api="RequestIdleCallback / IdleDeadline"
+                 Description="Idle callbacks run when the browser has nothing better to do. TimeRemaining is a snapshot taken when the callback was dispatched, not a budget that updates - the real value falls as you use it, and 50ms is the ceiling the browser will ever report. Without a timeout, work scheduled on a page that is never idle never runs at all; with one, DidTimeout tells you it ran anyway on a busy page, which is the moment to do the least you can."
+                 Code=@("""
+await scheduler.RequestIdleCallback(deadline => InvokeAsync(() =>
+{
+    if (deadline.DidTimeout) { /* the page is busy - do the minimum */ }
+    else { /* up to deadline.TimeRemaining ms of slack */ }
+}), timeout: TimeSpan.FromSeconds(2));
+""")>
+        <div class="controls">
+            <button @onclick="RunIdle">RequestIdleCallback</button>
+            <button class="secondary" @onclick="RunIdleWhileBusy">While the page is busy</button>
+        </div>
+        <DemoConsole @ref="idleOutput" Title="idle output" />
+    </DemoSection>
+
+    <DemoSection Title="Tasks that say how urgent they are"
+                 Api="PostTask / SchedulerPriority"
+                 Description="Every setTimeout lands in one queue in the order it was scheduled. These land in three, and the browser drains them against its own rendering work: user-blocking ahead of rendering, background behind it. Posting all three at once shows the order the browser chooses rather than the order they were posted. A shared AbortSignal cancels one that has not run yet - the same signal that cancels your requests."
+                 Code=@("""
+await scheduler.PostTask(() => Log("background"), SchedulerPriority.Background);
+await scheduler.PostTask(() => Log("visible"), SchedulerPriority.UserVisible);
+await scheduler.PostTask(() => Log("blocking"), SchedulerPriority.UserBlocking);
+
+// cancellable, with the same signal that cancels a fetch
+var handle = await abortController.Create();
+var error = await scheduler.PostTask(work, delay: TimeSpan.FromSeconds(2), signal: handle!.Signal);
+""")>
+        <div class="controls">
+            <button @onclick="PostThree">Post three priorities</button>
+            <button @onclick="PostCancellable">Post a delayed task</button>
+            <button class="danger" @onclick="CancelPosted">Cancel it</button>
+        </div>
+        <DemoConsole @ref="taskOutput" Title="task output" />
+    </DemoSection>
+
+    <DemoSection Title="Letting the page breathe"
+                 Api="Yield / IsInputPending"
+                 Description="A long loop in C# freezes the page as thoroughly as one in JavaScript. Yielding hands the thread back so the browser can paint or handle a click, then continues. IsInputPending is the cheaper question: keep working while nothing is waiting, and yield the moment something is. It returns false where the API is missing, which reads as 'nothing is waiting' on purpose - the safe answer is to keep working and yield on a schedule instead."
+                 Code=@("""
+for (var i = 0; i < 200; i++)
+{
+    DoAChunkOfWork(i);
+
+    // yield when the user is waiting, or every so often regardless
+    if (await scheduler.IsInputPending() || i % 20 == 0)
+        await scheduler.Yield();
+}
+""")>
+        <div class="controls">
+            <button @onclick="RunBlocking">Run without yielding</button>
+            <button @onclick="RunYielding">Run yielding</button>
+            <button class="secondary" @onclick="() => _clicks++">Click me while it runs: @_clicks</button>
+        </div>
+        <DemoConsole @ref="yieldOutput" Title="yield output" />
+    </DemoSection>
+</div>
+
+<br />
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes requestAnimationFrame. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsIdleCallbackSupported / IsPostTaskSupported / IsYieldSupported / IsInputPendingSupported"
+               Signature="ValueTask<bool> ...()"
+               Description="The per-feature checks. PostTask and Yield still work where theirs are false, by falling back to a timeout and a macrotask." />
+    <ApiMember Name="RequestAnimationFrame"
+               Signature="ValueTask<ButilSubscription> RequestAnimationFrame(Action<double> onFrame)"
+               Description="Runs once just before the next paint, with the frame's timestamp. Disposing before it arrives cancels it." />
+    <ApiMember Name="OnAnimationFrame"
+               Signature="ValueTask<ButilSubscription> OnAnimationFrame(Action<double> onFrame)"
+               Description="Runs every frame until disposed. A callback slower than a frame causes frames to be skipped rather than queued." />
+    <ApiMember Name="RequestIdleCallback"
+               Signature="ValueTask<ButilSubscription?> RequestIdleCallback(Action<IdleDeadline> onIdle, TimeSpan? timeout = null)"
+               Description="Runs once when the browser has time to spare. Null where requestIdleCallback is missing. Re-request from inside the callback to keep going." />
+    <ApiMember Name="PostTask"
+               Signature="ValueTask<string?> PostTask(Action work, SchedulerPriority priority = SchedulerPriority.UserVisible, TimeSpan? delay = null, ButilAbortSignal? signal = null)"
+               Description="Posts to the browser's scheduler and completes when it has run. Null on success, or the reason it did not run." />
+    <ApiMember Name="Yield"
+               Signature="ValueTask Yield()"
+               Description="Hands the thread back so the browser can paint or handle input, then continues." />
+    <ApiMember Name="IsInputPending"
+               Signature="ValueTask<bool> IsInputPending()"
+               Description="Whether user input is waiting behind your work. False where the API is missing." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, cancels every frame loop and idle callback whose subscription was never disposed." />
+    <ApiMember Name="IdleDeadline"
+               Signature="record (bool DidTimeout, double TimeRemaining)"
+               Description="TimeRemaining is a snapshot in milliseconds, not a budget that updates. DidTimeout means the page never went idle." />
+    <ApiMember Name="SchedulerPriority"
+               Signature="enum { UserBlocking, UserVisible, Background }"
+               Description="Ahead of rendering, with it, or behind it. Ignored by the timeout fallback, which has one queue and no priorities." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole frameOutput = default!;
+    private DemoConsole onceOutput = default!;
+    private DemoConsole idleOutput = default!;
+    private DemoConsole taskOutput = default!;
+    private DemoConsole yieldOutput = default!;
+
+    private ButilSubscription? _loop;
+    private double _offset;
+    private int _frames;
+    private int _fps;
+    private double _lastSecond;
+    private int _framesThisSecond;
+    private int _clicks;
+
+    private AbortControllerHandle? _postedSignal;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await scheduler.IsSupported());
+            await supportOutput.Success("IsIdleCallbackSupported →", await scheduler.IsIdleCallbackSupported());
+            await supportOutput.Success("IsPostTaskSupported →", await scheduler.IsPostTaskSupported());
+            await supportOutput.Success("IsYieldSupported →", await scheduler.IsYieldSupported());
+            await supportOutput.Success("IsInputPendingSupported →", await scheduler.IsInputPendingSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task StartLoop()
+    {
+        await StopLoop();
+
+        try
+        {
+            _frames = 0;
+            _framesThisSecond = 0;
+            _lastSecond = 0;
+
+            _loop = await scheduler.OnAnimationFrame(timestamp => InvokeAsync(() =>
+            {
+                _frames++;
+                _framesThisSecond++;
+
+                // Position from the timestamp, so the motion is the same speed on a 60Hz and a
+                // 120Hz display rather than twice as fast on one of them.
+                _offset = (Math.Sin(timestamp / 400) + 1) * 45;
+
+                if (timestamp - _lastSecond >= 1000)
+                {
+                    _fps = _framesThisSecond;
+                    _framesThisSecond = 0;
+                    _lastSecond = timestamp;
+                }
+
+                StateHasChanged();
+            }));
+
+            await frameOutput.Success("Loop started.");
+        }
+        catch (Exception ex)
+        {
+            await frameOutput.Error("OnAnimationFrame failed →", ex.Message);
+        }
+    }
+
+    private async Task StopLoop()
+    {
+        if (_loop is null) return;
+
+        await _loop.DisposeAsync();
+        _loop = null;
+        await frameOutput.Log($"Stopped after {_frames} frame(s).");
+    }
+
+    private async Task OneFrame()
+    {
+        try
+        {
+            await scheduler.RequestAnimationFrame(timestamp => InvokeAsync(async () =>
+            {
+                await onceOutput.Success("Frame →", $"timestamp {timestamp:0.##}ms");
+            }));
+        }
+        catch (Exception ex)
+        {
+            await onceOutput.Error("RequestAnimationFrame failed →", ex.Message);
+        }
+    }
+
+    private async Task RunIdle()
+    {
+        try
+        {
+            var subscription = await scheduler.RequestIdleCallback(deadline => InvokeAsync(async () =>
+            {
+                await idleOutput.Success("Idle →",
+                    $"DidTimeout {deadline.DidTimeout}, {deadline.TimeRemaining:0.##}ms of slack");
+            }), TimeSpan.FromSeconds(2));
+
+            if (subscription is null)
+                await idleOutput.Warn("RequestIdleCallback returned null - this engine has no requestIdleCallback.");
+        }
+        catch (Exception ex)
+        {
+            await idleOutput.Error("RequestIdleCallback failed →", ex.Message);
+        }
+    }
+
+    private async Task RunIdleWhileBusy()
+    {
+        await idleOutput.Log("Scheduling with a 500ms timeout, then blocking the thread for a second...");
+
+        var subscription = await scheduler.RequestIdleCallback(deadline => InvokeAsync(async () =>
+        {
+            await idleOutput.Warn("Idle →",
+                $"DidTimeout {deadline.DidTimeout}, {deadline.TimeRemaining:0.##}ms - the page never went idle, so it ran anyway.");
+        }), TimeSpan.FromMilliseconds(500));
+
+        if (subscription is null)
+        {
+            await idleOutput.Warn("RequestIdleCallback returned null - this engine has no requestIdleCallback.");
+            return;
+        }
+
+        // Deliberately blocking: it is what makes DidTimeout true.
+        var until = DateTime.UtcNow.AddSeconds(1);
+        while (DateTime.UtcNow < until) { }
+    }
+
+    private async Task PostThree()
+    {
+        try
+        {
+            await taskOutput.Log("Posting background, then user-visible, then user-blocking...");
+
+            // Started together, deliberately not awaited in order: the point is the order they run
+            // in, which is the browser's choice rather than the posting order.
+            var background = scheduler.PostTask(() => InvokeAsync(() => taskOutput.Log("ran: background")), SchedulerPriority.Background);
+            var visible = scheduler.PostTask(() => InvokeAsync(() => taskOutput.Log("ran: user-visible")), SchedulerPriority.UserVisible);
+            var blocking = scheduler.PostTask(() => InvokeAsync(() => taskOutput.Log("ran: user-blocking")), SchedulerPriority.UserBlocking);
+
+            await Task.WhenAll(background.AsTask(), visible.AsTask(), blocking.AsTask());
+            await taskOutput.Success("All three finished.");
+        }
+        catch (Exception ex)
+        {
+            await taskOutput.Error("PostTask failed →", ex.Message);
+        }
+    }
+
+    private async Task PostCancellable()
+    {
+        try
+        {
+            if (_postedSignal is not null) await _postedSignal.DisposeAsync();
+            _postedSignal = await abortController.Create();
+
+            if (_postedSignal is null)
+            {
+                await taskOutput.Warn("Create returned null - the runtime has no AbortController.");
+                return;
+            }
+
+            await taskOutput.Log("Posted a task with a 2s delay - press Cancel before it runs.");
+
+            var error = await scheduler.PostTask(
+                () => InvokeAsync(() => taskOutput.Success("The delayed task ran.")),
+                SchedulerPriority.UserVisible,
+                TimeSpan.FromSeconds(2),
+                _postedSignal.Signal);
+
+            if (error is not null) await taskOutput.Warn("The task did not run →", error);
+        }
+        catch (Exception ex)
+        {
+            await taskOutput.Error("PostTask failed →", ex.Message);
+        }
+    }
+
+    private async Task CancelPosted()
+    {
+        if (_postedSignal is null)
+        {
+            await taskOutput.Warn("Post a delayed task first.");
+            return;
+        }
+
+        await _postedSignal.Abort("cancelled by the user");
+    }
+
+    private async Task RunBlocking()
+    {
+        await yieldOutput.Log("Running 60 chunks without yielding - the counter button will not respond.");
+        var started = DateTime.UtcNow;
+
+        for (var i = 0; i < 60; i++) Burn(10);
+
+        await yieldOutput.Warn("Done →", $"{(DateTime.UtcNow - started).TotalMilliseconds:0}ms with the page frozen throughout");
+    }
+
+    private async Task RunYielding()
+    {
+        await yieldOutput.Log("Running the same 60 chunks, yielding when input is waiting - keep clicking.");
+        var started = DateTime.UtcNow;
+        var yields = 0;
+
+        for (var i = 0; i < 60; i++)
+        {
+            Burn(10);
+
+            // IsInputPending is the cheap question; the modulo is the fallback for engines that
+            // cannot answer it, where it always says false.
+            if (await scheduler.IsInputPending() || i % 10 == 0)
+            {
+                await scheduler.Yield();
+                yields++;
+            }
+        }
+
+        await yieldOutput.Success("Done →",
+            $"{(DateTime.UtcNow - started).TotalMilliseconds:0}ms, yielded {yields} time(s) - and the page kept responding");
+    }
+
+    /// <summary>Burns roughly <paramref name="milliseconds"/> of CPU, so the demo has real work to schedule around.</summary>
+    private static void Burn(int milliseconds)
+    {
+        var until = DateTime.UtcNow.AddMilliseconds(milliseconds);
+        while (DateTime.UtcNow < until) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_loop is not null) await _loop.DisposeAsync();
+            if (_postedSignal is not null) await _postedSignal.DisposeAsync();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}
