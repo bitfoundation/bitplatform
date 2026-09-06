@@ -90,6 +90,10 @@ public class SearchTests : McpTestBase
         // The setup guide, which is what "how do I install this" has to reach.
         var setup = await CallAsync("SearchBitBlazorUI", new { query = "register services stylesheet script", limit = 8 });
         StringAssert.Contains(setup, "GetBitBlazorUISetupGuide");
+
+        // A component's public custom property, which is the half of its look no parameter reaches.
+        var variable = await CallAsync("SearchBitBlazorUI", new { query = "--bit-ActionButton-hover-background", limit = 8 });
+        StringAssert.Contains(variable, "--bit-ActionButton-hover-background");
     }
 
     [TestMethod]

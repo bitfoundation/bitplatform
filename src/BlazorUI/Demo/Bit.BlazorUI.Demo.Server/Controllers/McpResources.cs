@@ -29,7 +29,7 @@ public class McpResources(HtmlRenderer htmlRenderer, ILogger<McpResources> logge
 
     [McpServerResource(UriTemplate = "bitblazorui://components/{name}", Name = "bitblazorui-component",
                        Title = "One component's API", MimeType = "text/markdown")]
-    [Description("The full reference of one component - every parameter with its type, default and description, its own classes and enums, and the titles of its examples. E.g. bitblazorui://components/BitDropdown.")]
+    [Description("The full reference of one component - every parameter with its type, default and description, its own classes and enums, the CSS variables it reads off its root, and the titles of its examples. E.g. bitblazorui://components/BitDropdown.")]
     public static string Component(string name)
     {
         var component = BlazorUIComponentCatalog.Find(name);
