@@ -106,7 +106,7 @@ public partial class BitActionButtonDemo
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Stretches the action button across the full available width and spreads its icon and content to the two ends.",
+            Description = "Stretches the action button across the full available width. The icon and the content stay next to each other with IconPosition.Start; IconPosition.End reverses the inner wrapper, so the growing content pushes them to the opposite edges.",
         },
         new()
         {
@@ -260,7 +260,7 @@ public partial class BitActionButtonDemo
         {
             Name = "--bit-ActionButton-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Text color at rest. The role color only reaches the text on hover and press, so this is what colorizes the label permanently.",
+            Description = "Text color in the rest state, where the role color reaches the icon alone. The hover and pressed states paint the text through their own override variables, so this one does not apply there.",
         },
         new()
         {

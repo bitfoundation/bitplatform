@@ -301,6 +301,58 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual(autoFocus, button.HasAttribute("autofocus"));
     }
 
+    // Autofocus pulls the focus on the first render, so it follows the same rule as the tab order: a button hidden
+    // from assistive technologies, or a disabled one that is not kept focusable, must not take it.
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public void BitActionButtonAriaHiddenShouldSuppressAutoFocus(string? href)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.AriaHidden, true);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.IsFalse(button.HasAttribute("autofocus"));
+        Assert.AreEqual("-1", button.GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(null, false, false),
+        DataRow(null, true, true),
+        DataRow("https://bitplatform.dev", false, false),
+        DataRow("https://bitplatform.dev", true, true)
+    ]
+    public void BitActionButtonDisabledShouldSuppressAutoFocusUnlessDisabledFocusIsAllowed(string? href, bool allowDisabledFocus, bool expectedAutoFocus)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual(expectedAutoFocus, button.HasAttribute("autofocus"));
+    }
+
+    // A false the component writes over a splatted attribute removes it, so the suppression reaches a hand-written
+    // autofocus as well.
+    [TestMethod]
+    public void BitActionButtonShouldRemoveTheSplattedAutoFocusWhenAriaHidden()
+    {
+        var button = RenderSplatted(new() { ["autofocus"] = true, ["AriaHidden"] = true }).Find(".bit-acb");
+
+        Assert.IsFalse(button.HasAttribute("autofocus"));
+    }
+
     [TestMethod,
         DataRow(null),
         DataRow("my-form")

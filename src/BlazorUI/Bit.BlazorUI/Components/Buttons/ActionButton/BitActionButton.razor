@@ -9,7 +9,9 @@
     // A null or false written over a splatted attribute removes that attribute rather than leaving it alone, so the two
     // attributes a page can also write by hand are resolved against what it wrote (see BitComponentBase.GetSplattedAttribute).
     var formId = FormId ?? GetSplattedAttribute("form");
-    var autoFocus = AutoFocus || GetSplattedAttribute("autofocus") is not null;
+    // Autofocus follows the same rule as the tab order: a control hidden from assistive technologies, or a disabled one
+    // that is not kept focusable, must not pull the focus on the first render - a hand-written autofocus included.
+    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && AriaHidden is false && (IsEnabled || AllowDisabledFocus);
 
     RenderFragment inner =
         @<text>

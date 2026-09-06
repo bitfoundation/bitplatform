@@ -77,7 +77,9 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public string? FormId { get; set; }
 
     /// <summary>
-    /// Stretches the action button across the full available width and spreads its icon and content to the two ends.
+    /// Stretches the action button across the full available width. The icon and the content stay next to each other
+    /// with <see cref="BitIconPosition.Start"/>; <see cref="BitIconPosition.End"/> reverses the inner wrapper, so the
+    /// growing content pushes them to the opposite edges.
     /// </summary>
     public bool? FullWidth { get; set; }
 
