@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Components;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
 public partial class DemoCssVariablesTable
 {

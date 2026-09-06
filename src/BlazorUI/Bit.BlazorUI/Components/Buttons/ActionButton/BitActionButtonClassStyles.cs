@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Defines per-part CSS class/style values for <see cref="BitActionButton"/>.

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Models;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
 /// <summary>
 /// One of the public CSS custom properties a component reads off its root, documented on its demo page.

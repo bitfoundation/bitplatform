@@ -6,6 +6,10 @@
     var body = ((Body ?? ChildContent) is not null && IconOnly is false) ? b : null;
     var icon = BitIconInfo.From(Icon, IconName);
     var descriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
+    // A null or false written over a splatted attribute removes that attribute rather than leaving it alone, so the two
+    // attributes a page can also write by hand are resolved against what it wrote (see BitComponentBase.GetSplattedAttribute).
+    var formId = FormId ?? GetSplattedAttribute("form");
+    var autoFocus = AutoFocus || GetSplattedAttribute("autofocus") is not null;
 
     RenderFragment inner =
         @<text>
@@ -52,10 +56,10 @@
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             type="@_buttonType.GetValue()"
-            form="@FormId"
+            form="@formId"
             dir="@Dir?.ToString().ToLower()"
             disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
-            autofocus="@AutoFocus"
+            autofocus="@autoFocus"
             title="@Title"
             tabindex="@GetTabIndex()"
             aria-label="@AriaLabel"
@@ -79,7 +83,7 @@ else
        dir="@Dir?.ToString().ToLower()"
        href="@(IsEnabled && IsLoading is false ? Href : null)"
        role="@(IsEnabled && IsLoading is false ? null : "link")"
-       autofocus="@AutoFocus"
+       autofocus="@autoFocus"
        title="@Title"
        target="@Target"
        download="@Download"

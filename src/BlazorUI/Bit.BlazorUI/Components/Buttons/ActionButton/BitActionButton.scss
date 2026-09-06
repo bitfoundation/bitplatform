@@ -168,8 +168,11 @@
 
 // A real text underline rather than a painted bar: it follows the text through wrapping and survives a
 // forced-colors palette, which strips every background an author paints.
+// The loading label replaces the content rather than sitting beside it, so it is underlined too - the
+// underline is a property of the button, and a button that loses it while it loads reads as a different one.
 .bit-acb-und {
-    .bit-acb-con {
+    .bit-acb-con,
+    .bit-acb-lbl {
         text-decoration: underline;
         text-underline-offset: 0.2em;
         text-decoration-thickness: $shp-border-width;
@@ -177,7 +180,8 @@
     }
 
     @media (hover: hover) {
-        &:hover .bit-acb-con {
+        &:hover .bit-acb-con,
+        &:hover .bit-acb-lbl {
             text-decoration-thickness: $shp-border-width-thick;
         }
     }

@@ -317,6 +317,37 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual(formId, button.GetAttribute("form"));
     }
 
+    // A null or false the component writes over a splatted attribute removes that attribute rather than
+    // leaving it alone, so form and autofocus are resolved against what the page wrote by hand.
+    [TestMethod]
+    public void BitActionButtonShouldKeepTheSplattedFormAndAutoFocus()
+    {
+        var button = RenderSplatted(new() { ["form"] = "outer-form", ["autofocus"] = true }).Find(".bit-acb");
+
+        Assert.AreEqual("outer-form", button.GetAttribute("form"));
+        Assert.IsTrue(button.HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonFormIdShouldWinOverTheSplattedForm()
+    {
+        var button = RenderSplatted(new() { ["form"] = "outer-form", ["FormId"] = "my-form" }).Find(".bit-acb");
+
+        Assert.AreEqual("my-form", button.GetAttribute("form"));
+    }
+
+    // The attributes a page writes by hand reach the component the way @attributes sends them, which is the
+    // only path a lowercase name matching a parameter of the component can take.
+    private IRenderedComponent<BitActionButton> RenderSplatted(Dictionary<string, object> attributes)
+    {
+        return Context.Render<BitActionButton>(builder =>
+        {
+            builder.OpenComponent<BitActionButton>(0);
+            builder.AddMultipleAttributes(1, attributes);
+            builder.CloseComponent();
+        });
+    }
+
     [TestMethod]
     public void BitActionButtonIconUrlShouldRenderImageIcon()
     {
