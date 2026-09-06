@@ -46,7 +46,7 @@ not nine; everything else in Bit.Butil is untouched and should be dropped.
 public constructor; the services nothing references must be gone.
 
 That check starts from the attribute, so on its own it is blind to a service class that never got one -
-the report would happily say "88 of 88 registered" while consumers hit *Cannot provide a value for
+the report would happily say "96 of 96 registered" while consumers hit *Cannot provide a value for
 property* at runtime. So the harness also looks for service classes by **shape**: a public, constructible
 class taking an `IJSRuntime`. Any such class without `[ButilService]` is a failure. (`ButilStorage` is
 excluded: it takes an `IJSRuntime` too, but it is the shared base of `LocalStorage` and `SessionStorage`
@@ -125,7 +125,7 @@ and this repository never does, plus the artifacts the whole feature rests on:
   dependency closure assembles to, every chunk carries the guard that makes a second evaluation a no-op and
   appears in the bundle exactly once, and the manifest lists every module after the modules it depends on;
 - **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 18-module,
-  36,636-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
+  36,779-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
   evaluated under Node in a browser-like sandbox and has to register exactly the expected `BitButil`
   namespaces, none of them empty, and register nothing a second time (the sentinel each namespace is marked
   with has to survive re-evaluation - a guard that stopped holding would reset a module's listener
@@ -268,7 +268,7 @@ the same "removed entirely is not a defect" rule the verification already applie
 Run both from this folder, so they share the manifest:
 
 ```bash
-# untrimmed: all 88 [ButilService] classes present; writes interop-manifest.txt
+# untrimmed: all 96 [ButilService] classes present; writes interop-manifest.txt
 dotnet run -c Release
 
 # trimmed, TrimMode=full (what Blazor WebAssembly uses); checks against the manifest
@@ -284,13 +284,13 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 997,888 bytes | 160,256 bytes |
-| types in assembly | 1,156 | 207 |
-| `[ButilService]` discovered / registered | 88 / 88 | 12 / 12 |
-| interop contract | 67 types captured | 19 checked, 48 trimmed away, 0 problems |
-| JavaScript modules called | 94 of 97 | 13 of 97 (canvas, clipboard, cookie, digitalCredentials, dom, events, fetch, geolocation, storage, streams, webOtp, webRtc, window) |
-| `bit-butil.js` a publish would ship | 196,002 bytes, all 97 modules | 36,636 bytes, 18 modules (10,742 gzip / 9,537 brotli) - 18.7% |
-| lazy scripts would download | 348,241 bytes over 94 files | 57,521 bytes over 13 files |
+| `Bit.Butil.dll` | 1,157,120 bytes | 160,256 bytes |
+| types in assembly | 1,322 | 207 |
+| `[ButilService]` discovered / registered | 96 / 96 | 12 / 12 |
+| interop contract | 80 types captured | 19 checked, 61 trimmed away, 0 problems |
+| JavaScript modules called | 102 of 105 | 13 of 105 (canvas, clipboard, cookie, digitalCredentials, dom, events, fetch, geolocation, storage, streams, webOtp, webRtc, window) |
+| `bit-butil.js` a publish would ship | 234,666 bytes, all 105 modules | 36,779 bytes, 18 modules (10,789 gzip / 9,582 brotli) - 15.7% |
+| lazy scripts would download | 411,548 bytes over 102 files | 58,520 bytes over 13 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 41 / 41 | not run |
 | script-publishing checks | 33 / 33 (11 publishes, ~26s) | not run |
@@ -377,7 +377,7 @@ assembly comes out at 30,720 bytes and 36 types.
 - **`script publishing: ...`** - the MSBuild half. The message names the claim; the ones worth knowing on
   sight are *is added to what the scan found, not used instead of it* (the csproj list has stopped being
   additive - a consumer naming one module would lose everything else), *publishes no per-module files* (the
-  publish asset list is no longer being narrowed, so a bundle-mode app ships all 97 module files - that is
+  publish asset list is no longer being narrowed, so a bundle-mode app ships all 105 module files - that is
   `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
   bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
   every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in
