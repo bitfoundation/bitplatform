@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -21,7 +22,7 @@ public class BitAppShellTests : BunitTestContext
                 <div class=""bit-ash-top""></div>
                 <div class=""bit-ash-center"">
                     <div class=""bit-ash-left""></div>
-                    <div id=""BitAppShell-container"" class=""bit-ash-main""></div>
+                    <div id=""BitAppShell-container"" class=""bit-ash-main bit-ash-smt""></div>
                     <div class=""bit-ash-right""></div>
                 </div>
                 <div class=""bit-ash-bottom""></div>
@@ -1104,6 +1105,725 @@ public class BitAppShellTests : BunitTestContext
         Assert.Contains("background:red", style);
         Assert.Contains("color:blue", style);
         Assert.Contains("visibility:hidden", style);
+    }
+
+
+    // ---------------------------------------------------------------------------------------------
+    //  Container id
+    // ---------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitAppShellMainContainerShouldUseTheWellKnownIdByDefault()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        Assert.AreEqual(BitAppShell.ContainerId, component.Instance.MainContainerId);
+        Assert.AreEqual(BitAppShell.ContainerId, component.Find(".bit-ash-main").GetAttribute("id"));
+    }
+
+    [TestMethod]
+    public void BitAppShellMainContainerIdShouldBeDerivedFromTheIdOfTheShell()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.Id, "second-shell");
+        });
+
+        Assert.AreEqual("second-shell-container", component.Instance.MainContainerId);
+        Assert.AreEqual("second-shell-container", component.Find(".bit-ash-main").GetAttribute("id"));
+    }
+
+    [TestMethod]
+    public void BitAppShellTwoShellsWithIdsShouldNotShareTheirContainerId()
+    {
+        var first = RenderComponent<BitAppShell>(parameters => parameters.Add(p => p.Id, "shell-a"));
+        var second = RenderComponent<BitAppShell>(parameters => parameters.Add(p => p.Id, "shell-b"));
+
+        Assert.AreNotEqual(first.Instance.MainContainerId, second.Instance.MainContainerId);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    //  NoInsets / NoScroll / ScrollBehavior / Overscroll
+    // ---------------------------------------------------------------------------------------------
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitAppShellShouldRespectNoInsets(bool noInsets)
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.NoInsets, noInsets);
+        });
+
+        Assert.AreEqual(noInsets, component.Find(".bit-ash").ClassList.Contains("bit-ash-nin"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldRespectNoInsetsChangingAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        Assert.IsFalse(component.Find(".bit-ash").ClassList.Contains("bit-ash-nin"));
+
+        component.Render(parameters => parameters.Add(p => p.NoInsets, true));
+
+        Assert.IsTrue(component.Find(".bit-ash").ClassList.Contains("bit-ash-nin"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitAppShellShouldRespectNoScroll(bool noScroll)
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.NoScroll, noScroll);
+        });
+
+        Assert.AreEqual(noScroll, component.Find(".bit-ash-main").ClassList.Contains("bit-ash-nsc"));
+    }
+
+    [TestMethod]
+    public void BitAppShellNoScrollShouldSetUpTheBrowserSide()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.NoScroll, true);
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.setup");
+
+        Assert.IsTrue(component.Find(".bit-ash-main").ClassList.Contains("bit-ash-nsc"));
+    }
+
+    [TestMethod,
+        DataRow(null, true),
+        DataRow(BitScrollBehavior.Smooth, true),
+        DataRow(BitScrollBehavior.Instant, false),
+        DataRow(BitScrollBehavior.Auto, false)
+    ]
+    public void BitAppShellShouldRespectScrollBehavior(BitScrollBehavior? behavior, bool smooth)
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.ScrollBehavior, behavior);
+        });
+
+        Assert.AreEqual(smooth, component.Find(".bit-ash-main").ClassList.Contains("bit-ash-smt"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldRespectScrollBehaviorChangingAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        Assert.IsTrue(component.Find(".bit-ash-main").ClassList.Contains("bit-ash-smt"));
+
+        component.Render(parameters => parameters.Add(p => p.ScrollBehavior, BitScrollBehavior.Instant));
+
+        Assert.IsFalse(component.Find(".bit-ash-main").ClassList.Contains("bit-ash-smt"));
+    }
+
+    [TestMethod,
+        DataRow(BitOverscroll.Auto, "overscroll-behavior:auto"),
+        DataRow(BitOverscroll.Contain, "overscroll-behavior:contain"),
+        DataRow(BitOverscroll.None, "overscroll-behavior:none")
+    ]
+    public void BitAppShellShouldRespectOverscroll(BitOverscroll overscroll, string expected)
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.Overscroll, overscroll);
+        });
+
+        Assert.Contains(expected, component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldNotWriteAnOverscrollStyleByDefault()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        Assert.IsFalse((component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty).Contains("overscroll-behavior"));
+    }
+
+    [TestMethod]
+    public void BitAppShellOverscrollShouldBeAppendedToTheMainStyles()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.Overscroll, BitOverscroll.Contain);
+            parameters.Add(p => p.Styles, new BitAppShellClassStyles { Main = "padding:1rem" });
+        });
+
+        var style = component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty;
+
+        Assert.Contains("padding:1rem", style);
+        Assert.Contains("overscroll-behavior:contain", style);
+    }
+
+    [TestMethod]
+    public void BitAppShellMainShouldKeepItsClassesAlongsideTheClassesParameter()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.NoScroll, true);
+            parameters.Add(p => p.Classes, new BitAppShellClassStyles { Main = "custom-main" });
+        });
+
+        var main = component.Find(".bit-ash-main");
+
+        Assert.IsTrue(main.ClassList.Contains("bit-ash-main"));
+        Assert.IsTrue(main.ClassList.Contains("bit-ash-smt"));
+        Assert.IsTrue(main.ClassList.Contains("bit-ash-nsc"));
+        Assert.IsTrue(main.ClassList.Contains("custom-main"));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    //  The scrolling API
+    // ---------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public async Task BitAppShellShouldCallGoToBottom()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        await component.Instance.GoToBottom();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Extras.goToBottom");
+    }
+
+    [TestMethod,
+        DataRow(BitScrollBehavior.Auto, "auto"),
+        DataRow(BitScrollBehavior.Instant, "instant"),
+        DataRow(BitScrollBehavior.Smooth, "smooth"),
+        DataRow(null, null)
+    ]
+    public async Task BitAppShellShouldPassTheBehaviorOfGoToBottom(BitScrollBehavior? behavior, string expected)
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        await component.Instance.GoToBottom(behavior);
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Extras.goToBottom"].Single();
+
+        Assert.AreEqual(expected, invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldCallScrollTo()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        await component.Instance.ScrollTo(null, 240);
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Extras.scrollTo"].Single();
+
+        Assert.IsNull(invocation.Arguments[1]);
+        Assert.AreEqual(240d, invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldCallScrollBy()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        await component.Instance.ScrollBy(10, 20, BitScrollBehavior.Instant);
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Extras.scrollBy"].Single();
+
+        Assert.AreEqual(10m, invocation.Arguments[1]);
+        Assert.AreEqual(20m, invocation.Arguments[2]);
+        Assert.AreEqual("instant", invocation.Arguments[3]);
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldCallScrollToElement()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        await component.Instance.ScrollToElement("row-9", 12, false, BitScrollAlignment.Center);
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.ScrollablePane.scrollToElement"].Single();
+
+        Assert.AreEqual("row-9", invocation.Arguments[1]);
+        Assert.AreEqual(12d, invocation.Arguments[2]);
+        Assert.AreEqual(false, invocation.Arguments[3]);
+        Assert.AreEqual("center", invocation.Arguments[4]);
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldNotCallScrollToElementWithoutAnElementId()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        await component.Instance.ScrollToElement(" ");
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.scrollToElement"));
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldReadTheScrollOffset()
+    {
+        var expected = new BitScrollOffset { Top = 120, ScrollHeight = 1000, ClientHeight = 400 };
+
+        Context.JSInterop.Setup<BitScrollOffset?>("BitBlazorUI.ScrollablePane.getOffset", _ => true).SetResult(expected);
+
+        var component = RenderComponent<BitAppShell>();
+
+        var offset = await component.Instance.GetScrollOffset();
+
+        Assert.IsNotNull(offset);
+        Assert.AreEqual(120d, offset!.Top);
+        Assert.AreEqual(600d, offset.MaxTop);
+        Assert.IsFalse(offset.AtTop);
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldClearThePersistedScroll()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        await component.Instance.ClearPersistedScroll();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.clearScrolls");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    //  Scroll reporting
+    // ---------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitAppShellShouldNotSetUpTheBrowserSideWithoutAnyScrollCallback()
+    {
+        RenderComponent<BitAppShell>();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.setup"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldSetUpTheBrowserSideWhenAScrollCallbackIsHandled()
+    {
+        RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScroll, EventCallback.Factory.Create<BitScrollOffset>(this, _ => { }));
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.setup");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldSetUpTheBrowserSideForEachOfTheScrollCallbacks()
+    {
+        RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScrollStart, EventCallback.Factory.Create<BitScrollOffset>(this, _ => { }));
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.setup");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldSetUpTheBrowserSideForTheReachedCallbacks()
+    {
+        RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnReachedBottom, EventCallback.Factory.Create(this, () => { }));
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.setup");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldSetUpTheBrowserSideOnlyOnceForTheSameOptions()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScroll, EventCallback.Factory.Create<BitScrollOffset>(this, _ => { }));
+        });
+
+        component.Render();
+        component.Render();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.ScrollablePane.setup"].Count);
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.update"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldUpdateTheBrowserSideWhenTheOptionsChange()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScroll, EventCallback.Factory.Create<BitScrollOffset>(this, _ => { }));
+            parameters.Add(p => p.ReachOffset, 0);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.ReachOffset, 32));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.update");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldDisposeTheBrowserSideWhenTheLastScrollCallbackIsTakenAway()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScroll, EventCallback.Factory.Create<BitScrollOffset>(this, _ => { }));
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.setup");
+
+        component.Render(parameters => parameters.Add(p => p.OnScroll, default(EventCallback<BitScrollOffset>)));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.dispose");
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldRaiseOnScrollFromTheBrowserSide()
+    {
+        BitScrollOffset? reported = null;
+
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScroll, EventCallback.Factory.Create<BitScrollOffset>(this, o => reported = o));
+        });
+
+        await component.Instance._OnScroll(new BitScrollOffset { Top = 42 });
+
+        Assert.IsNotNull(reported);
+        Assert.AreEqual(42d, reported!.Top);
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldRaiseOnScrollStartAndOnScrollEndFromTheBrowserSide()
+    {
+        var started = false;
+        var ended = false;
+
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScrollStart, EventCallback.Factory.Create<BitScrollOffset>(this, _ => started = true));
+            parameters.Add(p => p.OnScrollEnd, EventCallback.Factory.Create<BitScrollOffset>(this, _ => ended = true));
+        });
+
+        await component.Instance._OnScrollStart(new BitScrollOffset());
+        await component.Instance._OnScrollEnd(new BitScrollOffset());
+
+        Assert.IsTrue(started);
+        Assert.IsTrue(ended);
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldIgnoreANullOffsetFromTheBrowserSide()
+    {
+        var raised = false;
+
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScroll, EventCallback.Factory.Create<BitScrollOffset>(this, _ => raised = true));
+        });
+
+        await component.Instance._OnScroll(null!);
+
+        Assert.IsFalse(raised);
+    }
+
+    [TestMethod,
+        DataRow("top"),
+        DataRow("bottom")
+    ]
+    public async Task BitAppShellShouldRouteTheReachedEdgeToItsOwnCallback(string edge)
+    {
+        var reached = string.Empty;
+
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnReachedTop, EventCallback.Factory.Create(this, () => reached = "top"));
+            parameters.Add(p => p.OnReachedBottom, EventCallback.Factory.Create(this, () => reached = "bottom"));
+        });
+
+        await component.Instance._OnReached(edge);
+
+        Assert.AreEqual(edge, reached);
+    }
+
+    [TestMethod]
+    public async Task BitAppShellShouldIgnoreAnUnknownReachedEdge()
+    {
+        var reached = false;
+
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnReachedTop, EventCallback.Factory.Create(this, () => reached = true));
+        });
+
+        await component.Instance._OnReached("left");
+
+        Assert.IsFalse(reached);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldDisposeTheBrowserSideOfTheScrollReporting()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.OnScroll, EventCallback.Factory.Create<BitScrollOffset>(this, _ => { }));
+        });
+
+        component.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.dispose");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    //  Navigation
+    // ---------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitAppShellShouldNotGoToTopOnAFragmentOnlyNavigation()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AutoGoToTop, true);
+        });
+
+        InvokeLocationChanged(component.Instance, "https://example.com/page");
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Extras.goToTop");
+
+        var before = Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"].Count;
+
+        InvokeLocationChanged(component.Instance, "https://example.com/page#section-2");
+
+        Assert.AreEqual(before, Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"].Count);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldGoToTopWhenTheFragmentIsLeftBehind()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AutoGoToTop, true);
+        });
+
+        InvokeLocationChanged(component.Instance, "https://example.com/page");
+        InvokeLocationChanged(component.Instance, "https://example.com/page#section-2");
+        InvokeLocationChanged(component.Instance, "https://example.com/other");
+
+        // The first and the last are real navigations; the fragment-only one in between is not.
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"].Count);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldNotPersistScrollOnAFragmentOnlyNavigation()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PersistScroll, true);
+        });
+
+        InvokeLocationChanged(component.Instance, "https://example.com/page");
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.locationChangedScroll");
+
+        InvokeLocationChanged(component.Instance, "https://example.com/page#section-2");
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.locationChangedScroll"].Count);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldGoToTopWithTheScrollBehaviorItWasGiven()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AutoGoToTop, true);
+            parameters.Add(p => p.ScrollBehavior, BitScrollBehavior.Smooth);
+        });
+
+        InvokeLocationChanged(component.Instance, "https://example.com/other");
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"].Single();
+
+        Assert.AreEqual("smooth", invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitAppShellAutoGoToTopShouldDefaultToAnInstantMove()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AutoGoToTop, true);
+        });
+
+        InvokeLocationChanged(component.Instance, "https://example.com/other");
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"].Single();
+
+        Assert.AreEqual("instant", invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldSubscribeWhenAutoGoToTopIsTurnedOnAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        InvokeLocationChanged(component.Instance, "https://example.com/one");
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.Extras.goToTop"));
+
+        component.Render(parameters => parameters.Add(p => p.AutoGoToTop, true));
+
+        InvokeLocationChanged(component.Instance, "https://example.com/two");
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Extras.goToTop");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldUnsubscribeWhenBothNavigationFeaturesAreTurnedOffAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AutoGoToTop, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.AutoGoToTop, false));
+
+        InvokeLocationChanged(component.Instance, "https://example.com/two");
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.Extras.goToTop"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldInitScrollWhenPersistScrollIsTurnedOnAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.initScroll"));
+
+        component.Render(parameters => parameters.Add(p => p.PersistScroll, true));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.initScroll");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldInitScrollOnlyOnce()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PersistScroll, true);
+        });
+
+        component.Render();
+        component.Render();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.initScroll"].Count);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    //  Keyboard inset
+    // ---------------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BitAppShellShouldNotTrackTheKeyboardByDefault()
+    {
+        RenderComponent<BitAppShell>();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.setupKeyboard"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldTrackTheKeyboardWhenAvoidKeyboardIsSet()
+    {
+        RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AvoidKeyboard, true);
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.setupKeyboard");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldTrackTheKeyboardOnlyOnce()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AvoidKeyboard, true);
+        });
+
+        component.Render();
+        component.Render();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.setupKeyboard"].Count);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldStartTrackingTheKeyboardWhenAvoidKeyboardIsTurnedOnAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.setupKeyboard"));
+
+        component.Render(parameters => parameters.Add(p => p.AvoidKeyboard, true));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.setupKeyboard");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldStopTrackingTheKeyboardWhenAvoidKeyboardIsTurnedOffAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AvoidKeyboard, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.AvoidKeyboard, false));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeKeyboard");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldStopTrackingTheKeyboardOnDispose()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AvoidKeyboard, true);
+        });
+
+        component.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeKeyboard");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldStopPersistingScrollWhenPersistScrollIsTurnedOffAfterRender()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PersistScroll, true);
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.initScroll");
+
+        component.Render(parameters => parameters.Add(p => p.PersistScroll, false));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeScroll");
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldPersistScrollAgainAfterItWasTurnedOffAndOn()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PersistScroll, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.PersistScroll, false));
+        component.Render(parameters => parameters.Add(p => p.PersistScroll, true));
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.AppShell.initScroll"].Count);
     }
 
     private static void InvokeLocationChanged(BitAppShell instance, string uri)

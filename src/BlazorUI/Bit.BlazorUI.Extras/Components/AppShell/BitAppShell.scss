@@ -1,7 +1,27 @@
 ﻿@import '../../Styles/extra-variables.scss';
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// Deliberately outside the library's z-index scale (which tops out at the snackbar's 1400). The four
+// bars mask the physical chrome of the device - the notch, the rounded corners, the home indicator - so
+// there is nothing an application can render that is allowed to paint over them.
+$bit-ash-inset-zindex: 999999;
+
+// The four bars around the main container are sized from custom properties of their own rather than
+// straight off the env() values, so that NoInsets has one place to take all four back to zero and a page
+// can override a single edge without having to know how the bar is built.
+// The two side ones read the LOGICAL insets: the center is laid out in the reading direction, so its
+// first child is the physically right one in a right-to-left app shell - and the physical right edge is
+// the one whose inset it has to be sized by.
 .bit-ash {
+    --bit-ash-inset-top: #{$bit-env-inset-top};
+    --bit-ash-inset-bottom: #{$bit-env-inset-bottom};
+    --bit-ash-inset-start: #{$bit-env-inset-inline-start};
+    --bit-ash-inset-end: #{$bit-env-inset-inline-end};
+    // How much of the shell the on-screen keyboard is covering. It stays 0 unless AvoidKeyboard is set,
+    // which is what puts the measured height here from the browser side; a page can read it to place
+    // chrome of its own against the same number.
+    --bit-ash-keyboard-inset: 0px;
+
     width: 100%;
     height: 100%;
     display: flex;
@@ -9,24 +29,31 @@
     background-color: $clr-bg-pri;
 }
 
+.bit-ash-nin {
+    --bit-ash-inset-top: 0px;
+    --bit-ash-inset-bottom: 0px;
+    --bit-ash-inset-start: 0px;
+    --bit-ash-inset-end: 0px;
+}
+
 .bit-ash-top {
     width: 100%;
-    z-index: 999999;
-    height: $bit-env-inset-top;
+    z-index: $bit-ash-inset-zindex;
+    height: var(--bit-ash-inset-top);
     background-color: $clr-bg-pri;
 }
 
 .bit-ash-bottom {
     width: 100%;
-    z-index: 999999;
-    height: $bit-env-inset-bottom;
+    z-index: $bit-ash-inset-zindex;
+    height: var(--bit-ash-inset-bottom);
     background-color: $clr-bg-pri;
 }
 
 .bit-ash-center {
     width: 100%;
     display: flex;
-    height: calc(100% - $bit-env-inset-top - $bit-env-inset-bottom);
+    height: calc(100% - var(--bit-ash-inset-top) - var(--bit-ash-inset-bottom) - var(--bit-ash-keyboard-inset));
 }
 
 .bit-ash-main {
@@ -34,21 +61,40 @@
     display: flex;
     overflow: auto;
     position: relative;
-    scroll-behavior: smooth;
     overscroll-behavior: none;
-    width: calc(100% - $bit-env-inset-left - $bit-env-inset-right);
+    width: calc(100% - var(--bit-ash-inset-start) - var(--bit-ash-inset-end));
+}
+
+// Applies to every move the main container is not dragged to by the reader: the scrolling API of the
+// component, a fragment navigation into it, and the browser bringing a focused element into view.
+.bit-ash-smt {
+    scroll-behavior: smooth;
+}
+
+// The force-animation class opts a whole SUBTREE out of the preference, so a shell carrying it keeps its
+// smooth scrolling - which is what every other animated component in the library does with it.
+@media (prefers-reduced-motion: reduce) {
+    .bit-ash-smt:not(.bit-fam):not(.bit-fam *) {
+        scroll-behavior: auto;
+    }
+}
+
+// Only the reader's own gestures are stopped. The element stays scrollable through the scrolling API,
+// which is what the public methods of the component move it with.
+.bit-ash-nsc {
+    overflow: hidden;
 }
 
 .bit-ash-left {
     height: 100%;
-    z-index: 999999;
-    width: $bit-env-inset-left;
+    z-index: $bit-ash-inset-zindex;
+    width: var(--bit-ash-inset-start);
     background-color: $clr-bg-pri;
 }
 
 .bit-ash-right {
     height: 100%;
-    z-index: 999999;
-    width: $bit-env-inset-right;
+    z-index: $bit-ash-inset-zindex;
+    width: var(--bit-ash-inset-end);
     background-color: $clr-bg-pri;
 }

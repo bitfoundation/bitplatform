@@ -13,10 +13,37 @@ namespace BitBlazorUI {
             element.scrollTo({ top: 0, behavior });
         }
 
-        public static scrollBy(element: HTMLElement, x: number, y: number) {
+        // scrollHeight is the FULL height of the content, so handing it over as the target lets the
+        // browser clamp it to wherever the last scrollable pixel actually is - which is the same answer
+        // as scrollHeight - clientHeight without this side having to read a second property for it.
+        public static goToBottom(element: HTMLElement, behavior: ScrollBehavior | undefined) {
             if (!element) return;
 
-            element.scrollBy(x, y);
+            behavior ??= undefined;
+
+            element.scrollTo({ top: element.scrollHeight, behavior });
+        }
+
+        // A null axis is left where it stands rather than being sent to 0, which is what makes one call
+        // able to serve "scroll to this row", "scroll to this column" and "scroll to both" alike.
+        public static scrollTo(element: HTMLElement, left: number | null, top: number | null, behavior: ScrollBehavior | undefined) {
+            if (!element) return;
+
+            behavior ??= undefined;
+
+            element.scrollTo({
+                left: left ?? element.scrollLeft,
+                top: top ?? element.scrollTop,
+                behavior
+            });
+        }
+
+        public static scrollBy(element: HTMLElement, x: number, y: number, behavior?: ScrollBehavior | undefined) {
+            if (!element) return;
+
+            behavior ??= undefined;
+
+            element.scrollBy({ left: x, top: y, behavior });
         }
 
         // Attaches (or updates) a deterministic keydown listener that calls preventDefault

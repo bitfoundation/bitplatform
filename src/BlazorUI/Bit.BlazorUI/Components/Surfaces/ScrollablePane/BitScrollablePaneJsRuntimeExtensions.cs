@@ -8,13 +8,18 @@ internal static class BitScrollablePaneJsRuntimeExtensions
     // application that never reads the position at a moment of its own choosing would otherwise lose the
     // members of BitScrollOffset with the GetOffset call below, and every OnScroll report would arrive
     // with all six of its measurements deserialized into nothing.
+    // Generic in what holds the callbacks rather than tied to BitScrollablePane, because the browser side
+    // only ever calls invokeMethodAsync on the reference it is handed: any component that declares the
+    // four callback names this engine invokes - OnScroll, OnScrollStart, OnScrollEnd, OnReached - can be
+    // driven by it. BitAppShell is the second such component, and it is in another assembly, which is why
+    // the constraint is `class` rather than the component base type.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollablePaneOptions))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollOffset))]
-    internal static ValueTask BitScrollablePaneSetup(this IJSRuntime jsRuntime,
-                                                     string id,
-                                                     ElementReference element,
-                                                     DotNetObjectReference<BitScrollablePane> dotnetObj,
-                                                     BitScrollablePaneOptions options)
+    internal static ValueTask BitScrollablePaneSetup<T>(this IJSRuntime jsRuntime,
+                                                        string id,
+                                                        ElementReference element,
+                                                        DotNetObjectReference<T> dotnetObj,
+                                                        BitScrollablePaneOptions options) where T : class
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.ScrollablePane.setup", id, element, dotnetObj, options);
     }
