@@ -126,7 +126,7 @@ var one = await performance.GetResourceEntries("https://example.com/app.js");
                  Api="GetWebVitals"
                  Description="LCP, CLS and INP already reduced from the entries they are computed over - the last LCP candidate, the worst CLS session window, the near-worst interaction - plus FCP and TTFB. The first call is what starts CLS and INP accumulating, so call it early and read it again later. Click around the page, then read it a second time."
                  Code=@("""
-WebVitals vitals = await performance.GetWebVitals();
+WebVitals? vitals = await performance.GetWebVitals(); // null during prerender/SSR
 
 // vitals.Lcp  - milliseconds, good below 2,500
 // vitals.Cls  - unitless, good below 0.1
@@ -200,7 +200,7 @@ await subscription.DisposeAsync();
                  Api="GetMemory"
                  Description="Reads the Chrome-only performance.memory snapshot of the JavaScript heap. On other browsers every field is null."
                  Code=@("""
-var memory = await performance.GetMemory();
+var memory = await performance.GetMemory(); // null during prerender/SSR
 
 // memory.UsedJsHeapSize, memory.TotalJsHeapSize, memory.JsHeapSizeLimit
 // all fields are null when the browser does not expose performance.memory
@@ -256,8 +256,8 @@ await performance.ClearResourceTimings();
     <ApiMember Name="GetLargestContentfulPaints" Signature="ValueTask<LargestContentfulPaint[]> GetLargestContentfulPaints()" Description="The LCP candidates recorded so far; the last one is the current LCP." />
     <ApiMember Name="GetLayoutShifts" Signature="ValueTask<LayoutShift[]> GetLayoutShifts()" Description="The layout shifts recorded so far, with the rectangles each moved element occupied." />
     <ApiMember Name="GetEventTimings" Signature="ValueTask<PerformanceEventTiming[]> GetEventTimings(bool firstInputOnly = false)" Description="The slow interactions INP is computed from, or the page's single first-input entry." />
-    <ApiMember Name="GetWebVitals" Signature="ValueTask<WebVitals> GetWebVitals()" Description="LCP, CLS and INP as they stand, plus FCP and TTFB. The first call starts CLS and INP accumulating." />
-    <ApiMember Name="GetMemory" Signature="ValueTask<PerformanceMemory> GetMemory()" Description="Chrome-only JS heap snapshot; all fields are null on browsers without performance.memory." />
+    <ApiMember Name="GetWebVitals" Signature="ValueTask<WebVitals?> GetWebVitals()" Description="LCP, CLS and INP as they stand, plus FCP and TTFB. The first call starts CLS and INP accumulating." />
+    <ApiMember Name="GetMemory" Signature="ValueTask<PerformanceMemory?> GetMemory()" Description="Chrome-only JS heap snapshot; all fields are null on browsers without performance.memory." />
     <ApiMember Name="SubscribeObserver" Signature="Task<ButilSubscription> SubscribeObserver(string[] entryTypes, Action<JsonElement[]> handler, bool buffered = true)" Description="Subscribes a PerformanceObserver for the given entry types and returns a disposable subscription handle." />
     <ApiMember Name="SubscribeObserver<T>" Signature="Task<ButilSubscription> SubscribeObserver<T>(string[] entryTypes, Action<T[]> handler, bool buffered = true)" Description="The same subscription with each batch deserialized into T - the way to read long tasks, layout shifts and LCP candidates." />
     <ApiMember Name="InvokePerformanceObserver" Signature="void InvokePerformanceObserver(Guid id, JsonElement[] entries)" Description="JS interop bridge invoked on each observer report; not intended for application code." />
@@ -638,6 +638,13 @@ await performance.ClearResourceTimings();
         try
         {
             var memory = await performance.GetMemory();
+            if (memory is null)
+            {
+                // Only reachable during prerender/SSR, where there is no JS runtime to read from.
+                await memoryOutput.Info("GetMemory → no JS runtime yet; read it after the first render.");
+                return;
+            }
+
             if (memory.UsedJsHeapSize is null)
             {
                 await memoryOutput.Warn("performance.memory is not exposed by this browser (Chrome-only).");

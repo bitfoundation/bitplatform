@@ -20,9 +20,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     let _clsWindowStart = 0;
     let _clsWindowLast = 0;
 
-    // interactionId -> the longest duration seen for that interaction. One tap produces several
-    // events sharing an id, and the interaction's latency is the worst of them, not their sum.
-    const _interactions: { [id: string]: number } = {};
+    // The interactions INP can still be answered by, worst first, and the same records keyed by
+    // interactionId. One tap produces several events sharing an id, and the interaction's latency is
+    // the worst of them, not their sum - hence the map.
+    //
+    // Only the worst MAX_INTERACTIONS can ever be the answer: INP indexes this list at
+    // floor(count / 50) capped to its own length, so an entry past the cap is unreachable however
+    // long the session runs. Keeping every interaction of a long-lived document would grow without
+    // bound - and make every read sort a list that only its first ten entries are read from.
+    const MAX_INTERACTIONS = 10;
+    let _interactionList: { id: number, duration: number }[] = [];
+    let _interactions: { [id: string]: { id: number, duration: number } } = {};
 
     // These entry types are never kept on the performance timeline: getEntriesByType() answers them
     // with an empty array on every engine, and they only ever arrive through a PerformanceObserver.
@@ -37,6 +45,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // not in _perfObservers: that map is keyed by a subscription id and disconnect() answers to a
     // caller who asked for one, while these belong to the module rather than to any one caller.
     const _retainedObservers: { [type: string]: PerformanceObserver } = {};
+
+    // The observers behind the Web Vitals accumulator, for the same reason: webVitals() starts them,
+    // no caller holds a handle to them, and stopRetained() is the only thing that can stop them.
+    const _vitalObservers: PerformanceObserver[] = [];
 
     // The most recent entries kept per type. These observers run for the life of the document, and
     // an interaction-heavy page produces 'event' entries without end - so the records are a window
@@ -65,6 +77,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // option) - leave the metric at null rather than reporting a number nothing feeds.
             return null;
         }
+    }
+
+    // observeVital plus the bookkeeping the accumulator needs: an observer started for a Web Vital
+    // has no other owner, so this list is the only way stopWebVitals() can find it again.
+    function observeAccumulator(type: string, handler: (list: PerformanceObserverEntryList) => void, options: any = {}): PerformanceObserver | null {
+        const observer = observeVital(type, handler, options);
+        if (observer) _vitalObservers.push(observer);
+        return observer;
     }
 
     // Appends what an observer reported to the records of its type, as plain JSON, keeping only the
@@ -105,31 +125,31 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         _vitals.started = true;
 
         // LCP reports a new, larger candidate each time one paints; the one that counts is the last.
-        observeVital('largest-contentful-paint', list => {
+        observeAccumulator('largest-contentful-paint', list => {
             const entries = list.getEntries() as any[];
             const last = entries[entries.length - 1];
             if (last) _vitals.lcp = last.renderTime || last.loadTime || last.startTime;
         });
 
-        if (observeVital('layout-shift', list => {
+        if (observeAccumulator('layout-shift', list => {
             for (const entry of list.getEntries() as any[]) addLayoutShift(entry);
         })) _vitals.cls = 0;
 
         // durationThreshold below the 104ms default so short interactions are counted too: INP is a
         // percentile over the interactions there were, and dropping the fast ones inflates it.
-        const events = observeVital('event', list => {
+        const events = observeAccumulator('event', list => {
             for (const entry of list.getEntries() as any[]) addInteraction(entry);
         }, { durationThreshold: 16 });
 
         // first-input is reported by engines that have no 'event' support at all, so it is the
         // fallback rather than an addition.
         if (!events) {
-            observeVital('first-input', list => {
+            observeAccumulator('first-input', list => {
                 for (const entry of list.getEntries() as any[]) addInteraction(entry);
             });
         }
 
-        observeVital('paint', list => {
+        observeAccumulator('paint', list => {
             for (const entry of list.getEntries()) {
                 if (entry.name === 'first-contentful-paint') _vitals.fcp = entry.startTime;
             }
@@ -139,6 +159,28 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // activationStart is non-zero only for a prerendered document, where the other timestamps
         // are relative to the prerender rather than to the moment the user saw the page.
         if (nav) _vitals.ttfb = Math.max(0, nav.responseStart - (nav.activationStart || 0));
+    }
+
+    // Disconnects the accumulator's observers and puts it back to its pre-first-call state. Both
+    // halves matter: metrics that are running totals of observers no longer running would report a
+    // frozen score as a live one, and started:false is what lets a later webVitals() - a new circuit,
+    // a new scope - start collecting again rather than reading the leftovers of the last one.
+    // buffered:true backfills whatever the engine still holds when it does.
+    function stopWebVitals() {
+        for (const observer of _vitalObservers) observer.disconnect();
+        _vitalObservers.length = 0;
+
+        _vitals.started = false;
+        _vitals.lcp = _vitals.cls = _vitals.inp = _vitals.fcp = _vitals.ttfb = null;
+        _vitals.interactionCount = 0;
+        _vitals.layoutShiftCount = 0;
+
+        _clsWindowValue = 0;
+        _clsWindowStart = 0;
+        _clsWindowLast = 0;
+
+        _interactionList = [];
+        _interactions = {};
     }
 
     function addLayoutShift(entry: any) {
@@ -162,23 +204,42 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Events that are not part of an interaction carry id 0 and are not INP's business.
         if (!id) return;
 
-        const previous = _interactions[id];
-        if (previous === undefined) {
-            _interactions[id] = entry.duration;
-            _vitals.interactionCount++;
-        } else if (entry.duration > previous) {
-            _interactions[id] = entry.duration;
+        // An id already on the list: the interaction's latency is its worst event, so this only ever
+        // raises the record - and the list is at most MAX_INTERACTIONS long, so re-sorting it is free.
+        const kept = _interactions[id];
+        if (kept) {
+            if (entry.duration > kept.duration) {
+                kept.duration = entry.duration;
+                _interactionList.sort((a, b) => b.duration - a.duration);
+            }
+            return;
+        }
+
+        // The count is every interaction there was, not every one kept - it is what INP's index is
+        // derived from, and discarding the fast ones from it would move that index.
+        _vitals.interactionCount++;
+
+        const weakest = _interactionList[_interactionList.length - 1];
+        if (_interactionList.length >= MAX_INTERACTIONS && entry.duration <= weakest.duration) return;
+
+        const record = { id, duration: entry.duration };
+        _interactions[id] = record;
+        _interactionList.push(record);
+        _interactionList.sort((a, b) => b.duration - a.duration);
+
+        while (_interactionList.length > MAX_INTERACTIONS) {
+            delete _interactions[_interactionList.pop()!.id];
         }
     }
 
     // INP is not the worst interaction: it is the worst discounted by one for every 50 interactions,
-    // so a single outlier in a long session does not define the page.
+    // so a single outlier in a long session does not define the page. The list is kept sorted by
+    // addInteraction, so this is an index rather than a sort.
     function computeInp() {
-        const durations = Object.keys(_interactions).map(k => _interactions[k]).sort((a, b) => b - a);
-        if (durations.length === 0) return null;
+        if (_interactionList.length === 0) return null;
 
-        const index = Math.min(durations.length - 1, Math.floor(_vitals.interactionCount / 50));
-        return durations[index];
+        const index = Math.min(_interactionList.length - 1, Math.floor(_vitals.interactionCount / 50));
+        return _interactionList[index].duration;
     }
 
     butil.performance = {
@@ -249,15 +310,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             delete _perfObservers[listenerId];
             observer.disconnect();
         },
-        // Stops the observers behind the observer-only entry types and drops their records. Called
-        // when the Performance service is disposed - the scope owning it is the document's, so the
-        // records have no reader left and the observers have no reason to keep filling them.
+        // Stops every observer this module started for itself - the ones behind the observer-only
+        // entry types and the ones behind the Web Vitals accumulator - and drops what they collected.
+        // Called when the Performance service is disposed: the scope owning it is the document's, so
+        // the records have no reader left and the observers have no reason to keep filling them.
         stopRetained() {
             for (const type of Object.keys(_retainedObservers)) {
                 _retainedObservers[type].disconnect();
                 delete _retainedObservers[type];
                 delete _retained[type];
             }
+
+            stopWebVitals();
         }
     };
 }(BitButil));

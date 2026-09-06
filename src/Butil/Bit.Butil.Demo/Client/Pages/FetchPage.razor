@@ -243,6 +243,8 @@ await handle.Abort();
     <ApiMember Name="FetchHeaders.Remove" Signature="bool Remove(string name)" Description="Removes every occurrence of the name; returns whether anything was removed." />
     <ApiMember Name="FetchHeaders.Names" Signature="IEnumerable<string> Names" Description="The distinct header names present, in the order they first appear." />
     <ApiMember Name="FetchHeaders.ToDictionary" Signature="Dictionary<string, string> ToDictionary()" Description='Flattens to a dictionary, repeats joined by ", ". The lossy direction.' />
+    <ApiMember Name="FetchHeaders (implicit)" Signature="implicit operator FetchHeaders?(Dictionary<string, string>?)" Description="A dictionary of headers reads as a FetchHeaders, so code written against the old shape keeps working. Null converts to null rather than throwing." />
+    <ApiMember Name="Dictionary (implicit)" Signature="implicit operator Dictionary<string, string>?(FetchHeaders?)" Description="The flattening conversion - ToDictionary applied implicitly, with the same loss. Null converts to null." />
     <ApiMember Name="FetchProgress.Loaded" Signature="long Loaded" Description="Bytes received so far." />
     <ApiMember Name="FetchProgress.Total" Signature="long? Total" Description="Total bytes expected, or null when unknown (chunked / no Content-Length)." />
     <ApiMember Name="AbortableFetch.Id" Signature="Guid Id" Description="The internal request id." />

@@ -19,6 +19,12 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
 
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<JsonElement[]>> _handlers = new();
 
+    // Whether anything on this instance could have started one of the module's own observers - the
+    // observer-fed reads and the Web Vitals accumulator. Disposal only has to reach into JS when one
+    // of them did: stopRetained on an instance that never called those would lazily import
+    // performance.js at teardown just to tell it there is nothing to stop.
+    private volatile bool _startedModuleObservers;
+
     // Per-instance callback reference (see Keyboard): observers are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Performance>? _dotNetRef;
@@ -81,7 +87,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/getEntries">Performance.getEntries()</see>
     /// </summary>
     public ValueTask<JsonElement[]> GetEntries(string? name = null, string? type = null)
-        => js.Invoke<JsonElement[]>("BitButil.performance.getEntries", name, type);
+    {
+        _startedModuleObservers = true;
+        return js.Invoke<JsonElement[]>("BitButil.performance.getEntries", name, type);
+    }
 
     /// <summary>
     /// Returns the entries of one <c>entryType</c>, deserialized into the type that describes that
@@ -112,7 +121,10 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftAttribution))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LayoutShiftRect))]
     public ValueTask<T[]> GetTypedEntries<[DynamicallyAccessedMembers(JsonSerialized)] T>(string entryType, string? name = null)
-        => js.Invoke<T[]>("BitButil.performance.getEntries", name, entryType);
+    {
+        _startedModuleObservers = true;
+        return js.Invoke<T[]>("BitButil.performance.getEntries", name, entryType);
+    }
 
     /// <summary>
     /// The document's own load timing - one entry, or none during prerender.
@@ -231,15 +243,23 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// it if you read it anywhere a prerender pass can reach.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebVitals))]
-    public ValueTask<WebVitals> GetWebVitals()
-        => js.Invoke<WebVitals>("BitButil.performance.webVitals");
+    public ValueTask<WebVitals?> GetWebVitals()
+    {
+        _startedModuleObservers = true;
+        return js.Invoke<WebVitals?>("BitButil.performance.webVitals");
+    }
 
     /// <summary>
     /// Chrome-only memory snapshot. All fields are null on browsers that don't expose <c>performance.memory</c>.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) there is nothing to read and the result itself is
+    /// <c>null</c> rather than an exception - read it from <c>OnAfterRenderAsync</c>, and null-check
+    /// it if you read it anywhere a prerender pass can reach.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceMemory))]
-    public ValueTask<PerformanceMemory> GetMemory()
-        => js.Invoke<PerformanceMemory>("BitButil.performance.memory");
+    public ValueTask<PerformanceMemory?> GetMemory()
+        => js.Invoke<PerformanceMemory?>("BitButil.performance.memory");
 
     /// <summary>
     /// Invoked from JS on each observer report. Public + <see cref="JSInvokableAttribute"/> so it can
@@ -340,9 +360,14 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Disconnects every PerformanceObserver started through this instance - including the ones
-    /// behind the observer-fed reads such as <see cref="GetLongTasks"/> - and releases its interop
-    /// reference.
+    /// behind the observer-fed reads such as <see cref="GetLongTasks"/> and the ones behind
+    /// <see cref="GetWebVitals"/> - and releases its interop reference.
     /// </summary>
+    /// <remarks>
+    /// The Web Vitals accumulator goes back to its pre-first-call state along with them, so a later
+    /// <see cref="GetWebVitals"/> - from a new circuit or a new scope - starts collecting afresh
+    /// rather than reporting the frozen totals of observers that no longer run.
+    /// </remarks>
     public async ValueTask DisposeAsync()
     {
         try
@@ -354,9 +379,14 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.performance.disconnect", id);
             }
 
-            // The observer-fed reads start observers that belong to the module rather than to a
-            // subscription, so they are not in the loop above and would otherwise outlive the scope.
-            await js.InvokeVoid("BitButil.performance.stopRetained");
+            // The observer-fed reads and the Web Vitals accumulator start observers that belong to
+            // the module rather than to a subscription, so they are not in the loop above and would
+            // otherwise outlive the scope. Skipped when nothing here could have started one - see
+            // the flag's note on why teardown must not be the thing that imports the module.
+            if (_startedModuleObservers)
+            {
+                await js.InvokeVoid("BitButil.performance.stopRetained");
+            }
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

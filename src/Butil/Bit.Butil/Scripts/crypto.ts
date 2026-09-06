@@ -270,7 +270,16 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function requestedUsages(name: string, format: string, key: any): KeyUsage[] {
         const supported = usagesFor(name, format, key);
         const declared = format === 'jwk' && Array.isArray(key?.key_ops) ? key.key_ops : null;
-        return declared ? supported.filter(u => declared.includes(u)) : supported;
+        if (!declared) return supported;
+
+        const narrowed = supported.filter(u => declared.includes(u));
+
+        // A key_ops naming none of the algorithm's usages narrows to nothing, and importKey rejects
+        // an empty list outright for a secret or private key - with a SyntaxError about the empty
+        // list rather than about the mismatch that produced it. Ask for the algorithm's own usages
+        // instead, so the failure is the DataError that names key_ops. (An algorithm with no usages
+        // to begin with - the public half of ECDH - genuinely wants the empty list, and still gets it.)
+        return narrowed.length > 0 || supported.length === 0 ? narrowed : supported;
     }
 
     function importKeyMaterial(format: string, key: any, algorithm: any, extractable: boolean) {

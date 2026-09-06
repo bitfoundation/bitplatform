@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -121,11 +122,20 @@ public class FetchHeaders : IEnumerable<KeyValuePair<string, string>>
     public Dictionary<string, string> ToDictionary()
         => Names.ToDictionary(name => name, name => Get(name)!, StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Reads a dictionary of headers as a <see cref="FetchHeaders"/>.</summary>
-    public static implicit operator FetchHeaders(Dictionary<string, string> headers) => new(headers);
+    // Both conversions map null to null rather than throwing: an implicit conversion is invisible at
+    // the call site, so a null that was legal to assign before this type existed has to stay legal -
+    // failing inside an operator nobody wrote is exactly the break the conversions exist to avoid.
+    // NotNullIfNotNull is what keeps a non-null source flowing into a non-null target unwarned.
 
-    /// <summary>Flattens the headers into a dictionary - see <see cref="ToDictionary"/> for what that loses.</summary>
-    public static implicit operator Dictionary<string, string>(FetchHeaders headers) => headers.ToDictionary();
+    /// <summary>Reads a dictionary of headers as a <see cref="FetchHeaders"/>. A null dictionary converts to null.</summary>
+    [return: NotNullIfNotNull(nameof(headers))]
+    public static implicit operator FetchHeaders?(Dictionary<string, string>? headers)
+        => headers is null ? null : new(headers);
+
+    /// <summary>Flattens the headers into a dictionary - see <see cref="ToDictionary"/> for what that loses. Null converts to null.</summary>
+    [return: NotNullIfNotNull(nameof(headers))]
+    public static implicit operator Dictionary<string, string>?(FetchHeaders? headers)
+        => headers?.ToDictionary();
 
     /// <summary>Enumerates every name/value pair, repeats included, in order.</summary>
     public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => _entries.GetEnumerator();
