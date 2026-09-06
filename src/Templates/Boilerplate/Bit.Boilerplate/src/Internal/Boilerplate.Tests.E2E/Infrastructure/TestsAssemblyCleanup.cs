@@ -1,12 +1,13 @@
 namespace Boilerplate.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// There is nothing to initialize - this suite starts no server, it talks to the deployed ones - but
-/// <see cref="TestHost"/>, built on first use, holds pooled connections to a live database and is closed here.
+/// Nothing to initialize - this suite starts no server - but <see cref="DeployedApiClientProvider"/> holds a live MCP session
+/// and database connections, closed here.
 /// </summary>
 [TestClass]
 public partial class TestsAssemblyCleanup
 {
+    /// <summary>MSTest awaits a Task-returning cleanup, so nothing here blocks on a disposal.</summary>
     [AssemblyCleanup]
-    public static void Cleanup() => TestHost.Shutdown();
+    public static Task Cleanup() => DeployedApiClientProvider.ShutdownAsync();
 }

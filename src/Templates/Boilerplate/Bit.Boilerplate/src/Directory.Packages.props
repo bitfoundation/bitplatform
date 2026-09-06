@@ -57,7 +57,9 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.11" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.11" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+        <PackageVersion Include="ModelContextProtocol" Version="2.2.0" />
+        <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+        <PackageVersion Include="System.Linq.Dynamic.Core" Version="1.6.9" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.5.3" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="13.5.0" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.Sqlite" Version="13.5.0" />

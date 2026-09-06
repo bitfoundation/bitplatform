@@ -1,0 +1,562 @@
+@page "/serial"
+@implements IAsyncDisposable
+@inject Bit.Butil.Serial serial
+
+<PageTitle>Serial - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Serial"
+            Lead="Pick a serial port, open it with the line settings the device expects, then read and write bytes - the browser's answer to a terminal program."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API"
+            InjectAs="Serial serial" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    Web Serial ships in Chromium-based browsers on desktop and on Android. Firefox and Safari do not
+    implement it. <code>RequestPort</code> must run inside a user gesture.
+</Callout>
+
+<Callout Type="info" Title="Reading is a subscription, not a call">
+    Bytes arrive whenever the device sends them, in whatever chunks the driver hands over, so a
+    message split across two chunks arrives as two callbacks. Framing a protocol on top - lines,
+    length prefixes - is the caller's job.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.serial. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Serial serial
+
+var supported = await serial.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Pick a port"
+                 Api="RequestPort / GetPorts"
+                 Description="RequestPort opens the browser's port chooser. GetPorts returns the ports this origin was already granted, without a prompt - which is how an app reconnects to the same board on a later visit."
+                 Code=@("""
+private SerialPort? _port;
+
+_port = await serial.RequestPort();
+// or narrowed to one adapter:
+_port = await serial.RequestPort(new SerialPortFilter { UsbVendorId = 0x2341 });
+
+var granted = await serial.GetPorts();
+""")>
+        <div class="controls">
+            <button @onclick="RequestPort">RequestPort</button>
+            <button class="secondary" @onclick="GetPorts">GetPorts</button>
+            <button class="danger" @onclick="ReleasePort">Dispose handle</button>
+        </div>
+        @if (_port is not null)
+        {
+            <div class="field">
+                <span class="field-label">Selected</span>
+                <span>@Describe(_port.Info)</span>
+            </div>
+        }
+        <DemoConsole @ref="portOutput" Title="port output" />
+    </DemoSection>
+
+    <DemoSection Title="Open and close"
+                 Api="Open / Close / IsOpen / GetInfo"
+                 Description="The line settings have to match what the device expects - a mismatched baud rate still produces bytes, just not the right ones. Opening an already-open port with different settings cycles it, which ends any read subscription."
+                 Code=@("""
+await _port.Open(new SerialOptions
+{
+    BaudRate = 115200,
+    DataBits = 8,
+    StopBits = 1,
+    Parity = SerialParity.None,
+    FlowControl = SerialFlowControl.None
+});
+
+await _port.Close();
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Baud rate</span>
+                <input type="number" min="300" @bind="_baudRate" />
+            </div>
+            <div class="field">
+                <span class="field-label">Data bits</span>
+                <input type="number" min="7" max="8" @bind="_dataBits" />
+            </div>
+            <div class="field">
+                <span class="field-label">Stop bits</span>
+                <input type="number" min="1" max="2" @bind="_stopBits" />
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Parity</span>
+                <select @bind="_parity">
+                    <option value="@SerialParity.None">None</option>
+                    <option value="@SerialParity.Even">Even</option>
+                    <option value="@SerialParity.Odd">Odd</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Flow control</span>
+                <select @bind="_flowControl">
+                    <option value="@SerialFlowControl.None">None</option>
+                    <option value="@SerialFlowControl.Hardware">Hardware</option>
+                </select>
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="Open">Open</button>
+            <button class="secondary" @onclick="Close">Close</button>
+            <button @onclick="CheckOpen">IsOpen</button>
+            <button @onclick="DescribePort">GetInfo</button>
+        </div>
+        <DemoConsole @ref="openOutput" Title="open output" />
+    </DemoSection>
+
+    <DemoSection Title="Read and write"
+                 Api="SubscribeData / Write / WriteText"
+                 Description="SubscribeData starts the read loop and hands each chunk to the callback; disposing the subscription stops it and releases the stream lock, which is what a later Close needs."
+                 Code=@("""
+await using var reading = await _port.SubscribeData(
+    onData: bytes => Console.WriteLine(Encoding.UTF8.GetString(bytes)),
+    onError: message => Console.WriteLine(message));
+
+await _port.WriteText("AT\r\n");
+await _port.Write([0x01, 0x02]);
+""")>
+        <div class="controls">
+            <button @onclick="StartReading">SubscribeData</button>
+            <button class="danger" @onclick="StopReading">Stop reading</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Text to send</span>
+            <input type="text" @bind="_sendText" placeholder="AT" />
+        </div>
+        <div class="controls">
+            <button @onclick="SendText">WriteText</button>
+            <button @onclick="SendBytes">Write (hex)</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Bytes to send (hex, space separated)</span>
+            <input type="text" @bind="_sendHex" placeholder="01 02 ff" />
+        </div>
+        <DemoConsole @ref="dataOutput" Title="data output" />
+    </DemoSection>
+
+    <DemoSection Title="Control lines"
+                 Api="GetSignals / SetSignals"
+                 Description="GetSignals reads the input lines the device drives; SetSignals drives the output lines. A null argument leaves that line as it is - which matters, because toggling DTR resets many microcontroller boards."
+                 Code=@("""
+var signals = await _port.GetSignals();
+// signals.ClearToSend, DataSetReady, DataCarrierDetect, RingIndicator
+
+await _port.SetSignals(dataTerminalReady: true);
+""")>
+        <div class="controls">
+            <button @onclick="ReadSignals">GetSignals</button>
+            <button @onclick="() => SetSignal(true)">SetSignals DTR on</button>
+            <button class="secondary" @onclick="() => SetSignal(false)">SetSignals DTR off</button>
+        </div>
+        <DemoConsole @ref="signalOutput" Title="signal output" />
+    </DemoSection>
+
+    <DemoSection Title="Plug and unplug"
+                 Api="SubscribeConnection"
+                 Description="Watches ports appearing and disappearing - a USB serial adapter being plugged in or pulled out. Only ports this origin already has permission for raise these."
+                 Code=@("""
+await using var watch = await serial.SubscribeConnection(
+    onConnected: port => Console.WriteLine($"+ {port.Id}"),
+    onDisconnected: port => Console.WriteLine($"- {port.Id}"));
+""")>
+        <div class="controls">
+            <button @onclick="StartWatching">SubscribeConnection</button>
+            <button class="danger" @onclick="StopWatching">Stop watching</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="connection output" />
+    </DemoSection>
+
+    <DemoSection Title="Revoke the grant"
+                 Api="Forget"
+                 Description="Drops this origin's permission for the port, so it stops appearing in GetPorts until the user picks it again."
+                 Code=@("""
+var revoked = await _port.Forget();
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="ForgetPort">Forget</button>
+        </div>
+        <DemoConsole @ref="forgetOutput" Title="forget output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.serial. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="RequestPort"
+               Signature="ValueTask<SerialPort?> RequestPort(params SerialPortFilter[] filters)"
+               Description="Opens the port chooser and returns the picked port, or null when dismissed. Needs a user gesture." />
+    <ApiMember Name="GetPorts"
+               Signature="ValueTask<SerialPort[]> GetPorts()"
+               Description="The ports this origin has already been granted, without a prompt." />
+    <ApiMember Name="SubscribeConnection"
+               Signature="ValueTask<ButilSubscription> SubscribeConnection(Action<SerialPort>? onConnected = null, Action<SerialPort>? onDisconnected = null)"
+               Description="Watches permitted ports appearing and disappearing." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes every port this service handed out, detaches listeners and releases the JS callback reference." />
+    <ApiMember Name="InvokeSerialData"
+               Signature="void InvokeSerialData(Guid id, byte[] data)"
+               Description="JSInvokable interop plumbing for read chunks - not intended for app code." />
+    <ApiMember Name="InvokeSerialError"
+               Signature="void InvokeSerialError(Guid id, string message)"
+               Description="JSInvokable interop plumbing for read-loop failures - not intended for app code." />
+    <ApiMember Name="InvokeSerialConnected"
+               Signature="void InvokeSerialConnected(Guid id, SerialPortInfo info)"
+               Description="JSInvokable interop plumbing for the connect event - not intended for app code." />
+    <ApiMember Name="InvokeSerialDisconnected"
+               Signature="void InvokeSerialDisconnected(Guid id, SerialPortInfo info)"
+               Description="JSInvokable interop plumbing for the disconnect event - not intended for app code." />
+    <ApiMember Name="SerialPort.Info"
+               Signature="SerialPortInfo Info { get; }"
+               Description="The port as it was when the handle was created: Id, UsbVendorId, UsbProductId, Open." />
+    <ApiMember Name="SerialPort.Open / Close / IsOpen"
+               Signature="ValueTask<bool> Open(SerialOptions? options = null) / ValueTask Close() / ValueTask<bool> IsOpen()"
+               Description="Opens with the given line settings, closes, and reports the open state." />
+    <ApiMember Name="SerialPort.GetInfo"
+               Signature="ValueTask<SerialPortInfo?> GetInfo()"
+               Description="Re-reads the port's state; Info is only the snapshot from when the handle was created." />
+    <ApiMember Name="SerialPort.Write / WriteText"
+               Signature="ValueTask<bool> Write(byte[] data) / ValueTask<bool> WriteText(string text)"
+               Description="Writes raw bytes, or UTF-8 text." />
+    <ApiMember Name="SerialPort.SubscribeData"
+               Signature="ValueTask<ButilSubscription> SubscribeData(Action<byte[]> onData, Action<string>? onError = null)"
+               Description="Starts the read loop. Dispose the subscription to stop reading and release the stream lock." />
+    <ApiMember Name="SerialPort.GetSignals / SetSignals"
+               Signature="ValueTask<SerialSignals?> GetSignals() / ValueTask<bool> SetSignals(bool? dataTerminalReady = null, bool? requestToSend = null, bool? signalBreak = null)"
+               Description="Reads the input control lines and drives the output ones. Nulls leave a line unchanged." />
+    <ApiMember Name="SerialPort.Forget"
+               Signature="ValueTask<bool> Forget()"
+               Description="Revokes this origin's permission for the port." />
+    <ApiMember Name="SerialPort.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Stops reading, closes the port and releases the browser-side reference." />
+    <ApiMember Name="SerialOptions"
+               Signature="class SerialOptions { int BaudRate; byte DataBits; byte StopBits; SerialParity Parity; int BufferSize; SerialFlowControl FlowControl; }"
+               Description="The line settings a port is opened with." />
+    <ApiMember Name="SerialPortFilter"
+               Signature="class SerialPortFilter { ushort? UsbVendorId; ushort? UsbProductId; }"
+               Description="One chooser filter. Only USB-attached adapters can be filtered." />
+    <ApiMember Name="SerialPortInfo"
+               Signature="class SerialPortInfo { string Id; ushort? UsbVendorId; ushort? UsbProductId; bool Open; }"
+               Description="A granted port." />
+    <ApiMember Name="SerialSignals"
+               Signature="class SerialSignals { bool ClearToSend; bool DataCarrierDetect; bool DataSetReady; bool RingIndicator; }"
+               Description="The input control lines the device is driving." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole portOutput = default!;
+    private DemoConsole openOutput = default!;
+    private DemoConsole dataOutput = default!;
+    private DemoConsole signalOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private DemoConsole forgetOutput = default!;
+
+    private SerialPort? _port;
+    private ButilSubscription? _reading;
+    private ButilSubscription? _watch;
+
+    private int _baudRate = 9600;
+    private int _dataBits = 8;
+    private int _stopBits = 1;
+    private SerialParity _parity = SerialParity.None;
+    private SerialFlowControl _flowControl = SerialFlowControl.None;
+    private string _sendText = "AT";
+    private string _sendHex = "01";
+
+    private static string Describe(SerialPortInfo info) =>
+        info.UsbVendorId is null
+            ? $"{info.Id} (built-in port)"
+            : $"{info.Id} - USB {info.UsbVendorId:x4}:{info.UsbProductId:x4}";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await serial.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestPort()
+    {
+        try
+        {
+            if (!await serial.IsSupported())
+            {
+                await portOutput.Warn("Web Serial is not supported in this browser.");
+                return;
+            }
+
+            var requested = await serial.RequestPort();
+
+            if (requested is null)
+            {
+                // A dismissed chooser is not a reason to throw away the port already in hand.
+                await portOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it - and the read
+            // subscription holding its readable stream locked - rather than leaving an open port with
+            // an orphaned read loop. Re-picking the same port hands back the handle already in play,
+            // and disposing that one would close the port this page is about to use.
+            if (ReferenceEquals(_port, requested) is false)
+            {
+                await StopReading();
+                if (_port is not null) await _port.DisposeAsync();
+            }
+
+            _port = requested;
+            await portOutput.Success("RequestPort →", Describe(_port.Info));
+        }
+        catch (Exception ex)
+        {
+            await portOutput.Error("RequestPort failed →", ex.Message);
+        }
+    }
+
+    private async Task GetPorts()
+    {
+        try
+        {
+            var ports = await serial.GetPorts();
+            await portOutput.Success("GetPorts →", $"{ports.Length} granted port(s)");
+            foreach (var port in ports)
+            {
+                await portOutput.Log("  " + Describe(port.Info));
+            }
+            _port ??= ports.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            await portOutput.Error("GetPorts failed →", ex.Message);
+        }
+    }
+
+    private async Task ReleasePort()
+    {
+        if (_port is null) return;
+        await StopReading();
+        await _port.DisposeAsync();
+        _port = null;
+        await portOutput.Log("Handle disposed - the port is closed but still granted.");
+    }
+
+    private async Task Open()
+    {
+        if (await RequirePort(openOutput) is false) return;
+
+        try
+        {
+            var ok = await _port!.Open(new SerialOptions
+            {
+                BaudRate = _baudRate,
+                DataBits = (byte)_dataBits,
+                StopBits = (byte)_stopBits,
+                Parity = _parity,
+                FlowControl = _flowControl
+            });
+
+            await openOutput.Success("Open →", ok);
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task Close()
+    {
+        if (await RequirePort(openOutput) is false) return;
+
+        await StopReading();
+        await _port!.Close();
+        await openOutput.Log("Closed.");
+    }
+
+    private async Task CheckOpen()
+    {
+        if (await RequirePort(openOutput) is false) return;
+        await openOutput.Success("IsOpen →", await _port!.IsOpen());
+    }
+
+    private async Task DescribePort()
+    {
+        if (await RequirePort(openOutput) is false) return;
+
+        var info = await _port!.GetInfo();
+        await openOutput.Success("GetInfo →", info is null ? "(no longer resolvable)" : $"{Describe(info)}, open={info.Open}");
+    }
+
+    private async Task StartReading()
+    {
+        if (await RequirePort(dataOutput) is false) return;
+
+        await StopReading();
+
+        try
+        {
+            _reading = await _port!.SubscribeData(
+                onData: bytes => _ = InvokeAsync(() => dataOutput.Log("Read →", Printable(bytes))),
+                onError: message => _ = InvokeAsync(() => dataOutput.Error("Read error →", message)));
+
+            await dataOutput.Log("Reading - bytes appear as the device sends them.");
+        }
+        catch (Exception ex)
+        {
+            await dataOutput.Error("SubscribeData failed →", ex.Message);
+        }
+    }
+
+    private async Task StopReading()
+    {
+        if (_reading is null) return;
+        await _reading.DisposeAsync();
+        _reading = null;
+        await dataOutput.Log("Reading stopped.");
+    }
+
+    private async Task SendText()
+    {
+        if (await RequirePort(dataOutput) is false) return;
+
+        try
+        {
+            await dataOutput.Success("WriteText →", await _port!.WriteText(_sendText + "\r\n"));
+        }
+        catch (Exception ex)
+        {
+            await dataOutput.Error("WriteText failed →", ex.Message);
+        }
+    }
+
+    private async Task SendBytes()
+    {
+        if (await RequirePort(dataOutput) is false) return;
+
+        try
+        {
+            await dataOutput.Success("Write →", await _port!.Write(ParseHex(_sendHex)));
+        }
+        catch (Exception ex)
+        {
+            await dataOutput.Error("Write failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadSignals()
+    {
+        if (await RequirePort(signalOutput) is false) return;
+
+        var signals = await _port!.GetSignals();
+        await signalOutput.Success("GetSignals →", signals is null
+            ? "(port not open)"
+            : $"cts={signals.ClearToSend}, dsr={signals.DataSetReady}, dcd={signals.DataCarrierDetect}, ri={signals.RingIndicator}");
+    }
+
+    private async Task SetSignal(bool value)
+    {
+        if (await RequirePort(signalOutput) is false) return;
+
+        await signalOutput.Success("SetSignals →", await _port!.SetSignals(dataTerminalReady: value));
+    }
+
+    private async Task StartWatching()
+    {
+        await StopWatching();
+
+        try
+        {
+            _watch = await serial.SubscribeConnection(
+                onConnected: port => _ = InvokeAsync(() => watchOutput.Success("Connected →", Describe(port.Info))),
+                onDisconnected: port => _ = InvokeAsync(() => watchOutput.Warn("Disconnected →", Describe(port.Info))));
+
+            await watchOutput.Log("Watching - plug or unplug an adapter you have already granted.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("SubscribeConnection failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        if (_watch is null) return;
+        await _watch.DisposeAsync();
+        _watch = null;
+        await watchOutput.Log("Stopped watching.");
+    }
+
+    private async Task ForgetPort()
+    {
+        if (await RequirePort(forgetOutput) is false) return;
+
+        try
+        {
+            var revoked = await _port!.Forget();
+            await forgetOutput.Success("Forget →", revoked ? "permission revoked." : "not supported by this browser.");
+            if (revoked) _port = null;
+        }
+        catch (Exception ex)
+        {
+            await forgetOutput.Error("Forget failed →", ex.Message);
+        }
+    }
+
+    private async Task<bool> RequirePort(DemoConsole output)
+    {
+        if (_port is not null) return true;
+        await output.Warn("Pick a port first with RequestPort.");
+        return false;
+    }
+
+    // Serial data is usually text but need not be, so printable bytes are shown as characters and
+    // everything else as hex rather than as replacement characters.
+    private static string Printable(byte[] bytes) =>
+        bytes.All(b => b is >= 0x20 and < 0x7f or 0x0a or 0x0d)
+            ? System.Text.Encoding.ASCII.GetString(bytes).Replace("\r", "\\r").Replace("\n", "\\n")
+            : Convert.ToHexString(bytes);
+
+    // A token that is not a hex byte is a typo, not something to quietly drop: "00 zz ff" has to be
+    // rejected rather than reach the port as the two bytes that happened to parse.
+    private static byte[] ParseHex(string text)
+    {
+        var parts = text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var bytes = new byte[parts.Length];
+
+        for (var index = 0; index < parts.Length; index++)
+        {
+            if (byte.TryParse(parts[index], System.Globalization.NumberStyles.HexNumber, null, out bytes[index]) is false)
+                throw new FormatException($"'{parts[index]}' is not a hexadecimal byte.");
+        }
+
+        return bytes;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_reading is not null) await _reading.DisposeAsync();
+        if (_watch is not null) await _watch.DisposeAsync();
+        if (_port is not null) await _port.DisposeAsync();
+    }
+}

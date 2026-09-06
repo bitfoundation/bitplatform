@@ -6,10 +6,48 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     butil.fetch = {
         send,
         start,
-        abort
+        abort,
+        // Exported so streams.fromResponse builds its request through the same mapping instead of
+        // keeping a second copy of it - the copy is what let the shared-signal handling drift.
+        requestInit: buildInit
     };
 
-    function buildInit(req: any, controller: AbortController): RequestInit {
+    // The request always has its own controller (that is what abort(id) reaches). A shared signal
+    // from butil.abortController has to be combined with it rather than replace it, so that either
+    // one can abort the request.
+    // Returns the signal to use and, where a listener had to be attached to the shared one, the way
+    // to take it off again once the request has settled.
+    function signalFor(req: any, controller: AbortController): { signal: AbortSignal; cleanup: () => void } {
+        const nothingToUndo = () => { /* no listener was attached */ };
+
+        const shared = req.signalId ? butil.abortController.signalOf(req.signalId) : undefined;
+        if (!shared) return { signal: controller.signal, cleanup: nothingToUndo };
+
+        const AS: any = (window as any).AbortSignal;
+        if (typeof AS?.any === 'function') return { signal: AS.any([controller.signal, shared]), cleanup: nothingToUndo };
+
+        // Pre-Safari-17.4: forward the shared signal into this request's own controller.
+        if (shared.aborted) {
+            controller.abort((shared as any).reason);
+            return { signal: controller.signal, cleanup: nothingToUndo };
+        }
+
+        // A shared signal is meant to outlive the requests it guards, and until this listener comes
+        // off again it holds this request's controller with it - one leak per request, for the life
+        // of the signal.
+        const forward = () => controller.abort((shared as any).reason);
+        shared.addEventListener('abort', forward, { once: true });
+        return { signal: controller.signal, cleanup: () => shared.removeEventListener('abort', forward) };
+    }
+
+    // An abort is not always an AbortError: a signal aborted with a reason rejects fetch with that
+    // reason, and AbortSignal.timeout rejects with a TimeoutError. The signal is the only reliable
+    // witness, so ask it rather than the exception it produced.
+    function wasAborted(signal: AbortSignal | undefined, e: any): boolean {
+        return signal?.aborted === true || e?.name === 'AbortError';
+    }
+
+    function buildInit(req: any, controller: AbortController): { init: RequestInit; cleanup: () => void } {
         const headers = new Headers();
         if (req.headers) {
             for (const k of Object.keys(req.headers)) headers.set(k, req.headers[k]);
@@ -20,13 +58,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             credentials: req.credentials || 'same-origin',
             mode: req.mode || 'cors',
             cache: req.cache || 'default',
-            redirect: req.redirect || 'follow',
-            signal: controller.signal
+            redirect: req.redirect || 'follow'
         };
         if (req.body && req.body.length > 0) {
             init.body = butil.utils.arrayToBuffer(req.body);
         }
-        return init;
+        // Last, because signalFor can register a listener on a shared signal and only the cleanup it
+        // returns takes it off again: anything above throwing before that cleanup reaches the caller
+        // would leak the listener, and this request's controller with it.
+        const { signal, cleanup } = signalFor(req, controller);
+        init.signal = signal;
+        return { init, cleanup };
     }
 
     function headersToObject(h: Headers) {
@@ -39,8 +81,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const controller = new AbortController();
         _controllers[id] = controller;
 
+        // buildInit throws on its own (an invalid header name, most likely). It stays inside the
+        // try so that failure comes back as the documented error result rather than as a
+        // JSException, and so the finally still releases the controller.
+        let cleanup = () => { /* nothing was built yet */ };
+        let signal: AbortSignal | undefined;
+
         try {
-            const resp = await fetch(req.url, buildInit(req, controller));
+            const built = buildInit(req, controller);
+            cleanup = built.cleanup;
+            signal = built.init.signal as AbortSignal;
+
+            const resp = await fetch(req.url, built.init);
             const total = (() => {
                 const cl = resp.headers.get('content-length');
                 return cl ? Number(cl) : null;
@@ -80,7 +132,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 error: null
             };
         } catch (e: any) {
-            const aborted = e?.name === 'AbortError';
+            const aborted = wasAborted(signal, e);
             return {
                 ok: false,
                 status: 0,
@@ -92,6 +144,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 error: aborted ? null : (e?.message ?? String(e))
             };
         } finally {
+            cleanup();
             delete _controllers[id];
         }
     }
@@ -99,9 +152,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function start(id: string, req: any) {
         const controller = new AbortController();
         _controllers[id] = controller;
+
         // Fire-and-forget: errors are silently swallowed because there's no consumer for the
-        // result. Use send() when you need the response.
-        fetch(req.url, buildInit(req, controller)).catch(() => { /* ignore */ }).finally(() => { delete _controllers[id]; });
+        // result - including the ones buildInit raises. Use send() when you need the response.
+        try {
+            const { init, cleanup } = buildInit(req, controller);
+            fetch(req.url, init).catch(() => { /* ignore */ }).finally(() => { cleanup(); delete _controllers[id]; });
+        } catch {
+            delete _controllers[id];
+        }
     }
 
     function abort(id: string) {

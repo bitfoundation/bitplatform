@@ -1,0 +1,195 @@
+@page "/identity"
+@inject Bit.Butil.Credentials credentials
+@inject Bit.Butil.FedCm fedCm
+@inject Bit.Butil.WebOtp webOtp
+@inject Bit.Butil.DigitalCredentials digitalCredentials
+
+<PageTitle>Butil - Identity Samples</PageTitle>
+
+<PageHeader Category="Identity"
+            Title="Identity"
+            Lead="The credential store behind navigator.credentials, federated sign-in through FedCM, SMS one-time codes, and wallet credentials. Most of these are Chromium-only and secure-context only, so expect the support checks to answer false on a desktop browser."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Credential_Management_API" />
+
+<pre>
+@@inject Bit.Butil.Credentials credentials
+
+await credentials.StorePassword("ada@@example.com", password, "Ada Lovelace");
+var credential = await credentials.Get(new CredentialRequestOptions { Mediation = CredentialMediation.Silent });
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Support checks" Api="IsSupported"
+              Description="What this browser implements across the four credential types.">
+        <button @onclick="CheckSupport">Check</button>
+    </DemoCard>
+
+    <DemoCard Title="Store a password" Api="Credentials.StorePassword"
+              Description="Hands a username/password pair to the browser's password manager, which decides for itself whether to prompt.">
+        <button @onclick="StorePassword">Store</button>
+    </DemoCard>
+
+    <DemoCard Title="Get a credential" Api="Credentials.Get"
+              Description="Silent mediation: returns a stored credential if there is one, and shows nothing if there is not.">
+        <button @onclick="GetCredential">Get</button>
+    </DemoCard>
+
+    <DemoCard Title="Sign out properly" Api="Credentials.PreventSilentAccess"
+              Description="Without this, the next visit signs the user straight back in.">
+        <button class="secondary" @onclick="SignOut">PreventSilentAccess</button>
+    </DemoCard>
+
+    <DemoCard Title="Federated sign-in" Api="FedCm.Get"
+              Description="Needs a real identity provider serving /.well-known/web-identity - against the placeholder below it returns null.">
+        <button @onclick="FedCmSignIn">Get</button>
+    </DemoCard>
+
+    <DemoCard Title="Wait for an SMS code" Api="WebOtp.Receive"
+              Description="Chromium on Android. Waits 30 seconds for a message whose last line names this origin and carries the code after a #.">
+        <button @onclick="ReceiveOtp" disabled="@_otpPending">Receive</button>
+        <button class="secondary" @onclick="AbortOtp">Abort</button>
+    </DemoCard>
+
+    <DemoCard Title="Wallet credential" Api="DigitalCredentials.IsProtocolSupported"
+              Description="Whether this browser speaks the openid4vp presentation protocol.">
+        <button @onclick="CheckProtocol">openid4vp?</button>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="identity output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    // One receive at a time per WebOtp instance: a second overlapping wait aborts the first, so the
+    // button is held down for as long as one is in flight.
+    private bool _otpPending;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await output.Success("Credentials →", await credentials.IsSupported());
+            await output.Success("PasswordCredential →", await credentials.IsPasswordSupported());
+            await output.Success("FedCm →", await fedCm.IsSupported());
+            await output.Success("WebOtp →", await webOtp.IsSupported());
+            await output.Success("DigitalCredentials →", await digitalCredentials.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task StorePassword()
+    {
+        try
+        {
+            var stored = await credentials.StorePassword("ada@example.com", "correct horse battery staple", "Ada Lovelace");
+            await output.Success("StorePassword →", stored);
+        }
+        catch (Exception ex)
+        {
+            await output.Error("StorePassword failed →", ex.Message);
+        }
+    }
+
+    private async Task GetCredential()
+    {
+        try
+        {
+            var credential = await credentials.Get(new CredentialRequestOptions { Mediation = CredentialMediation.Silent });
+            await output.Success("Get →", credential is null ? "no credential" : $"{credential.Type}: {credential.Id}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Get failed →", ex.Message);
+        }
+    }
+
+    private async Task SignOut()
+    {
+        try
+        {
+            await credentials.PreventSilentAccess();
+            await output.Success("PreventSilentAccess →", "done");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("PreventSilentAccess failed →", ex.Message);
+        }
+    }
+
+    private async Task FedCmSignIn()
+    {
+        try
+        {
+            var credential = await fedCm.Get(new FedCmOptions
+            {
+                Providers =
+                [
+                    new FedCmProvider { ConfigUrl = "https://idp.example/fedcm.json", ClientId = "butil-sample" }
+                ]
+            });
+
+            await output.Success("FedCm.Get →", credential is null ? "no credential" : $"token of {credential.Token.Length} chars");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("FedCm.Get failed →", ex.Message);
+        }
+    }
+
+    private async Task ReceiveOtp()
+    {
+        // Set before the support check, not after it: the check awaits, and a second click landing in
+        // that gap would start an overlapping wait on the same instance.
+        if (_otpPending) return;
+        _otpPending = true;
+
+        try
+        {
+            if (await webOtp.IsSupported() is false)
+            {
+                await output.Warn("WebOTP is not available here - try Chrome on Android over HTTPS.");
+                return;
+            }
+
+            await output.Info("Waiting up to 30s for an SMS...");
+            var code = await webOtp.Receive(TimeSpan.FromSeconds(30));
+            await output.Success("Receive →", code ?? "no code");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Receive failed →", ex.Message);
+        }
+        finally
+        {
+            _otpPending = false;
+        }
+    }
+
+    private async Task AbortOtp()
+    {
+        try
+        {
+            await output.Success("Abort →", await webOtp.Abort());
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Abort failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckProtocol()
+    {
+        try
+        {
+            await output.Success("IsProtocolSupported(openid4vp) →", await digitalCredentials.IsProtocolSupported("openid4vp"));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("IsProtocolSupported failed →", ex.Message);
+        }
+    }
+}

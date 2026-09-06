@@ -1,4 +1,21 @@
+using Boilerplate.Tests.E2E.Infrastructure.Services;
+
 namespace Boilerplate.Tests.E2E.Infrastructure;
+
+/// <summary>
+/// The demo apps as platform-agnostic identities; which platform carries an app, and how to reach it there, is the
+/// <see cref="IAppOpener"/>s' knowledge.
+/// </summary>
+public enum App
+{
+    AdminPanel,
+    AdminPanelWasmStandalone,
+    Todo,
+    TodoAot,
+    TodoSmall,
+    TodoOffline,
+    Sales,
+}
 
 /// <summary>
 /// The always-on demo apps that .github/workflows/{admin-sample,todo-sample,sales-module-demo}.cd.yml build from this
@@ -34,7 +51,7 @@ public static class DeployedApps
     public const string TodoApi = "https://todo-api.bitplatform.dev/";
 
     /// <summary>
-    /// The API an app talks to, for the tests that reach the backend directly through <see cref="TestHost"/>. The
+    /// The API an app talks to, for the tests that call it directly through <see cref="DeployedApiClientProvider"/>. The
     /// admin and todo apps share one standalone API each, while Sales' API is integrated into the app itself.
     /// </summary>
     public static string ApiOf(App app) => app switch
@@ -48,7 +65,7 @@ public static class DeployedApps
     public const string TodoAndroidAppId = "com.bitplatform.Todo.Template";
     public const string AdminPanelAndroidAppId = "com.bitplatform.AdminPanel.Template";
 
-    /// <summary>Velopack app ids of the published Windows apps, used by <see cref="HybridAppConnector.LaunchWindowsApp"/>.</summary>
+    /// <summary>Velopack app ids of the published Windows apps, used by <see cref="IPlaywrightExtensions.LaunchWindowsApp"/>.</summary>
     public const string TodoWindowsAppId = "TodoSample.Client.Windows";
     public const string AdminPanelWindowsAppId = "AdminPanel.Client.Windows";
     public const string SalesWindowsAppId = "SalesModule.Client.Windows";
