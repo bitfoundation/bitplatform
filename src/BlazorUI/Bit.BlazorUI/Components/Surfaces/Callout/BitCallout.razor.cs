@@ -47,6 +47,11 @@ public partial class BitCallout : BitComponentBase
     /// <remarks>
     /// The alignment is applied before the callout is kept within the screen, so a callout that would hang
     /// off an edge is still slid back onto it, and the arrow keeps pointing at the anchor either way.
+    /// <br />
+    /// Only Start, Center and End are meaningful here: which side a callout is placed on is settled by the
+    /// room it finds, so the axis it is aligned on is not known until it is opened, and a physical alignment
+    /// has no meaning on the vertical one. The physical pair therefore aligns to the start, exactly as
+    /// leaving this unset does.
     /// </remarks>
     [Parameter] public BitSideAlignment? Alignment { get; set; }
 

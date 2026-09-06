@@ -10,8 +10,9 @@ public sealed class BitChartTitleOptions
     /// Which edge of the chart the title is drawn against (default is the top).
     /// </summary>
     /// <remarks>
-    /// A chart is laid out physically, so only Top, Bottom, Left and Right are meaningful here; any other side
-    /// leaves the title at the top.
+    /// A title is a band across the chart rather than a column beside it, so only Top and Bottom are meaningful
+    /// here; every other side, the physical pair included, leaves the title at the top. Use <see cref="Align"/>
+    /// to move it along the edge it is drawn against.
     /// </remarks>
     public BitSide Position { get; set; } = BitSide.Top;
     public BitChartAlign Align { get; set; } = BitChartAlign.Center;

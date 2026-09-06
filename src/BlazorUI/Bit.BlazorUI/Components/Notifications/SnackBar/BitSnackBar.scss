@@ -394,11 +394,12 @@
 // The physical corners and the vertically centred stacks. A physical stack cannot span the screen and let
 // align-items pick its side the way the logical ones do - flex-start is the right edge in RTL - so it is
 // pinned by the physical property and shrunk to its content instead, which keeps it on the same side of the
-// screen in both reading directions. max-width on .bit-snb still caps how wide it may grow.
+// screen in both reading directions. max-width on .bit-snb still caps how wide it may grow. Which side its
+// items sit on within it is settled at the end of the block, by a margin rather than by align-items, for the
+// same reason.
 .bit-snb-tlf {
     width: auto;
     right: auto;
-    align-items: flex-start;
     top: var(--bit-snb-off-block);
     left: var(--bit-snb-off-inline);
     --bit-snb-ent: bit-snb-ent-t;
@@ -407,7 +408,6 @@
 .bit-snb-trg {
     width: auto;
     left: auto;
-    align-items: flex-end;
     top: var(--bit-snb-off-block);
     right: var(--bit-snb-off-inline);
     --bit-snb-ent: bit-snb-ent-t;
@@ -416,7 +416,6 @@
 .bit-snb-blf {
     width: auto;
     right: auto;
-    align-items: flex-start;
     left: var(--bit-snb-off-inline);
     bottom: var(--bit-snb-off-block);
 }
@@ -424,7 +423,6 @@
 .bit-snb-brg {
     width: auto;
     left: auto;
-    align-items: flex-end;
     right: var(--bit-snb-off-inline);
     bottom: var(--bit-snb-off-block);
 }
@@ -448,7 +446,6 @@
     top: 50%;
     width: auto;
     right: auto;
-    align-items: flex-start;
     transform: translateY(-50%);
     left: var(--bit-snb-off-inline);
 }
@@ -457,7 +454,6 @@
     top: 50%;
     width: auto;
     left: auto;
-    align-items: flex-end;
     transform: translateY(-50%);
     right: var(--bit-snb-off-inline);
 }
@@ -467,4 +463,21 @@
     left: 50%;
     align-items: center;
     transform: translate(-50%, -50%);
+}
+
+// A stack shrunk to its content is only as wide as its widest item, so a shorter one has room to slide inside
+// it, and align-items would hand that room to the reading direction - the very flip these positions are named
+// to avoid. The cross axis takes no left/right (that pair is justify-* only), so the item is pushed against the
+// edge the stack is pinned to by the physical margin opposite it, which absorbs the free space before any
+// alignment is applied. The logical stacks keep align-items: they are the ones meant to turn around.
+.bit-snb-tlf > .bit-snb-itm,
+.bit-snb-blf > .bit-snb-itm,
+.bit-snb-clf > .bit-snb-itm {
+    margin-right: auto;
+}
+
+.bit-snb-trg > .bit-snb-itm,
+.bit-snb-brg > .bit-snb-itm,
+.bit-snb-crg > .bit-snb-itm {
+    margin-left: auto;
 }

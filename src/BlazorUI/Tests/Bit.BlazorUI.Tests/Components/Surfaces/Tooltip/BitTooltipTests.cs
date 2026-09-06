@@ -1556,6 +1556,67 @@ public class BitTooltipTests : BunitTestContext
         Assert.IsTrue(rtl.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-lft"));
     }
 
+    // The physical half of the alignment is the escape hatch for a tooltip that must not turn around: above
+    // or below its anchor it lands on the same corner in either direction. Beside its anchor the free axis is
+    // the vertical one, which has no left or right, so it is centred along it the way an unset alignment is.
+    [DataTestMethod]
+    [DataRow(BitSide.Top, BitSideAlignment.Left, "bit-ttp-tlf")]
+    [DataRow(BitSide.Top, BitSideAlignment.Right, "bit-ttp-trg")]
+    [DataRow(BitSide.Bottom, BitSideAlignment.Left, "bit-ttp-blf")]
+    [DataRow(BitSide.Bottom, BitSideAlignment.Right, "bit-ttp-brg")]
+    [DataRow(BitSide.Left, BitSideAlignment.Left, "bit-ttp-lft")]
+    [DataRow(BitSide.Left, BitSideAlignment.Right, "bit-ttp-lft")]
+    [DataRow(BitSide.Right, BitSideAlignment.Left, "bit-ttp-rgt")]
+    [DataRow(BitSide.Right, BitSideAlignment.Right, "bit-ttp-rgt")]
+    public void BitTooltipShouldKeepAPhysicalAlignmentInBothDirections(BitSide side, BitSideAlignment alignment, string expectedClass)
+    {
+        var ltr = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Side, side);
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        var rtl = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Side, side);
+            parameters.Add(p => p.Alignment, alignment);
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        Assert.IsTrue(ltr.Find(".bit-ttp-wrp").ClassList.Contains(expectedClass));
+        Assert.IsTrue(rtl.Find(".bit-ttp-wrp").ClassList.Contains(expectedClass));
+    }
+
+    // The logical sides beside the anchor are the same crossing read against the direction: the physical
+    // alignment still means nothing on the vertical axis, and the side is the half that turns around.
+    [DataTestMethod]
+    [DataRow(BitSide.Start, BitSideAlignment.Left, "bit-ttp-lft", "bit-ttp-rgt")]
+    [DataRow(BitSide.Start, BitSideAlignment.Right, "bit-ttp-lft", "bit-ttp-rgt")]
+    [DataRow(BitSide.End, BitSideAlignment.Left, "bit-ttp-rgt", "bit-ttp-lft")]
+    [DataRow(BitSide.End, BitSideAlignment.Right, "bit-ttp-rgt", "bit-ttp-lft")]
+    public void BitTooltipShouldCenterAPhysicalAlignmentBesideItsAnchor(BitSide side, BitSideAlignment alignment, string ltrClass, string rtlClass)
+    {
+        var ltr = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Side, side);
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        var rtl = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Side, side);
+            parameters.Add(p => p.Alignment, alignment);
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        Assert.IsTrue(ltr.Find(".bit-ttp-wrp").ClassList.Contains(ltrClass));
+        Assert.IsTrue(rtl.Find(".bit-ttp-wrp").ClassList.Contains(rtlClass));
+    }
+
 
 
     [TestMethod]

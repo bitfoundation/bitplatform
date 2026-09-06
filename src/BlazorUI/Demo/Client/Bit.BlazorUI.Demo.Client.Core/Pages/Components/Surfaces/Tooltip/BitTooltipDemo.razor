@@ -554,9 +554,11 @@
             both vocabularies: Start and End are named for the reading order, so a tooltip meant to follow
             the text - a hint beside a field, say - lands on the side the reader starts at in either
             direction; Left and Right are named for the screen and stay where they are put, which is what a
-            tooltip aimed at the edge of a fixed layout wants. <b>Alignment</b> is always logical, so a
-            tooltip above or below its anchor turns around with the text while one beside it reads top to
-            bottom in both.
+            tooltip aimed at the edge of a fixed layout wants. <b>Alignment</b> carries both vocabularies too:
+            Start and End turn a tooltip above or below its anchor around with the text, and Left and Right
+            keep it on the same corner in either direction. A tooltip beside its anchor is aligned on the
+            vertical axis, which reads top to bottom in both and has no left or right, so there the physical
+            pair centres it.
         </div>
         <br />
         <div class="tooltips-container">
@@ -580,6 +582,17 @@
 
             <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Side="BitSide.Start"
                         Text="سمت شروعِ لنگر">
+                <BitButton Variant="BitVariant.Outline">Start</BitButton>
+            </BitTooltip>
+        </div>
+        <div class="tooltips-container row spaced" style="padding-inline:7rem">
+            <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Alignment="BitSideAlignment.Left"
+                        Text="ترازِ لبهٔ چپ">
+                <BitButton Variant="BitVariant.Outline">Left</BitButton>
+            </BitTooltip>
+
+            <BitTooltip Dir="BitDir.Rtl" DefaultIsShown="true" Alignment="BitSideAlignment.Start"
+                        Text="ترازِ لبهٔ شروع">
                 <BitButton Variant="BitVariant.Outline">Start</BitButton>
             </BitTooltip>
         </div>

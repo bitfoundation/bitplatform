@@ -9,7 +9,7 @@ public partial class BitTooltipDemo
             Name = "Alignment",
             Type = "BitSideAlignment",
             DefaultValue = "BitSideAlignment.Center",
-            Description = "Where along Side the tooltip lines up with its anchor. The axis is the one the side leaves free: a tooltip above or below its anchor is aligned horizontally, one beside it vertically. It is always logical, so an alignment on the horizontal axis follows the reading direction while one on the vertical axis reads top to bottom in either.",
+            Description = "Where along Side the tooltip lines up with its anchor. The axis is the one the side leaves free: a tooltip above or below its anchor is aligned horizontally, one beside it vertically. Start and End are logical, so an alignment on the horizontal axis follows the reading direction while one on the vertical axis reads top to bottom in either. Left and Right are physical and keep a tooltip above or below its anchor on the same side of the screen in both reading directions; beside the anchor they center it.",
             LinkType = LinkType.Link,
             Href = "#side-alignment-enum"
         },
@@ -383,6 +383,18 @@ public partial class BitTooltipDemo
                     Name = "End",
                     Value = "2",
                     Description = "Lined up with the end of the side: the right edge in LTR (the left in RTL) for a surface above or below its anchor, the bottom edge for one beside it."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "3",
+                    Description = "Lined up with the left edge, in both reading directions. It names a side of the screen, so it is only meaningful for a surface above or below its anchor; one beside its anchor is aligned on the vertical axis, which has no left, and is centered along it instead."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "4",
+                    Description = "Lined up with the right edge, in both reading directions. It names a side of the screen, so it is only meaningful for a surface above or below its anchor; one beside its anchor is aligned on the vertical axis, which has no right, and is centered along it instead."
                 }
             ]
         },
@@ -1032,6 +1044,16 @@ private readonly List<BitDropdownItem<BitSideAlignment>> tooltipAlignmentList = 
 
 <BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Side=""BitSide.Start""
             Text=""سمت شروعِ لنگر"">
+    <BitButton Variant=""BitVariant.Outline"">Start</BitButton>
+</BitTooltip>
+
+<BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Alignment=""BitSideAlignment.Left""
+            Text=""ترازِ لبهٔ چپ"">
+    <BitButton Variant=""BitVariant.Outline"">Left</BitButton>
+</BitTooltip>
+
+<BitTooltip Dir=""BitDir.Rtl"" DefaultIsShown=""true"" Alignment=""BitSideAlignment.Start""
+            Text=""ترازِ لبهٔ شروع"">
     <BitButton Variant=""BitVariant.Outline"">Start</BitButton>
 </BitTooltip>";
 }

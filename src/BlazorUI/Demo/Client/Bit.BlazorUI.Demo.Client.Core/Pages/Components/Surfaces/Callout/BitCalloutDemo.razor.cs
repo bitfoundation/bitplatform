@@ -9,7 +9,7 @@ public partial class BitCalloutDemo
             Name = "Alignment",
             Type = "BitSideAlignment?",
             DefaultValue = "null",
-            Description = "How the callout is lined up with its anchor along the axis it is not placed on. It defaults to Start.",
+            Description = "How the callout is lined up with its anchor along the axis it is not placed on. It defaults to Start, and only Start, Center and End are meaningful here: the physical pair aligns to the start, since the axis the callout is aligned on is not known until it is opened.",
             LinkType = LinkType.Link,
             Href = "#side-alignment-enum"
         },
@@ -600,6 +600,18 @@ public partial class BitCalloutDemo
                     Name = "End",
                     Value = "2",
                     Description = "Lined up with the end of the side: the right edge in LTR (the left in RTL) for a surface above or below its anchor, the bottom edge for one beside it."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "3",
+                    Description = "Lined up with the left edge, in both reading directions. The callout does not honor it: which side it is placed on is settled by the room it finds, so it aligns to the start instead."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "4",
+                    Description = "Lined up with the right edge, in both reading directions. The callout does not honor it: which side it is placed on is settled by the room it finds, so it aligns to the start instead."
                 }
             ]
         },
