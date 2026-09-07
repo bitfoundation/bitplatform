@@ -24,11 +24,22 @@ namespace ButilTests.Manual;
 internal static class Program
 {
     /// <summary>
-    /// Butil services <see cref="ConsumerComponent"/> injects - trimming must keep these, and must remove
-    /// every other <see cref="ButilServiceAttribute"/> class, since this list is the whole of what the
-    /// project references.
+    /// The Butil services this project references - trimming must keep these, and must remove every other
+    /// <see cref="ButilServiceAttribute"/> class.
     /// </summary>
-    private static readonly string[] MustSurvive = ["Clipboard", "Cookie", "Geolocation", "LocalStorage", "Window"];
+    /// <remarks>
+    /// Two sources, and both are references a trimmer has to honour: <see cref="ConsumerComponent"/> injects
+    /// nine of them the way a razor <c>@inject</c> would, and <see cref="CancellationContract"/> constructs
+    /// <c>DigitalCredentials</c>, <c>Fetch</c> and <c>WebOtp</c> directly to check the handles they put on the
+    /// wire. So the trimmed run measures a slightly larger consumer than the injected nine alone - the
+    /// alternative, checking that contract from a project that does not reference the library, is not a thing
+    /// that exists.
+    /// </remarks>
+    private static readonly string[] MustSurvive =
+    [
+        "Canvas", "Clipboard", "Cookie", "DigitalCredentials", "Dom", "Fetch", "Geolocation", "LocalStorage",
+        "Streams", "WebOtp", "WebRtc", "Window"
+    ];
 
     /// <summary>
     /// Where the untrimmed run records the service roster and the interop contract for the trimmed run to
@@ -128,7 +139,7 @@ internal static class Program
             // Every survivor, not a hand-picked sample of the ones expected to go: a sampled list only ever
             // fails for the names someone thought to put in it, so a service that starts surviving for a
             // reason nobody anticipated - a new unconditional reference, a DynamicDependency added in
-            // passing - goes unreported. ConsumerComponent references exactly MustSurvive, so anything else
+            // passing - goes unreported. This project references exactly MustSurvive, so anything else
             // still here is either a trimming regression or a reference added without updating that list.
             var unexpected = discoveredNames.Except(MustSurvive, StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToArray();
             if (unexpected.Length > 0)
@@ -194,6 +205,14 @@ internal static class Program
         Console.WriteLine($"  {lazyPassed} checks passed, {lazyFailed} failed");
         Console.WriteLine();
 
+        // The other half of the interop contract: not which members survive, but which arguments the
+        // cancellable APIs put on the wire. Checkable without a browser, and only here - the APIs it covers
+        // all prompt, so no headless test can reach them.
+        Console.WriteLine("--- cancellation contract ---");
+        var (cancellationPassed, cancellationFailed) = await CancellationContract.Run(failures);
+        Console.WriteLine($"  {cancellationPassed} checks passed, {cancellationFailed} failed");
+        Console.WriteLine();
+
         Console.WriteLine("--- activation ---");
         await using var provider = services.BuildServiceProvider();
         // CreateAsyncScope, not CreateScope: several Butil services implement only IAsyncDisposable, and
@@ -238,9 +257,20 @@ internal static class Program
     /// Types the trimmer removed entirely are skipped, because that is the point of the exercise - only a
     /// type that survived while losing members it is reflected over is a defect.
     /// </remarks>
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Looking a type up by name and finding it gone is exactly the outcome this harness measures.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2057",
+        Justification = "Looking a type up by name and finding it gone is exactly the outcome this harness measures.")]
     private static void VerifyInteropContract(Assembly assembly, bool trimmed, InteropManifest? manifest, string? manifestError, string[] serviceNames, List<string> failures)
     {
-        var contracts = InteropContract.Capture(assembly, ConsumerComponent.ExercisedPayloadTypes);
+        // The internal payload roots are looked up by name because nothing outside Bit.Butil can name them,
+        // and one that is simply gone from a trimmed assembly is dropped rather than reported: a type the
+        // trimmer removed outright is the feature working, the same rule Verify applies below.
+        var internalRoots = ConsumerComponent.ExercisedInternalPayloadTypeNames
+            .Select(assembly.GetType)
+            .OfType<Type>();
+
+        var contracts = InteropContract.Capture(assembly, [.. ConsumerComponent.ExercisedPayloadTypes, .. internalRoots]);
 
         if (trimmed is false)
         {
@@ -285,7 +315,7 @@ internal static class Program
     /// </summary>
     /// <remarks>
     /// Every other check here starts from the attribute, so a class that simply never got one is invisible
-    /// to all of them: the report still says "71 of 71 registered, PASS" while consumers hit "Cannot provide
+    /// to all of them: the report still says "115 of 115 registered, PASS" while consumers hit "Cannot provide
     /// a value for property" at runtime. That is the failure mode reflection-based registration introduces -
     /// there is no central <c>AddScoped&lt;T&gt;()</c> list whose absence a reviewer would notice - so it is
     /// the one thing this harness has to find without being told the answer.

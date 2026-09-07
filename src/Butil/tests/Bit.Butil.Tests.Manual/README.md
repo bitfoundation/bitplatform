@@ -17,16 +17,28 @@ non-zero when the outcome does not match what it expects.
 ## What it exercises
 
 [`ConsumerComponent`](ConsumerComponent.cs) stands in for a consumer's Blazor component. It injects
-`LocalStorage`, `Clipboard`, `Cookie`, `Window` and `Geolocation` through `[Inject]` properties and
+`LocalStorage`, `Clipboard`, `Cookie`, `Window`, `Geolocation`, `Canvas`, `Dom`, `Streams` and `WebRtc`
+through `[Inject]` properties and
 resolves them through the **non-generic** `GetRequiredService(Type)` - the same shape razor's `@inject`
 produces. That detail is the whole point: `@inject` references a service's *type* and never its
 *constructor*, and `GetRequiredService<T>()` would annotate the type argument with `PublicConstructors`
 and preserve the constructor by itself, quietly hiding the failure this project exists to catch.
 
 Its calls deliberately cross the interop boundary in both directions: DTO-returning APIs
-(`Cookie.GetAll`, `Geolocation.GetCurrentPosition`, `Window.GetLocationBar`) and a DOM subscription
-(`Window.SubscribeEvent`), which drags in the internal `DomEventsInterop` and its `[JSInvokable]`
-callbacks. Everything else in Bit.Butil is untouched, so a trimmed publish should drop it.
+(`Cookie.GetAll`, `Geolocation.GetCurrentPosition`, `Window.GetLocationBar`, `Canvas.GetSize`) and a DOM
+subscription (`Window.SubscribeEvent`), which drags in the internal `DomEventsInterop` and its
+`[JSInvokable]` callbacks. The last four services are there for the interop contract rather than for the
+registration check, each for a payload shape the others do not reach: an options object serialized on the
+way *out* (`Canvas.DrawImage`'s `CanvasDrawOptions`), a DTO reached through a handle rather than returned
+from the call (`ReadableStreamHandle.Read`'s `StreamChunk`), one that arrives as an array of records
+carrying a dictionary (`PeerConnectionHandle.GetStats`'s `RtcStat`), and two the library keeps **internal**
+and wraps before a caller sees them (`DomNodeDto`, `StreamedResponseDto`), so only its own
+`DynamicDependency` keeps their members alive.
+
+[`CancellationContract`](CancellationContract.cs) adds three more references - `WebOtp`,
+`DigitalCredentials` and `Fetch` - which it constructs directly rather than injecting, because what it
+checks is the arguments they put on the wire. So a trimmed publish of this harness keeps twelve services,
+not nine; everything else in Bit.Butil is untouched and should be dropped.
 
 ## The checks
 
@@ -34,7 +46,7 @@ callbacks. Everything else in Bit.Butil is untouched, so a trimmed publish shoul
 public constructor; the services nothing references must be gone.
 
 That check starts from the attribute, so on its own it is blind to a service class that never got one -
-the report would happily say "71 of 71 registered" while consumers hit *Cannot provide a value for
+the report would happily say "115 of 115 registered" while consumers hit *Cannot provide a value for
 property* at runtime. So the harness also looks for service classes by **shape**: a public, constructible
 class taking an `IJSRuntime`. Any such class without `[ButilService]` is a failure. (`ButilStorage` is
 excluded: it takes an `IJSRuntime` too, but it is the shared base of `LocalStorage` and `SessionStorage`
@@ -112,8 +124,8 @@ and this repository never does, plus the artifacts the whole feature rests on:
   into the `bit-butil.js` the package ships, each `modules/<name>.js` is byte-for-byte the bundle its own
   dependency closure assembles to, every chunk carries the guard that makes a second evaluation a no-op and
   appears in the bundle exactly once, and the manifest lists every module after the modules it depends on;
-- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 8-module,
-  9 KB one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
+- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 18-module,
+  36,779-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
   evaluated under Node in a browser-like sandbox and has to register exactly the expected `BitButil`
   namespaces, none of them empty, and register nothing a second time (the sentinel each namespace is marked
   with has to survive re-evaluation - a guard that stopped holding would reset a module's listener
@@ -129,15 +141,21 @@ a checkout that can produce the artifacts under test can always run them.
 **Script scanning** ([`ScriptScanning.cs`](ScriptScanning.cs)). Everything above rests on ILLink having
 run. A consumer publishing untrimmed has no trimmed assembly, and an *untrimmed* `Bit.Butil.dll` names every
 module the library has - so the signal has to come from somewhere else: the Bit.Butil types the app's own
-assemblies reference (`BitButilScriptScan`), and the modules its csproj names outright
+assemblies reference (`BitButilScriptScan`, which the trimming switch turns on by itself), and the modules
+its csproj names outright
 (`BitButilScriptModule`). These check that the somewhere else arrives at the same place. Untrimmed runs only,
 since the map is a question about the library as shipped rather than about what one app's trimming left.
 
 - **the class-to-module map**, built from `Bit.Butil.dll` by walking each type's IL for interop literals and
   closing over the types it can reach. Every module the library calls has to be reachable from some class -
-  one that is not is a module no scan could ever include - and the map, asked about the five classes
-  `ConsumerComponent` injects, has to answer **exactly `MustSurviveModules`**: the same set ILLink
-  independently arrives at for the same code. That equality is the point of the file. It is also a real test
+  one that is not is a module no scan could ever include - and the map, asked about the classes
+  `ConsumerComponent` injects, has to answer **exactly `ScanReachableModules`**: what ILLink independently
+  arrives at for the same code (`MustSurviveModules`), plus the two modules a *reference* closure reaches
+  where a *call* closure does not - `Streams` hands out a `FetchRequest` carrying an abort signal, and
+  `WebRtc` names the media-stream types, without this project calling either. The two lists are kept apart
+  and each compared exactly, rather than the check being loosened to a subset test that would stop noticing
+  either direction; over-including is the safe one (bytes, not a broken app), and it is the *only* one this
+  project is allowed to be wrong in. That equality is the point of the file. It is also a real test
   of the closure rather than a restatement of it: `LocalStorage` carries no interop literals of its own (they
   are on the `ButilStorage` base class) and `Window` reaches `events` only through an internal interop class
   called from inside a compiler-generated async state machine, so anything less than the full reference
@@ -167,17 +185,30 @@ is allowed to use, that a csproj list is *added* to what the others found rather
 assets removed from the build list are also removed from the publish list, and that a name meaning nothing
 fails the build. So these publish a real consumer app - a two-class web app next door, published in seconds
 rather than the minutes a WebAssembly one takes - and read the JavaScript back out of its publish output.
-Nine `dotnet publish` runs, about fifteen seconds in total, untrimmed runs only:
+Eleven `dotnet publish` runs and one `dotnet msbuild`, about fifteen seconds in total, untrimmed runs only:
 
 - with **no signal at all** the full bundle is published - the case that has to keep working for every
-  consumer who never asked for any of this;
+  consumer who never asked for any of this. Reached by setting `BitButilScriptScan=None`, since the switch
+  brings the scan with it;
+- the **switch on its own** - `BitButilTrimScripts=true` and no scan mode named beside it - scans the app and
+  reaches the same answer the explicit `TypeReferences` below does, which is what makes one property enough;
 - a **scan** trims the bundle to the modules the fixture's two classes need; `TypeNames` finds at least those;
-- a **csproj module list** trims it on its own, with no scan and no ILLink;
+- a **csproj module list** trims it on its own, with the scan turned off and no ILLink;
 - a csproj list **plus** a scan produces the union of the two, which is the whole meaning of "additive";
 - **lazy scripts** publish one file per reachable module and no bundle at all;
 - `BitButilTrimScripts=false` publishes the full bundle even when given a scan and a list to work from;
+- a project that **does not publish an app's static web assets** - a Razor class library, a hybrid head, the
+  shape a shared `Directory.Build.props` reaches by accident - leaves the JavaScript alone, because its
+  reference closure is not the app's. The fixture stands in for one by unsetting the two things the SDK sets
+  on a project that does publish an app;
 - a **misspelled module name**, and a **scan mode that is not one of the three**, each fail the publish with
   the error naming what was wrong.
+
+The `dotnet msbuild` run is the twelfth, and it is not a publish: it drives the two trimming targets by name
+so they land in a project instance where nothing else has run, which is the position the SDK puts them in on
+a referenced project. The untrimmed `Bit.Butil.dll` has to resolve there too - `@(ReferenceCopyLocalPaths)`
+is only populated because the target names `ResolveReferences` itself - and the scan reporting what it read
+is the assertion.
 
 Every bundle assertion reads the published file and asks which chunk guards are in it - the same thing the
 browser would find - rather than comparing byte counts. Each scenario also asserts the per-module files:
@@ -197,6 +228,21 @@ scripts off nothing may be imported. Runs in both modes of the harness, so the l
 survive trimming through the runtime override alone (this project never sets the `BitButilLazyScripts`
 switch).
 
+**Cancellation contract** ([`CancellationContract.cs`](CancellationContract.cs)). The other half of the
+interop contract: not which members survive, but which arguments the cancellable APIs put on the wire.
+`WebOtp` and `DigitalCredentials` each hand JavaScript an instance handle *and* a per-call one, and this
+pins why. A token that is **already** cancelled runs its registration synchronously, so its abort is
+dispatched *before* the call it cancels; with one handle per instance that abort would find nothing
+pending and be dropped, and the browser would open an SMS prompt or a wallet chooser for a request the
+caller had already given up on. So the checks are: the abort comes first and names the same per-call
+handle as the call; a second call gets a handle of its own; `Abort()` passes none, ending everything the
+instance has in flight; an uncancellable token registers nothing at all; an empty code from `Receive` is
+reported as `null`; and a `Fetch.Send` whose token is already cancelled is never dispatched.
+
+Neither API can be driven headlessly - both prompt, and both are Chromium-on-Android in practice - so the
+JavaScript half is exercised in the browser only through what these argument shapes guarantee. It lives in
+`webOtp.ts`, `digitalCredentials.ts` and the registry they share, `abortable.ts`.
+
 ## How it knows which run it is
 
 From `trimmed-publish.marker`, which the csproj copies to the **publish** output only (never to the build
@@ -212,12 +258,17 @@ over-reports badly: `ScrollOptions` and `WindowFeatures` belong to `Window` meth
 calls, so the trimmer strips them to shells - correct behaviour that looks like a defect. Only a type on
 a genuinely exercised code path can be asserted on.
 
+The library's `internal` payload types cannot be named with a `typeof` from out here at all, so they are
+listed as strings in `ConsumerComponent.ExercisedInternalPayloadTypeNames` and resolved against the
+assembly under test. One that is simply gone from a trimmed assembly is dropped rather than reported -
+the same "removed entirely is not a defect" rule the verification already applies.
+
 ## Running it
 
 Run both from this folder, so they share the manifest:
 
 ```bash
-# untrimmed: all 71 [ButilService] classes present; writes interop-manifest.txt
+# untrimmed: all 115 [ButilService] classes present; writes interop-manifest.txt
 dotnet run -c Release
 
 # trimmed, TrimMode=full (what Blazor WebAssembly uses); checks against the manifest
@@ -233,21 +284,26 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 725,504 bytes | 118,272 bytes |
-| types in assembly | 909 | 149 |
-| `[ButilService]` discovered / registered | 71 / 71 | 5 / 5 |
-| interop contract | 46 types captured | 10 checked, 36 trimmed away, 0 problems |
-| JavaScript modules called | 77 of 79 | 6 of 79 (clipboard, cookie, events, geolocation, storage, window) |
-| `bit-butil.js` a publish would ship | 140,547 bytes, all 79 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 6.5% |
-| lazy scripts would download | 188,283 bytes over 77 files | 11,940 bytes over 6 files |
+| `Bit.Butil.dll` | 1,252,352 bytes | 160,256 bytes |
+| types in assembly | 1,421 | 207 |
+| `[ButilService]` discovered / registered | 115 / 115 | 12 / 12 |
+| interop contract | 85 types captured | 19 checked, 66 trimmed away, 0 problems |
+| JavaScript modules called | 121 of 124 | 13 of 124 (canvas, clipboard, cookie, digitalCredentials, dom, events, fetch, geolocation, storage, streams, webOtp, webRtc, window) |
+| `bit-butil.js` a publish would ship | 280,169 bytes, all 124 modules | 36,779 bytes, 18 modules (10,789 gzip / 9,582 brotli) - 13.1% |
+| lazy scripts would download | 492,370 bytes over 121 files | 58,520 bytes over 13 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
-| script-scanning checks | 37 / 37 | not run |
-| script-publishing checks | 26 / 26 (9 publishes, ~15s) | not run |
+| script-scanning checks | 41 / 41 | not run |
+| script-publishing checks | 33 / 33 (11 publishes, ~30s) | not run |
 | lazy-loader checks | 16 / 16 | 16 / 16 |
+| cancellation-contract checks | 24 / 24 | 24 / 24 |
 
-The two new rows are untrimmed-only by design: the class-to-module map is a question about the library as
-shipped, and the publish fixture is published by this process, so a trimmed run would publish the same app
-to the same answers at twice the cost.
+The two "not run" rows are untrimmed-only by design: the class-to-module map is a question about the
+library as shipped, and the publish fixture is published by this process, so a trimmed run would publish
+the same app to the same answers at twice the cost.
+
+Twelve services survive rather than the nine `ConsumerComponent` injects because `CancellationContract`
+constructs `WebOtp`, `DigitalCredentials` and `Fetch` directly - a reference the trimmer honours the same
+as an injected one, which is why they are in `MustSurvive` and their modules in `MustSurviveModules`.
 
 The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
 `GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code.
@@ -307,8 +363,8 @@ assembly comes out at 30,720 bytes and 36 types.
   what a consumer would see as `BitButil.x is undefined`), and *packed into the folder the consumer-side
   targets read them from* (Bit.Butil.csproj and buildTransitive/Bit.Butil.targets disagree about where the
   chunks, the manifest or the task live, which breaks every consumer's publish and no build in this repo).
-- **`script scanning: the classes ConsumerComponent injects map to exactly the modules ILLink leaves ...`** -
-  the class-to-module map and the trimmer have stopped agreeing about the same five classes. A module the map
+- **`script scanning: the classes ConsumerComponent injects map to exactly the modules a reference closure ...`** -
+  the class-to-module map and `ScanReachableModules` have stopped agreeing about the same classes. A module the map
   *misses* is the serious direction: an untrimmed consumer would publish a bundle without JavaScript their app
   calls. Usually the reference closure stopped following something - a base class, an internal interop helper,
   a generic call, or the compiler-generated type an `async` method's body actually lives in.
@@ -321,7 +377,7 @@ assembly comes out at 30,720 bytes and 36 types.
 - **`script publishing: ...`** - the MSBuild half. The message names the claim; the ones worth knowing on
   sight are *is added to what the scan found, not used instead of it* (the csproj list has stopped being
   additive - a consumer naming one module would lose everything else), *publishes no per-module files* (the
-  publish asset list is no longer being narrowed, so a bundle-mode app ships all 65 module files - that is
+  publish asset list is no longer being narrowed, so a bundle-mode app ships all 124 module files - that is
   `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
   bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
   every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in
@@ -331,3 +387,9 @@ assembly comes out at 30,720 bytes and 36 types.
   chunks or the MSBuild task, both of which it points at the source tree.
 - **`lazy scripts: ...`** - the lazy loader imported the wrong module, imported twice, did not retry a
   failed import, or imported with lazy scripts off. See `LazyScripts.cs` for the exact expectation.
+
+- **`cancellation contract: ...`** - a cancellable API changed what it hands JavaScript. The abort of an
+  already-cancelled token has to name the *per-call* handle of the call it cancels, and be dispatched
+  before it; `Abort()` has to pass none, so it ends everything the instance has in flight. Getting this
+  wrong opens an SMS prompt or a wallet chooser for a request the caller already gave up on, or cancels
+  the wrong one - neither of which any browser test can catch, since both APIs prompt.

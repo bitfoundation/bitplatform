@@ -1,0 +1,429 @@
+@page "/dom"
+@implements IAsyncDisposable
+@inject Bit.Butil.Dom dom
+
+<PageTitle>Dom - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM &amp; Interaction"
+            Title="Dom"
+            Lead="Finding and creating elements Blazor did not render - querySelector, getElementById, createElement and node traversal - with a bridge back to every ElementReference extension in the library."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector"
+            InjectAs="Dom dom" />
+
+<Callout Type="warning" Title="Not for your own components">
+    Every other DOM API in Butil is anchored to an <code>ElementReference</code>, which means an
+    element your own markup rendered. That boundary exists because reaching into your own components
+    by selector is how Blazor's diffing and your code end up disagreeing about what is on the page -
+    Blazor will re-render over whatever you changed, at a moment you do not control. This is the way
+    out for what the boundary does not cover: a third-party widget, something a script put there, an
+    element you are building to hand to a library.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when there is a document to query, which is any real browser. During prerender/SSR it returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Dom dom
+
+var supported = await dom.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Finding things"
+                 Api="Query / QueryAll / ById / Body / Head / DocumentElement"
+                 Description="An invalid selector answers null rather than throwing: a selector is usually built from something a user or a configuration file supplied, so a bad one is an input error rather than an exceptional condition. QueryAll is a snapshot, not a live list - elements added afterwards are not in it."
+                 Code=@("""
+var widget = await dom.Query(".third-party-widget");
+var all = await dom.QueryAll("[data-role]");
+var byId = await dom.ById("some-id");
+var head = await dom.Head();      // where a stylesheet or a script goes
+""")>
+        <div class="controls">
+            <input @bind="_selector" placeholder="CSS selector" aria-label="selector" />
+            <button @onclick="RunQuery">Query</button>
+            <button class="secondary" @onclick="RunQueryAll">QueryAll</button>
+            <button class="secondary" @onclick="ReadRoots">Body / Head / DocumentElement</button>
+        </div>
+        <div class="playground" data-role="sample">
+            <p data-role="sample">A little markup to search: <b>bold</b>, <i>italic</i>, and <span id="dom-target">a span with an id</span>.</p>
+            <ul data-role="sample"><li>one</li><li>two</li><li>three</li></ul>
+        </div>
+        <DemoConsole @ref="queryOutput" Title="query output" />
+    </DemoSection>
+
+    <DemoSection Title="Building and placing"
+                 Api="Create / Append / Prepend / InsertBefore / AppendTo / Remove"
+                 Description="A created element is not on the page until something appends it. Moving an element that is already somewhere moves it - a node is in one place at a time, so there is no need to remove it first. Appending into one of your own rendered elements is possible but risky: Blazor owns that element's children and its next diff may remove what you put there, so use a container your markup leaves empty."
+                 Code=@("""
+var box = await dom.Create("div");
+await box!.SetAttribute("class", "note");
+await box.SetText("built from C#");
+
+var body = await dom.Body();
+await body!.Append(box);
+
+// SVG needs its namespace, or it renders as nothing:
+var circle = await dom.Create("circle", "http://www.w3.org/2000/svg");
+""")>
+        <div class="controls">
+            <button @onclick="BuildOne">Create and append</button>
+            <button class="secondary" @onclick="BuildMany">Build a list</button>
+            <button class="danger" @onclick="RemoveBuilt">Remove them</button>
+        </div>
+        <div @ref="_host" class="playground" style="min-height:3rem"></div>
+        <DemoConsole @ref="buildOutput" Title="build output" />
+    </DemoSection>
+
+    <DemoSection Title="Walking the tree"
+                 Api="GetParent / GetChildren / GetFirstChild / GetNextSibling / Closest / Matches"
+                 Description="Element-wise, not node-wise: the sibling and child accessors skip text and comment nodes, which is why raw node traversal so rarely does what you meant - the whitespace between two elements in your markup is a node too."
+                 Code=@("""
+var item = await dom.Query("ul[data-role] li");
+var list = await item!.GetParent();
+var second = await item.GetNextSibling();
+var section = await item.Closest("[data-role]");
+var isListItem = await item.Matches("li");
+""")>
+        <div class="controls">
+            <button @onclick="WalkTree">Walk from the first list item</button>
+        </div>
+        <DemoConsole @ref="walkOutput" Title="traversal output" />
+    </DemoSection>
+
+    <DemoSection Title="The bridge back"
+                 Api="AsElementReference"
+                 Description="This is what keeps the surface small: a found or created element becomes an ElementReference, and every element extension in Butil - classes, ARIA, styles, scrolling, layout, events - works on it. Two conditions: the element has to be in the document, and the lookup does not pierce shadow roots. It leans on the convention Blazor's own reference lookup uses, which is covered by a test, so a future change shows up here rather than in your app."
+                 Code=@("""
+var found = await dom.Query("#some-widget");
+var reference = await found!.AsElementReference();
+
+// and now the whole element surface applies:
+await reference!.Value.AddClass("highlighted");
+await reference.Value.SetStyleProperty("outline", "2px solid currentColor");
+var rect = await reference.Value.GetBoundingClientRect();
+""")>
+        <div class="controls">
+            <button @onclick="BridgeToExtensions">Find it, then style it as an ElementReference</button>
+        </div>
+        <DemoConsole @ref="bridgeOutput" Title="bridge output" />
+    </DemoSection>
+
+    <DemoSection Title="Text and HTML"
+                 Api="GetText / SetText / GetHtml / SetHtml"
+                 Description="SetText is safe with any input - markup in it becomes visible characters rather than elements. SetHtml is an injection point: anything from a user, a URL or a server response can carry script. Not a script tag, which will not run, but an onerror on an img, which will. Use SetText for anything you did not write yourself."
+                 Code=@("""
+await handle!.SetText("<b>not bold</b>");   // shows the characters
+await handle.SetHtml("<b>bold</b>");        // parses - only for markup you wrote
+""")>
+        <div class="controls">
+            <input @bind="_content" aria-label="content" />
+            <button @onclick="() => WriteContent(false)">SetText</button>
+            <button class="secondary" @onclick="() => WriteContent(true)">SetHtml</button>
+        </div>
+        <div @ref="_contentHost" class="playground" style="min-height:2.5rem"></div>
+        <DemoConsole @ref="contentOutput" Title="content output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="A handle is not an element">
+    Disposing a handle forgets the element; <code>Remove</code> takes it off the page. A handle to
+    an element that has been removed keeps working - it is simply no longer connected. As a safety
+    net the <code>Dom</code> service releases every handle when its scope is torn down, which
+    likewise leaves the page alone.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when there is a document to query. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Query / QueryAll"
+               Signature="ValueTask<DomHandle?> Query(string selector), ValueTask<DomHandle[]> QueryAll(string selector)"
+               Description="The first match, or all of them as a snapshot. An invalid selector answers null / empty rather than throwing." />
+    <ApiMember Name="ById"
+               Signature="ValueTask<DomHandle?> ById(string elementId)"
+               Description="The element with this id, or null." />
+    <ApiMember Name="Body / Head / DocumentElement"
+               Signature="ValueTask<DomHandle?> Body(), Head(), DocumentElement()"
+               Description="The document's landmarks - head for a stylesheet or script, documentElement for a theme attribute." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<DomHandle?> Create(string tagName, string? namespaceUri = null)"
+               Description="Creates an element, not yet on the page. SVG and MathML need their namespace or they render as nothing." />
+    <ApiMember Name="DomHandle.AsElementReference"
+               Signature="ValueTask<ElementReference?> AsElementReference()"
+               Description="Turns the element into an ElementReference so every element extension works on it. Needs the element to be in the document; does not pierce shadow roots." />
+    <ApiMember Name="DomHandle.Query / QueryAll / Closest / Matches"
+               Signature="ValueTask<DomHandle?> Query(string), ValueTask<DomHandle[]> QueryAll(string), ValueTask<DomHandle?> Closest(string), ValueTask<bool> Matches(string)"
+               Description="Searching inside this element, upwards from it, and testing it." />
+    <ApiMember Name="DomHandle traversal"
+               Signature="ValueTask<DomHandle?> GetParent(), GetFirstChild(), GetLastChild(), GetNextSibling(), GetPreviousSibling(); ValueTask<DomHandle[]> GetChildren()"
+               Description="Element-wise: text and comment nodes are skipped." />
+    <ApiMember Name="DomHandle placement"
+               Signature="ValueTask<bool> Append(DomHandle), Prepend(DomHandle), InsertBefore(DomHandle), AppendTo(ElementReference), Remove()"
+               Description="Moving an element that is already placed moves it. AppendTo puts it inside one of your own rendered elements - which Blazor may later diff away." />
+    <ApiMember Name="DomHandle content"
+               Signature="ValueTask<string> GetText(), GetHtml(); ValueTask<bool> SetText(string), SetHtml(string)"
+               Description="SetText is safe with any input. SetHtml parses, and is an injection point." />
+    <ApiMember Name="DomHandle attributes"
+               Signature="ValueTask<string?> GetAttribute(string); ValueTask<bool> SetAttribute(string, string), RemoveAttribute(string)"
+               Description="Attribute access. SetAttribute is false for a name that is not a valid attribute name." />
+    <ApiMember Name="DomHandle.IsConnected"
+               Signature="ValueTask<bool> IsConnected()"
+               Description="Whether the element is still in the document - false for one created and never appended, and for one since removed." />
+    <ApiMember Name="DomHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Releases the handle. The element is untouched - this forgets it, it does not remove it." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole queryOutput = default!;
+    private DemoConsole buildOutput = default!;
+    private DemoConsole walkOutput = default!;
+    private DemoConsole bridgeOutput = default!;
+    private DemoConsole contentOutput = default!;
+
+    private ElementReference _host;
+    private ElementReference _contentHost;
+    private readonly List<DomHandle> _built = [];
+    private DomHandle? _contentBox;
+
+    private string _selector = "[data-role]";
+    private string _content = "<b>markup</b> from C#";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await dom.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task RunQuery()
+    {
+        try
+        {
+            await using var found = await dom.Query(_selector);
+            if (found is null)
+            {
+                await queryOutput.Warn("Query →", "nothing matched, or the selector is invalid.");
+                return;
+            }
+
+            await queryOutput.Success($"Query(\"{_selector}\") →", $"<{found.TagName}> - \"{Trim(await found.GetText())}\"");
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("Query failed →", ex.Message);
+        }
+    }
+
+    private async Task RunQueryAll()
+    {
+        try
+        {
+            var found = await dom.QueryAll(_selector);
+            await queryOutput.Success($"QueryAll(\"{_selector}\") →", $"{found.Length} match(es): {string.Join(", ", found.Select(f => $"<{f.TagName}>"))}");
+
+            foreach (var handle in found) await handle.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("QueryAll failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadRoots()
+    {
+        try
+        {
+            await using var body = await dom.Body();
+            await using var head = await dom.Head();
+            await using var root = await dom.DocumentElement();
+
+            await queryOutput.Success("Roots →",
+                $"<{body?.TagName}>, <{head?.TagName}>, <{root?.TagName}> (lang=\"{await root!.GetAttribute("lang")}\")");
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("Roots failed →", ex.Message);
+        }
+    }
+
+    private async Task BuildOne()
+    {
+        try
+        {
+            var box = await dom.Create("div");
+            if (box is null)
+            {
+                await buildOutput.Warn("Create returned null - not a valid element name.");
+                return;
+            }
+
+            await box.SetAttribute("class", "field");
+            await box.SetText($"built from C# at {DateTime.Now:HH:mm:ss}");
+
+            var connectedBefore = await box.IsConnected();
+            await box.AppendTo(_host);
+            var connectedAfter = await box.IsConnected();
+
+            _built.Add(box);
+            await buildOutput.Success("Create → append →", $"connected before {connectedBefore}, after {connectedAfter}");
+        }
+        catch (Exception ex)
+        {
+            await buildOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task BuildMany()
+    {
+        try
+        {
+            var list = await dom.Create("ul");
+            if (list is null) return;
+
+            foreach (var text in new[] { "first", "second", "third" })
+            {
+                var item = await dom.Create("li");
+                if (item is null) continue;
+                await item.SetText(text);
+                await list.Append(item);
+                _built.Add(item);
+            }
+
+            await list.AppendTo(_host);
+            _built.Add(list);
+
+            await buildOutput.Success("Built →", $"a list with {(await list.GetChildren()).Length} item(s)");
+        }
+        catch (Exception ex)
+        {
+            await buildOutput.Error("Build failed →", ex.Message);
+        }
+    }
+
+    private async Task RemoveBuilt()
+    {
+        foreach (var handle in _built)
+        {
+            await handle.Remove();
+            await handle.DisposeAsync();
+        }
+
+        var count = _built.Count;
+        _built.Clear();
+        await buildOutput.Log($"Removed {count} element(s) and released their handles.");
+    }
+
+    private async Task WalkTree()
+    {
+        try
+        {
+            await using var item = await dom.Query("ul[data-role] li");
+            if (item is null)
+            {
+                await walkOutput.Warn("Nothing to walk from - the sample markup is above.");
+                return;
+            }
+
+            await using var parent = await item.GetParent();
+            await using var next = await item.GetNextSibling();
+            await using var previous = await item.GetPreviousSibling();
+            await using var section = await item.Closest("[data-role]");
+
+            await walkOutput.Success("From the first <li> →",
+                $"parent <{parent?.TagName}>, next \"{Trim(next is null ? "(none)" : await next.GetText())}\", " +
+                $"previous {(previous is null ? "(none - it is the first)" : "(unexpected)")}, " +
+                $"closest [data-role] is <{section?.TagName}>");
+
+            await walkOutput.Success("Matches →", $"li {await item.Matches("li")}, div {await item.Matches("div")}");
+        }
+        catch (Exception ex)
+        {
+            await walkOutput.Error("Traversal failed →", ex.Message);
+        }
+    }
+
+    private async Task BridgeToExtensions()
+    {
+        try
+        {
+            await using var span = await dom.ById("dom-target");
+            if (span is null)
+            {
+                await bridgeOutput.Warn("The sample span is not on the page.");
+                return;
+            }
+
+            var reference = await span.AsElementReference();
+            if (reference is null)
+            {
+                await bridgeOutput.Warn("AsElementReference returned null - the element cannot carry a reference.");
+                return;
+            }
+
+            // From here on it is an ordinary ElementReference: the whole element surface applies.
+            await reference.Value.SetStyleProperty("outline", "2px solid currentColor");
+            await reference.Value.SetStyleProperty("border-radius", ".25rem");
+            var rect = (await reference.Value.GetClientRects()).FirstOrDefault();
+
+            await bridgeOutput.Success("Bridged →",
+                $"styled through the element extensions; it measures {rect?.Width:0.#} x {rect?.Height:0.#}");
+        }
+        catch (Exception ex)
+        {
+            await bridgeOutput.Error("Bridge failed →", ex.Message);
+        }
+    }
+
+    private async Task WriteContent(bool asHtml)
+    {
+        try
+        {
+            if (_contentBox is null)
+            {
+                _contentBox = await dom.Create("div");
+                if (_contentBox is null) return;
+                await _contentBox.AppendTo(_contentHost);
+            }
+
+            if (asHtml) await _contentBox.SetHtml(_content);
+            else await _contentBox.SetText(_content);
+
+            await contentOutput.Success(asHtml ? "SetHtml →" : "SetText →", await _contentBox.GetHtml());
+        }
+        catch (Exception ex)
+        {
+            await contentOutput.Error("Write failed →", ex.Message);
+        }
+    }
+
+    private static string Trim(string text)
+    {
+        var single = string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        return single.Length > 60 ? single[..60] + "…" : single;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            foreach (var handle in _built) await handle.DisposeAsync();
+            if (_contentBox is not null) await _contentBox.DisposeAsync();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

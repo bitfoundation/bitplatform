@@ -39,7 +39,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             try {
                 const handles = await pick(options);
                 return handles.map((h: any) => {
-                    const id = crypto.randomUUID();
+                    const id = butil.utils.randomUUID();
                     _files[id] = h;
                     return describeFile(id, h);
                 });
@@ -60,7 +60,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
             try {
                 const handle = await pick(options);
-                const id = crypto.randomUUID();
+                const id = butil.utils.randomUUID();
                 _files[id] = handle;
                 return describeFile(id, handle);
             } catch {
@@ -77,7 +77,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
             try {
                 const handle = await pick(options);
-                const id = crypto.randomUUID();
+                const id = butil.utils.randomUUID();
                 _dirs[id] = handle;
                 return { id, name: handle.name, kind: 'directory' };
             } catch {
@@ -90,7 +90,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const entries: any[] = [];
             try {
                 for await (const entry of dir.values()) {
-                    const id = crypto.randomUUID();
+                    const id = butil.utils.randomUUID();
                     if (entry.kind === 'file') _files[id] = entry; else _dirs[id] = entry;
                     entries.push({ id, name: entry.name, kind: entry.kind });
                 }
@@ -165,7 +165,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (!dir?.getFileHandle) return null;
             try {
                 const handle = await dir.getFileHandle(name, { create });
-                const id = crypto.randomUUID();
+                const id = butil.utils.randomUUID();
                 _files[id] = handle;
                 return describeFile(id, handle);
             } catch {

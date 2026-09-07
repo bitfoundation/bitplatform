@@ -348,26 +348,4 @@ public partial class BitLabel : BitComponentBase
 
         base.BuildRenderTree(builder);
     }
-
-
-
-    // The same reading of a tag name as BitElement's: what a name is made of rather than what it must not contain,
-    // since a name the browser refuses throws where the element is built and takes the whole render batch with it.
-    private static bool IsValidElement(string element)
-    {
-        if (char.IsAsciiLetter(element[0]) is false) return false;
-
-        foreach (var @char in element)
-        {
-            if (char.IsAsciiLetterOrDigit(@char)) continue;
-
-            if (@char is '-' or '_' or '.' or ':') continue;
-
-            if (char.IsAscii(@char) is false && char.IsLetterOrDigit(@char)) continue;
-
-            return false;
-        }
-
-        return true;
-    }
 }

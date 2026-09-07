@@ -1,0 +1,9 @@
+description = "Review changes against the project's conventions (Bit.BlazorUI, theming, lifecycle, Mapperly, OData, logging, security). Reports findings only - never modifies code."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/code-reviewer.agent.md}
+
+Scope to review (defaults to the uncommitted changes if empty): {{args}}
+"""

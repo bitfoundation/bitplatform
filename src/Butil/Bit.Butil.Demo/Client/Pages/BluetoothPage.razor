@@ -1,0 +1,568 @@
+@page "/bluetooth"
+@implements IAsyncDisposable
+@inject Bit.Butil.Bluetooth bluetooth
+
+<PageTitle>Bluetooth - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Bluetooth"
+            Lead="Pick a Bluetooth Low Energy device, connect to its GATT server, and read, write or subscribe to its characteristics."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API"
+            InjectAs="Bluetooth bluetooth" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    Web Bluetooth ships in Chromium-based browsers on desktop and Android. Firefox and Safari
+    do not implement it, and on Linux the browser also needs BlueZ. Check
+    <code>IsSupported</code> and <code>GetAvailability</code> before offering the feature, and keep
+    every call inside a try/catch.
+</Callout>
+
+<Callout Type="info" Title="The grant is per service">
+    <code>RequestDevice</code> must run inside a user gesture, and the permission it produces covers
+    only the services the request named. A device picked with no <code>OptionalServices</code> can be
+    connected to and nothing else - every <code>getPrimaryService</code> for an unnamed service is a
+    <code>SecurityError</code>. The defaults below ask for <code>battery_service</code> and
+    <code>device_information</code>, which most peripherals expose.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and availability"
+                 Api="IsSupported / GetAvailability"
+                 Description="IsSupported reports whether navigator.bluetooth exists at all; GetAvailability reports whether this machine has a radio the browser can use, which is the difference between 'your browser cannot' and 'your Bluetooth is off'."
+                 Code=@("""
+@inject Bit.Butil.Bluetooth bluetooth
+
+var supported = await bluetooth.IsSupported();
+var available = await bluetooth.GetAvailability();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Pick a device"
+                 Api="RequestDevice / GetDevices"
+                 Description="RequestDevice opens the browser's chooser and returns a handle to the device the user picked. GetDevices returns the devices this origin was already granted, without a prompt."
+                 Code=@("""
+private BluetoothDevice? _device;
+
+_device = await bluetooth.RequestDevice(new BluetoothRequestOptions
+{
+    AcceptAllDevices = true,
+    OptionalServices = ["battery_service", "device_information"]
+});
+
+// or, without a prompt:
+var granted = await bluetooth.GetDevices();
+""")>
+        <div class="field">
+            <span class="field-label">Optional services (comma separated)</span>
+            <input type="text" @bind="_optionalServices" placeholder="battery_service, device_information" />
+        </div>
+        <div class="field">
+            <span class="field-label">Name prefix filter (blank = accept all devices)</span>
+            <input type="text" @bind="_namePrefix" placeholder="Polar" />
+        </div>
+        <div class="controls">
+            <button @onclick="RequestDevice">RequestDevice</button>
+            <button class="secondary" @onclick="GetDevices">GetDevices</button>
+            <button class="danger" @onclick="ReleaseDevice">Dispose handle</button>
+        </div>
+        @if (_device is not null)
+        {
+            <div class="field">
+                <span class="field-label">Selected</span>
+                <span>@(_device.Name ?? "(unnamed)") - @_device.Id</span>
+            </div>
+        }
+        <DemoConsole @ref="deviceOutput" Title="device output" />
+    </DemoSection>
+
+    <DemoSection Title="Connect and browse GATT"
+                 Api="Connect / Disconnect / IsConnected / GetServices / GetCharacteristics"
+                 Description="Connect opens the GATT server. GetServices lists the primary services the grant covers, and GetCharacteristics lists one service's characteristics with the operations each of them supports."
+                 Code=@("""
+await _device.Connect();
+
+foreach (var service in await _device.GetServices())
+{
+    foreach (var c in await _device.GetCharacteristics(service.Uuid))
+    {
+        // c.Uuid, c.Read, c.Write, c.Notify, ...
+    }
+}
+
+await _device.Disconnect();
+""")>
+        <div class="controls">
+            <button @onclick="Connect">Connect</button>
+            <button class="secondary" @onclick="Disconnect">Disconnect</button>
+            <button @onclick="CheckConnected">IsConnected</button>
+            <button @onclick="ListServices">GetServices</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Service UUID / alias</span>
+            <input type="text" @bind="_serviceUuid" placeholder="battery_service" />
+        </div>
+        <div class="controls">
+            <button @onclick="ListCharacteristics">GetCharacteristics</button>
+        </div>
+        <DemoConsole @ref="gattOutput" Title="gatt output" />
+    </DemoSection>
+
+    <DemoSection Title="Read and write a characteristic"
+                 Api="Read / Write"
+                 Description="Read returns the characteristic's current bytes; Write sends bytes to it, either acknowledged or fire-and-forget. The battery level characteristic below is a single byte holding a percentage."
+                 Code=@("""
+var value = await _device.Read("battery_service", "battery_level");
+var percent = value?[0];
+
+await _device.Write("0xFFE0", "0xFFE1", [0x01, 0x02], withResponse: true);
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Service</span>
+                <input type="text" @bind="_serviceUuid" />
+            </div>
+            <div class="field">
+                <span class="field-label">Characteristic</span>
+                <input type="text" @bind="_characteristicUuid" placeholder="battery_level" />
+            </div>
+        </div>
+        <div class="field">
+            <span class="field-label">Bytes to write (hex, space separated)</span>
+            <input type="text" @bind="_writeHex" placeholder="01 02 ff" />
+        </div>
+        <div class="controls">
+            <button @onclick="ReadValue">Read</button>
+            <button @onclick="WriteValue">Write</button>
+        </div>
+        <DemoConsole @ref="valueOutput" Title="value output" />
+    </DemoSection>
+
+    <DemoSection Title="Notifications and disconnection"
+                 Api="SubscribeValueChanged / SubscribeDisconnected"
+                 Description="SubscribeValueChanged asks the device to push a characteristic's value as it changes - a heart-rate strap, a thermometer. SubscribeDisconnected fires when the link drops, which for a battery-powered peripheral happens on its own schedule."
+                 Code=@("""
+await using var values = await _device.SubscribeValueChanged(
+    "heart_rate", "heart_rate_measurement",
+    bytes => Console.WriteLine(bytes.Length));
+
+await using var dropped = await _device.SubscribeDisconnected(
+    () => Console.WriteLine("device went away"));
+""")>
+        <div class="controls">
+            <button @onclick="StartNotifications">SubscribeValueChanged</button>
+            <button class="danger" @onclick="StopNotifications">Stop notifications</button>
+            <button @onclick="WatchDisconnect">SubscribeDisconnected</button>
+        </div>
+        <DemoConsole @ref="notifyOutput" Title="notification output" />
+    </DemoSection>
+
+    <DemoSection Title="Revoke the grant"
+                 Api="Forget"
+                 Description="Forget drops this origin's permission for the device, so it stops appearing in GetDevices until the user picks it again. Not every Chromium version implements it - false means it was unavailable."
+                 Code=@("""
+var revoked = await _device.Forget();
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="ForgetDevice">Forget</button>
+        </div>
+        <DemoConsole @ref="forgetOutput" Title="forget output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.bluetooth. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetAvailability"
+               Signature="ValueTask<bool> GetAvailability()"
+               Description="True when the machine has a Bluetooth adapter the browser can use." />
+    <ApiMember Name="RequestDevice"
+               Signature="ValueTask<BluetoothDevice?> RequestDevice(BluetoothRequestOptions? options = null)"
+               Description="Opens the device chooser and returns the picked device, or null when dismissed. Needs a user gesture." />
+    <ApiMember Name="GetDevices"
+               Signature="ValueTask<BluetoothDevice[]> GetDevices()"
+               Description="The devices this origin has already been granted, without a prompt." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Disconnects every device this service handed out, detaches listeners and releases the JS callback reference." />
+    <ApiMember Name="InvokeBluetoothValueChanged"
+               Signature="void InvokeBluetoothValueChanged(Guid id, byte[] value)"
+               Description="JSInvokable interop plumbing for characteristic notifications - not intended for app code." />
+    <ApiMember Name="InvokeBluetoothDisconnected"
+               Signature="void InvokeBluetoothDisconnected(Guid id)"
+               Description="JSInvokable interop plumbing for GATT disconnection - not intended for app code." />
+    <ApiMember Name="BluetoothDevice.Info"
+               Signature="BluetoothDeviceInfo Info { get; }"
+               Description="The device as it was when the handle was created: Id, DeviceId, Name, Connected." />
+    <ApiMember Name="BluetoothDevice.Connect"
+               Signature="ValueTask<bool> Connect()"
+               Description="Opens the GATT connection." />
+    <ApiMember Name="BluetoothDevice.Disconnect"
+               Signature="ValueTask Disconnect()"
+               Description="Closes the GATT connection without giving up the grant." />
+    <ApiMember Name="BluetoothDevice.IsConnected"
+               Signature="ValueTask<bool> IsConnected()"
+               Description="True while the GATT server is connected." />
+    <ApiMember Name="BluetoothDevice.GetServices"
+               Signature="ValueTask<BluetoothServiceInfo[]> GetServices()"
+               Description="The primary services the grant covers." />
+    <ApiMember Name="BluetoothDevice.GetCharacteristics"
+               Signature="ValueTask<BluetoothCharacteristicInfo[]> GetCharacteristics(string serviceUuid)"
+               Description="One service's characteristics, each with the operations it supports." />
+    <ApiMember Name="BluetoothDevice.Read"
+               Signature="ValueTask<byte[]?> Read(string serviceUuid, string characteristicUuid)"
+               Description="Reads a characteristic's current value." />
+    <ApiMember Name="BluetoothDevice.Write"
+               Signature="ValueTask<bool> Write(string serviceUuid, string characteristicUuid, byte[] data, bool withResponse = true)"
+               Description="Writes a characteristic's value, acknowledged or not." />
+    <ApiMember Name="BluetoothDevice.SubscribeValueChanged"
+               Signature="ValueTask<ButilSubscription> SubscribeValueChanged(string serviceUuid, string characteristicUuid, Action<byte[]> handler)"
+               Description="Subscribes to a characteristic's notifications. Dispose the subscription to stop them." />
+    <ApiMember Name="BluetoothDevice.SubscribeDisconnected"
+               Signature="ValueTask<ButilSubscription> SubscribeDisconnected(Action handler)"
+               Description="Runs the handler when the device drops the GATT connection." />
+    <ApiMember Name="BluetoothDevice.Forget"
+               Signature="ValueTask<bool> Forget()"
+               Description="Revokes this origin's permission for the device." />
+    <ApiMember Name="BluetoothDevice.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Disconnects, detaches this device's listeners and releases the browser-side reference." />
+    <ApiMember Name="BluetoothRequestOptions"
+               Signature="class BluetoothRequestOptions { BluetoothFilter[]? Filters; bool AcceptAllDevices; string[]? OptionalServices; }"
+               Description="What the chooser lists, and which services the grant covers." />
+    <ApiMember Name="BluetoothFilter"
+               Signature="class BluetoothFilter { string[]? Services; string? Name; string? NamePrefix; }"
+               Description="One chooser filter. A device matches when it satisfies every property that is set." />
+    <ApiMember Name="BluetoothServiceInfo"
+               Signature="class BluetoothServiceInfo { string Uuid; bool IsPrimary; }"
+               Description="A primary GATT service." />
+    <ApiMember Name="BluetoothCharacteristicInfo"
+               Signature="class BluetoothCharacteristicInfo { string Uuid; string ServiceUuid; bool Broadcast; bool Read; bool WriteWithoutResponse; bool Write; bool Notify; bool Indicate; }"
+               Description="A characteristic and the operations the device declares for it." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole deviceOutput = default!;
+    private DemoConsole gattOutput = default!;
+    private DemoConsole valueOutput = default!;
+    private DemoConsole notifyOutput = default!;
+    private DemoConsole forgetOutput = default!;
+
+    private BluetoothDevice? _device;
+    private ButilSubscription? _values;
+    private ButilSubscription? _disconnected;
+
+    private string _optionalServices = "battery_service, device_information";
+    private string _namePrefix = "";
+    private string _serviceUuid = "battery_service";
+    private string _characteristicUuid = "battery_level";
+    private string _writeHex = "01";
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await bluetooth.IsSupported());
+            await supportOutput.Success("GetAvailability →", await bluetooth.GetAvailability());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestDevice()
+    {
+        try
+        {
+            if (!await bluetooth.IsSupported())
+            {
+                await deviceOutput.Warn("Web Bluetooth is not supported in this browser.");
+                return;
+            }
+
+            var services = _optionalServices
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            var options = new BluetoothRequestOptions { OptionalServices = services };
+            if (string.IsNullOrWhiteSpace(_namePrefix))
+                options.AcceptAllDevices = true;
+            else
+                options.Filters = [new BluetoothFilter { NamePrefix = _namePrefix }];
+
+            var requested = await bluetooth.RequestDevice(options);
+
+            if (requested is null)
+            {
+                // A dismissed chooser is not a reason to throw away the device already in hand.
+                await deviceOutput.Warn("The chooser was dismissed.");
+                return;
+            }
+
+            // The replacement makes the previous handle unreachable, so release it - and the
+            // subscriptions taken through it - rather than leaving the radio connected. Re-picking the
+            // same device hands back the handle already in play, and disposing that one would release
+            // the device this page is about to use.
+            if (ReferenceEquals(_device, requested) is false)
+            {
+                await ReleaseSubscriptions();
+                if (_device is not null) await _device.DisposeAsync();
+            }
+
+            _device = requested;
+            await deviceOutput.Success("RequestDevice →", $"{_device.Name ?? "(unnamed)"} ({_device.Info.DeviceId})");
+        }
+        catch (Exception ex)
+        {
+            await deviceOutput.Error("RequestDevice failed →", ex.Message);
+        }
+    }
+
+    private async Task GetDevices()
+    {
+        try
+        {
+            var devices = await bluetooth.GetDevices();
+            await deviceOutput.Success("GetDevices →", $"{devices.Length} granted device(s)");
+            foreach (var device in devices)
+            {
+                await deviceOutput.Log($"  {device.Name ?? "(unnamed)"}", device.Info.DeviceId);
+            }
+            _device ??= devices.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            await deviceOutput.Error("GetDevices failed →", ex.Message);
+        }
+    }
+
+    // Subscriptions belong to the device they were taken on, so they never outlive its handle.
+    private async Task ReleaseSubscriptions()
+    {
+        if (_values is not null) await _values.DisposeAsync();
+        _values = null;
+
+        if (_disconnected is not null) await _disconnected.DisposeAsync();
+        _disconnected = null;
+    }
+
+    private async Task ReleaseDevice()
+    {
+        if (_device is null) return;
+        await ReleaseSubscriptions();
+        await _device.DisposeAsync();
+        _device = null;
+        await deviceOutput.Log("Handle disposed - the device is disconnected but still granted.");
+    }
+
+    private async Task Connect()
+    {
+        if (await RequireDevice(gattOutput) is false) return;
+
+        try
+        {
+            await gattOutput.Success("Connect →", await _device!.Connect());
+        }
+        catch (Exception ex)
+        {
+            await gattOutput.Error("Connect failed →", ex.Message);
+        }
+    }
+
+    private async Task Disconnect()
+    {
+        if (await RequireDevice(gattOutput) is false) return;
+
+        await _device!.Disconnect();
+        await gattOutput.Log("Disconnected.");
+    }
+
+    private async Task CheckConnected()
+    {
+        if (await RequireDevice(gattOutput) is false) return;
+
+        await gattOutput.Success("IsConnected →", await _device!.IsConnected());
+    }
+
+    private async Task ListServices()
+    {
+        if (await RequireDevice(gattOutput) is false) return;
+
+        try
+        {
+            var services = await _device!.GetServices();
+            await gattOutput.Success("GetServices →", $"{services.Length} service(s)");
+            foreach (var service in services)
+            {
+                await gattOutput.Log($"  {service.Uuid}", service.IsPrimary ? "primary" : "secondary");
+            }
+        }
+        catch (Exception ex)
+        {
+            await gattOutput.Error("GetServices failed →", ex.Message);
+        }
+    }
+
+    private async Task ListCharacteristics()
+    {
+        if (await RequireDevice(gattOutput) is false) return;
+
+        try
+        {
+            var characteristics = await _device!.GetCharacteristics(_serviceUuid);
+            await gattOutput.Success("GetCharacteristics →", $"{characteristics.Length} characteristic(s)");
+            foreach (var c in characteristics)
+            {
+                var ops = string.Join('/', new[]
+                {
+                    c.Read ? "read" : null,
+                    c.Write ? "write" : null,
+                    c.WriteWithoutResponse ? "write-no-response" : null,
+                    c.Notify ? "notify" : null,
+                    c.Indicate ? "indicate" : null,
+                }.Where(o => o is not null));
+
+                await gattOutput.Log($"  {c.Uuid}", ops.Length == 0 ? "(no operations)" : ops);
+            }
+        }
+        catch (Exception ex)
+        {
+            await gattOutput.Error("GetCharacteristics failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadValue()
+    {
+        if (await RequireDevice(valueOutput) is false) return;
+
+        try
+        {
+            var value = await _device!.Read(_serviceUuid, _characteristicUuid);
+            await valueOutput.Success("Read →", value is null ? "(null)" : Hex(value));
+        }
+        catch (Exception ex)
+        {
+            await valueOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task WriteValue()
+    {
+        if (await RequireDevice(valueOutput) is false) return;
+
+        try
+        {
+            var bytes = ParseHex(_writeHex);
+            if (bytes.Length == 0)
+            {
+                await valueOutput.Warn("Nothing to write - enter hex bytes such as \"01 ff\".");
+                return;
+            }
+
+            await valueOutput.Success("Write →", await _device!.Write(_serviceUuid, _characteristicUuid, bytes));
+        }
+        catch (Exception ex)
+        {
+            await valueOutput.Error("Write failed →", ex.Message);
+        }
+    }
+
+    private async Task StartNotifications()
+    {
+        if (await RequireDevice(notifyOutput) is false) return;
+
+        await StopNotifications();
+
+        try
+        {
+            _values = await _device!.SubscribeValueChanged(_serviceUuid, _characteristicUuid,
+                value => _ = InvokeAsync(() => notifyOutput.Log("Value →", Hex(value))));
+
+            await notifyOutput.Log("Subscribed - values arrive as the device sends them.");
+        }
+        catch (Exception ex)
+        {
+            await notifyOutput.Error("SubscribeValueChanged failed →", ex.Message);
+        }
+    }
+
+    private async Task StopNotifications()
+    {
+        if (_values is null) return;
+        await _values.DisposeAsync();
+        _values = null;
+        await notifyOutput.Log("Notifications stopped.");
+    }
+
+    private async Task WatchDisconnect()
+    {
+        if (await RequireDevice(notifyOutput) is false) return;
+
+        if (_disconnected is not null) await _disconnected.DisposeAsync();
+
+        try
+        {
+            _disconnected = await _device!.SubscribeDisconnected(
+                () => _ = InvokeAsync(() => notifyOutput.Warn("The device disconnected.")));
+
+            await notifyOutput.Log("Watching for disconnection.");
+        }
+        catch (Exception ex)
+        {
+            await notifyOutput.Error("SubscribeDisconnected failed →", ex.Message);
+        }
+    }
+
+    private async Task ForgetDevice()
+    {
+        if (await RequireDevice(forgetOutput) is false) return;
+
+        try
+        {
+            var revoked = await _device!.Forget();
+            await forgetOutput.Success("Forget →", revoked ? "permission revoked." : "not supported by this browser.");
+            if (revoked) _device = null;
+        }
+        catch (Exception ex)
+        {
+            await forgetOutput.Error("Forget failed →", ex.Message);
+        }
+    }
+
+    private async Task<bool> RequireDevice(DemoConsole output)
+    {
+        if (_device is not null) return true;
+        await output.Warn("Pick a device first with RequestDevice.");
+        return false;
+    }
+
+    private static string Hex(byte[] value) => value.Length == 0 ? "(empty)" : Convert.ToHexString(value);
+
+    // A token that is not a hex byte is a typo, not something to quietly drop: "00 zz ff" has to be
+    // rejected rather than reach the device as the two bytes that happened to parse.
+    private static byte[] ParseHex(string text)
+    {
+        var parts = text.Split([' ', ',', '-'], StringSplitOptions.RemoveEmptyEntries);
+        var bytes = new byte[parts.Length];
+
+        for (var index = 0; index < parts.Length; index++)
+        {
+            if (byte.TryParse(parts[index], System.Globalization.NumberStyles.HexNumber, null, out bytes[index]) is false)
+                throw new FormatException($"'{parts[index]}' is not a hexadecimal byte.");
+        }
+
+        return bytes;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_values is not null) await _values.DisposeAsync();
+        if (_disconnected is not null) await _disconnected.DisposeAsync();
+        if (_device is not null) await _device.DisposeAsync();
+    }
+}

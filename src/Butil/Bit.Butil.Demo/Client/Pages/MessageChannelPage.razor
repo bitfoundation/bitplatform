@@ -1,0 +1,364 @@
+@page "/message-channel"
+@implements IAsyncDisposable
+@inject Bit.Butil.MessageChannel messageChannel
+
+<PageTitle>MessageChannel - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network &amp; Workers"
+            Title="MessageChannel"
+            Lead="A two-ended pipe you can hand one end of to somewhere else - a worker, an iframe, a service worker - and then talk over privately."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/MessageChannel"
+            InjectAs="MessageChannel messageChannel" />
+
+<Callout Type="info" Title="A port is a private conversation">
+    Where <a href="broadcast-channel">BroadcastChannel</a> shouts to everyone on the origin, a
+    channel is between exactly two holders. A port belongs to one context at a time, so giving one
+    away <em>transfers</em> it and this side stops being able to use it - that is the guarantee, not
+    a limitation to work around.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Supported by every current engine. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.MessageChannel messageChannel
+
+var supported = await messageChannel.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Two ends, both symmetric"
+                 Api="Create / OnMessage / Start / PostMessage"
+                 Description="Neither port is privileged - there is no client end and no server end. Both are wired up here so the traffic is visible in both directions; in a real use one of them would have been sent somewhere else. Messages are JSON: what survives is what System.Text.Json can write and JSON.parse can read."
+                 Code=@("""
+var channel = await messageChannel.Create();
+
+await channel!.Port1.OnMessage(m => InvokeAsync(StateHasChanged));
+await channel.Port2.OnMessage(m => InvokeAsync(StateHasChanged));
+await channel.Port1.Start();
+await channel.Port2.Start();
+
+await channel.Port1.PostMessage(new { from = "port1", text = "hello" });
+""")>
+        <div class="controls">
+            <button @onclick="CreateChannel">Create</button>
+            <input @bind="_text" placeholder="message" aria-label="message text" />
+            <button @onclick="() => Send(1)">Port1 → Port2</button>
+            <button @onclick="() => Send(2)">Port2 → Port1</button>
+            <button class="danger" @onclick="DisposeChannel">Dispose</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Channel</span>
+            <span>@_state</span>
+        </div>
+        <DemoConsole @ref="channelOutput" Title="channel output" />
+    </DemoSection>
+
+    <DemoSection Title="Nothing is lost before Start"
+                 Api="Start"
+                 Description="A port queues everything it receives until it is started - which is what makes 'create it, hand it over, listen, then open it' work, and why listening does not start the port for you. The flip side: a port that is never started queues for as long as it lives, which is a slow leak rather than an error."
+                 Code=@("""
+var channel = await messageChannel.Create();
+await channel!.Port2.OnMessage(m => { /* not called yet */ });
+
+await channel.Port1.PostMessage(new { queued = 1 });
+await channel.Port1.PostMessage(new { queued = 2 });
+
+// both arrive now, in order
+await channel.Port2.Start();
+""")>
+        <div class="controls">
+            <button @onclick="QueueThenStart">Send two, then start</button>
+        </div>
+        <DemoConsole @ref="queueOutput" Title="queueing output" />
+    </DemoSection>
+
+    <DemoSection Title="Binary, without a copy"
+                 Api="PostBytes"
+                 Description="Transferring moves the underlying buffer to the receiver rather than copying it. The .NET array you pass in is a separate copy already and is unaffected; what gets detached is the JavaScript-side buffer."
+                 Code=@("""
+await channel!.Port1.PostBytes([1, 2, 3, 4], transfer: true);
+
+// arrives as: m.IsBinary == true, m.Data == [1, 2, 3, 4]
+""")>
+        <div class="controls">
+            <button @onclick="SendBytes">PostBytes([1, 2, 3, 4])</button>
+        </div>
+        <DemoConsole @ref="binaryOutput" Title="binary output" />
+    </DemoSection>
+
+    <DemoSection Title="Sending a port over a port"
+                 Api="PostWithPorts"
+                 Description="A port can carry other ports, which is how a third party is introduced to a conversation it was not part of - hand it one end of a channel it did not create. The ports sent are transferred, so the handles passed here stop working and the receiver owns them."
+                 Code=@("""
+var introduction = await messageChannel.Create();
+
+// Port2 of the new channel travels over the existing channel
+await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!.Port2]);
+
+// introduction.Port2 no longer works here; whoever received it owns it now
+""")>
+        <div class="controls">
+            <button @onclick="SendAPort">Send a fresh port across</button>
+        </div>
+        <DemoConsole @ref="transferOutput" Title="transfer output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Close what you open">
+    An unclosed port keeps its queue and its listeners alive for as long as the page lives. Dispose
+    the channel handle, which closes and releases both ends - as a safety net, the
+    <code>MessageChannel</code> service does the same for anything left behind when its scope is torn
+    down. A port that was transferred away is no longer yours to close, and releasing it here is a
+    no-op rather than an error.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes MessageChannel. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<MessageChannelHandle?> Create()"
+               Description="Creates a channel and its two ports. Null when the runtime has no MessageChannel." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, closes and releases every port and channel whose handle was never disposed." />
+    <ApiMember Name="MessageChannelHandle.Port1 / Port2"
+               Signature="MessagePortHandle Port1, Port2"
+               Description="The two ends. Symmetric - neither is privileged." />
+    <ApiMember Name="MessagePortHandle.OnMessage"
+               Signature="ValueTask<ButilSubscription?> OnMessage(Action<ButilMessage> onMessage)"
+               Description="Runs the callback for every message. Does not start the port. Several listeners can share one port." />
+    <ApiMember Name="MessagePortHandle.Start"
+               Signature="ValueTask Start()"
+               Description="Begins delivery. Everything queued while the port was closed arrives now, in order. Idempotent." />
+    <ApiMember Name="MessagePortHandle.PostMessage"
+               Signature="ValueTask<bool> PostMessage<T>(T value, JsonSerializerOptions? options = null)"
+               Description="Posts a message as JSON. False when the port has been released, closed or transferred away." />
+    <ApiMember Name="MessagePortHandle.PostBytes"
+               Signature="ValueTask<bool> PostBytes(byte[] data, bool transfer = true)"
+               Description="Posts raw bytes, moving the buffer rather than copying it when transfer is true." />
+    <ApiMember Name="MessagePortHandle.PostWithPorts"
+               Signature="ValueTask<bool> PostWithPorts<T>(T value, MessagePortHandle[] ports, JsonSerializerOptions? options = null)"
+               Description="Posts a message carrying other ports. They are transferred, so the handles passed here stop working." />
+    <ApiMember Name="MessagePortHandle.Close"
+               Signature="ValueTask Close()"
+               Description="Closes the port. Nothing more is delivered or sent." />
+    <ApiMember Name="ButilMessage"
+               Signature="record (bool IsBinary, string? Json, byte[]? Data) { T? Deserialize<T>() }"
+               Description="One message. Binary payloads stay binary; everything else is JSON - always valid JSON, so a plain string arrives quoted." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole channelOutput = default!;
+    private DemoConsole queueOutput = default!;
+    private DemoConsole binaryOutput = default!;
+    private DemoConsole transferOutput = default!;
+
+    private MessageChannelHandle? _channel;
+    private readonly List<ButilSubscription> _subscriptions = [];
+    private MessageChannelHandle? _queued;
+    private MessageChannelHandle? _introduction;
+    private string _state = "None created.";
+    private string _text = "hello";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await messageChannel.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateChannel()
+    {
+        await DisposeChannel();
+
+        try
+        {
+            _channel = await messageChannel.Create();
+            if (_channel is null)
+            {
+                _state = "Unavailable.";
+                await channelOutput.Warn("Create returned null - the runtime has no MessageChannel.");
+                return;
+            }
+
+            await Listen(_channel.Port1, "Port1", channelOutput);
+            await Listen(_channel.Port2, "Port2", channelOutput);
+
+            // Once, here, rather than on each send: OnMessage adds a listener every time it is
+            // called, so subscribing inside the send handler would print one extra copy of every
+            // later message per click.
+            await Listen(_channel.Port2, "Port2", binaryOutput);
+
+            await _channel.Port1.Start();
+            await _channel.Port2.Start();
+
+            _state = "Open, both ends started.";
+            await channelOutput.Success("Create → two ports, both listening.");
+        }
+        catch (Exception ex)
+        {
+            await channelOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task Listen(MessagePortHandle port, string label, DemoConsole console)
+    {
+        var subscription = await port.OnMessage(m => InvokeAsync(async () =>
+        {
+            await console.Success($"{label} received →", m.IsBinary ? $"binary [{string.Join(", ", m.Data ?? [])}]" : m.Json);
+        }));
+
+        if (subscription is not null) _subscriptions.Add(subscription);
+    }
+
+    private async Task Send(int from)
+    {
+        if (_channel is null)
+        {
+            await channelOutput.Warn("Create a channel first.");
+            return;
+        }
+
+        try
+        {
+            var port = from == 1 ? _channel.Port1 : _channel.Port2;
+            var sent = await port.PostMessage(new { from = $"port{from}", text = _text });
+            if (sent is false) await channelOutput.Warn("PostMessage returned false - the port is closed or gone.");
+        }
+        catch (Exception ex)
+        {
+            await channelOutput.Error("PostMessage failed →", ex.Message);
+        }
+    }
+
+    private async Task QueueThenStart()
+    {
+        try
+        {
+            if (_queued is not null)
+            {
+                await _queued.DisposeAsync();
+                _queued = null;
+            }
+
+            _queued = await messageChannel.Create();
+            if (_queued is null)
+            {
+                await queueOutput.Warn("Create returned null - the runtime has no MessageChannel.");
+                return;
+            }
+
+            await Listen(_queued.Port2, "Port2", queueOutput);
+            await _queued.Port1.PostMessage(new { queued = 1 });
+            await _queued.Port1.PostMessage(new { queued = 2 });
+            await queueOutput.Log("Sent two messages to an unstarted port - nothing has arrived yet.");
+
+            await _queued.Port2.Start();
+            await queueOutput.Log("Started - both arrive now, in order.");
+        }
+        catch (Exception ex)
+        {
+            await queueOutput.Error("Queueing demo failed →", ex.Message);
+        }
+    }
+
+    private async Task SendBytes()
+    {
+        if (_channel is null)
+        {
+            await binaryOutput.Warn("Create a channel first.");
+            return;
+        }
+
+        try
+        {
+            await _channel.Port1.PostBytes([1, 2, 3, 4]);
+        }
+        catch (Exception ex)
+        {
+            await binaryOutput.Error("PostBytes failed →", ex.Message);
+        }
+    }
+
+    private async Task SendAPort()
+    {
+        if (_channel is null)
+        {
+            await transferOutput.Warn("Create a channel first.");
+            return;
+        }
+
+        try
+        {
+            if (_introduction is not null)
+            {
+                await _introduction.DisposeAsync();
+                _introduction = null;
+            }
+
+            _introduction = await messageChannel.Create();
+            if (_introduction is null)
+            {
+                await transferOutput.Warn("Create returned null - the runtime has no MessageChannel.");
+                return;
+            }
+
+            // Port1 of the new channel stays here and is the line the receiver will answer on.
+            await Listen(_introduction.Port1, "Introduced port", transferOutput);
+            await _introduction.Port1.Start();
+
+            var sent = await _channel.Port1.PostWithPorts(new { op = "here is a line" }, [_introduction.Port2]);
+
+            if (sent)
+            {
+                await transferOutput.Success("Port2 of a fresh channel travelled over the existing one - it no longer works here.");
+                await transferOutput.Log("Port2 of the main channel received it as a message with a port attached.");
+            }
+            else
+            {
+                await transferOutput.Warn("PostWithPorts returned false - a port was already released.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await transferOutput.Error("PostWithPorts failed →", ex.Message);
+        }
+    }
+
+    private async Task DisposeChannel()
+    {
+        foreach (var subscription in _subscriptions) await subscription.DisposeAsync();
+        _subscriptions.Clear();
+
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+        if (_queued is not null) { await _queued.DisposeAsync(); _queued = null; }
+        if (_introduction is not null) { await _introduction.DisposeAsync(); _introduction = null; }
+
+        _state = "Disposed.";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await DisposeChannel();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

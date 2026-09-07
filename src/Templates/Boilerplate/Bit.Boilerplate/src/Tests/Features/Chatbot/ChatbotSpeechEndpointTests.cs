@@ -96,7 +96,8 @@ public class ChatbotSpeechEndpointTests
         Assert.AreEqual("audio/mpeg", contentType.MediaType,
             "The browser decodes what it is told it was handed, so the provider's own container has to be reported rather than assumed.");
 
-        Assert.AreSequenceEqual(spoken, await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
+        var served = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
+        Assert.AreSequenceEqual(spoken, served);
     }
 
     /// <summary>
@@ -209,8 +210,9 @@ public class ChatbotSpeechEndpointTests
 
         // The double answers with the number of the request it was, so the body says which pieces arrived and in
         // what order rather than only how many bytes there were.
+        var joined = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
         Assert.AreSequenceEqual(Enumerable.Range(1, textToSpeechClient.ReceivedAll.Count).Select(n => (byte)n).ToArray(),
-                                await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken),
+                                joined,
                                 "The pieces have to be joined in the order they were spoken.");
     }
 

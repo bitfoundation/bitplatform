@@ -71,6 +71,12 @@ public partial class AppJwtSecureDataFormat
             }
 
             var handler = new JwtSecurityTokenHandler();
+
+            // The default inbound map rewrites amr to a schemas.microsoft.com uri, so the claim written as amr comes
+            // back under another name and AuthPolicies.TFA_ENABLED never matches it. The map is per instance, so
+            // dropping the entry here leaves every other claim's mapping alone.
+            handler.InboundClaimTypeMap.Remove(AppClaimTypes.AMR);
+
             var principal = handler.ValidateToken(protectedText, validationParameters, out var validToken);
 
             var validJwt = (JwtSecurityToken)validToken;

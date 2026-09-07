@@ -1,0 +1,293 @@
+@page "/shadow-dom"
+@implements IAsyncDisposable
+@inject Bit.Butil.ShadowDom shadowDom
+@inject Bit.Butil.Dom dom
+
+<PageTitle>ShadowDom - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM &amp; Interaction"
+            Title="ShadowDom"
+            Lead="attachShadow and the roots it produces: a subtree with its own styles that the page's CSS does not reach into and whose own CSS does not leak out - and the way into a third-party web component's real markup."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow"
+            InjectAs="ShadowDom shadowDom" />
+
+<Callout Type="info" Title="Closed means closed to you too">
+    A closed root is unreachable from the page that created it as much as from anyone else - the
+    element simply reports no root at all, and there is no way back in. That is what closing it
+    means, and why open is the default here.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="attachShadow is in every current engine. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.ShadowDom shadowDom
+
+var supported = await shadowDom.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Style isolation that actually holds"
+                 Api="AttachShadow / AddStyle / SetHtml"
+                 Description="The page below has a rule that turns every .card red. The left box is an ordinary element and obeys it. The right one gets a shadow root, and the same rule cannot reach inside - so its own AddStyle wins, and nothing it defines escapes back out. This is the only reliable style isolation the platform has. Note that Blazor renders into the host's light DOM, and light-DOM content of a shadow host is not displayed unless the root has a slot for it: attach to a container your markup leaves empty."
+                 Code=@("""
+private ElementReference _host;
+
+var root = await shadowDom.AttachShadow(_host);
+await root!.AddStyle(".card { color: seagreen; border: 1px solid seagreen; }");
+await root.SetHtml("<div class='card'>inside a shadow root</div>");
+
+// the page's own `.card { color: red }` does not reach in
+""")>
+        <style>
+            /* Deliberately aggressive, to show what the boundary stops. */
+            .shadow-demo .card { color: crimson; border: 1px solid crimson; padding: .5rem; border-radius: .35rem; }
+        </style>
+        <div class="controls">
+            <button @onclick="AttachRoot">Attach a shadow root</button>
+            <button class="secondary" @onclick="ReadMode">GetMode / GetHost</button>
+        </div>
+        <div class="shadow-demo" style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem">
+            <div>
+                <div class="field-label">Ordinary element</div>
+                <div class="card">the page's rule applies</div>
+            </div>
+            <div>
+                <div class="field-label">Shadow host</div>
+                <div @ref="_host" style="min-height:2.5rem"></div>
+            </div>
+        </div>
+        <DemoConsole @ref="attachOutput" Title="attach output" />
+    </DemoSection>
+
+    <DemoSection Title="Building the contents instead of writing HTML"
+                 Api="Dom.Create / ShadowRootHandle.Append"
+                 Description="SetHtml is an injection point exactly as it is on an ordinary element - being inside a shadow root isolates styles, not script. Build the contents from elements for anything you did not write yourself."
+                 Code=@("""
+var badge = await dom.Create("span");
+await badge!.SetAttribute("class", "card");
+await badge.SetText(userSuppliedText);   // safe with any input
+
+await root!.Append(badge);
+""")>
+        <div class="controls">
+            <input @bind="_text" aria-label="text to add" />
+            <button @onclick="AppendBuilt">Append it safely</button>
+        </div>
+        <DemoConsole @ref="buildOutput" Title="build output" />
+    </DemoSection>
+
+    <DemoSection Title="Reading into someone else's component"
+                 Api="GetShadowRoot / Query / QueryAll"
+                 Description="This is the interoperability case: a web component's real markup lives inside its shadow root, where an ordinary querySelector cannot see it. Find the host with Dom, ask for its root, and query from there. Selectors from outside do not reach in at all - which is the isolation working, not a bug to route around. Note that AsElementReference does not resolve for an element inside a shadow root: Blazor's own reference lookup does not pierce the boundary either."
+                 Code=@("""
+var host = await dom.Query("some-web-component");
+var root = await shadowDom.GetShadowRoot(host!);
+
+var button = await root!.Query("button.internal");
+var all = await root.QueryAll("[part]");
+""")>
+        <div class="controls">
+            <button @onclick="QueryOutside">Query from outside</button>
+            <button class="secondary" @onclick="QueryInside">Query through the root</button>
+        </div>
+        <DemoConsole @ref="queryOutput" Title="query output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes attachShadow. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="AttachShadow"
+               Signature="ValueTask<ShadowRootHandle?> AttachShadow(ElementReference host, bool open = true, bool delegatesFocus = false)"
+               Description="Attaches a root. Null when the element already has one, or is one of the many that cannot have one at all." />
+    <ApiMember Name="AttachShadow (handle)"
+               Signature="ValueTask<ShadowRootHandle?> AttachShadow(DomHandle host, bool open = true, bool delegatesFocus = false)"
+               Description="The same, for an element found or created through Dom." />
+    <ApiMember Name="GetShadowRoot"
+               Signature="ValueTask<ShadowRootHandle?> GetShadowRoot(ElementReference host), GetShadowRoot(DomHandle host)"
+               Description="The root already on an element. Null when there is none - or when it is closed, which is indistinguishable from there being none." />
+    <ApiMember Name="ShadowRootHandle.Query / QueryAll"
+               Signature="ValueTask<DomHandle?> Query(string selector), ValueTask<DomHandle[]> QueryAll(string selector)"
+               Description="Searching inside the root, which nothing outside can do." />
+    <ApiMember Name="ShadowRootHandle.GetHost"
+               Signature="ValueTask<DomHandle?> GetHost()"
+               Description="The element the root is attached to - the way back out." />
+    <ApiMember Name="ShadowRootHandle.GetMode"
+               Signature="ValueTask<string> GetMode()"
+               Description='"open" or "closed".' />
+    <ApiMember Name="ShadowRootHandle.GetHtml / SetHtml"
+               Signature="ValueTask<string> GetHtml(), ValueTask<bool> SetHtml(string html)"
+               Description="The root's contents as HTML. SetHtml parses, and is an injection point - isolation is of styles, not script." />
+    <ApiMember Name="ShadowRootHandle.Append"
+               Signature="ValueTask<bool> Append(DomHandle child)"
+               Description="Puts an element inside the root. The safe way to add content you did not write." />
+    <ApiMember Name="ShadowRootHandle.AddStyle"
+               Signature="ValueTask<bool> AddStyle(string css)"
+               Description="A stylesheet scoped to the root. Selectors are written against its own contents, with :host for the element it is attached to." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole attachOutput = default!;
+    private DemoConsole buildOutput = default!;
+    private DemoConsole queryOutput = default!;
+
+    private ElementReference _host;
+    private ShadowRootHandle? _root;
+    private string _text = "text from a user";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await shadowDom.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task AttachRoot()
+    {
+        if (_root is not null)
+        {
+            await attachOutput.Warn("Already attached - a root cannot be attached twice, and cannot be detached.");
+            return;
+        }
+
+        try
+        {
+            _root = await shadowDom.AttachShadow(_host);
+            if (_root is null)
+            {
+                await attachOutput.Warn("AttachShadow returned null - the element already has a root, or cannot have one.");
+                return;
+            }
+
+            await _root.AddStyle(".card { color: seagreen; border: 1px solid seagreen; padding: .5rem; border-radius: .35rem; }");
+            await _root.SetHtml("<div class=\"card\">inside a shadow root</div>");
+
+            await attachOutput.Success("Attached →", "the page's crimson rule cannot reach this one.");
+        }
+        catch (Exception ex)
+        {
+            await attachOutput.Error("AttachShadow failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadMode()
+    {
+        if (await RequireRoot(attachOutput) is false) return;
+
+        try
+        {
+            await using var host = await _root!.GetHost();
+            await attachOutput.Success("GetMode →", await _root.GetMode());
+            await attachOutput.Success("GetHost →", $"<{host?.TagName}>");
+        }
+        catch (Exception ex)
+        {
+            await attachOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task AppendBuilt()
+    {
+        if (await RequireRoot(buildOutput) is false) return;
+
+        try
+        {
+            await using var badge = await dom.Create("div");
+            if (badge is null) return;
+
+            await badge.SetAttribute("class", "card");
+            // SetText rather than SetHtml: safe whatever the input turns out to be.
+            await badge.SetText(_text);
+            await _root!.Append(badge);
+
+            await buildOutput.Success("Appended →", "built from elements, so nothing in the text was parsed as markup.");
+        }
+        catch (Exception ex)
+        {
+            await buildOutput.Error("Append failed →", ex.Message);
+        }
+    }
+
+    private async Task QueryOutside()
+    {
+        try
+        {
+            // The document cannot see inside a shadow root at all.
+            await using var found = await dom.Query(".shadow-demo .card");
+            var text = found is null ? "(nothing)" : await found.GetText();
+
+            // Every handle QueryAll hands back holds its element in the JS registry until it is
+            // disposed, so they are released whatever the reporting does.
+            var all = await dom.QueryAll(".shadow-demo .card");
+            try
+            {
+                await queryOutput.Success("From the document →",
+                    $"{all.Length} match(es) - \"{text}\". The shadow content is not among them.");
+            }
+            finally
+            {
+                foreach (var handle in all) await handle.DisposeAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("Query failed →", ex.Message);
+        }
+    }
+
+    private async Task QueryInside()
+    {
+        if (await RequireRoot(queryOutput) is false) return;
+
+        try
+        {
+            var inside = await _root!.QueryAll(".card");
+            try
+            {
+                await queryOutput.Success("Through the root →",
+                    $"{inside.Length} match(es): {string.Join(", ", await Task.WhenAll(inside.Select(async h => $"\"{await h.GetText()}\"")))}");
+            }
+            finally
+            {
+                // A GetText that throws would otherwise leave every handle registered in JS.
+                foreach (var handle in inside) await handle.DisposeAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error("Query failed →", ex.Message);
+        }
+    }
+
+    private async Task<bool> RequireRoot(DemoConsole console)
+    {
+        if (_root is not null) return true;
+        await console.Warn("Attach a shadow root first.");
+        return false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_root is not null) await _root.DisposeAsync();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

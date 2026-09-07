@@ -16,6 +16,8 @@ public partial class Tenant
     [MaxLength(64)]
     public string? Title { get; set; }
 
+    public string? DisplayName => string.IsNullOrWhiteSpace(Title) ? Name : Title;
+
     /// <summary>
     /// Optional custom/vanity host (e.g. <c>myapp.com</c>) that resolves to this tenant for anonymous requests.
     /// Unlike <see cref="Name"/> (matched against the request's sub domain), this is matched against the complete request

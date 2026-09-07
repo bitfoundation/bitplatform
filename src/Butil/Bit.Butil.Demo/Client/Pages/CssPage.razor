@@ -1,0 +1,443 @@
+@page "/css"
+@implements IAsyncDisposable
+@inject Bit.Butil.Css css
+
+<PageTitle>Css - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM &amp; Interaction"
+            Title="Css"
+            Lead="The CSS object model: what an element is actually rendered with, what the browser understands, stylesheets you can edit, and highlights painted over text without touching the DOM."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model"
+            InjectAs="Css css" />
+
+<Callout Type="info" Title="Computed is not inline">
+    The element extensions read and write <em>inline</em> style - what an element was told. This
+    reads what it actually <em>is</em>: the answer after the cascade, inheritance, and the browser
+    resolving relative units into pixels. A width set in <code>em</code> comes back in
+    <code>px</code>; a colour set as a keyword comes back as <code>rgb()</code>.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsSupportsAvailable / IsRegisterPropertyAvailable / IsConstructableStyleSheetAvailable / IsHighlightAvailable"
+                 Description="getComputedStyle and CSS.supports are everywhere. registerProperty, constructable stylesheets and the Custom Highlight API are newer. CreateStyleSheet works either way - where constructable sheets are missing it appends a style element instead."
+                 Code=@("""
+@inject Bit.Butil.Css css
+
+var computed = await css.IsSupported();
+var supports = await css.IsSupportsAvailable();
+var register = await css.IsRegisterPropertyAvailable();
+var sheets = await css.IsConstructableStyleSheetAvailable();
+var highlight = await css.IsHighlightAvailable();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="What an element really is"
+                 Api="GetComputedStyle / GetComputedStyleValue / GetComputedStyleAll"
+                 Description="Property names in CSS spelling - 'font-size', not 'fontSize'. A list rather than the whole style object on purpose: a computed style has some 350 properties on it, and marshalling all of them to answer a question about two is most of the cost of the call. A pseudo-element is the one case where there is no element to reach for at all - '::before' is only readable this way."
+                 Code=@("""
+private ElementReference _sample;
+
+var values = await css.GetComputedStyle(_sample, ["color", "font-size", "padding-left"]);
+var one = await css.GetComputedStyleValue(_sample, "background-color");
+
+// generated content has no element - this is the only way to read its style
+var before = await css.GetComputedStyle(_sample, ["content"], "::before");
+""")>
+        <div class="controls">
+            <button @onclick="ReadComputed">Read a few</button>
+            <button class="secondary" @onclick="ReadPseudo">Read ::before</button>
+            <button class="secondary" @onclick="ReadAll">Read them all</button>
+        </div>
+        <div @ref="_sample" class="css-sample">A sample element, styled by the page's own stylesheet.</div>
+        <style>
+            .css-sample { padding: .75rem 1rem; border-radius: .5rem; border: 1px solid var(--border, #d4d4d8); font-size: 1.05em; position: relative; }
+            .css-sample::before { content: "styled"; font-size: .7rem; opacity: .6; display: block; }
+        </style>
+        <DemoConsole @ref="computedOutput" Title="computed style output" />
+    </DemoSection>
+
+    <DemoSection Title="Asking the parser"
+                 Api="Supports / SupportsCondition / Escape"
+                 Description="The honest way to feature-detect CSS: it asks the browser's own parser rather than inferring support from a name and a version. Escape is the other half - an id that starts with a digit, or contains a dot or a space, is perfectly legal HTML and illegal in a selector without it, so anything that came from data rather than from your markup should go through it."
+                 Code=@("""
+@inject Bit.Butil.Dom dom
+
+var grid = await css.Supports("display", "grid");
+var has = await css.SupportsCondition("selector(:has(a))");
+
+var safe = await css.Escape(idFromTheDatabase);
+var element = await dom.Query($"#{safe}");
+""")>
+        <div class="controls">
+            <input @bind="_property" placeholder="property" aria-label="property" style="max-width:10rem" />
+            <input @bind="_value" placeholder="value" aria-label="value" style="max-width:10rem" />
+            <button @onclick="CheckSupports">Supports</button>
+            <input @bind="_toEscape" placeholder="id to escape" aria-label="id" style="max-width:10rem" />
+            <button class="secondary" @onclick="EscapeIt">Escape</button>
+        </div>
+        <DemoConsole @ref="supportsOutput" Title="supports output" />
+    </DemoSection>
+
+    <DemoSection Title="A stylesheet of your own"
+                 Api="CreateStyleSheet / InsertRule / DeleteRule / GetRules / Replace"
+                 Description="Rules here reach the whole page through selectors, which is the thing setting a style on one element cannot do - a theme, a print stylesheet, a ::highlight() rule. A rule the parser cannot read is refused rather than ignored, which is more useful than a stylesheet quietly missing a line."
+                 Code=@("""
+_sheet = await css.CreateStyleSheet();
+await _sheet!.InsertRule(".css-sample { outline: 2px solid rebeccapurple }");
+
+// or hand over the whole thing, which is simpler than tracking indices
+await _sheet.Replace(BuildTheme(accent));
+
+await _sheet.DisposeAsync();   // removes it from the document
+""")>
+        <div class="controls">
+            <button @onclick="AddRule">Add a rule</button>
+            <button class="secondary" @onclick="AddBadRule">Add a rule that is not CSS</button>
+            <button class="secondary" @onclick="ListRules">List them</button>
+            <button class="danger" @onclick="RemoveSheet">Remove the sheet</button>
+        </div>
+        <DemoConsole @ref="sheetOutput" Title="stylesheet output" />
+    </DemoSection>
+
+    <DemoSection Title="Animating a custom property"
+                 Api="RegisterProperty"
+                 Description="An unregistered custom property is just a string to the browser, and strings do not interpolate - which is why a transition on --brand does nothing at all until it is registered. Registering says what it holds, and from then on it animates like any other value. Registering the same name twice fails, so do it once at startup."
+                 Code=@("""
+var error = await css.RegisterProperty("--butil-accent", "<color>", inherits: false, initialValue: "#6366f1");
+
+// and now this transitions rather than snapping:
+// .thing { transition: --butil-accent 400ms; background: var(--butil-accent) }
+""")>
+        <div class="controls">
+            <button @onclick="RegisterAccent">RegisterProperty</button>
+            <button class="secondary" @onclick="ToggleAccent">Toggle the accent</button>
+        </div>
+        <div @ref="_accentBox" class="css-accent">a transition on a custom property</div>
+        <style>
+            .css-accent { margin-top:.5rem; padding:.75rem 1rem; border-radius:.5rem; color:white;
+                          background: var(--butil-accent, #6366f1); transition: --butil-accent 400ms ease; }
+        </style>
+        <DemoConsole @ref="registerOutput" Title="register output" />
+    </DemoSection>
+
+    <DemoSection Title="Highlighting without touching the DOM"
+                 Api="HighlightText / ClearHighlight"
+                 Description="Wrapping matches in <mark> mutates the DOM - which breaks a Blazor diff, invalidates anything measured around it, and has to be undone before the next search. A custom highlight is painted over the text and changes nothing underneath it. Nothing is visible until a ::highlight(name) rule exists, which is what the stylesheet above is for."
+                 Code=@("""
+await _sheet!.InsertRule("::highlight(search) { background: gold; color: black }");
+
+var count = await css.HighlightText("search", _prose, term);
+await css.ClearHighlight("search");
+""")>
+        <div class="controls">
+            <input @bind="_search" placeholder="search" aria-label="search term" />
+            <button @onclick="Highlight">Highlight</button>
+            <button class="danger" @onclick="ClearHighlights">Clear</button>
+        </div>
+        <p @ref="_prose">
+            The Custom Highlight API paints ranges over text without adding a single element to the
+            document. Search this paragraph for a word - highlight, element, text - and notice that
+            the markup underneath is the same markup it was before.
+        </p>
+        <DemoConsole @ref="highlightOutput" Title="highlight output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Reading a style costs something">
+    Computing a style forces layout if anything has changed since the last one, which is why reading
+    a style inside a loop that also writes one is the classic way to make a page crawl. Read what you
+    need in one call, then write.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes getComputedStyle. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsSupportsAvailable / IsRegisterPropertyAvailable / IsConstructableStyleSheetAvailable / IsHighlightAvailable"
+               Signature="ValueTask<bool> ...()"
+               Description="The per-feature checks. CreateStyleSheet works where constructable sheets are missing, by appending a style element instead." />
+    <ApiMember Name="GetComputedStyle"
+               Signature="ValueTask<Dictionary<string, string>?> GetComputedStyle(ElementReference element, string[] properties, string? pseudoElement = null)"
+               Description="Resolved values for the named properties, in CSS spelling. A pseudo-element like ::before is only readable this way." />
+    <ApiMember Name="GetComputedStyleValue"
+               Signature="ValueTask<string> GetComputedStyleValue(ElementReference element, string property, string? pseudoElement = null)"
+               Description="One resolved value, or an empty string when it is not set." />
+    <ApiMember Name="GetComputedStyleAll"
+               Signature="ValueTask<Dictionary<string, string>?> GetComputedStyleAll(ElementReference element, string? pseudoElement = null)"
+               Description="Every resolved property - some 350 of them. For diagnostics rather than for reading two values." />
+    <ApiMember Name="Supports / SupportsCondition"
+               Signature="ValueTask<bool> Supports(string property, string value), SupportsCondition(string condition)"
+               Description="Asks the parser whether it understands a pair, or a whole @@supports condition." />
+    <ApiMember Name="Escape"
+               Signature="ValueTask<string> Escape(string value)"
+               Description="Makes a string safe to use in a selector. Anything that came from data rather than your markup should go through it." />
+    <ApiMember Name="RegisterProperty"
+               Signature='ValueTask&lt;string?&gt; RegisterProperty(string name, string syntax = "*", bool inherits = false, string? initialValue = null)'
+               Description="Teaches the browser what a custom property holds, which is what lets it be animated. Null on success, or the reason it failed." />
+    <ApiMember Name="CreateStyleSheet"
+               Signature="ValueTask<StyleSheetHandle?> CreateStyleSheet()"
+               Description="A stylesheet of your own, already in the document." />
+    <ApiMember Name="HighlightText"
+               Signature="ValueTask<int> HighlightText(string name, ElementReference element, string search, bool caseSensitive = false)"
+               Description="Highlights every occurrence without touching the DOM. Returns the count, or -1 where the API is missing. Needs a ::highlight(name) rule to be visible." />
+    <ApiMember Name="ClearHighlight"
+               Signature="ValueTask ClearHighlight(string name)"
+               Description="Removes a highlight by name." />
+    <ApiMember Name="StyleSheetHandle.InsertRule / DeleteRule / GetRules / Replace"
+               Signature="ValueTask<int> InsertRule(string rule, int index = -1); ValueTask<bool> DeleteRule(int index); ValueTask<string[]> GetRules(); ValueTask<bool> Replace(string css)"
+               Description="Editing the sheet. InsertRule answers -1 for a rule the parser rejected. Replace is simpler than tracking indices." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole computedOutput = default!;
+    private DemoConsole supportsOutput = default!;
+    private DemoConsole sheetOutput = default!;
+    private DemoConsole registerOutput = default!;
+    private DemoConsole highlightOutput = default!;
+
+    private ElementReference _sample;
+    private ElementReference _prose;
+    private ElementReference _accentBox;
+
+    private StyleSheetHandle? _sheet;
+    private bool _accentToggled;
+
+    private string _property = "display";
+    private string _value = "grid";
+    private string _toEscape = "1st.item";
+    private string _search = "highlight";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await css.IsSupported());
+            await supportOutput.Success("IsSupportsAvailable →", await css.IsSupportsAvailable());
+            await supportOutput.Success("IsRegisterPropertyAvailable →", await css.IsRegisterPropertyAvailable());
+            await supportOutput.Success("IsConstructableStyleSheetAvailable →", await css.IsConstructableStyleSheetAvailable());
+            await supportOutput.Success("IsHighlightAvailable →", await css.IsHighlightAvailable());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadComputed()
+    {
+        try
+        {
+            var values = await css.GetComputedStyle(_sample, ["color", "font-size", "padding-left", "border-radius"]);
+            if (values is null)
+            {
+                await computedOutput.Warn("GetComputedStyle returned null.");
+                return;
+            }
+
+            foreach (var (property, value) in values)
+                await computedOutput.Success($"{property} →", value);
+        }
+        catch (Exception ex)
+        {
+            await computedOutput.Error("GetComputedStyle failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadPseudo()
+    {
+        try
+        {
+            var values = await css.GetComputedStyle(_sample, ["content", "font-size", "opacity"], "::before");
+            await computedOutput.Success("::before →",
+                values is null ? "(nothing)" : string.Join(", ", values.Select(v => $"{v.Key}: {v.Value}")));
+        }
+        catch (Exception ex)
+        {
+            await computedOutput.Error("GetComputedStyle failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadAll()
+    {
+        try
+        {
+            var values = await css.GetComputedStyleAll(_sample);
+            await computedOutput.Success("GetComputedStyleAll →", $"{values?.Count ?? 0} properties - which is why the list overload exists");
+        }
+        catch (Exception ex)
+        {
+            await computedOutput.Error("GetComputedStyleAll failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckSupports()
+    {
+        try
+        {
+            await supportsOutput.Success($"Supports(\"{_property}\", \"{_value}\") →", await css.Supports(_property, _value));
+            await supportsOutput.Success($"SupportsCondition(\"({_property}: {_value})\") →",
+                await css.SupportsCondition($"({_property}: {_value})"));
+        }
+        catch (Exception ex)
+        {
+            await supportsOutput.Error("Supports failed →", ex.Message);
+        }
+    }
+
+    private async Task EscapeIt()
+    {
+        try
+        {
+            var escaped = await css.Escape(_toEscape);
+            await supportsOutput.Success($"Escape(\"{_toEscape}\") →", $"#{escaped} - usable in a selector, unlike #{_toEscape}");
+        }
+        catch (Exception ex)
+        {
+            await supportsOutput.Error("Escape failed →", ex.Message);
+        }
+    }
+
+    private async Task<bool> EnsureSheet(DemoConsole console)
+    {
+        if (_sheet is not null) return true;
+
+        _sheet = await css.CreateStyleSheet();
+        if (_sheet is not null) return true;
+
+        await console.Warn("CreateStyleSheet returned null.");
+        return false;
+    }
+
+    private async Task AddRule()
+    {
+        try
+        {
+            if (await EnsureSheet(sheetOutput) is false) return;
+
+            var index = await _sheet!.InsertRule(".css-sample { outline: 2px solid rebeccapurple; outline-offset: 2px }");
+            await sheetOutput.Success("InsertRule →", $"at index {index} - the sample above has an outline now");
+        }
+        catch (Exception ex)
+        {
+            await sheetOutput.Error("InsertRule failed →", ex.Message);
+        }
+    }
+
+    private async Task AddBadRule()
+    {
+        try
+        {
+            if (await EnsureSheet(sheetOutput) is false) return;
+
+            var index = await _sheet!.InsertRule("this is not css");
+            await sheetOutput.Warn("InsertRule →", $"{index} - refused rather than silently dropped");
+        }
+        catch (Exception ex)
+        {
+            await sheetOutput.Error("InsertRule failed →", ex.Message);
+        }
+    }
+
+    private async Task ListRules()
+    {
+        if (_sheet is null)
+        {
+            await sheetOutput.Warn("No stylesheet yet.");
+            return;
+        }
+
+        var rules = await _sheet.GetRules();
+        await sheetOutput.Success("GetRules →", rules.Length == 0 ? "(empty)" : string.Join(" | ", rules));
+    }
+
+    private async Task RemoveSheet()
+    {
+        if (_sheet is null) return;
+
+        await _sheet.DisposeAsync();
+        _sheet = null;
+        // The highlight rule was one of the rules that went with it, so the index has to go too, or
+        // the next highlight would think a replacement sheet already carried one.
+        _highlightRuleIndex = -1;
+        await sheetOutput.Log("Removed - every rule it carried went with it.");
+    }
+
+    private async Task RegisterAccent()
+    {
+        try
+        {
+            var error = await css.RegisterProperty("--butil-accent", "<color>", inherits: false, initialValue: "#6366f1");
+            if (error is null) await registerOutput.Success("RegisterProperty →", "--butil-accent is a <color> now, and animates.");
+            else await registerOutput.Warn("RegisterProperty →", error);
+        }
+        catch (Exception ex)
+        {
+            await registerOutput.Error("RegisterProperty failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleAccent()
+    {
+        try
+        {
+            _accentToggled = !_accentToggled;
+            await _accentBox.SetStyleProperty("--butil-accent", _accentToggled ? "#0d9488" : "#6366f1");
+            await registerOutput.Log(_accentToggled ? "Switched to teal." : "Switched back.");
+        }
+        catch (Exception ex)
+        {
+            await registerOutput.Error("Toggle failed →", ex.Message);
+        }
+    }
+
+    private async Task Highlight()
+    {
+        try
+        {
+            if (await css.IsHighlightAvailable() is false)
+            {
+                await highlightOutput.Warn("This engine has no Custom Highlight API.");
+                return;
+            }
+
+            // Nothing is painted until a ::highlight() rule exists, so put one in first.
+            if (await EnsureSheet(highlightOutput) is false) return;
+            if (_highlightRuleIndex < 0)
+                _highlightRuleIndex = await _sheet!.InsertRule("::highlight(butil-search) { background: gold; color: black }");
+
+            var count = await css.HighlightText("butil-search", _prose, _search);
+            await highlightOutput.Success("HighlightText →", $"{count} occurrence(s), and not one element added to the page");
+        }
+        catch (Exception ex)
+        {
+            await highlightOutput.Error("HighlightText failed →", ex.Message);
+        }
+    }
+
+    private int _highlightRuleIndex = -1;
+
+    private async Task ClearHighlights()
+    {
+        await css.ClearHighlight("butil-search");
+        await highlightOutput.Log("Cleared.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await css.ClearHighlight("butil-search");
+            if (_sheet is not null) await _sheet.DisposeAsync();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

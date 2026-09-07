@@ -117,5 +117,18 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 
 ## 6. Behavioral Directives
 
--   You **MUST** verify that you have access to the `ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message: **❌ CRITICAL ERROR: ask_question Tool Not Available**
 -   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.
+
+## 7. Available Agent Skills
+
+This project ships reusable [Agent Skills](https://agentskills.io), canonical in `.github/agents/`. Most agents preload only each skill's `description` and load the body on demand, so **do not read these files unless the trigger below matches the current task** - and when one does match, read the skill in full and follow it instead of improvising.
+
+| Skill | Read it when | Canonical file |
+| --- | --- | --- |
+| `scaffold-entity` | Adding a new entity or a new feature that needs full CRUD | `.github/agents/scaffold-entity.agent.md` |
+| `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx` | `.github/agents/localize-strings.agent.md` |
+| `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
+| `code-reviewer` | Reviewing a diff or PR against this project's conventions | `.github/agents/code-reviewer.agent.md` |
+| `ai-dlc` | Driving a feature end-to-end through requirements, plan, design, implement, validate | `.github/agents/ai-dlc.agent.md` |
+
+Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command, and Visual Studio lists the canonical files themselves in its agent picker as `@<name>`. The files under `.agents/skills/`, `.claude/skills/` and `.gemini/commands/` are thin bridges that delegate to the canonical file - never edit them for content, only the canonical file above.
