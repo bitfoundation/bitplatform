@@ -1,6 +1,5 @@
 //+:cnd:noEmit
 using System.Reflection;
-using ModelContextProtocol.Server;
 using Boilerplate.Server.Api.Features.Chatbot;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
 
@@ -12,13 +11,15 @@ namespace Boilerplate.Tests.Features.Chatbot;
 /// database with <c>HasData</c>. A wrong tool name, an unsupplied <c>{{Variable}}</c> or a lost newline is
 /// invisible in code review, invisible at build time, and only shows up as the assistant behaving oddly.
 /// <para>
-/// These are pure assertions over strings and reflection metadata - no server, no database, no model call - so
-/// they cost nothing to run and they close the whole class permanently.
+/// These are assertions over strings and the app's own metadata - no model call, and no assertion that depends on
+/// what a model would answer - so they close the whole class permanently.
 /// </para>
 /// </summary>
 [TestClass]
 public partial class SystemPromptContractTests
 {
+    public TestContext TestContext { get; set; } = default!;
+
     /// <summary>
     /// The variables <c>AppChatbot</c> actually emits into the per-message <c>### Variables:</c> system message:
     /// <c>variablesDefault</c> supplies the first three (See <c>AppChatbot.StartChat</c>) and
@@ -46,15 +47,20 @@ public partial class SystemPromptContractTests
     /// which is exactly why nobody spotted the two that were not.
     /// </summary>
     [TestMethod]
-    public void SeededPrompts_Should_OnlyNameToolsThatExist()
+    public async Task SeededPrompts_Should_OnlyNameToolsThatExist()
     {
-        var registeredTools = typeof(AppChatbot)
-            .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Where(m => m.GetCustomAttribute<McpServerToolAttribute>() is not null)
-            .Select(m => m.Name)
-            .ToArray();
+        // GetAIFunctions is the list the agent is given, and so the registry these prompts talk to. [McpServerTool] is
+        // a smaller set - what is also safe at /mcp - and would fail for every tool the agent alone has.
+        await using var server = new AppTestServer();
+        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
 
-        Assert.IsNotEmpty(registeredTools, "No [McpServerTool] methods were found on AppChatbot - the reflection query itself is broken, so a green result would mean nothing.");
+        var registeredTools = scope.ServiceProvider.GetRequiredService<AppChatbot>()
+                                                   .GetAIFunctions()
+                                                   .Select(function => function.Name)
+                                                   .ToArray();
+
+        Assert.IsNotEmpty(registeredTools, "AppChatbot registered no AI functions at all, so a green result would mean nothing.");
 
         foreach (var prompt in AllSeededPrompts)
         {
@@ -68,7 +74,7 @@ public partial class SystemPromptContractTests
             foreach (var namedTool in namedTools)
             {
                 Assert.Contains(namedTool, registeredTools,
-                    $"The seeded system prompt tells the model to call a '{namedTool}' tool, but no [McpServerTool] with that name exists on AppChatbot. Registered: [{string.Join(", ", registeredTools)}].");
+                    $"The seeded system prompt tells the model to call a '{namedTool}' tool, but AppChatbot registers no AI function with that name. Registered: [{string.Join(", ", registeredTools)}].");
             }
         }
     }

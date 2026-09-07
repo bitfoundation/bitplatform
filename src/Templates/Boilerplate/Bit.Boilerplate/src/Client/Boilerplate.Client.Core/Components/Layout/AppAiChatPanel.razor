@@ -107,9 +107,9 @@
                                                    Title="@Localizer[nameof(AppStrings.Copy)]"
                                                    OnClick="WrapHandled(() => CopyMessage(message))" />
 
-                                        @* Not on the greeting: that one is written here rather than by the model,
-                                           and read aloud only speaks what the model wrote. *@
-                                        @if (message.Role is AiChatMessageRole.Assistant && ReferenceEquals(message, greetingMessage) is false)
+                                        @* Only a signed answer can be read aloud, which rules out the greeting
+                                           written here and any answer that never finished arriving. *@
+                                        @if (message.Signature is not null)
                                         {
                                             var isReading = ReferenceEquals(readAloudMessage, message);
 

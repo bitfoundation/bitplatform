@@ -85,13 +85,20 @@ public partial class AppAiChatPanel
         // mode was doing when it opened. Nothing is said while the user is being recorded.
         if (readAloudEnabled is false || readAloudPaused || isListening || readAloudMessage is null) return;
 
+        // The backend only speaks an answer it is handed back the signature of, so an unsigned one is not worth a trip.
+        if (readAloudMessage.Signature is not { } signature) return;
+
         isReadAloudLoading = true;
         StateHasChanged();
 
         try
         {
             using var response = await httpClient.PostAsJsonAsync("api/v1/Chatbot/SynthesizeSpeech",
-                                                                  new SynthesizeSpeechRequestDto { Text = readAloudMessage.Content ?? string.Empty },
+                                                                  new SynthesizeSpeechRequestDto
+                                                                  {
+                                                                      Text = readAloudMessage.Content ?? string.Empty,
+                                                                      Signature = signature
+                                                                  },
                                                                   JsonSerializerOptions.GetTypeInfo<SynthesizeSpeechRequestDto>(),
                                                                   CurrentCancellationToken);
 

@@ -66,15 +66,12 @@ public partial class AppChatbot
     /// Navigates the user to a specific page within the application.
     /// </summary>
     [Description("Navigates the user to a specific page within the application. Use this tool only when the user explicitly requests to go to a particular section or feature of the app.")]
-    [McpServerTool(Name = nameof(NavigateToPage))]
     private async Task<string?> NavigateToPage(
         [Required, Description("Page URL to navigate to")] string pageUrl,
         CancellationToken cancellationToken = default)
     {
         if (Uri.IsAppRelativeUrl(pageUrl) is false)
             return "Invalid page url. Only app relative urls such as /dashboard are allowed.";
-
-        await EnsureSignalRConnectionIdIsPresent();
 
         await using var scope = serviceProvider.CreateAsyncScope();
 
@@ -104,15 +101,12 @@ public partial class AppChatbot
     }
 
     [Description(@"Displays the sign-in modal to the user and waits for either successful sign-in or cancellation")]
-    [McpServerTool(Name = nameof(ShowSignInModal))]
     public async Task<UserDto?> ShowSignInModal(CancellationToken cancellationToken = default)
     {
         await using var scope = serviceProvider.CreateAsyncScope();
 
         try
         {
-            await EnsureSignalRConnectionIdIsPresent();
-
             var accessToken = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
                 .Clients.Client(signalRConnectionId!)
                 .InvokeAsync<string>(SharedAppMessages.SHOW_SIGN_IN_MODAL, cancellationToken);
@@ -137,13 +131,10 @@ public partial class AppChatbot
     /// Changes the user's culture/language setting.
     /// </summary>
     [Description("Changes the user's culture/language setting. Use this tool only when the user explicitly requests to change the app language. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.")]
-    [McpServerTool(Name = nameof(SetApplicationCulture))]
     private async Task<string?> SetApplicationCulture(
         [Required, Description("Culture LCID (e.g., 1033 for en-US, 1065 for fa-IR)")] int cultureLcid,
         CancellationToken cancellationToken = default)
     {
-        await EnsureSignalRConnectionIdIsPresent();
-
         await using var scope = serviceProvider.CreateAsyncScope();
 
         try
@@ -170,13 +161,10 @@ public partial class AppChatbot
     /// Changes the user's theme preference between light and dark mode.
     /// </summary>
     [Description("Changes the user's theme preference between light and dark mode. Use this tool only when the user explicitly requests to change the app theme or appearance.")]
-    [McpServerTool(Name = nameof(SetApplicationTheme))]
     private async Task<string?> SetApplicationTheme(
         [Required, Description("Theme name: 'light' or 'dark'")] string theme,
         CancellationToken cancellationToken = default)
     {
-        await EnsureSignalRConnectionIdIsPresent();
-
         if (theme != "light" && theme != "dark")
             return "Invalid theme. Use 'light' or 'dark'.";
 
@@ -201,11 +189,8 @@ public partial class AppChatbot
     /// Retrieves the last error that occurred on the user's device from the diagnostic logs.
     /// </summary>
     [Description("Retrieves the last error that occurred on the user's device from the diagnostic logs. Use this tool when troubleshooting user-reported issues, investigating application crashes, or when the user mentions something isn't working.")]
-    [McpServerTool(Name = nameof(CheckLastError))]
     private async Task<string?> CheckLastError(CancellationToken cancellationToken = default)
     {
-        await EnsureSignalRConnectionIdIsPresent();
-
         await using var scope = serviceProvider.CreateAsyncScope();
 
         try
@@ -237,7 +222,6 @@ public partial class AppChatbot
     /// buttons under the answer.
     /// </summary>
     [Description("Sends short follow-up suggestions (questions or actions the user might pick next) to the user's device, where they are shown as clickable buttons under your answer. Call this exactly once right after every answer you give.")]
-    [McpServerTool(Name = nameof(SendFollowUpSuggestions))]
     private async Task<string?> SendFollowUpSuggestions(
         [Required, Description("Exactly 3 short follow-up suggestions, written from the user's perspective, each under 60 characters, in the language of the conversation")] string[] suggestions,
         CancellationToken cancellationToken = default)
@@ -251,8 +235,6 @@ public partial class AppChatbot
 
         if (followUpSuggestions.Count is 0)
             return "No suggestions were sent, because none of them had any text.";
-
-        await EnsureSignalRConnectionIdIsPresent();
 
         await using var scope = serviceProvider.CreateAsyncScope();
 
@@ -277,11 +259,8 @@ public partial class AppChatbot
     /// Clears application files on the user's device to fix issues.
     /// </summary>
     [Description("Clears application files on the user's device to fix issues.")]
-    [McpServerTool(Name = nameof(ClearAppFiles))]
     private async Task<string?> ClearAppFiles(CancellationToken cancellationToken = default)
     {
-        await EnsureSignalRConnectionIdIsPresent();
-
         await using var scope = serviceProvider.CreateAsyncScope();
 
         try

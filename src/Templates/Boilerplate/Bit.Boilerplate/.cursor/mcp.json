@@ -3,6 +3,9 @@
         "bitplatform": {
             "url": "https://bitplatform.dev/mcp"
         },
+        "dev-mcp": {
+            "url": "https://use-your-api-server-url-here.com/dev-mcp"
+        },
         "aspire": {
             "command": "aspire",
             "args": [

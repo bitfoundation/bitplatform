@@ -1902,4 +1902,134 @@
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>同意并继续</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>授权应用</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>正在检查此请求...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>无法授权此请求</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>未共享任何内容。您可以关闭此页面，然后从该应用重新尝试。</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>前往主页</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>您可以返回该应用</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>结果已交给 {0}。如果它没有自动切换到前台，请手动切换过去。</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>授权 {0}？</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>它请求代表您执行操作。只有在您确实是从信任的应用发起此操作时才继续。</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>应用</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>可访问</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>将您送回至</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>它将能够：</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>您的账户无法授予该应用请求的全部内容，因此以下项目将被排除：{0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>该应用是自行描述的；{0} 没有任何人为其担保。</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>授权</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>无法识别发出此请求的应用。</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>该应用希望被送回的地址不在它已注册的地址之中。</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>此授权请求无效。</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>读取此部署的诊断信息 - 配置、数据库架构、后台作业。它无法更改任何内容。</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>读取此部署的诊断信息。</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>已授权的应用</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>应用</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>已授权的应用</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>您的用户通过 OAuth 授权过的外部应用。</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>尚未授权任何应用。</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>一旦有人授权某个应用，它就会出现在这里；无需提前注册任何内容。</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>个有效授权</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>将用户送回至：</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>撤销访问权限</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} 目前持有 {1} 项授权。撤销会为所有授权过它的人注销；他们可以重新授权。</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>已撤销 {0} 项授权。</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>在此配置</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>自行描述</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>无法识别该应用，因此没有可返回的去处。</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>此授权请求无效（{0}）。</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>您的账户没有该应用所请求的权限。</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>该应用需要双重验证。请在您的账户设置中启用它，重新登录，然后从该应用重新开始。</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>工作区</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>您不是该应用所请求的工作区的成员。</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>代表您使用此应用的助手 - 向它提问并搜索它能搜索的内容。它无法在您的设备上执行操作。</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>代表您使用此应用的助手。</value>
+  </data>
+  <!--#endif -->
 </root>

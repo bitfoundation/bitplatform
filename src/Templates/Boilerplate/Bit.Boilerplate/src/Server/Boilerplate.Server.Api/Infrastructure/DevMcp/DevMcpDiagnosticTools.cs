@@ -65,7 +65,8 @@ public partial class DevMcpDiagnosticTools
                 UnconfirmedUsersRetention = identity.UnconfirmedUsersRetention.ToString(),
                 AccessTokenLifetime = identity.BearerTokenExpiration.ToString(),
                 RefreshTokenLifetime = identity.RefreshTokenExpiration.ToString(),
-                identity.Issuer,
+                // Derived from the request, so this is what every token minted on this deployment carries.
+                Issuer = httpContextAccessor.HttpContext?.Request.GetIssuer(),
                 identity.Audience
             },
             BackgroundJobs = new

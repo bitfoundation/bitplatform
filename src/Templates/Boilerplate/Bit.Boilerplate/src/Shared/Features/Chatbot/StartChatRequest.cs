@@ -56,6 +56,13 @@ public class AiChatMessageResponse
     /// sentence is never replayed as a complete previous answer.
     /// </summary>
     public bool Successful { get; set; } = true;
+
+    /// <summary>
+    /// The server's signature over <see cref="Content"/>, carried on the answer's
+    /// <c>SharedAppMessages.MESSAGE_PROCESS_SUCCESS</c> marker. Null on anything the assistant did not write, and an
+    /// assistant message that comes back without a matching one is dropped from the resent history.
+    /// </summary>
+    public string? Signature { get; set; }
 }
 
 public class AiChatFollowUpList

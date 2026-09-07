@@ -3,7 +3,7 @@ description = "Review changes against the project's conventions (Bit.BlazorUI, t
 prompt = """
 Follow these instructions exactly:
 
-@{.github/agents/code-reviewer.agent.md}
+@{.github/agents/review.agent.md}
 
 Scope to review (defaults to the uncommitted changes if empty): {{args}}
 """

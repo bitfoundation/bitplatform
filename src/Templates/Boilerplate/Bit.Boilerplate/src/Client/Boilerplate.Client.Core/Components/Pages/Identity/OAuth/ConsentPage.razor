@@ -1,0 +1,133 @@
+@*+:cnd:noEmit*@
+@attribute [Route(PageUrls.OAuthConsent)]
+@attribute [Route("{culture?}" + PageUrls.OAuthConsent)]
+@inherits AppPageBase
+
+@* Not [Authorize], which lands on NotAuthorizedPage: an OAuth client arrives signed out, so this page goes to /sign-in
+   with itself as the return url - which buys every existing way of signing in with no OAuth-specific code. *@
+
+<AppPageData Title="@Localizer[nameof(AppStrings.OAuthConsentPageTitle)]" />
+
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center">
+        <BitStack HorizontalAlign="BitAlignment.Center" FillContent Class="consent-card">
+
+            @if (isLoading || redirectToSignIn)
+            {
+                @* redirectToSignIn keeps the spinner up through the prerendered frame, so nothing flashes empty. *@
+                <BitProgress Indeterminate Label="@Localizer[nameof(AppStrings.OAuthConsentChecking)]" />
+            }
+            else if (error is not null)
+            {
+                <BitIcon IconName="@BitIconName.BlockedSite" Size="BitSize.Large" Color="BitColor.Error" />
+
+                <BitText Typography="BitTypography.H5" Align="BitTextAlign.Center">
+                    @Localizer[nameof(AppStrings.OAuthConsentRequestCannotBeAuthorized)]
+                </BitText>
+
+                <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center" Color="BitColor.SecondaryForeground">
+                    @error
+                </BitText>
+
+                <BitText Typography="BitTypography.Caption1" Align="BitTextAlign.Center" Color="BitColor.SecondaryForeground">
+                    @Localizer[nameof(AppStrings.OAuthConsentNothingShared)]
+                </BitText>
+
+                <BitLink Href="@PageUrls.Home">@Localizer[nameof(AppStrings.GoToHomePage)]</BitLink>
+            }
+            else if (leftFor is not null)
+            {
+                @* Hybrid only: the result went to another app, so this page cannot navigate away and would otherwise
+                   still be showing the buttons the user just pressed. *@
+                <BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Large" Color="BitColor.Success" />
+
+                <BitText Typography="BitTypography.H5" Align="BitTextAlign.Center">
+                    @Localizer[nameof(AppStrings.OAuthConsentLeftForApp)]
+                </BitText>
+
+                <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center" Color="BitColor.SecondaryForeground">
+                    @Localizer[nameof(AppStrings.OAuthConsentLeftForAppMessage), consent?.ClientName ?? leftFor]
+                </BitText>
+            }
+            else if (consent is not null)
+            {
+                <BitText Typography="BitTypography.H5" Align="BitTextAlign.Center">
+                    @Localizer[nameof(AppStrings.OAuthConsentAuthorizeTitle), consent.ClientName!]
+                </BitText>
+
+                <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center" Color="BitColor.SecondaryForeground">
+                    @Localizer[nameof(AppStrings.OAuthConsentActOnYourBehalfMessage)]
+                </BitText>
+
+                <BitStack FillContent Gap="0.75rem" Class="consent-facts">
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" VerticalAlign="BitAlignment.Center">
+                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.OAuthConsentApplication)]</BitText>
+                        <BitText Typography="BitTypography.Subtitle2">@consent.ClientOrigin</BitText>
+                    </BitStack>
+
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" VerticalAlign="BitAlignment.Center">
+                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.OAuthConsentCanAccess)]</BitText>
+                        <BitText Typography="BitTypography.Subtitle2">@consent.Resource</BitText>
+                    </BitStack>
+
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" VerticalAlign="BitAlignment.Center">
+                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.OAuthConsentSendsYouBackTo)]</BitText>
+                        <BitText Typography="BitTypography.Subtitle2">@consent.RedirectUri</BitText>
+                    </BitStack>
+
+                    @*#if (multitenant == true)*@
+                    @if (string.IsNullOrEmpty(consent.TenantName) is false)
+                    {
+                        <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" VerticalAlign="BitAlignment.Center">
+                            <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.OAuthConsentWorkspace)]</BitText>
+                            <BitText Typography="BitTypography.Subtitle2">@consent.TenantName</BitText>
+                        </BitStack>
+                    }
+                    @*#endif*@
+                </BitStack>
+
+                <BitStack FillContent Gap="0.25rem">
+                    <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(AppStrings.OAuthConsentItWillBeAbleTo)]</BitText>
+                    @foreach (var scope in consent.Scopes)
+                    {
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                            <BitIcon IconName="@BitIconName.CheckMark" Color="BitColor.Success" />
+                            <BitText Typography="BitTypography.Body2">@ScopeDescription(scope)</BitText>
+                        </BitStack>
+                    }
+                </BitStack>
+
+                @if (consent.DeniedScopes.Any())
+                {
+                    <BitMessage Color="BitColor.Warning">
+                        @Localizer[nameof(AppStrings.OAuthConsentDeniedScopesMessage), string.Join(", ", consent.DeniedScopes)]
+                    </BitMessage>
+                }
+
+                @if (consent.IsPreRegistered is false)
+                {
+                    <BitMessage Color="BitColor.Info">
+                        @Localizer[nameof(AppStrings.OAuthConsentSelfDescribedMessage), AbsoluteServerAddress.GetAddress().Host]
+                    </BitMessage>
+                }
+
+                <BitStack Horizontal FillContent Gap="1rem">
+                    <BitButton FullWidth
+                               Variant="BitVariant.Outline"
+                               Color="BitColor.SecondaryBackground"
+                               IsEnabled="@(isSubmitting is false)"
+                               OnClick="WrapHandled(Deny)">
+                        @Localizer[nameof(AppStrings.Cancel)]
+                    </BitButton>
+
+                    <BitButton FullWidth
+                               IsLoading="isSubmitting"
+                               OnClick="WrapHandled(Approve)">
+                        @Localizer[nameof(AppStrings.Authorize)]
+                    </BitButton>
+                </BitStack>
+            }
+
+        </BitStack>
+    </BitStack>
+</section>

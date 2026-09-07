@@ -60,6 +60,32 @@
                 <BitBasicList Items="otherSessions" Virtualize ItemSize="120" Class="sessions-list">
                     <RowTemplate Context="session">
                         <BitCard FullWidth Style="margin-bottom:1rem">
+                            @if (string.IsNullOrEmpty(session.OAuthClientId) is false)
+                            {
+                                @* An application the user authorized, not a device of theirs. *@
+                                <BitStack Gap="0.25rem" Class="oauth-session-banner">
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                                        <BitIcon IconName="@BitIconName.PlugConnected" Color="BitColor.Info" />
+                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                            @Localizer[nameof(AppStrings.OAuthSessionAuthorizedApplication)]
+                                        </BitText>
+                                        <BitText Typography="BitTypography.Subtitle2">
+                                            @(session.OAuthClientName ?? session.OAuthClientId)
+                                        </BitText>
+                                    </BitStack>
+
+                                    @foreach (var scope in (session.OAuthScope ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                                    {
+                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                            @ScopeDescription(scope)
+                                        </BitText>
+                                    }
+
+                                    <BitText Typography="BitTypography.Caption1" Class="oauth-client-id" Color="BitColor.SecondaryForeground" Title="@session.OAuthClientId">
+                                        @session.OAuthClientId
+                                    </BitText>
+                                </BitStack>
+                            }
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                                 <BitPersona PrimaryText="@($"{session.Address} ({session.IP})")"
                                             SecondaryText="@GetLastSeenOn(session.RenewedOnDateTimeOffset)"
@@ -70,7 +96,7 @@
                                             Styles="@(new() { Image = "width:50%;height:50%" })"
                                             ImageInitials="@(session.Privileged ? "✓" : "✘")"
                                             CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)"
-                                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
+                                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session)}")" />
                                 <BitSpacer />
                                 <BitButton IconOnly
                                            Color="BitColor.Error"

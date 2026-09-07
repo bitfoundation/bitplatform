@@ -228,22 +228,40 @@ public static class IDistributedApplicationBuilderExtensions
         //#endif
 
         /// <summary>
-        /// Projects' launchSettings bind <c>http://*:port</c> so a direct <c>dotnet run</c> is reachable over the LAN
-        /// (e.g. from Android/iOS devices), but Aspire can't give a container a reachable address for a wildcard host,
-        /// so that endpoint only makes the ingress container fail to start. Drops every wildcard endpoint from the
-        /// model - run mode only, and launchSettings is untouched, so a direct run still binds every interface.
+        /// In Run mode, converts wildcard (<c>*</c>) launchSettings endpoints to proxy-less <c>0.0.0.0</c> LAN endpoints
+        /// (and sets sibling <c>localhost</c> endpoints to proxy-less) so Kestrel binds all interfaces directly,
+        /// while hiding the wildcard endpoints from service discovery to prevent ms-dev and cloudflare tunnel failures.
         /// </summary>
-        public IDistributedApplicationBuilder RemoveWildcardEndpoints()
+        public IDistributedApplicationBuilder ExposeWildcardEndpointsToLan()
         {
-            if (builder.ExecutionContext.IsRunMode is false)
-                return builder;
+            if (builder.ExecutionContext.IsRunMode is false) return builder;
 
-            foreach (var project in builder.Resources.OfType<ProjectResource>().ToArray())
+            foreach (var project in builder.Resources.OfType<ProjectResource>())
             {
-                foreach (var wildcard in project.Annotations.OfType<EndpointAnnotation>().Where(endpoint => endpoint.TargetHost is "*").ToArray())
-                    project.Annotations.Remove(wildcard);
-            }
+                var endpoints = project.Annotations.OfType<EndpointAnnotation>().ToList();
+                var wildcards = endpoints.Where(e => e.TargetHost is "*").ToList();
 
+                foreach (var wc in wildcards)
+                {
+                    if (wc.Port is not { } port)
+                    {
+                        project.Annotations.Remove(wc);
+                        continue;
+                    }
+
+                    wc.Name = wildcards.Count == 1 ? "lan" : $"{wc.UriScheme}-lan";
+                    wc.TargetHost = "0.0.0.0";
+                    wc.TargetPort = port;
+                    wc.IsProxied = false;
+                    wc.ExcludeReferenceEndpoint = true;
+
+                    foreach (var sibling in endpoints.Where(e => e != wc && e.UriScheme == wc.UriScheme && e.Port == port))
+                    {
+                        sibling.TargetPort = port;
+                        sibling.IsProxied = false;
+                    }
+                }
+            }
             return builder;
         }
 
