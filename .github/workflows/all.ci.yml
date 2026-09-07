@@ -1,4 +1,4 @@
-name: bit platform full CI
+name: All CI
 
 on:
   workflow_dispatch:
@@ -14,8 +14,8 @@ jobs:
 
 # Bit.BlazorUI solution is being built in bit.ci.yml
 
-  build-boilerplate:
-    name: Build Boilerplate itself
+  build_boilerplate:
+    name: build boilerplate itself
     runs-on: ubuntu-24.04
 
     steps:
@@ -44,8 +44,8 @@ jobs:
 
 
 
-  test-boilerplate-postgres:
-    name: Create project from template with PostgreSQL and test it
+  test_boilerplate_postgres:
+    name: create project from template with postgresql and test it
     runs-on: ubuntu-24.04
 
     steps:
@@ -153,8 +153,8 @@ jobs:
         retention-days: 14
 
 
-  test-boilerplate-mssql:
-    name: Create project from template with SQL Server and test it
+  test_boilerplate_mssql:
+    name: create project from template with sql server and test it
     runs-on: ubuntu-24.04
 
     steps:
@@ -257,8 +257,8 @@ jobs:
     # its initializer before a single browser starts. The PostgreSQL job above covers that configuration.
 
 
-  build-boilerplate-configurations:
-    name: Create several projects from template and build them
+  build_boilerplate_configurations:
+    name: create several projects from template and build them
     runs-on: ubuntu-24.04
 
     steps:
@@ -325,8 +325,8 @@ jobs:
 
 
 
-  build-blazorempty-configurations:
-    name: Build BlazorEmpty based projects
+  build_blazorempty_configurations:
+    name: build blazorempty based projects
     runs-on: ubuntu-24.04
 
     steps:
@@ -365,8 +365,8 @@ jobs:
 
 
 
-  build-nuget-packages:
-    name: Build NuGet packages locally
+  build_nuget_packages:
+    name: build nuget packages locally
     runs-on: ubuntu-24.04
 
     steps:
@@ -525,8 +525,8 @@ jobs:
 
 
 
-  build-bswup-solution:
-    name: Build Bswup solution
+  build_bswup_solution:
+    name: build bswup solution
     runs-on: ubuntu-24.04
 
     steps:
@@ -555,8 +555,8 @@ jobs:
 
 
 
-  build-butil-solution:
-    name: Build Butil solution
+  build_butil_solution:
+    name: build butil solution
     runs-on: ubuntu-24.04
 
     steps:
@@ -585,8 +585,8 @@ jobs:
 
 
 
-  build-brouter-solution:
-    name: Build Brouter solution
+  build_brouter_solution:
+    name: build brouter solution
     runs-on: ubuntu-24.04
 
     steps:
@@ -615,8 +615,8 @@ jobs:
 
 
 
-  build-bmotion-solution:
-    name: Build Bmotion solution
+  build_bmotion_solution:
+    name: build bmotion solution
     runs-on: ubuntu-24.04
 
     steps:
@@ -645,8 +645,8 @@ jobs:
 
 
 
-  build-tooling-solutions:
-    name: Build tooling solutions
+  build_tooling_solutions:
+    name: build tooling solutions
     runs-on: ubuntu-24.04
 
     steps:
@@ -671,8 +671,8 @@ jobs:
 
 
 
-  build-websites:
-    name: Build website solutions
+  build_websites:
+    name: build website solutions
     runs-on: ubuntu-24.04
 
     steps:

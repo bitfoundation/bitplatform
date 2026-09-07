@@ -1,5 +1,5 @@
 ---
-name: code-reviewer
+name: review
 description: Reviews code changes against this project's conventions - Bit.BlazorUI usage, theming, enhanced lifecycle methods, WrapHandled, Mapperly, OData, structured logging, nullable awareness, security and concurrency. Reports findings only and never modifies code.
 ---
 

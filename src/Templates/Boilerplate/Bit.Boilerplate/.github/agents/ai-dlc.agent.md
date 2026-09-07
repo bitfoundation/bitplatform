@@ -32,9 +32,22 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 
 ### 5. Validation
 - Run build and tests after completing all tasks
-- Invoke the **code-reviewer** skill (`.github/agents/code-reviewer.agent.md`) on the resulting changes
+- Invoke the **review** skill (`.github/agents/review.agent.md`) on the resulting changes
 - Confirm acceptance criteria are met
+- Against a deployment, read its real state through **dev-mcp** (below) rather than guessing
 - Surface any issues found and resolve them before handing back
+
+### 6. Troubleshooting
+- Reproduce the failure and locate it before changing anything - a fix aimed at a guess is just a second bug
+- Read a running deployment's own state through the **dev-mcp** MCP server instead of inferring it: effective configuration, health, database schema and applied migrations, entity queries, and Hangfire job state - read-only, global-admin only, and every call is logged
+- The project's MCP files point it at `https://use-your-api-server-url-here.com/dev-mcp`; after the first publish, tell the user to replace that placeholder with the published server's address, because until then it connects to nothing
+<!--#if (sentry == true)-->
+- Suggest adding Sentry's MCP server too, so a reported exception can be read here rather than in Sentry's dashboard
+<!--#endif-->
+<!--#if (appInsights == true)-->
+- Suggest adding the Azure MCP server too, whose Azure Monitor tools read this app's traces, logs and metrics without leaving the session
+<!--#endif-->
+- Confirm the fix against the same evidence that showed the problem, then re-run phase 5
 
 ## Rules
 - Always complete phases 1-2 before writing any code

@@ -1,0 +1,17 @@
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .consent-card {
+        max-width: 30rem;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .consent-facts {
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        border: 1px solid var($bit-color-border-secondary);
+        background-color: var($bit-color-background-secondary);
+        word-break: break-all;
+    }
+}

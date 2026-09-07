@@ -1,0 +1,105 @@
+@*+:cnd:noEmit*@
+@using Boilerplate.Shared.Features.Identity.OAuth.Dtos
+@attribute [Route(PageUrls.OAuthClients)]
+@attribute [Route("{culture?}" + PageUrls.OAuthClients)]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.System.OAuthClients_Manage)]
+@inherits AppPageBase
+
+<AppPageData Title="@Localizer[nameof(AppStrings.OAuthClients)]"
+             PageTitle="@Localizer[nameof(AppStrings.OAuthClientsPageTitle)]" />
+
+<section>
+    <BitStack Style="min-width:fit-content">
+        <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Center">
+            <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
+                @Localizer[nameof(AppStrings.OAuthClientsSubtitle)]
+            </BitText>
+            <BitSpacer />
+            <BitButton AutoLoading IconOnly
+                       IconName="@BitIconName.Refresh"
+                       IsEnabled="isLoading is false"
+                       OnClick="WrapHandled(LoadClients)"
+                       Title="@Localizer[nameof(AppStrings.Refresh)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.Refresh)]" />
+        </BitStack>
+
+        @if (isLoading)
+        {
+            <BitRollingSquareLoading Size="BitSize.Small" />
+        }
+        else if (clients.Count is 0)
+        {
+            <BitStack HorizontalAlign="BitAlignment.Center" Gap="0.5rem" Class="empty-state">
+                <BitIcon IconName="@BitIconName.PlugDisconnected" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
+                <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.OAuthClientsEmptyTitle)]</BitText>
+                <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
+                    @Localizer[nameof(AppStrings.OAuthClientsEmptyMessage)]
+                </BitText>
+            </BitStack>
+        }
+        else
+        {
+            <BitStack FillContent Gap="1rem" Class="clients-list">
+                @foreach (var client in clients)
+                {
+                    <BitCard FullWidth NoShadow Class="client-card">
+                        <BitStack Gap="0.75rem">
+
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.75rem">
+                                <BitStack Gap="0.15rem" FillContent>
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                                        <BitText Typography="BitTypography.Subtitle1">@client.ClientName</BitText>
+                                        <BitTag Color="@KindColor(client.Kind)" Size="BitSize.Small">@KindLabel(client.Kind)</BitTag>
+                                    </BitStack>
+                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                        @client.Origin
+                                    </BitText>
+                                </BitStack>
+
+                                <BitStack HorizontalAlign="BitAlignment.End" Gap="0.15rem">
+                                    <BitText Typography="BitTypography.H6">@client.ActiveGrants.ToString("N0")</BitText>
+                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                        @Localizer[nameof(AppStrings.OAuthClientActiveGrants)]
+                                    </BitText>
+                                </BitStack>
+                            </BitStack>
+
+                            <BitText Typography="BitTypography.Caption1" Class="client-id" Title="@client.ClientId">
+                                @client.ClientId
+                            </BitText>
+
+                            @if (client.RedirectUris.Any())
+                            {
+                                <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground" Class="client-id">
+                                    @Localizer[nameof(AppStrings.OAuthClientRedirectUris)] @string.Join(" · ", client.RedirectUris)
+                                </BitText>
+                            }
+
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="1rem">
+                                <BitSpacer />
+
+                                <BitButton Variant="BitVariant.Outline"
+                                           Color="BitColor.Warning"
+                                           IsEnabled="@(client.ActiveGrants > 0)"
+                                           IsLoading="@(busyClientId == client.ClientId && busyAction is Busy.Revoking)"
+                                           OnClick="WrapHandled(() => AskToRevokeGrants(client))">
+                                    @Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]
+                                </BitButton>
+                            </BitStack>
+
+                        </BitStack>
+                    </BitCard>
+                }
+            </BitStack>
+        }
+    </BitStack>
+</section>
+
+<BitDialog OnOk="WrapHandled(RevokeGrants)"
+           @bind-IsOpen="isRevokeDialogOpen"
+           OkText="@Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]"
+           CancelText="@Localizer[nameof(AppStrings.Cancel)]"
+           Title="@Localizer[nameof(AppStrings.OAuthClientRevokeAccess)]"
+           Message="@Localizer[nameof(AppStrings.OAuthClientRevokeConfirmMessage),
+                              pendingClient?.ClientName ?? "", (pendingClient?.ActiveGrants ?? 0).ToString("N0")]" />

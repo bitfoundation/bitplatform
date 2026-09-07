@@ -87,7 +87,8 @@ public partial class SharedAppMessages
     public const string MESSAGE_PROCESS_ERROR = nameof(MESSAGE_PROCESS_ERROR);
 
     /// <summary>
-    /// This would let the client know that a chat bot successfully processed the user's message.
+    /// This would let the client know that a chat bot successfully processed the user's message. When the turn
+    /// produced an answer, the server's signature over that answer follows a ':' on this same frame.
     /// </summary>
     public const string MESSAGE_PROCESS_SUCCESS = nameof(MESSAGE_PROCESS_SUCCESS);
 

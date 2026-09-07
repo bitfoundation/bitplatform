@@ -228,7 +228,6 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
         }
     },
     "Identity": {
-        "Issuer": "Boilerplate",
         "Audience": "Boilerplate",
         "BearerTokenExpiration": "0.00:05:00",
         "RefreshTokenExpiration": "14.00:00:00"

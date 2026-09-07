@@ -15,12 +15,14 @@ public partial class AppJwtSecureDataFormat
     private readonly RsaSecurityKey privateKey;
     private readonly TimeProvider timeProvider;
     private readonly ServerApiSettings appSettings;
+    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ILogger<AppJwtSecureDataFormat> logger;
     private readonly TokenValidationParameters validationParameters;
 
     public AppJwtSecureDataFormat(ServerApiSettings appSettings,
         IHostEnvironment env,
         IConfiguration configuration,
+        IHttpContextAccessor httpContextAccessor,
         ILogger<AppJwtSecureDataFormat> logger,
         TimeProvider timeProvider,
         string tokenType)
@@ -29,15 +31,42 @@ public partial class AppJwtSecureDataFormat
         this.tokenType = tokenType;
         this.appSettings = appSettings;
         this.timeProvider = timeProvider;
+        this.httpContextAccessor = httpContextAccessor;
 
-        // The two token classes are otherwise indistinguishable - same key, same issuer, same claim shape - so each
-        // gets its own audience and validates only its own. Without that, a refresh token would authenticate ordinary
-        // api calls for its full 14 day lifetime, and an access token replayed at Refresh would mint a new session.
-        audience = tokenType is "AccessToken" ? appSettings.Identity.Audience : $"{appSettings.Identity.Audience}:{tokenType}";
+        // The classes are otherwise indistinguishable - same key, issuer and claim shape - so each validates only its
+        // own audience, or a refresh token would authenticate ordinary api calls and an access token replayed at
+        // Refresh would mint a session. Anything else is an RFC 8707 resource identifier, and is its own audience.
+        audience = tokenType switch
+        {
+            "AccessToken" => appSettings.Identity.Audience,
+            "RefreshToken" => $"{appSettings.Identity.Audience}:{tokenType}",
+            var resource => resource
+        };
+
+        // Refresh-class tokens are unprotected by code that checks expiry itself while rotating, so the protector must
+        // not reject one first. Keyed off the type, or an OAuth access token - whose type is a url - would go unchecked.
+        var isRefreshToken = tokenType.EndsWith("RefreshToken", StringComparison.Ordinal);
 
         privateKey = AppCertificateService.GetPrivateSecurityKey(configuration);
 
-        validationParameters = new()
+        validationParameters = CreateValidationParameters(configuration, env, appSettings, httpContextAccessor);
+        validationParameters.ValidateLifetime = isRefreshToken is false;
+        validationParameters.ValidateAudience = true;
+        validationParameters.ValidAudience = audience;
+        validationParameters.AuthenticationType = IdentityConstants.BearerScheme;
+    }
+
+    /// <summary>
+    /// The rules every token this server signed is checked against, here and in <c>AppOAuthBearerOptionsConfigurator</c>,
+    /// so key handling and trusted issuers cannot drift between the two schemes. Lifetime and audience are the caller's:
+    /// they are what tell the token classes apart.
+    /// </summary>
+    public static TokenValidationParameters CreateValidationParameters(IConfiguration configuration,
+        IHostEnvironment env,
+        ServerApiSettings appSettings,
+        IHttpContextAccessor httpContextAccessor)
+    {
+        return new()
         {
             ClockSkew = TimeSpan.Zero,
             RequireSignedTokens = true,
@@ -47,17 +76,21 @@ public partial class AppJwtSecureDataFormat
             ValidateIssuerSigningKey = env.IsDevelopment() is false,
 
             RequireExpirationTime = true,
-            ValidateLifetime = tokenType is "AccessToken", /* IdentityController.Refresh will validate expiry itself while refreshing the token */
-
-            ValidateAudience = true,
-            ValidAudience = audience,
 
             ValidateIssuer = true,
-            ValidIssuer = appSettings.Identity.Issuer,
-
-            AuthenticationType = IdentityConstants.BearerScheme
+            IssuerValidator = (issuer, _, _) => appSettings.IsTrustedIssuer(issuer, httpContextAccessor.HttpContext?.Request)
+                ? issuer
+                : throw new SecurityTokenInvalidIssuerException($"'{issuer}' is not an origin this server issues tokens for.")
         };
     }
+
+    /// <summary>
+    /// RFC 8414 wants the issuer to be the url its metadata is served from, and this app only learns that from the
+    /// request - localhost, a dev tunnel and production all differ. Keeps <c>iss</c>, the discovery document and the
+    /// address the caller used in agreement, unconfigured.
+    /// </summary>
+    private string Issuer => httpContextAccessor.HttpContext?.Request.GetIssuer()
+        ?? throw new InvalidOperationException("A token cannot be minted outside of a request.");
 
     public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);
 
@@ -84,22 +117,10 @@ public partial class AppJwtSecureDataFormat
 
             var identity = new ClaimsIdentity(principal.Identity, null, IdentityConstants.BearerScheme, ClaimTypes.NameIdentifier, ClaimTypes.Role);
 
-            if (principal.IsInRole(AppRoles.GlobalAdmin))
+            foreach (var feat in AppFeatures.GetRoleImpliedFeatures(principal.IsInRole))
             {
-                foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
-                {
-                    identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
-                }
+                identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
             }
-            //#if (multitenant == true)
-            else if (principal.IsInRole(AppRoles.TenantAdmin))
-            {
-                foreach (var feat in AppFeatures.GetTenantAdminFeatures())
-                {
-                    identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
-                }
-            }
-            //#endif
 
             var result = new ClaimsPrincipal(identity);
 
@@ -129,7 +150,7 @@ public partial class AppJwtSecureDataFormat
         var securityToken = jwtSecurityTokenHandler
             .CreateJwtSecurityToken(new SecurityTokenDescriptor
             {
-                Issuer = appSettings.Identity.Issuer,
+                Issuer = Issuer,
                 Audience = audience,
                 IssuedAt = timeProvider.GetUtcNow().UtcDateTime,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,

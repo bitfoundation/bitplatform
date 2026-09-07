@@ -5,6 +5,7 @@ using Boilerplate.Server.Api.Features.Tenants;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity.Models;
 
@@ -86,4 +87,10 @@ public partial class UserSession
     /// The version of the application used for this session.
     /// </summary>
     public string? AppVersion { get; set; }
+
+    /// <summary>
+    /// Set when an external application authorized over OAuth holds this session rather than one of the user's own
+    /// devices - which is what makes a grant revocable from Settings -&gt; Sessions like anything else.
+    /// </summary>
+    public OAuthGrant? OAuthGrant { get; set; }
 }

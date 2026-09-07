@@ -3,6 +3,8 @@
 using Hangfire.Storage;
 using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
+using Boilerplate.Server.Api.Features.Identity.OAuth;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
 using Boilerplate.Server.Api.Features.Identity;
 //#if (signalR == true)
 using Boilerplate.Server.Api.Features.Attachments;
@@ -82,13 +84,16 @@ public static partial class Program
 
         //#if (signalR == true)
         app.MapHub<Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
-        app.MapMcp("/mcp").RequireAuthorization(); // Chatbot tools. Isolated from /dev-mcp.
+        app.MapMcp(OAuthResources.McpPath).RequireAuthorization(OAuthEndpoints.AuthorizationFor(OAuthResources.McpPath)); // Chatbot tools. Isolated from /dev-mcp.
         //#endif
 
-        // Both policies, so both must pass: /dev-mcp is for global admins who have turned 2FA on, not either-or.
-        app.MapMcp("/dev-mcp").RequireAuthorization(AppFeatures.System.DevMcp, AuthPolicies.TFA_ENABLED);
+        // The feature AND two factor, for the app's own bearer scheme or a token issued for this resource; every
+        // requirement is read off OAuthResources (OAuthEndpoints.AuthorizationFor).
+        app.MapMcp(OAuthResources.DevMcpPath).RequireAuthorization(OAuthEndpoints.AuthorizationFor(OAuthResources.DevMcpPath));
 
         app.MapOpenIdConfiguration();
+
+        app.MapOAuthEndpoints();
 
         app.MapControllers()
            .RequireAuthorization()
@@ -115,6 +120,11 @@ public static partial class Program
                                                                            runner => runner.EnforceRetention(CancellationToken.None),
                                                                            Cron.Daily);
         scheduled.Add(UnconfirmedUsersRetentionJobRunner.RecurringJobId);
+
+        recurringJobManager.AddOrUpdate<OAuthRetentionJobRunner>(OAuthRetentionJobRunner.RecurringJobId,
+                                                                runner => runner.EnforceRetention(CancellationToken.None),
+                                                                Cron.Daily);
+        scheduled.Add(OAuthRetentionJobRunner.RecurringJobId);
 
         //#if (notification == true)
         recurringJobManager.AddOrUpdate<PushSubscriptionsRetentionJobRunner>(PushSubscriptionsRetentionJobRunner.RecurringJobId,
@@ -181,8 +191,11 @@ public static partial class Program
             var baseUrl = request.GetBaseUrl();
             return new
             {
-                issuer = app.Configuration["Identity:Issuer"],
+                // Must be derived exactly as AppJwtSecureDataFormat derives it when minting, or a consumer that trusts
+                // this document rejects every token it was published to validate.
+                issuer = request.GetIssuer(),
                 jwks_uri = new Uri(baseUrl, ".well-known/jwks"),
+                id_token_signing_alg_values_supported = new[] { SecurityAlgorithms.RsaSha256 },
             };
         });
 
