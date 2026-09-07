@@ -14,6 +14,13 @@
     // main
     --bit-tpg-font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 
+    // The monospaced family, for the text whose characters have to line up in a column rather than
+    // read as prose. Cascadia Mono is what Windows ships with Windows Terminal and Visual Studio, and
+    // the rest of the stack is each platform's own before the generic keyword, which is the last
+    // resort rather than the value: a bare "monospace" is drawn at the browser's monospace default
+    // size and comes out visibly smaller than the text around it.
+    --bit-tpg-font-family-mono: "Cascadia Mono", "Cascadia Code", Consolas, "SF Mono", Menlo, "DejaVu Sans Mono", "Roboto Mono", "Liberation Mono", "Courier New", monospace;
+
     // The weight of the LABEL OF AN INTERACTIVE CONTROL - a button, a tag, a pagination page, a
     // dialog action, the parts of a time picker. Fabric sets those semibold (ms-Button-label), and
     // so does Fluent 2 (Button medium and large are fontWeightSemibold); Material stays at 500,

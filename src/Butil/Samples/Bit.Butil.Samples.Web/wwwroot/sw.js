@@ -1,6 +1,6 @@
 // The standalone WebAssembly sample's service worker. It caches nothing: it exists so the
-// registration-based APIs on the Workers page - navigation preload, the Clients API, Background
-// Fetch and the Content Index - have something real to register against.
+// registration-based APIs on the Service Worker page - navigation preload, the Clients API,
+// Background Fetch and the Content Index - have something real to register against.
 
 // Deliberately no self.skipWaiting() here. A first registration activates immediately anyway
 // (nothing is controlling the page yet), while a worker installed over a running one waits - which

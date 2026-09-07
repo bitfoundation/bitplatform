@@ -82,7 +82,7 @@
                     </div>
                 </div>
 
-                <BitMessage Color="BitColor.Info">
+                <BitMessage Color="BitColor.Info" Multiline>
                     Starting a brand new app? <code>dotnet new bit-empty</code> produces a solution with
                     every step below already done - see
                     <BitLink Href="/getting-started#template">Start from a template</BitLink>.
@@ -117,7 +117,7 @@
                     </BitPivotItem>
                 </BitPivot>
 
-                <BitMessage Color="BitColor.Warning">
+                <BitMessage Color="BitColor.Warning" Multiline>
                     In a Blazor Web App with a separate <code>.Client</code> project, the package belongs to
                     whichever project holds your <code>.razor</code> files - which is usually both of them.
                 </BitMessage>
@@ -229,7 +229,7 @@ dotnet add package Bit.BlazorUI.Legacy</CodeBox>
                     <li><code>BitPageVisibility</code> - the browser's page-visibility state, as an event.</li>
                 </ul>
 
-                <BitMessage Color="BitColor.Warning">
+                <BitMessage Color="BitColor.Warning" Multiline>
                     In a Blazor Web App with a WebAssembly client, call it in <b>both</b>
                     <code>Program.cs</code> files. A component that renders on the server during
                     prerendering and again in the browser afterwards has to find the service in both
@@ -306,7 +306,7 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
     &lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script>
 &lt;/body></CodeBox>
 
-                <BitMessage Color="BitColor.Info">
+                <BitMessage Color="BitColor.Info" Multiline>
                     <b>Order matters among the stylesheets.</b> A design-system preset is an
                     override-only bundle of <code>--bit-*</code> tokens, so anything that re-skins the
                     library - Fluent&nbsp;2, Material, Cupertino, or a block of your own - has to be

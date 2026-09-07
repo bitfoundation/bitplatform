@@ -1,0 +1,474 @@
+@page "/canvas"
+@implements IAsyncDisposable
+@inject Bit.Butil.Canvas canvas
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageTitle>Canvas - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM &amp; Interaction"
+            Title="Canvas"
+            Lead="Getting a picture in and bytes out: draw a video frame or an image onto a canvas, then export it as a data URL or a byte[] - the screenshot and thumbnail path C# had no way to reach."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement"
+            InjectAs="Canvas canvas" />
+
+<Callout Type="info" Title="Not a drawing API, on purpose">
+    Every path, gradient and text call from C# would be an interop round trip, and a drawing loop
+    written that way is slower than the same loop in JavaScript by orders of magnitude. If you are
+    <em>drawing</em>, write the drawing in a script. What C# genuinely could not do before is the
+    other half - taking a frame and turning it into bytes - and that is what this covers.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsOffscreenSupported / IsWebGlSupported / IsWebGpuSupported"
+                 Description="A 2D context is everywhere. OffscreenCanvas is what Capture uses when it is there, and Capture works either way. WebGL and WebGPU are probes rather than wrappers - Butil does not wrap either, but 'can this device do it at all' is often the question behind the feature."
+                 Code=@("""
+@inject Bit.Butil.Canvas canvas
+
+var supported = await canvas.IsSupported();
+var offscreen = await canvas.IsOffscreenSupported();
+var webgl = await canvas.IsWebGlSupported();
+var webgpu = await canvas.IsWebGpuSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Draw an image onto a canvas"
+                 Api="DrawImage / SetSize / Clear / GetSize"
+                 Description="Source coordinates are in the source's own intrinsic pixels, not the size CSS is displaying it at - so a video laid out at 320px still yields its full frame. Note what GetSize reports: the pixel buffer and the CSS box are two different sizes, and the two disagreeing is the usual cause of a blurry canvas. Setting either dimension clears the canvas, even to the value it already had."
+                 Code=@("""
+private ElementReference _canvas;
+private ElementReference _image;
+
+await canvas.SetSize(_canvas, 320, 160);
+await canvas.DrawImage(_canvas, _image);
+
+// or just a corner of it, in a corner of the canvas:
+await canvas.DrawImage(_canvas, _image, new CanvasDrawOptions
+{
+    SourceWidth = 100, SourceHeight = 50,
+    DestinationWidth = 160, DestinationHeight = 80
+});
+""")>
+        <div class="controls">
+            <button @onclick="DrawWhole">Draw it</button>
+            <button class="secondary" @onclick="DrawCorner">Draw a corner, scaled</button>
+            <button class="secondary" @onclick="ReadSize">GetSize</button>
+            <button class="danger" @onclick="ClearCanvas">Clear</button>
+        </div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem;align-items:flex-start">
+            <div>
+                <div class="field-label">Source</div>
+                <img @ref="_image" src="@SampleImage" alt="sample" width="200" height="100" style="border:1px solid var(--border, #d4d4d8);border-radius:.4rem" />
+            </div>
+            <div>
+                <div class="field-label">Canvas</div>
+                <canvas @ref="_canvas" width="320" height="160" style="border:1px solid var(--border, #d4d4d8);border-radius:.4rem;max-width:100%"></canvas>
+            </div>
+        </div>
+        <DemoConsole @ref="drawOutput" Title="draw output" />
+    </DemoSection>
+
+    <DemoSection Title="Export what's on it"
+                 Api="ToDataUrl / ToBytes"
+                 Description="A data URL is base64, so it is about a third larger than the bytes it carries and it all sits in a string - fine for a preview, wasteful for anything else. ToBytes is what you upload or hash. An unsupported MIME type silently falls back to PNG rather than failing, which is worth knowing when a WebP export comes back looking like a PNG."
+                 Code=@("""
+var url = await canvas.ToDataUrl(_canvas);                       // <img src="...">
+var png = await canvas.ToBytes(_canvas);                         // upload this
+var jpeg = await canvas.ToBytes(_canvas, "image/jpeg", 0.7);     // smaller, lossy
+""")>
+        <div class="controls">
+            <button @onclick="ExportPng">ToBytes (PNG)</button>
+            <button class="secondary" @onclick="ExportJpeg">ToBytes (JPEG 0.7)</button>
+            <button class="secondary" @onclick="ExportDataUrl">ToDataUrl</button>
+        </div>
+        @if (_preview is not null)
+        {
+            <div class="field">
+                <span class="field-label">Preview</span>
+                <img src="@_preview" alt="exported" style="max-width:100%;border:1px solid var(--border, #d4d4d8);border-radius:.4rem" />
+            </div>
+        }
+        <DemoConsole @ref="exportOutput" Title="export output" />
+    </DemoSection>
+
+    <DemoSection Title="A thumbnail, with no canvas of your own"
+                 Api="Capture / CaptureToDataUrl"
+                 Description="Capture draws into a scratch canvas it discards afterwards, so nothing has to exist in your markup. Give one dimension and leave the other at 0 to keep the aspect ratio - a thumbnail is one number, not two. The source's intrinsic size is what gets captured, not the size CSS is showing it at."
+                 Code=@("""
+// 120px wide, height follows the aspect ratio
+var thumbnail = await canvas.Capture(_image, width: 120, type: "image/jpeg", quality: 0.7);
+
+// or straight to something you can show
+var url = await canvas.CaptureToDataUrl(_image, width: 120);
+""")>
+        <div class="controls">
+            <button @onclick="() => MakeThumbnail(120)">120px wide</button>
+            <button @onclick="() => MakeThumbnail(48)">48px wide</button>
+        </div>
+        @if (_thumbnail is not null)
+        {
+            <div class="field">
+                <span class="field-label">Thumbnail</span>
+                <img src="@_thumbnail" alt="thumbnail" style="border:1px solid var(--border, #d4d4d8);border-radius:.4rem" />
+            </div>
+        }
+        <DemoConsole @ref="thumbnailOutput" Title="thumbnail output" />
+    </DemoSection>
+
+    <DemoSection Title="A still from the camera"
+                 Api="Capture from a video element"
+                 Description="The headline case: MediaDevices opens the stream, a video element shows it, and Capture takes a frame as bytes - the whole path from camera to upload, in C#. Needs a secure context and the camera permission, so this one prompts."
+                 Code=@("""
+private ElementReference _video;
+
+var stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+await stream!.AttachTo(_video);
+
+// ... and later, a frame:
+var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality: 0.85);
+""")>
+        <div class="controls">
+            <button @onclick="StartCamera">Start the camera</button>
+            <button @onclick="TakePhoto">Take a photo</button>
+            <button class="danger" @onclick="StopCamera">Stop</button>
+        </div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem;align-items:flex-start">
+            <video @ref="_video" autoplay playsinline muted
+                   style="width:240px;border:1px solid var(--border, #d4d4d8);border-radius:.4rem;background:#000"></video>
+            @if (_photo is not null)
+            {
+                <img src="@_photo" alt="captured frame" style="width:240px;border:1px solid var(--border, #d4d4d8);border-radius:.4rem" />
+            }
+        </div>
+        <DemoConsole @ref="cameraOutput" Title="camera output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Tainted canvases cannot be read">
+    A canvas that has drawn a cross-origin image cannot be exported at all - the browser refuses, to
+    stop a page using a canvas to read pictures the user can see but the page is not allowed to have.
+    Every export here answers with <code>null</code> in that case rather than throwing, because
+    drawing someone else's picture is a normal thing to do. Serve the image same-origin, or with CORS
+    headers and <code>crossorigin="anonymous"</code> on the element.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when a 2D context can be created. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsOffscreenSupported / IsWebGlSupported / IsWebGpuSupported"
+               Signature="ValueTask<bool> ...()"
+               Description="Capability probes. Capture uses OffscreenCanvas where it exists and a detached element where it does not; WebGL and WebGPU are not wrapped." />
+    <ApiMember Name="GetSize"
+               Signature="ValueTask<CanvasSize?> GetSize(ElementReference canvas)"
+               Description="The pixel buffer's size, the CSS box's size, and the device pixel ratio. Null when the element is not a canvas." />
+    <ApiMember Name="SetSize"
+               Signature="ValueTask<bool> SetSize(ElementReference canvas, int width, int height)"
+               Description="Resizes the pixel buffer. Setting either dimension clears the canvas, even to the value it already had." />
+    <ApiMember Name="Clear"
+               Signature="ValueTask<bool> Clear(ElementReference canvas)"
+               Description="Erases everything, leaving the canvas transparent." />
+    <ApiMember Name="DrawImage"
+               Signature="ValueTask<bool> DrawImage(ElementReference canvas, ElementReference source, CanvasDrawOptions? options = null)"
+               Description="Draws a video, image or canvas onto a canvas. False when the source has nothing to draw yet - a video before its first frame, most often." />
+    <ApiMember Name="ToDataUrl"
+               Signature='ValueTask<string?> ToDataUrl(ElementReference canvas, string type = "image/png", double quality = 0.92)'
+               Description="Encodes as a data: URL. Null when the canvas is tainted by a cross-origin image." />
+    <ApiMember Name="ToBytes"
+               Signature='ValueTask<byte[]?> ToBytes(ElementReference canvas, string type = "image/png", double quality = 0.92)'
+               Description="Encodes as image bytes. Null when the canvas is tainted." />
+    <ApiMember Name="Capture"
+               Signature='ValueTask<byte[]?> Capture(ElementReference source, int width = 0, int height = 0, string type = "image/png", double quality = 0.92)'
+               Description="Takes a picture from a video, image or canvas with no canvas of your own. One dimension at 0 keeps the aspect ratio; both at 0 uses the source's own size." />
+    <ApiMember Name="CaptureToDataUrl"
+               Signature='ValueTask<string?> CaptureToDataUrl(ElementReference source, int width = 0, int height = 0, string type = "image/png", double quality = 0.92)'
+               Description="The same capture, encoded as a data: URL." />
+    <ApiMember Name="CanvasSize"
+               Signature="record (int Width, int Height, double CssWidth, double CssHeight, double DevicePixelRatio)"
+               Description="The buffer size and the CSS size. Set the buffer to the CSS size times the ratio for a sharp canvas." />
+    <ApiMember Name="CanvasDrawOptions"
+               Signature="class { double? SourceX, SourceY, SourceWidth, SourceHeight, DestinationX, DestinationY, DestinationWidth, DestinationHeight }"
+               Description="Which part of the source, and where on the canvas. All optional - the default stretches the whole source over the whole canvas." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole drawOutput = default!;
+    private DemoConsole exportOutput = default!;
+    private DemoConsole thumbnailOutput = default!;
+    private DemoConsole cameraOutput = default!;
+
+    private ElementReference _canvas;
+    private ElementReference _image;
+    private ElementReference _video;
+
+    private MediaStreamHandle? _stream;
+    private int _cameraGeneration;
+    private string? _preview;
+    private string? _thumbnail;
+    private string? _photo;
+
+    /// <summary>
+    /// A same-origin source with an intrinsic size, inline so the page has something to draw without
+    /// shipping an asset. A data: URL does not taint the canvas - a cross-origin one would.
+    /// </summary>
+    private const string SampleImage =
+        "data:image/svg+xml;utf8," +
+        "%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E" +
+        "%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E" +
+        "%3Cstop offset='0' stop-color='%236366f1'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E" +
+        "%3C/linearGradient%3E%3C/defs%3E" +
+        "%3Crect width='200' height='100' fill='url(%23g)'/%3E" +
+        "%3Ccircle cx='50' cy='50' r='28' fill='white' fill-opacity='.85'/%3E" +
+        "%3Crect x='110' y='24' width='70' height='52' rx='8' fill='white' fill-opacity='.7'/%3E" +
+        "%3C/svg%3E";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await canvas.IsSupported());
+            await supportOutput.Success("IsOffscreenSupported →", await canvas.IsOffscreenSupported());
+            await supportOutput.Success("IsWebGlSupported →", await canvas.IsWebGlSupported());
+            await supportOutput.Success("IsWebGpuSupported →", await canvas.IsWebGpuSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task DrawWhole()
+    {
+        try
+        {
+            var drawn = await canvas.DrawImage(_canvas, _image);
+            if (drawn) await drawOutput.Success("DrawImage → the whole source, stretched to fill.");
+            else await drawOutput.Warn("DrawImage returned false - the source has nothing to draw yet.");
+        }
+        catch (Exception ex)
+        {
+            await drawOutput.Error("DrawImage failed →", ex.Message);
+        }
+    }
+
+    private async Task DrawCorner()
+    {
+        try
+        {
+            await canvas.Clear(_canvas);
+            var drawn = await canvas.DrawImage(_canvas, _image, new CanvasDrawOptions
+            {
+                SourceWidth = 100,
+                SourceHeight = 50,
+                DestinationX = 20,
+                DestinationY = 20,
+                DestinationWidth = 160,
+                DestinationHeight = 80
+            });
+
+            if (drawn) await drawOutput.Success("DrawImage → the top-left quarter, scaled and offset.");
+            else await drawOutput.Warn("DrawImage returned false.");
+        }
+        catch (Exception ex)
+        {
+            await drawOutput.Error("DrawImage failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadSize()
+    {
+        try
+        {
+            var size = await canvas.GetSize(_canvas);
+            if (size is null)
+            {
+                await drawOutput.Warn("GetSize returned null - that element is not a canvas.");
+                return;
+            }
+
+            await drawOutput.Success("GetSize →",
+                $"buffer {size.Width}x{size.Height}, CSS {size.CssWidth:0.#}x{size.CssHeight:0.#}, dpr {size.DevicePixelRatio}");
+        }
+        catch (Exception ex)
+        {
+            await drawOutput.Error("GetSize failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearCanvas()
+    {
+        await canvas.Clear(_canvas);
+        _preview = null;
+        await drawOutput.Log("Cleared.");
+    }
+
+    private async Task ExportPng()
+    {
+        try
+        {
+            var bytes = await canvas.ToBytes(_canvas);
+            if (bytes is null)
+            {
+                await exportOutput.Warn("ToBytes returned null - the canvas is tainted, or not a canvas.");
+                return;
+            }
+
+            await exportOutput.Success("ToBytes (PNG) →", $"{bytes.Length} bytes");
+        }
+        catch (Exception ex)
+        {
+            await exportOutput.Error("ToBytes failed →", ex.Message);
+        }
+    }
+
+    private async Task ExportJpeg()
+    {
+        try
+        {
+            var png = await canvas.ToBytes(_canvas);
+            var jpeg = await canvas.ToBytes(_canvas, "image/jpeg", 0.7);
+
+            if (jpeg is null || png is null)
+            {
+                await exportOutput.Warn("Export returned null - the canvas is tainted, or not a canvas.");
+                return;
+            }
+
+            await exportOutput.Success("JPEG 0.7 →", $"{jpeg.Length} bytes, against {png.Length} for the PNG");
+        }
+        catch (Exception ex)
+        {
+            await exportOutput.Error("ToBytes failed →", ex.Message);
+        }
+    }
+
+    private async Task ExportDataUrl()
+    {
+        try
+        {
+            _preview = await canvas.ToDataUrl(_canvas);
+            if (_preview is null)
+            {
+                await exportOutput.Warn("ToDataUrl returned null - the canvas is tainted, or not a canvas.");
+                return;
+            }
+
+            await exportOutput.Success("ToDataUrl →", $"{_preview.Length} characters of base64");
+        }
+        catch (Exception ex)
+        {
+            await exportOutput.Error("ToDataUrl failed →", ex.Message);
+        }
+    }
+
+    private async Task MakeThumbnail(int width)
+    {
+        try
+        {
+            var bytes = await canvas.Capture(_image, width, type: "image/jpeg", quality: 0.7);
+            _thumbnail = await canvas.CaptureToDataUrl(_image, width, type: "image/jpeg", quality: 0.7);
+
+            if (bytes is null)
+            {
+                await thumbnailOutput.Warn("Capture returned null - the source has nothing to show, or is cross-origin.");
+                return;
+            }
+
+            await thumbnailOutput.Success($"Capture at {width}px wide →", $"{bytes.Length} bytes, height from the aspect ratio");
+        }
+        catch (Exception ex)
+        {
+            await thumbnailOutput.Error("Capture failed →", ex.Message);
+        }
+    }
+
+    private async Task StartCamera()
+    {
+        await StopCamera();
+
+        // GetUserMedia can sit on a permission prompt for as long as the user leaves it there, so a
+        // second Start - or a Stop - can land while it is still pending. The generation says which
+        // request the page is still waiting for; anything else has to release the camera it opened
+        // rather than becoming _stream, or the light stays on with nothing holding the handle.
+        var generation = ++_cameraGeneration;
+
+        try
+        {
+            var stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+            if (stream is null)
+            {
+                await cameraOutput.Warn("GetUserMedia returned null - no camera, or permission was refused.");
+                return;
+            }
+
+            if (generation != _cameraGeneration)
+            {
+                await stream.DisposeAsync();
+                await cameraOutput.Log("A camera that was asked for and then abandoned - stopped it rather than leaving it open.");
+                return;
+            }
+
+            _stream = stream;
+            await _stream.AttachTo(_video);
+            await cameraOutput.Success("Camera started.");
+        }
+        catch (Exception ex)
+        {
+            await cameraOutput.Error("GetUserMedia failed →", ex.Message);
+        }
+    }
+
+    private async Task TakePhoto()
+    {
+        try
+        {
+            _photo = await canvas.CaptureToDataUrl(_video, width: 480, type: "image/jpeg", quality: 0.85);
+            if (_photo is null)
+            {
+                await cameraOutput.Warn("Capture returned null - the video has no frame yet. Start the camera first.");
+                return;
+            }
+
+            var bytes = await canvas.Capture(_video, width: 480, type: "image/jpeg", quality: 0.85);
+            await cameraOutput.Success("Captured →", $"{bytes?.Length ?? 0} bytes of JPEG, ready to upload");
+        }
+        catch (Exception ex)
+        {
+            await cameraOutput.Error("Capture failed →", ex.Message);
+        }
+    }
+
+    private async Task StopCamera()
+    {
+        // Bumped even when there is nothing to stop: a request still in flight is exactly what a
+        // Stop with no stream yet is cancelling.
+        _cameraGeneration++;
+
+        if (_stream is null) return;
+
+        await _stream.DisposeAsync();
+        _stream = null;
+        await cameraOutput.Log("Camera stopped.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            // Also invalidates a request still on the permission prompt: after teardown there is
+            // nothing left that would stop the camera it comes back with.
+            _cameraGeneration++;
+
+            if (_stream is not null) await _stream.DisposeAsync();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

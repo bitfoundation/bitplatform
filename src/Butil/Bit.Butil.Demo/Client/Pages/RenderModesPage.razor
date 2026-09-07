@@ -85,7 +85,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 
     <DemoSection Title="Fast invoke"
                  Api="BitButil.UseFastInvoke / BitButil.UseNormalInvoke"
-                 Description="On WebAssembly the runtime can call JavaScript synchronously, skipping the task machinery and JSON round trip that the async path pays for. Fast invoke turns that path on for the APIs whose JavaScript is genuinely synchronous - LocalStorage, SessionStorage, Cookie, Console and Location. Anything wrapping a Promise-returning API keeps running asynchronously no matter what this is set to, so turning it on cannot break those calls. It is a process-wide static switch meant to be set once at startup, and on Blazor Server it does nothing at all: there is no in-process runtime to use, so the calls fall back to the async path."
+                 Description="On WebAssembly the runtime can call JavaScript synchronously, skipping the task machinery and JSON round trip that the async path pays for. Fast invoke turns that path on for the APIs whose JavaScript is genuinely synchronous - LocalStorage, SessionStorage, Cookie, Console and Location. Anything wrapping a Promise-returning API keeps running asynchronously no matter what this is set to, so turning it on cannot break those calls. It is a process-wide static switch meant to be set once at startup, and on Blazor Server it does nothing at all: there is no in-process runtime to use, so the calls fall back to the async path. One trimming note belongs here rather than on the trimming page: the public FastInvoke* extension methods on IJSRuntime carry [RequiresUnreferencedCode] because they serialise arbitrary payloads, so calling one of them directly from a trimmed app warns at your call site - the Butil classes themselves do not, since they only pass trim-safe primitives down that path."
                  Code=@("""
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -128,13 +128,6 @@ await builder.Build().RunAsync();
 }
 """)
                  Language="razor" />
-
-    <DemoSection Title="Trimming and AOT"
-                 Description="Butil is annotated for trimming, so a published WebAssembly app keeps only the wrappers it actually uses. The one thing to know: the public FastInvoke* extension methods on IJSRuntime carry [RequiresUnreferencedCode] because they serialise arbitrary payloads, so calling them directly from a trimmed app produces a warning at your call site. The Butil classes themselves do not - they only pass trim-safe primitives down that path."
-                 Code=@("""
-<PublishTrimmed>true</PublishTrimmed>
-""")
-                 Language="xml" />
 </div>
 
 <Callout Type="warning" Title="The same call, three different costs">
@@ -145,8 +138,10 @@ await builder.Build().RunAsync();
 
 <Callout Type="info" Title="Where to next?">
     <a href="browser-support">Browser support</a> lists which APIs need a secure context, a permission or a
-    specific engine. <a href="troubleshooting">Troubleshooting</a> covers the errors these rules produce when
-    they are broken.
+    specific engine. <a href="javascript-trimming">JavaScript trimming</a> covers the other half of picking a
+    hosting model - how much of Butil's JavaScript each one ends up shipping, and what to set so it ships
+    less. <a href="troubleshooting">Troubleshooting</a> covers the errors these rules produce when they are
+    broken.
 </Callout>
 
 <ApiTable Title="Reference">

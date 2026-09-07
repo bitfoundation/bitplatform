@@ -1,208 +1,148 @@
 @page "/workers"
-@inject Bit.Butil.ServiceWorker serviceWorker
-@inject Bit.Butil.BackgroundFetch backgroundFetch
-@inject Bit.Butil.ContentIndex contentIndex
-@inject Bit.Butil.WebTransport webTransport
+@implements IAsyncDisposable
+@inject Bit.Butil.Worker worker
+@inject Bit.Butil.MessageChannel messageChannel
 
-<PageTitle>Butil - Service Worker Samples</PageTitle>
+<PageTitle>Butil - Worker Samples</PageTitle>
 
 <PageHeader Category="Utilities"
-            Title="Workers"
-            Lead="The APIs that hang off a service worker registration - navigation preload, the Clients API, background fetches and the content index - plus WebTransport, the HTTP/3 connection that is not a WebSocket."
-            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API" />
+            Title="Worker &amp; MessageChannel"
+            Lead="JavaScript on a thread of its own, and the ports that carry the conversation. A worker runs a script you supply - there is no second .NET runtime behind this."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Worker" />
 
 <pre>
-@@inject Bit.Butil.ServiceWorker serviceWorker
+@@inject Bit.Butil.Worker worker
 
-await serviceWorker.Register("/sw.js");
-await serviceWorker.EnableNavigationPreload();
-
-var clients = await serviceWorker.MatchAllClients(includeUncontrolled: true);
+var w = await worker.Create("/workers/sample-worker.js", onMessage: m => { /* m.Json */ });
+await w!.PostMessage(new { op = "fib", n = 38 });
 </pre>
 
 <div class="stack" style="margin-top:1.5rem">
-    <DemoCard Title="Register the worker" Api="Register / Ready"
-              Description="Everything else on this page needs an active registration first.">
+    <DemoCard Title="Offload the work" Api="Create / PostMessage"
+              Description="The worker computes fib(n) with the naive recursion, blocking its own thread for seconds. Keep clicking the counter while it runs - the page never stops responding.">
         <div class="controls">
-            <button @onclick="RegisterWorker">Register /sw.js</button>
-            <button class="secondary" @onclick="UnregisterWorker">Unregister</button>
+            <button @onclick="StartWorker">Create</button>
+            <button @onclick="() => RunFib(38)" disabled="@(_worker is null)">fib(38)</button>
+            <button @onclick="() => RunFib(42)" disabled="@(_worker is null)">fib(42)</button>
+            <button class="secondary" @onclick="() => _clicks++">The page is still alive: @_clicks</button>
+            <button class="danger" @onclick="TerminateWorker" disabled="@(_worker is null)">Terminate</button>
         </div>
+        <p style="margin-top:0.75rem"><span class="result-pill">@_state</span></p>
     </DemoCard>
 
-    <DemoCard Title="Navigation preload" Api="EnableNavigationPreload / GetNavigationPreloadState"
-              Description="Lets the browser issue the navigation request while the worker is still booting.">
-        <div class="controls">
-            <button @onclick="EnablePreload">Enable</button>
-            <button class="secondary" @onclick="ReadPreloadState">Get state</button>
-            <button class="danger" @onclick="DisablePreload">Disable</button>
-        </div>
+    <DemoCard Title="Bytes without a copy" Api="PostBytes"
+              Description="Transferring moves the ArrayBuffer to the worker instead of copying it, which is why bytes rather than JSON is the right shape for anything large.">
+        <button @onclick="SendBytes" disabled="@(_worker is null)">Send 1,000 bytes</button>
     </DemoCard>
 
-    <DemoCard Title="Clients, claim and skipWaiting" Api="MatchAllClients / Claim / SkipWaiting"
-              Description="These three live on the worker's global scope, so the page asks over a MessageChannel and the worker answers - see the handler in /sw.js.">
-        <div class="controls">
-            <button @onclick="ListClients">MatchAllClients</button>
-            <button class="secondary" @onclick="ClaimClients">Claim</button>
-            <button class="secondary" @onclick="SkipWaiting">SkipWaiting</button>
-        </div>
-    </DemoCard>
-
-    <DemoCard Title="Background fetch" Api="Fetch / GetIds / Abort"
-              Description="Chromium only. A download the browser owns: it survives the tab closing and shows its own progress UI.">
-        <div class="controls">
-            <button @onclick="StartFetch">Fetch</button>
-            <button class="secondary" @onclick="ListFetches">GetIds</button>
-            <button class="danger" @onclick="AbortFetch">Abort</button>
-        </div>
-    </DemoCard>
-
-    <DemoCard Title="Content index" Api="Add / GetAll / Delete"
-              Description="Chromium only. Registers a page as offline-available so the browser can offer it to the user itself.">
-        <div class="controls">
-            <button @onclick="AddEntry">Add</button>
-            <button class="secondary" @onclick="ListEntries">GetAll</button>
-            <button class="danger" @onclick="DeleteEntry">Delete</button>
-        </div>
-    </DemoCard>
-
-    <DemoCard Title="WebTransport" Api="IsSupported / Connect"
-              Description="Needs an HTTP/3 server that speaks WebTransport - there is none here, so a connect attempt reports why it failed.">
-        <div class="field">
-            <span class="field-label">URL</span>
-            <input @bind="_transportUrl" placeholder="https://localhost:4433/echo" />
-        </div>
-        <div class="controls">
-            <button @onclick="CheckTransport">IsSupported</button>
-            <button class="secondary" @onclick="ConnectTransport">Connect</button>
-        </div>
+    <DemoCard Title="A private line" Api="MessageChannel.Create / PostWithPorts"
+              Description="A channel has two ends. Give one to the worker and keep the other, and the two talk directly. Ports are transferred rather than copied: once sent, the handle on this side stops working.">
+        <button @onclick="HandOverAPort" disabled="@(_worker is null)">Hand a port to the worker</button>
     </DemoCard>
 </div>
 
-<DemoConsole @ref="output" Title="workers output" />
+<DemoConsole @ref="output" Title="worker output" />
 
 @code {
     private DemoConsole output = default!;
 
-    private const string FetchId = "butil-samples-fetch";
-    private const string EntryId = "butil-samples-entry";
+    private WorkerHandle? _worker;
+    private MessageChannelHandle? _channel;
+    // Which Create the page is still waiting for. Creating a worker is asynchronous, so a second
+    // Create - or a Terminate - can land while one is still being made, and a worker nobody is
+    // waiting for any more has to be terminated rather than dropped: it keeps its thread otherwise.
+    private int _generation;
+    private string _state = "Not started.";
+    private int _clicks;
 
-    private string _transportUrl = "https://localhost:4433/echo";
-
-    private async Task RegisterWorker()
+    private async Task StartWorker()
     {
-        var registration = await serviceWorker.Register("/sw.js");
-        await serviceWorker.Ready();
-        await output.Success($"Register(\"/sw.js\") → registered: {registration.IsRegistered}, scope: {registration.Scope}");
-    }
+        await TerminateWorker();
 
-    private async Task UnregisterWorker()
-    {
-        await output.Info("Unregister() →", await serviceWorker.Unregister());
-    }
+        var generation = ++_generation;
 
-    private async Task EnablePreload()
-    {
-        await output.Info("EnableNavigationPreload() →", await serviceWorker.EnableNavigationPreload());
-    }
+        var created = await worker.Create("/workers/sample-worker.js",
+            onMessage: m => InvokeAsync(async () =>
+            {
+                await output.Success("Worker →", m.IsBinary ? $"binary [{m.Data?.Length} bytes]" : m.Json);
+            }),
+            options: new WorkerOptions { Name = "butil-sample" },
+            onError: e => InvokeAsync(() => output.Error("onError →", $"{e.Message} ({e.FileName}:{e.LineNumber})")));
 
-    private async Task DisablePreload()
-    {
-        await output.Info("DisableNavigationPreload() →", await serviceWorker.DisableNavigationPreload());
-    }
-
-    private async Task ReadPreloadState()
-    {
-        var state = await serviceWorker.GetNavigationPreloadState();
-        await output.Info($"GetNavigationPreloadState() → supported: {state.IsSupported}, enabled: {state.Enabled}, header: \"{state.HeaderValue}\"");
-    }
-
-    private async Task ListClients()
-    {
-        var clients = await serviceWorker.MatchAllClients(includeUncontrolled: true);
-        if (clients.Length == 0) await output.Warn("MatchAllClients() → empty - no active worker, or it does not answer.");
-        else await output.Success($"MatchAllClients() → {string.Join(", ", clients.Select(c => c.Url))}");
-    }
-
-    private async Task ClaimClients()
-    {
-        await output.Info("Claim() →", await serviceWorker.Claim());
-    }
-
-    private async Task SkipWaiting()
-    {
-        await output.Info("SkipWaiting() →", await serviceWorker.SkipWaiting());
-    }
-
-    private async Task StartFetch()
-    {
-        // The library's own script, at the path static web assets serve it from under every hosting
-        // model - a URL that 404s starts the fetch and then fails it as a browser download.
-        var registration = await backgroundFetch.Fetch(FetchId, ["/_content/Bit.Butil/bit-butil.js"], "Bit.Butil sample download");
-        if (registration is null) await output.Warn("Fetch → null (Chromium only, and a worker must be registered)");
-        else await output.Success($"Fetch(\"{registration.Id}\") → started");
-    }
-
-    private async Task ListFetches()
-    {
-        var ids = await backgroundFetch.GetIds();
-        if (ids.Length == 0) await output.Warn("GetIds() → nothing running");
-        else await output.Success($"GetIds() → {string.Join(", ", ids)}");
-    }
-
-    private async Task AbortFetch()
-    {
-        await output.Info($"Abort(\"{FetchId}\") →", await backgroundFetch.Abort(FetchId));
-    }
-
-    private async Task AddEntry()
-    {
-        var added = await contentIndex.Add(new ContentIndexEntry
+        if (created is null)
         {
-            Id = EntryId,
-            Title = "Bit.Butil samples",
-            Description = "The samples app, registered as offline-available content.",
-            Url = "/workers",
-            Category = "article",
-            // Served out of this library's own wwwroot, so the icon is fetchable under every
-            // hosting model - an icon that 404s makes Chromium reject the whole add().
-            Icons = [new ContentIndexIcon { Src = "_content/Bit.Butil.Samples.Core/icon-512.png", Sizes = "512x512", Type = "image/png" }]
-        });
-
-        if (added) await output.Success($"Add(\"{EntryId}\") → indexed");
-        else await output.Warn("Add → false (Chromium only; the icon and URL must be fetchable and in scope)");
-    }
-
-    private async Task ListEntries()
-    {
-        var entries = await contentIndex.GetAll();
-        if (entries.Length == 0) await output.Warn("GetAll() → nothing indexed");
-        else await output.Success($"GetAll() → {string.Join(", ", entries.Select(e => e.Id))}");
-    }
-
-    private async Task DeleteEntry()
-    {
-        await output.Info($"Delete(\"{EntryId}\") →", await contentIndex.Delete(EntryId));
-    }
-
-    private async Task CheckTransport()
-    {
-        await output.Info("WebTransport.IsSupported() →", await webTransport.IsSupported());
-    }
-
-    private async Task ConnectTransport()
-    {
-        var result = await webTransport.Connect(_transportUrl,
-            onDatagram: data => _ = InvokeAsync(() => output.Info($"datagram → {data.Length} bytes")),
-            onClosed: info => _ = InvokeAsync(() => output.Warn($"closed → {info.CloseCode} {info.Reason} {info.Error}")));
-
-        if (result.Session is null)
-        {
-            await output.Error($"Connect(\"{_transportUrl}\") → {result.Error}");
+            _state = "Could not start - Worker is unavailable, or the script URL was refused.";
+            await output.Warn(_state);
             return;
         }
 
-        await output.Success("Connected. Sending one datagram, then closing.");
-        await result.Session.SendDatagram(System.Text.Encoding.UTF8.GetBytes("ping"));
-        await result.Session.DisposeAsync();
+        if (generation != _generation)
+        {
+            await created.Terminate();
+            await output.Warn("A worker that was created and then abandoned - terminated it rather than leaving it running.");
+            return;
+        }
+
+        _worker = created;
+        _state = "Running.";
+    }
+
+    private async Task RunFib(int n)
+    {
+        if (_worker is null) return;
+        await output.Log($"Asked the worker for fib({n}).");
+        await _worker.PostMessage(new { op = "fib", n });
+    }
+
+    private async Task SendBytes()
+    {
+        if (_worker is null) return;
+        var payload = new byte[1000];
+        Random.Shared.NextBytes(payload);
+        await _worker.PostBytes(payload);
+    }
+
+    private async Task HandOverAPort()
+    {
+        if (_worker is null) return;
+
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+
+        _channel = await messageChannel.Create();
+        if (_channel is null)
+        {
+            await output.Warn("Create returned null - the runtime has no MessageChannel.");
+            return;
+        }
+
+        await _channel.Port2.OnMessage(m => InvokeAsync(() => output.Success("Over the port →", m.Json)));
+        await _channel.Port2.Start();
+
+        // The sample worker does not answer on ports, so this shows the transfer itself: Port1 is
+        // the worker's now, and posting to it here is reported rather than thrown.
+        var sent = await _worker.PostWithPorts(new { op = "takePort" }, [_channel.Port1]);
+        var stillUsable = await _channel.Port1.PostMessage(new { late = true });
+
+        await output.Success("PostWithPorts →", $"sent {sent}, still usable here: {stillUsable}");
+    }
+
+    private async Task TerminateWorker()
+    {
+        // Bumped before the null check, so this also invalidates a worker still being created: on
+        // teardown there is nothing else that would ever terminate it.
+        _generation++;
+
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+        if (_worker is null) return;
+
+        await _worker.Terminate();
+        _worker = null;
+        _state = "Terminated.";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await TerminateWorker(); }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
     }
 }

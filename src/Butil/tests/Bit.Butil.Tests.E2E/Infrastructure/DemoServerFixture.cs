@@ -29,6 +29,11 @@ public class DemoServerFixture
     [AssemblyInitialize]
     public static async Task GlobalSetup(TestContext context)
     {
+        // The WebSocket harness needs a socket endpoint, and the app under test is a standalone
+        // WebAssembly host with no server side. MSTest allows one [AssemblyInitialize] per assembly,
+        // so it is started from here rather than from a fixture of its own.
+        await Infrastructure.WebSocketEchoFixture.Start();
+
         var external = Environment.GetEnvironmentVariable("BUTIL_E2E_BASE_URL");
         if (!string.IsNullOrWhiteSpace(external))
         {
@@ -79,8 +84,10 @@ public class DemoServerFixture
     }
 
     [AssemblyCleanup]
-    public static void GlobalTeardown()
+    public static async Task GlobalTeardown()
     {
+        await Infrastructure.WebSocketEchoFixture.Stop();
+
         if (_process is null || _process.HasExited) return;
         try
         {

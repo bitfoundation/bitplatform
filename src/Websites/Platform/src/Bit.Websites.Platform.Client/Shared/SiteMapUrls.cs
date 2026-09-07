@@ -13,6 +13,7 @@ public static class SiteMapUrls
     public static readonly string[] NoIndexUrls =
     [
         "/not-found",
+        "/ask", // opens the AI chat panel and redirects home; nothing there to index
         "/lowcode-nocode/overview", "/lowcode-nocode/benefits", "/lowcode-nocode/specs",
         "/lowcode-nocode/customizations", "/lowcode-nocode/comparison", "/lowcode-nocode/stats"
     ];

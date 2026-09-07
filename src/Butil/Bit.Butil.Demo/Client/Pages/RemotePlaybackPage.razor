@@ -1,0 +1,297 @@
+@page "/remote-playback"
+@implements IAsyncDisposable
+@inject Bit.Butil.RemotePlayback remotePlayback
+
+<PageTitle>RemotePlayback - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="RemotePlayback"
+            Lead="Hand one video or audio element to a TV, a speaker or a cast receiver on the network - and know what happens to it there, including when the user ends the cast from the device itself."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Remote_Playback_API"
+            InjectAs="RemotePlayback remotePlayback" />
+
+<div class="stack">
+    <DemoSection Title="Support"
+                 Api="IsSupported"
+                 Description="True when media elements expose a remote object. Chromium and Safari implement it; note that the presence of the API says nothing about whether any device is on the network - that is what WatchAvailability answers."
+                 Code=@("""
+@inject Bit.Butil.RemotePlayback remotePlayback
+
+var isSupported = await remotePlayback.IsSupported();
+""")>
+        <audio @ref="mediaElement" src="@ToneDataUrl" loop controls style="width:100%;max-width:420px"></audio>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Is there anything to cast to?"
+                 Api="WatchAvailability"
+                 Description="The callback fires immediately with the current answer and again whenever it changes, so a cast button can be hidden until there is somewhere to cast to. Watching costs battery - the browser keeps scanning the network - so dispose the subscription when the UI it feeds goes away."
+                 Code=@("""
+var subscription = await remotePlayback.WatchAvailability(mediaElement, available =>
+{
+    showCastButton = available;
+    StateHasChanged();
+});
+
+// later - or when the component is disposed
+await subscription!.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="Watch" disabled="@(availabilitySubscription is not null)">WatchAvailability</button>
+            <button class="danger" @onclick="Unwatch" disabled="@(availabilitySubscription is null)">Dispose subscription</button>
+        </div>
+        @if (available is not null)
+        {
+            <p><span class="result-pill">@(available.Value ? "a device is available" : "nothing to cast to right now")</span></p>
+        }
+        <DemoConsole @ref="availabilityOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Casting, and watching what happens next"
+                 Api="Prompt / GetState / SubscribeStateChange"
+                 Description="Prompt opens the browser's own device picker and needs a user gesture. A true from it means the picker was answered, not that playback has started - the state subscription is what reports the connection being made, and the disconnect that happens when the user stops the cast from the TV."
+                 Code=@("""
+await remotePlayback.SubscribeStateChange(mediaElement, state =>
+{
+    // Connecting -> Connected, and Disconnected when the user ends it from the device
+    Console.WriteLine(state);
+});
+
+// from a click handler:
+var prompted = await remotePlayback.Prompt(mediaElement);
+
+var state = await remotePlayback.GetState(mediaElement);
+""")>
+        <div class="controls">
+            <button @onclick="Cast">Prompt</button>
+            <button class="secondary" @onclick="ReadState">GetState</button>
+            <button class="secondary" @onclick="WatchState" disabled="@(stateSubscription is not null)">SubscribeStateChange</button>
+            <button class="danger" @onclick="UnwatchState" disabled="@(stateSubscription is null)">Dispose state subscription</button>
+        </div>
+        <DemoConsole @ref="stateOutput" Title="state output" />
+    </DemoSection>
+
+    <DemoSection Title="Opting an element out"
+                 Api="SetDisabled"
+                 Description="Sets the element's disableRemotePlayback property, which removes the cast affordance the browser draws inside its own controls. Worth doing for media that must not leave the device - a DRM stream whose licence forbids it, or a local preview."
+                 Code=@("""
+await remotePlayback.SetDisabled(mediaElement, true);   // no cast button on this element
+await remotePlayback.SetDisabled(mediaElement, false);
+""")>
+        <div class="controls">
+            <button @onclick="() => SetDisabled(true)">SetDisabled(true)</button>
+            <button class="secondary" @onclick="() => SetDisabled(false)">SetDisabled(false)</button>
+        </div>
+        <DemoConsole @ref="disableOutput" Title="opt-out output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="One element, not the page">
+    Remote playback hands over a single media element: the remote device fetches and plays the media itself,
+    and the element in the page becomes a remote control that decodes nothing. To put arbitrary page content on
+    a second screen instead, use <a href="presentation">Presentation</a>.
+</Callout>
+
+<Callout Type="warning" Title="The picker needs a gesture, and the user owns the answer">
+    Prompt only works from inside a click or key handler, and it returns false for every outcome the app cannot
+    control - dismissed, nothing found, blocked by the embedder. Treat the state subscription as the source of
+    truth rather than the return value.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when media elements expose a remote object." />
+    <ApiMember Name="GetState" Signature="ValueTask<RemotePlaybackState> GetState(ElementReference mediaElement)" Description="Disconnected, Connecting or Connected." />
+    <ApiMember Name="SetDisabled" Signature="ValueTask<bool> SetDisabled(ElementReference mediaElement, bool disabled)" Description="Opts the element out of remote playback, removing the browser's cast button." />
+    <ApiMember Name="Prompt" Signature="ValueTask<bool> Prompt(ElementReference mediaElement)" Description="Opens the browser's device picker. Needs a user gesture." />
+    <ApiMember Name="WatchAvailability" Signature="ValueTask<ButilSubscription?> WatchAvailability(ElementReference mediaElement, Action<bool> handler)" Description="Whether there is any device to cast to, now and on every change." />
+    <ApiMember Name="SubscribeStateChange" Signature="ValueTask<ButilSubscription> SubscribeStateChange(ElementReference mediaElement, Action<RemotePlaybackState> handler)" Description="Watches the element connecting to and disconnecting from a device." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Cancels every watch and detaches every listener on teardown; media already playing remotely is left alone." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole availabilityOutput = default!;
+    private DemoConsole stateOutput = default!;
+    private DemoConsole disableOutput = default!;
+
+    private ElementReference mediaElement;
+    private ButilSubscription? availabilitySubscription;
+    private ButilSubscription? stateSubscription;
+    private bool? available;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await remotePlayback.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Watch()
+    {
+        try
+        {
+            availabilitySubscription = await remotePlayback.WatchAvailability(mediaElement, async isAvailable =>
+            {
+                available = isAvailable;
+                await availabilityOutput.Log("availability →", isAvailable);
+                await InvokeAsync(StateHasChanged);
+            });
+
+            if (availabilitySubscription is null)
+            {
+                await availabilityOutput.Warn("WatchAvailability → null (unavailable here, or this element opted out)");
+                return;
+            }
+
+            await availabilityOutput.Success("WatchAvailability → watching");
+        }
+        catch (Exception ex)
+        {
+            await availabilityOutput.Error("WatchAvailability failed →", ex.Message);
+        }
+    }
+
+    private async Task Unwatch()
+    {
+        try
+        {
+            await availabilitySubscription!.DisposeAsync();
+            availabilitySubscription = null;
+            available = null;
+            await availabilityOutput.Log("DisposeAsync → the browser stops scanning");
+        }
+        catch (Exception ex)
+        {
+            await availabilityOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    private async Task Cast()
+    {
+        try
+        {
+            await stateOutput.Log("Prompt →", await remotePlayback.Prompt(mediaElement));
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("Prompt failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadState()
+    {
+        try
+        {
+            await stateOutput.Log("GetState →", await remotePlayback.GetState(mediaElement));
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("GetState failed →", ex.Message);
+        }
+    }
+
+    private async Task WatchState()
+    {
+        try
+        {
+            stateSubscription = await remotePlayback.SubscribeStateChange(mediaElement, async state =>
+            {
+                await stateOutput.Info("state →", state);
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await stateOutput.Success("SubscribeStateChange → watching");
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("SubscribeStateChange failed →", ex.Message);
+        }
+    }
+
+    private async Task UnwatchState()
+    {
+        try
+        {
+            await stateSubscription!.DisposeAsync();
+            stateSubscription = null;
+            await stateOutput.Log("DisposeAsync → listeners detached");
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    // A one-second 440 Hz tone, generated once rather than shipped as a file or fetched from elsewhere -
+    // remote playback works on an audio element exactly as it does on a video one.
+    private static readonly string ToneDataUrl = BuildTone();
+
+    private static string BuildTone()
+    {
+        const int sampleRate = 8000;
+        const int samples = sampleRate;   // one second
+        var data = new byte[44 + samples];
+
+        void WriteAscii(int offset, string text)
+        {
+            for (var i = 0; i < text.Length; i++) data[offset + i] = (byte)text[i];
+        }
+
+        void WriteInt32(int offset, int value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+        void WriteInt16(int offset, short value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+
+        WriteAscii(0, "RIFF");
+        WriteInt32(4, 36 + samples);
+        WriteAscii(8, "WAVEfmt ");
+        WriteInt32(16, 16);          // PCM header size
+        WriteInt16(20, 1);           // PCM
+        WriteInt16(22, 1);           // mono
+        WriteInt32(24, sampleRate);
+        WriteInt32(28, sampleRate);  // byte rate: 8-bit mono
+        WriteInt16(32, 1);           // block align
+        WriteInt16(34, 8);           // bits per sample
+        WriteAscii(36, "data");
+        WriteInt32(40, samples);
+
+        for (var i = 0; i < samples; i++)
+        {
+            var value = Math.Sin(2 * Math.PI * 440 * i / sampleRate);
+            data[44 + i] = (byte)(128 + value * 40);   // quiet on purpose
+        }
+
+        return "data:audio/wav;base64," + Convert.ToBase64String(data);
+    }
+
+    private async Task SetDisabled(bool disabled)
+    {
+        try
+        {
+            await disableOutput.Log($"SetDisabled({disabled}) →", await remotePlayback.SetDisabled(mediaElement, disabled));
+        }
+        catch (Exception ex)
+        {
+            await disableOutput.Error("SetDisabled failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (availabilitySubscription is not null) await availabilitySubscription.DisposeAsync();
+            if (stateSubscription is not null) await stateSubscription.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

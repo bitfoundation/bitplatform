@@ -1,0 +1,195 @@
+@page "/webrtc"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebRtc webRtc
+
+<PageTitle>Butil - WebRtc Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="WebRtc"
+            Lead="Media and data straight between two browsers. This sample plays both peers in one tab, which is exactly what a real signalling channel would do more slowly."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection" />
+
+<pre>
+@@inject Bit.Butil.WebRtc webRtc
+
+var a = await webRtc.CreatePeerConnection(onIceCandidate: json =&gt; SendToPeer(json));
+var channel = await a!.CreateDataChannel("chat");   // before the offer
+var offer = await a.CreateOffer();
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Two peers, one page" Api="CreatePeerConnection / CreateDataChannel / CreateOffer"
+              Description="WebRTC connects nobody by itself: an offer, an answer and a stream of ICE candidates have to be carried between the peers by something that already works. Here they are handed straight across.">
+        <div class="controls">
+            <button @onclick="Connect">Connect</button>
+            <button @onclick="Send" disabled="@(_channel is null)">Send a message</button>
+            <button @onclick="ReadStats" disabled="@(_a is null)">Stats</button>
+            <button class="danger" @onclick="Close" disabled="@(_a is null)">Close</button>
+        </div>
+        <div class="field" style="margin-top:.75rem">
+            <span class="field-label">State</span>
+            <span>@_state</span>
+        </div>
+        @if (_received.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">B received</span>
+                <span>@string.Join(" | ", _received)</span>
+            </div>
+        }
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="web rtc output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private PeerConnectionHandle? _a;
+    private PeerConnectionHandle? _b;
+    private RtcDataChannelHandle? _channel;
+    private readonly List<string> _received = [];
+    private string _state = "Not connected.";
+
+    // A candidate has nowhere to go until the peer it is meant for has a remote description, and
+    // they start arriving the moment a local description is set - which is before the other side
+    // has been told anything at all. Held per peer, in arrival order, and handed over as soon as
+    // that peer's SetRemoteDescription has succeeded.
+    private readonly List<string?> _forA = [];
+    private readonly List<string?> _forB = [];
+    private bool _remoteSetOnA;
+    private bool _remoteSetOnB;
+
+    private async Task Connect()
+    {
+        await Close();
+        _received.Clear();
+
+        _a = await webRtc.CreatePeerConnection(
+            onIceCandidate: json => InvokeAsync(() => SendCandidate(_b, _remoteSetOnB, _forB, json)),
+            onConnectionState: state => InvokeAsync(() => { _state = state; StateHasChanged(); }));
+
+        _b = await webRtc.CreatePeerConnection(
+            onIceCandidate: json => InvokeAsync(() => SendCandidate(_a, _remoteSetOnA, _forA, json)),
+            onRemoteChannel: channel => channel.Listen(onMessage: m => InvokeAsync(async () =>
+            {
+                // Text sent as a plain string arrives as quoted JSON, like every other structured
+                // channel here, so it is deserialized rather than read raw.
+                _received.Add(m.Deserialize<string>() ?? string.Empty);
+                await output.Success("B received →", _received[^1]);
+                StateHasChanged();
+            })));
+
+        if (_a is null || _b is null)
+        {
+            await output.Warn("CreatePeerConnection returned null - this runtime has no RTCPeerConnection.");
+            return;
+        }
+
+        // Everything the offer must describe has to exist before the offer is made.
+        _channel = await _a.CreateDataChannel("chat");
+        _channel?.Listen(onOpen: () => InvokeAsync(() => output.Success("The channel is open.")));
+
+        var offer = await _a.CreateOffer();
+        if (offer?.Sdp is null)
+        {
+            await output.Error("CreateOffer failed →", offer?.Error);
+            return;
+        }
+
+        await _a.SetLocalDescription(offer);
+
+        var offerApplied = await _b.SetRemoteDescription(offer);
+        if (offerApplied is not null)
+        {
+            await output.Error("B could not take the offer →", offerApplied);
+            return;
+        }
+        // Flag first, then drain: from here a candidate goes straight over rather than onto a list
+        // that is being emptied.
+        _remoteSetOnB = true;
+        await DrainCandidates(_b, _forB);
+
+        var answer = await _b.CreateAnswer();
+        if (answer?.Sdp is null)
+        {
+            await output.Error("CreateAnswer failed →", answer?.Error);
+            return;
+        }
+
+        await _b.SetLocalDescription(answer);
+
+        var answerApplied = await _a.SetRemoteDescription(answer);
+        if (answerApplied is not null)
+        {
+            await output.Error("A could not take the answer →", answerApplied);
+            return;
+        }
+        _remoteSetOnA = true;
+        await DrainCandidates(_a, _forA);
+
+        await output.Success("Handshake done.");
+    }
+
+    // Candidates only go over once the peer they are for can take them; until then they are held.
+    private async Task SendCandidate(PeerConnectionHandle? peer, bool remoteDescriptionSet, List<string?> pending, string? candidateJson)
+    {
+        if (peer is null) return;
+
+        if (remoteDescriptionSet is false)
+        {
+            pending.Add(candidateJson);
+            return;
+        }
+
+        var error = await peer.AddIceCandidate(candidateJson);
+        if (error is not null) await output.Warn("AddIceCandidate →", error);
+    }
+
+    private async Task DrainCandidates(PeerConnectionHandle peer, List<string?> pending)
+    {
+        foreach (var candidate in pending)
+        {
+            var error = await peer.AddIceCandidate(candidate);
+            if (error is not null) await output.Warn("AddIceCandidate →", error);
+        }
+
+        pending.Clear();
+    }
+
+    private async Task Send()
+    {
+        if (_channel is null) return;
+
+        var sent = await _channel.SendText($"hello at {DateTime.Now:HH:mm:ss}");
+        if (sent is false) await output.Warn("SendText returned false - the channel is not open yet.");
+    }
+
+    private async Task ReadStats()
+    {
+        if (_a is null) return;
+
+        var stats = await _a.GetStats();
+        await output.Success("GetStats →", $"{stats.Length} entries: {string.Join(", ", stats.Select(s => s.Type).Distinct())}");
+    }
+
+    private async Task Close()
+    {
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+        if (_a is not null) { await _a.DisposeAsync(); _a = null; }
+        if (_b is not null) { await _b.DisposeAsync(); _b = null; }
+
+        _forA.Clear();
+        _forB.Clear();
+        _remoteSetOnA = false;
+        _remoteSetOnB = false;
+
+        _state = "Closed.";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await Close(); }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}
