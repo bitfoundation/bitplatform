@@ -1,9 +1,10 @@
 # Bit.Butil interop contract captured from an untrimmed build. Regenerate with: dotnet run -c Release
-@services|AbortController,AudioOutput,BackgroundSync,BarcodeDetector,Battery,Bluetooth,BroadcastChannel,CacheStorage,Canvas,Clipboard,Compression,ComputePressure,Console,ContactPicker,Cookie,CookieStore,Credentials,Crypto,Css,DataTransfer,DeviceOrientation,DevicePosture,DigitalCredentials,DigitalGoods,Document,DocumentPictureInPicture,Dom,EncryptedMedia,EventSource,EyeDropper,FedCm,Fetch,FileReader,FileSystem,Gamepad,Geolocation,Hid,History,IdleDetector,IndexedDb,Keyboard,LocalFonts,LocalStorage,Location,MediaCapabilities,MediaDevices,MediaRecorder,MediaSession,MediaSource,MessageChannel,Midi,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,PaymentHandler,PaymentRequest,Performance,Permissions,PictureInPicture,Presentation,Push,RemotePlayback,Reporting,Scheduler,Screen,ScreenOrientation,Sensors,Serial,ServiceWorker,SessionStorage,ShadowDom,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageManager,Streams,Usb,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebCodecs,WebLocks,WebOtp,WebRtc,WebSocket,WebXr,Window,WindowManagement,WindowMessaging,Worker
+@services|AbortController,AudioOutput,BackgroundFetch,BackgroundSync,BarcodeDetector,Battery,Bluetooth,BroadcastChannel,CacheStorage,Canvas,Clipboard,Compression,ComputePressure,Console,ContactPicker,ContentIndex,Cookie,CookieStore,Credentials,Crypto,Css,DataTransfer,DeviceOrientation,DevicePosture,DigitalCredentials,DigitalGoods,Document,DocumentPictureInPicture,Dom,EncryptedMedia,EventSource,EyeDropper,FedCm,Fetch,FileReader,FileSystem,Gamepad,Geolocation,Hid,History,IdleDetector,IndexedDb,Keyboard,LocalFonts,LocalStorage,Location,MediaCapabilities,MediaDevices,MediaRecorder,MediaSession,MediaSource,MessageChannel,Midi,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,OriginPrivateFileSystem,PaymentHandler,PaymentRequest,Performance,Permissions,PictureInPicture,Presentation,Push,RemotePlayback,Reporting,Scheduler,Screen,ScreenOrientation,Sensors,Serial,ServiceWorker,SessionStorage,ShadowDom,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageBuckets,StorageManager,Streams,Usb,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebCodecs,WebLocks,WebOtp,WebRtc,WebSocket,WebTransport,WebXr,Window,WindowManagement,WindowMessaging,Worker
 Bit.Butil.AbortController|J|-|1|InvokeAbort|
 Bit.Butil.AudioDecoderHandle|J|-|0|InvokeAudioDecoderData,InvokeAudioDecoderError|
 Bit.Butil.AudioEncoderHandle|J|-|0|InvokeAudioEncoderChunk,InvokeAudioEncoderError|
 Bit.Butil.AudioWorkletNodeHandle|J|-|0|InvokeAudioWorkletMessage|
+Bit.Butil.BackgroundFetch|J|-|1|InvokeBackgroundFetchProgress|
 Bit.Butil.BarProp|-|P|1||Visible
 Bit.Butil.BarcodeDetector|J|-|1|InvokeBarcodesDetected|
 Bit.Butil.Battery|J|-|1|InvokeBatteryChange|
@@ -75,9 +76,10 @@ Bit.Butil.ViewTransition|J|-|1|InvokeViewTransitionPhase,InvokeViewTransitionUpd
 Bit.Butil.VisualViewport|J|-|1|InvokeVisualViewport|
 Bit.Butil.WebRtc|J|-|1|InvokeChannelClose,InvokeChannelMessage,InvokeChannelOpen,InvokeConnectionState,InvokeIceCandidate,InvokeRemoteChannel,InvokeTrack|
 Bit.Butil.WebSocket|J|-|1|InvokeWebSocketClose,InvokeWebSocketError,InvokeWebSocketMessage,InvokeWebSocketOpen|
+Bit.Butil.WebTransport|J|-|1|InvokeWebTransportClosed,InvokeWebTransportDatagram,InvokeWebTransportStreamData,InvokeWebTransportStreamEnd,InvokeWebTransportStreamOpened|
 Bit.Butil.Window|J|-|1|InvokeMediaQueryChange|
 Bit.Butil.WindowManagement|J|-|1|InvokeScreensChange|
 Bit.Butil.WindowMessaging|J|-|1|InvokeWindowMessage|
 Bit.Butil.Worker|J|-|1|InvokeWorkerError,InvokeWorkerMessage|
 Bit.Butil.XrSessionHandle|J|-|0|InvokeXrInput,InvokeXrPose,InvokeXrSessionEnd|
-@count|80
+@count|82

@@ -268,7 +268,7 @@ the same "removed entirely is not a defect" rule the verification already applie
 Run both from this folder, so they share the manifest:
 
 ```bash
-# untrimmed: all 96 [ButilService] classes present; writes interop-manifest.txt
+# untrimmed: all 101 [ButilService] classes present; writes interop-manifest.txt
 dotnet run -c Release
 
 # trimmed, TrimMode=full (what Blazor WebAssembly uses); checks against the manifest
@@ -284,16 +284,16 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 1,157,120 bytes | 160,256 bytes |
-| types in assembly | 1,322 | 207 |
-| `[ButilService]` discovered / registered | 96 / 96 | 12 / 12 |
-| interop contract | 80 types captured | 19 checked, 61 trimmed away, 0 problems |
-| JavaScript modules called | 102 of 105 | 13 of 105 (canvas, clipboard, cookie, digitalCredentials, dom, events, fetch, geolocation, storage, streams, webOtp, webRtc, window) |
-| `bit-butil.js` a publish would ship | 234,666 bytes, all 105 modules | 36,779 bytes, 18 modules (10,789 gzip / 9,582 brotli) - 15.7% |
-| lazy scripts would download | 411,548 bytes over 102 files | 58,520 bytes over 13 files |
+| `Bit.Butil.dll` | 1,201,152 bytes | 160,256 bytes |
+| types in assembly | 1,363 | 207 |
+| `[ButilService]` discovered / registered | 101 / 101 | 12 / 12 |
+| interop contract | 82 types captured | 19 checked, 63 trimmed away, 0 problems |
+| JavaScript modules called | 107 of 110 | 13 of 110 (canvas, clipboard, cookie, digitalCredentials, dom, events, fetch, geolocation, storage, streams, webOtp, webRtc, window) |
+| `bit-butil.js` a publish would ship | 256,860 bytes, all 110 modules | 36,779 bytes, 18 modules (10,789 gzip / 9,582 brotli) - 14.3% |
+| lazy scripts would download | 446,510 bytes over 107 files | 58,520 bytes over 13 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 41 / 41 | not run |
-| script-publishing checks | 33 / 33 (11 publishes, ~26s) | not run |
+| script-publishing checks | 33 / 33 (11 publishes, ~30s) | not run |
 | lazy-loader checks | 16 / 16 | 16 / 16 |
 | cancellation-contract checks | 24 / 24 | 24 / 24 |
 
@@ -377,7 +377,7 @@ assembly comes out at 30,720 bytes and 36 types.
 - **`script publishing: ...`** - the MSBuild half. The message names the claim; the ones worth knowing on
   sight are *is added to what the scan found, not used instead of it* (the csproj list has stopped being
   additive - a consumer naming one module would lose everything else), *publishes no per-module files* (the
-  publish asset list is no longer being narrowed, so a bundle-mode app ships all 105 module files - that is
+  publish asset list is no longer being narrowed, so a bundle-mode app ships all 110 module files - that is
   `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
   bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
   every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in

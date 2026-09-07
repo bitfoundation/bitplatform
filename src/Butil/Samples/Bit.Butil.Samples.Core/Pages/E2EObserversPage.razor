@@ -6,6 +6,8 @@
 @inject Bit.Butil.BroadcastChannel broadcastChannel
 @inject Bit.Butil.IndexedDb indexedDb
 @inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.OriginPrivateFileSystem opfs
+@inject Bit.Butil.StorageBuckets storageBuckets
 @inject Bit.Butil.WebLocks webLocks
 @inject Bit.Butil.ObjectUrls objectUrls
 @inject Bit.Butil.CookieStore cookieStore
@@ -106,6 +108,18 @@
 <section>
     <h3>CacheStorage</h3>
     <button id="cache-roundtrip" @onclick="CacheRoundTrip">putText + match + delete</button>
+</section>
+
+<section>
+    <h3>Origin private file system</h3>
+    <button id="opfs-roundtrip" @onclick="OpfsRoundTrip">write + read + list + remove</button>
+    <button id="opfs-sync" @onclick="OpfsSyncAccess">sync access handle (worker)</button>
+    <button id="opfs-sync-aliases" @onclick="OpfsSyncPathAliases">sync access handle (aliased paths)</button>
+</section>
+
+<section>
+    <h3>Storage buckets</h3>
+    <button id="buckets-roundtrip" @onclick="StorageBucketsRoundTrip">open + write + keys + delete</button>
 </section>
 
 <section>
@@ -527,6 +541,115 @@
         var deleted = await cacheStorage.DeleteEntry(cacheName, url);
         await cacheStorage.Delete(cacheName);
         Set($"cache:roundtrip:{match.Found}/{body}/{deleted}");
+    }
+
+    // ─── Origin private file system ────────────────────────────────────────────
+    private async Task OpfsRoundTrip()
+    {
+        const string directory = "butil-e2e";
+        const string path = "butil-e2e/note.txt";
+
+        // Start from a clean tree: the harness runs more than once against the same profile.
+        await opfs.Remove(directory, recursive: true);
+
+        var written = await opfs.WriteText(path, "hello-opfs");
+        var read = await opfs.ReadText(path);
+        var entries = await opfs.List(directory);
+        var info = await opfs.GetFileInfo(path);
+        var removed = await opfs.Remove(directory, recursive: true);
+        var exists = await opfs.Exists(path);
+
+        Set($"opfs:roundtrip:{written}/{read}/{entries.Length}/{info?.Size}/{removed}/{exists}");
+    }
+
+    private async Task OpfsSyncAccess()
+    {
+        const string path = "butil-e2e-sync/log.bin";
+
+        await opfs.Remove(path);
+
+        if (await opfs.IsSyncAccessSupported() is false)
+        {
+            // createSyncAccessHandle is worker-only and not everywhere; the suite also has to pass
+            // where it is absent, and every call below would silently report a failed write there.
+            Set("opfs:sync:unsupported");
+            return;
+        }
+
+        var written = await opfs.SyncWrite(path, System.Text.Encoding.UTF8.GetBytes("record-1;"));
+        var appended = await opfs.SyncAppend(path, System.Text.Encoding.UTF8.GetBytes("record-2;"));
+        var size = await opfs.SyncSize(path);
+        var slice = await opfs.SyncRead(path, offset: 9, length: 9);
+        var text = slice is null ? "null" : System.Text.Encoding.UTF8.GetString(slice);
+        await opfs.Remove("butil-e2e-sync", recursive: true);
+
+        Set($"opfs:sync:True/{written}/{appended}/{size}/{text}");
+    }
+
+    // The worker serializes sync operations per file, and a sync access handle is an exclusive lock -
+    // so two overlapping appends to one file only survive if both take the same queue. These three
+    // spellings are one file, and a queue keyed on the raw string would give them three queues and
+    // have the later handles fail with NoModificationAllowedError.
+    private async Task OpfsSyncPathAliases()
+    {
+        const string directory = "butil-e2e-alias";
+
+        await opfs.Remove(directory, recursive: true);
+
+        if (await opfs.IsSyncAccessSupported() is false)
+        {
+            Set("opfs:aliases:unsupported");
+            return;
+        }
+
+        // Created up front: three concurrent creates of the same missing file is a different race
+        // than the one under test.
+        await opfs.SyncWrite($"{directory}/log.bin", []);
+
+        var record = System.Text.Encoding.UTF8.GetBytes("abc");
+        var appends = await Task.WhenAll(
+            opfs.SyncAppend($"{directory}/log.bin", record).AsTask(),
+            opfs.SyncAppend($"./{directory}/log.bin", record).AsTask(),
+            opfs.SyncAppend($"{directory}//log.bin", record).AsTask());
+
+        // -1 is what the interop reports for a failed sync operation, so a bypassed queue shows up
+        // as a negative here rather than only as a short file.
+        var failures = appends.Count(count => count < 0);
+        var size = await opfs.SyncSize($"{directory}/log.bin");
+        await opfs.Remove(directory, recursive: true);
+
+        Set($"opfs:aliases:{failures}/{size}");
+    }
+
+    // ─── Storage buckets ───────────────────────────────────────────────────────
+    private async Task StorageBucketsRoundTrip()
+    {
+        const string bucket = "butil-e2e";
+
+        if (await storageBuckets.IsSupported() is false)
+        {
+            // Chromium-only API, and the suite also has to pass where it is absent.
+            Set("buckets:roundtrip:unsupported");
+            return;
+        }
+
+        await storageBuckets.Delete(bucket);
+
+        var opened = await storageBuckets.Open(bucket);
+        var written = await storageBuckets.WriteText(bucket, "letters/draft.txt", "unsent");
+        var read = await storageBuckets.ReadText(bucket, "letters/draft.txt");
+
+        // Not valid UTF-8 on purpose: these four bytes are what tells ReadBytes apart from
+        // ReadText, which would decode 0xC3 0x28 into replacement characters and lose them.
+        byte[] payload = [0x00, 0xC3, 0x28, 0xFF];
+        var wroteBytes = await storageBuckets.WriteBytes(bucket, "letters/seal.bin", payload);
+        var readBytes = await storageBuckets.ReadBytes(bucket, "letters/seal.bin");
+        var bytesMatch = readBytes is not null && readBytes.SequenceEqual(payload);
+
+        var keys = await storageBuckets.Keys();
+        var deleted = await storageBuckets.Delete(bucket);
+
+        Set($"buckets:roundtrip:{opened?.Name}/{written}/{read}/{wroteBytes}/{bytesMatch}/{keys.Contains(bucket)}/{deleted}");
     }
 
     // ─── Web Locks ─────────────────────────────────────────────────────────────
