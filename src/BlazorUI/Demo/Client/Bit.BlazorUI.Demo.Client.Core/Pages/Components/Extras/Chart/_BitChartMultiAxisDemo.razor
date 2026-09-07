@@ -1,16 +1,26 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Rainfall + temperature" RazorCode="@comboRazorCode" CsharpCode="@comboCsharpCode" Id="multiaxis-rainfall-temperature">
-    <div class="example-desc">bars on left axis, line on right axis</div>
+    <div class="example-desc">
+        The classic combo: rainfall as bars on the left axis, temperature as a line on the right. Each axis scales
+        to its own datasets, so neither measure flattens the other.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Data="BitChartSampleData.TempAndRainfall()" Options="_combo" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Dual line axes" RazorCode="@dualLineRazorCode" CsharpCode="@dualLineCsharpCode" Id="multiaxis-dual-line-axes" PreventRenderForMcpClient>
-    <div class="example-desc">two metrics with very different ranges</div>
+    <div class="example-desc">
+        Two lines whose ranges differ by orders of magnitude. On one axis the smaller series would be a flat line
+        along the bottom.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="DualLine()" Options="_dual" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Two x-axes" RazorCode="@dualXRazorCode" CsharpCode="@dualXCsharpCode" Id="multiaxis-two-x-axes">
-    <div class="example-desc">a second x-axis (top) with its own scale</div>
+    <div class="example-desc">
+        Secondary x axes work the same way, through <code>XAxisID</code>. They stack outside the plot &mdash;
+        <code>Position = BitChartPosition.Top</code> puts this one above it &mdash; and only the primary axis
+        draws the chart-area grid.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="DualX()" Options="_dualX" /></div></div>
 </DemoExample>

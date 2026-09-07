@@ -1,21 +1,33 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Two players" RazorCode="@twoPlayersRazorCode" CsharpCode="@twoPlayersCsharpCode" Id="radar-two-players">
-    <div class="example-desc">filled areas</div>
+    <div class="example-desc">
+        A radar chart plots several measures on one shared radial scale, so two profiles can be compared by shape.
+        Filling the webs (<code>Fill = BitChartFillMode.Origin</code>) makes the overlap easy to read.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="BitChartSampleData.Skills()" Options="_bottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Outline only" RazorCode="@outlineRazorCode" CsharpCode="@outlineCsharpCode" Id="radar-outline" PreventRenderForMcpClient>
-    <div class="example-desc">no fill, thicker borders</div>
+    <div class="example-desc">
+        Outlines only. Past two or three series the fills start hiding each other, so a thicker border and no fill
+        keeps every web readable.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="@Outline()" Options="_bottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Circular grid" RazorCode="@circularRazorCode" CsharpCode="@circularCsharpCode" Id="radar-circular">
-    <div class="example-desc">grid.circular + styled point labels &amp; backdrop</div>
+    <div class="example-desc">
+        <code>Grid.Circular</code> draws the rings as circles rather than polygons, and the radial tick labels get
+        a backdrop so they stay legible where they cross the web.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="BitChartSampleData.Skills()" Options="@_circular" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Skipped points" RazorCode="@skipRazorCode" CsharpCode="@skipCsharpCode" Id="radar-skipped">
-    <div class="example-desc">null values are skipped, not zeroed</div>
+    <div class="example-desc">
+        A <code>null</code> means "not measured", not zero: the vertex is skipped and the web closes over it
+        instead of collapsing to the center and inventing a value.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="@Skip()" Options="_bottom" /></div></div>
 </DemoExample>

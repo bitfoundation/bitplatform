@@ -1,0 +1,46 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Title and subtitle" RazorCode="@basicRazorCode" CsharpCode="@basicCsharpCode" Id="titles-basic">
+    <div class="example-desc">
+        <code>Plugins.Title</code> and <code>Plugins.Subtitle</code> render above the plot with their own font,
+        color and alignment. The title also becomes the chart's accessible name when no
+        <code>AriaLabel</code> is given, so a titled chart is described correctly for free.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_titled" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Placement" RazorCode="@placementRazorCode" CsharpCode="@placementCsharpCode" Id="titles-placement">
+    <div class="example-desc">
+        A title can sit on any of the four sides: top and bottom run across the chart, left and right run down
+        beside the plot. <code>Align</code> pins it to the start, center or end of that edge, and a newline in
+        the text breaks it over two lines.
+    </div>
+    <div class="controls">
+        <label>
+            Position
+            <select @bind="_position">
+                <option value="@BitChartPosition.Top">Top</option>
+                <option value="@BitChartPosition.Bottom">Bottom</option>
+                <option value="@BitChartPosition.Left">Left</option>
+                <option value="@BitChartPosition.Right">Right</option>
+            </select>
+        </label>
+        <label>
+            Align
+            <select @bind="_align">
+                <option value="@BitChartAlign.Start">Start</option>
+                <option value="@BitChartAlign.Center">Center</option>
+                <option value="@BitChartAlign.End">End</option>
+            </select>
+        </label>
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="Placement()" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Axis titles" RazorCode="@axisRazorCode" CsharpCode="@axisCsharpCode" Id="titles-axis">
+    <div class="example-desc">
+        Each scale carries its own <code>Title</code>, drawn beside the axis and rotated to run along it. The
+        axis reserves the room the title needs, so it never overlaps the tick labels.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_axisTitles" /></div></div>
+</DemoExample>

@@ -6,9 +6,10 @@ internal static class BitChartJsRuntimeExtensions
 {
     public static ValueTask<IJSObjectReference> BitChartObserve(this IJSRuntime jsRuntime,
                                                                      ElementReference element,
-                                                                     DotNetObjectReference<BitChart> dotnetObj)
+                                                                     DotNetObjectReference<BitChart> dotnetObj,
+                                                                     bool responsive)
     {
-        return jsRuntime.InvokeAsync<IJSObjectReference>("BitBlazorUI.BitChart.observe", element, dotnetObj);
+        return jsRuntime.InvokeAsync<IJSObjectReference>("BitBlazorUI.BitChart.observe", element, dotnetObj, responsive);
     }
 
     // The zoom payload is only ever constructed (never read) from C#, so without this hint the
@@ -21,5 +22,22 @@ internal static class BitChartJsRuntimeExtensions
                                                                       BitChartZoomPayload options)
     {
         return jsRuntime.InvokeAsync<IJSObjectReference>("BitBlazorUI.BitChart.register", element, dotnetObj, options);
+    }
+
+    public static ValueTask<bool> BitChartExportSvg(this IJSRuntime jsRuntime, ElementReference element,
+                                                   string fileName, string? background)
+    {
+        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.exportSvg", element, fileName, background);
+    }
+
+    public static ValueTask<bool> BitChartExportPng(this IJSRuntime jsRuntime, ElementReference element,
+                                                   string fileName, double scale, string? background)
+    {
+        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.exportPng", element, fileName, scale, background);
+    }
+
+    public static ValueTask BitChartDownloadText(this IJSRuntime jsRuntime, string fileName, string content, string mimeType)
+    {
+        return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitChart.downloadText", fileName, content, mimeType);
     }
 }

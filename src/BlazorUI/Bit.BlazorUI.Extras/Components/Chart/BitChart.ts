@@ -11,7 +11,7 @@ namespace BitBlazorUI {
     export class BitChart {
         // Observe an element's pixel size and report changes to .NET so the chart can render at real
         // device pixels (keeping font sizes constant, like Chart.js) instead of scaling a fixed viewBox.
-        public static observe(element: HTMLElement, dotnet: DotNetObject) {
+        public static observe(element: HTMLElement, dotnet: DotNetObject, responsive: boolean) {
             let lastW = 0, lastH = 0;
 
             function report() {
@@ -23,19 +23,35 @@ namespace BitBlazorUI {
                 }
             }
 
-            let ro: ResizeObserver | null = null;
-            if (typeof ResizeObserver !== 'undefined') {
-                ro = new ResizeObserver(report);
-                ro.observe(element);
-            } else {
-                window.addEventListener('resize', report);
+            // Arrow/Home/End/Space navigate the focused chart. Blazor evaluates @onkeydown:preventDefault
+            // at render time, so it cannot decide per key - and cancelling every keydown would break Tab.
+            // A capture listener decides per key, and only while the SVG itself has focus.
+            const NAV_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', ' ', 'Spacebar'];
+            function onKeyDown(e: KeyboardEvent) {
+                const target = e.target as Element | null;
+                if (!target || target.tagName.toLowerCase() !== 'svg') return;
+                if (NAV_KEYS.indexOf(e.key) >= 0) e.preventDefault();
             }
-            report();
+            element.addEventListener('keydown', onKeyDown, true);
+
+            let ro: ResizeObserver | null = null;
+            let listening = false;
+            if (responsive) {
+                if (typeof ResizeObserver !== 'undefined') {
+                    ro = new ResizeObserver(report);
+                    ro.observe(element);
+                } else {
+                    window.addEventListener('resize', report);
+                    listening = true;
+                }
+                report();
+            }
 
             return {
                 dispose() {
+                    element.removeEventListener('keydown', onKeyDown, true);
                     if (ro) ro.disconnect();
-                    else window.removeEventListener('resize', report);
+                    if (listening) window.removeEventListener('resize', report);
                 }
             };
         }
@@ -121,6 +137,106 @@ namespace BitBlazorUI {
                     element.removeEventListener('dblclick', onDouble);
                 }
             };
+        }
+
+        // ---- export ----
+
+        // Theme tokens the chart references from SVG attributes as var(--bit-...). They resolve against
+        // the document, so an exported (standalone) SVG has to carry their computed values with it.
+        private static readonly THEME_VARS = [
+            '--bit-clr-fg-pri', '--bit-clr-fg-sec', '--bit-clr-brd-pri', '--bit-clr-brd-sec',
+            '--bit-clr-bg-pri', '--bit-clr-pri', '--bit-tpg-font-family'
+        ];
+
+        private static serialize(element: HTMLElement, background: string | null): string | null {
+            const svg = element.querySelector('svg') as SVGSVGElement | null;
+            if (!svg) return null;
+
+            const clone = svg.cloneNode(true) as SVGSVGElement;
+            const box = svg.getBoundingClientRect();
+            const width = Math.max(1, Math.round(box.width));
+            const height = Math.max(1, Math.round(box.height));
+            clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            clone.setAttribute('width', String(width));
+            clone.setAttribute('height', String(height));
+            clone.style.overflow = 'visible';
+
+            // Interaction-only layers are not part of the picture.
+            clone.querySelectorAll('.bit-cht-hover, .bit-cht-bands').forEach(n => n.remove());
+
+            const computed = getComputedStyle(svg);
+            for (const name of BitChart.THEME_VARS) {
+                const value = computed.getPropertyValue(name);
+                if (value) clone.style.setProperty(name, value.trim());
+            }
+            if (background) {
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('width', '100%');
+                rect.setAttribute('height', '100%');
+                rect.setAttribute('fill', background);
+                clone.insertBefore(rect, clone.firstChild);
+            }
+            return new XMLSerializer().serializeToString(clone);
+        }
+
+        public static exportSvg(element: HTMLElement, fileName: string, background: string | null) {
+            const markup = BitChart.serialize(element, background);
+            if (!markup) return false;
+            BitChart.downloadBlob(fileName || 'chart.svg', new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }));
+            return true;
+        }
+
+        public static async exportPng(element: HTMLElement, fileName: string, scale: number, background: string | null) {
+            const markup = BitChart.serialize(element, background);
+            if (!markup) return false;
+            const svg = element.querySelector('svg') as SVGSVGElement;
+            const box = svg.getBoundingClientRect();
+            const ratio = Math.max(1, scale || 1);
+            const width = Math.max(1, Math.round(box.width * ratio));
+            const height = Math.max(1, Math.round(box.height * ratio));
+
+            const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }));
+            try {
+                const image = new Image();
+                image.width = width;
+                image.height = height;
+                await new Promise<void>((resolve, reject) => {
+                    image.onload = () => resolve();
+                    image.onerror = () => reject(new Error('svg load failed'));
+                    image.src = url;
+                });
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return false;
+                if (background) {
+                    ctx.fillStyle = background;
+                    ctx.fillRect(0, 0, width, height);
+                }
+                ctx.drawImage(image, 0, 0, width, height);
+                const blob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                if (!blob) return false;
+                BitChart.downloadBlob(fileName || 'chart.png', blob);
+                return true;
+            } finally {
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        public static downloadText(fileName: string, content: string, mimeType: string) {
+            BitChart.downloadBlob(fileName || 'chart.csv', new Blob([content], { type: mimeType || 'text/plain;charset=utf-8' }));
+        }
+
+        private static downloadBlob(fileName: string, blob: Blob) {
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = fileName;
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            setTimeout(() => URL.revokeObjectURL(url), 0);
         }
     }
 }

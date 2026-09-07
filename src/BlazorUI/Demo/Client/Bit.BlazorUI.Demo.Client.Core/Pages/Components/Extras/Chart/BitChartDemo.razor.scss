@@ -22,4 +22,30 @@
         margin-top: 2rem;
         justify-content: center;
     }
+
+    // The live controls above a sample (selects, checkboxes, sliders) share one row and wrap.
+    .controls {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        > label {
+            gap: 0.35rem;
+            display: inline-flex;
+            align-items: center;
+        }
+    }
+
+    .csv-preview {
+        margin: 1rem 0;
+        padding: 0.75rem;
+        overflow: auto;
+        max-height: rem2(180px);
+        font-size: 0.8rem;
+        border-radius: 4px;
+        background: var(--bit-clr-bg-sec);
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
 }

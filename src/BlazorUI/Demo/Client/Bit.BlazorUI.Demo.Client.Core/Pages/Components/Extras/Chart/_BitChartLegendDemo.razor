@@ -27,11 +27,18 @@
 </DemoExample>
 
 <DemoExample Title="Legend title" RazorCode="@titledRazorCode" CsharpCode="@titledCsharpCode" Id="legend-title">
-    <div class="example-desc">a heading above the items</div>
+    <div class="example-desc">
+        A legend <code>Title</code> names what the entries stand for, which matters once a page carries several
+        charts.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_titled" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Point-style markers" RazorCode="@pointStyleRazorCode" CsharpCode="@pointStyleCsharpCode" Id="legend-point-style" PreventRenderForMcpClient>
-    <div class="example-desc">usePointStyle uses each dataset's marker</div>
+    <div class="example-desc">
+        <code>UsePointStyle</code> draws each entry with its dataset's own marker instead of a color box, so the
+        legend matches what is actually on the plot. Every entry is a real button: reachable by Tab, toggled with
+        Enter or Space, and reporting its state through <code>aria-pressed</code>.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
 </DemoExample>

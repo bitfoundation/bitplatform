@@ -1,11 +1,18 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Threshold lines" RazorCode="@linesRazorCode" CsharpCode="@linesCsharpCode" Id="annotations-threshold-lines">
-    <div class="example-desc">horizontal target + warning band</div>
+    <div class="example-desc">
+        <code>BitChartAnnotationPlugin</code> draws reference lines, boxes, points and labels in data coordinates,
+        so they stay glued to the values as the chart resizes. A target line plus a shaded warning band turns raw
+        numbers into a verdict.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_lines" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Box + vertical marker" RazorCode="@boxRazorCode" CsharpCode="@boxCsharpCode" Id="annotations-box-vertical-marker">
-    <div class="example-desc">highlight a region and an event</div>
+    <div class="example-desc">
+        A box highlights a span of categories and a vertical line marks a single event.
+        <code>DrawBehindDatasets</code> decides whether an annotation sits under the data or over it.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Bars()" Options="_box" /></div></div>
 </DemoExample>

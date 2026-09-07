@@ -335,4 +335,108 @@ private BitChartData StackedGroups() => new()
         new BitChartDataset { Label = ""2026 · Renew"", Stack = ""2026"", Data = new() { 15, 18, 17, 22 }, BackgroundColor = ""#ffb1c1"" }
     }
 };";
+
+    private readonly BitChartOptions _target = new()
+    {
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
+        Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Title = new BitChartScaleTitleOptions { Display = true, Text = "Units" } } }
+    };
+
+    private BitChartData AgainstTarget() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Label = "Units vs target",
+                Data = BitChartSampleData.V(118, 96, 100.2, 131, 88, 104, 112),
+                Base = 100,
+                MinBarLength = 6,
+                BorderRadius = 3,
+                BackgroundColorFn = ctx => ctx.Value >= 100 ? "#2ecc71" : "#ff6384"
+            }
+        }
+    };
+
+    private BitChartData Overlay() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Label = "Budget", Grouped = false,
+                Data = BitChartSampleData.V(20, 22, 24, 26, 28, 30, 32),
+                BackgroundColor = "rgba(120,130,145,0.25)"
+            },
+            new BitChartDataset
+            {
+                Label = "Team A", SkipNull = true,
+                Data = BitChartSampleData.V(12, 19, 14, 22, 18, 25, 20),
+                BackgroundColor = "#36a2eb", BorderRadius = 3
+            },
+            new BitChartDataset
+            {
+                Label = "Team B", SkipNull = true,
+                Data = BitChartSampleData.V(8, null, 17, null, 14, 12, 19),
+                BackgroundColor = "#ff9f40", BorderRadius = 3
+            }
+        }
+    };
+
+    private readonly string minLengthRazorCode = @"<BitChart Type=""BitChartType.Bar"" Data=""AgainstTarget()"" Options=""_target"" />";
+    private readonly string minLengthCsharpCode = @"
+private readonly BitChartOptions _target = new()
+{
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
+    Scales = { [""y""] = new BitChartScaleOptions { Id = ""y"", Title = new BitChartScaleTitleOptions { Display = true, Text = ""Units"" } } }
+};
+
+private BitChartData AgainstTarget() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        new BitChartDataset
+        {
+            Label = ""Units vs target"",
+            Data = new() { 118, 96, 100.2, 131, 88, 104, 112 },
+            Base = 100,          // bars grow from the target instead of zero
+            MinBarLength = 6,    // a value that is almost on target still shows
+            BorderRadius = 3,
+            BackgroundColorFn = ctx => ctx.Value >= 100 ? ""#2ecc71"" : ""#ff6384""
+        }
+    }
+};";
+
+    private readonly string overlayRazorCode = @"<BitChart Type=""BitChartType.Bar"" Data=""Overlay()"" Options=""_bottom"" />";
+    private readonly string overlayCsharpCode = @"
+private BitChartData Overlay() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        // Grouped = false steps out of the side-by-side layout and keeps the whole band.
+        new BitChartDataset
+        {
+            Label = ""Budget"", Grouped = false,
+            Data = new() { 20, 22, 24, 26, 28, 30, 32 },
+            BackgroundColor = ""rgba(120,130,145,0.25)""
+        },
+        new BitChartDataset
+        {
+            Label = ""Team A"", SkipNull = true,
+            Data = new() { 12, 19, 14, 22, 18, 25, 20 },
+            BackgroundColor = ""#36a2eb"", BorderRadius = 3
+        },
+        // The nulls leave no gap: Team A widens over those categories.
+        new BitChartDataset
+        {
+            Label = ""Team B"", SkipNull = true,
+            Data = new() { 8, null, 17, null, 14, 12, 19 },
+            BackgroundColor = ""#ff9f40"", BorderRadius = 3
+        }
+    }
+};";
 }

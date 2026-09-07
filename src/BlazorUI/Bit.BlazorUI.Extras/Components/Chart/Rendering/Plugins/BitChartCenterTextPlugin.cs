@@ -13,7 +13,7 @@ public sealed class BitChartCenterTextPlugin : IBitChartPlugin
     public string Text { get; set; } = "";
     /// <summary>Optional secondary line shown beneath the main text.</summary>
     public string? Subtext { get; set; }
-    public string Color { get; set; } = "#333";
+    public string Color { get; set; } = "var(--bit-clr-fg-pri, #1A1A1A)";
     public string? SubtextColor { get; set; }
     public BitChartFont Font { get; set; } = new() { Size = 28, Weight = "bold" };
     public BitChartFont SubtextFont { get; set; } = new() { Size = 13 };

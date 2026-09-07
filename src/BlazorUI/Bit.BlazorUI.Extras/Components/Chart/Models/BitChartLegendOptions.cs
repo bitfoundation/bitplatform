@@ -11,4 +11,6 @@ public sealed class BitChartLegendOptions
     public bool OnClickToggle { get; set; } = true;
     public BitChartLegendLabelOptions Labels { get; set; } = new();
     public string? Title { get; set; }
+    /// <summary>Keeps only the items this predicate accepts, mirroring Chart.js <c>legend.labels.filter</c>.</summary>
+    public Func<BitChartLegendItemModel, bool>? Filter { get; set; }
 }

@@ -1,0 +1,51 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Hover anywhere" RazorCode="@anywhereRazorCode" CsharpCode="@anywhereCsharpCode" Id="interaction-anywhere">
+    <div class="example-desc">
+        By default <code>Interaction.Intersect</code> is <code>false</code>: an invisible hit band per category
+        covers the plot, so moving anywhere over the chart activates that index. A crosshair marks it and a chip
+        on the axis names it. That is what keeps a line drawn without markers (<code>PointRadius = 0</code>)
+        hoverable at all. Both the line and the chip can be turned off with <code>Interaction.Crosshair</code>
+        and <code>Interaction.CrosshairLabel</code>.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_default" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Require an intersection" RazorCode="@intersectRazorCode" CsharpCode="@intersectCsharpCode" Id="interaction-intersect">
+    <div class="example-desc">
+        Set <code>Interaction.Intersect = true</code> for the strict Chart.js behaviour: only the element directly
+        under the pointer reacts. The same series is shown here with visible markers, since with this setting a
+        marker-less dataset would have nothing left to hover.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Markers()" Options="_intersect" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Interaction modes" RazorCode="@modesRazorCode" CsharpCode="@modesCsharpCode" Id="interaction-modes">
+    <div class="example-desc">
+        <code>Interaction.Mode</code> decides which elements join the hovered one: <code>Nearest</code> takes just
+        that element, <code>Index</code> takes every series at the same label, and <code>Dataset</code> takes the
+        whole series. The tooltip inherits the mode unless <code>Plugins.Tooltip.Mode</code> overrides it.
+    </div>
+    <div class="controls">
+        <label>
+            Mode
+            <select @bind="_mode">
+                <option value="@BitChartInteractionMode.Nearest">Nearest</option>
+                <option value="@BitChartInteractionMode.Index">Index</option>
+                <option value="@BitChartInteractionMode.Dataset">Dataset</option>
+            </select>
+        </label>
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="ModeOptions()" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Empty state" RazorCode="@emptyRazorCode" CsharpCode="@emptyCsharpCode" Id="interaction-empty">
+    <div class="example-desc">
+        When the configuration produces nothing to draw the chart says so instead of showing bare axes. Set
+        <code>NoDataText</code> for a message, or <code>NoDataTemplate</code> to render your own content.
+    </div>
+    <div class="buttons-container">
+        <BitButton Variant="BitVariant.Outline" OnClick="ToggleEmpty">@(_hasData ? "Clear the data" : "Restore the data")</BitButton>
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="EmptyDemoData()" NoDataText="No results for this filter" /></div></div>
+</DemoExample>

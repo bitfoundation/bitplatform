@@ -1,26 +1,41 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Gradient fill" RazorCode="@gradientRazorCode" CsharpCode="@gradientCsharpCode" Id="area-gradient" PreventRenderForMcpClient>
-    <div class="example-desc">vertical gradient under a smooth line</div>
+    <div class="example-desc">
+        An area is a line dataset with a <code>Fill</code> mode. <code>FillGradient</code> paints it with a linear
+        gradient &mdash; fading to transparent at the bottom keeps the fill from competing with the gridlines.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Gradient()" Options="_noLegend" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Stacked area" RazorCode="@stackedRazorCode" CsharpCode="@stackedCsharpCode" Id="area-stacked">
-    <div class="example-desc">scales.y.stacked, three cumulative series</div>
+    <div class="example-desc">
+        With <code>Stacked</code> on the value axis the line datasets accumulate: each band is drawn between the
+        running total below it and its own, so the top edge is the overall total.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Stacked()" Options="@_stacked" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Range (fill between datasets)" RazorCode="@rangeRazorCode" CsharpCode="@rangeCsharpCode" Id="area-range">
-    <div class="example-desc">upper fills down to lower (BitChartFillMode.Dataset)</div>
+    <div class="example-desc">
+        <code>BitChartFillMode.Dataset</code> fills to another dataset's line instead of to an axis, with
+        <code>FillTargetIndex</code> naming it. That is the band shape for confidence intervals and min/max ranges.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Range()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Fill boundaries" RazorCode="@boundariesRazorCode" CsharpCode="@boundariesCsharpCode" Id="area-boundaries">
-    <div class="example-desc">origin, start (top) and end (bottom) baselines</div>
+    <div class="example-desc">
+        The remaining fill modes pick a different baseline: <code>Origin</code> fills to zero, <code>Start</code>
+        to the bottom of the axis, <code>End</code> to the top, and <code>Value</code> to any number you name.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Boundaries()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Radial gradient" RazorCode="@radialFillRazorCode" CsharpCode="@radialFillCsharpCode" Id="area-radial" PreventRenderForMcpClient>
-    <div class="example-desc">center→edge radial fill under the line</div>
+    <div class="example-desc">
+        <code>BitChartRadialGradient</code> fills from the center of the shape outwards. Its center and radius are
+        fractions of the filled area's bounding box, so the gradient follows the data as the chart resizes.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@RadialFill()" Options="_noLegend" /></div></div>
 </DemoExample>

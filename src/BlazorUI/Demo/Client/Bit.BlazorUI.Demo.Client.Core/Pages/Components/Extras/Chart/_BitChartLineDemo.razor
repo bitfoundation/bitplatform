@@ -6,7 +6,10 @@
 </DemoExample>
 
 <DemoExample Title="Straight lines" RazorCode="@straightRazorCode" CsharpCode="@straightCsharpCode" Id="line-straight" PreventRenderForMcpClient>
-    <div class="example-desc">Two series without smoothing (tension 0).</div>
+    <div class="example-desc">
+        Straight segments between the points (<code>Tension = 0</code>). Without smoothing the line states exactly
+        what was measured, which is the honest default for sparse or irregular data.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
@@ -21,7 +24,10 @@
 </DemoExample>
 
 <DemoExample Title="Logarithmic Y axis" RazorCode="@logRazorCode" CsharpCode="@logCsharpCode" Id="line-log">
-    <div class="example-desc">A logarithmic value axis handles data that spans several orders of magnitude.</div>
+    <div class="example-desc">
+        A logarithmic value axis handles data spanning several orders of magnitude: growth that would be a flat
+        line at the bottom of a linear axis becomes a readable slope.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Log()" Options="_logOptions" /></div></div>
 </DemoExample>
 

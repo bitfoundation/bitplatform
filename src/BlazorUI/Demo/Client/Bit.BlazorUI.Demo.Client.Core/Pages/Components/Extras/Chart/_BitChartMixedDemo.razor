@@ -1,11 +1,17 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Bar + line" RazorCode="@barLineRazorCode" CsharpCode="@barLineCsharpCode" Id="mixed-bar-line">
-    <div class="example-desc">line drawn on top of bars</div>
+    <div class="example-desc">
+        A per-dataset <code>Type</code> mixes chart types in one plot. Bars are always drawn first so lines and
+        points land on top of them; <code>Order</code> decides the rest.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@BarLine()" Options="_bottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Dual axis" RazorCode="@dualAxisRazorCode" CsharpCode="@dualAxisCsharpCode" Id="mixed-dual-axis">
-    <div class="example-desc">revenue (left) vs. margin % (right)</div>
+    <div class="example-desc">
+        Two measures with unrelated units get their own value axes: <code>YAxisID</code> binds a dataset to a
+        scale, and a scale with <code>Position = BitChartPosition.Right</code> is drawn on the other side.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@DualAxis()" Options="@_dual" /></div></div>
 </DemoExample>

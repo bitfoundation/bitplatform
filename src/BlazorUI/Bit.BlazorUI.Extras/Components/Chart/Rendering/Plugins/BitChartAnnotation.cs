@@ -27,5 +27,7 @@ public sealed class BitChartAnnotation
     public string? Label { get; set; }
     public string LabelColor { get; set; } = "#fff";
     public string LabelBackground { get; set; } = "#ff6384";
+    /// <summary>Font of the annotation label.</summary>
+    public BitChartFont LabelFont { get; set; } = new() { Size = 11, Weight = "bold" };
     public bool DrawBehindDatasets { get; set; }
 }

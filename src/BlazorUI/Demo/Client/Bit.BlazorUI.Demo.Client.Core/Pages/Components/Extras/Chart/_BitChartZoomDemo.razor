@@ -9,16 +9,16 @@
 </DemoExample>
 
 <DemoExample Title="Zoom both axes" RazorCode="@xyRazorCode" CsharpCode="@xyCsharpCode" Id="zoom-xy" PreventRenderForMcpClient>
-    <div class="example-desc"><code>Mode = XY</code> on a scatter plot: scroll to zoom both axes, drag to pan.</div>
+    <div class="example-desc"><code>Mode = XY</code> zooms and pans both axes at once, which is what a scatter plot needs. Zooming stays inside the data range, so the plot can never be dragged off into empty space.</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="Scatter()" Options="_xy" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Drag-to-zoom box" RazorCode="@dragRazorCode" CsharpCode="@dragCsharpCode" Id="zoom-drag">
-    <div class="example-desc">Drag a rectangle to zoom into it; double-click to reset (<code>DragZoom = true</code>, <code>Wheel = false</code>).</div>
+    <div class="example-desc">With <code>DragZoom</code> the drag gesture selects a rectangle to zoom into instead of panning. Double-click resets it; from code, <code>ResetZoom()</code> and <code>ZoomTo(axisId, min, max)</code> do the same, and <code>OnZoomChange</code> reports every change.</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="Scatter()" Options="_drag" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Category-axis zoom" RazorCode="@catZoomRazorCode" CsharpCode="@catZoomCsharpCode" Id="zoom-category">
-    <div class="example-desc">Scroll to zoom a 40-category bar chart; drag to pan.</div>
+    <div class="example-desc">Category axes zoom too: the visible window is a range of indexes, so 40 categories can be explored a handful at a time without touching the data.</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="ManyBars()" Options="_catZoom" /></div></div>
 </DemoExample>

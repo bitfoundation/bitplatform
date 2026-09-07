@@ -1,0 +1,39 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Culture-aware numbers" RazorCode="@cultureRazorCode" CsharpCode="@cultureCsharpCode" Id="localization-culture">
+    <div class="example-desc">
+        Every number the chart prints &mdash; tick labels, tooltips, data labels and the CSV export &mdash; is
+        formatted with <code>Options.Culture</code>. It defaults to the invariant culture so output is stable
+        regardless of the thread culture; set it to <code>CultureInfo.CurrentCulture</code> to follow the user.
+    </div>
+    <div class="controls">
+        <label>
+            Culture
+            <select @bind="_culture">
+                <option value="en-US">en-US</option>
+                <option value="de-DE">de-DE</option>
+                <option value="fr-FR">fr-FR</option>
+                <option value="fa-IR">fa-IR</option>
+            </select>
+        </label>
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Revenue()" Options="CultureOptions()" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Currency ticks" RazorCode="@currencyRazorCode" CsharpCode="@currencyCsharpCode" Id="localization-currency">
+    <div class="example-desc">
+        <code>Ticks.Format</code> takes any .NET numeric format string and is applied with the chart's culture,
+        so <code>"C0"</code> gives properly placed currency symbols. <code>Prefix</code> and <code>Suffix</code>
+        are the simpler alternative when you just need to wrap the number.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Revenue()" Options="_currency" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Right-to-left" RazorCode="@rtlRazorCode" CsharpCode="@rtlCsharpCode" Id="localization-rtl">
+    <div class="example-desc">
+        <code>Dir="BitDir.Rtl"</code> flips everything around the plot: the title, the legend, the tooltip and the
+        screen-reader table. The plot itself keeps its own coordinates &mdash; mirror it as well by setting
+        <code>Reverse</code> on the index scale, as this sample does.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Dir="BitDir.Rtl" RespectReducedMotion="false" Type="BitChartType.Bar" Data="Persian()" Options="_rtl" /></div></div>
+</DemoExample>

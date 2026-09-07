@@ -97,8 +97,17 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
 
     private static void AddLabel(Action<BitChartSvgNode> add, BitChartAnnotation a, double x, double y, string anchor)
     {
-        double w = (a.Label!.Length * 7) + 10;
-        add(new BitChartSvgRect { X = anchor == "end" ? x - w : anchor == "middle" ? x - w / 2 : x, Y = y - 9, Width = w, Height = 18, Rx = 4, Fill = a.LabelBackground });
-        add(new BitChartSvgText { X = anchor == "end" ? x - w / 2 : x, Y = y, Text = a.Label!, Fill = a.LabelColor, FontSize = 11, Anchor = "middle", Baseline = "central", FontWeight = "bold" });
+        // Measured rather than guessed from the character count, so the pill fits the text at any length.
+        double fontSize = a.LabelFont.Size;
+        double w = BitChartTextMeasure.Width(a.Label, fontSize, a.LabelFont.Weight) + 12;
+        double h = a.LabelFont.LineHeightPx + 6;
+        double left = anchor == "end" ? x - w : anchor == "middle" ? x - w / 2 : x;
+        add(new BitChartSvgRect { X = left, Y = y - h / 2, Width = w, Height = h, Rx = 4, Fill = a.LabelBackground });
+        add(new BitChartSvgText
+        {
+            X = left + w / 2, Y = y, Text = a.Label!, Fill = a.LabelColor,
+            FontFamily = a.LabelFont.Family, FontSize = fontSize, FontWeight = a.LabelFont.Weight,
+            Anchor = "middle", Baseline = "central"
+        });
     }
 }

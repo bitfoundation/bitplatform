@@ -12,6 +12,8 @@ public sealed class BitChartScene
     /// Rendered in an animated group so every line - solid, dashed or per-segment - animates uniformly.</summary>
     public List<BitChartSvgNode> Series { get; } = new();
     public List<BitChartDataElement> Elements { get; } = new();
+    /// <summary>Invisible per-index hit areas spanning the plot, used for non-intersecting hover.</summary>
+    public List<BitChartHitBand> HitBands { get; } = new();
     public List<BitChartSvgNode> Foreground { get; } = new();
 
     /// <summary>Gradient definitions referenced via url(#id).</summary>
@@ -45,4 +47,12 @@ public sealed class BitChartScene
     public Dictionary<string, (double Min, double Max)> AxisRanges { get; } = new();
     /// <summary>Axis ids that support zoom/pan (linear/time/logarithmic).</summary>
     public HashSet<string> ZoomableAxes { get; } = new();
+    /// <summary>The full (un-zoomed) data range per axis id, used to keep zoom/pan inside the data.</summary>
+    public Dictionary<string, (double Min, double Max)> DataRanges { get; } = new();
+
+    /// <summary>Axis ids drawn in reverse, so pointer gestures can be mapped back the right way round.</summary>
+    public HashSet<string> ReversedAxes { get; } = new();
+
+    /// <summary>True when the configuration produced nothing to draw (no datasets, or all empty/hidden).</summary>
+    public bool IsEmpty { get; set; }
 }

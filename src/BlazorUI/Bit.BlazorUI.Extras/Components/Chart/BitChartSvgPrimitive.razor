@@ -5,44 +5,57 @@
     case BitChartSvgLine l:
         <line x1="@BitChartSvg.N(l.X1)" y1="@BitChartSvg.N(l.Y1)" x2="@BitChartSvg.N(l.X2)" y2="@BitChartSvg.N(l.Y2)"
               stroke="@l.Stroke" stroke-width="@BitChartSvg.N(l.StrokeWidth)" opacity="@BitChartSvg.N(l.Opacity)"
-              stroke-dasharray="@l.Dash" />
+              stroke-dasharray="@l.Dash" transform="@l.Transform" class="@l.CssClass">
+            @if (!string.IsNullOrEmpty(l.Title)) { <title>@l.Title</title> }
+        </line>
         break;
 
     case BitChartSvgRect r:
         <rect x="@BitChartSvg.N(r.X)" y="@BitChartSvg.N(r.Y)" width="@BitChartSvg.N(r.Width)" height="@BitChartSvg.N(r.Height)"
               rx="@BitChartSvg.N(r.Rx)" fill="@r.Fill" stroke="@r.Stroke" stroke-width="@BitChartSvg.N(r.StrokeWidth)"
-              opacity="@BitChartSvg.N(r.Opacity)" class="@r.CssClass">
+              opacity="@BitChartSvg.N(r.Opacity)" transform="@r.Transform" class="@r.CssClass">
             @if (!string.IsNullOrEmpty(r.Title)) { <title>@r.Title</title> }
         </rect>
         break;
 
     case BitChartSvgCircle c:
         <circle cx="@BitChartSvg.N(c.Cx)" cy="@BitChartSvg.N(c.Cy)" r="@BitChartSvg.N(c.R)" fill="@c.Fill"
-                stroke="@c.Stroke" stroke-width="@BitChartSvg.N(c.StrokeWidth)" opacity="@BitChartSvg.N(c.Opacity)" class="@c.CssClass" />
+                stroke="@c.Stroke" stroke-width="@BitChartSvg.N(c.StrokeWidth)" opacity="@BitChartSvg.N(c.Opacity)"
+                transform="@c.Transform" class="@c.CssClass">
+            @if (!string.IsNullOrEmpty(c.Title)) { <title>@c.Title</title> }
+        </circle>
         break;
 
     case BitChartSvgPath p:
         <path d="@p.D" fill="@p.Fill" stroke="@p.Stroke" stroke-width="@BitChartSvg.N(p.StrokeWidth)"
-              stroke-dasharray="@p.Dash" stroke-linecap="@p.LineCap" stroke-linejoin="@p.LineJoin"
-              opacity="@BitChartSvg.N(p.Opacity)" class="@(p.AnimateDraw ? "bc-draw" : p.AnimateFade ? "bc-fade" : p.CssClass)"
-              pathLength="@(p.AnimateDraw ? "1" : null)" />
+              stroke-dasharray="@p.Dash" stroke-dashoffset="@(p.DashOffset != 0 ? BitChartSvg.N(p.DashOffset) : null)"
+              stroke-linecap="@p.LineCap" stroke-linejoin="@p.LineJoin"
+              opacity="@BitChartSvg.N(p.Opacity)" transform="@p.Transform"
+              class="@(p.AnimateDraw ? "bit-cht-draw" : p.AnimateFade ? "bit-cht-fade" : p.CssClass)"
+              pathLength="@(p.AnimateDraw ? "1" : null)">
+            @if (!string.IsNullOrEmpty(p.Title)) { <title>@p.Title</title> }
+        </path>
         break;
 
     case BitChartSvgPolygon poly:
         @if (poly.Closed)
         {
             <polygon points="@PolyPoints(poly)" fill="@poly.Fill" stroke="@poly.Stroke"
-                     stroke-width="@BitChartSvg.N(poly.StrokeWidth)" stroke-linejoin="round" opacity="@BitChartSvg.N(poly.Opacity)" />
+                     stroke-width="@BitChartSvg.N(poly.StrokeWidth)" stroke-linejoin="round"
+                     opacity="@BitChartSvg.N(poly.Opacity)" transform="@poly.Transform" class="@poly.CssClass">
+                @if (!string.IsNullOrEmpty(poly.Title)) { <title>@poly.Title</title> }
+            </polygon>
         }
         else
         {
             <polyline points="@PolyPoints(poly)" fill="none" stroke="@poly.Stroke"
-                      stroke-width="@BitChartSvg.N(poly.StrokeWidth)" opacity="@BitChartSvg.N(poly.Opacity)" />
+                      stroke-width="@BitChartSvg.N(poly.StrokeWidth)" opacity="@BitChartSvg.N(poly.Opacity)"
+                      transform="@poly.Transform" class="@poly.CssClass" />
         }
         break;
 
     case BitChartSvgText t:
-        @((MarkupString)BuildText(t))
+        @RenderText(t)
         break;
 }
 
@@ -52,15 +65,33 @@
     private static string PolyPoints(BitChartSvgPolygon p) =>
         string.Join(" ", p.Points.Select(pt => $"{BitChartSvg.N(pt.X)},{BitChartSvg.N(pt.Y)}"));
 
-    private static string BuildText(BitChartSvgText t)
+    // "text" is a reserved tag name in Razor markup, so the SVG text element is emitted through the
+    // render tree directly. Values go through AddAttribute/AddContent, which encode them - unlike the
+    // hand-built markup string this used to be.
+    private static RenderFragment RenderText(BitChartSvgText t) => builder =>
     {
-        string transform = t.Rotation != 0
-            ? $" transform=\"rotate({BitChartSvg.N(t.Rotation)} {BitChartSvg.N(t.X)} {BitChartSvg.N(t.Y)})\""
-            : "";
-        string content = System.Net.WebUtility.HtmlEncode(t.Text);
-        return $"<text x=\"{BitChartSvg.N(t.X)}\" y=\"{BitChartSvg.N(t.Y)}\" fill=\"{t.Fill}\" " +
-               $"font-family=\"{System.Net.WebUtility.HtmlEncode(t.FontFamily)}\" font-size=\"{BitChartSvg.N(t.FontSize)}\" " +
-               $"font-weight=\"{t.FontWeight}\" font-style=\"{t.FontStyle}\" text-anchor=\"{t.Anchor}\" " +
-               $"dominant-baseline=\"{t.Baseline}\" opacity=\"{BitChartSvg.N(t.Opacity)}\"{transform}>{content}</text>";
+        builder.OpenElement(0, "text");
+        builder.AddAttribute(1, "x", BitChartSvg.N(t.X));
+        builder.AddAttribute(2, "y", BitChartSvg.N(t.Y));
+        builder.AddAttribute(3, "fill", t.Fill);
+        builder.AddAttribute(4, "font-family", t.FontFamily);
+        builder.AddAttribute(5, "font-size", BitChartSvg.N(t.FontSize));
+        builder.AddAttribute(6, "font-weight", t.FontWeight);
+        builder.AddAttribute(7, "font-style", t.FontStyle);
+        builder.AddAttribute(8, "text-anchor", t.Anchor);
+        builder.AddAttribute(9, "dominant-baseline", t.Baseline);
+        builder.AddAttribute(10, "opacity", BitChartSvg.N(t.Opacity));
+        if (TextTransform(t) is { } tr) builder.AddAttribute(11, "transform", tr);
+        if (!string.IsNullOrEmpty(t.CssClass)) builder.AddAttribute(12, "class", t.CssClass);
+        builder.AddContent(13, t.Text);
+        builder.CloseElement();
+    };
+
+    private static string? TextTransform(BitChartSvgText t)
+    {
+        string? rot = t.Rotation != 0
+            ? $"rotate({BitChartSvg.N(t.Rotation)} {BitChartSvg.N(t.X)} {BitChartSvg.N(t.Y)})"
+            : null;
+        return string.IsNullOrEmpty(t.Transform) ? rot : string.IsNullOrEmpty(rot) ? t.Transform : $"{t.Transform} {rot}";
     }
 }

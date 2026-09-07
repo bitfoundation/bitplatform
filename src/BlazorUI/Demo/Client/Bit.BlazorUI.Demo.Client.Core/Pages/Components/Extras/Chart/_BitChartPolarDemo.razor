@@ -1,11 +1,17 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Polar area" RazorCode="@areaRazorCode" CsharpCode="@areaCsharpCode" Id="polar-area">
-    <div class="example-desc">click legend to toggle slices</div>
+    <div class="example-desc">
+        A polar area chart gives every category the same angle and lets the radius carry the value, so it compares
+        magnitudes without the misleading wedge areas of a pie. Click a legend label to drop a slice.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.PolarArea" Data="Data()" Options="_right" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Centered point labels" RazorCode="@labelsRazorCode" CsharpCode="@labelsCsharpCode" Id="polar-centered-point-labels">
-    <div class="example-desc">category labels around the perimeter</div>
+    <div class="example-desc">
+        <code>PointLabels</code> on the radial scale writes the category names around the rim, which can replace
+        the legend entirely. A <code>Callback</code> shortens or rewords each one.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.PolarArea" Data="Data()" Options="_labels" /></div></div>
 </DemoExample>

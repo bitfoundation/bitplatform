@@ -1,51 +1,103 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Grouped" RazorCode="@groupedRazorCode" CsharpCode="@groupedCsharpCode" Id="bar-grouped">
-    <div class="example-desc">three datasets side by side</div>
+    <div class="example-desc">
+        The default bar layout: every dataset gets its own slot inside each category, so the series stand side by
+        side and can be compared at a glance. <code>CategoryPercentage</code> controls how much of the band the
+        whole group takes and <code>BarPercentage</code> how much of its slot each bar fills.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_bottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Stacked" RazorCode="@stackedRazorCode" CsharpCode="@stackedCsharpCode" Id="bar-stacked">
-    <div class="example-desc">scales.y.stacked = true</div>
+    <div class="example-desc">
+        Setting <code>Stacked</code> on the value scale makes the datasets accumulate instead of sitting side by
+        side, so each bar reads as a total broken into parts. Positive and negative values stack away from zero
+        independently.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="@_stacked" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Horizontal" RazorCode="@horizontalRazorCode" CsharpCode="@horizontalCsharpCode" Id="bar-horizontal">
-    <div class="example-desc">indexAxis = y</div>
+    <div class="example-desc">
+        <code>IndexAxis = BitChartIndexAxis.Y</code> turns the chart on its side. Horizontal bars give long
+        category names room to breathe, so they suit rankings and survey results.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@PerColor()" Options="@_horizontal" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Rounded + per-bar colors" RazorCode="@roundedRazorCode" CsharpCode="@roundedCsharpCode" Id="bar-rounded" PreventRenderForMcpClient>
-    <div class="example-desc">borderRadius, palette per index</div>
+    <div class="example-desc">
+        <code>BorderRadius</code> rounds the corners away from the baseline, so a bar keeps a flat foot on the
+        axis. A list in <code>BackgroundColors</code> gives one color per category instead of per series.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@PerColorRounded()" Options="@_rounded" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Floating bars" RazorCode="@floatingRazorCode" CsharpCode="@floatingCsharpCode" Id="bar-floating">
-    <div class="example-desc">each bar spans a [low, high] range</div>
+    <div class="example-desc">
+        With <code>RangeData</code> each bar spans a <code>[low, high]</code> pair rather than growing from zero
+        &mdash; the shape for temperature ranges, price bands and Gantt-style schedules.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Floating()" Options="_noLegend" /></div></div>
 </DemoExample>
 
 <DemoExample Title="100% stacked" RazorCode="@stacked100RazorCode" CsharpCode="@stacked100CsharpCode" Id="bar-stacked-100">
-    <div class="example-desc">scales.y.stacked100 normalizes each category</div>
+    <div class="example-desc">
+        Adding <code>Stacked100</code> normalizes every category to 100%, which shifts the story from totals to
+        composition. The tooltip still shows the original values.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="@_stacked100" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Pattern fills" RazorCode="@patternedRazorCode" CsharpCode="@patternedCsharpCode" Id="bar-patterned">
-    <div class="example-desc">hatch &amp; dot patterns (print-friendly)</div>
+    <div class="example-desc">
+        <code>BackgroundPattern</code> fills the bars with a repeating hatch, grid or dot texture. Patterns keep
+        the series distinguishable when the chart is printed in black and white or read by someone with a color
+        vision deficiency.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Patterned()" Options="_bottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Top-rounded corners" RazorCode="@topRoundedRazorCode" CsharpCode="@topRoundedCsharpCode" Id="bar-top-rounded" PreventRenderForMcpClient>
-    <div class="example-desc">per-corner borderRadius</div>
+    <div class="example-desc">
+        <code>BorderRadiusCorners</code> sets each corner separately when the automatic choice is not what you
+        want &mdash; here only the two top corners, with <code>BitChartBorderRadiusCorners.Top</code>.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@TopRounded()" Options="_noLegend" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Auto-rotated labels" RazorCode="@rotatedRazorCode" CsharpCode="@rotatedCsharpCode" Id="bar-rotated" PreventRenderForMcpClient>
-    <div class="example-desc">long category labels tilt to fit</div>
+    <div class="example-desc">
+        Category labels that do not fit their band tilt automatically, just far enough to fit and never past
+        <code>MaxRotation</code>. The axis then reserves the extra height the rotated text needs.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Countries()" Options="_noLegend" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Stacked groups" RazorCode="@stackedGroupsRazorCode" CsharpCode="@stackedGroupsCsharpCode" Id="bar-stacked-groups">
-    <div class="example-desc">two independent stacks side by side (Stack id)</div>
+    <div class="example-desc">
+        Datasets sharing a <code>Stack</code> id accumulate together, and each id gets its own column. Two stacks
+        side by side compare composition across scenarios &mdash; and the value axis fits the tallest stack, not
+        the sum of them all.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@StackedGroups()" Options="@_stackedGroups" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Minimum length and a custom base" RazorCode="@minLengthRazorCode" CsharpCode="@minLengthCsharpCode" Id="bar-min-length">
+    <div class="example-desc">
+        <code>MinBarLength</code> keeps near-zero values visible instead of collapsing them into the axis line,
+        and <code>Base</code> moves the value bars grow from &mdash; here a target of 100, so the chart reads as
+        distance from target rather than absolute size.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@AgainstTarget()" Options="@_target" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Overlaid series and skipped gaps" RazorCode="@overlayRazorCode" CsharpCode="@overlayCsharpCode" Id="bar-overlay">
+    <div class="example-desc">
+        A dataset with <code>Grouped = false</code> leaves the grouping layout and keeps the full category band,
+        which is how a target or budget series is drawn behind the actuals. <code>SkipNull</code> then lets the
+        remaining bars widen over the categories where a series has no value, instead of leaving a hole.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Overlay()" Options="_bottom" /></div></div>
 </DemoExample>
