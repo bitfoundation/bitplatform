@@ -46,7 +46,8 @@ public static class IPlaywrightExtensions
             {
                 await browser.CloseAsync();
                 StopWindowsApps();
-            });
+            }
+            );
         }
 
         /// <summary>
@@ -98,7 +99,8 @@ public static class IPlaywrightExtensions
                 await browser.CloseAsync();
                 await RunAdb($"forward --remove tcp:{localPort}", allowNonZeroExit: true);
                 await RunAdb($"shell am force-stop {applicationId}");
-            });
+            }
+            );
         }
 
         /// <summary>

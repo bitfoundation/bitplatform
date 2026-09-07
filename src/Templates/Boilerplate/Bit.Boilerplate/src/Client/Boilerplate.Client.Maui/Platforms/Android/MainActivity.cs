@@ -22,7 +22,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             "/en-us", "/en-gb", "/nl-nl", "/fa-ir", "/sv-se", "/hi-in", "/zh-cn", "/es-es", "/fr-fr", "/ar-sa", "/de-de",
                             PageUrls.Confirm, PageUrls.ForgotPassword, PageUrls.Settings, PageUrls.ResetPassword, PageUrls.SignIn,
                             PageUrls.SignUp, PageUrls.NotAuthorized, PageUrls.NotFound, PageUrls.Terms, PageUrls.PrivacyPolicy, PageUrls.About,
-                            PageUrls.Roles, PageUrls.Users, 
+                            PageUrls.Roles, PageUrls.Users, PageUrls.OAuthClients, PageUrls.OAuthConsent,
                             //#if (multitenant == true)
                             PageUrls.ManageMyTenants, PageUrls.ManageAllTenants,
                             //#endif

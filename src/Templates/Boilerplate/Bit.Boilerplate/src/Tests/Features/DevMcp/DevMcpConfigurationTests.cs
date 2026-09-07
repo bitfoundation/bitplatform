@@ -22,7 +22,8 @@ public class DevMcpConfigurationTests
         var json = JsonNode.Parse(text)!;
 
         Assert.AreEqual("Development", json["hosting"]!["environmentName"]!.GetValue<string>());
-        Assert.AreEqual("Boilerplate", json["identity"]!["issuer"]!.GetValue<string>());
+        // The issuer is the origin the caller reached, which is what every token minted there carries.
+        Assert.AreEqual(server.WebAppServerAddress.ToString().TrimEnd('/'), json["identity"]!["issuer"]!.GetValue<string>());
         Assert.IsTrue(json["identity"]!["requireConfirmedAccount"]!.GetValue<bool>());
         Assert.IsFalse(json["backgroundJobs"]!["useIsolatedStorage"]!.GetValue<bool>());
 

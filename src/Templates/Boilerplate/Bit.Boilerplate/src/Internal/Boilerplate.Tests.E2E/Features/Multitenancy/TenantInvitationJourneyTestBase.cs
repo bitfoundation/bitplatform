@@ -50,7 +50,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
             await using var tenantAdminBrowserContext = await NewBrowserContext(adminPanelAppUrl);
             var tenantAdminBrowser = await tenantAdminBrowserContext.NewPageAsync();
-            await tenantAdminBrowser.GotoAsync(adminPanelAppUrl.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+            await Navigate(tenantAdminBrowser, adminPanelAppUrl.ToString());
             await SignInExistingUser(tenantAdminBrowser, tenantAdminEmail, tenantAdminPassword, mcp);
             await SwitchToTenant(tenantAdminBrowser, e2eTenantName);
 
@@ -111,7 +111,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task SignInExistingUser(IPage page, string email, string userPassword, McpClient mcp)
     {
-        await page.GotoAsync(AppUrl(PageUrls.SignIn), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Navigate(page, AppUrl(PageUrls.SignIn));
         await WaitUntilInteractive(page);
 
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
@@ -140,7 +140,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
     /// <summary>No Switch button on the card means this tenant is already the selected one.</summary>
     private async Task SwitchToTenant(IPage page, string tenantName)
     {
-        await page.GotoAsync(AppUrl(PageUrls.ManageMyTenants), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Navigate(page, AppUrl(PageUrls.ManageMyTenants));
         await Expect(page.GetByText(tenantName).First).ToBeVisibleAsync();
 
         var cardSwitch = page.Locator(".tenant-card", new() { HasText = tenantName })
@@ -155,7 +155,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task InviteUser(IPage page, string email, string tenantAdminEmail, McpClient mcp)
     {
-        await page.GotoAsync(AppUrl(PageUrls.ManageMyTenants), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Navigate(page, AppUrl(PageUrls.ManageMyTenants));
 
         var inviteHeaderPrefix = AppStrings.InviteUserToTenant.Replace("{0}", "").Trim();
         await page.GetByText(inviteHeaderPrefix).First.ClickAsync();
@@ -225,7 +225,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task AssertUserInTenantUsersList(IPage page, string email, bool shouldExist)
     {
-        await page.GotoAsync(AppUrl(PageUrls.Users), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Navigate(page, AppUrl(PageUrls.Users));
         await page.GetByPlaceholder(AppStrings.SearchUsersPlaceholder).FillAsync(email);
 
         var userItem = page.GetByText(email);
@@ -254,8 +254,26 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
     /// deployment in a browser, the WebView's own one in a hybrid app - where the deployment's url would leave the
     /// app for the website. The tenant admin's browser is always on the deployment, so it uses <see cref="AppUrl"/>.
     /// </summary>
-    private Task GoTo(IPage page, string path, string? culture = null)
-        => page.GotoAsync(new Uri(new Uri(page.Url), RouteOf(path, culture)).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+    private static Task GoTo(IPage page, string path, string? culture = null)
+        => Navigate(page, new Uri(new Uri(page.Url), RouteOf(path, culture)).ToString());
+
+    /// <summary>
+    /// The app navigates on its own here - the culture switch redirects the url it was applied on - and where chromium
+    /// lets the later navigation win, firefox and webkit raise the interrupted one; so ask again once it settles.
+    /// </summary>
+    private static async Task Navigate(IPage page, string url)
+    {
+        try
+        {
+            await page.GotoAsync(url, new() { WaitUntil = WaitUntilState.NetworkIdle });
+        }
+        catch (PlaywrightException exp) when (exp.Message.Contains("interrupted by another navigation", StringComparison.Ordinal)
+                                              || exp.Message.Contains("NS_BINDING_ABORTED", StringComparison.Ordinal))
+        {
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await page.GotoAsync(url, new() { WaitUntil = WaitUntilState.NetworkIdle });
+        }
+    }
 
     /// <summary>The app relative route, culture prefixed the way the pages' own route templates are.</summary>
     private static string RouteOf(string path, string? culture = null) => culture is null ? path : $"/{culture}{path}";

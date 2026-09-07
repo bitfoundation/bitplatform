@@ -107,9 +107,9 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 
 ---
 
-### 4. Code Reviewer (`code-reviewer`)
+### 4. Review (`review`)
 
-**Canonical file**: `.github/agents/code-reviewer.agent.md`
+**Canonical file**: `.github/agents/review.agent.md`
 
 **What it does**: Reviews code changes against this project's conventions and reports findings. It never modifies code.
 
@@ -125,7 +125,7 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 
 It carries `context: fork` in its frontmatter, so tools that support forked skill contexts (Claude Code, VS Code Copilot) run it in a dedicated subagent context instead of filling your main conversation; every other tool simply ignores that field and runs it inline.
 
-**Example usage**: `/code-reviewer` on the current branch's changes
+**Example usage**: `/review` on the current branch's changes
 
 ---
 
@@ -142,7 +142,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 - Phase 2 - Planning and task decomposition, presented for approval
 - Phase 3 - Design of affected files, components, APIs and data models
 - Phase 4 - Implementation, one task at a time
-- Phase 5 - Validation via build, tests and the `code-reviewer` skill
+- Phase 5 - Validation via build, tests and the `review` skill
 - Delegates to `scaffold-entity` and `bitify-ui` where they apply
 
 **Example usage**: `/ai-dlc add a customer feedback feature`

@@ -11,7 +11,7 @@ public class AppRoles
     //#if (multitenant == true)
     /// <summary>
     /// Each tenant has its own role named t-admin (Scoped by Role's TenantId).
-    /// Has the features returned by <see cref="AppFeatures.GetTenantAdminFeatures"/> automatically assigned (See IAuthTokenProvider.ReadClaims and AppJwtSecureDataFormat.Unprotect).
+    /// Has the features returned by <see cref="AppFeatures.GetTenantAdminFeatures"/> automatically assigned (See <see cref="AppFeatures.GetRoleImpliedFeatures"/>).
     /// </summary>
     public const string TenantAdmin = "t-admin";
     //#endif

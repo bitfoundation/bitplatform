@@ -1902,4 +1902,134 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>Akkoord en doorgaan</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>Applicatie autoriseren</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>Dit verzoek wordt gecontroleerd...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>Dit verzoek kan niet worden geautoriseerd</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>Er is niets gedeeld. U kunt deze pagina sluiten en het opnieuw proberen vanuit de applicatie.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>Naar de startpagina</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>U kunt terug naar de applicatie</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>Het resultaat is doorgegeven aan {0}. Als die niet vanzelf naar voren komt, schakel er dan naartoe.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>{0} autoriseren?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>Ze vraagt om namens u te handelen. Ga alleen verder als u dit zelf hebt gestart vanuit een applicatie die u vertrouwt.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>Applicatie</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>Heeft toegang tot</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>Stuurt u terug naar</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>Ze kan straks:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>Uw account kan niet alles verlenen wat deze applicatie heeft gevraagd; het volgende blijft daarom buiten beschouwing: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>Deze applicatie heeft zichzelf beschreven; niemand bij {0} staat ervoor in.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>Autoriseren</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>De applicatie die dit verzoek doet, kon niet worden geïdentificeerd.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>Het adres waarnaar deze applicatie teruggestuurd wil worden, is niet een van de adressen die ze heeft geregistreerd.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>Dit autorisatieverzoek is niet geldig.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>Diagnostische informatie over deze deployment lezen - configuratie, databaseschema, achtergrondtaken. Ze kan niets wijzigen.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>Diagnostische informatie over deze deployment lezen.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>Geautoriseerde applicatie</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>Applicaties</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>Geautoriseerde applicaties</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>Externe applicaties die uw gebruikers via OAuth hebben geautoriseerd.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>Er is nog geen applicatie geautoriseerd.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>Applicaties verschijnen hier zodra iemand er een autoriseert; niets hoeft vooraf te worden geregistreerd.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>actieve toekenningen</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>Stuurt gebruikers terug naar:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>Toegang intrekken</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} heeft momenteel {1} toekenning(en). Intrekken meldt de applicatie af voor iedereen die haar heeft geautoriseerd; ze kunnen haar opnieuw autoriseren.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>{0} toekenning(en) ingetrokken.</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>Hier geconfigureerd</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>Zelfbeschreven</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>Deze applicatie kon niet worden geïdentificeerd, dus er is niets om naar terug te keren.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>Dit autorisatieverzoek is niet geldig ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>Uw account heeft niet de rechten waar deze applicatie om vraagt.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>Deze applicatie vereist tweefactorauthenticatie. Zet die aan in uw accountinstellingen, meld u opnieuw aan en begin daarna opnieuw vanuit de applicatie.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>Werkruimte</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>U bent geen lid van de werkruimte waar deze applicatie om vraagt.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>De assistent van deze app namens u gebruiken - hem vragen stellen en laten zoeken in wat hij kan doorzoeken. Hij kan niets doen op uw apparaat.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>De assistent van deze app namens u gebruiken.</value>
+  </data>
+  <!--#endif -->
 </root>

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
@@ -122,6 +123,40 @@ public class OpenIdConfigurationIntegrationTests
     }
 
     /// <summary>
+    /// The invariant discovery rests on: the <c>issuer</c> this app publishes is the <c>iss</c> it stamps, and it is an
+    /// absolute url. Separate from the tests above, which still pass if both sides drift onto a value no client can
+    /// reach - <c>"Boilerplate"</c>, published here for years. RFC 8414 requires the url its metadata is served from.
+    /// </summary>
+    [TestMethod]
+    public async Task TheDiscoveryDocument_Should_PublishTheSameIssuerTheTokensCarry()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await SignIn(scope);
+
+        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var mintedIssuer = new JwtSecurityToken(accessToken).Issuer;
+
+        using var anonymousHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var document = JsonDocument.Parse(
+            await anonymousHttpClient.GetStringAsync(".well-known/openid-configuration", TestContext.CancellationToken));
+
+        var publishedIssuer = document.RootElement.GetProperty("issuer").GetString();
+
+        Assert.AreEqual(publishedIssuer, mintedIssuer,
+            "A consumer validates against the issuer this document publishes, so a token stamped with anything else " +
+            "is rejected by every client that reads it - including the ones that never talk to us again to find out why.");
+
+        Assert.IsTrue(Uri.TryCreate(mintedIssuer, UriKind.Absolute, out var issuerUri),
+            $"The issuer must be an absolute url (RFC 8414), not a name. Got '{mintedIssuer}'.");
+
+        Assert.AreEqual(server.WebAppServerAddress.GetLeftPart(UriPartial.Authority), issuerUri!.GetLeftPart(UriPartial.Authority),
+            "And it must be the origin the caller actually reached, or discovery sends them somewhere this server is not.");
+    }
+
+    /// <summary>
     /// The user id the API put in the token, read the way the client heads read it. The resource server is asserted
     /// against this rather than against a hard-coded value, so the test says "the identity survived the trip" rather
     /// than "some string came back".
@@ -161,8 +196,9 @@ public class OpenIdConfigurationIntegrationTests
                 ValidateAudience = true,
                 ValidAudience = configuration["Identity:Audience"],
 
-                ValidateIssuer = true,
-                ValidIssuer = configuration["Identity:Issuer"]
+                // No ValidIssuer on purpose: it comes from the discovery document behind Authority, so these tests
+                // fail if that document and the tokens drift apart.
+                ValidateIssuer = true
             };
         });
         builder.Services.AddAuthorization();

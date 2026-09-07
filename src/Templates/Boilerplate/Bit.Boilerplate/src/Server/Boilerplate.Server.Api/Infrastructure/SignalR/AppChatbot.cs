@@ -13,7 +13,10 @@ namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 /// Service responsible for managing chatbot conversations, maintaining chat history,
 /// and handling AI interactions including getting user feedbacks, describing app's features and pages etc.
 /// This service is exposed over SignalR's AppHub.Chat.cs, so it can accept stream of user messages and return stream of AI responses using AiChatPanel.razor
-/// Every tool method is decorated with [McpServerTool] attribute, so it can be also be used by other external MCP-Client if needed (Checkout AppChatbot.Tools.cs)
+/// Only the tools that stay on the server carry [McpServerTool], so an external MCP client can use them too (checkout
+/// AppChatbot.Tools.cs). The rest reach into the user's live app over this SignalR connection - navigating it, showing
+/// a sign-in modal, clearing its files - which is the agent's to do and nobody else's, so they are AIFunctions only
+/// and signalRConnectionId is always the connection StartChat was given.
 /// 
 /// Microsoft.Agents.AI:
 /// Workflows are not implemented in this project, but with AIAgent, achieving them is now easier compared to using IChatClient directly.
@@ -27,8 +30,8 @@ public partial class AppChatbot
 
     [AutoInject] private IStore blobStorage = default!;
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
-    [AutoInject] private IFusionCache cache = default!;
     [AutoInject] private TimeProvider timeProvider = default!;
+    [AutoInject] private ChatbotAnswerSigner answerSigner = default!;
     [AutoInject] private ServerApiSettings appSettings = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
@@ -57,6 +60,7 @@ public partial class AppChatbot
 
         var history = request.ChatMessagesHistory
             .Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
+            .Where(WrittenByThisAssistantOrByTheUser)
             .TakeLast(MaxMessagesInHistory)
             .ToArray();
 
@@ -82,6 +86,15 @@ public partial class AppChatbot
 ";
 
         this.signalRConnectionId = signalRConnectionId;
+    }
+
+    /// <summary>
+    /// A resent assistant turn is believed only when it carries the signature this app wrote it with - anything else,
+    /// the panel's own local greeting included, is the caller putting words in the assistant's mouth.
+    /// </summary>
+    private bool WrittenByThisAssistantOrByTheUser(AiChatMessageResponse message)
+    {
+        return message.Role is not AiChatMessageRole.Assistant || answerSigner.Verify(message.Content, message.Signature);
     }
 
     /// <summary>
@@ -145,14 +158,20 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
+            var successMarker = SharedAppMessages.MESSAGE_PROCESS_SUCCESS;
+
             if (assistantResponse.Length > 0)
             {
-                chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+                var answer = assistantResponse.ToString();
 
-                await ChatbotController.RememberAnswer(cache, assistantResponse.ToString(), cancellationToken);
+                chatMessages.Add(new(ChatRole.Assistant, answer));
+
+                // Rides on the answer's own terminal marker so the two cannot be separated. The client hands it back
+                // whenever it asks the server to take this answer at its word - read aloud, or history on reconnect.
+                successMarker = $"{successMarker}:{answerSigner.Sign(answer)}";
             }
 
-            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS);
+            await SendTerminalMarkerToClient(successMarker);
         }
         catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)
         {
@@ -316,38 +335,6 @@ public partial class AppChatbot
         var chatOptions = new ChatOptions { };
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
         return chatOptions;
-    }
-
-    private async Task EnsureSignalRConnectionIdIsPresent()
-    {
-        // If the AIFunction tool is getting called by the AIAgent, the signalRConnectionId is already set in the AppChatbot instance using
-        // StartChat method, so we can return it directly without querying the database again.
-
-        // The SignalRConnectionId gives access to the currently exposed SignalR Client methods (e.g., NavigateToPage, ShowSignInModal)
-        // that are essential for some of the AI tools to work properly, so it's important to ensure that we have it available when processing AI tool calls.
-
-        // If the AIFunction tool is getting called by an external MCP client, then the signalRConnectionId won't be set,
-        // so we need to query the database to get the active SignalR connection id for the current user session, assuming that the external MCP client is using authentication headers.
-
-        if (string.IsNullOrWhiteSpace(signalRConnectionId) is false)
-            return;
-
-        await using var scope = serviceProvider.CreateAsyncScope();
-        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
-
-        if (httpContextAccessor?.HttpContext?.User?.IsAuthenticated() is false)
-            throw new UnauthorizedException("User must be authenticated to use this tool when calling from an external MCP client.");
-        // While these tools can be called internally even for unauthenticated users,
-        // we require authentication for external MCP clients to ensure we can associate the request with a user session and retrieve the correct SignalR connection id.
-        // accepting SignalR connection id from external MCP clients would not be secure as it can be easily manipulated using prompt injection in external LLM that's calling the MCP tool.
-
-        var userSessionId = httpContextAccessor?.HttpContext?.User.GetSessionId();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        signalRConnectionId = await dbContext.UserSessions
-            .Where(s => s.Id == userSessionId)
-            .Select(s => s.SignalRConnectionId)
-            .FirstOrDefaultAsync() ?? throw new InvalidOperationException("There's no access to your app on your device.");
     }
 
     private async Task SendStringToClient(string message, CancellationToken ct)

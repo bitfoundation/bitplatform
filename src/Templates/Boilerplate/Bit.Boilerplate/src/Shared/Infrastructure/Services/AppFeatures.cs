@@ -45,6 +45,13 @@ public class AppFeatures
         /// Read-only inspection of a running deployment via /dev-mcp. Not 2.0: that value used to mean Logs_View.
         /// </summary>
         public const string DevMcp = "2.2";
+
+        /// <summary>
+        /// See and cut off the external applications users have authorized over OAuth. A System feature rather than a
+        /// Management one - an OAuth client is registered against the deployment, not a tenant - which is what makes
+        /// it global-admin only, see <see cref="GetTenantAdminFeatures"/>.
+        /// </summary>
+        public const string OAuthClients_Manage = "2.3";
     }
 
     public class AdminPanel
@@ -91,4 +98,21 @@ public class AppFeatures
         return tenantAdminFeatures ??= [.. GetGlobalAdminFeatures().Where(f => f.Value is not Management.Tenants_Manage_Global && f.Group != typeof(System))];
     }
     //#endif
+
+    /// <summary>
+    /// The features a role implies without a claim of its own. Every token reader applies this - the api's protector,
+    /// the web host's bearer handler, the client's token reader, the OAuth token service - so it is defined once.
+    /// </summary>
+    public static (string Name, string Value, Type Group)[] GetRoleImpliedFeatures(Func<string, bool> containsRole)
+    {
+        if (containsRole(AppRoles.GlobalAdmin))
+            return GetGlobalAdminFeatures();
+
+        //#if (multitenant == true)
+        if (containsRole(AppRoles.TenantAdmin))
+            return GetTenantAdminFeatures();
+        //#endif
+
+        return [];
+    }
 }

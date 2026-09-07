@@ -52,4 +52,16 @@ public partial class UserSessionDto
     /// The version of the application used for this session.
     /// </summary>
     public string? AppVersion { get; set; }
+
+    /// <summary>
+    /// Set when this session belongs to an external app authorized over OAuth. Surfaced in the sessions list because a
+    /// grant to somebody else's software is what a user most needs to recognise before revoking it.
+    /// </summary>
+    public string? OAuthClientId { get; set; }
+
+    /// <summary>The application's own name, where it gave one. Untrusted text: render as text, never as markup.</summary>
+    public string? OAuthClientName { get; set; }
+
+    /// <summary>Space delimited, as granted - what this application may actually do, rather than merely that it can.</summary>
+    public string? OAuthScope { get; set; }
 }

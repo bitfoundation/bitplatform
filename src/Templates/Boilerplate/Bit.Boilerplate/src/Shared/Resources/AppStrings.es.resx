@@ -1902,4 +1902,134 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>Aceptar y continuar</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>Autorizar aplicación</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>Comprobando esta solicitud...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>Esta solicitud no se puede autorizar</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>No se ha compartido nada. Puede cerrar esta página e intentarlo de nuevo desde la aplicación.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>Ir a la página de inicio</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>Puede volver a la aplicación</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>El resultado se entregó a {0}. Si no ha pasado al frente por sí sola, cambie a ella.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>¿Autorizar {0}?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>Está pidiendo actuar en su nombre. Continúe solo si usted inició esto desde una aplicación en la que confía.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>Aplicación</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>Puede acceder a</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>Le devuelve a</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>Podrá:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>Su cuenta no puede conceder todo lo que esta aplicación ha pedido, así que quedará fuera lo siguiente: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>Esta aplicación se describió a sí misma; nadie en {0} ha respondido por ella.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>Autorizar</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>No se pudo identificar la aplicación que hace esta solicitud.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>La dirección a la que esta aplicación quiere que se le devuelva no es una de las que ha registrado.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>Esta solicitud de autorización no es válida.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>Leer información de diagnóstico de este despliegue - configuración, esquema de base de datos, trabajos en segundo plano. No puede cambiar nada.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>Leer información de diagnóstico de este despliegue.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>Aplicación autorizada</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>Aplicaciones</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>Aplicaciones autorizadas</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>Aplicaciones externas que sus usuarios han autorizado mediante OAuth.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>Todavía no se ha autorizado ninguna aplicación.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>Las aplicaciones aparecen aquí en cuanto alguien autoriza una; no hace falta registrar nada de antemano.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>concesiones activas</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>Devuelve a los usuarios a:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>Revocar acceso</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} tiene actualmente {1} concesión(es). Revocarlas la cierra para todos los que la autorizaron; pueden volver a autorizarla.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>Se revocaron {0} concesión(es).</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>Configurada aquí</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>Autodescrita</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>No se pudo identificar esta aplicación, así que no hay adónde volver.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>Esta solicitud de autorización no es válida ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>Su cuenta no tiene los permisos que esta aplicación está pidiendo.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>Esta aplicación requiere autenticación en dos pasos. Actívela en la configuración de su cuenta, inicie sesión de nuevo y vuelva a empezar desde la aplicación.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>Espacio de trabajo</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>No es miembro del espacio de trabajo que esta aplicación está pidiendo.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>Usar el asistente de esta app en su nombre - hacerle preguntas y buscar lo que él puede buscar. No puede actuar en su dispositivo.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>Usar el asistente de esta app en su nombre.</value>
+  </data>
+  <!--#endif -->
 </root>

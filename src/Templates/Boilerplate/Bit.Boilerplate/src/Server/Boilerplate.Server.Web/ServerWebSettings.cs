@@ -19,8 +19,8 @@ public partial class ServerWebSettings : ClientWebSettings
     /// <summary>
     /// In a production environment, <see cref="ClientCoreSettings.ServerAddress"/> is usually set to  
     /// a URL like <c>https://api.myproject.com</c>, often secured behind a CDN or firewall.  
-    /// However, during pre-rendering or in Blazor Server/Auto mode, using a local address  
-    /// such as <c>http://localhost:8080</c> is much more efficient.  
+    /// However, during pre-rendering or in Blazor Server/Auto mode, using a local address
+    /// such as <c>http://localhost:8080</c> is much more efficient.
     /// This optional setting allows overriding HttpClient's BaseAddress specifically for the server project.
     /// </summary>
     public string? ServerSideHttpClientBaseAddress { get; set; }
