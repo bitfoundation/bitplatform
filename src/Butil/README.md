@@ -109,6 +109,7 @@ registering everything.
 | `ShadowDom` | `attachShadow`, scoped styles, and querying into any open shadow root - a closed one is closed to you too |
 | `Canvas` | `drawImage` from a video/image/canvas, then `toDataURL`/`toBlob` - screenshots and thumbnails as `byte[]` |
 | `PictureInPicture` | Float a `<video>` in an always-on-top window |
+| `DocumentPictureInPicture` | Put arbitrary DOM in an always-on-top window - not just a video |
 | `ViewTransition` | Animate between two states of the page, the browser doing the work |
 | Media element extensions | Play, pause, seek, volume and rate on any `<audio>`/`<video>` |
 
@@ -213,9 +214,16 @@ registering everything.
 | --- | --- |
 | `SpeechSynthesis` | Text-to-speech with voices, pitch and rate |
 | `SpeechRecognition` | Speech-to-text with interim results and events |
-| `WebAudio` | Play and control audio buffers |
+| `WebAudio` | The Web Audio graph: buffers, oscillators, filters, analysers, reverb, spatial panning and worklets |
 | `MediaRecorder` | Record a camera, microphone or screen share to a file |
 | `MediaSession` | Lock-screen metadata and hardware media-key handlers |
+| `MediaSource` | Media Source Extensions: feed a media element with segments you fetched yourself |
+| `MediaCapabilities` | Whether a codec will decode smoothly and power-efficiently, before you commit to it |
+| `EncryptedMedia` | DRM playback: key systems, key sessions and licence exchange |
+| `WebCodecs` | The browser's own codecs, frame by frame - no element, no container |
+| `RemotePlayback` | Hand a media element to a TV, a speaker or a cast receiver |
+| `Presentation` | Open one of your own pages on a second display, with a message channel to it |
+| `WebXr` | VR and AR sessions: lifecycle, poses, controllers and input |
 | `AudioOutput` | Route a media element's sound to a chosen speaker or headset |
 
 ---
@@ -312,7 +320,7 @@ through such a literal, so the trimmed assembly is the exact list of modules the
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
 Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
 that injects `Clipboard`, `LocalStorage` and `Window` ships about 8 KB of JavaScript instead of the
-191 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+229 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
 a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
 trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping

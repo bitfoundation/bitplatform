@@ -49,7 +49,12 @@
          one piece of this demo that is neither C# nor Razor and that those APIs cannot work without. -->
     <EmbeddedResource Include="wwwroot\sw.js" LogicalName="ButilSource/Demo/Server/wwwroot/sw.js" />
 
-    <!-- Same reasoning for the worker scripts: a worker runs a script you supply, so these are the
+    <!-- Same reasoning for the AudioWorklet processor the WebAudio page loads: a worklet processor
+         has to be a JavaScript file (it runs on the audio thread), so it is the other piece of this
+         demo that its API cannot be shown without. -->
+    <EmbeddedResource Include="wwwroot\js\butil-gain-processor.js" LogicalName="ButilSource/Demo/Server/wwwroot/js/butil-gain-processor.js" />
+
+    <!-- Same for the worker scripts: a worker runs a script you supply, so these are the
          other half of the Worker page and reading the C# without them explains nothing. -->
     <EmbeddedResource Include="wwwroot\workers\*.js">
       <LogicalName>ButilSource/Demo/Server/wwwroot/workers/%(Filename)%(Extension)</LogicalName>

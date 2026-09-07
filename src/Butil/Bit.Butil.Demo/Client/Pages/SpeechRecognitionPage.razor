@@ -177,8 +177,9 @@ await using var session = await speechRecognition.Start(
                 }),
                 onEnd: () => _ = InvokeAsync(async () =>
                 {
-                    recognizing = false;
-                    recognitionHandle = null;
+                    // The engine stopped on its own, but the service still holds this session's listener
+                    // entry - dropping the handle without disposing would orphan it for good.
+                    await StopRecognitionInternal();
                     await sessionOutput.Info("Recognition ended.");
                 }));
 
@@ -206,11 +207,15 @@ await using var session = await speechRecognition.Start(
 
     private async Task StopRecognitionInternal()
     {
+        // Cleared ahead of the guard: the engine's end can reach here before Start's continuation
+        // has assigned the handle, and returning early then would leave the page believing it is
+        // still listening - with the Start button disabled for good.
+        recognizing = false;
+
         if (recognitionHandle is null) return;
 
         await recognitionHandle.DisposeAsync();
         recognitionHandle = null;
-        recognizing = false;
     }
 
     public async ValueTask DisposeAsync()

@@ -1,0 +1,548 @@
+@page "/media-source"
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaSource mediaSource
+@inject Bit.Butil.FileReader fileReader
+
+<PageTitle>MediaSource - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="MediaSource"
+            Lead="Media Source Extensions: feed a video element with segments your own code fetched, instead of pointing it at a URL. The foundation every adaptive player - HLS, DASH - is built on."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API"
+            InjectAs="MediaSource mediaSource" />
+
+<div class="stack">
+    <DemoSection Title="Support and segment types"
+                 Api="IsSupported / IsManagedSupported / IsTypeSupported / GetSupportedTypes"
+                 Description="isTypeSupported answers whether the engine can parse a container and decode its codec - the check to run before building a buffer for it. ManagedMediaSource is the iOS Safari variant, and the only Media Source Extensions an iPhone has."
+                 Code=@("""
+@inject Bit.Butil.MediaSource mediaSource
+
+var isSupported = await mediaSource.IsSupported();
+var isManaged = await mediaSource.IsManagedSupported();
+
+var ok = await mediaSource.IsTypeSupported("video/mp4;codecs=\"avc1.42E01E\"");
+
+// the ones this engine will actually take, in your order of preference:
+var usable = await mediaSource.GetSupportedTypes();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button class="secondary" @onclick="CheckManaged">IsManagedSupported</button>
+            <button class="secondary" @onclick="ListTypes">GetSupportedTypes</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Probe a type</span>
+            <input @bind="probeType" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="ProbeType">IsTypeSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Open a source on a video element"
+                 Api="Open / GetReadyState / Subscribe"
+                 Description="Open attaches a media source to the element and hands back a handle only once the element has adopted it - so a buffer can be added straight away, with no sourceopen event to wait for. Subscribe reports the state afterwards, including the close that happens when the element is torn down."
+                 Code=@("""
+<video @ref="videoElement" controls playsinline></video>
+
+@code {
+    private ElementReference videoElement;
+
+    var source = await mediaSource.Open(videoElement);
+    if (source is null) return; // no MSE, or the element never opened it
+
+    await source.Subscribe(state => Console.WriteLine($"ready state: {state}"));
+
+    var state = await source.GetReadyState();   // Open
+    await source.DisposeAsync();                // detaches and frees the buffered media
+}
+""")>
+        <video @ref="videoElement" controls playsinline muted style="width:100%;max-width:480px;background:#000;border-radius:8px"></video>
+        <div class="controls">
+            <button @onclick="OpenSource" disabled="@(source is not null)">Open</button>
+            <button class="secondary" @onclick="ReadState" disabled="@(source is null)">GetReadyState</button>
+            <button class="danger" @onclick="CloseSource" disabled="@(source is null)">Dispose source</button>
+        </div>
+        <DemoConsole @ref="sourceOutput" Title="source output" />
+    </DemoSection>
+
+    <DemoSection Title="Buffers and appends"
+                 Api="AddSourceBuffer / Append / GetBuffered / IsUpdating"
+                 Description="One buffer per container-and-codec combination; the first thing appended has to be the stream's initialization segment. Append waits for the browser to finish and reports what became of it - QuotaExceeded above all, which is routine and means 'remove what has played and try again', not 'give up'. Pick a fragmented MP4 or WebM below to append it for real."
+                 Code=@("""
+var buffer = await source.AddSourceBuffer("video/mp4;codecs=\"avc1.42E01E,mp4a.40.2\"");
+
+var status = await buffer!.Append(initSegmentBytes);   // Success
+status = await buffer.Append(mediaSegmentBytes);
+
+if (status == SourceBufferAppendStatus.QuotaExceeded)
+{
+    await buffer.Remove(0, currentTime - 10);          // evict what has already played
+    status = await buffer.Append(mediaSegmentBytes);   // and try the same segment again
+}
+
+foreach (var range in await buffer.GetBuffered())
+{
+    Console.WriteLine($"{range.Start:0.00}s - {range.End:0.00}s");
+}
+""")>
+        <div class="field">
+            <span class="field-label">Buffer type</span>
+            <input @bind="bufferType" />
+        </div>
+        <div class="controls">
+            <button @onclick="AddBuffer" disabled="@(source is null || buffer is not null)">AddSourceBuffer</button>
+            <button class="secondary" @onclick="ShowBuffered" disabled="@(buffer is null)">GetBuffered</button>
+            <button class="secondary" @onclick="ShowUpdating" disabled="@(buffer is null)">IsUpdating</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Append a segment file (init segment first)</span>
+            <input type="file" @ref="segmentInput" />
+        </div>
+        <div class="controls">
+            <button @onclick="AppendSegment" disabled="@(buffer is null)">Append selected file</button>
+            <button class="danger" @onclick="RemoveBuffer" disabled="@(buffer is null)">Dispose buffer</button>
+        </div>
+        <DemoConsole @ref="bufferOutput" Title="buffer output" />
+    </DemoSection>
+
+    <DemoSection Title="Timeline control"
+                 Api="SetDuration / SetMode / SetTimestampOffset / SetAppendWindow / Remove"
+                 Description="What splicing is made of: the mode decides whether a segment keeps its own timestamps or is laid after the last one, the timestamp offset moves a segment along the timeline, and the append window trims what falls outside it. Remove is the eviction half of buffer management."
+                 Code=@("""
+await source.SetDuration(120);                       // what the seek bar is drawn from
+
+await buffer.SetMode(SourceBufferMode.Sequence);     // lay segments end to end
+await buffer.SetTimestampOffset(30);                 // or place them at a point you choose
+await buffer.SetAppendWindow(0, 10);                 // and drop whatever falls outside
+
+await buffer.Remove(0, 30);                          // free what has already been played
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Duration (seconds)</span>
+                <input type="number" min="0" step="1" @bind="duration" />
+            </div>
+            <div class="field">
+                <span class="field-label">Timestamp offset</span>
+                <input type="number" step="0.5" @bind="timestampOffset" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="ApplyDuration" disabled="@(source is null)">SetDuration</button>
+            <button class="secondary" @onclick="ReadDuration" disabled="@(source is null)">GetDuration</button>
+            <button class="secondary" @onclick="ApplySequenceMode" disabled="@(buffer is null)">SetMode(Sequence)</button>
+            <button class="secondary" @onclick="ApplyTimestampOffset" disabled="@(buffer is null)">SetTimestampOffset</button>
+            <button class="secondary" @onclick="RemoveRange" disabled="@(buffer is null)">Remove(0, 5)</button>
+        </div>
+        <DemoConsole @ref="timelineOutput" Title="timeline output" />
+    </DemoSection>
+
+    <DemoSection Title="Ending the stream"
+                 Api="EndOfStream / SetLiveSeekableRange / ClearLiveSeekableRange"
+                 Description="EndOfStream declares that everything that will ever be appended has been - playback runs to the end of what is buffered and the element fires ended. Ending with a reason instead puts the element in an error state, which is how a failed stream is told apart from a finished one. A live stream uses the seekable range to give itself a DVR window."
+                 Code=@("""
+await source.EndOfStream();                                   // finished cleanly
+
+await source.EndOfStream(MediaSourceEndOfStreamError.Network); // the next segment never arrived
+
+await source.SetLiveSeekableRange(liveEdge - 60, liveEdge);    // a one-minute DVR window
+await source.ClearLiveSeekableRange();
+""")>
+        <div class="controls">
+            <button @onclick="EndStream" disabled="@(source is null)">EndOfStream</button>
+            <button class="secondary" @onclick="EndStreamNetwork" disabled="@(source is null)">EndOfStream(Network)</button>
+            <button class="secondary" @onclick="SetSeekable" disabled="@(source is null)">SetLiveSeekableRange(0, 30)</button>
+            <button class="secondary" @onclick="ClearSeekable" disabled="@(source is null)">ClearLiveSeekableRange</button>
+        </div>
+        <DemoConsole @ref="endOutput" Title="end-of-stream output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Segments, not files">
+    A source buffer takes fragmented media: an initialization segment, then media segments. A plain progressive
+    MP4 is rejected - it has to be fragmented (moof/mdat), which is what <code>ffmpeg -movflags
+    frag_keyframe+empty_moov</code> produces and what every DASH or HLS packager emits already.
+</Callout>
+
+<Callout Type="warning" Title="QuotaExceeded is normal">
+    A long playback fills the buffer. The accepted answer is to remove the ranges that have already been played
+    and append the same segment again - treating it as fatal is the classic way to make a player stall halfway
+    through a film.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes MediaSource or ManagedMediaSource." />
+    <ApiMember Name="IsManagedSupported" Signature="ValueTask<bool> IsManagedSupported()" Description="True when ManagedMediaSource exists - the iOS Safari variant." />
+    <ApiMember Name="IsTypeSupported" Signature="ValueTask<bool> IsTypeSupported(string mimeType)" Description="Whether the engine can play segments of this container and codec." />
+    <ApiMember Name="GetSupportedTypes" Signature="ValueTask<string[]> GetSupportedTypes(string[]? candidates = null)" Description="Filters candidates down to what this engine accepts, preserving your preference order." />
+    <ApiMember Name="CommonTypes" Signature="static readonly string[] CommonTypes" Description="Segment types worth probing on today's engines, most broadly supported first." />
+    <ApiMember Name="Open" Signature="ValueTask<MediaSourceHandle?> Open(ElementReference mediaElement, bool preferManagedMediaSource = false)" Description="Attaches a media source to the element and returns a handle once it is open." />
+    <ApiMember Name="MediaSourceHandle.AddSourceBuffer" Signature="ValueTask<SourceBufferHandle?> AddSourceBuffer(string mimeType)" Description="Creates a buffer for one container and codec combination." />
+    <ApiMember Name="MediaSourceHandle.GetReadyState" Signature="ValueTask<MediaSourceReadyState> GetReadyState()" Description="Closed, Open or Ended." />
+    <ApiMember Name="MediaSourceHandle.GetDuration" Signature="ValueTask<double?> GetDuration()" Description="The timeline's length in seconds, or null when it has none yet." />
+    <ApiMember Name="MediaSourceHandle.SetDuration" Signature="ValueTask<bool> SetDuration(double seconds)" Description="Sets the total length - what the element reports and the seek bar is drawn from." />
+    <ApiMember Name="MediaSourceHandle.EndOfStream" Signature="ValueTask<bool> EndOfStream(MediaSourceEndOfStreamError error = None)" Description="Declares the stream complete, optionally as a failure." />
+    <ApiMember Name="MediaSourceHandle.SetLiveSeekableRange" Signature="ValueTask<bool> SetLiveSeekableRange(double start, double end)" Description="The window a live stream lets the user seek within." />
+    <ApiMember Name="MediaSourceHandle.ClearLiveSeekableRange" Signature="ValueTask<bool> ClearLiveSeekableRange()" Description="Drops that window." />
+    <ApiMember Name="MediaSourceHandle.Subscribe" Signature="ValueTask<ButilSubscription> Subscribe(Action<MediaSourceReadyState> handler)" Description="Watches the source opening, ending and closing." />
+    <ApiMember Name="MediaSourceHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches the source, revokes its object URL and frees the buffered media." />
+    <ApiMember Name="SourceBufferHandle.Append" Signature="ValueTask<SourceBufferAppendStatus> Append(byte[] data)" Description="Appends one segment and completes once the browser has taken it. Appends are serialized per buffer." />
+    <ApiMember Name="SourceBufferHandle.Remove" Signature="ValueTask<bool> Remove(double start, double end)" Description="Drops the media between two points on the timeline." />
+    <ApiMember Name="SourceBufferHandle.Abort" Signature="ValueTask Abort()" Description="Cancels the current operation and resets the parser - what a quality switch calls first." />
+    <ApiMember Name="SourceBufferHandle.ChangeType" Signature="ValueTask<bool> ChangeType(string mimeType)" Description="Re-points the buffer at a different container or codec, for a seamless switch." />
+    <ApiMember Name="SourceBufferHandle.SetMode" Signature="ValueTask<bool> SetMode(SourceBufferMode mode)" Description="Whether segments keep their own timestamps or are laid end to end." />
+    <ApiMember Name="SourceBufferHandle.SetTimestampOffset" Signature="ValueTask<bool> SetTimestampOffset(double seconds)" Description="Shifts subsequent appends along the timeline." />
+    <ApiMember Name="SourceBufferHandle.SetAppendWindow" Signature="ValueTask<bool> SetAppendWindow(double start, double end)" Description="Media outside this window is dropped as it is appended." />
+    <ApiMember Name="SourceBufferHandle.GetBuffered" Signature="ValueTask<BufferedTimeRange[]> GetBuffered()" Description="The stretches of media the buffer currently holds." />
+    <ApiMember Name="SourceBufferHandle.IsUpdating" Signature="ValueTask<bool> IsUpdating()" Description="True while the browser is still working through an append or removal." />
+    <ApiMember Name="SourceBufferHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Removes the buffer from its source, discarding what it holds." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole sourceOutput = default!;
+    private DemoConsole bufferOutput = default!;
+    private DemoConsole timelineOutput = default!;
+    private DemoConsole endOutput = default!;
+
+    private ElementReference videoElement;
+    private ElementReference segmentInput;
+
+    private MediaSourceHandle? source;
+    private SourceBufferHandle? buffer;
+    private ButilSubscription? subscription;
+
+    private string probeType = "video/mp4;codecs=\"avc1.42E01E\"";
+    private string bufferType = "video/mp4;codecs=\"avc1.42E01E,mp4a.40.2\"";
+    private double duration = 30;
+    private double timestampOffset;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await mediaSource.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckManaged()
+    {
+        try
+        {
+            await supportOutput.Log("IsManagedSupported →", await mediaSource.IsManagedSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsManagedSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeType()
+    {
+        try
+        {
+            await supportOutput.Log($"IsTypeSupported({probeType}) →", await mediaSource.IsTypeSupported(probeType));
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsTypeSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ListTypes()
+    {
+        try
+        {
+            var types = await mediaSource.GetSupportedTypes();
+            await supportOutput.Log($"GetSupportedTypes → {types.Length} usable: {string.Join(" | ", types)}");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("GetSupportedTypes failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenSource()
+    {
+        try
+        {
+            source = await mediaSource.Open(videoElement);
+            if (source is null)
+            {
+                await sourceOutput.Warn("Open → null (no Media Source Extensions, or the element never opened it)");
+                return;
+            }
+
+            subscription = await source.Subscribe(async state =>
+            {
+                await sourceOutput.Log($"ready state → {state}");
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await sourceOutput.Success($"Open → source {source.Id} is open");
+        }
+        catch (Exception ex)
+        {
+            await sourceOutput.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadState()
+    {
+        try
+        {
+            await sourceOutput.Log("GetReadyState →", await source!.GetReadyState());
+        }
+        catch (Exception ex)
+        {
+            await sourceOutput.Error("GetReadyState failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseSource()
+    {
+        try
+        {
+            await Teardown();
+            await sourceOutput.Log("DisposeAsync → source detached and freed");
+        }
+        catch (Exception ex)
+        {
+            await sourceOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    private async Task AddBuffer()
+    {
+        try
+        {
+            buffer = await source!.AddSourceBuffer(bufferType);
+            if (buffer is null)
+            {
+                await bufferOutput.Warn($"AddSourceBuffer({bufferType}) → null (unsupported type, or the source is not open)");
+                return;
+            }
+
+            await bufferOutput.Success($"AddSourceBuffer → buffer {buffer.Id} for {buffer.MimeType}");
+        }
+        catch (Exception ex)
+        {
+            await bufferOutput.Error("AddSourceBuffer failed →", ex.Message);
+        }
+    }
+
+    private async Task AppendSegment()
+    {
+        try
+        {
+            var bytes = await fileReader.ReadAsBytes(segmentInput);
+            if (bytes is null || bytes.Length == 0)
+            {
+                await bufferOutput.Warn("Append → pick a segment file first");
+                return;
+            }
+
+            var status = await buffer!.Append(bytes);
+            var message = $"Append({bytes.Length:N0} bytes) → {status}";
+            if (status == SourceBufferAppendStatus.Success) await bufferOutput.Success(message);
+            else if (status == SourceBufferAppendStatus.QuotaExceeded) await bufferOutput.Warn(message + " - remove played ranges and append it again");
+            else await bufferOutput.Error(message);
+        }
+        catch (Exception ex)
+        {
+            await bufferOutput.Error("Append failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowBuffered()
+    {
+        try
+        {
+            var ranges = await buffer!.GetBuffered();
+            if (ranges.Length == 0)
+            {
+                await bufferOutput.Log("GetBuffered → nothing buffered yet");
+                return;
+            }
+
+            await bufferOutput.Log("GetBuffered → " + string.Join(", ", ranges.Select(r => $"{r.Start:0.00}s-{r.End:0.00}s ({r.Duration:0.00}s)")));
+        }
+        catch (Exception ex)
+        {
+            await bufferOutput.Error("GetBuffered failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowUpdating()
+    {
+        try
+        {
+            await bufferOutput.Log("IsUpdating →", await buffer!.IsUpdating());
+        }
+        catch (Exception ex)
+        {
+            await bufferOutput.Error("IsUpdating failed →", ex.Message);
+        }
+    }
+
+    private async Task RemoveBuffer()
+    {
+        try
+        {
+            await buffer!.DisposeAsync();
+            buffer = null;
+            await bufferOutput.Log("DisposeAsync → buffer removed");
+        }
+        catch (Exception ex)
+        {
+            await bufferOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    private async Task ApplyDuration()
+    {
+        try
+        {
+            await timelineOutput.Log($"SetDuration({duration}) →", await source!.SetDuration(duration));
+        }
+        catch (Exception ex)
+        {
+            await timelineOutput.Error("SetDuration failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadDuration()
+    {
+        try
+        {
+            var value = await source!.GetDuration();
+            await timelineOutput.Log("GetDuration →", value?.ToString("0.00") ?? "null (no duration set)");
+        }
+        catch (Exception ex)
+        {
+            await timelineOutput.Error("GetDuration failed →", ex.Message);
+        }
+    }
+
+    private async Task ApplySequenceMode()
+    {
+        try
+        {
+            await timelineOutput.Log("SetMode(Sequence) →", await buffer!.SetMode(SourceBufferMode.Sequence));
+        }
+        catch (Exception ex)
+        {
+            await timelineOutput.Error("SetMode failed →", ex.Message);
+        }
+    }
+
+    private async Task ApplyTimestampOffset()
+    {
+        try
+        {
+            await timelineOutput.Log($"SetTimestampOffset({timestampOffset}) →", await buffer!.SetTimestampOffset(timestampOffset));
+        }
+        catch (Exception ex)
+        {
+            await timelineOutput.Error("SetTimestampOffset failed →", ex.Message);
+        }
+    }
+
+    private async Task RemoveRange()
+    {
+        try
+        {
+            await timelineOutput.Log("Remove(0, 5) →", await buffer!.Remove(0, 5));
+        }
+        catch (Exception ex)
+        {
+            await timelineOutput.Error("Remove failed →", ex.Message);
+        }
+    }
+
+    private async Task EndStream()
+    {
+        try
+        {
+            await endOutput.Log("EndOfStream() →", await source!.EndOfStream());
+        }
+        catch (Exception ex)
+        {
+            await endOutput.Error("EndOfStream failed →", ex.Message);
+        }
+    }
+
+    private async Task EndStreamNetwork()
+    {
+        try
+        {
+            await endOutput.Log("EndOfStream(Network) →", await source!.EndOfStream(MediaSourceEndOfStreamError.Network));
+        }
+        catch (Exception ex)
+        {
+            await endOutput.Error("EndOfStream failed →", ex.Message);
+        }
+    }
+
+    private async Task SetSeekable()
+    {
+        try
+        {
+            await endOutput.Log("SetLiveSeekableRange(0, 30) →", await source!.SetLiveSeekableRange(0, 30));
+        }
+        catch (Exception ex)
+        {
+            await endOutput.Error("SetLiveSeekableRange failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearSeekable()
+    {
+        try
+        {
+            await endOutput.Log("ClearLiveSeekableRange →", await source!.ClearLiveSeekableRange());
+        }
+        catch (Exception ex)
+        {
+            await endOutput.Error("ClearLiveSeekableRange failed →", ex.Message);
+        }
+    }
+
+    private async Task Teardown()
+    {
+        if (subscription is not null)
+        {
+            await subscription.DisposeAsync();
+            subscription = null;
+        }
+        if (buffer is not null)
+        {
+            await buffer.DisposeAsync();
+            buffer = null;
+        }
+        if (source is not null)
+        {
+            await source.DisposeAsync();
+            source = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await Teardown();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

@@ -8,7 +8,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         throttle,
         handleRegistry,
         encodeMessage,
-        randomUUID
+        randomUUID,
+        pick
     };
 
     // crypto.randomUUID is only exposed in a secure context, while crypto.getRandomValues is
@@ -31,6 +32,20 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Slice covers exactly the [byteOffset, byteOffset + byteLength) range so that
         // a Uint8Array view over a larger buffer doesn't leak extra bytes.
         return array.buffer.slice(array.byteOffset, array.byteOffset + array.byteLength);
+    }
+
+    // Builds a browser dictionary from a .NET-serialized options object, keeping only the named
+    // members that carry a value. Blazor serializes every member of an options class, so a member
+    // left unset arrives as an explicit `null` - and a browser dictionary that expects an enum, a
+    // number or a sequence rejects `null` outright rather than treating it as "not specified".
+    function pick(source: any, keys: string[]) {
+        const result: any = {};
+        if (!source) return result;
+        for (const key of keys) {
+            const value = source[key];
+            if (value !== null && value !== undefined) result[key] = value;
+        }
+        return result;
     }
 
     // The inverse of arrayToBuffer, and it exists for the same reason: Web Bluetooth, WebHID and
