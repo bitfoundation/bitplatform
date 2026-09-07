@@ -43,8 +43,10 @@ public partial class OAuthService(AppDbContext dbContext,
             return OAuthValidationResult.Redirectable(client, "unsupported_response_type");
 
         // OAuth 2.1 makes PKCE mandatory; `plain` sends the verifier through the browser, which is what it exists to avoid.
+        // The shape is checked here rather than at the insert: RFC 7636 §4.2 bounds it at 43-128 base64url characters,
+        // and a longer one would otherwise pass consent and fail on OAuthAuthorizationCode.CodeChallenge as a 500.
         if (string.Equals(request.CodeChallengeMethod, "S256", StringComparison.Ordinal) is false
-            || string.IsNullOrWhiteSpace(request.CodeChallenge))
+            || IsAcceptableCodeChallenge(request.CodeChallenge) is false)
         {
             return OAuthValidationResult.Redirectable(client, "invalid_request");
         }
@@ -66,6 +68,13 @@ public partial class OAuthService(AppDbContext dbContext,
 
         if (scopes is { Length: 0 })
             return OAuthValidationResult.Redirectable(client, "invalid_scope");
+
+        //#if (multitenant == true)
+        // Told apart from an absent one: a client that names a workspace and gets a tenantless grant is worse off than
+        // one that is told its request was wrong.
+        if (string.IsNullOrWhiteSpace(request.TenantId) is false && Guid.TryParse(request.TenantId, out _) is false)
+            return OAuthValidationResult.Redirectable(client, "invalid_request");
+        //#endif
 
         return OAuthValidationResult.Valid(client, resource, scopes);
     }
@@ -241,6 +250,15 @@ public partial class OAuthService(AppDbContext dbContext,
             return uri.IsLoopback;
 
         return true;
+    }
+
+    /// <summary>RFC 7636 §4.1: 43-128 characters of base64url. An S256 challenge is always exactly 43.</summary>
+    private static bool IsAcceptableCodeChallenge(string? codeChallenge)
+    {
+        if (codeChallenge is not { Length: >= 43 and <= 128 })
+            return false;
+
+        return codeChallenge.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.' or '~');
     }
 
     private static string GenerateCode()

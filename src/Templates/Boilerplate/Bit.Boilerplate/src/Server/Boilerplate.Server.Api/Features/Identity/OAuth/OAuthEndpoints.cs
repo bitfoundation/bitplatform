@@ -172,7 +172,7 @@ public static class OAuthEndpoints
             CodeChallengeMethod = request.Query["code_challenge_method"],
             Resource = request.Query["resource"],
             //#if (multitenant == true)
-            TenantId = Guid.TryParse(request.Query["tenant_id"], out var tenantId) ? tenantId : null
+            TenantId = request.Query["tenant_id"]
             //#endif
         };
     }

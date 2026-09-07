@@ -27,7 +27,7 @@ section {
     .oauth-session-banner {
         padding-bottom: 0.5rem;
         margin-bottom: 0.5rem;
-        border-bottom: 1px solid var($bit-color-border-secondary);
+        border-bottom: 1px solid $bit-color-border-secondary;
     }
 
     // A client id is long either way - a metadata document url or an opaque token - so it gets its row and no more.

@@ -36,7 +36,11 @@ public partial class OAuthAuthorizeRequestDto
     public string? Resource { get; set; }
 
     //#if (multitenant == true)
-    /// <summary>Optional; the user must be an accepted member of that active tenant. Absent means no tenant claim.</summary>
-    public Guid? TenantId { get; set; }
+    /// <summary>
+    /// Optional; the user must be an accepted member of that active tenant. Absent means no tenant claim. Kept as the
+    /// raw string so a malformed one is still malformed when it reaches validation - parsed to null at the boundary, it
+    /// would read as "no tenant asked for" and quietly grant a tenantless code instead of <c>invalid_request</c>.
+    /// </summary>
+    public string? TenantId { get; set; }
     //#endif
 }

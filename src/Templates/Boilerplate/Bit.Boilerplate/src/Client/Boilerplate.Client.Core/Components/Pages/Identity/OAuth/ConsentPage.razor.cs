@@ -153,7 +153,7 @@ public partial class ConsentPage
         CodeChallengeMethod = CodeChallengeMethod,
         Resource = Resource,
         //#if (multitenant == true)
-        TenantId = Guid.TryParse(TenantId, out var tenantId) ? tenantId : null
+        TenantId = TenantId
         //#endif
     };
 

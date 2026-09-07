@@ -268,7 +268,8 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
             await page.GotoAsync(url, new() { WaitUntil = WaitUntilState.NetworkIdle });
         }
         catch (PlaywrightException exp) when (exp.Message.Contains("interrupted by another navigation", StringComparison.Ordinal)
-                                              || exp.Message.Contains("NS_BINDING_ABORTED", StringComparison.Ordinal))
+                                              || exp.Message.Contains("NS_BINDING_ABORTED", StringComparison.Ordinal)
+                                              || exp.Message.Contains("net::ERR_ABORTED", StringComparison.Ordinal))
         {
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await page.GotoAsync(url, new() { WaitUntil = WaitUntilState.NetworkIdle });

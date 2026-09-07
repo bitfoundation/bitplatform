@@ -359,7 +359,8 @@ public partial class AppAiChatPanel
                 int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
 
                 // A success marker carries the signature of the answer it ends, after a ':' (See SharedAppMessages).
-                var isSuccessMarker = response.StartsWith(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, StringComparison.Ordinal);
+                var isSuccessMarker = response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS
+                                      || response.StartsWith($"{SharedAppMessages.MESSAGE_PROCESS_SUCCESS}:", StringComparison.Ordinal);
 
                 if (isSuccessMarker || response is SharedAppMessages.MESSAGE_PROCESS_ERROR)
                 {

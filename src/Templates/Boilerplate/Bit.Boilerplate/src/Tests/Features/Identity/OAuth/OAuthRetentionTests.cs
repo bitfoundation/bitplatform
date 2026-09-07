@@ -24,9 +24,11 @@ public class OAuthRetentionTests
 
         // A day past expiry, which is the grace a consumed code keeps so a replay still has a session to revoke.
         var expiredCode = NewCode(userId, expiresOn: now - 2 * 86400);
+        // Inside that grace: without this case a runner that swept every expired code would pass the two below.
+        var recentlyExpiredCode = NewCode(userId, expiresOn: now - 3600);
         var liveCode = NewCode(userId, expiresOn: now + 60);
 
-        await dbContext.OAuthAuthorizationCodes.AddRangeAsync([expiredCode, liveCode], TestContext.CancellationToken);
+        await dbContext.OAuthAuthorizationCodes.AddRangeAsync([expiredCode, recentlyExpiredCode, liveCode], TestContext.CancellationToken);
         await dbContext.SaveChangesAsync(TestContext.CancellationToken);
 
         try
@@ -35,12 +37,14 @@ public class OAuthRetentionTests
 
             Assert.IsFalse(await dbContext.OAuthAuthorizationCodes.AnyAsync(code => code.Id == expiredCode.Id, TestContext.CancellationToken),
                 "A code a day past its expiry has nothing left to prove and goes.");
+            Assert.IsTrue(await dbContext.OAuthAuthorizationCodes.AnyAsync(code => code.Id == recentlyExpiredCode.Id, TestContext.CancellationToken),
+                "An expired code is kept for a day so ConsumeCode can still tell a replay from an unknown code, and revoke the session it minted.");
             Assert.IsTrue(await dbContext.OAuthAuthorizationCodes.AnyAsync(code => code.Id == liveCode.Id, TestContext.CancellationToken),
                 "A code that can still be exchanged must not be swept out from under the client waiting to exchange it.");
         }
         finally
         {
-            Guid[] codeIds = [expiredCode.Id, liveCode.Id];
+            Guid[] codeIds = [expiredCode.Id, recentlyExpiredCode.Id, liveCode.Id];
 
             await dbContext.OAuthAuthorizationCodes.Where(code => codeIds.Contains(code.Id)).ExecuteDeleteAsync(CancellationToken.None);
         }

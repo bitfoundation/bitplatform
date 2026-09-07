@@ -109,9 +109,10 @@ public partial class OAuthController : AppControllerBase, IOAuthController
     /// A tenant is accepted only for an accepted member of an active one; a request naming none gets no tenant claim
     /// rather than being quietly placed in one.
     /// </summary>
-    private async Task<Guid?> ResolveTenantId(Guid? requestedTenantId, CancellationToken cancellationToken)
+    private async Task<Guid?> ResolveTenantId(string? requestedTenantId, CancellationToken cancellationToken)
     {
-        if (requestedTenantId is not Guid tenantId)
+        // A malformed one never gets here - OAuthService.Validate turns it into invalid_request first.
+        if (Guid.TryParse(requestedTenantId, out var tenantId) is false)
             return null;
 
         var userId = User.GetUserId();

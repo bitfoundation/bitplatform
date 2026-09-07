@@ -68,6 +68,11 @@ public partial class OAuthClientManagementController : AppControllerBase, IOAuth
         if (string.IsNullOrWhiteSpace(request.ClientId))
             throw new BadRequestException();
 
+        // First, or a code minted moments ago is still exchangeable for a brand new session right after this returns.
+        await DbContext.OAuthAuthorizationCodes
+            .Where(code => code.ClientId == request.ClientId)
+            .ExecuteDeleteAsync(cancellationToken);
+
         // What actually ends access: a refresh whose session is gone is refused, and access tokens expire in minutes.
         // The session is deleted, not the grant - the grant cascades with it, and it is the session that holds a token.
         var revoked = await DbContext.UserSessions
