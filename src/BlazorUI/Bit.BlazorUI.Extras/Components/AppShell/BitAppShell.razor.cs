@@ -474,7 +474,11 @@ public partial class BitAppShell : BitComponentBase
     {
         if (_containerRef.HasValue is false) return;
 
-        await InvokeJs(() => _js.BitExtrasScrollBy(_containerRef!.Value, (decimal)x, (decimal)y, behavior));
+        // A NaN or an infinity is not a distance, and the serializer of the interop call refuses both, so a
+        // call made with one is dropped here rather than thrown out of the caller's own event handler.
+        if (double.IsFinite(x) is false || double.IsFinite(y) is false) return;
+
+        await InvokeJs(() => _js.BitExtrasScrollBy(_containerRef!.Value, x, y, behavior));
     }
 
     /// <summary>

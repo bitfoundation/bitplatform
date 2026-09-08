@@ -22,7 +22,7 @@ internal static class ExtrasJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.scrollTo", element, left, top, behavior?.ToString().ToLowerInvariant());
     }
 
-    internal static ValueTask BitExtrasScrollBy(this IJSRuntime jsRuntime, ElementReference element, decimal x, decimal y, BitScrollBehavior? behavior = null)
+    internal static ValueTask BitExtrasScrollBy(this IJSRuntime jsRuntime, ElementReference element, double x, double y, BitScrollBehavior? behavior = null)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.scrollBy", element, x, y, behavior?.ToString().ToLowerInvariant());
     }

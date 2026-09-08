@@ -15,6 +15,7 @@
 .page {
     width: 100%;
     display: flex;
+
     // So a page shorter than the shell still fills it, which is what a sticky header and a sticky
     // composer both need to have something to stick to.
     min-height: 100%;

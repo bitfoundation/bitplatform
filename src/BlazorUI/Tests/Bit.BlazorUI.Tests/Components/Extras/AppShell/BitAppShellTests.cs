@@ -1335,8 +1335,8 @@ public class BitAppShellTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Extras.scrollBy"].Single();
 
-        Assert.AreEqual(10m, invocation.Arguments[1]);
-        Assert.AreEqual(20m, invocation.Arguments[2]);
+        Assert.AreEqual(10d, invocation.Arguments[1]);
+        Assert.AreEqual(20d, invocation.Arguments[2]);
         Assert.AreEqual("instant", invocation.Arguments[3]);
     }
 
