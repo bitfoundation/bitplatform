@@ -704,6 +704,7 @@
                     "exclude": [
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/DevMcp/**",
+                        "src/Tests/Features/Versioning/**",
                         "src/Tests/Features/Identity/OAuth/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
                         "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
@@ -852,6 +853,7 @@
                     "condition": "(advancedTests != true || notification != true)",
                     "exclude": [
                         "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs",
+                        "src/Tests/Features/PushNotification/PushSubscriptionDeviceContextTests.cs",
                         "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs"
                     ]

@@ -28,14 +28,14 @@
             <BitCard FullWidth>
                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                     <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
-                                SecondaryText="@GetLastSeenOn(currentSession.RenewedOnDateTimeOffset)"
+                                SecondaryText="@currentSession.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
                                 TertiaryText="@currentSession.DeviceInfo"
                                 Class="session-persona"
                                 Size="BitPersonaSize.Size72"
+                                ImageUrl="@currentSession.ImageUrl"
                                 Styles="@(new() { Image = "width:50%;height:50%" })"
                                 ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
                                 CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
-                                ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
                                 Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
                     <BitSpacer />
                     @*#if (signalR == true || notification == true)*@
@@ -74,10 +74,10 @@
                                         </BitText>
                                     </BitStack>
 
-                                    @foreach (var scope in (session.OAuthScope ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                                    @foreach (var description in session.ScopeDescriptions(Localizer))
                                     {
                                         <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
-                                            @ScopeDescription(scope)
+                                            @description
                                         </BitText>
                                     }
 
@@ -88,15 +88,15 @@
                             }
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                                 <BitPersona PrimaryText="@($"{session.Address} ({session.IP})")"
-                                            SecondaryText="@GetLastSeenOn(session.RenewedOnDateTimeOffset)"
+                                            SecondaryText="@session.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
                                             TertiaryText="@session.DeviceInfo"
                                             Size="BitPersonaSize.Size72"
+                                            ImageUrl="@session.ImageUrl"
                                             Class="other-session-persona"
-                                            Presence="@GetPresence(session.RenewedOnDateTimeOffset)"
                                             Styles="@(new() { Image = "width:50%;height:50%" })"
                                             ImageInitials="@(session.Privileged ? "✓" : "✘")"
-                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)"
-                                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session)}")" />
+                                            Presence="@session.GetPresence(TimeProvider.GetUtcNow())"
+                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)" />
                                 <BitSpacer />
                                 <BitButton IconOnly
                                            Color="BitColor.Error"

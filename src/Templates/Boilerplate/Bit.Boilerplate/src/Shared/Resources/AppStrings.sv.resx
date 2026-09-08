@@ -1499,6 +1499,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DisableNotifications" xml:space="preserve">
     <value>Inaktivera notiser</value>
   </data>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Pushnotiser är aktiverade för den här sessionen.</value>
+  </data>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Pushnotiser är tystade för den här sessionen.</value>
+  </data>
+  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>Pushnotiser är inte konfigurerade för den här sessionen.</value>
+  </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Aviseringar är på</value>
   </data>
@@ -1999,7 +2008,7 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>{0} behörighet(er) återkallade.</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>Konfigurerad här</value>
+    <value>Förkonfigurerad</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
     <value>Självbeskriven</value>

@@ -1499,6 +1499,15 @@
   <data name="DisableNotifications" xml:space="preserve">
     <value>禁用通知</value>
   </data>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>此会话已启用推送通知。</value>
+  </data>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>此会话的推送通知已静音。</value>
+  </data>
+  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>此会话尚未配置推送通知。</value>
+  </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>推送通知已开启</value>
   </data>
@@ -1999,7 +2008,7 @@
     <value>已撤销 {0} 项授权。</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>在此配置</value>
+    <value>预先配置</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
     <value>自行描述</value>

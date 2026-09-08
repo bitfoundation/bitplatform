@@ -1499,6 +1499,15 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="DisableNotifications" xml:space="preserve">
     <value>Meldingen uitschakelen</value>
   </data>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Pushmeldingen zijn ingeschakeld voor deze sessie.</value>
+  </data>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Pushmeldingen zijn gedempt voor deze sessie.</value>
+  </data>
+  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>Pushmeldingen zijn niet geconfigureerd voor deze sessie.</value>
+  </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Meldingen staan aan</value>
   </data>
@@ -1999,7 +2008,7 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>{0} toekenning(en) ingetrokken.</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>Hier geconfigureerd</value>
+    <value>Vooraf geconfigureerd</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
     <value>Zelfbeschreven</value>

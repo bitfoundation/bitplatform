@@ -172,33 +172,91 @@
                                     </EmptyContent>
                                     <RowTemplate Context="session">
                                         <BitCard Class="session-card" FullWidth Background="BitColorKind.Tertiary">
-                                            <BitStack FitHeight>
-                                                <BitText>@Localizer[nameof(AppStrings.IP)]: @session.IP</BitText>
-                                                <BitText>@Localizer[nameof(AppStrings.Address)]: @session.Address</BitText>
-                                                <BitText>@Localizer[nameof(AppStrings.DeviceInfo)]: @session.DeviceInfo</BitText>
-                                                <BitText>@Localizer[nameof(AppStrings.Privileged)]: @session.Privileged</BitText>
-                                                <BitText>@Localizer[nameof(AppStrings.Culture)]: @session.CultureName</BitText>
-                                                <BitText>@Localizer[nameof(AppStrings.AppVersion)]: @session.AppVersion</BitText>
-                                                <BitText>@Localizer[nameof(AppStrings.RenewedOn)]: @TimeZoneService.ToLocalTime(session.RenewedOnDateTimeOffset)</BitText>
-                                                <BitText>
-                                                    @Localizer[nameof(AppStrings.Id)]:
-                                                    <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.Id</BitTag>
-                                                </BitText>
-                                                @*#if (signalR == true)*@
-                                                <BitText>
-                                                    @Localizer[nameof(AppStrings.SignalRConnectionId)]:
-                                                    @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
+                                            @if (string.IsNullOrEmpty(session.OAuthClientId) is false)
+                                            {
+                                                @* An authorized app, not a device. *@
+                                                <BitStack Gap="0.25rem" Class="oauth-session-banner">
+                                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                                                        <BitIcon IconName="@BitIconName.PlugConnected" Color="BitColor.Info" />
+                                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                                            @Localizer[nameof(AppStrings.OAuthSessionAuthorizedApplication)]
+                                                        </BitText>
+                                                        <BitText Typography="BitTypography.Subtitle2">
+                                                            @(session.OAuthClientName ?? session.OAuthClientId)
+                                                        </BitText>
+                                                    </BitStack>
+
+                                                    @foreach (var description in session.ScopeDescriptions(Localizer))
                                                     {
-                                                        <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
+                                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                                            @description
+                                                        </BitText>
                                                     }
-                                                </BitText>
+
+                                                    <BitText Typography="BitTypography.Caption1" Class="oauth-client-id" Color="BitColor.SecondaryForeground" Title="@session.OAuthClientId">
+                                                        @session.OAuthClientId
+                                                    </BitText>
+                                                </BitStack>
+                                            }
+                                            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                                                <BitPersona PrimaryText="@($"{session.Address} ({session.IP})")"
+                                                            SecondaryText="@session.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
+                                                            TertiaryText="@session.DeviceInfo"
+                                                            Size="BitPersonaSize.Size72"
+                                                            ImageUrl="@session.ImageUrl"
+                                                            Class="session-persona"
+                                                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                                                            ImageInitials="@(session.Privileged ? "✓" : "✘")"
+                                                            Presence="@session.GetPresence(TimeProvider.GetUtcNow())"
+                                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)" />
+                                                <BitSpacer />
+                                                @*#if (signalR == true || notification == true)*@
+                                                @* Read-only: only the receiving device can answer the permission prompt. *@
+                                                <BitIcon Title="@GetNotificationStatusTitle(session)"
+                                                         IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
+                                                         Color="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitColor.Success : BitColor.TertiaryForeground)" />
                                                 @*#endif*@
                                                 <BitButton AutoLoading IconOnly
-                                                           Class="del-session-btn"
+                                                           Color="BitColor.Error"
+                                                           Variant="BitVariant.Text"
                                                            IconName="@BitIconName.Delete"
                                                            IsEnabled="selectedUserItem is not null"
                                                            OnClick="WrapHandled(() => RevokeUserSession(session))"
-                                                           Title="@Localizer[nameof(AppStrings.DeleteSession)]" />
+                                                           Title="@Localizer[nameof(AppStrings.DeleteSession)]"
+                                                           AriaLabel="@Localizer[nameof(AppStrings.DeleteSession)]" />
+                                            </BitStack>
+                                            <BitStack Gap="0.25rem" Class="session-details">
+                                                <BitStack Horizontal Wrap Gap="0.25rem 1rem" VerticalAlign="BitAlignment.Center">
+                                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                                        @Localizer[nameof(AppStrings.Privileged)]: @session.Privileged
+                                                    </BitText>
+                                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                                        @Localizer[nameof(AppStrings.Culture)]: @session.CultureName
+                                                    </BitText>
+                                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                                        @Localizer[nameof(AppStrings.AppVersion)]: @session.AppVersion
+                                                    </BitText>
+                                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                                        @Localizer[nameof(AppStrings.RenewedOn)]: @TimeZoneService.ToLocalTime(session.RenewedOnDateTimeOffset)
+                                                    </BitText>
+                                                </BitStack>
+                                                <BitStack Horizontal Wrap Gap="0.25rem 0.5rem" VerticalAlign="BitAlignment.Center">
+                                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                                        @Localizer[nameof(AppStrings.Id)]:
+                                                    </BitText>
+                                                    <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Small" Class="selectable">@session.Id</BitTag>
+                                                </BitStack>
+                                                @*#if (signalR == true)*@
+                                                <BitStack Horizontal Wrap Gap="0.25rem 0.5rem" VerticalAlign="BitAlignment.Center">
+                                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                                        @Localizer[nameof(AppStrings.SignalRConnectionId)]:
+                                                    </BitText>
+                                                    @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
+                                                    {
+                                                        <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Small" Class="selectable">@session.SignalRConnectionId</BitTag>
+                                                    }
+                                                </BitStack>
+                                                @*#endif*@
                                             </BitStack>
                                         </BitCard>
                                     </RowTemplate>

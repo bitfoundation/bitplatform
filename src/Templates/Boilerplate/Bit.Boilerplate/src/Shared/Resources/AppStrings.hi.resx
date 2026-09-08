@@ -1499,6 +1499,15 @@
   <data name="DisableNotifications" xml:space="preserve">
     <value>सूचनाएं अक्षम करें</value>
   </data>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>इस सत्र पर पुश सूचनाएँ सक्षम हैं।</value>
+  </data>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>इस सत्र पर पुश सूचनाएँ म्यूट हैं।</value>
+  </data>
+  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>इस सत्र पर पुश सूचनाएँ कॉन्फ़िगर नहीं की गई हैं।</value>
+  </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>सूचनाएँ चालू हैं</value>
   </data>
@@ -1999,7 +2008,7 @@
     <value>{0} अनुमति रद्द की गई।</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>यहाँ कॉन्फ़िगर किया गया</value>
+    <value>पूर्व-कॉन्फ़िगर</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
     <value>स्व-वर्णित</value>

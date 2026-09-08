@@ -34,7 +34,7 @@
         5031
     ],
     "features": {
-        "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:2": {},
+        "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:3": {},
         "ghcr.io/devcontainers/features/powershell:2": {},
         "ghcr.io/devcontainers/features/docker-in-docker:4": {},
         "ghcr.io/devcontainers/features/node:2": {

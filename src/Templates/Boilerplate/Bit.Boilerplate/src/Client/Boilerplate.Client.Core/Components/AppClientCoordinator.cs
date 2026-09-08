@@ -26,6 +26,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private CultureService cultureService = default!;
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
+    [AutoInject] private ConsentService consentService = default!;
     //#endif
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IUserController userController = default!;
@@ -95,9 +96,19 @@ public partial class AppClientCoordinator : AppComponentBase
                 }
             });
 
-            // Nothing to apply at startup: UpdateCfg reads the decision itself. This only says it changed, since
-            // consent is withdrawable. The empty config asks for nothing - the switches are filled in there.
-            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ => await appInsights.UpdateCfg(new())));
+            if (appInsights is AppInsightsJsSdkService appInsightsJsSdk)
+            {
+                appInsightsJsSdk.AnalyticsConsentProvider = () => consentService.IsGranted(ConsentCategory.Analytics);
+            }
+
+            _ = appInsights.UpdateCfg(new());
+
+            // The empty config asks for nothing - the switches are filled in there.
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ =>
+            {
+                await appInsights.UpdateCfg(new());
+                await ApplyAuthenticatedUserContext(lastPropagatedUser);
+            }));
             //#endif
 
             await accentColorService.InitializeAsync();
@@ -141,8 +152,31 @@ public partial class AppClientCoordinator : AppComponentBase
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
         TelemetryContext.PageUrl = new Uri(e.Location).GetUrlWithMaskedQueryValues();
+        //#if (appInsights != true)
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
+        //#endif
     }
+
+    //#if (appInsights == true)
+    private async Task ApplyAuthenticatedUserContext(ClaimsPrincipal? user)
+    {
+        try
+        {
+            if (user?.IsAuthenticated() is true && await consentService.IsGranted(ConsentCategory.Analytics))
+            {
+                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+            }
+            else
+            {
+                await appInsights.ClearAuthenticatedUserContext();
+            }
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
+        }
+    }
+    //#endif
 
     private ClaimsPrincipal? lastPropagatedUser;
     /// <summary>
@@ -182,14 +216,7 @@ public partial class AppClientCoordinator : AppComponentBase
             // By leveraging this method during authentication state changes, we streamline the propagation of user-specific contexts across these systems.
 
             //#if (appInsights == true)
-            if (isAuthenticated)
-            {
-                _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
-            }
-            else
-            {
-                _ = appInsights.ClearAuthenticatedUserContext();
-            }
+            _ = ApplyAuthenticatedUserContext(user);
             //#endif
 
             var data = TelemetryContext.ToDictionary();

@@ -13,7 +13,8 @@ public partial class DevMcpQueryTools
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ILogger<DevMcpQueryTools> logger = default!;
 
-    private Guid? CallerId => httpContextAccessor.HttpContext?.User is { } user && user.IsAuthenticated() ? user.GetUserId() : null;
+    /// <summary>Unguarded on purpose: nothing reaches a tool here without the endpoint's global-admin + 2FA authorization.</summary>
+    private Guid CallerId => httpContextAccessor.HttpContext!.User.GetUserId();
 
     private static readonly ParsingConfig ParsingConfig = new()
     {
