@@ -1499,6 +1499,15 @@
   <data name="DisableNotifications" xml:space="preserve">
     <value>تعطيل الإشعارات</value>
   </data>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>الإشعارات الفورية مفعّلة في هذه الجلسة.</value>
+  </data>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>الإشعارات الفورية مكتومة في هذه الجلسة.</value>
+  </data>
+  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>الإشعارات الفورية غير مهيّأة في هذه الجلسة.</value>
+  </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>تم تفعيل الإشعارات</value>
   </data>
@@ -1999,7 +2008,7 @@
     <value>تم إلغاء {0} تصريح.</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>مُعدّ هنا</value>
+    <value>مُهيّأ مسبقًا</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
     <value>معرّف لنفسه</value>

@@ -108,8 +108,11 @@ public partial class UserController : AppControllerBase, IUserController
         // example scenario would be when user restarts the app after an update or after changing device settings like language.
         // so in server side, we always have the latest info about the user session.
 
+        // The client sends the version as text; anything unrepresentable becomes null.
+        var appVersionCode = AppVersionCodes.TryEncode(request.AppVersion);
+
         var affectedRows = await DbContext.UserSessions.Where(us => us.Id == User.GetSessionId()).ExecuteUpdateAsync(us =>
-            us.SetProperty(x => x.AppVersion, request.AppVersion)
+            us.SetProperty(x => x.AppVersionCode, appVersionCode)
                 .SetProperty(x => x.DeviceInfo, request.DeviceInfo)
                 .SetProperty(x => x.PlatformType, request.PlatformType)
                 .SetProperty(x => x.CultureName, request.CultureName), cancellationToken);

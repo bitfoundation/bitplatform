@@ -46,9 +46,30 @@ section {
         margin-bottom: 1rem;
     }
 
-    .del-session-btn {
-        top: 1rem;
-        position: absolute;
-        inset-inline-end: 1rem;
+    .session-persona {
+        @include lt-sm {
+            max-width: calc(100% - 60px);
+        }
+    }
+
+    .session-details {
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid $bit-color-border-secondary;
+    }
+
+    .oauth-session-banner {
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid $bit-color-border-secondary;
+    }
+
+    // Client ids are long, so keep them to a single row.
+    .oauth-client-id {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        direction: ltr;
+        font-family: monospace;
     }
 }

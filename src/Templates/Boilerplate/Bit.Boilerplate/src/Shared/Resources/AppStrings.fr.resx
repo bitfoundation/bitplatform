@@ -1499,6 +1499,15 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DisableNotifications" xml:space="preserve">
     <value>Désactiver les notifications</value>
   </data>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Les notifications push sont activées pour cette session.</value>
+  </data>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Les notifications push sont mises en sourdine pour cette session.</value>
+  </data>
+  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>Les notifications push ne sont pas configurées pour cette session.</value>
+  </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Les notifications sont activées</value>
   </data>
@@ -1999,7 +2008,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>{0} autorisation(s) révoquée(s).</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>Configurée ici</value>
+    <value>Préconfigurée</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
     <value>Auto-décrite</value>

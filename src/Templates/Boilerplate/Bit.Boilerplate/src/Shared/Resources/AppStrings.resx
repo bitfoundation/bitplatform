@@ -1499,6 +1499,15 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DisableNotifications" xml:space="preserve">
     <value>Disable notifications</value>
   </data>
+    <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Push notifications are enabled on this session.</value>
+  </data>
+    <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Push notifications are muted on this session.</value>
+  </data>
+    <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>Push notifications are not configured on this session.</value>
+  </data>
     <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Push notifications are on</value>
   </data>
@@ -1999,7 +2008,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Revoked {0} grant(s).</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>Configured here</value>
+    <value>Pre-configured</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
     <value>Self-described</value>

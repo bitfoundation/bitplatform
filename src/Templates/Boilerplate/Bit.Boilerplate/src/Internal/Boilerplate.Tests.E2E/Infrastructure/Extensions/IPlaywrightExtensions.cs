@@ -24,8 +24,9 @@ public static class IPlaywrightExtensions
         /// Starts the installed Client.Windows app identified by <paramref name="windowsAppId"/>
         /// (e.g. <see cref="DeployedApps.TodoWindowsAppId"/>) and attaches to it. Every Client.Windows app hard-codes
         /// <c>--remote-debugging-port=9222</c>, so a leftover instance of any of them would be the one answering on
-        /// the port - hence every running Client.Windows process is killed first. The app is started minimized and
-        /// then parked off-screen, so a run leaves the machine's screen alone (see <see cref="HideWindowsAppWindow"/>).
+        /// the port - hence every running Client.Windows process is killed first, then its data cleared (see
+        /// <see cref="ClearWindowsAppData"/>). The app is started minimized and then parked off-screen, so a run leaves
+        /// the machine's screen alone (see <see cref="HideWindowsAppWindow"/>).
         /// </summary>
         public async Task<(IPage Page, Func<Task> OnStop)> LaunchWindowsApp(string windowsAppId, int port = 9222)
         {
@@ -36,13 +37,20 @@ public static class IPlaywrightExtensions
 
             StopWindowsApps();
 
+            // After the kill, so nothing still holds the files open.
+            ClearWindowsAppData(windowsAppId);
+
             Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true, WindowStyle = ProcessWindowStyle.Minimized });
 
             await HideWindowsAppWindow();
 
             var browser = await playwright.ConnectWithRetry($"http://localhost:{port}");
 
-            return (browser.SinglePage(), async () =>
+            var page = browser.SinglePage();
+
+            await AnswerConsentBanner(page);
+
+            return (page, async () =>
             {
                 await browser.CloseAsync();
                 StopWindowsApps();
@@ -225,6 +233,43 @@ public static class IPlaywrightExtensions
     }
 
     private static bool IsWindowsApp(Process process) => process.ProcessName.EndsWith(".Client.Windows", StringComparison.Ordinal);
+
+    /// <summary>
+    /// The Windows counterpart of the Android launch's <c>pm clear</c>: drops WindowsStorageService's isolated storage
+    /// file (access token, culture, consent answer) and the WebView2 profile, so a run inherits no earlier session.
+    /// Best effort - what it cannot delete, the app recreates.
+    /// </summary>
+    private static void ClearWindowsAppData(string windowsAppId)
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        // Named after the app by WebView2 itself, since Client.Windows sets no user data folder of its own.
+        TryDelete(() => Directory.Delete(Path.Combine(localAppData, $"{windowsAppId}.WebView2"), recursive: true));
+
+        // The store's path is hashed out of the assembly's evidence, so it is searched for by the file name
+        // WindowsStorageService writes - the assembly name, which is windowsAppId - rather than derived from a path.
+        var isolatedStorage = Path.Combine(localAppData, "IsolatedStorage");
+
+        if (Directory.Exists(isolatedStorage) is false)
+            return;
+
+        TryDelete(() =>
+        {
+            foreach (var store in Directory.EnumerateFiles(isolatedStorage, $"{windowsAppId}.storage.json", SearchOption.AllDirectories))
+                TryDelete(() => File.Delete(store));
+        });
+    }
+
+    private static void TryDelete(Action delete)
+    {
+        try
+        {
+            delete();
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
 
     /// <summary>Far outside every monitor - where Windows itself parks a minimized window.</summary>
     private const int offScreenPosition = -32000;

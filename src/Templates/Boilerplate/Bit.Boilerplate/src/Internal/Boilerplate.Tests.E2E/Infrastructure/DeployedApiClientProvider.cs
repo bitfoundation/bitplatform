@@ -1,7 +1,6 @@
 using OtpNet;
 using Npgsql;
 using Microsoft.JSInterop;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components;
 using Boilerplate.Client.Web.Infrastructure.Services;
@@ -187,7 +186,7 @@ public static class DeployedApiClientProvider
 
             var authenticatorKey = configuration["GlobalAdminAuthenticatorKey"]!;
 
-            await EnsureUserCanSignIn(db, admin.Id, password, authenticatorKey, grantGlobalAdmin: true);
+            await EnsureUserCanSignIn(db, admin.Id, authenticatorKey, grantGlobalAdmin: true);
 
             var authManager = sp.GetRequiredService<AuthManager>();
             await authManager.SignIn(new() { Email = email, Password = password, RememberMe = true }, CancellationToken.None);
@@ -215,28 +214,22 @@ public static class DeployedApiClientProvider
     }
 
     /// <summary>
-    /// Aligns a live account with the secrets: confirmed, unlocked, matching password, and on two-factor with
+    /// Aligns a live account with the secrets: confirmed, unlocked, and on two-factor with
     /// <paramref name="authenticatorKey"/> (null turns 2FA off). A no-op once it matches.
     /// </summary>
     /// <remarks>
     /// The key is why this exists: enrolling through the UI mints a random one, so nothing else can put the account on
     /// two-factor with OURS - and /dev-mcp needs a 2FA session.
     /// </remarks>
-    public static async Task EnsureUserCanSignIn(AppDbContext db, Guid userId, string password, string? authenticatorKey = null, bool grantGlobalAdmin = false)
+    public static async Task EnsureUserCanSignIn(AppDbContext db, Guid userId, string? authenticatorKey = null, bool grantGlobalAdmin = false)
     {
         var user = await db.Users.IgnoreQueryFilters().SingleAsync(item => item.Id == userId);
 
+        // Undoing what an earlier run can leave behind: a failed sign-in raises AccessFailedCount and locks the account.
         user.EmailConfirmed = true;
         user.TwoFactorEnabled = authenticatorKey is not null;
         user.LockoutEnd = null;
         user.AccessFailedCount = 0;
-
-        var hasher = new PasswordHasher<User>();
-        if (user.PasswordHash is null ||
-            hasher.VerifyHashedPassword(user, user.PasswordHash, password) is PasswordVerificationResult.Failed)
-        {
-            user.PasswordHash = hasher.HashPassword(user, password);
-        }
 
         if (authenticatorKey is not null)
         {

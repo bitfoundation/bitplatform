@@ -1499,6 +1499,15 @@
     <data name="DisableNotifications" xml:space="preserve">
     <value>غیرفعال‌سازی اعلان‌ها</value>
   </data>
+    <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>اعلان‌های پوش برای این نشست فعال هستند.</value>
+  </data>
+    <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>اعلان‌های پوش برای این نشست بی‌صدا شده‌اند.</value>
+  </data>
+    <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>اعلان‌های پوش برای این نشست پیکربندی نشده‌اند.</value>
+  </data>
     <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>اعلان‌ها فعال شد</value>
   </data>
@@ -1999,10 +2008,10 @@
     <value>{0} اجازه لغو شد.</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>پیکربندی‌شده در اینجا</value>
+    <value>از پیش پیکربندی‌شده</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
-    <value>خودمعرف</value>
+    <value>خودمعرفی‌شده</value>
   </data>
     <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
     <value>این برنامه شناسایی نشد، بنابراین جایی برای برگرداندن نتیجه وجود ندارد.</value>

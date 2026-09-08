@@ -1499,6 +1499,15 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DisableNotifications" xml:space="preserve">
     <value>Deshabilitar notificaciones</value>
   </data>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Las notificaciones push están habilitadas en esta sesión.</value>
+  </data>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Las notificaciones push están silenciadas en esta sesión.</value>
+  </data>
+  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
+    <value>Las notificaciones push no están configuradas en esta sesión.</value>
+  </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Las notificaciones están activadas</value>
   </data>
@@ -1999,7 +2008,7 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Se revocaron {0} concesión(es).</value>
   </data>
     <data name="OAuthClientKindConfigured" xml:space="preserve">
-    <value>Configurada aquí</value>
+    <value>Preconfigurada</value>
   </data>
     <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
     <value>Autodescrita</value>
