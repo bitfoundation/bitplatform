@@ -56,7 +56,7 @@ public partial class BitDataGridDemo : AppComponentBase
         {
             var a = x as int? ?? 0;
             var b = y as int? ?? 0;
-            var inStock = (b == 0).CompareTo(a == 0);
+            var inStock = (a == 0).CompareTo(b == 0);
             return inStock != 0 ? inStock : a.CompareTo(b);
         }
     }

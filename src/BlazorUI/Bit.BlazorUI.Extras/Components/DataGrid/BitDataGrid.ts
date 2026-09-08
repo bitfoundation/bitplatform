@@ -224,12 +224,13 @@ namespace BitBlazorUI {
                 const styles = getComputedStyle(cell);
                 const padding = parseFloat(styles.paddingLeft || '0') + parseFloat(styles.paddingRight || '0');
                 // The header holds the sort/group/resize affordances next to its label, so measure its
-                // children's extent rather than the label alone.
+                // children's extent rather than the label alone. Both measurements exclude the cell's
+                // own padding, which the widest calculation below adds back exactly once.
                 let content = cell.scrollWidth;
                 for (let i = 0; i < cell.children.length; i++) {
                     const child = cell.children[i] as HTMLElement;
                     if (child.classList.contains('bit-dtg-resizer')) continue;
-                    content = Math.max(content, child.scrollWidth + padding);
+                    content = Math.max(content, child.scrollWidth);
                 }
                 widest = Math.max(widest, content + padding);
             });

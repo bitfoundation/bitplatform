@@ -203,7 +203,7 @@ private List<Product> products = SampleData.Generate(50);" + ProductModelCode + 
 private List<Product> products = SampleData.Generate(200);" + ProductModelCode + SampleDataCode;
 
     private readonly string example3RazorCode = @"
-<BitDataGrid Items=""@products"" Height=""420px""
+<BitDataGrid Items=""@products"" Height=""420px"" KeyField=""p => p.Id""
              SelectionMode=""BitDataGridSelectionMode.Multiple"" @bind-SelectedItems=""selected""
              Pageable=""true"" PageSize=""10"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Align=""BitDataGridColumnAlign.Right"" />
@@ -318,7 +318,7 @@ private sealed class StockComparer : IComparer<object?>
     {
         var a = x as int? ?? 0;
         var b = y as int? ?? 0;
-        var inStock = (b == 0).CompareTo(a == 0);
+        var inStock = (a == 0).CompareTo(b == 0);
         return inStock != 0 ? inStock : a.CompareTo(b);
     }
 }" + ProductModelCode + SampleDataCode;

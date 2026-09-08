@@ -96,7 +96,7 @@
                 <BitText>@selectedProducts.Count selected</BitText>
             </BitStack>
             <br />
-            <BitDataGrid Items="@selectionProducts" Height="420px"
+            <BitDataGrid Items="@selectionProducts" Height="420px" KeyField="p => p.Id"
                          SelectionMode="selectionMode" @bind-SelectedItems="selectedProducts" Pageable="true" PageSize="10">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" />

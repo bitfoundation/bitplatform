@@ -76,6 +76,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// <c>&lt;Columns&gt;...&lt;/Columns&gt;</c>. Both fragments are rendered when both are set.</summary>
     [Parameter] public RenderFragment? Columns { get; set; }
 
+    /// <summary>
+    /// Replaces the grid body with a loading row (<see cref="LoadingTemplate"/>, or a spinner and the
+    /// localized loading text) while data is being fetched, and marks the grid <c>aria-busy</c>. The
+    /// rows are hidden for as long as it is set rather than dimmed behind an overlay.
+    /// </summary>
     [Parameter] public bool Loading { get; set; }
 
     /// <summary>Optional key selector used for selection/edit identity. Defaults to reference equality.</summary>
@@ -222,7 +227,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Enables copying the grid's data to the system clipboard with <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>C</kbd>
     /// while a cell is focused (requires <see cref="CellNavigation"/>), and through
-    /// <see cref="CopyToClipboardAsync"/> from code. The selected rows are copied when there is a
+    /// <see cref="CopyToClipboardAsync(TItem)"/> from code. The selected rows are copied when there is a
     /// selection, otherwise the focused row; the payload is tab-separated text with a header line, so
     /// it pastes straight into Excel or Google Sheets as columns. Mirrors AG Grid's and
     /// react-data-grid's clipboard copy.
@@ -3503,14 +3508,18 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// unknown - a null renders no attribute.</summary>
     internal int? AriaRowIndex(TItem item)
     {
-        if (_rowIndexByKey is null || !_rowIndexByKey.TryGetValue(GetKey(item), out var index)) return null;
+        if (RowDataIndex(item) is not { } index) return null;
         return index + 1 + HeaderRowCount;
     }
 
     /// <summary>The row's absolute 0-based dataset position (its data-ri attribute), or null when
     /// unknown. Used by the pointer-based (touch) reorder to identify rows across JS interop.</summary>
+    /// <remarks>A null row has no usable dictionary key (and was skipped when the map was built), so it
+    /// reports no position rather than throwing out of the render path on a null lookup.</remarks>
     internal int? RowDataIndex(TItem item)
-        => _rowIndexByKey is not null && _rowIndexByKey.TryGetValue(GetKey(item), out var index) ? index : null;
+        => _rowIndexByKey is not null && item is not null && _rowIndexByKey.TryGetValue(GetKey(item), out var index)
+            ? index
+            : null;
 
     /// <summary>The 1-based aria-colindex of a data column's cells (after any special leading columns).</summary>
     internal int AriaColIndex(int colIndex) => colIndex + 1 + SpecialColumnCount;
@@ -3786,18 +3795,31 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // ------------------------------------------------------------ Clipboard
     /// <summary>
     /// Copies the grid's data to the system clipboard as tab-separated text with a header line, so it
+    /// pastes into a spreadsheet as real columns. Only the selected rows are copied; nothing is copied
+    /// when there is no selection. Returns the number of data rows copied; <c>0</c> when there was
+    /// nothing to copy or the clipboard was unavailable (an insecure origin, a denied permission,
+    /// prerendering).
+    /// </summary>
+    public Task<int> CopyToClipboardAsync() => CopyToClipboardAsync(default, false);
+
+    /// <summary>
+    /// Copies the grid's data to the system clipboard as tab-separated text with a header line, so it
     /// pastes into a spreadsheet as real columns. The selected rows are copied when a selection
-    /// exists, otherwise the row given by <paramref name="fallbackRow"/> (the keyboard-focused row) or
-    /// nothing. Returns the number of data rows copied; <c>0</c> when there was nothing to copy or the
+    /// exists, otherwise the row given by <paramref name="fallbackRow"/> (the keyboard-focused row).
+    /// Returns the number of data rows copied; <c>0</c> when there was nothing to copy or the
     /// clipboard was unavailable (an insecure origin, a denied permission, prerendering).
     /// </summary>
-    public async Task<int> CopyToClipboardAsync(TItem? fallbackRow = default)
+    public Task<int> CopyToClipboardAsync(TItem? fallbackRow) => CopyToClipboardAsync(fallbackRow, true);
+
+    // The two public entry points differ only in whether a fallback row was supplied, which the value
+    // itself cannot report: default(TItem) is a legitimate row for a value-type TItem, so a null test
+    // would both miss it and let an omitted argument match a zeroed row that happens to be in view.
+    private async Task<int> CopyToClipboardAsync(TItem? fallbackRow, bool hasFallbackRow)
     {
-        // The fallback row has to be one the grid is actually showing: it doubles as the "nothing was
-        // passed" check, which a plain null test can't be for a value-type TItem (whose default is not null).
+        // The fallback row also has to be one the grid is actually showing.
         var rows = _selected.Count > 0
             ? _view.Where(_selected.Contains).ToList()
-            : fallbackRow is not null && _view.Any(r => KeyEquals(r, fallbackRow))
+            : hasFallbackRow && fallbackRow is not null && _view.Any(r => KeyEquals(r, fallbackRow))
                 ? new List<TItem> { fallbackRow }
                 : new List<TItem>();
         if (rows.Count == 0) return 0;
