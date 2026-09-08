@@ -1134,6 +1134,71 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
     }
 
+    [TestMethod]
+    public void BitAccordionListShouldNotScrollToThePanelsTheMaxExpandedCapKeptClosed()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.MaxExpanded, 1);
+            parameters.Add(p => p.ScrollIntoViewOnExpand, true);
+            parameters.Add(p => p.ExpandedKeys, (IEnumerable<string>)[]);
+        });
+
+        // Only the first key of the set fits under the cap, and the panels the cap kept closed are nothing
+        // to scroll to.
+        component.Render(parameters => parameters.Add(p => p.ExpandedKeys, (IEnumerable<string>)["a", "b"]));
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldScrollToAPanelTheSameChangeAddedToTheList()
+    {
+        var component = RenderComponent<BitAccordionListScrollOnExpandTest>(parameters => parameters.Add(p => p.ShowSecond, false));
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+
+        // The panel this change opens belongs to the option the same change adds, so it registers itself -
+        // and then its element - only in the renders that follow the one that asked for the scroll.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ShowSecond, true);
+            parameters.Add(p => p.ExpandedKey, "second");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldLeaveTheNavigationKeysToAPanelThatScrollsAndHoldsTheFocus()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.MaxHeight, "100px");
+            parameters.Add(p => p.DefaultExpandedKey, "a");
+        });
+
+        // A panel with a MaxHeight is a tab stop of its own, so the arrow keys pressed on it are its own
+        // scroll: the stop inside it never sees them, and the navigation would otherwise move the reader
+        // twice - once down the list and once down the panel.
+        var panel = component.FindAll(".bit-acd-con")[0];
+        panel.FocusIn(new FocusEventArgs());
+        panel.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.AreEqual(0, FocusCalls());
+
+        // The same key pressed on the header of the item is the navigation it has always been.
+        component.FindAll(".bit-acd-con")[0].FocusOut(new FocusEventArgs());
+        component.FindAll(".bit-acl-itm")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.AreEqual(1, FocusCalls());
+
+        int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
     public class KeylessItem
     {
         public string? Name { get; set; }

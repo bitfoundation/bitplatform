@@ -90,6 +90,28 @@ namespace BitBlazorUI {
             } catch (e) { console.error('BitBlazorUI.Extras.scrollIntoView:', e); }
         }
 
+        // Answers with the indexes of the provided elements in the order they appear in the document, so a
+        // component that cannot tell the order of the children it was given in markup - Blazor hands a child
+        // its parameters again only when one of them has actually changed, so a child of nothing but
+        // constants can sit a render out without reporting anything - can read it back from what was
+        // rendered. An element that is not in the document is left out, which the caller reads as a miss.
+        public static getElementsOrder(elements: HTMLElement[]): number[] {
+            if (!elements) return [];
+
+            const indexes = elements
+                .map((el, i) => ({ el, i }))
+                .filter(e => e.el && e.el.isConnected);
+
+            indexes.sort((a, b) => {
+                if (a.el === b.el) return 0;
+
+                // DOCUMENT_POSITION_FOLLOWING (4) is set when b comes after a in the document.
+                return (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+            });
+
+            return indexes.map(e => e.i);
+        }
+
         // Scrolls the option element into the visible area of its scroll container using
         // 'nearest' so keyboard navigation keeps the active item on screen with minimal movement.
         public static scrollOptionIntoView(optionId: string) {

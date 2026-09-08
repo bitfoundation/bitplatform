@@ -81,6 +81,12 @@ public partial class _BitAccordionListItem<TItem> : ComponentBase, IDisposable w
     {
         _skipRender = true;
 
+        // A panel that scrolls (MaxHeight) is a tab stop of its own, and the arrow keys pressed on it are its
+        // own scroll. The stop inside it never sees them - they are fired on the box that holds the content
+        // rather than inside it - so the navigation steps aside for as long as the panel holds the focus,
+        // rather than moving the reader twice: once down the list and once down the panel.
+        if (_accordion?.IsContentFocused is true) return;
+
         await AccordionList.HandleOnItemKeyDown(e, Item);
     }
 

@@ -372,6 +372,11 @@ public partial class BitAccordion : BitComponentBase
     // keyboard could not otherwise reach: the scroll of a content that is taller than its MaxHeight.
     private bool _IsContentFocusable => IsExpanded && MaxHeight.HasValue();
 
+    // Whether the focus is inside the panel - on the scrollable region itself or on anything it holds. What
+    // reads it is a list of accordions (BitAccordionList): the keys it navigates its headers with are the
+    // scroll keys of the panel, so it leaves them alone while the panel is the one holding the focus.
+    internal bool IsContentFocused => _contentHasFocus;
+
     // The header answers nothing while an awaited OnToggling of its own is running, and nothing while the
     // page - a BitAccordionList that owns the expansion - says so through the Busy parameter either.
     private bool _IsBusy => _isToggling || Busy;

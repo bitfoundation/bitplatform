@@ -22,6 +22,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     private bool _pendingBoundKeysPush;
     private bool _preventKeysRegistered;
     private bool _collectingOptionOrder;
+    // Set by an option that registers after the first render: it is the only way _items can end up in an
+    // order other than the markup one, and what says the rendered document is worth reading back.
+    private bool _optionOrderIsStale;
     private string? _togglingKey;
     private List<TItem> _items = [];
     private List<TItem>? _oldItems;
@@ -30,7 +33,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     private BitAccordionListClassStyles? _oldClasses;
     private BitAccordionListClassStyles? _oldStyles;
     private readonly List<TItem> _optionOrder = [];
-    private readonly List<TItem> _pendingScrolls = [];
+    // The keys of the panels waiting to be scrolled into view. Keys rather than items, since a panel can be
+    // opened by the very change that mounts the item it belongs to - and that item is not there to name yet.
+    private readonly List<string> _pendingScrolls = [];
     private readonly HashSet<string> _expandedKeys = new(StringComparer.Ordinal);
     // The order the keys were expanded in, which is what MaxExpanded closes the oldest panel by. It is kept
     // beside the set rather than in it, since a HashSet has no order of its own.
@@ -538,6 +543,10 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
         _items.Add(item);
 
+        // An option that arrives after the first render is one the markup added conditionally, so it lands
+        // behind every option that was already there wherever in the markup it sits.
+        if (_hasRendered) _optionOrderIsStale = true;
+
         if (ShouldExpandOnRegister(option.Key!, option.IsExpanded))
         {
             AddExpandedKey(option.Key!);
@@ -641,6 +650,12 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     internal void RegisterItem(TItem item, _BitAccordionListItem<TItem> itemRef)
     {
         _itemRefs[item] = itemRef;
+
+        // The panel of an item that is only being mounted now can already be waiting to be scrolled into
+        // view, and nothing else would ask for the render that brings it there: registering an element is
+        // bookkeeping of the item's own and puts nothing new on screen.
+        var key = GetItemKey(item);
+        if (key.HasValue() && _pendingScrolls.Contains(key!, StringComparer.Ordinal)) StateHasChanged();
     }
 
     internal void UnregisterItem(TItem item)
@@ -798,32 +813,84 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     // Puts _items back into the order the options were rendered in, which is their markup order.
     private async Task ReorderOptions()
     {
-        if (_collectingOptionOrder)
+        if (_collectingOptionOrder is false) return;
+
+        _collectingOptionOrder = false;
+
+        // A pass in which not every option had its turn says nothing about the order of the ones that
+        // did, so it is thrown away rather than guessed at. Blazor hands a child its parameters again
+        // only when one of them has actually changed, so a list whose options carry nothing but
+        // constants - no content, no template, no handler - can render without any of them reporting.
+        var complete = _optionOrder.Count == _items.Count;
+        var order = complete ? _optionOrder.ToArray() : [];
+
+        _optionOrder.Clear();
+
+        // What the options could not report is read back from the document they were rendered into, which
+        // holds the markup order whether they reported it or not.
+        if (complete is false)
         {
-            _collectingOptionOrder = false;
-
-            // A pass in which not every option had its turn says nothing about the order of the ones that
-            // did, so it is thrown away rather than guessed at. Blazor hands a child its parameters again
-            // only when one of them has actually changed, so a list whose options carry nothing but
-            // constants - no content, no template, no handler - can render without any of them reporting.
-            var complete = _optionOrder.Count == _items.Count;
-            var order = complete ? _optionOrder.ToArray() : [];
-
-            _optionOrder.Clear();
-
-            if (complete is false || _items.SequenceEqual(order, ReferenceComparer.Instance)) return;
-
-            _items = [.. order];
-
-            // Nothing on screen depends on the order - the options render their own items in place - but the
-            // keys the list reports do, so they are pushed again where the order changed them.
-            if (GetOrderedExpandedKeys().SequenceEqual(_internalExpandedKeys) is false)
-            {
-                await UpdateBoundKeys();
-            }
-
-            StateHasChanged();
+            order = await ReadOptionOrderFromDom();
+            if (order.Length == 0) return;
         }
+        else
+        {
+            _optionOrderIsStale = false;
+        }
+
+        if (_items.SequenceEqual(order, ReferenceComparer.Instance)) return;
+
+        _items = [.. order];
+
+        // Nothing on screen depends on the order - the options render their own items in place - but the
+        // keys the list reports do, so they are pushed again where the order changed them.
+        if (GetOrderedExpandedKeys().SequenceEqual(_internalExpandedKeys) is false)
+        {
+            await UpdateBoundKeys();
+        }
+
+        StateHasChanged();
+    }
+
+    // The order of this list's own items in the rendered document, which is the markup order of the options
+    // that rendered them. It is only asked for where an option was added after the first render - the one
+    // case _items can be out of order - and only where the options themselves could not report it.
+    private async Task<TItem[]> ReadOptionOrderFromDom()
+    {
+        if (_optionOrderIsStale is false) return [];
+
+        var items = _items.ToArray();
+        var elements = new ElementReference[items.Length];
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            // An item that has not registered its element yet is one this render has just mounted: its own
+            // OnAfterRender is still to come, so the reading is left to the render that follows this one.
+            if (_itemRefs.TryGetValue(items[i], out var itemRef) is false) return [];
+
+            var element = itemRef.GetElement();
+            if (element is null) return [];
+
+            elements[i] = element.Value;
+        }
+
+        int[]? indexes;
+        try
+        {
+            indexes = await _js.BitExtrasGetElementsOrder(elements);
+        }
+        catch (JSDisconnectedException) { return []; } // we can ignore this exception here
+
+        // An element that is not in the document is left out of the answer, so a partial one is no order at
+        // all - the same way a partial pass of the options is none. Anything that is not a permutation of
+        // what was sent is not an order of these items either.
+        if (indexes is null || indexes.Length != items.Length) return [];
+        if (indexes.Distinct().Count() != items.Length) return [];
+        if (indexes.Any(i => i < 0 || i >= items.Length)) return [];
+
+        _optionOrderIsStale = false;
+
+        return [.. indexes.Select(i => items[i])];
     }
 
     // The navigation keys are suppressed on a listener of the browser's own, and only for a key pressed on
@@ -855,15 +922,24 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     {
         if (_pendingScrolls.Count == 0) return;
 
-        var items = _pendingScrolls.ToArray();
+        var keys = _pendingScrolls.ToArray();
         _pendingScrolls.Clear();
 
-        foreach (var item in items)
+        foreach (var key in keys)
         {
-            if (_itemRefs.TryGetValue(item, out var itemRef) is false) continue;
+            var item = FindItem(key);
+            var element = (item is not null && _itemRefs.TryGetValue(item, out var itemRef)) ? itemRef.GetElement() : null;
 
-            var element = itemRef.GetElement();
-            if (element is null) continue;
+            if (element is null)
+            {
+                // The item the panel belongs to can be one that is only being mounted by the change that
+                // opened it: it registers itself, and then its element, in renders that come after the one
+                // this is running at the end of. So the key waits here until it does - the registration asks
+                // for the render that scrolls it - and is dropped as soon as the panel it names is closed.
+                if (_expandedKeys.Contains(key)) _pendingScrolls.Add(key);
+
+                continue;
+            }
 
             try
             {
@@ -1111,20 +1187,30 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     {
         foreach (var key in keys)
         {
-            var item = FindItem(key);
-            if (item is not null) QueueScrollIntoView(item);
+            // Not every key of an incoming set opens a panel: the ones beyond MaxExpanded are dropped on the
+            // way in, and a panel that was never opened is nothing to scroll to.
+            if (_expandedKeys.Contains(key) is false) continue;
+
+            QueueScrollIntoView(key);
         }
     }
 
-    // The scroll is left to the render that puts the panel on screen: the item it belongs to can be one
-    // that is only rendered by the change being applied here.
     private void QueueScrollIntoView(TItem item)
+    {
+        var key = GetItemKey(item);
+
+        if (key.HasValue()) QueueScrollIntoView(key!);
+    }
+
+    // The scroll is left to the render that puts the panel on screen: the item it belongs to can be one
+    // that is only rendered - or only registered - by the change being applied here.
+    private void QueueScrollIntoView(string key)
     {
         if (ScrollIntoViewOnExpand is false) return;
 
-        if (_pendingScrolls.Any(i => ReferenceEquals(i, item))) return;
+        if (_pendingScrolls.Contains(key, StringComparer.Ordinal)) return;
 
-        _pendingScrolls.Add(item);
+        _pendingScrolls.Add(key);
     }
 
     internal async Task HandleOnItemClick(TItem item)
