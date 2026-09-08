@@ -1,5 +1,18 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The table of countries the flag images and the country lookups of the library are built on.
+/// </summary>
+/// <remarks>
+/// Every country is a shared <see cref="BitCountry"/> instance, named after itself so it can be
+/// written straight into markup, and <see cref="All"/> is all of them in alphabetical order. The
+/// table carries exactly the countries the packaged flag images cover, which is what lets
+/// <see cref="HasFlag"/> answer for an image without asking the network for it.
+/// <br />
+/// The Find methods resolve any of the four ways a country is written down - the ISO 3166-1 alpha-2
+/// and alpha-3 codes, the English name and the dialing code - back to its instance, out of a
+/// dictionary rather than by scanning the table.
+/// </remarks>
 public class BitCountries
 {
     public static readonly BitCountry Afghanistan = new("Afghanistan", "93", "AF", "AFG");
@@ -498,4 +511,210 @@ public class BitCountries
         Zambia,
         Zimbabwe
     ];
+
+    // Every lookup below is a dictionary rather than a scan of All: a flag resolves its country on
+    // every render, and a page that renders a list of them would otherwise walk the whole table once
+    // per row. The keys are compared with the ordinal case-insensitive comparer - an ISO code and a
+    // dialing code are ASCII, and a culture-aware comparison over them is both slower and, in the
+    // Turkish locale, wrong about the letter I.
+    private static readonly Dictionary<string, BitCountry> _iso2Map = CreateMap(static c => c.Iso2);
+    private static readonly Dictionary<string, BitCountry> _iso3Map = CreateMap(static c => c.Iso3);
+    private static readonly Dictionary<string, BitCountry> _nameMap = CreateMap(static c => c.Name);
+    private static readonly Dictionary<string, BitCountry> _codeMap = CreateMap(static c => c.Code);
+
+    // The first regional indicator symbol, U+1F1E6 REGIONAL INDICATOR SYMBOL LETTER A. The pair a
+    // country's alpha-2 code maps to is the emoji flag of that country.
+    private const int RegionalIndicatorA = 0x1F1E6;
+
+    private static Dictionary<string, BitCountry> CreateMap(Func<BitCountry, string> keySelector)
+    {
+        var map = new Dictionary<string, BitCountry>(All.Length, StringComparer.OrdinalIgnoreCase);
+
+        // Dialing codes are not unique - Canada and the United States both carry "1" - so the first
+        // country of the table that carries a key keeps it, which is the country the scan this
+        // replaced would have stopped at.
+        foreach (var country in All)
+        {
+            map.TryAdd(keySelector(country), country);
+        }
+
+        return map;
+    }
+
+    /// <summary>
+    /// Finds the country carrying the given ISO 3166-1 alpha-2 code, case insensitively.
+    /// </summary>
+    /// <param name="iso2">
+    /// The two letter code to look up. Surrounding whitespace is ignored.
+    /// </param>
+    /// <returns>
+    /// The country carrying the code, or null where no country of <see cref="All"/> does.
+    /// </returns>
+    public static BitCountry? FindByIso2(string? iso2)
+    {
+        if (string.IsNullOrWhiteSpace(iso2)) return null;
+
+        return _iso2Map.GetValueOrDefault(iso2!.Trim());
+    }
+
+    /// <summary>
+    /// Finds the country carrying the given ISO 3166-1 alpha-3 code, case insensitively.
+    /// </summary>
+    /// <param name="iso3">
+    /// The three letter code to look up. Surrounding whitespace is ignored.
+    /// </param>
+    /// <returns>
+    /// The country carrying the code, or null where no country of <see cref="All"/> does.
+    /// </returns>
+    public static BitCountry? FindByIso3(string? iso3)
+    {
+        if (string.IsNullOrWhiteSpace(iso3)) return null;
+
+        return _iso3Map.GetValueOrDefault(iso3!.Trim());
+    }
+
+    /// <summary>
+    /// Finds the country carrying the given English name, case insensitively.
+    /// </summary>
+    /// <param name="name">
+    /// The name to look up, which has to be the whole name rather than part of it. Surrounding
+    /// whitespace is ignored.
+    /// </param>
+    /// <returns>
+    /// The country carrying the name, or null where no country of <see cref="All"/> does.
+    /// </returns>
+    public static BitCountry? FindByName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return null;
+
+        return _nameMap.GetValueOrDefault(name!.Trim());
+    }
+
+    /// <summary>
+    /// Finds the country carrying the given dialing code.
+    /// </summary>
+    /// <remarks>
+    /// The code is read the way a telephone number is written rather than as an exact key: a leading
+    /// plus sign, an international prefix written out as "00", spaces and brackets are all taken off
+    /// before the lookup, so "+31", "00 31" and "31" all reach the Netherlands.
+    /// <br />
+    /// Dialing codes are not unique - Canada and the United States both carry "1", Kazakhstan and
+    /// Russia both carry "7" - and the country answered with is the first of them in <see cref="All"/>,
+    /// which is alphabetical. Where the difference matters, look the country up by its ISO code.
+    /// </remarks>
+    /// <param name="code">
+    /// The dialing code to look up.
+    /// </param>
+    /// <returns>
+    /// The first country carrying the code, or null where no country of <see cref="All"/> does.
+    /// </returns>
+    public static BitCountry? FindByCode(string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return null;
+
+        var normalized = NormalizeCode(code!);
+
+        return normalized.Length == 0 ? null : _codeMap.GetValueOrDefault(normalized);
+    }
+
+    /// <summary>
+    /// Finds the country a single value stands for, whichever of the four ways of writing one it is.
+    /// </summary>
+    /// <remarks>
+    /// The value is read as an ISO 3166-1 alpha-2 code, an alpha-3 code, an English name and a dialing
+    /// code, in that order, and the first of them that resolves wins. The length rules most of them
+    /// out at once - only a two letter value can be an alpha-2 code - so the order only decides
+    /// between a name and a dialing code, which cannot collide.
+    /// </remarks>
+    /// <param name="value">
+    /// The alpha-2 code, alpha-3 code, name or dialing code to look up.
+    /// </param>
+    /// <returns>
+    /// The country the value stands for, or null where it stands for none of <see cref="All"/>.
+    /// </returns>
+    public static BitCountry? Find(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+
+        var trimmed = value!.Trim();
+
+        if (trimmed.Length == 2 && _iso2Map.TryGetValue(trimmed, out var byIso2)) return byIso2;
+
+        if (trimmed.Length == 3 && _iso3Map.TryGetValue(trimmed, out var byIso3)) return byIso3;
+
+        if (_nameMap.TryGetValue(trimmed, out var byName)) return byName;
+
+        return FindByCode(trimmed);
+    }
+
+    /// <summary>
+    /// Determines whether the given ISO 3166-1 alpha-2 code is one of the countries of
+    /// <see cref="All"/>, and so one the packaged flag images cover.
+    /// </summary>
+    /// <param name="iso2">
+    /// The two letter code to check, case insensitively.
+    /// </param>
+    /// <returns>
+    /// true where a flag image ships for the code; otherwise, false.
+    /// </returns>
+    public static bool HasFlag(string? iso2)
+    {
+        return FindByIso2(iso2) is not null;
+    }
+
+    /// <summary>
+    /// Builds the Unicode emoji flag of the given ISO 3166-1 alpha-2 code.
+    /// </summary>
+    /// <remarks>
+    /// The emoji flag of a country is the pair of regional indicator symbols its two letters stand
+    /// for, so the code is turned into one rather than looked up - which is why this answers for any
+    /// pair of ASCII letters, including the ones <see cref="All"/> does not carry. What such a pair
+    /// looks like is the platform's to decide: an emoji font that has no flag for it draws the two
+    /// letters side by side instead.
+    /// </remarks>
+    /// <param name="iso2">
+    /// The two letter code to build the emoji flag of. Surrounding whitespace is ignored.
+    /// </param>
+    /// <returns>
+    /// The emoji flag, or null where the code is not two ASCII letters.
+    /// </returns>
+    public static string? GetEmoji(string? iso2)
+    {
+        if (string.IsNullOrWhiteSpace(iso2)) return null;
+
+        var code = iso2!.Trim();
+
+        if (code.Length != 2) return null;
+
+        var first = char.ToUpperInvariant(code[0]);
+        var second = char.ToUpperInvariant(code[1]);
+
+        if (char.IsAsciiLetterUpper(first) is false || char.IsAsciiLetterUpper(second) is false) return null;
+
+        return string.Concat(char.ConvertFromUtf32(RegionalIndicatorA + (first - 'A')),
+                             char.ConvertFromUtf32(RegionalIndicatorA + (second - 'A')));
+    }
+
+    // A dialing code is written in as many ways as a telephone number is, and all of them mean the
+    // same country: the plus sign and the "00" that stands in for it are prefixes rather than part of
+    // the code, and the spaces and brackets are only there to be read. The hyphen is left alone - it
+    // is part of the codes of the North American Numbering Plan as this table writes them ("1-242").
+    private static string NormalizeCode(string code)
+    {
+        var buffer = new char[code.Length];
+        var length = 0;
+
+        foreach (var character in code)
+        {
+            if (char.IsWhiteSpace(character) || character is '+' or '(' or ')') continue;
+
+            buffer[length++] = character;
+        }
+
+        // Only a prefix is taken off, never the whole code: a code that is nothing but "00" is not a
+        // prefix of anything.
+        if (length > 2 && buffer[0] is '0' && buffer[1] is '0') return new string(buffer, 2, length - 2);
+
+        return new string(buffer, 0, length);
+    }
 }

@@ -1,11 +1,105 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+@{
+    var interactive = OnClick.HasDelegate;
+
+    @*  An attribute written after the splat wins over the one the app passed in through HtmlAttributes,
+        and a null one takes it off the element altogether. Everything the flag decides below therefore
+        has to read what came in with the attributes and write it back, or setting it that way would
+        stop working. *@
+    var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
+    var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
+    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
+    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
+    var splattedDisabled = HtmlAttributes.TryGetValue("aria-disabled", out var sdd) ? sdd?.ToString() : null;
+
+    var title = Title ?? (AutoTitle ? _country?.Name : null) ?? splattedTitle;
+
+    @*  The accessible name of the flag. A flag is decorative by default - it nearly always sits beside
+        the name of the very country it stands for, and a second reading of that name is noise - so it
+        is only named where the page says it carries meaning of its own.
+
+        A flag that answers a click is the exception: it is a control a screen reader stops at, and
+        "button" with nothing to read out is a dead stop. So an unnamed one falls back to the name of
+        the country it shows, since "Canada, button" is worth more than "button" on its own. *@
+    var name = Alt ?? AriaLabel ?? splattedLabel ?? (AutoAlt || interactive ? _country?.Name : null);
+
+    @*  Which element carries the name depends on what is drawn. An image carries it in its own alt,
+        which is the attribute a screen reader reads an image by, and an empty alt is what marks the
+        decorative one. An emoji flag is text rather than a picture - read out of the flow it would be
+        announced as the two letters its regional indicators are built from - so it is hidden and the
+        root takes the img role and the name instead. And a flag that answers a click is a button,
+        whose name is the whole control's rather than the picture's inside it. *@
+    var named = name.HasValue();
+    var emojiMode = _emoji is not null;
+
+    var role = splattedRole ?? (interactive
+        ? "button"
+        : (emojiMode && named ? "img" : null));
+
+    @*  A name written after the splat with a null value does not leave the splatted aria-label alone,
+        it takes it off the element - so where the name belongs on the image rather than on the frame,
+        whatever came in with the attributes is written back untouched. *@
+    var ariaLabel = interactive || emojiMode ? name : splattedLabel;
+    var alt = interactive || named is false ? string.Empty : name;
+
+    @*  A flag with a handler is a tab stop; a disabled one leaves the tab order but stays in the
+        document, so whatever pointed at it still has something to point at. Everywhere else the tab
+        index is whatever was asked for and nothing more - a flag is not focusable by itself. *@
+    var tabIndex = TabIndex ?? splattedTabIndex;
+    var rootTabIndex = interactive ? (IsEnabled ? (tabIndex ?? "0") : "-1") : tabIndex;
+
+    var ariaDisabled = interactive && IsEnabled is false ? "true" : splattedDisabled;
+
+    @*  Nothing is listening on a flag that does nothing: an empty handler still costs a round trip to
+        the server on every click and every keystroke of a Blazor Server app. *@
+    var onClick = interactive ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick) : default;
+    var onKeyDown = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown) : default;
+    var onKeyUp = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyUp) : default;
+    var onBlur = interactive ? EventCallback.Factory.Create<FocusEventArgs>(this, HandleOnBlur) : default;
+}
+
+@*  The frame. It carries the size, the shape and the border, and it clips - which is what lets the
+    rounded and the circular shapes crop the flag rather than only round the corners of the box around
+    it. It is also what a click lands on, so the flag stays one target whether it is drawn as an image,
+    as an emoji or as a fallback of the page's own. *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     title="@Title"
+     role="@role"
+     title="@title"
+     tabindex="@rootTabIndex"
+     aria-label="@ariaLabel"
+     aria-disabled="@ariaDisabled"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLowerInvariant()"
+     @onclick="onClick"
+     @onkeydown="onKeyDown"
+     @onkeyup="onKeyUp"
+     @onblur="onBlur">
+    @if (emojiMode)
+    {
+        <span aria-hidden="true"
+              style="@Styles?.Emoji"
+              class="bit-flg-emj@(Classes?.Emoji.HasValue() is true ? $" {Classes!.Emoji}" : null)">@_emoji</span>
+    }
+    else if (_src is not null)
+    {
+        <img src="@_src"
+             alt="@alt"
+             draggable="false"
+             decoding="async"
+             loading="@_loading"
+             style="@Styles?.Image"
+             class="bit-flg-img@(Classes?.Image.HasValue() is true ? $" {Classes!.Image}" : null)"
+             @onerror="HandleOnError" />
+    }
+    else if (FallbackTemplate is not null)
+    {
+        <div style="@Styles?.Fallback"
+             class="bit-flg-fbk@(Classes?.Fallback.HasValue() is true ? $" {Classes!.Fallback}" : null)">
+            @FallbackTemplate
+        </div>
+    }
 </div>
