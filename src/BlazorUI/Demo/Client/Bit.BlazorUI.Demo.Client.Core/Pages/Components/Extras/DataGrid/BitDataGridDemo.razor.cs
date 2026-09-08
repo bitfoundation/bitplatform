@@ -128,12 +128,13 @@ public partial class BitDataGridDemo : AppComponentBase
         emptyHasData = true;
     }
 
-    // example 20 - borders & striping
+    // example 20 - borders, striping & row numbers
     private readonly List<Product> borderStripeProducts = SampleData.Generate(60);
     private bool bordered = true;
     private bool striped = true;
+    private bool rowNumbers = true;
 
-    // example 37 - RTL
+    // example 39 - RTL
     private readonly List<Product> rtlProducts = SampleData.GeneratePersian(60);
 
     // example 21 - filter operators
@@ -356,6 +357,40 @@ public partial class BitDataGridDemo : AppComponentBase
             ? $"{copied} rows copied to the clipboard."
             : "Nothing was copied (the clipboard may be unavailable here).";
     }
+
+    private async Task ExportSelection()
+    {
+        if (clipboardGrid is null) return;
+        await clipboardGrid.ExportExcelAsync(selectedOnly: true);
+        clipboardStatus = $"{clipboardSelection.Count} rows exported to selection.xlsx.";
+    }
+
+    // example 37 - text wrapping
+    private readonly List<Product> wrapProducts = SampleData.Generate(40);
+    private bool wrapCellText = true;
+
+    // A long, unbroken description per row, so the wrapping (and the growing row) is actually visible.
+    private static string DescriptionOf(Product p)
+        => $"{p.Name} is a {p.Category.ToString().ToLowerInvariant()} product supplied by {p.Supplier}, " +
+           $"released on {p.ReleaseDate:d} and currently rated {p.Rating:0.0} out of 5 by our customers.";
+
+    // example 38 - row double-click & programmatic editing
+    private readonly List<Product> rowEventProducts = SampleData.Generate(30);
+    private BitDataGrid<Product>? rowEventGrid;
+    private string rowEventStatus = "Double-click a row to edit it.";
+
+    private void EditOnDoubleClick(Product product)
+    {
+        if (rowEventGrid is null) return;
+        // BeginEdit is public API, so a double-click (or any chrome of your own) can open the editors
+        // the command column's Edit button would have opened.
+        rowEventGrid.BeginEdit(product);
+        rowEventStatus = $"Editing {product.Name}. Press Enter to save or Esc to cancel.";
+    }
+
+    private void OnRowEventSaved(Product product) => rowEventStatus = $"Saved {product.Name}.";
+
+    private void OnRowEventCancelled(Product product) => rowEventStatus = $"Cancelled editing {product.Name}.";
 
     // example 25 - localization
     private readonly List<Product> localizedProducts = SampleData.GeneratePersian(60);

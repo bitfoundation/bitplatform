@@ -54,6 +54,12 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     [Parameter] public bool SortDescendingFirst { get; set; }
 
     /// <summary>
+    /// Overrides the grid-level <c>AllowUnsorted</c>: whether a third header click returns this column
+    /// to its unsorted state, or the cycle stays between ascending and descending.
+    /// </summary>
+    [Parameter] public bool? AllowUnsorted { get; set; }
+
+    /// <summary>
     /// Optional custom comparer applied to this column's sort keys, for orderings the default
     /// null-safe value comparer cannot express (e.g. a domain-specific ranking, or a culture-aware
     /// string collation). Client-side only: server mode forwards descriptors rather than delegates,
@@ -109,6 +115,13 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// <c>ShowCellTooltips</c>.
     /// </summary>
     [Parameter] public bool? ShowTooltip { get; set; }
+
+    /// <summary>
+    /// Lets this column's header and cells wrap onto several lines instead of clipping to one, with
+    /// each row growing to fit. Overrides the grid-level <c>WrapCellText</c>. Ignored while the grid
+    /// virtualizes rows, which requires a uniform row height.
+    /// </summary>
+    [Parameter] public bool? WrapText { get; set; }
 
     /// <summary>Pin the column to the start edge so it stays visible while scrolling horizontally.</summary>
     [Parameter] public bool Frozen { get; set; }

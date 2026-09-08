@@ -28,6 +28,46 @@ public static class BitDataGridDataProcessor
     }
 
     /// <summary>
+    /// Whether a single row satisfies every filter descriptor - the per-row form of
+    /// <see cref="Filter"/>, for pipelines that decide row by row rather than over a flat sequence
+    /// (the tree grid, which must keep a non-matching row whose descendants match).
+    /// </summary>
+    public static bool MatchesFilters<TItem>(
+        TItem item,
+        IReadOnlyList<BitDataGridFilterDescriptor> filters,
+        IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
+    {
+        for (int i = 0; i < filters.Count; i++)
+        {
+            var filter = filters[i];
+            if (!columns.TryGetValue(filter.ColumnId, out var column) || column.Accessor is null) continue;
+            if (!Matches(column.Accessor.GetValue(item), filter)) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Whether a single row matches the quick-search term - the per-row form of <see cref="Search"/>.
+    /// A blank term matches every row; a term with no searchable column to read matches none.
+    /// </summary>
+    public static bool MatchesSearch<TItem>(
+        TItem item,
+        string? term,
+        IReadOnlyList<BitDataGridColumn<TItem>> columns)
+    {
+        if (string.IsNullOrWhiteSpace(term)) return true;
+
+        var needle = term.Trim();
+        for (int i = 0; i < columns.Count; i++)
+        {
+            var column = columns[i];
+            if (!column.IsSearchable) continue;
+            if (column.GetFormattedExportValue(item).Contains(needle, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Applies the grid-wide quick-search term: a row matches when <b>any</b> searchable column's
     /// formatted display text contains the term (case-insensitively), so the user searches exactly
     /// what the grid renders. A blank term matches every row.

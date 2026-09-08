@@ -8,6 +8,13 @@ namespace Bit.BlazorUI;
 /// </summary>
 public class BitDataGridStrings
 {
+    /// <summary>
+    /// Default accessible name of the grid itself (its <c>role="grid"</c> element), used when no
+    /// <c>AriaLabel</c> is given. A page with several grids should name each one through
+    /// <c>AriaLabel</c> instead, so screen-reader users can tell them apart.
+    /// </summary>
+    public string GridLabel { get; set; } = "Data grid";
+
     /// <summary>Shown when the grid has no rows to display.</summary>
     public string EmptyText { get; set; } = "No records to display.";
 
@@ -16,6 +23,12 @@ public class BitDataGridStrings
 
     /// <summary>Header of the command (Edit/Delete) column.</summary>
     public string ActionsText { get; set; } = "Actions";
+
+    /// <summary>Visible header glyph of the row-number column.</summary>
+    public string RowNumberHeader { get; set; } = "#";
+
+    /// <summary>Accessible name of the row-number column's header (the "#" glyph reads as nothing).</summary>
+    public string RowNumberLabel { get; set; } = "Row number";
 
     /// <summary>Toolbar button that begins adding a new row.</summary>
     public string AddRowText { get; set; } = "+ Add";
@@ -144,6 +157,17 @@ public class BitDataGridStrings
     public string AnnouncementSortCleared { get; set; } = "Sorting by {0} removed";
     public string AnnouncementFiltered { get; set; } = "Filter applied on {0}";
     public string AnnouncementFilterCleared { get; set; } = "Filter on {0} cleared";
+    /// <summary>Announced when every column filter is cleared at once (the toolbar's Clear filters
+    /// button, or ClearFiltersAsync).</summary>
+    public string AnnouncementFiltersCleared { get; set; } = "All filters cleared";
+    /// <summary>Announced when every sort is removed at once (ClearSortsAsync).</summary>
+    public string AnnouncementSortsCleared { get; set; } = "Sorting cleared";
+    /// <summary>Announced when every grouping is removed at once (ClearGroupsAsync).</summary>
+    public string AnnouncementGroupsCleared { get; set; } = "Grouping cleared";
+    /// <summary>Announced after a bulk selection change. {0} = the number of selected rows.</summary>
+    public string AnnouncementRowsSelected { get; set; } = "{0} rows selected";
+    /// <summary>Announced when the selection is cleared.</summary>
+    public string AnnouncementSelectionCleared { get; set; } = "Selection cleared";
     /// <summary>{0} = current page, {1} = total pages.</summary>
     public string AnnouncementPage { get; set; } = "Page {0} of {1}";
     /// <summary>Announced after a row is deleted (via the Delete button or the Delete key).</summary>

@@ -170,6 +170,36 @@
     white-space: nowrap;
 }
 
+/* Wrapped cells: the value flows over as many lines as it needs and the row - a grid whose items
+   stretch - grows to the tallest cell, so no extra height math is required. The overflow clip is
+   lifted with it, since a clipped multi-line value would just hide the wrapped lines, and the
+   content is aligned to the top so several lines read as a block rather than sitting centered
+   against their single-line neighbours. */
+.bit-dtg-cell-wrap {
+    white-space: normal;
+    overflow: visible;
+    align-items: flex-start;
+}
+
+.bit-dtg-cell-wrap .bit-dtg-cell-text {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    /* Break a single unbroken run (a URL, an id) rather than letting it push the column wider. */
+    overflow-wrap: anywhere;
+}
+
+.bit-dtg-hcell-wrap {
+    overflow: visible;
+}
+
+.bit-dtg-hcell-wrap .bit-dtg-htext {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
 .bit-dtg-bordered .bit-dtg-cell,
 .bit-dtg-bordered .bit-dtg-hcell {
     border-inline-end: $shp-border-width $shp-border-style $clr-brd-ter;
@@ -226,6 +256,15 @@
 .bit-dtg-cell-detail,
 .bit-dtg-cell-select {
     justify-content: center;
+}
+
+/* Row-number gutter: numbers line up on their last digit, and the column reads as chrome rather than
+   as one more data column. */
+.bit-dtg-cell-rownumber,
+.bit-dtg-hcell-rownumber {
+    justify-content: flex-end;
+    color: $clr-fg-sec;
+    font-variant-numeric: tabular-nums;
 }
 
 /* ---------------------------------------------------------- Header sorting */

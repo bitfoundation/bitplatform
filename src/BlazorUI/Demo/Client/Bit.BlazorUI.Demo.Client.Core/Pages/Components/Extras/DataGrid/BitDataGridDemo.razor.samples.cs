@@ -542,7 +542,10 @@ private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadReque
 }" + ProductModelCode + SampleDataCode;
 
     private readonly string example13RazorCode = @"
+@* Search and filters prune the tree to the branches containing a match (and open them); a node that
+   matches keeps its whole subtree. *@
 <BitDataGrid Items=""@roots"" Height=""460px"" Sortable=""true""
+             ShowToolbar=""true"" ShowSearchBox=""true"" Filterable=""true""
              ChildrenSelector=""n => n.Children"" TreeInitiallyExpanded=""true""
              KeyField=""n => n.Id"" @ref=""grid"">
     <BitDataGridColumn Property=""p => p.Name"" Width=""320px"" />
@@ -746,8 +749,10 @@ private async Task SimulateLoading()
 }" + ProductModelCode + SampleDataCode;
 
     private readonly string example20RazorCode = @"
+@* ShowRowNumbers numbers rows by their position in the whole dataset, so paging and virtualization
+   keep the count going instead of restarting. *@
 <BitDataGrid Items=""@products"" Height=""420px""
-             Bordered=""@bordered"" Striped=""@striped""
+             Bordered=""@bordered"" Striped=""@striped"" ShowRowNumbers=""@rowNumbers""
              Sortable=""true"" Pageable=""true"" PageSize=""8"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Frozen=""true"" />
     <BitDataGridColumn Property=""p => p.Name"" />
@@ -756,7 +761,8 @@ private async Task SimulateLoading()
     private readonly string example20CsharpCode = @"
 private List<Product> products = SampleData.Generate(60);
 private bool bordered = true;
-private bool striped = true;" + ProductModelCode + SampleDataCode;
+private bool striped = true;
+private bool rowNumbers = true;" + ProductModelCode + SampleDataCode;
 
     private readonly string example21RazorCode = @"
 <BitDataGrid Items=""@products"" Height=""430px""
@@ -935,6 +941,8 @@ private IQueryable<Product> products = SampleData.Generate(400).AsQueryable();" 
     <BitDataGridColumn Property=""p => p.Category"" />
     <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" />
     <BitDataGridColumn Property=""p => p.Stock"" />
+    @* A date column lands in the workbook as a real date cell, not as its display text. *@
+    <BitDataGridColumn Property=""p => p.ReleaseDate"" Title=""Released"" Format=""d"" Width=""120px"" />
     <BitDataGridColumn Property=""p => p.Discontinued"" />
 </BitDataGrid>";
     private readonly string example27CsharpCode = @"
@@ -1223,12 +1231,13 @@ private static string? RowStyleFor(Product p) => p.Price > 800 ? ""font-weight:6
     <BitButton OnClick=""SelectAllRows"">Select all</BitButton>
     <BitButton OnClick=""ClearRowSelection"" Variant=""BitVariant.Outline"">Clear selection</BitButton>
     <BitButton OnClick=""CopySelection"" IsEnabled=""selection.Count > 0"">Copy selection</BitButton>
+    <BitButton OnClick=""ExportSelection"" IsEnabled=""selection.Count > 0"">Export selection</BitButton>
     <BitText>@status</BitText>
 </BitStack>
 
 @* Shift+click a second checkbox to select the run between it and the last one clicked.
    With CellNavigation on, a focused cell answers Space, Ctrl+A and Ctrl/Cmd+C. *@
-<BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""430px""
+<BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""430px"" ExportFileName=""selection""
              SelectionMode=""BitDataGridSelectionMode.Multiple"" @bind-SelectedItems=""selection""
              CellNavigation=""true"" ClipboardCopy=""true"" Sortable=""true"" KeyField=""p => p.Id"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" />
@@ -1262,9 +1271,80 @@ private async Task CopySelection()
     // denied permission, prerendering).
     var copied = await grid!.CopyToClipboardAsync();
     status = copied > 0 ? $""{copied} rows copied to the clipboard."" : ""Nothing was copied."";
+}
+
+private async Task ExportSelection()
+{
+    // Every export overload takes selectedOnly: the file then carries just the selected rows, in the
+    // order the view shows them. ToCsvAsync/ToExcelAsync accept it too when you want the bytes instead
+    // of a download.
+    await grid!.ExportExcelAsync(selectedOnly: true);
+    status = $""{selection.Count} rows exported to selection.xlsx."";
 }" + ProductModelCode + SampleDataCode;
 
     private readonly string example37RazorCode = @"
+@* Wrapping is a grid-level switch a column can opt out of; short, right-aligned values stay on one
+   line so the column keeps its shape. Do not combine it with Virtualize, which needs a uniform row height. *@
+<BitButton OnClick=""() => wrap = !wrap"">Wrapping: @(wrap ? ""on"" : ""off"")</BitButton>
+
+<BitDataGrid Items=""@products"" Height=""430px"" Sortable=""true"" Resizable=""true""
+             WrapCellText=""wrap"">
+    <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" WrapText=""false"" />
+    <BitDataGridColumn Property=""p => p.Name"" Width=""160px"" />
+    <BitDataGridColumn TItem=""Product"" Title=""Description"" Width=""280px"">
+        <Template Context=""product"">@DescriptionOf(product)</Template>
+    </BitDataGridColumn>
+    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Width=""100px"" WrapText=""false"" />
+    <BitDataGridColumn Property=""p => p.Stock"" Width=""90px"" WrapText=""false"" />
+</BitDataGrid>";
+    private readonly string example37CsharpCode = @"
+private bool wrap = true;
+private List<Product> products = SampleData.Generate(40);
+
+private static string DescriptionOf(Product p)
+    => $""{p.Name} is a {p.Category.ToString().ToLowerInvariant()} product supplied by {p.Supplier}, "" +
+       $""released on {p.ReleaseDate:d} and currently rated {p.Rating:0.0} out of 5 by our customers."";" + ProductModelCode + SampleDataCode;
+
+    private readonly string example38RazorCode = @"
+@* OnRowDoubleClick reports the row itself; BeginEdit opens the same editors the command column's
+   Edit button opens, so a double-click becomes the edit gesture. *@
+<BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""430px""
+             Sortable=""true"" KeyField=""p => p.Id""
+             Editable=""true"" CellNavigation=""true""
+             OnRowDoubleClick=""EditOnDoubleClick""
+             OnRowSave=""OnSaved"" OnRowCancel=""OnCancelled"">
+    <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Editable=""false"" />
+    <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
+    <BitDataGridColumn Property=""p => p.Category"" />
+    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" />
+    <BitDataGridColumn Property=""p => p.Stock"" />
+</BitDataGrid>
+
+<BitText>@status</BitText>";
+    private readonly string example38CsharpCode = @"
+private BitDataGrid<Product>? grid;
+private string status = ""Double-click a row to edit it."";
+private List<Product> products = SampleData.Generate(30);
+
+private void EditOnDoubleClick(Product product)
+{
+    grid!.BeginEdit(product);
+    status = $""Editing {product.Name}. Press Enter to save or Esc to cancel."";
+}
+
+private void OnSaved(Product product) => status = $""Saved {product.Name}."";
+
+private void OnCancelled(Product product) => status = $""Cancelled editing {product.Name}."";
+
+// The rest of the editing lifecycle is public API too:
+//     grid.EditingItem            // the row currently open for editing, or null
+//     await grid.CommitEditAsync();
+//     await grid.CancelEditAsync();
+//     await grid.AddNewRowAsync();   // needs NewItemFactory
+//     await grid.DeleteRowAsync(product);
+" + ProductModelCode + SampleDataCode;
+
+    private readonly string example39RazorCode = @"
 <BitDataGrid Items=""@products"" Height=""420px""
              Direction=""BitDir.Rtl""
              Sortable=""true"" Pageable=""true"" PageSize=""8"">
@@ -1276,7 +1356,7 @@ private async Task CopySelection()
     <BitDataGridColumn Property=""p => p.Price"" Title=""قیمت"" Format=""C2"" />
     <BitDataGridColumn Property=""p => p.Stock"" Title=""موجودی"" />
 </BitDataGrid>";
-    private readonly string example37CsharpCode = @"
+    private readonly string example39CsharpCode = @"
 private List<Product> products = SampleData.GeneratePersian(60);
 
 private static string CategoryFa(Category category) => category switch

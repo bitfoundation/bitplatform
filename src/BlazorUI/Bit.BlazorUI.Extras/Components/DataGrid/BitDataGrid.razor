@@ -28,11 +28,14 @@
                        keyboard; the explicit clear button covers the browsers that render neither. *@
                     <div class="bit-dtg-search">
                         @* type="search" already carries the searchbox role, so none is declared here. *@
+                        @* The term is applied as the user types, debounced by SearchDebounce, so the
+                           grid answers a keystroke instead of waiting for Enter or a blur - while a
+                           burst of typing still issues a single search. *@
                         <input type="search" class="bit-dtg-search-input"
                                placeholder="@Strings.SearchPlaceholder"
                                aria-label="@Strings.SearchLabel"
-                               value="@_search"
-                               @onchange="e => SearchAsync((string?)e.Value)" />
+                               value="@(_searchBoxText ?? _search)"
+                               @oninput="e => DebouncedSearchAsync((string?)e.Value)" />
                         @if (!string.IsNullOrEmpty(_search))
                         {
                             <button type="button" class="bit-dtg-icon-btn bit-dtg-search-clear"
@@ -50,11 +53,11 @@
                 }
                 @if (ShowCsvExport)
                 {
-                    <button type="button" class="bit-dtg-btn" @onclick="ExportCsvAsync">@Strings.ExportCsvText</button>
+                    <button type="button" class="bit-dtg-btn" @onclick="() => ExportCsvAsync()">@Strings.ExportCsvText</button>
                 }
                 @if (ShowExcelExport)
                 {
-                    <button type="button" class="bit-dtg-btn" @onclick="ExportExcelAsync">@Strings.ExportExcelText</button>
+                    <button type="button" class="bit-dtg-btn" @onclick="() => ExportExcelAsync()">@Strings.ExportExcelText</button>
                 }
                 @if (ShowColumnChooser)
                 {
@@ -101,7 +104,11 @@
            aria-busy marks the grid as still updating while a load is in flight. *@
         @* A hierarchical grid is a treegrid, not a grid: that is what tells assistive tech the rows
            nest, and what makes the per-row aria-level/aria-expanded meaningful. *@
-        <div class="bit-dtg-table" role="@(IsTreeMode ? "treegrid" : "grid")" aria-rowcount="@(IsInfiniteMode ? -1 : TotalCount + HeaderRowCount)" aria-colcount="@TotalColumnSpan"
+        @* A grid needs an accessible name for assistive tech to announce it (and to tell several grids
+           on one page apart); AriaLabel names this one, falling back to the generic localized default. *@
+        <div class="bit-dtg-table" role="@(IsTreeMode ? "treegrid" : "grid")"
+             aria-label="@(string.IsNullOrWhiteSpace(AriaLabel) ? Strings.GridLabel : AriaLabel)"
+             aria-rowcount="@(IsInfiniteMode ? -1 : TotalCount + HeaderRowCount)" aria-colcount="@TotalColumnSpan"
              aria-multiselectable="@(SelectionMode == BitDataGridSelectionMode.Multiple ? "true" : null)"
              aria-busy="@(Loading || InfiniteLoading ? "true" : null)"
              style="--bit-dtg-template:@BuildGridTemplate();">
@@ -112,6 +119,10 @@
                     @if (HasColumnGroups)
                     {
                         <div class="bit-dtg-row bit-dtg-group-header-row" role="row" aria-rowindex="1" style="grid-template-columns:var(--bit-dtg-template);">
+                            @if (HasRowNumberColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@RowNumberStickyStyle" role="columnheader"></div>
+                            }
                             @if (HasReorderColumn)
                             {
                                 <div class="bit-dtg-hcell bit-dtg-sticky" style="@ReorderStickyStyle" role="columnheader"></div>
@@ -139,6 +150,16 @@
                     }
                     <div class="bit-dtg-row bit-dtg-header-row" role="row" aria-rowindex="@(HasColumnGroups ? 2 : 1)" style="grid-template-columns:var(--bit-dtg-template);">
                         @{ var headerColIndex = 0; }
+                        @if (HasRowNumberColumn)
+                        {
+                            headerColIndex++;
+                            @* The "#" glyph reads as nothing useful to a screen reader, so the cell
+                               carries a real name and hides the glyph from the accessibility tree. *@
+                            <div class="bit-dtg-hcell bit-dtg-sticky bit-dtg-hcell-rownumber" style="@RowNumberStickyStyle"
+                                 role="columnheader" aria-colindex="@headerColIndex" aria-label="@Strings.RowNumberLabel">
+                                <span aria-hidden="true">@Strings.RowNumberHeader</span>
+                            </div>
+                        }
                         @if (HasReorderColumn)
                         {
                             headerColIndex++;
@@ -257,6 +278,10 @@
                     {
                         @* The filter row is always the last header row, so its aria-rowindex is HeaderRowCount. *@
                         <div class="bit-dtg-row bit-dtg-filter-row" role="row" aria-rowindex="@HeaderRowCount" style="grid-template-columns:var(--bit-dtg-template);">
+                            @if (HasRowNumberColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" role="columnheader" style="@RowNumberStickyStyle"></div>
+                            }
                             @if (HasReorderColumn)
                             {
                                 <div class="bit-dtg-hcell bit-dtg-sticky" role="columnheader" style="@ReorderStickyStyle"></div>
@@ -445,6 +470,10 @@
             {
                 <div class="bit-dtg-footer" role="rowgroup">
                     <div class="bit-dtg-row bit-dtg-footer-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                        @if (HasRowNumberColumn)
+                        {
+                            <div class="bit-dtg-cell" role="gridcell"></div>
+                        }
                         @if (HasReorderColumn)
                         {
                             <div class="bit-dtg-cell" role="gridcell"></div>

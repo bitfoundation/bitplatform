@@ -7,7 +7,7 @@
             Description="BitDataGrid displays an information-rich collection of items with sorting, searching, filtering, paging, grouping, selection, inline editing, virtualization and Excel/CSV export." />
 
 <DemoPage Name="DataGrid"
-          Description="BitDataGrid displays an information-rich collection of items and gives people the tools to work through it: sorting, quick search and per-column filters, paging, grouping with aggregates, selection and inline editing, resizable/reorderable/frozen columns, master-detail and tree rows, keyboard cell navigation, row and column virtualization, and CSV/Excel export. Bind a list, an IQueryable that a provider such as EF Core executes at the source, or a callback for server-side paging or infinite scrolling. Use a data grid when information density is critical."
+          Description="BitDataGrid displays an information-rich collection of items and gives people the tools to work through it: sorting, quick search and per-column filters, paging, grouping with aggregates, selection and inline editing, resizable/reorderable/frozen columns, master-detail and tree rows, keyboard cell navigation, row and column virtualization, and CSV/Excel export of everything matching or just the selection. Bind a list, an IQueryable that a provider such as EF Core executes at the source, or a callback for server-side paging or infinite scrolling. Use a data grid when information density is critical."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -32,8 +32,9 @@
         <DemoExample Title="Basic &amp; sorting" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
                 Bind a collection, declare columns, and you get sorting out of the box.
-                Click a header to sort ascending → descending → unsorted.
-                Hold Ctrl (or ⌘) and click additional headers for multi-column sorting.
+                Click a header to sort ascending → descending → unsorted - or set <code>AllowUnsorted="false"</code>
+                (on the grid or on one column) to cycle between ascending and descending only, for data whose
+                source order means nothing. Hold Ctrl (or ⌘) and click additional headers for multi-column sorting.
                 <br /><br />
                 The item type flows from the grid to its columns automatically (no per-column TItem needed),
                 a column binds to its property with the strongly typed Property selector (the string-based
@@ -379,6 +380,10 @@
                 own depth (<code>aria-level</code>) and expanded state. <code>TreeInitiallyExpanded</code> decides
                 how it opens, and <code>ExpandAllAsync</code>/<code>CollapseAllAsync</code> drive it from code.
                 Sorting applies within each set of siblings, so the hierarchy is preserved.
+                Searching and filtering work on the hierarchy rather than flattening it: the tree is pruned
+                to the branches that contain a match, those branches open themselves so nothing hides behind
+                a collapsed ancestor, and a folder that matches keeps its whole subtree. Clearing the term
+                restores the expand state you had - the grid never writes to it.
             </div>
             <br />
             <BitStack Horizontal Wrap>
@@ -387,6 +392,7 @@
             </BitStack>
             <br />
             <BitDataGrid Items="@fileRoots" Height="460px" Sortable="true"
+                         ShowToolbar="true" ShowSearchBox="true" Filterable="true"
                          ChildrenSelector="n => n.Children" TreeInitiallyExpanded="true"
                          KeyField="n => n.Id" @ref="treeGrid">
                 <BitDataGridColumn Property="p => p.Name" Title="Name" Width="320px" />
@@ -558,18 +564,24 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Borders &amp; Striping" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+        <DemoExample Title="Borders, striping &amp; row numbers" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
             <div>
-                Toggle column/row borders and alternate-row striping using the <code>Bordered</code> and <code>Striped</code> parameters.
+                Toggle column/row borders and alternate-row striping using the <code>Bordered</code> and
+                <code>Striped</code> parameters. <code>ShowRowNumbers</code> adds the line-number gutter
+                desktop grids put on the leading edge: it counts the row's position in the <b>whole</b>
+                dataset, so it keeps going across pages (turn to page 2 and the numbers continue at 9)
+                and across virtualized windows instead of restarting. It is chrome rather than data, so
+                exports and clipboard copies never carry it.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
                 <BitButton OnClick="() => bordered = !bordered">Borders: @(bordered ? "on" : "off")</BitButton>
                 <BitButton OnClick="() => striped = !striped">Striping: @(striped ? "on" : "off")</BitButton>
+                <BitButton OnClick="() => rowNumbers = !rowNumbers">Row numbers: @(rowNumbers ? "on" : "off")</BitButton>
             </BitStack>
             <br />
             <BitDataGrid Items="@borderStripeProducts" Height="420px"
-                         Bordered="bordered" Striped="striped"
+                         Bordered="bordered" Striped="striped" ShowRowNumbers="rowNumbers"
                          Sortable="true" Pageable="true" PageSize="8">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" />
@@ -622,7 +634,8 @@
         <DemoExample Title="State persistence" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
             <div>
                 <code>GetState()</code> captures the user-adjustable state - page, page size, search term, sorts,
-                filters, groups and the per-column visibility, width and order - as a serializable snapshot;
+                filters, groups (including which of them are open) and the per-column visibility, width and
+                order - as a serializable snapshot;
                 <code>ApplyStateAsync()</code> restores it. The snapshot survives a JSON round trip to local
                 storage or a user-preferences store: filter values come back as <code>JsonElement</code>s and
                 are re-coerced to each column's own type on restore. Entries for columns that no longer exist
@@ -709,8 +722,9 @@
             <div>
                 <code>ShowExcelExport</code> adds a toolbar button that downloads the full (filtered/sorted)
                 data as a real <code>.xlsx</code> workbook - generated in-process with no external library.
-                Numbers and booleans are written as native cell types so spreadsheet formulas work on them,
-                and the workbook mirrors the grid's layout: a bold, frozen header row, the grid's column
+                Numbers, booleans and dates are written as native cell types, so the sheet can compute,
+                sort and date-filter on them instead of on text, and the workbook mirrors the grid's
+                layout: a bold, frozen header row carrying Excel's own AutoFilter, the grid's column
                 widths, frozen columns as Excel freeze panes and <code>ColSpan</code> cells as merged cells.
                 With <code>ExcelExportStyled</code> the workbook also carries the grid's <b>current visual
                 theme</b> - the rendered header/row colors, the striped alternating background, the border
@@ -732,6 +746,7 @@
                 <BitDataGridColumn Property="p => p.Category" />
                 <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
                 <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Format="d" Width="120px" />
                 <BitDataGridColumn Property="p => p.Discontinued" Align="BitDataGridColumnAlign.Center" />
             </BitDataGrid>
         </DemoExample>
@@ -941,9 +956,13 @@
                 exactly what they see (a formatted price matches on its formatted form). A column opts out with
                 <code>Searchable="false"</code> - the Stock column here - and the term is two-way bindable
                 through <code>SearchText</code>, so it can also be driven from your own field or persisted with
-                the rest of the grid state. In server and infinite modes the term arrives as
+                the rest of the grid state. The box searches as you type, coalescing a burst of keystrokes into
+                one search after <code>SearchDebounce</code> milliseconds of quiet (300 by default; set
+                <code>0</code> to apply every keystroke, which a small in-memory grid can afford but a remote
+                one should not). In server and infinite modes the term arrives as
                 <code>BitDataGridReadRequest.Search</code>; over an <code>IQueryable</code> it is translated
-                into a single <code>OR</code> of <code>Contains</code> predicates the provider runs at the source.
+                into a single <code>OR</code> of <code>Contains</code> predicates the provider runs at the source;
+                and a tree grid prunes itself to the branches that contain a match.
             </div>
             <br />
             <BitDataGrid Items="@searchProducts" Height="430px"
@@ -987,7 +1006,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Clipboard &amp; range selection" RazorCode="@example36RazorCode" CsharpCode="@example36CsharpCode" Id="example36">
+        <DemoExample Title="Clipboard, range selection &amp; selected-rows export" RazorCode="@example36RazorCode" CsharpCode="@example36CsharpCode" Id="example36">
             <div>
                 Selection behaves the way desktop grids do: click a checkbox, then <kbd>Shift</kbd>+click another
                 to select the whole run between them. With <code>CellNavigation</code> on, a focused cell also
@@ -997,16 +1016,22 @@
                 with a header line, ready to paste into Excel or Sheets as real columns.
                 The same operations are public API: <code>SelectAllAsync</code>,
                 <code>ClearSelectionAsync</code> and <code>CopyToClipboardAsync</code>.
+                Every export takes the selection too: passing <code>selectedOnly: true</code> to
+                <code>ExportCsvAsync</code>, <code>ExportExcelAsync</code>, <code>ToCsvAsync</code> or
+                <code>ToExcelAsync</code> narrows the file to the selected rows, written in view order rather
+                than in the order they were picked.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
                 <BitButton OnClick="SelectAllRows">Select all</BitButton>
                 <BitButton OnClick="ClearRowSelection" Variant="BitVariant.Outline">Clear selection</BitButton>
                 <BitButton OnClick="CopySelection" IsEnabled="clipboardSelection.Count > 0">Copy selection</BitButton>
+                <BitButton OnClick="ExportSelection" IsEnabled="clipboardSelection.Count > 0" Variant="BitVariant.Outline">Export selection</BitButton>
                 <BitText>@clipboardStatus</BitText>
             </BitStack>
             <br />
             <BitDataGrid @ref="clipboardGrid" TItem="Product" Items="@clipboardProducts" Height="430px"
+                         ExportFileName="selection"
                          SelectionMode="BitDataGridSelectionMode.Multiple" @bind-SelectedItems="clipboardSelection"
                          CellNavigation="true" ClipboardCopy="true" Sortable="true" KeyField="p => p.Id">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
@@ -1017,7 +1042,60 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example37RazorCode" CsharpCode="@example37CsharpCode" Id="example37" PreventRenderForMcpClient>
+        <DemoExample Title="Text wrapping" RazorCode="@example37RazorCode" CsharpCode="@example37CsharpCode" Id="example37">
+            <div>
+                By default a cell keeps its value on one line and ellipsises whatever doesn't fit, which is
+                what makes a dense grid scannable. <code>WrapCellText</code> flips that for grids whose
+                content is prose: headers and cells wrap onto as many lines as they need and each row grows
+                to fit its tallest cell, so nothing is hidden behind a tooltip. A column overrides the grid
+                with <code>WrapText</code> - the ID, price and stock columns here stay on one line, because a
+                short value has nothing to gain from wrapping and a ragged column is harder to compare down.
+                Wrapping is deliberately inert while <code>Virtualize</code> is on: virtualization needs every
+                row to be exactly <code>RowHeight</code> tall, which a wrapped row is not.
+            </div>
+            <br />
+            <BitButton OnClick="() => wrapCellText = !wrapCellText">Wrapping: @(wrapCellText ? "on" : "off")</BitButton>
+            <br /><br />
+            <BitDataGrid Items="@wrapProducts" Height="430px" Sortable="true" Resizable="true"
+                         WrapCellText="wrapCellText">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" WrapText="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="160px" />
+                <BitDataGridColumn TItem="Product" Title="Description" Width="280px">
+                    <Template Context="product">@DescriptionOf(product)</Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Width="100px" Align="BitDataGridColumnAlign.Right" WrapText="false" />
+                <BitDataGridColumn Property="p => p.Stock" Width="90px" Align="BitDataGridColumnAlign.Right" WrapText="false" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Row double-click &amp; editing from code" RazorCode="@example38RazorCode" CsharpCode="@example38CsharpCode" Id="example38">
+            <div>
+                <code>OnRowDoubleClick</code> is the row-level counterpart of <code>OnCellDoubleClick</code>:
+                it reports the row itself, which is what "open this record" hangs off in most applications.
+                Paired with the editing lifecycle - <code>BeginEdit</code>, <code>CommitEditAsync</code>,
+                <code>CancelEditAsync</code>, <code>AddNewRowAsync</code>, <code>DeleteRowAsync</code> and the
+                <code>EditingItem</code> the grid currently holds open - it turns the double-click into the
+                edit gesture spreadsheets have trained everyone to expect, alongside (not instead of) the
+                command column's own buttons. The row still commits with <kbd>Enter</kbd> and cancels with
+                <kbd>Esc</kbd>.
+            </div>
+            <br />
+            <BitDataGrid @ref="rowEventGrid" TItem="Product" Items="@rowEventProducts" Height="430px"
+                         Sortable="true" KeyField="p => p.Id"
+                         Editable="true" CellNavigation="true"
+                         OnRowDoubleClick="EditOnDoubleClick"
+                         OnRowSave="OnRowEventSaved" OnRowCancel="OnRowEventCancelled">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+            <br />
+            <BitText>@rowEventStatus</BitText>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example39RazorCode" CsharpCode="@example39CsharpCode" Id="example39" PreventRenderForMcpClient>
             <div>
                 Render the grid in a right-to-left layout by setting the <code>Direction</code> parameter to <code>BitDir.Rtl</code>.
             </div>

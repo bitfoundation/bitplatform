@@ -6,6 +6,7 @@
    reference-capture frames (which break render-tree diffing). *@
 <div @ref="_el" class="@CssClass" role="gridcell" style="@Style" tabindex="@TabIndex" title="@Title"
      aria-colindex="@Grid.AriaColIndex(ColIndex)"
+     aria-colspan="@(ColSpan > 1 ? ColSpan : (int?)null)"
      @onclick="HandleClick"
      @ondblclick="HandleDoubleClick"
      @oncontextmenu="HandleContextMenu"
@@ -20,6 +21,12 @@
     [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
     [Parameter, EditorRequired] public BitDataGridColumn<TItem> Column { get; set; } = default!;
     [Parameter] public int ColIndex { get; set; }
+
+    /// <summary>How many columns this cell covers (its column's resolved <c>ColSpan</c> for the row).
+    /// A span greater than one is reported through <c>aria-colspan</c> so assistive tech maps the
+    /// remaining cells of the row to the right columns - the visual <c>grid-column: span</c> alone is
+    /// invisible to it.</summary>
+    [Parameter] public int ColSpan { get; set; } = 1;
     [Parameter] public string? CssClass { get; set; }
     [Parameter] public string? Style { get; set; }
 

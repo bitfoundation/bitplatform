@@ -8,11 +8,12 @@ namespace Bit.BlazorUI;
 /// Minimal, dependency-free XLSX writer for the grid's Excel export. An .xlsx file is a ZIP package
 /// of SpreadsheetML parts; this emits the smallest valid subset (workbook, one worksheet, styles,
 /// package relationships) using inline strings, so no shared-string table is needed.
-/// Numeric and boolean values are written as native cell types so spreadsheet formulas work on them;
-/// everything else is written as the column's formatted display text.
-/// The grid's rendered layout is mirrored with native workbook features: the header row is bold and
-/// frozen (with the grid's leading frozen columns becoming the vertical freeze pane), ColSpan cells
-/// become merged regions, and the grid's pixel column widths carry over.
+/// Numeric, boolean and date/time values are written as native cell types so spreadsheet formulas,
+/// sorting and date filters work on them; everything else is written as the column's formatted
+/// display text.
+/// The grid's rendered layout is mirrored with native workbook features: the header row is bold,
+/// frozen (with the grid's leading frozen columns becoming the vertical freeze pane) and carries an
+/// AutoFilter, ColSpan cells become merged regions, and the grid's pixel column widths carry over.
 /// </summary>
 internal static class BitDataGridExcelWriter
 {
@@ -54,8 +55,28 @@ internal static class BitDataGridExcelWriter
         </Relationships>
         """;
 
-    // Minimal style sheet: style 0 is the default cell, style 1 the bold header. The two fills and
-    // the empty border are mandatory filler (SpreadsheetML requires fill 0 = none and fill 1 = gray125).
+    // The cell-format (cellXfs) contract shared by both style sheets, so the sheet writer can pick a
+    // format without knowing whether the export is styled:
+    //   0 data | 1 header | 2 striped data | 3 data+date | 4 striped+date | 5 data+datetime | 6 striped+datetime
+    // An unstyled export has no stripe fill, so its striped entries are identical to their plain
+    // counterparts - the indices stay the same either way.
+    private const int StyleData = 0;
+    private const int StyleHeader = 1;
+    private const int StyleStripe = 2;
+    private const int StyleDate = 3;
+    private const int StyleStripeDate = 4;
+    private const int StyleDateTime = 5;
+    private const int StyleStripeDateTime = 6;
+
+    // Built-in SpreadsheetML number formats, so no <numFmts> block is needed: 14 is the locale's short
+    // date, 22 its short date + time. Using the built-ins means the workbook renders dates the way the
+    // opening machine expects rather than pinning one culture's pattern into the file.
+    private const int DateNumFmtId = 14;
+    private const int DateTimeNumFmtId = 22;
+
+    // Minimal style sheet: style 0 is the default cell, style 1 the bold header, and 3/5 the two date
+    // formats (2/4/6 mirror them, since an unstyled export has no stripe fill). The two fills and the
+    // empty border are mandatory filler (SpreadsheetML requires fill 0 = none and fill 1 = gray125).
     private const string StylesXml =
         """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -64,7 +85,7 @@ internal static class BitDataGridExcelWriter
         <fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>
         <borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>
         <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
-        <cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>
+        <cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="22" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="22" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>
         <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
         </styleSheet>
         """;
@@ -105,9 +126,8 @@ internal static class BitDataGridExcelWriter
         return stream.ToArray();
     }
 
-    /// <summary>Builds the style sheet for a styled export. The cell-format (cellXfs) contract with
-    /// the sheet writer: index 0 = data row (the implicit default for cells with no <c>s</c>
-    /// attribute), 1 = header, 2 = alternating (striped) data row.</summary>
+    /// <summary>Builds the style sheet for a styled export, following the same cellXfs contract the
+    /// unstyled <see cref="StylesXml"/> declares (see the Style* constants).</summary>
     private static string BuildStylesXml(BitDataGridExcelStyle style)
     {
         // "#rrggbb" (CSS) -> "FFRRGGBB" (SpreadsheetML ARGB); anything else falls back to default.
@@ -164,16 +184,21 @@ internal static class BitDataGridExcelWriter
 
         sb.Append("<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>");
 
-        void AppendXf(int fontId, int fillId)
-            => sb.Append($"<xf numFmtId=\"0\" fontId=\"{fontId}\" fillId=\"{fillId}\" borderId=\"{borderId}\" xfId=\"0\" applyFont=\"1\"")
+        void AppendXf(int fontId, int fillId, int numFmtId = 0)
+            => sb.Append($"<xf numFmtId=\"{numFmtId}\" fontId=\"{fontId}\" fillId=\"{fillId}\" borderId=\"{borderId}\" xfId=\"0\" applyFont=\"1\"")
                  .Append(fillId > 0 ? " applyFill=\"1\"" : "")
                  .Append(borderId > 0 ? " applyBorder=\"1\"" : "")
+                 .Append(numFmtId > 0 ? " applyNumberFormat=\"1\"" : "")
                  .Append("/>");
 
-        sb.Append("<cellXfs count=\"3\">");
-        AppendXf(0, rowFill);      // 0: data row (implicit default)
-        AppendXf(1, headerFill);   // 1: header
-        AppendXf(0, stripeFill);   // 2: striped data row
+        sb.Append("<cellXfs count=\"7\">");
+        AppendXf(0, rowFill);                             // 0: data row (implicit default)
+        AppendXf(1, headerFill);                          // 1: header
+        AppendXf(0, stripeFill);                          // 2: striped data row
+        AppendXf(0, rowFill, DateNumFmtId);               // 3: date
+        AppendXf(0, stripeFill, DateNumFmtId);            // 4: striped date
+        AppendXf(0, rowFill, DateTimeNumFmtId);           // 5: date + time
+        AppendXf(0, stripeFill, DateTimeNumFmtId);        // 6: striped date + time
         sb.Append("</cellXfs>");
 
         sb.Append("<cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles>");
@@ -207,7 +232,7 @@ internal static class BitDataGridExcelWriter
         writer.Write("<row>");
         foreach (var column in columns)
         {
-            WriteInlineString(writer, column.DisplayTitle, styleIndex: 1);
+            WriteInlineString(writer, column.DisplayTitle, StyleHeader);
         }
         writer.Write("</row>");
 
@@ -221,11 +246,12 @@ internal static class BitDataGridExcelWriter
             // Cell format 0 (the implicit default) is the data-row style; in a styled export the
             // alternating rows use format 2 (the stripe fill), matching the grid's nth-child(even)
             // striping (sheet data row 2 = data index 1).
-            var cellStyle = styled && rowIndex % 2 == 1 ? 2 : 0;
+            var stripe = styled && rowIndex % 2 == 1;
+            var cellStyle = stripe ? StyleStripe : StyleData;
             writer.Write("<row>");
             for (var colIndex = 0; colIndex < columns.Count; colIndex++)
             {
-                WriteCell(writer, columns[colIndex], item, cellStyle);
+                WriteCell(writer, columns[colIndex], item, cellStyle, stripe);
 
                 // Mirror the rendered layout: a spanning cell covers its following neighbours, whose
                 // own values/spans are skipped (a merged region keeps only its top-left cell's value).
@@ -245,6 +271,14 @@ internal static class BitDataGridExcelWriter
         }
 
         writer.Write("</sheetData>");
+
+        // Turn the header row into Excel's own filter row, so the exported sheet opens with the same
+        // per-column sort/filter affordances the grid has. The schema puts autoFilter after sheetData
+        // and before mergeCells, so the order here is not interchangeable.
+        if (columns.Count > 0)
+        {
+            writer.Write($"<autoFilter ref=\"{CellRef(0, 1)}:{CellRef(columns.Count - 1, rows.Count + 1)}\"/>");
+        }
 
         if (merges is not null)
         {
@@ -297,12 +331,34 @@ internal static class BitDataGridExcelWriter
         return letters + row.ToString(CultureInfo.InvariantCulture);
     }
 
-    private static void WriteCell<TItem>(TextWriter writer, BitDataGridColumn<TItem> column, TItem item, int styleIndex)
+    private static void WriteCell<TItem>(TextWriter writer, BitDataGridColumn<TItem> column, TItem item, int styleIndex, bool stripe)
     {
         var s = styleIndex > 0 ? $" s=\"{styleIndex}\"" : "";
         // GetExportValue resolves the column's ExportValue selector when one is set (which is what
         // gives a template-only column a real exported value), and the bound field's value otherwise.
         var value = column.GetExportValue(item);
+
+        // Dates go in as real date cells (a serial number under a date format) rather than text, so
+        // the sheet can sort, filter and compute on them; the display text is only the fallback for a
+        // value Excel's serial calendar cannot represent (see TryDateSerial).
+        if (value is DateOnly or DateTime or DateTimeOffset)
+        {
+            if (TryDateSerial(value, out var serial, out var hasTime))
+            {
+                var dateStyle = hasTime
+                    ? (stripe ? StyleStripeDateTime : StyleDateTime)
+                    : (stripe ? StyleStripeDate : StyleDate);
+                writer.Write($"<c s=\"{dateStyle}\"><v>");
+                writer.Write(serial.ToString("0.##########", CultureInfo.InvariantCulture));
+                writer.Write("</v></c>");
+            }
+            else
+            {
+                WriteInlineString(writer, column.GetFormattedExportValue(item), styleIndex);
+            }
+            return;
+        }
+
         switch (value)
         {
             case null:
@@ -331,6 +387,36 @@ internal static class BitDataGridExcelWriter
                 WriteInlineString(writer, column.GetFormattedExportValue(item), styleIndex);
                 break;
         }
+    }
+
+    /// <summary>
+    /// Converts a date/time value to the serial number Excel stores dates as (days since 1899-12-30,
+    /// the fraction being the time of day), and reports whether it carries a time worth showing.
+    /// <para>
+    /// Returns false - so the caller writes the display text instead - for anything before
+    /// 1900-03-01. Excel's serial calendar contains a deliberate 1900 leap-year bug that OADate does
+    /// not reproduce, so every earlier date would land one day off in the workbook.
+    /// </para>
+    /// A <see cref="DateTimeOffset"/> is written as its own wall-clock time (the offset itself has no
+    /// representation in a date cell), matching the text an unconverted export would have carried.
+    /// </summary>
+    private static bool TryDateSerial(object value, out double serial, out bool hasTime)
+    {
+        var moment = value switch
+        {
+            DateOnly d => d.ToDateTime(TimeOnly.MinValue),
+            DateTime dt => dt,
+            DateTimeOffset dto => dto.DateTime,
+            _ => default
+        };
+
+        hasTime = moment.TimeOfDay != TimeSpan.Zero;
+        serial = 0;
+        // 61 is 1900-03-01, the first serial Excel and OADate agree on.
+        if (moment < new DateTime(1900, 3, 1)) return false;
+
+        serial = moment.ToOADate();
+        return true;
     }
 
     private static void WriteInlineString(TextWriter writer, string text, int styleIndex = 0)
