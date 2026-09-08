@@ -164,7 +164,7 @@ private BitChartData Traffic() => new()
     }
 };";
 
-    private readonly string doughnutRazorCode = @"<BitChart Type=""BitChartType.Doughnut"" Data=""Traffic()"" Options=""_doughnut"" />";
+    private readonly string doughnutRazorCode = @"<BitChart Type=""BitChartType.Doughnut"" Data=""BitChartSampleData.Traffic()"" Options=""_doughnut"" />";
     private readonly string doughnutCsharpCode = @"
 private readonly BitChartOptions _doughnut = new()
 {

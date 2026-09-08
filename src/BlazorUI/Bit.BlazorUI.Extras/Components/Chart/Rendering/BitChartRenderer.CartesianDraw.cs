@@ -148,8 +148,11 @@ public sealed partial class BitChartRenderer
             else
                 scene.Background.Add(new BitChartSvgText
                 {
-                    // A value axis under a horizontal-bar chart reserves height, not width.
-                    X = plot.CenterX, Y = axisPos + ReserveAxisHeight(axis) - o.Title.Font.Size * 0.3,
+                    // A value axis under a horizontal-bar chart reserves height, not width - and along
+                    // the far (top) edge it reserves that height upwards, the same direction its ticks
+                    // are drawn in.
+                    X = plot.CenterX,
+                    Y = axisPos + (isRight ? -1 : 1) * (ReserveAxisHeight(axis) - o.Title.Font.Size * 0.3),
                     Text = o.Title.Text, Fill = o.Title.Color,
                     FontFamily = o.Title.Font.Family, FontSize = o.Title.Font.Size, FontWeight = o.Title.Font.Weight,
                     Anchor = "middle", Baseline = "central"

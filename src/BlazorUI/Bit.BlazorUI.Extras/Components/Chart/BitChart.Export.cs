@@ -120,7 +120,7 @@ public partial class BitChart
             {
                 if (ds.Points is not { } pts) continue;
                 foreach (var p in pts)
-                    sb.Append(Csv(ds.Label ?? "Series")).Append(',')
+                    sb.Append(CsvText(ds.Label ?? "Series")).Append(',')
                       .Append(Csv(p.X.ToString(culture))).Append(',')
                       .Append(Csv(p.Y.ToString(culture))).Append(',')
                       .AppendLine(p.R is { } r ? Csv(r.ToString(culture)) : "");
@@ -129,12 +129,12 @@ public partial class BitChart
         }
 
         sb.Append("Series");
-        foreach (var label in data.Labels) sb.Append(',').Append(Csv(label));
+        foreach (var label in data.Labels) sb.Append(',').Append(CsvText(label));
         sb.AppendLine();
 
         foreach (var ds in data.Datasets)
         {
-            sb.Append(Csv(ds.Label ?? "Series"));
+            sb.Append(CsvText(ds.Label ?? "Series"));
             if (ds.RangeData is { } ranges)
             {
                 foreach (var r in ranges)
@@ -148,6 +148,19 @@ public partial class BitChart
             sb.AppendLine();
         }
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Quotes a caller-supplied text field - a series or category label - and neutralizes the leading
+    /// characters a spreadsheet reads as the start of a formula, so a label taken from user data cannot
+    /// become executable content when the file is opened. Formatted numbers keep going through
+    /// <see cref="Csv"/>, where a leading minus sign is a sign rather than an injection.
+    /// </summary>
+    private static string CsvText(string value)
+    {
+        if (value.Length > 0 && value[0] is '=' or '+' or '-' or '@' or '\t' or '\r')
+            value = "'" + value;
+        return Csv(value);
     }
 
     /// <summary>Quotes a CSV field when it contains a separator, quote or newline.</summary>

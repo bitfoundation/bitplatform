@@ -259,15 +259,19 @@ public sealed partial class BitChartRenderer
         if (!indexAligned) return;
 
         // One band per distinct index, ordered by where that index actually sits along the axis.
-        var centers = new Dictionary<int, double>();
+        // Summed and counted rather than averaged pair by pair, which would weight the last element of
+        // an index far more heavily than the first.
+        var sums = new Dictionary<int, (double Sum, int Count)>();
         foreach (var el in scene.Elements)
         {
             double c = IsVertical ? el.CenterX : el.CenterY;
-            centers[el.DataIndex] = centers.TryGetValue(el.DataIndex, out var existing) ? (existing + c) / 2 : c;
+            var (sum, n) = sums.GetValueOrDefault(el.DataIndex);
+            sums[el.DataIndex] = (sum + c, n + 1);
         }
-        if (centers.Count is 0 or > 1000) return;
+        if (sums.Count is 0 or > 1000) return;
 
-        var ordered = centers.OrderBy(kv => kv.Value).ToList();
+        var ordered = sums.Select(kv => new KeyValuePair<int, double>(kv.Key, kv.Value.Sum / kv.Value.Count))
+                          .OrderBy(kv => kv.Value).ToList();
         double lo = IsVertical ? plot.Left : plot.Top;
         double hi = IsVertical ? plot.Right : plot.Bottom;
 
@@ -300,8 +304,13 @@ public sealed partial class BitChartRenderer
     /// <summary>The height an axis drawn along the top or bottom edge needs for its ticks and title.</summary>
     private double ReserveAxisHeight(BitChartAxisScale scale)
     {
+        // Memoized for the same two reasons ReserveAxisWidth is: the label measuring is repeated on
+        // every later call, and the drawing code has to place the axis at exactly the height the
+        // layout reserved for it, even though the tick set is rebuilt once the plot area is known.
+        if (_heightReserve.TryGetValue(scale, out var cached)) return cached;
+
         var o = scale.Options;
-        if (!ScaleVisible(o)) return 0;
+        if (!ScaleVisible(o)) return _heightReserve[scale] = 0;
         double h = 0;
         if (o.Grid.DrawTicks) h += o.Grid.TickLength;
         if (o.Ticks.Display)
@@ -321,8 +330,11 @@ public sealed partial class BitChartRenderer
             }
         }
         if (o.Title.Display) h += o.Title.Font.LineHeightPx + o.Title.Padding.Vertical;
+        _heightReserve[scale] = h;
         return h;
     }
+
+    private readonly Dictionary<BitChartAxisScale, double> _heightReserve = new();
 
     /// <summary>Computes an auto label rotation (degrees) so category labels fit their band width.</summary>
     private static double ComputeIndexLabelRotation(BitChartAxisScale scale, double availWidth)

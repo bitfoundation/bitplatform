@@ -341,7 +341,9 @@ public sealed partial class BitChartRenderer
 
     private static bool HasValueAt(BitChartDataset ds, int di)
     {
-        if (ds.RangeData is { } rd) return di < rd.Count && rd[di].HasValue;
+        // A dataset carrying ranges still falls back to its plain values where a range is missing,
+        // which is exactly how DrawBars picks the value it draws.
+        if (ds.RangeData is { } rd && di < rd.Count && rd[di].HasValue) return true;
         return di < ds.Data.Count && ds.Data[di].HasValue;
     }
 

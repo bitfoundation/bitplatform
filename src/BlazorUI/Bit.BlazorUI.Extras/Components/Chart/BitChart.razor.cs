@@ -834,12 +834,14 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         double cx, cy;
         if (horizontalIndex)
         {
-            cx = Math.Clamp(pa.Left - w / 2 - 4, w / 2, _vw - w / 2);
-            cy = Math.Clamp(e.CenterY, pa.Top + h / 2, pa.Bottom - h / 2);
+            // A chip wider or taller than the room it is clamped into would leave Math.Clamp with a
+            // minimum above its maximum, so each upper bound is held at or above its lower one.
+            cx = Math.Clamp(pa.Left - w / 2 - 4, w / 2, Math.Max(w / 2, _vw - w / 2));
+            cy = Math.Clamp(e.CenterY, pa.Top + h / 2, Math.Max(pa.Top + h / 2, pa.Bottom - h / 2));
         }
         else
         {
-            cx = Math.Clamp(e.CenterX, pa.Left + w / 2, pa.Right - w / 2);
+            cx = Math.Clamp(e.CenterX, pa.Left + w / 2, Math.Max(pa.Left + w / 2, pa.Right - w / 2));
             cy = Math.Min(pa.Bottom + h / 2 + 3, _vh - h / 2);
         }
 

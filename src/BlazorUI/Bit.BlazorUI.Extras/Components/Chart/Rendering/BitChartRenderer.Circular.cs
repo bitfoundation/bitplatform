@@ -241,7 +241,19 @@ public sealed partial class BitChartRenderer
             });
 
             if (_options.Plugins.DataLabels.Display)
-                AddDataLabel(scene, v, cx + Math.Cos(mid) * r * 0.6, cy + Math.Sin(mid) * r * 0.6, dsIndex, i);
+            {
+                // Placed the way a doughnut places its labels, with the wedge running from the center
+                // out to its own radius.
+                var dl = _options.Plugins.DataLabels;
+                double lr = dl.Anchor switch
+                {
+                    BitChartAlign.Start => 0.35 * r,
+                    BitChartAlign.End => r,
+                    _ => r / 2
+                };
+                lr += AlignShift(dl, 1);
+                AddDataLabel(scene, v, cx + Math.Cos(mid) * lr, cy + Math.Sin(mid) * lr, dsIndex, i);
+            }
         }
 
         // Perimeter category (point) labels.

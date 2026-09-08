@@ -107,6 +107,9 @@ public sealed class BitChartAxisScale
     private int FitTickLimit(int requested)
     {
         if (!Options.AutoSkipTicks) return requested;
+        // A single-category axis - or an explicit tick count of one - asks for fewer than the two the
+        // fit is floored at, and there is nothing to thin out there anyway.
+        if (requested < 2) return requested;
         double length = Math.Abs(_pixelEnd - _pixelStart);
         if (length <= 0) return requested;
         double perTick = Horizontal

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -589,7 +590,7 @@ public class BitChartTests : BunitTestContext
     // ---- zoom api ----
 
     [TestMethod]
-    public void ZoomToShouldNarrowTheVisibleRangeAndResetShouldRestoreIt()
+    public async Task ZoomToShouldNarrowTheVisibleRangeAndResetShouldRestoreIt()
     {
         var options = new BitChartOptions { Zoom = { Enabled = true } };
         var data = new BitChartData
@@ -601,12 +602,12 @@ public class BitChartTests : BunitTestContext
         var chart = component.Instance;
 
         var full = chart.GetAxisRange("y")!.Value;
-        component.InvokeAsync(() => chart.ZoomTo("y", 20, 40));
+        await component.InvokeAsync(() => chart.ZoomTo("y", 20, 40));
         var zoomed = chart.GetAxisRange("y")!.Value;
         Assert.AreEqual(20, zoomed.Min, 1e-6);
         Assert.AreEqual(40, zoomed.Max, 1e-6);
 
-        component.InvokeAsync(chart.ResetZoom);
+        await component.InvokeAsync(chart.ResetZoom);
         Assert.AreEqual(full.Max, chart.GetAxisRange("y")!.Value.Max, 1e-6);
     }
 
@@ -699,7 +700,7 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
-    public void ZoomChangeShouldRaiseTheCallback()
+    public async Task ZoomChangeShouldRaiseTheCallback()
     {
         int raised = 0;
         var options = new BitChartOptions { Zoom = { Enabled = true } };
@@ -711,7 +712,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.OnZoomChange, () => raised++);
         });
 
-        component.InvokeAsync(() => component.Instance.ZoomTo("y", 1, 2));
+        await component.InvokeAsync(() => component.Instance.ZoomTo("y", 1, 2));
 
         Assert.AreEqual(1, raised);
     }

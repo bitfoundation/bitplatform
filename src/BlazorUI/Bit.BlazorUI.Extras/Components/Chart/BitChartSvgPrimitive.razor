@@ -31,7 +31,7 @@
               stroke-dasharray="@p.Dash" stroke-dashoffset="@(p.DashOffset != 0 ? BitChartSvg.N(p.DashOffset) : null)"
               stroke-linecap="@p.LineCap" stroke-linejoin="@p.LineJoin"
               opacity="@BitChartSvg.N(p.Opacity)" transform="@p.Transform"
-              class="@(p.AnimateDraw ? "bit-cht-draw" : p.AnimateFade ? "bit-cht-fade" : p.CssClass)"
+              class="@PathClass(p)"
               pathLength="@(p.AnimateDraw ? "1" : null)">
             @if (!string.IsNullOrEmpty(p.Title)) { <title>@p.Title</title> }
         </path>
@@ -64,6 +64,15 @@
 @code {
     [Parameter, EditorRequired] public BitChartSvgNode Node { get; set; } = default!;
 
+    // An animation class is added to the path's own class rather than replacing it, so a path that
+    // both animates in and carries a class of its own keeps both.
+    private static string? PathClass(BitChartSvgPath p)
+    {
+        string? anim = p.AnimateDraw ? "bit-cht-draw" : p.AnimateFade ? "bit-cht-fade" : null;
+        if (anim is null) return p.CssClass;
+        return string.IsNullOrEmpty(p.CssClass) ? anim : $"{p.CssClass} {anim}";
+    }
+
     private static string PolyPoints(BitChartSvgPolygon p) =>
         string.Join(" ", p.Points.Select(pt => $"{BitChartSvg.N(pt.X)},{BitChartSvg.N(pt.Y)}"));
 
@@ -86,6 +95,12 @@
         if (TextTransform(t) is { } tr) builder.AddAttribute(11, "transform", tr);
         if (!string.IsNullOrEmpty(t.CssClass)) builder.AddAttribute(12, "class", t.CssClass);
         builder.AddContent(13, t.Text);
+        if (!string.IsNullOrEmpty(t.Title))
+        {
+            builder.OpenElement(14, "title");
+            builder.AddContent(15, t.Title);
+            builder.CloseElement();
+        }
         builder.CloseElement();
     };
 
