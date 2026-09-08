@@ -84,8 +84,7 @@ private readonly List<BitAccordionListItem> iconItems =
         Body = BodyFor(""In the beginning, there is silence, ..."")
     },
 ];
-
-private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
+" + basicItemsCsharpCode;
 
     private readonly string example6RazorCode = @"
 <BitAccordionList Items=""keyedItems"" TItem=""BitAccordionListItem"">

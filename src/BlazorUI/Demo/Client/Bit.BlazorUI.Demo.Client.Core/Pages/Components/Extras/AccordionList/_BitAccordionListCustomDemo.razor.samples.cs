@@ -48,6 +48,15 @@ private readonly List<Section> basicItems =
 ];
 " + sectionCsharpCode;
 
+    private const string keyedItemsCsharpCode = @"
+private readonly List<Section> keyedItems =
+[
+    new() { Id = ""general"", Name = ""General settings"", Info = ""The general settings of the application"", Content = BodyFor(""Once upon a time, ..."") },
+    new() { Id = ""users"", Name = ""Users"", Info = ""You are currently not an owner"", Content = BodyFor(""Every story starts with a blank canvas, ..."") },
+    new() { Id = ""advanced"", Name = ""Advanced settings"", Info = ""Filtering has been entirely disabled"", Content = BodyFor(""In the beginning, there is silence, ..."") },
+];
+" + sectionCsharpCode;
+
 
     private readonly string example1RazorCode = @"
 <BitAccordionList Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />";
@@ -63,7 +72,7 @@ private readonly List<Section> basicItems =
 <BitAccordionList Items=""keyedItems"" TItem=""Section"" NameSelectors=""nameSelectors"" DefaultExpandedKey=""users"" />
 
 <BitAccordionList Multiple Items=""keyedItems"" TItem=""Section"" NameSelectors=""nameSelectors"" DefaultExpandedKeys=""@([""general"", ""advanced""])"" />";
-    private readonly string example3CsharpCode = basicItemsCsharpCode;
+    private readonly string example3CsharpCode = keyedItemsCsharpCode;
 
     private readonly string example4RazorCode = @"
 <BitAccordionList Items=""keyedItems""
@@ -71,7 +80,7 @@ private readonly List<Section> basicItems =
                   NameSelectors=""nameSelectors""
                   Collapsible=""false""
                   DefaultExpandedKey=""general"" />";
-    private readonly string example4CsharpCode = basicItemsCsharpCode;
+    private readonly string example4CsharpCode = keyedItemsCsharpCode;
 
     private readonly string example5RazorCode = @"
 <BitAccordionList Items=""iconItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />
@@ -92,7 +101,7 @@ private readonly List<Section> iconItems =
     new() { Id = ""users"", Name = ""Users"", Info = ""You are currently not an owner"", Glyph = BitIconName.Contact, Image = BitIconName.ChevronDownSmall, Content = BodyFor(""Every story starts with a blank canvas, ..."") },
     new() { Id = ""advanced"", Name = ""Advanced settings"", Info = ""Filtering has been entirely disabled"", Glyph = BitIconName.Ringer, Content = BodyFor(""In the beginning, there is silence, ..."") },
 ];
-" + sectionCsharpCode;
+" + basicItemsCsharpCode;
 
     private readonly string example6RazorCode = @"
 <BitAccordionList Items=""keyedItems"" TItem=""Section"" NameSelectors=""nameSelectors"">
@@ -111,7 +120,7 @@ private string? actionedTitle;
 
 // An item can also carry its own actions through the member mapped to Actions (Section.Extra here),
 // which take precedence over the ActionsTemplate.
-" + basicItemsCsharpCode;
+" + keyedItemsCsharpCode;
 
     private readonly string example7RazorCode = @"
 <BitAccordionList Multiple
@@ -193,7 +202,7 @@ private async Task HandleOnToggling(BitAccordionListToggleArgs<Section> args)
 
     args.Cancel = lockToggling;
 }
-" + basicItemsCsharpCode;
+" + keyedItemsCsharpCode;
 
     private readonly string example10RazorCode = @"
 <BitButtonGroup Toggle Items=""bindingButtons"" TItem=""BitButtonGroupItem"" @bind-ToggleKey=""boundExpandedKey"" />
@@ -215,7 +224,7 @@ private List<BitButtonGroupItem> bindingButtons =>
     new() { Key = ""users"", Text = ""Users"" },
     new() { Key = ""advanced"", Text = ""Advanced"" },
 ];
-" + basicItemsCsharpCode;
+" + keyedItemsCsharpCode;
 
     private readonly string example11RazorCode = @"
 <BitButton OnClick=""@(() => accordionListRef!.ExpandAll())"">Expand all</BitButton>
@@ -232,7 +241,7 @@ private BitAccordionList<Section>? accordionListRef;
 
 // The same state can also be read back without a binding:
 // accordionListRef.IsExpanded(""users""); accordionListRef.GetExpandedKeys();
-" + basicItemsCsharpCode;
+" + keyedItemsCsharpCode;
 
     private readonly string example12RazorCode = @"
 <BitAccordionList Multiple LazyContent Items=""lazyItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />
@@ -299,7 +308,7 @@ private static RenderFragment<Section> TimestampBody() => section => builder =>
                   NoContentRegion
                   NoNavigationLoop
                   AriaLabel=""Application settings"" />";
-    private readonly string example15CsharpCode = basicItemsCsharpCode;
+    private readonly string example15CsharpCode = keyedItemsCsharpCode;
 
     private readonly string example16RazorCode = @"
 <BitAccordionList ExpandOnPrint Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />

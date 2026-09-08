@@ -673,13 +673,16 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         if (ChildContent is null && Options is null && Items is not null)
         {
             // The snapshot is a copy rather than the collection itself, so a page that keeps mutating the very
-            // list it handed over - adding an item to it, removing one - is still noticed here.
-            if (_oldItems is null || Items.SequenceEqual(_oldItems) is false)
+            // list it handed over - adding an item to it, removing one - is still noticed here. A lazy sequence
+            // is walked once, so what is compared is also exactly what is kept.
+            List<TItem> snapshot = [.. Items];
+
+            if (_oldItems is null || snapshot.SequenceEqual(_oldItems) is false)
             {
                 var isFirstPass = _oldItems is null;
 
-                _oldItems = [.. Items];
-                _items = [.. Items];
+                _oldItems = snapshot;
+                _items = [.. snapshot];
 
                 AssignItemKeys();
 
