@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 
 namespace Boilerplate.Server.Shared;
@@ -34,6 +35,20 @@ public partial class ServerSharedSettings : SharedSettings
 
         return TrustedOrigins.Any(trustedOrigin => MatchTrustedOrigin(trustedOrigin, requestOrigin))
             || TrustedOriginsRegex().IsMatch(origin.ToString());
+    }
+
+    /// <summary>
+    /// Whether a token stamped with <paramref name="issuer"/> could have been minted by this deployment. The current
+    /// request's origin always qualifies - <see cref="TrustedOrigins"/> lists the <i>other</i> origins and ships empty,
+    /// so without that a production deployment refuses every token it issued. Otherwise the same predicate that gates
+    /// cors, forwarded headers, return urls and WebAuthn.
+    /// </summary>
+    public bool IsTrustedIssuer(string issuer, HttpRequest? currentRequest)
+    {
+        if (currentRequest is not null && string.Equals(issuer, currentRequest.GetIssuer(), StringComparison.Ordinal))
+            return true;
+
+        return Uri.TryCreate(issuer, UriKind.Absolute, out var issuerUri) && IsTrustedOrigin(issuerUri);
     }
 
     /// <summary>

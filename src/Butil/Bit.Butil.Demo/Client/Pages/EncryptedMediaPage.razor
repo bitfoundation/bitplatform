@@ -1,0 +1,462 @@
+@page "/encrypted-media"
+@implements IAsyncDisposable
+@inject Bit.Butil.EncryptedMedia encryptedMedia
+
+<PageTitle>EncryptedMedia - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media &amp; Speech"
+            Title="EncryptedMedia"
+            Lead="Encrypted Media Extensions: negotiate a key system, open key sessions, and carry licence requests between the browser's decryption module and your licence server. DRM playback, from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Encrypted_Media_Extensions_API"
+            InjectAs="EncryptedMedia encryptedMedia" />
+
+<div class="stack">
+    <DemoSection Title="Which key systems does this browser have?"
+                 Api="IsSupported / IsKeySystemSupported"
+                 Description="The resolved configuration is the answer worth reading: capabilities the key system could not meet have been dropped from it, so it says which robustness level you actually get - and therefore whether the HD rendition may be offered at all. A key system that is not installed answers null."
+                 Code=@("""
+@inject Bit.Butil.EncryptedMedia encryptedMedia
+
+var access = await encryptedMedia.IsKeySystemSupported("com.widevine.alpha",
+    new MediaKeySystemConfiguration
+    {
+        InitDataTypes = ["cenc"],
+        VideoCapabilities =
+        [
+            new MediaKeySystemMediaCapability { ContentType = "video/mp4;codecs=\"avc1.42E01E\"", Robustness = "HW_SECURE_ALL" },
+            new MediaKeySystemMediaCapability { ContentType = "video/mp4;codecs=\"avc1.42E01E\"", Robustness = "SW_SECURE_CRYPTO" },
+        ]
+    });
+
+var robustness = access?.Configuration.VideoCapabilities?[0].Robustness; // what was actually granted
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button class="secondary" @onclick="ProbeKeySystems">Probe the four key systems</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="key system output" />
+    </DemoSection>
+
+    <DemoSection Title="A complete Clear Key exchange"
+                 Api="CreateMediaKeys / CreateSession / GenerateRequest / Update / GetKeyStatuses"
+                 Description="Clear Key is the key system every browser has, and it needs no server - which makes it the one DRM flow that can run end to end on a documentation page. The steps here are exactly the ones Widevine or PlayReady would take: create the keys, open a session, generate a request from initialization data, and feed a licence back."
+                 Code=@("""
+var keys = await encryptedMedia.CreateMediaKeys("org.w3.clearkey", new MediaKeySystemConfiguration
+{
+    InitDataTypes = ["keyids"],
+    VideoCapabilities = [new MediaKeySystemMediaCapability { ContentType = "video/mp4;codecs=\"avc1.42E01E\"" }]
+});
+
+var session = await keys!.CreateSession(
+    onMessage: async message =>
+    {
+        // POST message.Message to the licence server, unchanged, and feed the answer back.
+        var licence = await licenceServer.RequestAsync(message.Message);
+        await session!.Update(licence);
+    },
+    onKeyStatusesChange: statuses =>
+    {
+        foreach (var status in statuses) Console.WriteLine($"{status.KeyId}: {status.Status}");
+    });
+
+await session!.GenerateRequest("keyids", initData);
+""")>
+        <div class="controls">
+            <button @onclick="CreateClearKey" disabled="@(keys is not null)">CreateMediaKeys (clearkey)</button>
+            <button class="secondary" @onclick="OpenSession" disabled="@(keys is null || session is not null)">CreateSession</button>
+            <button class="secondary" @onclick="GenerateRequest" disabled="@(session is null)">GenerateRequest</button>
+            <button class="secondary" @onclick="ShowStatuses" disabled="@(session is null)">GetKeyStatuses</button>
+            <button class="secondary" @onclick="ShowSessionInfo" disabled="@(session is null)">GetSessionId / GetExpiration</button>
+        </div>
+        <div class="controls">
+            <button class="danger" @onclick="CloseSession" disabled="@(session is null)">Close session</button>
+            <button class="danger" @onclick="ReleaseKeys" disabled="@(keys is null)">Dispose keys</button>
+        </div>
+        <DemoConsole @ref="sessionOutput" Title="session output" />
+    </DemoSection>
+
+    <DemoSection Title="Learning that content is encrypted"
+                 Api="SubscribeEncrypted"
+                 Description="The encrypted event is how a page finds out that the media it is playing needs a key, and it carries the initialization data the licence request has to be built from. Subscribe before playback starts - an element that raises it with nobody listening simply stalls."
+                 Code=@("""
+<video @ref="videoElement" controls></video>
+
+var subscription = await encryptedMedia.SubscribeEncrypted(videoElement, async initData =>
+{
+    // one per protection system in the stream; filter by InitDataType, and by key ids you already hold
+    await session!.GenerateRequest(initData);
+});
+
+// later
+await subscription.DisposeAsync();
+""")>
+        <video @ref="videoElement" controls playsinline muted style="width:100%;max-width:420px;background:#000;border-radius:8px"></video>
+        <div class="controls">
+            <button @onclick="Watch" disabled="@(encryptedSubscription is not null)">SubscribeEncrypted</button>
+            <button class="danger" @onclick="Unwatch" disabled="@(encryptedSubscription is null)">Dispose subscription</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="encrypted event output" />
+    </DemoSection>
+
+    <DemoSection Title="Server certificates and persistent licences"
+                 Api="SetServerCertificate / MediaKeySessionType / Load / Remove"
+                 Description="A server certificate lets the decryption module encrypt its very first licence request, which removes a round trip and stops device information travelling in the clear. A persistent-licence session stores the licence on the device and can be reloaded later by its session id - which is all offline playback is."
+                 Code=@("""
+await keys.SetServerCertificate(certificateBytes);
+
+var offline = await keys.CreateSession(onMessage, MediaKeySessionType.PersistentLicense);
+await offline!.GenerateRequest(initData);
+var storedId = await offline.GetSessionId();   // persist this
+
+// next time, with no network at all:
+var restored = await keys.CreateSession(onMessage, MediaKeySessionType.PersistentLicense);
+await restored!.Load(storedId);
+
+await restored.Remove();   // releases the licence and deletes the stored copy
+""")>
+        <div class="controls">
+            <button @onclick="TryServerCertificate" disabled="@(keys is null)">SetServerCertificate (dummy)</button>
+            <button class="secondary" @onclick="TryPersistentSession" disabled="@(keys is null)">CreateSession(PersistentLicense)</button>
+        </div>
+        <DemoConsole @ref="advancedOutput" Title="advanced output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Butil carries the bytes and never reads them">
+    Licence requests and responses are opaque to the browser and to this library alike: the contract is between
+    your app and the key system's licence server. What Butil provides is the plumbing - negotiation, sessions,
+    the message callback, and key statuses - in a shape that survives the interop boundary.
+</Callout>
+
+<Callout Type="warning" Title="Usable is not the only status that matters">
+    A licence can be accepted and still leave its keys unusable: OutputRestricted means the display path has no
+    HDCP, OutputDownscaled means only a lower resolution is allowed, and UsableInFuture means the licence is
+    valid but its window has not opened yet - waiting is the answer there, not a new licence. Watch the
+    key-status callback rather than the return value of Update to know that playback can really start.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.requestMediaKeySystemAccess." />
+    <ApiMember Name="IsKeySystemSupported" Signature="ValueTask<MediaKeySystemAccessInfo?> IsKeySystemSupported(string keySystem, params MediaKeySystemConfiguration[] configurations)" Description="Asks whether a key system can meet one of these configurations, and reports the one it settled on." />
+    <ApiMember Name="CreateMediaKeys" Signature="ValueTask<MediaKeysHandle?> CreateMediaKeys(string keySystem, params MediaKeySystemConfiguration[] configurations)" Description="Negotiates the key system and instantiates its content decryption module." />
+    <ApiMember Name="SubscribeEncrypted" Signature="ValueTask<ButilSubscription> SubscribeEncrypted(ElementReference mediaElement, Action<EncryptedMediaInitData> handler)" Description="Watches an element's encrypted event - how the app learns it needs a key." />
+    <ApiMember Name="MediaKeysHandle.Access" Signature="MediaKeySystemAccessInfo Access" Description="The key system that answered, and the configuration it resolved." />
+    <ApiMember Name="MediaKeysHandle.AttachTo" Signature="ValueTask<bool> AttachTo(ElementReference mediaElement)" Description="Hands the keys to the element that will play the protected content." />
+    <ApiMember Name="MediaKeysHandle.SetServerCertificate" Signature="ValueTask<bool> SetServerCertificate(byte[] certificate)" Description="Gives the decryption module the licence server's certificate up front." />
+    <ApiMember Name="MediaKeysHandle.CreateSession" Signature="ValueTask<MediaKeySessionHandle?> CreateSession(Action<MediaKeyMessage> onMessage, MediaKeySessionType sessionType = Temporary, Action<MediaKeyStatusEntry[]>? onKeyStatusesChange = null)" Description="Opens a session that will hold one licence." />
+    <ApiMember Name="MediaKeySessionHandle.GenerateRequest" Signature="ValueTask<bool> GenerateRequest(EncryptedMediaInitData initData)" Description="Turns initialization data into a licence request, which arrives on the message callback." />
+    <ApiMember Name="MediaKeySessionHandle.GenerateRequest" Signature="ValueTask<bool> GenerateRequest(string initDataType, byte[] initData)" Description="The same, with initialization data the app assembled itself." />
+    <ApiMember Name="MediaKeySessionHandle.Update" Signature="ValueTask<bool> Update(byte[] response)" Description="Hands the licence server's answer to the key system." />
+    <ApiMember Name="MediaKeySessionHandle.Load" Signature="ValueTask<bool> Load(string storedSessionId)" Description="Restores a stored persistent licence instead of asking the server for a new one." />
+    <ApiMember Name="MediaKeySessionHandle.GetSessionId" Signature="ValueTask<string> GetSessionId()" Description="The key system's own session id - what Load needs later." />
+    <ApiMember Name="MediaKeySessionHandle.GetKeyStatuses" Signature="ValueTask<MediaKeyStatusEntry[]> GetKeyStatuses()" Description="Every key the session holds and what it can currently decrypt." />
+    <ApiMember Name="MediaKeySessionHandle.GetExpiration" Signature="ValueTask<double?> GetExpiration()" Description="When the licence expires, in milliseconds since the epoch, or null when it does not." />
+    <ApiMember Name="MediaKeySessionHandle.Remove" Signature="ValueTask<bool> Remove()" Description="Releases the licence and deletes a stored copy." />
+    <ApiMember Name="MediaKeySessionHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Closes the session, releasing the keys it holds." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole sessionOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private DemoConsole advancedOutput = default!;
+
+    private ElementReference videoElement;
+
+    private MediaKeysHandle? keys;
+    private MediaKeySessionHandle? session;
+    private ButilSubscription? encryptedSubscription;
+
+    // A key id and its key, for the Clear Key exchange below. Real content gets these from its packager.
+    private static readonly byte[] KeyId = [0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x70, 0x81, 0x92, 0xa3, 0xb4, 0xc5, 0xd6, 0xe7, 0xf8, 0x09];
+    private static readonly byte[] Key = [0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x87, 0x96, 0xa5, 0xb4, 0xc3, 0xd2, 0xe1, 0xf0];
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await encryptedMedia.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeKeySystems()
+    {
+        string[] keySystems = ["org.w3.clearkey", "com.widevine.alpha", "com.microsoft.playready", "com.apple.fps"];
+
+        foreach (var keySystem in keySystems)
+        {
+            try
+            {
+                var access = await encryptedMedia.IsKeySystemSupported(keySystem, new MediaKeySystemConfiguration
+                {
+                    InitDataTypes = ["cenc", "keyids"],
+                    VideoCapabilities =
+                    [
+                        new MediaKeySystemMediaCapability { ContentType = "video/mp4;codecs=\"avc1.42E01E\"" },
+                        new MediaKeySystemMediaCapability { ContentType = "video/webm;codecs=\"vp9\"" },
+                    ]
+                });
+
+                if (access is null)
+                {
+                    await supportOutput.Log($"{keySystem} → not available");
+                    continue;
+                }
+
+                var robustness = access.Configuration.VideoCapabilities?.FirstOrDefault()?.Robustness;
+                await supportOutput.Success($"{keySystem} → available; video capability " +
+                                            $"{access.Configuration.VideoCapabilities?.FirstOrDefault()?.ContentType}, " +
+                                            $"robustness '{robustness}', persistent state {access.Configuration.PersistentState}");
+            }
+            catch (Exception ex)
+            {
+                await supportOutput.Error($"{keySystem} failed →", ex.Message);
+            }
+        }
+    }
+
+    private async Task CreateClearKey()
+    {
+        try
+        {
+            keys = await encryptedMedia.CreateMediaKeys("org.w3.clearkey", new MediaKeySystemConfiguration
+            {
+                InitDataTypes = ["keyids"],
+                VideoCapabilities = [new MediaKeySystemMediaCapability { ContentType = "video/mp4;codecs=\"avc1.42E01E\"" }],
+                AudioCapabilities = [new MediaKeySystemMediaCapability { ContentType = "audio/mp4;codecs=\"mp4a.40.2\"" }]
+            });
+
+            if (keys is null)
+            {
+                await sessionOutput.Warn("CreateMediaKeys → null (no Clear Key support in this browser)");
+                return;
+            }
+
+            await sessionOutput.Success($"CreateMediaKeys → {keys.Access.KeySystem}, keys {keys.Id}");
+            await sessionOutput.Log("AttachTo(videoElement) →", await keys.AttachTo(videoElement));
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("CreateMediaKeys failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenSession()
+    {
+        try
+        {
+            session = await keys!.CreateSession(OnMessage, MediaKeySessionType.Temporary, OnKeyStatuses);
+            if (session is null)
+            {
+                await sessionOutput.Warn("CreateSession → null (the key system refused the session type)");
+                return;
+            }
+
+            await sessionOutput.Success($"CreateSession → session {session.Id}");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("CreateSession failed →", ex.Message);
+        }
+    }
+
+    private async Task GenerateRequest()
+    {
+        try
+        {
+            // Clear Key's "keyids" initialization data is a JSON document naming the keys the content needs.
+            var initData = Encoding.UTF8.GetBytes($$"""{"kids":["{{Base64Url(KeyId)}}"]}""");
+            var ok = await session!.GenerateRequest("keyids", initData);
+            await sessionOutput.Log($"GenerateRequest(keyids, {initData.Length} bytes) →", ok);
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("GenerateRequest failed →", ex.Message);
+        }
+    }
+
+    private async void OnMessage(MediaKeyMessage message)
+    {
+        try
+        {
+            await sessionOutput.Info($"message → {message.Type}, {message.Message.Length} bytes: " +
+                                     $"{Encoding.UTF8.GetString(message.Message)}");
+
+            // Standing in for the licence server: Clear Key's response is a JSON Web Key set.
+            var licence = Encoding.UTF8.GetBytes(
+                $$"""{"keys":[{"kty":"oct","kid":"{{Base64Url(KeyId)}}","k":"{{Base64Url(Key)}}"}],"type":"temporary"}""");
+
+            await sessionOutput.Log("Update(licence) →", await session!.Update(licence));
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("handling the message failed →", ex.Message);
+        }
+    }
+
+    private async void OnKeyStatuses(MediaKeyStatusEntry[] statuses)
+    {
+        try
+        {
+            await sessionOutput.Success("keystatuseschange → " + string.Join(", ", statuses.Select(s => $"{s.KeyId}: {s.Status}")));
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("reporting key statuses failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowStatuses()
+    {
+        try
+        {
+            var statuses = await session!.GetKeyStatuses();
+            if (statuses.Length == 0)
+            {
+                await sessionOutput.Log("GetKeyStatuses → no keys yet (generate a request and let the licence come back)");
+                return;
+            }
+
+            await sessionOutput.Log("GetKeyStatuses → " + string.Join(", ", statuses.Select(s => $"{s.KeyId}: {s.Status}")));
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("GetKeyStatuses failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowSessionInfo()
+    {
+        try
+        {
+            var id = await session!.GetSessionId();
+            var expiration = await session.GetExpiration();
+            await sessionOutput.Log($"GetSessionId → '{id}'; GetExpiration → {(expiration is null ? "null (no expiry)" : expiration.Value.ToString("0"))}");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("reading the session failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseSession()
+    {
+        try
+        {
+            await session!.DisposeAsync();
+            session = null;
+            await sessionOutput.Log("DisposeAsync → session closed");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("closing the session failed →", ex.Message);
+        }
+    }
+
+    private async Task ReleaseKeys()
+    {
+        try
+        {
+            if (session is not null)
+            {
+                await session.DisposeAsync();
+                session = null;
+            }
+
+            await keys!.DisposeAsync();
+            keys = null;
+            await sessionOutput.Log("DisposeAsync → keys detached and released");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("releasing the keys failed →", ex.Message);
+        }
+    }
+
+    private async Task Watch()
+    {
+        try
+        {
+            encryptedSubscription = await encryptedMedia.SubscribeEncrypted(videoElement, async initData =>
+            {
+                await watchOutput.Info($"encrypted → {initData.InitDataType}, {initData.InitData.Length} bytes");
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await watchOutput.Success("SubscribeEncrypted → watching. Point the video at protected media to see it fire.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("SubscribeEncrypted failed →", ex.Message);
+        }
+    }
+
+    private async Task Unwatch()
+    {
+        try
+        {
+            await encryptedSubscription!.DisposeAsync();
+            encryptedSubscription = null;
+            await watchOutput.Log("DisposeAsync → listener detached");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("DisposeAsync failed →", ex.Message);
+        }
+    }
+
+    private async Task TryServerCertificate()
+    {
+        try
+        {
+            // Clear Key has no server certificate, so this reports false - which is what a key system
+            // that does not use one is supposed to do.
+            await advancedOutput.Log("SetServerCertificate →", await keys!.SetServerCertificate([1, 2, 3, 4]));
+        }
+        catch (Exception ex)
+        {
+            await advancedOutput.Error("SetServerCertificate failed →", ex.Message);
+        }
+    }
+
+    private async Task TryPersistentSession()
+    {
+        try
+        {
+            var persistent = await keys!.CreateSession(m => { }, MediaKeySessionType.PersistentLicense);
+            if (persistent is null)
+            {
+                await advancedOutput.Warn("CreateSession(PersistentLicense) → null (this configuration did not ask for persistent state)");
+                return;
+            }
+
+            await advancedOutput.Success($"CreateSession(PersistentLicense) → session {persistent.Id}");
+            await persistent.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            await advancedOutput.Error("CreateSession failed →", ex.Message);
+        }
+    }
+
+    private static string Base64Url(byte[] value)
+        => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (encryptedSubscription is not null) await encryptedSubscription.DisposeAsync();
+            if (session is not null) await session.DisposeAsync();
+            if (keys is not null) await keys.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

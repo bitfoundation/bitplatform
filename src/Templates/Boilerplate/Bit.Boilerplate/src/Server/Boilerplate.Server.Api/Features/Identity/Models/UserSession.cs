@@ -5,6 +5,7 @@ using Boilerplate.Server.Api.Features.Tenants;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity.Models;
 
@@ -61,9 +62,9 @@ public partial class UserSession
     /// signed in with no way for the server to address them through this column.
     /// </para>
     /// <para>
-    /// So anything sent here reaches ONE tab or app. That is fine for what it is used for - a device level action
-    /// the user is watching for (a diagnostic log upload, an AI chatbot tool acting on the device) - but do not
-    /// treat it as "notify this session". For that, target all the sessions of the user instead.
+    /// So anything sent here reaches ONE tab or app. That is fine for what it is used for - a device-level action
+    /// the user is watching for (an AI chatbot tool acting on the device) - but do not treat it as "notify this
+    /// session". For that, target all the sessions of the user instead.
     /// </para>
     /// </summary>
     public string? SignalRConnectionId { get; set; }
@@ -86,4 +87,10 @@ public partial class UserSession
     /// The version of the application used for this session.
     /// </summary>
     public string? AppVersion { get; set; }
+
+    /// <summary>
+    /// Set when an external application authorized over OAuth holds this session rather than one of the user's own
+    /// devices - which is what makes a grant revocable from Settings -&gt; Sessions like anything else.
+    /// </summary>
+    public OAuthGrant? OAuthGrant { get; set; }
 }

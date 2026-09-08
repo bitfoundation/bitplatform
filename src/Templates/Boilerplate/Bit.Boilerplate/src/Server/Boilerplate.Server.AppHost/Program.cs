@@ -98,8 +98,7 @@ serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 //#endif
 //#endif
 
-// Drop the projects' http://*:port (wildcard) endpoints - Aspire can't reach a wildcard host from the ingress container.
-builder.RemoveWildcardEndpoints();
+builder.ExposeWildcardEndpointsToLan();
 
 //#if (cloudflare == true)
 // cloudflared connects straight to the projects (no reverse proxy) - possible now that RemoveWildcardEndpoints drops http2.
@@ -126,24 +125,12 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     serverWebProject.WithReference(mailpit);
     //#endif
 
-    //#if (api == "Standalone")
-    builder.AddDevTunnel("api-dev-tunnel")
-        .WithAnonymousAccess()
-        .WithReference(serverApiProject);
-    //#endif
-
-    var tunnel = builder.AddDevTunnel("web-dev-tunnel")
-        .WithAnonymousAccess()
-        .WithReference(serverWebProject);
-
     if (OperatingSystem.IsWindows())
     {
         // Blazor Hybrid Windows project.
         builder.AddProject("clientwindows", "../../Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj")
             .WithExplicitStart();
     }
-
-    builder.AddMaui(serverWebProject, tunnel);
 
     // Every container is created from scratch on each run and is destroyed as soon as the app host stops.
     // Uncommenting the following line keeps them alive and reuses them instead, which makes starting the project

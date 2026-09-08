@@ -1699,9 +1699,6 @@
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>
   </data>
-  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
-    <value>उपयोगकर्ता सत्र लॉग पढ़ें</value>
-  </data>
   <!--#endif -->
   <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
@@ -1905,4 +1902,134 @@
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>सहमत हूँ और जारी रखें</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>एप्लिकेशन को अनुमति दें</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>इस अनुरोध की जाँच हो रही है...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>इस अनुरोध को अधिकृत नहीं किया जा सकता</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>कुछ भी साझा नहीं किया गया। आप यह पेज बंद करके एप्लिकेशन से दोबारा कोशिश कर सकते हैं।</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>होम पेज पर जाएँ</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>आप एप्लिकेशन पर वापस जा सकते हैं</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>परिणाम {0} को सौंप दिया गया। अगर वह अपने आप सामने न आए, तो उस पर स्विच करें।</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>{0} को अनुमति दें?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>यह आपकी ओर से काम करने की अनुमति माँग रहा है। आगे तभी बढ़ें जब आपने इसे किसी भरोसेमंद एप्लिकेशन से शुरू किया हो।</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>एप्लिकेशन</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>पहुँच सकता है</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>आपको वापस भेजता है</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>यह ये कर सकेगा:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>आपका खाता वह सब कुछ नहीं दे सकता जो इस एप्लिकेशन ने माँगा है, इसलिए ये छोड़ दिए जाएँगे: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>इस एप्लिकेशन ने खुद अपना परिचय दिया है; {0} पर किसी ने इसकी पुष्टि नहीं की है।</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>अनुमति दें</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>यह अनुरोध करने वाले एप्लिकेशन की पहचान नहीं हो सकी।</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>यह एप्लिकेशन जिस पते पर वापस भेजा जाना चाहता है, वह उसके पंजीकृत पतों में से नहीं है।</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>यह प्राधिकरण अनुरोध मान्य नहीं है।</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना - कॉन्फ़िगरेशन, डेटाबेस स्कीमा, बैकग्राउंड जॉब। यह कुछ भी बदल नहीं सकता।</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना।</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>अधिकृत एप्लिकेशन</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>एप्लिकेशन</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>अधिकृत एप्लिकेशन</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>बाहरी एप्लिकेशन जिन्हें आपके उपयोगकर्ताओं ने OAuth के ज़रिए अनुमति दी है।</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>अभी तक किसी एप्लिकेशन को अनुमति नहीं दी गई है।</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>जैसे ही कोई किसी एप्लिकेशन को अनुमति देता है, वह यहाँ दिखने लगता है; पहले से कुछ पंजीकृत करने की ज़रूरत नहीं।</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>सक्रिय अनुमतियाँ</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>उपयोगकर्ताओं को वापस भेजता है:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>पहुँच रद्द करें</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} के पास इस समय {1} अनुमति है। रद्द करने पर वह उन सभी के लिए साइन आउट हो जाएगा जिन्होंने अनुमति दी थी; वे दोबारा अनुमति दे सकते हैं।</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>{0} अनुमति रद्द की गई।</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>यहाँ कॉन्फ़िगर किया गया</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>स्व-वर्णित</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>इस एप्लिकेशन की पहचान नहीं हो सकी, इसलिए लौटने के लिए कोई जगह नहीं है।</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>यह प्राधिकरण अनुरोध मान्य नहीं है ({0})।</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>आपके खाते के पास वे अनुमतियाँ नहीं हैं जो यह एप्लिकेशन माँग रहा है।</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>इस एप्लिकेशन के लिए दो-कारक प्रमाणीकरण ज़रूरी है। इसे अपने खाते की सेटिंग्स में चालू करें, दोबारा साइन इन करें, फिर एप्लिकेशन से नए सिरे से शुरू करें।</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>कार्यक्षेत्र</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>यह एप्लिकेशन जिस कार्यक्षेत्र की माँग कर रहा है, आप उसके सदस्य नहीं हैं।</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>आपकी ओर से इस ऐप के सहायक का उपयोग करना - उससे सवाल पूछना और जो वह खोज सकता है उसे खोजना। यह आपके डिवाइस पर कुछ नहीं कर सकता।</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>आपकी ओर से इस ऐप के सहायक का उपयोग करना।</value>
+  </data>
+  <!--#endif -->
 </root>

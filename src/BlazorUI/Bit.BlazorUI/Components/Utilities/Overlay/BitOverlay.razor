@@ -1,11 +1,35 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes" @onclick="CloseOverlay"
+@* An Overlay that hosts no content and carries no accessible name of its own is a purely decorative
+   layer - a dim scrim or a transparent click catcher - so it is taken out of the accessibility tree the
+   way every surveyed backdrop is; one given content is the very thing a screen reader is meant to reach. *@
+@* Pressing something that cannot hold the focus is what takes the focus off whatever had it, and the layer
+   is the largest such thing on the screen while an Overlay is open. A press on it would otherwise leave the
+   keyboard on the body, walking the next Tab into the page the Overlay is there to keep out of reach. The
+   default of the press is refused so that the focus stays where the content put it - the click itself still
+   arrives, and still dismisses. Only the presses on the layer reach here: the content stops its own. *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     @onclick="HandleOnClick"
+     @onmousedown="HandleOnMouseDown"
+     @onmousedown:preventDefault="true"
      id="@_Id"
      aria-label="@AriaLabel"
+     aria-hidden="@(ChildContent is null && AriaLabel.HasNoValue() ? "true" : null)"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @ChildContent
+    @if (ChildContent is not null)
+    {
+        @* The content is given a box of its own so that a press and a click on it are told apart from the
+           ones on the layer around it: the layer is what a dismissal is aimed at, and every surveyed
+           backdrop is a sibling of the surface it dims rather than its parent for exactly that reason. The
+           box is laid out as display:contents, so it takes no part in the layout and what the consumer
+           wrote is still what the Overlay's own flex container lays out. *@
+        <div class="bit-ovl-cnt"
+             @onclick="HandleOnContentClick" @onclick:stopPropagation="true"
+             @onmousedown="HandleOnContentMouseDown" @onmousedown:stopPropagation="true">
+            @ChildContent
+        </div>
+    }
 </div>

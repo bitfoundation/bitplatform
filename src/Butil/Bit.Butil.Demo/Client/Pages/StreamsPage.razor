@@ -1,0 +1,448 @@
+@page "/streams"
+@implements IAsyncDisposable
+@inject Bit.Butil.Streams streams
+
+<PageTitle>Streams - Bit.Butil</PageTitle>
+
+<PageHeader Category="Async &amp; Scheduling"
+            Title="Streams"
+            Lead="Data that arrives in pieces and is handled in pieces. Read a response as it downloads, split it in two, run it through the browser's gzip codec, and take the bytes in C# as they come."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Streams_API"
+            InjectAs="Streams streams" />
+
+<Callout Type="info" Title="A stream has one consumer">
+    Reading from a stream <em>locks</em> it, and a locked stream can no longer be teed or piped -
+    the specification's rule, not this wrapper's, and what stops two consumers silently stealing
+    each other's chunks. <code>Tee</code>, <code>PipeThrough</code> and <code>PipeTo</code> spend the
+    handle they were called on: the stream belongs to the result afterwards.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsTransformSupported"
+                 Description="ReadableStream is everywhere. CompressionStream - which the transforms need - is newer, so it has its own check. During prerender/SSR both return false rather than throwing, so defer them to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Streams streams
+
+var supported = await streams.IsSupported();
+var transforms = await streams.IsTransformSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Read a response as it arrives"
+                 Api="FromResponse / Read"
+                 Description="The difference between 'download it, then look at it' and 'look at it as it downloads': a gigabyte through Fetch.Send is a gigabyte of managed memory, while a gigabyte through here is one chunk at a time. TotalBytes is the Content-Length header, which describes the transfer rather than the stream - a compressed response reports the encoded size while the chunks you read are the decoded ones, and a chunked response sends no header at all. It is a hint for a progress bar, never the number of bytes you will read. The final read carries no data, so the loop ends on Done rather than on an empty array."
+                 Code=@("""
+var response = await streams.FromResponse(new FetchRequest { Url = "/api/stream" });
+if (response.Stream is null) { /* response.Error says why */ }
+
+var received = 0L;
+while (true)
+{
+    var chunk = await response.Stream!.Read();
+    if (chunk.Done) break;
+    received += chunk.Data!.Length;   // ... and do something with it now
+}
+""")>
+        <div class="controls">
+            <button @onclick="ReadStream">Read /api/stream</button>
+            <button class="danger" @onclick="CancelRead">Cancel</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Progress</span>
+            <span>@_progress</span>
+        </div>
+        <DemoConsole @ref="readOutput" Title="read output" />
+    </DemoSection>
+
+    <DemoSection Title="Cancelling actually cancels"
+                 Api="Cancel"
+                 Description="Cancelling a stream tells the source to give up - for a fetch body that aborts the download rather than letting it finish into nothing. Start the read above and press Cancel; the server stops sending, and the read loop ends where it was."
+                 Code=@("""
+await response.Stream!.Cancel("the user navigated away");
+
+// the next Read answers Done, and the request is gone from the network panel
+""")>
+        <DemoConsole @ref="cancelOutput" Title="cancel output" />
+    </DemoSection>
+
+    <DemoSection Title="One stream, two consumers"
+                 Api="Tee"
+                 Description="Tee splits a stream in two, each getting every chunk - for hashing a download while also writing it somewhere, say. The original handle is spent: the stream has been split, not copied. Both branches are fed from the one source, so a branch nobody reads makes the browser buffer for it indefinitely - read both, or cancel the one you do not want."
+                 Code=@("""
+var split = await response.Stream!.Tee();
+var (first, second) = split!.Value;
+
+// both see every chunk; the original handle is spent
+var counting = CountBytes(first);
+var hashing = HashBytes(second);
+await Task.WhenAll(counting, hashing);
+""")>
+        <div class="controls">
+            <button @onclick="TeeStream">Tee and read both</button>
+        </div>
+        <DemoConsole @ref="teeOutput" Title="tee output" />
+    </DemoSection>
+
+    <DemoSection Title="A pipeline of your own"
+                 Api="CreateCompression / PipeThrough / CreateWritable / PipeTo"
+                 Description="The transforms are the browser's own codecs, and PipeThrough is what accepts them. PipeTo runs the whole pipe in one call - back-pressure, closing the destination, and propagating an error from either end all happen inside it. The sink's callback is where the bytes reach C#, and the producer waits for it to return before sending the next chunk, so a slow handler slows the download rather than queueing behind it."
+                 Code=@("""
+var gzip = await streams.CreateCompression(CompressionFormat.Gzip);
+var sink = await streams.CreateWritable(
+    onChunk: bytes => { compressed += bytes.Length; },
+    onFinished: reason => { /* null on a clean close */ });
+
+var compressedStream = await response.Stream!.PipeThrough(gzip!);
+var error = await compressedStream!.PipeTo(sink!);   // null on success
+""")>
+        <div class="controls">
+            <button @onclick="RunPipeline">Download → gzip → C#</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Result</span>
+            <span>@_pipelineResult</span>
+        </div>
+        <DemoConsole @ref="pipeOutput" Title="pipeline output" />
+    </DemoSection>
+
+    <DemoSection Title="Writing into a sink by hand"
+                 Api="Write / Close"
+                 Description="A writable does not have to be fed by a pipe. Write waits until the sink is ready for the chunk rather than queueing without limit, which is what makes a producer in a loop run at the speed of its consumer. A stream being piped into cannot also be written to by hand - the pipe holds it."
+                 Code=@("""
+var sink = await streams.CreateWritable(bytes => received.AddRange(bytes));
+
+foreach (var chunk in chunks)
+{
+    await sink!.Write(chunk);   // returns when the sink is ready for the next one
+}
+await sink!.Close();
+""")>
+        <div class="controls">
+            <button @onclick="WriteByHand">Write 5 chunks</button>
+        </div>
+        <DemoConsole @ref="writeOutput" Title="write output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Cancel what you abandon">
+    A stream you stop reading does not stop arriving. Dispose the handle - which cancels it, and for
+    a fetch body cancels the download with it. As a safety net the <code>Streams</code> service
+    cancels anything left behind when its scope is torn down. A handle spent by <code>Tee</code>,
+    <code>PipeThrough</code> or a successful <code>PipeTo</code> owns nothing any more, so disposing
+    it cancels nothing.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes ReadableStream. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsTransformSupported"
+               Signature="ValueTask<bool> IsTransformSupported()"
+               Description="True when the runtime exposes CompressionStream, which the transforms need." />
+    <ApiMember Name="FromResponse"
+               Signature="ValueTask<StreamedResponse> FromResponse(FetchRequest request)"
+               Description="Starts a request and hands back its body as a stream before the body has arrived. Honours FetchRequest.Signal. A failure or a bodyless response sets Error rather than throwing." />
+    <ApiMember Name="CreateWritable"
+               Signature="ValueTask<WritableStreamHandle?> CreateWritable(Action<byte[]> onChunk, Action<string?>? onFinished = null, int highWaterMark = 1)"
+               Description="A stream that writes into C#. The producer waits for onChunk to return before sending the next chunk." />
+    <ApiMember Name="CreateCompression"
+               Signature="ValueTask<TransformStreamHandle?> CreateCompression(CompressionFormat format = CompressionFormat.Gzip)"
+               Description="A transform that compresses what passes through it, using the browser's own codec. Null where CompressionStream is missing." />
+    <ApiMember Name="CreateDecompression"
+               Signature="ValueTask<TransformStreamHandle?> CreateDecompression(CompressionFormat format = CompressionFormat.Gzip)"
+               Description="The inverse. A format that does not match the data errors the pipe rather than this call." />
+    <ApiMember Name="ReadableStreamHandle.Read"
+               Signature="ValueTask<StreamChunk> Read()"
+               Description="Reads the next chunk. The first read locks the stream. The final read carries Done and no data." />
+    <ApiMember Name="ReadableStreamHandle.Tee"
+               Signature="ValueTask<(ReadableStreamHandle First, ReadableStreamHandle Second)?> Tee()"
+               Description="Splits the stream in two, each getting every chunk. Null when it is already locked. This handle is spent afterwards." />
+    <ApiMember Name="ReadableStreamHandle.PipeThrough"
+               Signature="ValueTask<ReadableStreamHandle?> PipeThrough(TransformStreamHandle transform)"
+               Description="Runs the stream through a transform and returns its output. This handle is spent afterwards." />
+    <ApiMember Name="ReadableStreamHandle.PipeTo"
+               Signature="ValueTask<string?> PipeTo(WritableStreamHandle destination, bool preventClose = false)"
+               Description="Pumps everything into a destination and completes when done. Null on success, or the reason it failed." />
+    <ApiMember Name="ReadableStreamHandle.Cancel"
+               Signature="ValueTask Cancel(string? reason = null)"
+               Description="Stops the stream and tells the source to give up - for a fetch body, cancels the download." />
+    <ApiMember Name="ReadableStreamHandle.GetLocked"
+               Signature="ValueTask<bool> GetLocked()"
+               Description="Whether a reader or a pipe holds the stream. A locked stream cannot be teed or piped." />
+    <ApiMember Name="WritableStreamHandle.Write"
+               Signature="ValueTask<bool> Write(byte[] data)"
+               Description="Writes a chunk, waiting until the sink is ready for it. False when the stream is closed, aborted or released." />
+    <ApiMember Name="WritableStreamHandle.Close / Abort"
+               Signature="ValueTask<bool> Close(), Abort(string? reason = null)"
+               Description="Ends the stream cleanly once queued chunks are handled, or now discarding them. onFinished runs with null or the reason." />
+    <ApiMember Name="TransformStreamHandle.Readable / Writable"
+               Signature="ReadableStreamHandle Readable, WritableStreamHandle Writable"
+               Description="The two ends, for wiring a transform up by hand rather than through PipeThrough." />
+    <ApiMember Name="StreamedResponse"
+               Signature="record (ReadableStreamHandle? Stream, int Status, string StatusText, string Url, long? TotalBytes, string? Error)"
+               Description="The response's status and its unread body. TotalBytes is null for a chunked or compressed response." />
+    <ApiMember Name="StreamChunk"
+               Signature="record (bool Done, byte[]? Data, string? Error)"
+               Description="One read. Chunk sizes are the browser's choice and vary within one stream." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole readOutput = default!;
+    private DemoConsole cancelOutput = default!;
+    private DemoConsole teeOutput = default!;
+    private DemoConsole pipeOutput = default!;
+    private DemoConsole writeOutput = default!;
+
+    private ReadableStreamHandle? _reading;
+    private string _progress = "Idle.";
+    private string _pipelineResult = "Idle.";
+
+    private const string StreamUrl = "/api/stream?chunks=20&chunkSize=4096&delayMs=100";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await streams.IsSupported());
+            await supportOutput.Success("IsTransformSupported →", await streams.IsTransformSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadStream()
+    {
+        await CancelRead();
+
+        ReadableStreamHandle? reading = null;
+
+        try
+        {
+            var response = await streams.FromResponse(new FetchRequest { Url = StreamUrl });
+
+            if (response.Stream is null)
+            {
+                _progress = "Could not start.";
+                await readOutput.Warn("No stream →", response.Error);
+                return;
+            }
+
+            // Read through this invocation's own handle rather than the field: a Cancel, or a
+            // second Read, replaces the field while this loop is still awaiting a chunk, and the
+            // loop must keep reading the stream it started on rather than following the field.
+            reading = response.Stream;
+            _reading = reading;
+
+            await readOutput.Success($"Status {response.Status} →",
+                response.TotalBytes is null ? "no Content-Length" : $"{response.TotalBytes} bytes expected");
+
+            var received = 0L;
+            var chunks = 0;
+
+            while (true)
+            {
+                var chunk = await reading.Read();
+                if (chunk.Error is not null)
+                {
+                    await readOutput.Error("Read failed →", chunk.Error);
+                    break;
+                }
+                if (chunk.Done) break;
+
+                chunks++;
+                received += chunk.Data!.Length;
+                // Clamped, because Content-Length is the encoded size: a compressed response
+                // decodes to more bytes than it claimed, and a progress bar must not run past 100%.
+                _progress = response.TotalBytes is long total and > 0
+                    ? $"{received} / {total} bytes in {chunks} chunk(s) - {Math.Min(100, received * 100 / total)}%"
+                    : $"{received} bytes in {chunks} chunk(s)";
+                StateHasChanged();
+            }
+
+            await readOutput.Success("Done →", $"{received} bytes in {chunks} chunk(s)");
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("Read failed →", ex.Message);
+        }
+        finally
+        {
+            // Only if the field is still this read's stream: a newer read has already put its own
+            // there, and clearing it would leave Cancel and disposal with nothing to reach.
+            if (ReferenceEquals(_reading, reading)) _reading = null;
+        }
+    }
+
+    private async Task CancelRead()
+    {
+        if (_reading is null) return;
+
+        var stream = _reading;
+        _reading = null;
+        await stream.Cancel("cancelled from the page");
+        _progress = "Cancelled.";
+        await cancelOutput.Warn("Cancelled - the download stops rather than finishing into nothing.");
+    }
+
+    private async Task TeeStream()
+    {
+        try
+        {
+            var response = await streams.FromResponse(new FetchRequest { Url = StreamUrl });
+            if (response.Stream is null)
+            {
+                await teeOutput.Warn("No stream →", response.Error);
+                return;
+            }
+
+            var split = await response.Stream.Tee();
+            if (split is null)
+            {
+                await teeOutput.Warn("Tee returned null - the stream was already locked.");
+                return;
+            }
+
+            var (first, second) = split.Value;
+            await teeOutput.Log("Split - reading both branches at once.");
+
+            // Both branches are read together on purpose: reading one to the end while the other
+            // waits makes the browser buffer everything for the branch nobody is draining.
+            var counts = await Task.WhenAll(CountBytes(first), CountBytes(second));
+
+            await teeOutput.Success("Both branches →", $"{counts[0]} bytes and {counts[1]} bytes");
+        }
+        catch (Exception ex)
+        {
+            await teeOutput.Error("Tee failed →", ex.Message);
+        }
+    }
+
+    private static async Task<long> CountBytes(ReadableStreamHandle stream)
+    {
+        var total = 0L;
+        while (true)
+        {
+            var chunk = await stream.Read();
+            if (chunk.Done) return total;
+            total += chunk.Data!.Length;
+        }
+    }
+
+    private async Task RunPipeline()
+    {
+        try
+        {
+            var response = await streams.FromResponse(new FetchRequest { Url = StreamUrl });
+            if (response.Stream is null)
+            {
+                await pipeOutput.Warn("No stream →", response.Error);
+                return;
+            }
+
+            await using var gzip = await streams.CreateCompression();
+            if (gzip is null)
+            {
+                await pipeOutput.Warn("CreateCompression returned null - this engine has no CompressionStream.");
+                await response.Stream.Cancel();
+                return;
+            }
+
+            var compressed = 0L;
+            var finished = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var sink = await streams.CreateWritable(
+                onChunk: bytes => compressed += bytes.Length,
+                onFinished: reason => finished.TrySetResult(reason));
+
+            if (sink is null)
+            {
+                await pipeOutput.Warn("CreateWritable returned null.");
+                await response.Stream.Cancel();
+                return;
+            }
+
+            var piped = await response.Stream.PipeThrough(gzip);
+            if (piped is null)
+            {
+                await pipeOutput.Warn("PipeThrough returned null - the stream was locked, or the transform released.");
+                return;
+            }
+
+            await pipeOutput.Log("Piping /api/stream through the browser's gzip codec into C#...");
+            var error = await piped.PipeTo(sink);
+
+            if (error is not null)
+            {
+                await pipeOutput.Error("PipeTo failed →", error);
+                return;
+            }
+
+            await finished.Task;
+            _pipelineResult = $"{response.TotalBytes} bytes downloaded, {compressed} bytes after gzip.";
+            await pipeOutput.Success("Done →", _pipelineResult);
+        }
+        catch (Exception ex)
+        {
+            await pipeOutput.Error("Pipeline failed →", ex.Message);
+        }
+    }
+
+    private async Task WriteByHand()
+    {
+        try
+        {
+            var received = 0L;
+            var chunks = 0;
+            var finished = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var sink = await streams.CreateWritable(
+                onChunk: bytes => { received += bytes.Length; chunks++; },
+                onFinished: reason => finished.TrySetResult(reason));
+
+            if (sink is null)
+            {
+                await writeOutput.Warn("CreateWritable returned null - the runtime has no WritableStream.");
+                return;
+            }
+
+            for (var i = 1; i <= 5; i++)
+            {
+                var written = await sink.Write(new byte[i * 100]);
+                if (written is false)
+                {
+                    await writeOutput.Warn($"Write {i} returned false - the sink is closed.");
+                    return;
+                }
+            }
+
+            await sink.Close();
+            await finished.Task;
+
+            await writeOutput.Success("Sink received →", $"{chunks} chunk(s), {received} bytes, then a clean close");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("Write failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_reading is not null) await _reading.DisposeAsync();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

@@ -1,0 +1,433 @@
+@page "/web-socket"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebSocket webSocket
+@inject NavigationManager navManager
+
+<PageTitle>WebSocket - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network &amp; Workers"
+            Title="WebSocket"
+            Lead="A two-way, message-oriented connection that stays open - with the parts a managed ClientWebSocket hides: binary frames, close codes, the negotiated sub-protocol, and the one back-pressure signal a browser socket offers."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
+            InjectAs="WebSocket webSocket" />
+
+<Callout Type="info" Title="A live endpoint is running">
+    This demo talks to <code>/ws/echo</code> on the demo server. It echoes text back with an
+    <code>echo:</code> prefix, echoes binary frames back with every byte incremented (so a real
+    round trip is distinguishable from keeping your own array), offers the
+    <code>butil-echo</code> sub-protocol, and understands two commands - <code>close</code> to make
+    the server close with an application code, and <code>burst</code> to flood the connection.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes WebSocket. Supported by every current engine. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.WebSocket webSocket
+
+var supported = await webSocket.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Open, send, receive"
+                 Api="Open / SendText / WebSocketHandle"
+                 Description="A page served over HTTPS may only open wss:// - a ws:// URL is blocked as mixed content before the connection is attempted, which is why Open returns null rather than reporting an error. Sending before the connection is established fails rather than queueing, so SendText returns false until onOpen has run."
+                 Code=@("""
+private WebSocketHandle? _socket;
+
+_socket = await webSocket.Open(
+    "wss://example.com/ws/echo",
+    onMessage: m => InvokeAsync(() =>
+    {
+        // m.IsBinary says which payload carries this frame
+        _messages.Insert(0, m.IsBinary ? $"{m.Data!.Length} bytes" : m.Text!);
+        StateHasChanged();
+    }),
+    protocols: ["butil-echo"],
+    onOpen: (protocol, extensions) => InvokeAsync(StateHasChanged),
+    onClose: c => InvokeAsync(StateHasChanged),
+    onError: () => InvokeAsync(StateHasChanged));
+
+await _socket!.SendText("hello");
+""")>
+        <div class="controls">
+            <button @onclick="OpenSocket">Open</button>
+            <input @bind="_outgoing" placeholder="message" aria-label="message to send" />
+            <button @onclick="SendText">SendText</button>
+            <button class="secondary" @onclick="SendBytes">SendBytes</button>
+            <button class="danger" @onclick="CloseSocket">Close</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
+        </div>
+        <div class="field">
+            <span class="field-label">Received</span>
+            <span>@_received frame(s)</span>
+        </div>
+        @if (_messages.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Latest</span>
+                <span><code>@_messages[0]</code></span>
+            </div>
+        }
+        <DemoConsole @ref="socketOutput" Title="socket output" />
+    </DemoSection>
+
+    <DemoSection Title="Binary frames"
+                 Api="SendBytes / WebSocketMessage.Data"
+                 Description="The socket is opened in arraybuffer mode, so an incoming binary frame arrives as bytes rather than a Blob that would need an extra asynchronous read per frame. The echo endpoint increments every byte it sends back, so a round trip is visible in the values rather than only in the length."
+                 Code=@("""
+await _socket!.SendBytes([1, 2, 3, 4]);
+
+// arrives as: m.IsBinary == true, m.Data == [2, 3, 4, 5]
+""")>
+        <div class="controls">
+            <button @onclick="SendBytes">Send 4 bytes</button>
+        </div>
+        <DemoConsole @ref="binaryOutput" Title="binary output" />
+    </DemoSection>
+
+    <DemoSection Title="Negotiation and identity"
+                 Api="GetProtocol / GetExtensions / GetUrl / GetState"
+                 Description="Sub-protocols are offered most-preferred first and the server picks one; offering a protocol the server does not know fails the connection outright rather than falling back to none. Extensions are what the server agreed to - permessage-deflate, usually - and are not something a page chooses."
+                 Code=@("""
+var protocol = await _socket!.GetProtocol();     // "butil-echo"
+var extensions = await _socket.GetExtensions();  // e.g. "permessage-deflate"
+var url = await _socket.GetUrl();
+var state = await _socket.GetState();            // Connecting / Open / Closing / Closed
+""")>
+        <div class="controls">
+            <button @onclick="ReadNegotiation">Read</button>
+        </div>
+        <DemoConsole @ref="negotiationOutput" Title="negotiation output" />
+    </DemoSection>
+
+    <DemoSection Title="Back-pressure"
+                 Api="GetBufferedAmount"
+                 Description="Sending never blocks and never fails for being too fast, so a producer that outruns the connection just grows this number until the tab runs out of memory. It is the only back-pressure signal a browser socket has. Press Burst to make the server flood the connection, then read it while the frames are still arriving."
+                 Code=@("""
+await _socket!.SendText("burst");
+
+var queued = await _socket.GetBufferedAmount();
+if (queued > 1_000_000) { /* stop producing until it drains */ }
+""")>
+        <div class="controls">
+            <button @onclick="Burst">Burst (2 MB back)</button>
+            <button class="secondary" @onclick="ReadBuffered">GetBufferedAmount</button>
+        </div>
+        <DemoConsole @ref="pressureOutput" Title="back-pressure output" />
+    </DemoSection>
+
+    <DemoSection Title="Closing, and being closed"
+                 Api="Close / onClose / WebSocketClose"
+                 Description="Only 1000 and 3000-4999 may be sent from script; anything else is refused and the socket closes without a code instead. Code 1006 with WasClean false is the browser's stand-in for 'the connection dropped' - no close frame ever arrived, so there is nothing more specific to report. Nothing here reconnects: unlike EventSource, a WebSocket that drops stays dropped until you open another."
+                 Code=@("""
+// close from this side, with an application-defined code
+await _socket!.Close(4000, "done for now");
+
+// ... or let the server close: it answers "close" with code 4001
+await _socket.SendText("close");
+
+// either way the same callback runs
+onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="CloseWithCode">Close(4000)</button>
+            <button class="secondary" @onclick="AskServerToClose">Ask the server to close</button>
+        </div>
+        <DemoConsole @ref="closeOutput" Title="close output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Always close what you open">
+    A socket that is never closed holds a connection open for as long as the page lives, and the
+    server holds one with it. Dispose the handle - as a safety net, the <code>WebSocket</code>
+    service closes any leaked socket when its scope is torn down.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes WebSocket. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Open"
+               Signature="ValueTask<WebSocketHandle?> Open(string url, Action<WebSocketMessage> onMessage, string[]? protocols = null, Action<string, string>? onOpen = null, Action<WebSocketClose>? onClose = null, Action? onError = null)"
+               Description="Opens a ws:// or wss:// connection. Null when WebSocket is missing, the URL is malformed, or mixed content blocked it. onOpen receives the negotiated protocol and extensions." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, closes any socket whose handle was never disposed." />
+    <ApiMember Name="WebSocketHandle.SendText"
+               Signature="ValueTask<bool> SendText(string text)"
+               Description="Sends a text frame. False when the socket is not open - including sending before the connection is established." />
+    <ApiMember Name="WebSocketHandle.SendBytes"
+               Signature="ValueTask<bool> SendBytes(byte[] data)"
+               Description="Sends a binary frame. False when the socket is not open." />
+    <ApiMember Name="WebSocketHandle.GetState"
+               Signature="ValueTask<WebSocketState> GetState()"
+               Description="Connecting, Open, Closing or Closed. Closed is also what a disposed handle reports." />
+    <ApiMember Name="WebSocketHandle.GetBufferedAmount"
+               Signature="ValueTask<long> GetBufferedAmount()"
+               Description="Bytes queued by send but not yet on the wire - the only back-pressure signal a browser socket offers." />
+    <ApiMember Name="WebSocketHandle.GetProtocol"
+               Signature="ValueTask<string> GetProtocol()"
+               Description="The sub-protocol the server chose, or an empty string when none was negotiated." />
+    <ApiMember Name="WebSocketHandle.GetExtensions"
+               Signature="ValueTask<string> GetExtensions()"
+               Description="The extensions the server agreed to, such as permessage-deflate." />
+    <ApiMember Name="WebSocketHandle.GetUrl"
+               Signature="ValueTask<string> GetUrl()"
+               Description="The absolute URL the socket resolved to." />
+    <ApiMember Name="WebSocketHandle.Close"
+               Signature="ValueTask Close(int? code = null, string? reason = null)"
+               Description="Closes with a close frame. Only 1000 and 3000-4999 may be sent from script. The reason is at most 123 UTF-8 bytes." />
+    <ApiMember Name="WebSocketHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes the connection. Idempotent." />
+    <ApiMember Name="WebSocketMessage"
+               Signature="record (bool IsBinary, string? Text, byte[]? Data)"
+               Description="One received frame. IsBinary says which payload carries it - a frame is text or binary, never both." />
+    <ApiMember Name="WebSocketClose"
+               Signature="record (int Code, string Reason, bool WasClean)"
+               Description="How the connection ended. 1006 with WasClean false means it dropped without a closing handshake." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole socketOutput = default!;
+    private DemoConsole binaryOutput = default!;
+    private DemoConsole negotiationOutput = default!;
+    private DemoConsole pressureOutput = default!;
+    private DemoConsole closeOutput = default!;
+
+    private WebSocketHandle? _socket;
+    private readonly List<string> _messages = [];
+    private string _connectionState = "Not connected.";
+    private string _outgoing = "hello";
+    private int _received;
+
+    /// <summary>
+    /// The echo endpoint on this same origin, with the scheme swapped: a page served over HTTPS may
+    /// only open wss://, and one served over HTTP may not open wss:// against an HTTP server.
+    /// </summary>
+    private string EchoUrl => new UriBuilder(navManager.BaseUri) { Scheme = navManager.BaseUri.StartsWith("https", StringComparison.OrdinalIgnoreCase) ? "wss" : "ws", Path = "/ws/echo" }.Uri.ToString();
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await webSocket.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenSocket()
+    {
+        await CloseSocket();
+
+        try
+        {
+            _messages.Clear();
+            _received = 0;
+
+            // The close of the socket this call is opening, told from the close of one already
+            // replaced: a callback is an asynchronous dispatch, so the previous socket's close can
+            // land after a newer one is in the field, and clearing it there would leave the page
+            // saying "closed" about a socket that is open.
+            WebSocketHandle? opening = null;
+
+            opening = await webSocket.Open(EchoUrl,
+                onMessage: m => InvokeAsync(() =>
+                {
+                    _received++;
+                    _messages.Insert(0, m.IsBinary ? $"binary: [{string.Join(", ", m.Data ?? [])}]" : m.Text ?? string.Empty);
+                    if (_messages.Count > 20) _messages.RemoveAt(_messages.Count - 1);
+                    StateHasChanged();
+                }),
+                protocols: ["butil-echo"],
+                onOpen: (protocol, extensions) => InvokeAsync(async () =>
+                {
+                    _connectionState = "Open.";
+                    await socketOutput.Success("Connected. Protocol →", string.IsNullOrEmpty(protocol) ? "(none negotiated)" : protocol);
+                    StateHasChanged();
+                }),
+                onClose: close => InvokeAsync(async () =>
+                {
+                    // Only this socket's own close touches the field - a later socket is already in it.
+                    if (opening is not null && ReferenceEquals(_socket, opening) is false) return;
+
+                    _connectionState = $"Closed ({close.Code}).";
+                    _socket = null;
+                    await closeOutput.Warn($"Closed → code {close.Code}, clean {close.WasClean}, reason",
+                        string.IsNullOrEmpty(close.Reason) ? "(none)" : close.Reason);
+                    StateHasChanged();
+                }),
+                onError: () => InvokeAsync(async () =>
+                {
+                    // The error event carries nothing by design - the close that follows has the detail.
+                    await socketOutput.Error("Socket error. The close callback that follows carries the code.");
+                }));
+
+            if (opening is null)
+            {
+                _connectionState = "Could not open.";
+                await socketOutput.Warn("Open returned null - WebSocket is unavailable, the URL is malformed, or mixed content blocked it.");
+                return;
+            }
+
+            _socket = opening;
+            _connectionState = "Connecting...";
+            await socketOutput.Success("Open → connecting to", EchoUrl);
+        }
+        catch (Exception ex)
+        {
+            await socketOutput.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task SendText()
+    {
+        if (await RequireSocket(socketOutput) is false) return;
+
+        try
+        {
+            var sent = await _socket!.SendText(_outgoing);
+            if (sent) await socketOutput.Success("SendText →", _outgoing);
+            else await socketOutput.Warn("SendText returned false - the socket is not open yet.");
+        }
+        catch (Exception ex)
+        {
+            await socketOutput.Error("SendText failed →", ex.Message);
+        }
+    }
+
+    private async Task SendBytes()
+    {
+        if (await RequireSocket(binaryOutput) is false) return;
+
+        try
+        {
+            byte[] payload = [1, 2, 3, 4];
+            var sent = await _socket!.SendBytes(payload);
+            if (sent) await binaryOutput.Success("SendBytes → [1, 2, 3, 4]; the echo comes back incremented.");
+            else await binaryOutput.Warn("SendBytes returned false - the socket is not open yet.");
+        }
+        catch (Exception ex)
+        {
+            await binaryOutput.Error("SendBytes failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadNegotiation()
+    {
+        if (await RequireSocket(negotiationOutput) is false) return;
+
+        try
+        {
+            await negotiationOutput.Success("GetState →", await _socket!.GetState());
+            await negotiationOutput.Success("GetProtocol →", await _socket.GetProtocol());
+            await negotiationOutput.Success("GetExtensions →", await _socket.GetExtensions());
+            await negotiationOutput.Success("GetUrl →", await _socket.GetUrl());
+        }
+        catch (Exception ex)
+        {
+            await negotiationOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task Burst()
+    {
+        if (await RequireSocket(pressureOutput) is false) return;
+
+        try
+        {
+            await _socket!.SendText("burst");
+            await pressureOutput.Log("Asked the server for 32 x 64 KB - read GetBufferedAmount while they arrive.");
+        }
+        catch (Exception ex)
+        {
+            await pressureOutput.Error("Burst failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadBuffered()
+    {
+        if (await RequireSocket(pressureOutput) is false) return;
+
+        try
+        {
+            await pressureOutput.Success("GetBufferedAmount →", $"{await _socket!.GetBufferedAmount()} byte(s) queued");
+        }
+        catch (Exception ex)
+        {
+            await pressureOutput.Error("GetBufferedAmount failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseWithCode()
+    {
+        if (await RequireSocket(closeOutput) is false) return;
+
+        try
+        {
+            await _socket!.Close(4000, "done for now");
+            await closeOutput.Log("Close(4000) → the onClose callback reports what the peer saw.");
+        }
+        catch (Exception ex)
+        {
+            await closeOutput.Error("Close failed →", ex.Message);
+        }
+    }
+
+    private async Task AskServerToClose()
+    {
+        if (await RequireSocket(closeOutput) is false) return;
+
+        try
+        {
+            await _socket!.SendText("close");
+            await closeOutput.Log("Asked the server to close - it answers with code 4001.");
+        }
+        catch (Exception ex)
+        {
+            await closeOutput.Error("Send failed →", ex.Message);
+        }
+    }
+
+    private async Task<bool> RequireSocket(DemoConsole console)
+    {
+        if (_socket is not null) return true;
+        await console.Warn("Open a socket first.");
+        return false;
+    }
+
+    private async Task CloseSocket()
+    {
+        if (_socket is null) return;
+
+        var socket = _socket;
+        _socket = null;
+        await socket.DisposeAsync();
+        _connectionState = "Closed.";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await CloseSocket();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

@@ -134,7 +134,15 @@ const everything = ordered(sources);
 write(join(wwwroot, 'bit-butil.js'), concat(everything));
 
 for (const name of sources) {
-    write(join(modulesOutDir, `${name}.js`), concat(ordered([name])));
+    // The closure, but laid out in the bundle's own order rather than in the order a walk from this
+    // module happens to reach it. Both orders are dependency-first, so either would run - but the
+    // publish-time bundler assembles a module's closure in manifest order, and these two files are
+    // compared byte-for-byte (the Manual harness checks exactly that). Ordering the closure the same
+    // way keeps them equal by construction instead of by coincidence: a module whose dependency is
+    // alphabetically before a dependency of its own (trustedTypes -> sanitizer, ahead of utils) comes
+    // out in a different order from a per-module walk.
+    const closure = new Set(ordered([name]));
+    write(join(modulesOutDir, `${name}.js`), concat(everything.filter(module => closure.has(module))));
     write(join(chunksOutDir, `${name}.js`), chunks.get(name));
 }
 

@@ -1,0 +1,290 @@
+@page "/speculation"
+@implements IAsyncDisposable
+@inject Bit.Butil.Speculation speculation
+
+<PageTitle>Speculation - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window &amp; Browsing"
+            Title="Speculation"
+            Lead="Speculation rules that make the next navigation instant - and, more importantly for most apps, the prerendering state that says whether anyone is actually looking at this page yet."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Speculation_Rules_API"
+            InjectAs="Speculation speculation" />
+
+<Callout Type="warning" Title="The half every app needs, even without rules of its own">
+    The browser, or the site that linked to you, may prerender your page anyway. While
+    <code>IsPrerendering</code> is true the page is running in a hidden tab nobody has opened:
+    analytics events, a <code>play()</code>, a POST, anything that counts a visit is happening for a
+    user who may never arrive. Hold those back and run them from <code>OnActivated</code>.
+</Callout>
+
+<Callout Type="info" Title="Not Blazor's prerendering">
+    This is the browser's prerender - "a hidden tab", not "on the server". The two are unrelated and
+    can both be happening at once.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="How did this page get here?"
+                 Api="IsSupported / IsPrerendering / WasPrerendered / GetActivationStart"
+                 Description="GetActivationStart is worth more than it looks: every other timestamp on the page is measured from the moment the prerender began, so a load time computed without subtracting it counts time the user never spent waiting."
+                 Code=@("""
+@inject Bit.Butil.Speculation speculation
+
+if (await speculation.IsPrerendering())
+{
+    // running in a hidden tab - hold the analytics call back
+}
+
+var activationStart = await speculation.GetActivationStart();
+var realLoadTime = loadEnd - activationStart;
+""")>
+        <div class="controls">
+            <button @onclick="ReadState">Read the state</button>
+        </div>
+        @if (_state is not null)
+        {
+            <div class="field"><span class="field-label">Prerendering now</span><span>@_state.Value.Prerendering</span></div>
+            <div class="field"><span class="field-label">Was prerendered</span><span>@_state.Value.WasPrerendered</span></div>
+            <div class="field"><span class="field-label">Activation start</span><span>@_state.Value.ActivationStart.ToString("0.#") ms</span></div>
+        }
+        <DemoConsole @ref="stateOutput" Title="state output" />
+    </DemoSection>
+
+    <DemoSection Title="Do the deferred work at the right moment"
+                 Api="OnActivated"
+                 Description="Fires once, on a page that was prerendered, at the moment the user actually navigates to it - and never on a page that wasn't. So it is a place to put work, not the only place: pair it with an IsPrerendering check that is false."
+                 Code=@("""
+if (await speculation.IsPrerendering())
+{
+    _subscription = await speculation.OnActivated(activationStart =>
+    {
+        analytics.PageView();      // now there is really someone here
+    });
+}
+else
+{
+    analytics.PageView();
+}
+""")>
+        <div class="controls">
+            <button @onclick="ToggleWatch">@(_subscription is null ? "Listen for activation" : "Stop listening")</button>
+        </div>
+        <DemoConsole @ref="activationOutput" Title="activation output" Placeholder="Nothing will fire here unless this page was itself prerendered." />
+    </DemoSection>
+
+    <DemoSection Title="Ask for a page in advance"
+                 Api="Prefetch / Prerender / AddRules"
+                 Description="Prefetch fetches the response and stops there - cheap, no side effects, safe to be generous with. Prerender loads and runs the whole page in a hidden tab, which is what makes the navigation instant and also what makes it expensive: bandwidth, CPU and battery for a page the user may never open. Keep it to a handful of destinations you are confident about, and remember those pages will see IsPrerendering true."
+                 Code=@("""
+_prefetch = await speculation.Prefetch(["/url", "/selection"]);
+_prerender = await speculation.Prerender(["/getting-started"], SpeculationEagerness.Conservative);
+
+// anything the two convenience methods don't cover - a rule set of your own:
+var documentRules = @"{ ""prerender"": [ { ""where"": { ""selector_matches"": "".product-link"" } } ] }";
+await speculation.AddRules(documentRules);
+
+await _prefetch!.DisposeAsync();   // removes the rules, cancelling unused speculations
+""")>
+        <div class="controls">
+            <label>Eagerness
+                <select @bind="_eagerness">
+                    <option value="@SpeculationEagerness.Immediate">Immediate</option>
+                    <option value="@SpeculationEagerness.Eager">Eager</option>
+                    <option value="@SpeculationEagerness.Moderate">Moderate</option>
+                    <option value="@SpeculationEagerness.Conservative">Conservative</option>
+                </select>
+            </label>
+            <button @onclick="AddPrefetch">Prefetch two pages</button>
+            <button @onclick="AddPrerender">Prerender one page</button>
+            <button class="secondary" @onclick="AddDocumentRules">AddRules (document rule)</button>
+            <button class="secondary" @onclick="RemoveRules" disabled="@(_rules.Count == 0)">Remove all rules</button>
+        </div>
+        @if (_rules.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Rule sets in the document</span>
+                <span>@_rules.Count</span>
+            </div>
+        }
+        <DemoConsole @ref="rulesOutput" Title="rules output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime supports speculation rules. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsPrerendering"
+               Signature="ValueTask<bool> IsPrerendering()"
+               Description="True while this document is being prerendered in a hidden tab." />
+    <ApiMember Name="WasPrerendered"
+               Signature="ValueTask<bool> WasPrerendered()"
+               Description="Whether this page was prerendered before the user arrived at it." />
+    <ApiMember Name="GetActivationStart"
+               Signature="ValueTask<double> GetActivationStart()"
+               Description="When the prerender began, relative to activation, in milliseconds. 0 for a page that was never prerendered." />
+    <ApiMember Name="Prerender"
+               Signature="ValueTask<ButilSubscription?> Prerender(string[] urls, SpeculationEagerness eagerness = Moderate)"
+               Description="Asks the browser to load and run these pages in advance. Dispose the subscription to remove the rules." />
+    <ApiMember Name="Prefetch"
+               Signature="ValueTask<ButilSubscription?> Prefetch(string[] urls, SpeculationEagerness eagerness = Moderate)"
+               Description="Asks the browser to fetch these responses in advance, without running them." />
+    <ApiMember Name="AddRules"
+               Signature="ValueTask<ButilSubscription?> AddRules(string rulesJson)"
+               Description="Adds a speculation-rules document verbatim - for document rules, cross-site prefetches and per-rule referrer policies." />
+    <ApiMember Name="OnActivated"
+               Signature="ValueTask<ButilSubscription> OnActivated(Action<double> handler)"
+               Description="Called when a prerendered page is activated, with the activation start. Never fires on a page that wasn't prerendered." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, removes any rule sets and activation listeners whose subscription was never disposed - a rule set left behind would keep asking the browser to load pages for a component that is gone." />
+    <ApiMember Name="SpeculationEagerness"
+               Signature="Immediate | Eager | Moderate | Conservative"
+               Description="How keen the browser should be - the dial between wasted work and saved time." />
+</ApiTable>
+
+@code {
+    private DemoConsole stateOutput = default!;
+    private DemoConsole activationOutput = default!;
+    private DemoConsole rulesOutput = default!;
+
+    private (bool Prerendering, bool WasPrerendered, double ActivationStart)? _state;
+    private SpeculationEagerness _eagerness = SpeculationEagerness.Conservative;
+    private ButilSubscription? _subscription;
+    private readonly List<ButilSubscription> _rules = [];
+
+    private async Task ReadState()
+    {
+        try
+        {
+            var supported = await speculation.IsSupported();
+            _state = (await speculation.IsPrerendering(),
+                      await speculation.WasPrerendered(),
+                      await speculation.GetActivationStart());
+
+            await stateOutput.Success("IsSupported →", supported);
+            await stateOutput.Info($"IsPrerendering → {_state.Value.Prerendering}, WasPrerendered → {_state.Value.WasPrerendered}, GetActivationStart → {_state.Value.ActivationStart:0.#} ms.");
+
+            if (_state.Value is { Prerendering: false, WasPrerendered: false })
+            {
+                await stateOutput.Log("You navigated here normally, so nothing was prerendered - which is what these three should say in that case.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleWatch()
+    {
+        try
+        {
+            if (_subscription is not null)
+            {
+                await _subscription.DisposeAsync();
+                _subscription = null;
+                await activationOutput.Info("Stopped listening.");
+                return;
+            }
+
+            _subscription = await speculation.OnActivated(activationStart => InvokeAsync(async () =>
+            {
+                await activationOutput.Success($"Activated - the prerender started {activationStart:0.#} ms before the user arrived.");
+                StateHasChanged();
+            }));
+
+            await activationOutput.Success("Listening. On a page that was not prerendered this never fires, by design.");
+        }
+        catch (Exception ex)
+        {
+            await activationOutput.Error("OnActivated failed →", ex.Message);
+        }
+    }
+
+    private async Task AddPrefetch()
+    {
+        try
+        {
+            var subscription = await speculation.Prefetch(["/url", "/selection"], _eagerness);
+
+            if (subscription is null)
+            {
+                await rulesOutput.Warn("Prefetch → null - this browser doesn't support speculation rules.");
+                return;
+            }
+
+            _rules.Add(subscription);
+            await rulesOutput.Success($"Prefetch → rules added ({_eagerness}). Hover the sidebar links to those pages and watch the network panel.");
+        }
+        catch (Exception ex)
+        {
+            await rulesOutput.Error("Prefetch failed →", ex.Message);
+        }
+    }
+
+    private async Task AddPrerender()
+    {
+        try
+        {
+            var subscription = await speculation.Prerender(["/getting-started"], _eagerness);
+
+            if (subscription is null)
+            {
+                await rulesOutput.Warn("Prerender → null - this browser doesn't support speculation rules.");
+                return;
+            }
+
+            _rules.Add(subscription);
+            await rulesOutput.Success($"Prerender → rules added ({_eagerness}). That page will run in a hidden tab - and will see IsPrerendering true while it does.");
+        }
+        catch (Exception ex)
+        {
+            await rulesOutput.Error("Prerender failed →", ex.Message);
+        }
+    }
+
+    private async Task AddDocumentRules()
+    {
+        try
+        {
+            // A document rule matches links already on the page by selector, rather than naming URLs.
+            const string rules = """{"prefetch":[{"where":{"selector_matches":".nav-panel-item"},"eagerness":"moderate"}]}""";
+
+            var subscription = await speculation.AddRules(rules);
+
+            if (subscription is null)
+            {
+                await rulesOutput.Warn("AddRules → null - this browser doesn't support speculation rules.");
+                return;
+            }
+
+            _rules.Add(subscription);
+            await rulesOutput.Success("AddRules → every sidebar link is now a moderate prefetch candidate.");
+        }
+        catch (Exception ex)
+        {
+            await rulesOutput.Error("AddRules failed →", ex.Message);
+        }
+    }
+
+    private async Task RemoveRules()
+    {
+        foreach (var subscription in _rules)
+        {
+            await subscription.DisposeAsync();
+        }
+
+        _rules.Clear();
+        await rulesOutput.Log("Rules removed - any speculation they started that hasn't been used is cancelled.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+
+        foreach (var subscription in _rules)
+        {
+            await subscription.DisposeAsync();
+        }
+    }
+}

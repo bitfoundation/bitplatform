@@ -366,3 +366,9 @@ private async Task SaveProfile()
 ```
 
 ---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

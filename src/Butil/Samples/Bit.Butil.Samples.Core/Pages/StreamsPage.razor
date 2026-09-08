@@ -1,0 +1,151 @@
+@page "/streams"
+@inject Bit.Butil.Streams streams
+
+<PageTitle>Butil - Streams Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Streams"
+            Lead="Read a response as it arrives rather than after it has all arrived - and build a pipeline out of the browser's own codecs."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Streams_API" />
+
+<pre>
+@@inject Bit.Butil.Streams streams
+
+var response = await streams.FromResponse(new FetchRequest { Url = "…" });
+while (true)
+{
+    var chunk = await response.Stream!.Read();
+    if (chunk.Done) break;
+    // handle chunk.Data now, instead of waiting for the whole body
+}
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Read as it arrives" Api="FromResponse / Read"
+              Description="A gigabyte through Fetch.Send is a gigabyte of managed memory; a gigabyte through here is one chunk at a time. Chunk sizes are the browser's choice and vary within one stream.">
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input @bind="_url" />
+        </div>
+        <button @onclick="ReadIt" disabled="@_busy">Read it</button>
+        <p style="margin-top:0.75rem"><span class="result-pill">@_state</span></p>
+    </DemoCard>
+
+    <DemoCard Title="A pipeline" Api="CreateCompression / PipeThrough / CreateWritable / PipeTo"
+              Description="Download, run it through the browser's gzip codec, and land the bytes in a C# callback. PipeTo runs the whole pipe - back-pressure, closing the destination, and errors from either end all happen inside it.">
+        <button @onclick="RunPipeline" disabled="@_busy">Download → gzip → C#</button>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="streams output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private string _url = "/data/stream-sample.txt";
+    private string _state = "Idle.";
+    private bool _busy;
+
+    private async Task ReadIt()
+    {
+        _busy = true;
+        try
+        {
+            var response = await streams.FromResponse(new FetchRequest { Url = _url.Trim() });
+            if (response.Stream is null)
+            {
+                _state = "No stream.";
+                await output.Warn("No stream →", response.Error);
+                return;
+            }
+
+            var received = 0L;
+            var chunks = 0;
+
+            while (true)
+            {
+                var chunk = await response.Stream.Read();
+                if (chunk.Error is not null)
+                {
+                    await output.Error("Read failed →", chunk.Error);
+                    break;
+                }
+                if (chunk.Done) break;
+
+                chunks++;
+                received += chunk.Data!.Length;
+                _state = $"{received} bytes in {chunks} chunk(s)";
+                StateHasChanged();
+            }
+
+            await output.Success($"Status {response.Status} →", $"{received} bytes in {chunks} chunk(s)");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RunPipeline()
+    {
+        _busy = true;
+        try
+        {
+            var response = await streams.FromResponse(new FetchRequest { Url = _url.Trim() });
+            if (response.Stream is null)
+            {
+                await output.Warn("No stream →", response.Error);
+                return;
+            }
+
+            await using var gzip = await streams.CreateCompression();
+            if (gzip is null)
+            {
+                await output.Warn("This engine has no CompressionStream.");
+                await response.Stream.Cancel();
+                return;
+            }
+
+            var compressed = 0L;
+            var finished = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            await using var sink = await streams.CreateWritable(bytes => compressed += bytes.Length,
+                reason => finished.TrySetResult(reason));
+
+            if (sink is null)
+            {
+                await output.Warn("CreateWritable returned null.");
+                await response.Stream.Cancel();
+                return;
+            }
+
+            var piped = await response.Stream.PipeThrough(gzip);
+            if (piped is null)
+            {
+                await output.Warn("PipeThrough returned null - the stream was locked.");
+                return;
+            }
+
+            var error = await piped.PipeTo(sink);
+            if (error is not null)
+            {
+                await output.Error("PipeTo failed →", error);
+                return;
+            }
+
+            await finished.Task;
+            await output.Success("Through gzip →", $"{compressed} bytes reached C#");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

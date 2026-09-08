@@ -30,6 +30,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         setName(value: string) { window.name = value },
         origin() { return window.origin },
         outerHeight() { return window.outerHeight },
+        // For other modules (windowMessaging): the live window a popup id opened, or undefined once
+        // it has been closed. A closed popup's ref is still an object, so the check is explicit.
+        refOf(id: string) {
+            const ref = (_refs as any)[id];
+            return ref && !ref.closed ? ref : undefined;
+        },
         outerWidth() { return window.outerWidth },
         screenX() { return window.screenX },
         screenY() { return window.screenY },

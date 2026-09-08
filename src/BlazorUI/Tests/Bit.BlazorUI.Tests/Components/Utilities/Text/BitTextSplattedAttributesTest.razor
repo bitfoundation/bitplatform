@@ -1,0 +1,55 @@
+﻿@* Covers the attribute splatting of the text: the class and the style the component builds itself are merged with
+   the ones splatted through a dictionary rather than replacing them, and every attribute the component would
+   otherwise write as null is resolved against the splatted spelling of the same name instead of removing it.
+
+   The dictionary is the only way to reach these: the razor compiler matches a plain "class" or "dir" written on a
+   component to the parameter of that name, case insensitively, so they never arrive as splatted attributes. *@
+
+@* A key of the dictionary matches the parameter of that name case insensitively and is written after it, so a
+   "class" or a "style" splatted here replaces the Class and the Style parameters rather than joining them. What
+   the merge keeps is the class list and the style the component builds of its own - the root class, the variant,
+   the alignment - which would otherwise be thrown away by the splatted attribute of the same name. *@
+<BitText Element="p" Align="BitTextAlign.Center"
+         @attributes="@(new Dictionary<string, object>
+                        {
+                            ["class"] = "splatted-class",
+                            ["style"] = "font-weight:bold",
+                        })">
+    I'm a merged text
+</BitText>
+
+<BitText Element="section"
+         @attributes="@(new Dictionary<string, object>
+                        {
+                            ["id"] = "splatted-id",
+                            ["dir"] = "rtl",
+                            ["lang"] = "de",
+                            ["aria-label"] = "splatted label",
+                            ["tabindex"] = "-1",
+                            ["aria-level"] = "2",
+                            ["role"] = "note",
+                        })">
+    I'm a splatted text
+</BitText>
+
+@* The dictionary is written first here, so the parameters beside it are the later of the two spellings and are
+   the ones kept - which is how a page gives a component a default set of attributes and overrides one of them. *@
+<BitText @attributes="@(new Dictionary<string, object>
+                        {
+                            ["id"] = "splatted-id",
+                            ["dir"] = "rtl",
+                            ["lang"] = "de",
+                            ["aria-label"] = "splatted label",
+                            ["tabindex"] = "-1",
+                            ["aria-level"] = "2",
+                            ["role"] = "note",
+                        })"
+         Element="article"
+         Id="own-id"
+         Dir="BitDir.Ltr"
+         Lang="fa"
+         AriaLabel="own label"
+         TabIndex="0"
+         AriaLevel="5">
+    I'm an overriding text
+</BitText>

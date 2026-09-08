@@ -57,6 +57,37 @@ public class AiChatMessageWireContractTests
     }
 
     /// <summary>
+    /// <c>Signature</c> crosses the same wire with the stakes reversed: the server drops every assistant turn it cannot
+    /// verify, so a signature serialized away costs the model its answers on every reconnect.
+    /// </summary>
+    [TestMethod]
+    public void ASignedAnswer_Should_ReachTheServerWithItsSignature()
+    {
+        const string signature = "CfDJ8-a-signature-the-server-wrote";
+
+        var request = new StartChatRequest
+        {
+            ChatMessagesHistory =
+            [
+                new() { Role = AiChatMessageRole.User, Content = "what is bit platform?" },
+                new() { Role = AiChatMessageRole.Assistant, Content = "bit platform is a set of tools.", Signature = signature }
+            ]
+        };
+
+        foreach (var (name, json) in new[]
+        {
+            ("Hub payload options", JsonSerializer.Serialize(request, HubPayloadOptions)),
+            (nameof(AppJsonContext), JsonSerializer.Serialize(request, AppJsonContext.Default.StartChatRequest))
+        })
+        {
+            var received = JsonSerializer.Deserialize<StartChatRequest>(json, HubPayloadOptions)!;
+
+            Assert.AreEqual(signature, received.ChatMessagesHistory[1].Signature,
+                $"{name} does not put AiChatMessageResponse.Signature on the wire, so the server cannot tell its own answers from made up ones and drops every one of them. Payload: {json}");
+        }
+    }
+
+    /// <summary>
     /// The property defaults to <c>true</c>, and that default is load bearing in the other direction: a payload that
     /// omits it - an older client, or any other caller of this hub method - must have its history kept, not silently
     /// discarded as one long string of canceled answers.

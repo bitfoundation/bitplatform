@@ -3,6 +3,7 @@ using ImageMagick;
 using System.IO.Compression;
 using System.Text.Json.Nodes;
 using System.Net.Http.Headers;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
 
 namespace Boilerplate.Tests.Features.Identity;
 
@@ -111,6 +112,62 @@ public class PersonalDataExportTests
             Assert.DoesNotContain(credential, dataJson, StringComparison.OrdinalIgnoreCase,
                 $"'{credential}' reached the export. A source is projecting an entity instead of its own export record.");
         }
+    }
+
+    /// <summary>
+    /// A grant to an external application is a <c>UserSession</c> row like any other, so it was already exported - but
+    /// as something indistinguishable from one of the user's own devices, since DeviceInfo carries the app's name.
+    /// Which applications hold access is the part of Article 15 an OAuth server adds.
+    /// </summary>
+    [TestMethod]
+    public async Task ExportingOwnData_Should_NameTheApplicationsHoldingAGrant()
+    {
+        await using var server = await StartServer();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var grantedClientId = $"https://export-test.example/{Guid.NewGuid():N}";
+
+        await dbContext.UserSessions.AddAsync(new UserSession
+        {
+            Id = Guid.CreateSequentialGuid(),
+            UserId = userId,
+            StartedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            OAuthGrant = new OAuthGrant
+            {
+                ClientId = grantedClientId,
+                ClientName = "Some MCP client",
+                Scope = "dev-mcp",
+                Resource = "https://export-test.example/dev-mcp",
+                RefreshTokenId = Guid.CreateVersion7()
+            }
+        }, TestContext.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.CancellationToken);
+
+        await TestAccountUtils.Elevate(server, scope, email, TestContext.CancellationToken);
+
+        using var response = await httpClient.GetAsync(IUserController.ExportPersonalDataUri, TestContext.CancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        using var archive = new ZipArchive(await response.Content.ReadAsStreamAsync(TestContext.CancellationToken), ZipArchiveMode.Read);
+
+        var sections = JsonNode.Parse(archive.GetEntry("data.json")!.Open())!["sections"]!;
+
+        var grant = sections["sessions"]!["data"]!.AsArray()
+            .SingleOrDefault(session => session!["authorizedApplication"]?.GetValue<string>() == grantedClientId);
+
+        Assert.IsNotNull(grant,
+            "The grant is in the export only as a session; without the application's identity the user cannot tell it " +
+            "from a device of their own, which is the one thing they would act on.");
+
+        Assert.AreEqual("Some MCP client", grant["authorizedApplicationName"]!.GetValue<string>(),
+            "The application's own name, which is what the sessions screen shows beside it.");
+
+        Assert.AreEqual("dev-mcp", grant["authorizedScope"]!.GetValue<string>(),
+            "And what it may actually do - the token is gone, so this row is the only record the user has of it.");
     }
 
     private async Task<AppTestServer> StartServer()

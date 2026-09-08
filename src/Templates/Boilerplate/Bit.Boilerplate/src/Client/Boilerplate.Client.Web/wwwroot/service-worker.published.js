@@ -89,6 +89,7 @@ self.serverHandledUrls = [
     /\/swagger/,
     /\/scalar/,
     /\/signin-/,
+    /\/oauth\//,
     /\/.well-known/,
     /\/sitemap.xml/,
     //#if (module == "Sales")

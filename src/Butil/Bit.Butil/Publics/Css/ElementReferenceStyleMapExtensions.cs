@@ -27,7 +27,7 @@ public static class ElementReferenceStyleMapExtensions
 {
     /// <summary>True when the runtime implements the CSS Typed OM.</summary>
     public static ValueTask<bool> IsStyleMapSupported(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.css.isSupported");
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.css.isTypedOmAvailable");
 
     /// <summary>
     /// Reads a computed value as a number and a unit.

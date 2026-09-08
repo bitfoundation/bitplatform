@@ -72,6 +72,8 @@ public static class Services
 
         AddMcpServer(services);
 
+        services.AddHostedService<CodebaseMemoryIndexService>();
+
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.All;
