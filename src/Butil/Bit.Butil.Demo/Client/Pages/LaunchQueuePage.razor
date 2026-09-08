@@ -1,0 +1,267 @@
+@page "/launch-queue"
+@implements IAsyncDisposable
+@inject Bit.Butil.LaunchQueue launchQueue
+
+<PageTitle>LaunchQueue - Bit.Butil</PageTitle>
+
+<PageHeader Category="PWA & Installation"
+            Title="LaunchQueue"
+            Lead="How an installed app receives the files, and the target URL, it was launched with - the .NET side of the manifest's file_handlers, protocol_handlers and share_target."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Window/launchQueue"
+            InjectAs="LaunchQueue launchQueue" />
+
+<Callout Type="warning" Title="Installed apps only">
+    A launch is delivered to an <b>installed</b> app whose manifest declares what it handles. A page
+    open in a browser tab never receives one, so on this site the consumer will simply never fire -
+    install the sample app and open a file with it to see the real thing.
+</Callout>
+
+<Callout Type="info" Title="Register the consumer early">
+    The browser delivers the launch the moment a consumer exists, and a page may set one only once.
+    Butil installs its own consumer while the module is evaluated and parks the launch until your
+    handler arrives, so registering in <code>OnAfterRenderAsync</code> is safe. Under
+    <code>UseLazyScripts</code>, call <code>IsSupported()</code> early in start-up so the module is
+    imported before the launch arrives.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / SupportsFiles"
+                 Description="IsSupported is true when the runtime exposes window.launchQueue. SupportsFiles is a separate question: a runtime can deliver a launch without ever putting files on it."
+                 Code=@("""
+@inject Bit.Butil.LaunchQueue launchQueue
+
+var supported = await launchQueue.IsSupported();
+var withFiles = await launchQueue.SupportsFiles();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="CheckFiles">SupportsFiles</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Receive the launch"
+                 Api="SetConsumer"
+                 Description="Registers the handler that receives this app's launch, with the target URL and any files. It fires immediately when the launch has already arrived, so registering late is safe. Dispose the returned subscription in DisposeAsync."
+                 Code=@("""
+_sub = await launchQueue.SetConsumer(launch =>
+{
+    _targetUrl = launch.TargetUrl;
+    _files = launch.Files;
+    InvokeAsync(StateHasChanged);
+});
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe" disabled="@(_sub is not null)">SetConsumer</button>
+            <button class="danger" @onclick="Unsubscribe" disabled="@(_sub is null)">Dispose subscription</button>
+        </div>
+        @if (_files.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">Launched files</span>
+                <span>
+                    @foreach (var file in _files)
+                    {
+                        <code style="margin-right:0.5rem">@file.Name (@file.Size bytes)</code>
+                    }
+                </span>
+            </div>
+        }
+        <DemoConsole @ref="launchOutput" Title="launch output" />
+    </DemoSection>
+
+    <DemoSection Title="Read a launched file"
+                 Api="ReadText / ReadBytes"
+                 Description="A launched file's handle stays on the JS side - it cannot cross interop - so contents are read by the file's Index. Both overloads take either the LaunchFile or its index; pass the LaunchFile where an app can be launched more than once, since it carries the LaunchId that keeps it pointing at its own launch's files rather than at the newest launch's."
+                 Code=@("""
+foreach (var file in launch.Files)
+{
+    var text = await launchQueue.ReadText(file);
+    if (text is not null) Open(file.Name, text);
+}
+""")>
+        <div class="controls">
+            <button @onclick="ReadFirst" disabled="@(_files.Length == 0)">ReadText(first file)</button>
+            <button @onclick="ReadFirstBytes" disabled="@(_files.Length == 0)">ReadBytes(first file)</button>
+        </div>
+        <DemoConsole @ref="readOutput" Title="read output" />
+    </DemoSection>
+
+    <DemoSection Title="Write back to a launched file"
+                 Api="WriteText / WriteBytes"
+                 Description="The 'save' half of an editor launched through file_handlers. The browser asks for the write permission on the first save; a refusal returns false rather than throwing."
+                 Code=@("""
+var saved = await launchQueue.WriteText(file, editorContents);
+if (saved is false)
+{
+    // the user refused the write permission, or the handle went stale
+}
+""")>
+        <div class="field">
+            <span class="field-label">Contents to write</span>
+            <input @bind="_contents" />
+        </div>
+        <div class="controls">
+            <button @onclick="WriteFirst" disabled="@(_files.Length == 0)">WriteText(first file)</button>
+        </div>
+        <DemoConsole @ref="writeOutput" Title="write output" />
+    </DemoSection>
+
+    <DemoSection Title="The manifest side"
+                 Api="file_handlers / protocol_handlers / launch_handler"
+                 Description="None of this fires without the manifest declaring what the app handles. file_handlers registers the app for a file type, protocol_handlers for a URL scheme, and launch_handler decides whether a second launch opens a new window or reuses the existing one."
+                 Code=@("""
+{
+  "file_handlers": [
+    { "action": "/open", "accept": { "text/markdown": [".md"] } }
+  ],
+  "protocol_handlers": [
+    { "protocol": "web+butil", "url": "/open?link=%s" }
+  ],
+  "launch_handler": { "client_mode": "focus-existing" }
+}
+""") Language="json" />
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.launchQueue (Chromium only)." />
+    <ApiMember Name="SupportsFiles"
+               Signature="ValueTask<bool> SupportsFiles()"
+               Description="True when the runtime also implements File Handling, i.e. a launch can carry files." />
+    <ApiMember Name="SetConsumer"
+               Signature="Task<ButilSubscription> SetConsumer(Action<LaunchParams> handler)"
+               Description="Registers the handler that receives this app's launch. Fires immediately when the launch has already arrived." />
+    <ApiMember Name="ReadText"
+               Signature="ValueTask<string?> ReadText(LaunchFile file) / ReadText(int index)"
+               Description="Reads a launched file as text. Null when the handle went stale or access was refused." />
+    <ApiMember Name="ReadBytes"
+               Signature="ValueTask<byte[]?> ReadBytes(LaunchFile file) / ReadBytes(int index)"
+               Description="Reads a launched file as bytes. Null when the handle went stale or access was refused." />
+    <ApiMember Name="WriteText"
+               Signature="ValueTask<bool> WriteText(LaunchFile file, string contents) / WriteText(int index, string contents)"
+               Description="Writes text back to a launched file. False when the runtime can't write, or the write permission was refused." />
+    <ApiMember Name="WriteBytes"
+               Signature="ValueTask<bool> WriteBytes(LaunchFile file, byte[] contents) / WriteBytes(int index, byte[] contents)"
+               Description="Writes bytes back to a launched file." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Unregisters every handler registered through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole launchOutput = default!;
+    private DemoConsole readOutput = default!;
+    private DemoConsole writeOutput = default!;
+
+    private ButilSubscription? _sub;
+    private LaunchFile[] _files = [];
+    private string _contents = "Saved from Bit.Butil.";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await launchQueue.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckFiles()
+    {
+        try
+        {
+            await supportOutput.Success("SupportsFiles →", await launchQueue.SupportsFiles());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("SupportsFiles failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            _sub = await launchQueue.SetConsumer(async launch => await InvokeAsync(async () =>
+            {
+                _files = launch.Files;
+                StateHasChanged();
+                await launchOutput.Success("Launch →", $"targetUrl: '{launch.TargetUrl}', files: {launch.Files.Length}");
+            }));
+
+            await launchOutput.Info("Consumer registered. In a browser tab nothing will arrive - install the app and open a file with it.");
+        }
+        catch (Exception ex)
+        {
+            await launchOutput.Error("SetConsumer failed →", ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        try
+        {
+            if (_sub is not null) await _sub.DisposeAsync();
+            _sub = null;
+            await launchOutput.Info("Consumer disposed.");
+        }
+        catch (Exception ex)
+        {
+            await launchOutput.Error("Dispose failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadFirst()
+    {
+        try
+        {
+            var text = await launchQueue.ReadText(_files[0]);
+            if (text is null) await readOutput.Warn("ReadText →", "null - the handle went stale or access was refused.");
+            else await readOutput.Success("ReadText →", text.Length > 200 ? text[..200] + "…" : text);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("ReadText failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadFirstBytes()
+    {
+        try
+        {
+            var bytes = await launchQueue.ReadBytes(_files[0]);
+            if (bytes is null) await readOutput.Warn("ReadBytes →", "null - the handle went stale or access was refused.");
+            else await readOutput.Success("ReadBytes →", $"{bytes.Length} bytes");
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("ReadBytes failed →", ex.Message);
+        }
+    }
+
+    private async Task WriteFirst()
+    {
+        try
+        {
+            var saved = await launchQueue.WriteText(_files[0], _contents);
+            if (saved) await writeOutput.Success("WriteText →", "saved.");
+            else await writeOutput.Warn("WriteText →", "false - the write permission was refused, or the runtime can't write to the handle.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("WriteText failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+    }
+}

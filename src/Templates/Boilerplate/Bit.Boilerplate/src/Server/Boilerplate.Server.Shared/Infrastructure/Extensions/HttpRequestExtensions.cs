@@ -4,6 +4,17 @@ namespace Microsoft.AspNetCore.Http;
 
 public static partial class HttpRequestExtensions
 {
+    private static readonly string[] CrawlerUserAgentTokens =
+    [
+        "googlebot", "storebot-google", "google-inspectiontool", "googleother", "google-extended",
+        "adsbot-google", "mediapartners-google",
+        "bingbot", "adidxbot", "msnbot", "bingpreview",
+        "slurp", // Yahoo
+        "duckduckbot", "duckassistbot",
+        "yandexbot", "yandexmobilebot", "yandeximages",
+        "baiduspider", "applebot", "petalbot", "seznambot"
+    ];
+
     extension(HttpRequest request)
     {
         public Uri GetUri()
@@ -30,6 +41,16 @@ public static partial class HttpRequestExtensions
             return uriBuilder.Uri;
         }
 
+        /// <summary>
+        /// The OAuth issuer for this request: the origin the caller reached, no trailing slash, as RFC 8414 requires.
+        /// Token minting and the discovery document must both come through here, or a conforming client rejects the
+        /// mismatch - as does the RFC 9207 check on the authorization response.
+        /// </summary>
+        public string GetIssuer()
+        {
+            return request.GetBaseUrl().ToString().TrimEnd('/');
+        }
+
         public bool IsLightHouseRequest()
         {
             return GetLoweredUserAgent(request).Contains("lighthouse");
@@ -39,17 +60,7 @@ public static partial class HttpRequestExtensions
         {
             var agent = GetLoweredUserAgent(request);
 
-            if (agent.Contains("google")) return true;
-
-            if (agent.Contains("bing")) return true;
-
-            if (agent.Contains("yahoo")) return true;
-
-            if (agent.Contains("duckduck")) return true;
-
-            if (agent.Contains("yandex")) return true;
-
-            return false;
+            return CrawlerUserAgentTokens.Any(agent.Contains);
         }
 
         public string GetLoweredUserAgent()

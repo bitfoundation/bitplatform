@@ -1,0 +1,291 @@
+@page "/install-prompt"
+@implements IAsyncDisposable
+@inject Bit.Butil.InstallPrompt installPrompt
+
+<PageTitle>InstallPrompt - Bit.Butil</PageTitle>
+
+<PageHeader Category="PWA & Installation"
+            Title="InstallPrompt"
+            Lead="Capture the browser's beforeinstallprompt event, put the install button where it belongs in your own UI, and know when the app was actually installed."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/BeforeInstallPromptEvent"
+            InjectAs="InstallPrompt installPrompt" />
+
+<Callout Type="warning" Title="Chromium only">
+    Only Chromium fires <code>beforeinstallprompt</code>. On Safari and Firefox installing is a
+    manual browser-menu action, so <code>IsSupported</code> is false and there is nothing to prompt -
+    treat the install button as an enhancement, not a feature you can rely on.
+</Callout>
+
+<Callout Type="info" Title="The event fires once, early">
+    Butil attaches its listener while the <code>installPrompt</code> module is evaluated, which with
+    the classic bundle is early enough. Under <code>UseLazyScripts</code> the module is imported on
+    first use - possibly after the event has already fired - so add this to your host page and Butil
+    will adopt what it stashed:
+    <CodeBlock Language="html" Code=@("""
+<script>
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    window.BitButilDeferredInstallPrompt = e;
+  });
+</script>
+""") />
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime fires beforeinstallprompt at all. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.InstallPrompt installPrompt
+
+var supported = await installPrompt.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Is the app already installed?"
+                 Api="IsStandalone / WasInstalled"
+                 Description="IsStandalone is the portable check - it is true whenever the page is running as an installed app rather than in a tab, covering the standalone, minimal-ui, fullscreen and window-controls-overlay display modes plus iOS Safari's own flag. WasInstalled only reports an install that happened during this page's lifetime."
+                 Code=@("""
+if (await installPrompt.IsStandalone())
+{
+    // running as an installed app - hide the install button
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckStandalone">IsStandalone</button>
+            <button @onclick="CheckWasInstalled">WasInstalled</button>
+        </div>
+        <DemoConsole @ref="stateOutput" Title="install state output" />
+    </DemoSection>
+
+    <DemoSection Title="Can we prompt right now?"
+                 Api="IsAvailable / GetPlatforms"
+                 Description="IsAvailable is the condition to show your install button on: true only once the browser has decided the app is installable and before the deferred prompt has been used. GetPlatforms reports what the captured event offers - ['web'], or ['play', 'web'] when the manifest names a related native app."
+                 Code=@("""
+_canInstall = await installPrompt.IsAvailable();
+var platforms = await installPrompt.GetPlatforms();
+""")>
+        <div class="controls">
+            <button @onclick="CheckAvailable">IsAvailable</button>
+            <button @onclick="CheckPlatforms">GetPlatforms</button>
+        </div>
+        <DemoConsole @ref="availableOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Show the install dialog"
+                 Api="Prompt"
+                 Description="Shows the deferred dialog and resolves with what the user chose. Must be called from a user gesture. The event is spent afterwards whatever the answer, so IsAvailable becomes false; a user who dismissed it can only be asked again after the browser fires beforeinstallprompt anew on a later visit."
+                 Code=@("""
+var result = await installPrompt.Prompt();
+
+if (result.Accepted)
+{
+    // installing on result.Platform
+}
+else if (result.Outcome == InstallPromptOutcome.Dismissed)
+{
+    // asked and declined - don't nag
+}
+""")>
+        <div class="controls">
+            <button @onclick="ShowPrompt">Prompt</button>
+        </div>
+        <DemoConsole @ref="promptOutput" Title="prompt output" />
+    </DemoSection>
+
+    <DemoSection Title="React to availability and installation"
+                 Api="OnAvailable / OnInstalled"
+                 Description="OnAvailable fires when a prompt becomes offerable - and immediately if one is already in hand, so subscribing late is safe. OnInstalled fires after the browser has installed the app: the moment to hide the button. Both return a ButilSubscription; dispose it in DisposeAsync."
+                 Code=@("""
+_availableSub = await installPrompt.OnAvailable(platforms =>
+{
+    _canInstall = true;
+    InvokeAsync(StateHasChanged);
+});
+
+_installedSub = await installPrompt.OnInstalled(() =>
+{
+    _canInstall = false;
+    InvokeAsync(StateHasChanged);
+});
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe" disabled="@(_availableSub is not null)">Subscribe</button>
+            <button class="danger" @onclick="Unsubscribe" disabled="@(_availableSub is null)">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="eventOutput" Title="event output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime fires beforeinstallprompt at all (Chromium only)." />
+    <ApiMember Name="IsAvailable"
+               Signature="ValueTask<bool> IsAvailable()"
+               Description="True when a deferred prompt is in hand, i.e. Prompt() would show the dialog right now." />
+    <ApiMember Name="GetPlatforms"
+               Signature="ValueTask<string[]> GetPlatforms()"
+               Description="The platforms the captured event offers an install on. Empty when no prompt is available." />
+    <ApiMember Name="WasInstalled"
+               Signature="ValueTask<bool> WasInstalled()"
+               Description="True when appinstalled has fired during this page's lifetime. Per page load, not persistent." />
+    <ApiMember Name="IsStandalone"
+               Signature="ValueTask<bool> IsStandalone()"
+               Description="True when the page is running as an installed app rather than in a browser tab." />
+    <ApiMember Name="Prompt"
+               Signature="ValueTask<InstallPromptResult> Prompt()"
+               Description="Shows the install dialog and resolves once the user has answered. Requires a user gesture; the deferred event is spent afterwards." />
+    <ApiMember Name="OnAvailable"
+               Signature="Task<ButilSubscription> OnAvailable(Action<string[]> handler)"
+               Description="Calls the handler when an install prompt becomes available, with the platforms it offers. Fires immediately when one is already in hand." />
+    <ApiMember Name="OnInstalled"
+               Signature="Task<ButilSubscription> OnInstalled(Action handler)"
+               Description="Calls the handler once the app has been installed." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every listener registered through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole stateOutput = default!;
+    private DemoConsole availableOutput = default!;
+    private DemoConsole promptOutput = default!;
+    private DemoConsole eventOutput = default!;
+
+    private ButilSubscription? _availableSub;
+    private ButilSubscription? _installedSub;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await installPrompt.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckStandalone()
+    {
+        try
+        {
+            await stateOutput.Success("IsStandalone →", await installPrompt.IsStandalone());
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("IsStandalone failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckWasInstalled()
+    {
+        try
+        {
+            await stateOutput.Success("WasInstalled →", await installPrompt.WasInstalled());
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("WasInstalled failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckAvailable()
+    {
+        try
+        {
+            var available = await installPrompt.IsAvailable();
+            if (available) await availableOutput.Success("IsAvailable →", true);
+            else await availableOutput.Warn("IsAvailable →", "false - the browser hasn't offered an install, or the prompt was already used.");
+        }
+        catch (Exception ex)
+        {
+            await availableOutput.Error("IsAvailable failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckPlatforms()
+    {
+        try
+        {
+            var platforms = await installPrompt.GetPlatforms();
+            await availableOutput.Success("GetPlatforms →", platforms.Length == 0 ? "(none)" : string.Join(", ", platforms));
+        }
+        catch (Exception ex)
+        {
+            await availableOutput.Error("GetPlatforms failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowPrompt()
+    {
+        try
+        {
+            var result = await installPrompt.Prompt();
+
+            switch (result.Outcome)
+            {
+                case InstallPromptOutcome.Accepted:
+                    await promptOutput.Success("Prompt →", $"accepted on '{result.Platform}'.");
+                    break;
+                case InstallPromptOutcome.Dismissed:
+                    await promptOutput.Warn("Prompt →", "dismissed. The deferred event is spent either way.");
+                    break;
+                default:
+                    await promptOutput.Warn("Prompt →", "unavailable - no deferred prompt, or the call wasn't tied to a user gesture.");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            await promptOutput.Error("Prompt failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            _availableSub = await installPrompt.OnAvailable(async platforms =>
+                await InvokeAsync(() => eventOutput.Info("OnAvailable →", platforms.Length == 0 ? "(no platforms)" : string.Join(", ", platforms))));
+
+            _installedSub = await installPrompt.OnInstalled(async () =>
+                await InvokeAsync(() => eventOutput.Success("OnInstalled →", "the app was installed.")));
+
+            await eventOutput.Success("Subscribed to OnAvailable and OnInstalled.");
+        }
+        catch (Exception ex)
+        {
+            await eventOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        try
+        {
+            if (_availableSub is not null) await _availableSub.DisposeAsync();
+            if (_installedSub is not null) await _installedSub.DisposeAsync();
+            _availableSub = null;
+            _installedSub = null;
+            await eventOutput.Info("Unsubscribed.");
+        }
+        catch (Exception ex)
+        {
+            await eventOutput.Error("Unsubscribe failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_availableSub is not null) await _availableSub.DisposeAsync();
+        if (_installedSub is not null) await _installedSub.DisposeAsync();
+    }
+}

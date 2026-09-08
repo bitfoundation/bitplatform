@@ -4,7 +4,6 @@
     "hostRequirements": {
         "cpus": 4
     },
-    "onCreateCommand": "dotnet workload install wasm-tools",
     "waitFor": "onCreateCommand",
     "postCreateCommand": "dotnet dev-certs https --trust",
     "customizations": {
@@ -15,8 +14,6 @@
         },
         "vscode": {
             "extensions": [
-                "GitHub.copilot",
-                "GitHub.copilot-chat",
                 "ms-dotnettools.csharp",
                 "Anthropic.claude-code",
                 "ms-dotnettools.csdevkit",
@@ -38,10 +35,11 @@
     ],
     "features": {
         "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:2": {},
-        "ghcr.io/devcontainers/features/python:1": {},
         "ghcr.io/devcontainers/features/powershell:2": {},
         "ghcr.io/devcontainers/features/docker-in-docker:4": {},
-        "ghcr.io/devcontainers/features/node:2": { "version": "24" },
+        "ghcr.io/devcontainers/features/node:2": {
+            "version": "24"
+        },
         "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
             "version": "1",
             "helm": "3",

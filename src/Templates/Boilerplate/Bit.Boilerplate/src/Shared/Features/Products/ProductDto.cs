@@ -66,6 +66,7 @@ public partial class ProductDto
             : new Uri(absoluteServerAddress, $"/api/v1/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={Version}").ToString();
     }
 
+    [JsonIgnore]
     public string FormattedPrice => FormatPrice();
 
     /// <summary>

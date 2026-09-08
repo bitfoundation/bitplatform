@@ -228,7 +228,6 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
         }
     },
     "Identity": {
-        "Issuer": "Boilerplate",
         "Audience": "Boilerplate",
         "BearerTokenExpiration": "0.00:05:00",
         "RefreshTokenExpiration": "14.00:00:00"
@@ -417,5 +416,11 @@ The project supports four environments by default:
 Environment is determined by `AppEnvironment.Current` which is set during build time based on the `-p:Environment` msbuild switch.
 
 See [`Directory.Build.props`](/src/Directory.Build.props) for environment configuration and [`src/Shared/Infrastructure/Services/AppEnvironment.cs`](/src/Shared/Infrastructure/Services/AppEnvironment.cs) for the environment service.
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

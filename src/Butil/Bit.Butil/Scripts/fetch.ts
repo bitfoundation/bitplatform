@@ -33,10 +33,48 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Streaming an upload needs a whole-stream request body, which only lands on HTTP/2 or
         // HTTP/3 over a secure context, and only in engines that accept the duplex option. The
         // feature test is the request constructor itself: engines without it throw here.
-        supportsStreamingUpload
+        supportsStreamingUpload,
+        // Exported so streams.fromResponse builds its request through the same mapping instead of
+        // keeping a second copy of it - the copy is what let the shared-signal handling drift.
+        requestInit: buildInit
     };
 
-    function buildInit(req: any, controller: AbortController): RequestInit {
+    // The request always has its own controller (that is what abort(id) reaches). A shared signal
+    // from butil.abortController has to be combined with it rather than replace it, so that either
+    // one can abort the request.
+    // Returns the signal to use and, where a listener had to be attached to the shared one, the way
+    // to take it off again once the request has settled.
+    function signalFor(req: any, controller: AbortController): { signal: AbortSignal; cleanup: () => void } {
+        const nothingToUndo = () => { /* no listener was attached */ };
+
+        const shared = req.signalId ? butil.abortController.signalOf(req.signalId) : undefined;
+        if (!shared) return { signal: controller.signal, cleanup: nothingToUndo };
+
+        const AS: any = (window as any).AbortSignal;
+        if (typeof AS?.any === 'function') return { signal: AS.any([controller.signal, shared]), cleanup: nothingToUndo };
+
+        // Pre-Safari-17.4: forward the shared signal into this request's own controller.
+        if (shared.aborted) {
+            controller.abort((shared as any).reason);
+            return { signal: controller.signal, cleanup: nothingToUndo };
+        }
+
+        // A shared signal is meant to outlive the requests it guards, and until this listener comes
+        // off again it holds this request's controller with it - one leak per request, for the life
+        // of the signal.
+        const forward = () => controller.abort((shared as any).reason);
+        shared.addEventListener('abort', forward, { once: true });
+        return { signal: controller.signal, cleanup: () => shared.removeEventListener('abort', forward) };
+    }
+
+    // An abort is not always an AbortError: a signal aborted with a reason rejects fetch with that
+    // reason, and AbortSignal.timeout rejects with a TimeoutError. The signal is the only reliable
+    // witness, so ask it rather than the exception it produced.
+    function wasAborted(signal: AbortSignal | undefined, e: any): boolean {
+        return signal?.aborted === true || e?.name === 'AbortError';
+    }
+
+    function buildInit(req: any, controller: AbortController): { init: RequestInit; cleanup: () => void } {
         const headers = new Headers();
         // Headers cross as [name, value] pairs so a repeated name survives; a plain object is
         // accepted too, for a caller that hand-built the payload.
@@ -52,8 +90,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             credentials: req.credentials || 'same-origin',
             mode: req.mode || 'cors',
             cache: req.cache || 'default',
-            redirect: req.redirect || 'follow',
-            signal: controller.signal
+            redirect: req.redirect || 'follow'
         };
 
         // Every one of these is absent-means-default: sending an explicit null would be a TypeError
@@ -67,7 +104,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         if (req.body && req.body.length > 0) {
             init.body = butil.utils.arrayToBuffer(req.body);
         }
-        return init;
+        // Last, because signalFor can register a listener on a shared signal and only the cleanup it
+        // returns takes it off again: anything above throwing before that cleanup reaches the caller
+        // would leak the listener, and this request's controller with it.
+        const { signal, cleanup } = signalFor(req, controller);
+        init.signal = signal;
+        return { init, cleanup };
     }
 
     function headersToArray(h: Headers) {
@@ -100,8 +142,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         };
     }
 
-    function toErrorResponse(url: string, e: any) {
-        const aborted = e?.name === 'AbortError';
+    function toErrorResponse(url: string, e: any, signal?: AbortSignal) {
+        const aborted = wasAborted(signal, e);
         return {
             ok: false,
             status: 0,
@@ -142,8 +184,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     async function send(id: string, req: any, dotNetRef: any, withProgress: boolean): Promise<any> {
         const controller = openController(id);
 
+        // buildInit throws on its own (an invalid header name, most likely). It stays inside the
+        // try so that failure comes back as the documented error result rather than as a
+        // JSException, and so the finally still releases the controller.
+        let cleanup = () => { /* nothing was built yet */ };
+        let signal: AbortSignal | undefined;
+
         try {
-            const resp = await fetch(req.url, buildInit(req, controller));
+            const built = buildInit(req, controller);
+            cleanup = built.cleanup;
+            signal = built.init.signal as AbortSignal;
+
+            const resp = await fetch(req.url, built.init);
 
             let bytes: Uint8Array;
             if (withProgress && resp.body && typeof (resp.body as any).getReader === 'function') {
@@ -158,8 +210,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
             return toResponse(resp, bytes);
         } catch (e: any) {
-            return toErrorResponse(req.url, e);
+            return toErrorResponse(req.url, e, signal);
         } finally {
+            cleanup();
             delete _controllers[id];
         }
     }
@@ -169,15 +222,25 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // aborted rather than pulling the whole body from .NET first.
         const controller = openController(id);
 
+        // buildInit throws on its own (an invalid header name, most likely) and can have registered a
+        // listener on a shared signal before it did, so its cleanup lives out here where the finally
+        // can reach it whether or not the build got that far.
+        let cleanup = () => { /* nothing was built yet */ };
+        let signal: AbortSignal | undefined;
+
         try {
             // Aborted before it began: answer without ever asking .NET for the stream, so nothing of
             // the body is pulled and the caller's stream is untouched.
-            if (controller.signal.aborted) return toErrorResponse(req.url, { name: 'AbortError' });
+            if (controller.signal.aborted) return toErrorResponse(req.url, { name: 'AbortError' }, controller.signal);
 
             // The .NET stream arrives as a reference; stream() turns it into a ReadableStream that
             // pulls from .NET on demand, so the body is never held in memory whole on either side.
             const source: ReadableStream = await streamRef.stream();
-            const init: any = buildInit(req, controller);
+            const built = buildInit(req, controller);
+            cleanup = built.cleanup;
+            signal = built.init.signal as AbortSignal;
+
+            const init: any = built.init;
             init.body = withProgress ? countingStream(source, dotNetRef, id, total) : source;
             // Required by the spec for a streamed request body, and the member whose absence is how
             // an engine without streaming upload rejects the call.
@@ -187,8 +250,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const buf = await resp.arrayBuffer();
             return toResponse(resp, new Uint8Array(buf));
         } catch (e: any) {
-            return toErrorResponse(req.url, e);
+            return toErrorResponse(req.url, e, signal);
         } finally {
+            cleanup();
             delete _controllers[id];
         }
     }
@@ -234,9 +298,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function start(id: string, req: any) {
         const controller = openController(id);
+
         // Fire-and-forget: errors are silently swallowed because there's no consumer for the
-        // result. Use send() when you need the response.
-        fetch(req.url, buildInit(req, controller)).catch(() => { /* ignore */ }).finally(() => { delete _controllers[id]; });
+        // result - including the ones buildInit raises. Use send() when you need the response.
+        try {
+            const { init, cleanup } = buildInit(req, controller);
+            fetch(req.url, init).catch(() => { /* ignore */ }).finally(() => { cleanup(); delete _controllers[id]; });
+        } catch {
+            delete _controllers[id];
+        }
     }
 
     function abort(id: string) {

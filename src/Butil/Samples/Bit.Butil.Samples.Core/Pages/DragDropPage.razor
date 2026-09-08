@@ -1,0 +1,115 @@
+@page "/drag-drop"
+@implements IAsyncDisposable
+@inject Bit.Butil.DataTransfer dataTransfer
+
+<PageTitle>Butil - DataTransfer Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="DataTransfer"
+            Lead="What a drag is actually carrying: the files, the text and the link - the payload Blazor's DragEventArgs leaves out of reach."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer" />
+
+<pre>
+@@inject Bit.Butil.DataTransfer dataTransfer
+
+await dataTransfer.OnDrop(_target, payload =&gt; { /* payload.Files, payload.Text, payload.Uri */ });
+var bytes = await dataTransfer.ReadFile(payload.Files[0].Id);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Accept a drop" Api="OnDrop / ReadFile"
+              Description="The dragover handling that makes a drop possible at all is wired up for you. A dropped file stays readable after the event, so the handler does not have to do the reading.">
+        <div @ref="_target"
+             style="min-height:5rem;display:flex;align-items:center;justify-content:center;border:2px dashed #94a3b8;border-radius:.5rem;margin-top:.5rem">
+            @if (_payload is null)
+            {
+                <span>Drop files, text or a link here.</span>
+            }
+            else
+            {
+                <span>@_payload.Files.Length file(s) - @(_payload.Text ?? _payload.Uri ?? "no text")</span>
+            }
+        </div>
+        <button style="margin-top:.75rem" @onclick="ReadFirst" disabled="@(_payload is null || _payload.Files.Length == 0)">Read the first file</button>
+    </DemoCard>
+
+    <DemoCard Title="Be the drag source" Api="ConfigureDragSource"
+              Description="The payload is settled up front, because dragstart has to set its data synchronously and a round trip to .NET is not.">
+        <button @onclick="MakeDraggable">Make the chip draggable</button>
+        <p style="margin-top:.75rem">
+            <span @ref="_chip" class="result-pill">@(_draggable ? "drag me onto the box above" : "not draggable yet")</span>
+        </p>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="drag and drop output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference _target;
+    private ElementReference _chip;
+    private ButilSubscription? _dropSubscription;
+    private ButilSubscription? _sourceSubscription;
+    private DropPayload? _payload;
+    private bool _draggable;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _dropSubscription = await dataTransfer.OnDrop(_target, payload => InvokeAsync(async () =>
+        {
+            // The browser holds a dropped file until it is released, so the payload being replaced
+            // has to let go of its files rather than simply being overwritten.
+            if (_payload is not null)
+            {
+                foreach (var previous in _payload.Files) await dataTransfer.ReleaseFile(previous.Id);
+            }
+
+            _payload = payload;
+            await output.Success("Dropped →",
+                $"{payload.Files.Length} file(s); types: {(payload.Items.Count == 0 ? "(none)" : string.Join(", ", payload.Items.Keys))}");
+            StateHasChanged();
+        }));
+    }
+
+    private async Task ReadFirst()
+    {
+        var file = _payload?.Files.FirstOrDefault();
+        if (file is null) return;
+
+        var bytes = await dataTransfer.ReadFile(file.Id);
+        await output.Success($"ReadFile(\"{file.Name}\") →", $"{bytes?.Length ?? 0} bytes");
+    }
+
+    private async Task MakeDraggable()
+    {
+        if (_sourceSubscription is not null) await _sourceSubscription.DisposeAsync();
+
+        _sourceSubscription = await dataTransfer.ConfigureDragSource(_chip,
+            new Dictionary<string, string> { ["text/plain"] = "a chip from the Butil samples" },
+            effectAllowed: "copyMove");
+
+        _draggable = true;
+        await output.Success("Configured →", "drag the chip onto the box above, or into a text editor.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            // Same reason as the replacement above: a dropped file is held until it is released, and
+            // leaving the page is not a release.
+            if (_payload is not null)
+            {
+                foreach (var file in _payload.Files) await dataTransfer.ReleaseFile(file.Id);
+                _payload = null;
+            }
+
+            if (_dropSubscription is not null) await _dropSubscription.DisposeAsync();
+            if (_sourceSubscription is not null) await _sourceSubscription.DisposeAsync();
+        }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}

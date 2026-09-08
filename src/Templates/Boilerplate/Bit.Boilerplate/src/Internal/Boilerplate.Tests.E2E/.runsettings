@@ -9,20 +9,17 @@
             <!--<HEADED>1</HEADED>-->
             <!--<PWDEBUG>1</PWDEBUG>-->
 
-            <!-- Every test in this suite runs on chromium by default and re-targets as a whole through BROWSER -
-                 uncomment (or set the environment variable per run: `BROWSER=firefox dotnet test`) to cover Gecko and
-                 WebKit/Safari. -->
+            <!-- Every test runs on chromium unless BROWSER re-targets them; uncomment (or set it per run:
+                 `BROWSER=firefox dotnet test`) to cover Gecko and WebKit/Safari. -->
             <!--<BROWSER>firefox</BROWSER>-->
             <!--<BROWSER>webkit</BROWSER>-->
 
             <!--<PLAYWRIGHT_SERVER_ENDPOINT>ws://192.168.178.24:4444/</PLAYWRIGHT_SERVER_ENDPOINT>-->
-            <!-- Runs the selected BROWSER on another computer (e.g. webkit on the mac on the local network), after
-                 starting the following command on it: -->
+            <!-- Runs the selected BROWSER on another computer (e.g. webkit on a mac), which must first run: -->
             <COMMAND_TO_RUN_IN_REMOTE_MACHINE>npx playwright@1.62.0 install; npx playwright@1.62.0 run-server --port 4444 --host 0.0.0.0</COMMAND_TO_RUN_IN_REMOTE_MACHINE>
 
-            <!-- The deployed demo apps are PWAs whose assets are largely downloaded by their bswup service worker
-                 rather than by the page itself, and Playwright only surfaces service worker requests through the
-                 browser context's Request/RequestFinished events when this flag is set before the driver starts.
+            <!-- The demo apps download most of their assets through their bswup service worker, whose requests reach
+                 the browser context's Request/RequestFinished events only with this flag set before the driver starts.
                  https://playwright.dev/docs/service-workers-experimental -->
             <PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS>1</PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS>
 

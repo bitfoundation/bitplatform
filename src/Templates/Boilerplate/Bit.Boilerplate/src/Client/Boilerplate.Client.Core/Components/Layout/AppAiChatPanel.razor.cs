@@ -44,8 +44,8 @@ public partial class AppAiChatPanel
     private AiChatMessageResponse? lastAssistantMessage;
 
     /// <summary>
-    /// The line the panel opens on - the one assistant message the assistant did not write, which is why read aloud
-    /// is not offered on it: the backend only speaks answers it has a record of writing.
+    /// The line the panel opens on - the one assistant message the assistant did not write, so it carries no
+    /// signature: read aloud is not offered on it and the server drops it from a resent history.
     /// </summary>
     private AiChatMessageResponse? greetingMessage;
     private List<AiChatMessageResponse> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
@@ -358,7 +358,11 @@ public partial class AppAiChatPanel
 
                 int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
 
-                if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS or SharedAppMessages.MESSAGE_PROCESS_ERROR)
+                // A success marker carries the signature of the answer it ends, after a ':' (See SharedAppMessages).
+                var isSuccessMarker = response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS
+                                      || response.StartsWith($"{SharedAppMessages.MESSAGE_PROCESS_SUCCESS}:", StringComparison.Ordinal);
+
+                if (isSuccessMarker || response is SharedAppMessages.MESSAGE_PROCESS_ERROR)
                 {
                     // One marker per message. A second one for a message already answered - the server reporting the
                     // follow-up generation that the next message cancelled - would leave this counter ahead of the
@@ -367,8 +371,14 @@ public partial class AppAiChatPanel
 
                     responseCounter++;
 
-                    if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS)
+                    if (isSuccessMarker)
                     {
+                        // Kept next to the answer so the panel can prove to the server that the server wrote it.
+                        if (response.Split(':', 2) is [_, var signature])
+                        {
+                            chatMessages[responseCounter * 2].Signature = signature;
+                        }
+
                         isLoading = false;
                         await ReadAloudCompletedAnswer(); // The answer is whole, so there is something worth reading out.
                     }

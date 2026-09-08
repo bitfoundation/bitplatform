@@ -1,0 +1,187 @@
+@page "/pwa"
+@implements IAsyncDisposable
+@inject Bit.Butil.InstallPrompt installPrompt
+@inject Bit.Butil.LaunchQueue launchQueue
+@inject Bit.Butil.WindowControlsOverlay overlay
+@inject Bit.Butil.Navigator navigator
+
+<PageTitle>Butil - PWA Samples</PageTitle>
+
+<PageHeader Category="PWA & Installation"
+            Title="PWA"
+            Lead="The installed-app hooks: the install prompt, the launch the OS hands over, the title-bar overlay, and the two Navigator members that go with them."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps" />
+
+<pre>
+@@inject Bit.Butil.InstallPrompt installPrompt
+@@inject Bit.Butil.LaunchQueue launchQueue
+@@inject Bit.Butil.WindowControlsOverlay overlay
+
+var canInstall = await installPrompt.IsAvailable();
+var result = await installPrompt.Prompt();
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Install prompt" Api="IsSupported / IsStandalone / IsAvailable / Prompt"
+              Description="Chromium captures beforeinstallprompt for you; Prompt shows it from your own button, once.">
+        <div class="controls">
+            <button @onclick="InstallSupported">IsSupported</button>
+            <button @onclick="Standalone">IsStandalone</button>
+            <button @onclick="Available">IsAvailable</button>
+            <button @onclick="ShowPrompt">Prompt</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Install events" Api="OnAvailable / OnInstalled"
+              Description="Fires when a prompt becomes offerable and after the app is installed.">
+        <div class="controls">
+            <button @onclick="SubscribeInstall">Subscribe</button>
+            <button class="danger" @onclick="UnsubscribeInstall">Unsubscribe</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Launch queue" Api="SetConsumer / ReadText"
+              Description="Only fires for an installed app launched with a file or a target URL - never in a browser tab.">
+        <div class="controls">
+            <button @onclick="LaunchSupported">IsSupported</button>
+            <button @onclick="SubscribeLaunch">SetConsumer</button>
+            <button @onclick="ReadLaunchedFile">ReadText(first)</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Window controls overlay" Api="IsVisible / GetTitlebarAreaRect / OnGeometryChange"
+              Description="Only visible for an installed desktop app with display_override: window-controls-overlay.">
+        <div class="controls">
+            <button @onclick="OverlayVisible">IsVisible</button>
+            <button @onclick="OverlayRect">GetTitlebarAreaRect</button>
+            <button @onclick="SubscribeOverlay">Subscribe</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Protocol handler & related apps" Api="RegisterProtocolHandler / GetInstalledRelatedApps"
+              Description="Offer this site as the handler for web+butil:, and check whether the native app is already installed.">
+        <div class="controls">
+            <button @onclick="RegisterHandler">RegisterProtocolHandler</button>
+            <button @onclick="RelatedApps">GetInstalledRelatedApps</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="pwa output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ButilSubscription? _availableSub;
+    private ButilSubscription? _installedSub;
+    private ButilSubscription? _launchSub;
+    private ButilSubscription? _overlaySub;
+    private LaunchFile[] _files = [];
+
+    private async Task InstallSupported()
+        => await output.Success("InstallPrompt.IsSupported →", await installPrompt.IsSupported());
+
+    private async Task Standalone()
+        => await output.Success("IsStandalone →", await installPrompt.IsStandalone());
+
+    private async Task Available()
+        => await output.Success("IsAvailable →", await installPrompt.IsAvailable());
+
+    private async Task ShowPrompt()
+    {
+        var result = await installPrompt.Prompt();
+        if (result.Accepted) await output.Success("Prompt →", $"accepted on '{result.Platform}'.");
+        else await output.Warn("Prompt →", result.Outcome);
+    }
+
+    private async Task SubscribeInstall()
+    {
+        await UnsubscribeInstall();
+
+        _availableSub = await installPrompt.OnAvailable(platforms =>
+            _ = output.Log($"OnAvailable → {string.Join(", ", platforms)}"));
+
+        _installedSub = await installPrompt.OnInstalled(() =>
+            _ = output.Success("OnInstalled → the app was installed."));
+
+        await output.Log("Subscribed to install events.");
+    }
+
+    private async Task UnsubscribeInstall()
+    {
+        if (_availableSub is not null) await _availableSub.DisposeAsync();
+        if (_installedSub is not null) await _installedSub.DisposeAsync();
+        _availableSub = null;
+        _installedSub = null;
+    }
+
+    private async Task LaunchSupported()
+        => await output.Success("LaunchQueue.IsSupported →", await launchQueue.IsSupported());
+
+    private async Task SubscribeLaunch()
+    {
+        if (_launchSub is not null) await _launchSub.DisposeAsync();
+
+        _launchSub = await launchQueue.SetConsumer(launch =>
+        {
+            _files = launch.Files;
+            _ = output.Success("Launch →", $"targetUrl '{launch.TargetUrl}', {launch.Files.Length} file(s).");
+        });
+
+        await output.Log("Consumer registered. Install the app and open a file with it to see this fire.");
+    }
+
+    private async Task ReadLaunchedFile()
+    {
+        if (_files.Length == 0)
+        {
+            await output.Warn("No launched files.");
+            return;
+        }
+
+        var text = await launchQueue.ReadText(_files[0]);
+        await output.Success("ReadText →", text ?? "(null)");
+    }
+
+    private async Task OverlayVisible()
+        => await output.Success("Overlay.IsVisible →", await overlay.IsVisible());
+
+    private async Task OverlayRect()
+        => await output.Success("GetTitlebarAreaRect →", await overlay.GetTitlebarAreaRect());
+
+    private async Task SubscribeOverlay()
+    {
+        if (_overlaySub is not null) await _overlaySub.DisposeAsync();
+
+        _overlaySub = await overlay.OnGeometryChange(geometry =>
+            _ = output.Log($"geometrychange → visible {geometry.Visible}, {geometry.Width}×{geometry.Height}"));
+
+        await output.Log("Subscribed to geometrychange.");
+    }
+
+    private async Task RegisterHandler()
+    {
+        if (await navigator.CanRegisterProtocolHandler() is false)
+        {
+            await output.Warn("registerProtocolHandler is not implemented here.");
+            return;
+        }
+
+        var registered = await navigator.RegisterProtocolHandler("web+butil", "/open?link=%s");
+        await output.Success("RegisterProtocolHandler →", registered);
+    }
+
+    private async Task RelatedApps()
+    {
+        var apps = await navigator.GetInstalledRelatedApps();
+        if (apps.Length == 0) await output.Log("GetInstalledRelatedApps → none.");
+        else await output.Success("GetInstalledRelatedApps →", apps);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await UnsubscribeInstall();
+        if (_launchSub is not null) await _launchSub.DisposeAsync();
+        if (_overlaySub is not null) await _overlaySub.DisposeAsync();
+    }
+}

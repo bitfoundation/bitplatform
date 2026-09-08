@@ -1,0 +1,355 @@
+﻿@page "/background-fetch"
+@implements IAsyncDisposable
+@inject Bit.Butil.BackgroundFetch backgroundFetch
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+<PageTitle>BackgroundFetch - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="BackgroundFetch"
+            Lead="Downloads the browser owns: they keep running after the tab is closed, resume after a dropped connection, and show the user their own progress UI. Start one from C#, watch its progress, and let the service worker keep what arrives."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Background_Fetch_API"
+            InjectAs="BackgroundFetch backgroundFetch" />
+
+<div class="stack">
+
+    <Callout Type="warning" Title="Chromium only, and it needs a service worker">
+        The whole API hangs off an active <em>ServiceWorkerRegistration</em>, so <code>IsSupported</code>
+        is false until one is registered - even in a browser that implements it. Firefox and Safari do
+        not. Register the demo worker below first.
+    </Callout>
+
+    <Callout Type="info" Title="Not the same as BackgroundSync">
+        <a href="background-sync">BackgroundSync</a> gets your worker a few seconds of runtime when
+        connectivity returns, and the work is yours to do. This transfers whole files for as long as it
+        takes, the browser doing the transferring - and telling the user about it, in the same place it
+        shows its own downloads.
+    </Callout>
+
+    <DemoSection Title="Prerequisite: register the demo worker"
+                 Api="ServiceWorker.Register"
+                 Description="The same minimal /sw.js the rest of this category uses. Its backgroundfetchsuccess handler logs what arrived to the DevTools console."
+                 Code=@("""
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+await serviceWorker.Register("/sw.js");
+await serviceWorker.Ready();
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="RegisterWorker">Register /sw.js</button>
+            <button class="secondary" @onclick="CheckSupport">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Start a fetch"
+                 Api="Fetch"
+                 Description="The id is your name for the transfer and has to be unique among the ones currently running. downloadTotal is what the browser's progress UI counts against - and a limit it enforces, so an estimate that is too low aborts the fetch. Pass 0 for an indeterminate UI."
+                 Code=@("""
+var registration = await backgroundFetch.Fetch(
+    id: "manual-2024",
+    urls: ["/media/chapter-1.pdf", "/media/chapter-2.pdf"],
+    title: "Downloading the manual",
+    downloadTotal: 12 * 1024 * 1024,
+    icons: [new BackgroundFetchIcon { Src = "/icon-192.png", Sizes = "192x192", Type = "image/png" }]);
+
+// null when the browser refused it - a duplicate id, or no support
+""")>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Fetch id</label>
+                <input @bind="fetchId" />
+            </div>
+            <div class="field">
+                <label class="field-label">Title shown to the user</label>
+                <input @bind="fetchTitle" />
+            </div>
+        </div>
+        <div class="field">
+            <label class="field-label">URLs (one per line)</label>
+            <textarea rows="3" @bind="urls"></textarea>
+        </div>
+        <div class="controls">
+            <button @onclick="StartFetch">Fetch</button>
+        </div>
+        <DemoConsole @ref="fetchOutput" Title="fetch output" />
+    </DemoSection>
+
+    <DemoSection Title="Inspect and cancel"
+                 Api="Get / GetIds / Abort"
+                 Description="GetIds lists what is running for this registration - which is how a page that has just been reopened finds the transfer it started in an earlier session. A fetch disappears from here soon after it ends, so a null Get is 'not running now', not 'never existed'."
+                 Code=@("""
+string[] ids = await backgroundFetch.GetIds();
+
+BackgroundFetchRegistrationInfo? info = await backgroundFetch.Get("manual-2024");
+if (info is not null)
+{
+    var progress = info.DownloadTotal > 0
+        ? (double)info.Downloaded / info.DownloadTotal
+        : 0;
+}
+
+await backgroundFetch.Abort("manual-2024");
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="ListIds">GetIds</button>
+            <button class="secondary" @onclick="GetFetch">Get</button>
+            <button class="danger" @onclick="AbortFetch">Abort</button>
+        </div>
+        <DemoConsole @ref="inspectOutput" Title="inspect output" />
+    </DemoSection>
+
+    <DemoSection Title="Watch the progress"
+                 Api="SubscribeProgress"
+                 Description="Progress events fire as bytes move, for as long as this page is open. They are a convenience, not the way to observe a transfer: the fetch outlives the page and the events do not - the service worker's backgroundfetchsuccess handler is what always runs."
+                 Code=@("""
+var subscription = await backgroundFetch.SubscribeProgress("manual-2024", info =>
+{
+    var done = info.Downloaded;
+    var total = info.DownloadTotal;
+    InvokeAsync(StateHasChanged);
+});
+
+// null when nothing is running under that id
+await using var _ = subscription;
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe" disabled="@(progressSubscription is not null || isSubscribing)">SubscribeProgress</button>
+            <button class="secondary" @onclick="Unsubscribe" disabled="@(progressSubscription is null)">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="progressOutput" Title="progress output" />
+    </DemoSection>
+
+    <DemoSection Title="Read what arrived"
+                 Api="GetRecordUrls / ReadRecordText"
+                 Description="A fetch is made of records - one request/response pair each. They can be read while the fetch is live; once it ends the browser releases them and RecordsAvailable goes false, which is why keeping the responses is the service worker's job."
+                 Code=@("""
+string[] recordUrls = await backgroundFetch.GetRecordUrls("manual-2024");
+
+string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0], timeoutMs: 5000);
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="ListRecords">GetRecordUrls</button>
+            <button class="secondary" @onclick="ReadRecord">ReadRecordText</button>
+        </div>
+        <DemoConsole @ref="recordOutput" Title="record output" />
+    </DemoSection>
+
+    <Callout Type="info" Title="Where the responses go">
+        The service worker receives <code>backgroundfetchsuccess</code>,
+        <code>backgroundfetchfail</code> and <code>backgroundfetchabort</code>, and that handler is
+        where the responses should be stored - in a <a href="cache-storage">Cache</a> or in the
+        <a href="origin-private-file-system">origin private file system</a>. By the time a page asks
+        for them, they are usually gone.
+    </Callout>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the active service worker registration exposes backgroundFetch." />
+        <ApiMember Name="Fetch" Signature="ValueTask<BackgroundFetchRegistrationInfo?> Fetch(string id, string[] urls, string title = &quot;&quot;, long downloadTotal = 0, BackgroundFetchIcon[]? icons = null)" Description="Starts a background fetch. Null when the browser refused it." />
+        <ApiMember Name="Get" Signature="ValueTask<BackgroundFetchRegistrationInfo?> Get(string id)" Description="Reads a running fetch's progress, or null when nothing is running under that id." />
+        <ApiMember Name="GetIds" Signature="ValueTask<string[]> GetIds()" Description="Lists the ids of the fetches currently running for this service worker registration." />
+        <ApiMember Name="Abort" Signature="ValueTask<bool> Abort(string id)" Description="Cancels a running fetch. The worker gets a backgroundfetchabort event." />
+        <ApiMember Name="GetRecordUrls" Signature="ValueTask<string[]> GetRecordUrls(string id)" Description="The request URLs a running fetch is made of, in order." />
+        <ApiMember Name="ReadRecordText" Signature="ValueTask<string?> ReadRecordText(string id, string url, int timeoutMs = 10000)" Description="Reads one of a fetch's responses as text once that request has finished." />
+        <ApiMember Name="SubscribeProgress" Signature="Task<ButilSubscription?> SubscribeProgress(string id, Action<BackgroundFetchRegistrationInfo> handler)" Description="Subscribes to a running fetch's progress events. Null when nothing is running under that id." />
+        <ApiMember Name="BackgroundFetchRegistrationInfo" Signature="class BackgroundFetchRegistrationInfo { string Id; long UploadTotal; long Uploaded; long DownloadTotal; long Downloaded; string Result; string FailureReason; bool RecordsAvailable; }" Description="A fetch's counters, and how it ended if it has. Result is empty while it runs." />
+        <ApiMember Name="BackgroundFetchIcon" Signature="class BackgroundFetchIcon { string Src; string? Sizes; string? Type; string? Label; }" Description="One icon for the browser's own download UI." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole fetchOutput = default!;
+    private DemoConsole inspectOutput = default!;
+    private DemoConsole progressOutput = default!;
+    private DemoConsole recordOutput = default!;
+
+    private Bit.Butil.ButilSubscription? progressSubscription;
+    private bool isSubscribing;
+
+    private string fetchId = "butil-demo-fetch";
+    private string fetchTitle = "Bit.Butil demo download";
+    // The library's own script, at the path static web assets actually serve it from. A background
+    // fetch of a URL that 404s does not fail at registration - it starts, then ends in the
+    // browser's UI as a failed download with failureReason "bad-status", which demonstrates
+    // nothing.
+    private string urls = "/_content/Bit.Butil/bit-butil.js";
+
+    private string[] Urls => urls.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private async Task RegisterWorker()
+    {
+        try
+        {
+            var registration = await serviceWorker.Register("/sw.js");
+            await serviceWorker.Ready();
+            await supportOutput.Success($"Register(\"/sw.js\") → registered: {registration.IsRegistered}, scope: {registration.Scope}");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await backgroundFetch.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported() → true");
+            else await supportOutput.Warn("IsSupported() → false - register the worker first, or this engine has no Background Fetch.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StartFetch()
+    {
+        try
+        {
+            var registration = await backgroundFetch.Fetch(fetchId, Urls, fetchTitle);
+            if (registration is null)
+            {
+                await fetchOutput.Warn($"Fetch(\"{fetchId}\") → null - unsupported, or a fetch with that id is already running.");
+                return;
+            }
+
+            await fetchOutput.Success($"Fetch(\"{registration.Id}\") → started, {Urls.Length} request(s), " +
+                $"downloaded {registration.Downloaded} of {registration.DownloadTotal} bytes.");
+        }
+        catch (Exception ex)
+        {
+            await fetchOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListIds()
+    {
+        try
+        {
+            var ids = await backgroundFetch.GetIds();
+            if (ids.Length == 0) await inspectOutput.Warn("GetIds() → nothing running.");
+            else await inspectOutput.Success($"GetIds() → {string.Join(", ", ids)}");
+        }
+        catch (Exception ex)
+        {
+            await inspectOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetFetch()
+    {
+        try
+        {
+            var info = await backgroundFetch.Get(fetchId);
+            if (info is null)
+            {
+                await inspectOutput.Warn($"Get(\"{fetchId}\") → null - nothing running under that id.");
+                return;
+            }
+
+            await inspectOutput.Success($"Get(\"{info.Id}\") → {info.Downloaded}/{info.DownloadTotal} bytes, " +
+                $"result: \"{info.Result}\", records available: {info.RecordsAvailable}");
+        }
+        catch (Exception ex)
+        {
+            await inspectOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task AbortFetch()
+    {
+        try
+        {
+            var aborted = await backgroundFetch.Abort(fetchId);
+            await (aborted
+                ? inspectOutput.Success($"Abort(\"{fetchId}\") → cancelled.")
+                : inspectOutput.Warn($"Abort(\"{fetchId}\") → false - nothing running under that id."));
+        }
+        catch (Exception ex)
+        {
+            await inspectOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        // progressSubscription is still null while the call is in flight, so the button's disabled
+        // state alone would let a second click add a listener nothing then holds a handle to.
+        if (isSubscribing) return;
+        isSubscribing = true;
+
+        try
+        {
+            // The handler is an Action, so the render-thread work is marshalled rather than awaited:
+            // an async lambda here would be an async void running off the renderer's sync context.
+            progressSubscription = await backgroundFetch.SubscribeProgress(fetchId, info =>
+                _ = InvokeAsync(() => progressOutput.Info(
+                    $"progress → {info.Downloaded}/{info.DownloadTotal} bytes, result: \"{info.Result}\"")));
+
+            if (progressSubscription is null) await progressOutput.Warn($"SubscribeProgress(\"{fetchId}\") → null - nothing running under that id.");
+            else await progressOutput.Success($"SubscribeProgress(\"{fetchId}\") → listening.");
+        }
+        catch (Exception ex)
+        {
+            await progressOutput.Error(ex.Message);
+        }
+        finally
+        {
+            isSubscribing = false;
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        if (progressSubscription is null) return;
+
+        await progressSubscription.DisposeAsync();
+        progressSubscription = null;
+        await progressOutput.Info("Unsubscribed.");
+    }
+
+    private async Task ListRecords()
+    {
+        try
+        {
+            var records = await backgroundFetch.GetRecordUrls(fetchId);
+            if (records.Length == 0) await recordOutput.Warn($"GetRecordUrls(\"{fetchId}\") → empty - the fetch is over, or never started.");
+            else await recordOutput.Success($"GetRecordUrls(\"{fetchId}\") → {string.Join(", ", records)}");
+        }
+        catch (Exception ex)
+        {
+            await recordOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ReadRecord()
+    {
+        try
+        {
+            var records = await backgroundFetch.GetRecordUrls(fetchId);
+            if (records.Length == 0)
+            {
+                await recordOutput.Warn("No records to read - start a fetch first.");
+                return;
+            }
+
+            var body = await backgroundFetch.ReadRecordText(fetchId, records[0], timeoutMs: 5_000);
+            if (body is null) await recordOutput.Warn($"ReadRecordText(\"{records[0]}\") → null - not finished within the timeout.");
+            else await recordOutput.Success($"ReadRecordText(\"{records[0]}\") → {body.Length} characters.");
+        }
+        catch (Exception ex)
+        {
+            await recordOutput.Error(ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (progressSubscription is not null) await progressSubscription.DisposeAsync();
+    }
+}

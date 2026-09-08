@@ -1,0 +1,246 @@
+@page "/face-detector"
+@implements IAsyncDisposable
+@inject Bit.Butil.FaceDetector faceDetector
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageTitle>FaceDetector - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device &amp; Hardware"
+            Title="FaceDetector"
+            Lead="Find where faces are in an image or a camera frame using the platform's own detector - for framing a profile-photo crop, focusing a preview, or blurring faces before an upload."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/FaceDetector"
+            InjectAs="FaceDetector faceDetector" />
+
+<Callout Type="info" Title="Detection, not recognition">
+    This answers "is there a face, and where". It never says whose face it is, and computes nothing
+    that could - no descriptor, no embedding, no identity. Nothing leaves the device either: the
+    detector is the operating system's.
+</Callout>
+
+<Callout Type="warning" Title="Thin support, even by this family's standards">
+    Chromium only, off by default on desktop, and behind a flag or an origin trial where it exists at
+    all. Treat it as an enhancement: <code>IsSupported</code> returning false is the common case, and
+    <code>Detect</code> answers with an empty array rather than throwing.
+    <a href="/barcode-detector">BarcodeDetector</a> is the one member of the Shape Detection family
+    with real deployment.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes FaceDetector. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.FaceDetector faceDetector
+
+if (await faceDetector.IsSupported() is false)
+{
+    // offer the manual crop instead
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Detect in a camera frame"
+                 Api="Detect"
+                 Description="Reads one frame of a video, image or canvas element. fastMode trades accuracy for speed, which is what a live preview wants; maxFaces stops the search early when you only need one. Landmarks - eyes, nose, mouth - are the platform's decision, not the browser's, so they are often empty on the same browser version that reports them elsewhere."
+                 Code=@("""
+_stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+await _stream!.AttachTo(_video);
+
+var faces = await faceDetector.Detect(_video, maxFaces: 5, fastMode: true);
+
+foreach (var face in faces)
+{
+    // face.X / Y / Width / Height in source pixels, face.Landmarks
+}
+""")>
+        <video @ref="_video" autoplay playsinline muted
+               class="demo-video" style="min-height:160px"></video>
+        <div class="controls">
+            <button @onclick="StartCamera" disabled="@(_stream is not null)">Start camera</button>
+            <button class="secondary" @onclick="StopCamera" disabled="@(_stream is null)">Stop camera</button>
+            <button @onclick="DetectOnce" disabled="@(_stream is null)">Detect one frame</button>
+        </div>
+        @if (_faces.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">Last result</span>
+                <span>@_faces.Length face(s)</span>
+            </div>
+        }
+        <DemoConsole @ref="cameraOutput" Title="camera output" />
+    </DemoSection>
+
+    <DemoSection Title="Detect in an image file"
+                 Api="DetectImage"
+                 Description="Takes an encoded image's bytes - a PNG or JPEG, not raw pixels - which is what a file the user picked or an image you fetched already is. The decoded bitmap is released as soon as the scan finishes; it holds uncompressed pixels, which would be a real leak in a loop."
+                 Code=@("""
+var found = await faceDetector.DetectImage(bytes, "image/jpeg", maxFaces: 10);
+""")>
+        <div class="controls">
+            <label>
+                Pick an image
+                <InputFile OnChange="DetectFromFile" accept="image/*" />
+            </label>
+        </div>
+        <DemoConsole @ref="fileOutput" Title="file output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Nothing found is not an error">
+    Both methods return an empty array rather than throwing - when there is no face, when the API is
+    unavailable, when the video has no frame yet, and when the image couldn't be decoded. Check
+    <code>IsSupported</code> up front rather than inferring it from silence.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes FaceDetector. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Detect"
+               Signature="ValueTask<DetectedFace[]> Detect(ElementReference element, int maxFaces = 0, bool fastMode = false)"
+               Description="Scans one frame of a video, image or canvas element. Empty when there is nothing to find, or no frame yet. maxFaces is 0 to 65535 - the spec's own range - and throws outside it." />
+    <ApiMember Name="DetectImage"
+               Signature="ValueTask<DetectedFace[]> DetectImage(byte[] imageBytes, string mimeType = &quot;image/png&quot;, int maxFaces = 0, bool fastMode = false)"
+               Description="Scans an encoded image's bytes. Empty when the image couldn't be decoded. maxFaces is 0 to 65535 - the spec's own range - and throws outside it." />
+    <ApiMember Name="DetectedFace"
+               Signature="X | Y | Width | Height | Landmarks"
+               Description="One face's bounding box in source pixels, plus whatever features the platform located." />
+    <ApiMember Name="FaceLandmark"
+               Signature="Type | X | Y | PointCount"
+               Description="One feature - an eye, the nose, the mouth - with its first point and how many points the platform reported." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole cameraOutput = default!;
+    private DemoConsole fileOutput = default!;
+
+    private ElementReference _video;
+    private MediaStreamHandle? _stream;
+    private DetectedFace[] _faces = [];
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await faceDetector.IsSupported();
+
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - try Chromium with the Experimental Web Platform features flag on, or an Android device.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task StartCamera()
+    {
+        try
+        {
+            _stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+
+            if (_stream is null)
+            {
+                await cameraOutput.Warn("GetUserMedia → null - permission denied, or no camera.");
+                return;
+            }
+
+            try
+            {
+                await _stream.AttachTo(_video);
+            }
+            catch
+            {
+                // The camera is live even though nothing is showing it: let go of it, so "start" is
+                // something the reader can press again.
+                await _stream.DisposeAsync();
+                _stream = null;
+                throw;
+            }
+
+            await cameraOutput.Success("Camera started.");
+        }
+        catch (Exception ex)
+        {
+            await cameraOutput.Error("GetUserMedia failed →", ex.Message);
+        }
+    }
+
+    private async Task StopCamera()
+    {
+        if (_stream is null) return;
+
+        await _stream.DisposeAsync();
+        _stream = null;
+        await cameraOutput.Log("Camera stopped.");
+    }
+
+    private async Task DetectOnce()
+    {
+        try
+        {
+            _faces = await faceDetector.Detect(_video, maxFaces: 5, fastMode: true);
+
+            if (_faces.Length == 0)
+            {
+                await cameraOutput.Warn("Detect → nothing in this frame. A browser without FaceDetector answers the same way.");
+                return;
+            }
+
+            foreach (var face in _faces)
+            {
+                var landmarks = face.Landmarks.Length == 0
+                    ? "no landmarks reported by this platform"
+                    : string.Join(", ", face.Landmarks.Select(l => $"{l.Type} at ({l.X:0}, {l.Y:0})"));
+
+                await cameraOutput.Success($"Face at ({face.X:0}, {face.Y:0}) {face.Width:0}×{face.Height:0} - {landmarks}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await cameraOutput.Error("Detect failed →", ex.Message);
+        }
+    }
+
+    private async Task DetectFromFile(InputFileChangeEventArgs args)
+    {
+        try
+        {
+            var file = args.File;
+            if (file is null) return;
+
+            using var stream = file.OpenReadStream(10 * 1024 * 1024);
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer);
+
+            var faces = await faceDetector.DetectImage(buffer.ToArray(), file.ContentType, maxFaces: 10);
+
+            if (faces.Length == 0)
+            {
+                await fileOutput.Warn($"DetectImage({file.Name}) → nothing found.");
+                return;
+            }
+
+            await fileOutput.Success($"DetectImage({file.Name}) → {faces.Length} face(s).");
+
+            foreach (var face in faces)
+            {
+                await fileOutput.Info($"  ({face.X:0}, {face.Y:0}) {face.Width:0}×{face.Height:0}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await fileOutput.Error("DetectImage failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_stream is not null) await _stream.DisposeAsync();
+    }
+}

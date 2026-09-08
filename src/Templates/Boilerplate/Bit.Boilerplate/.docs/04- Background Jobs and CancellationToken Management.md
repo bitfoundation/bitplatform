@@ -448,6 +448,8 @@ The job runner is registered as a scoped service so it has access to all the sam
 
 ---
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

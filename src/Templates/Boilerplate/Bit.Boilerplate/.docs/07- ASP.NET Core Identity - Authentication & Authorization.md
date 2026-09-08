@@ -12,7 +12,8 @@ tracking, a role + permission model, one-time tokens, external providers, and (o
 
 **Contents:** [Two ways in](#1-there-are-only-two-ways-in) · [Tokens & sessions](#2-tokens-and-sessions) ·
 [Authorization](#3-authorization) · [Multi-tenancy](#4-multi-tenancy) · [One-time tokens](#5-one-time-tokens) ·
-[External providers](#6-external-providers) · [Keycloak](#7-keycloak) · [Try it](#8-try-it-yourself)
+[External providers](#6-external-providers) · [Keycloak](#7-keycloak) ·
+[OAuth for other apps](#8-oauth-21-for-other-apps) · [Try it](#9-try-it-yourself)
 
 ---
 
@@ -94,13 +95,18 @@ Everything lives under the `Identity` section of
 
 | Setting | Meaning |
 |---|---|
-| `Issuer` / `Audience` | Written into, and validated on, every token |
+| `Audience` | The name written into every token this app mints, and required on every token it accepts |
 | `BearerTokenExpiration` | Access token lifetime (`D.HH:mm:ss`) |
 | `RefreshTokenExpiration` | Refresh token lifetime |
 | `*TokenLifetime` | How long each kind of one-time token stays valid (email, phone, reset password, 2FA, OTP) |
 | `MaxPrivilegedSessionsCount` | Default privileged-session cap per user |
 | `Password` | Standard ASP.NET Core Identity complexity rules |
 | `SignIn:RequireConfirmedAccount` | Whether a confirmed email/phone is required to sign in |
+
+There is deliberately no `Issuer` setting. A token's issuer is simply the address the request that minted it arrived
+on, which is why one deployment works on `localhost`, through a dev tunnel and on its own domain at the same time,
+with nothing to reconfigure. OAuth clients rely on this, and it is also the one rule they can trip over: a client
+discovers the issuer at one address, so the whole flow - authorize, consent, token - has to stay on that address.
 
 Identity also brings the usual protections along, and the template does not weaken them: PBKDF2/HMAC-SHA512
 password hashing, security stamps that invalidate outstanding tokens when credentials change, concurrency stamps,
@@ -340,7 +346,17 @@ let it validate normally. The private key never leaves the API.
 
 ---
 
-## 8. Try it yourself
+## 8. OAuth 2.1 for other apps
+
+The app is also an OAuth 2.1 authorization server, so other apps can act on a user's behalf. What they may reach is
+[`OAuthResources`](/src/Server/Boilerplate.Server.Api/Features/Identity/OAuth/Services/OAuthResources.cs) - one row
+per resource with its path, its scopes and the policies its endpoint requires - and you add your own there. Try it:
+on grok.com add `https://sales.bitplatform.dev/mcp` as an MCP server, then ask what pages the Sales app has. This is
+for delegating access to other apps, not a full identity server - no OIDC, no `id_token`, no third-party sign-in.
+
+---
+
+## 9. Try it yourself
 
 Run the project and walk through these - it is faster than reading:
 
@@ -362,8 +378,8 @@ Run the project and walk through these - it is faster than reading:
 password and OTP sign-in, 2FA, session management and revocation, password reset, roles and permissions, external
 providers, privileged sessions and elevated access.
 
-### AI Wiki: answered questions
+### AI Wiki
 
-Ask your own question [here](https://wiki.bitplatform.dev).
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

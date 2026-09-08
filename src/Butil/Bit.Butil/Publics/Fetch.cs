@@ -51,11 +51,17 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // A token already cancelled on the way in fires its abort registration before the request is
+        // dispatched, and an abort for a request JavaScript has not seen yet has nothing to stop - the
+        // request would go out and run to completion. Answering here is what "cancelled" means for it.
+        if (cancellationToken.IsCancellationRequested)
+            return new FetchResponse { Url = request.Url, Aborted = true, Type = "error" };
+
         var id = Guid.NewGuid();
         if (onProgress is not null)
             _progressHandlers.TryAdd(id, onProgress);
 
-        var registration = RegisterAbort(id, cancellationToken);
+        var registration = js.RegisterJsAbort(cancellationToken, "BitButil.fetch.abort", id);
 
         try
         {
@@ -143,7 +149,11 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
         // label - an unknown one reports null the same way a chunked download does.
         long? total = body.CanSeek ? body.Length - body.Position : null;
 
-        var registration = RegisterAbort(id, cancellationToken);
+        // Registered before the call is posted to JS, so a token that fires immediately reaches the
+        // JS abort before the request it names exists there. The JS side records such an abort
+        // against the id and the request consumes it as it starts - which is what stops a cancelled
+        // SendStream from uploading its body anyway.
+        var registration = js.RegisterJsAbort(cancellationToken, "BitButil.fetch.abort", id);
 
         try
         {
@@ -168,26 +178,6 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
             _progressHandlers.TryRemove(id, out _);
         }
     }
-
-    /// <summary>
-    /// Wires the token to the JS-side <c>AbortController</c> for this request, or hands back an
-    /// empty registration when the token can never fire.
-    /// </summary>
-    /// <remarks>
-    /// This runs before the call is posted to JS, so a token that fires immediately reaches the JS
-    /// <c>abort</c> before the request it names exists there. The JS side records such an abort
-    /// against the id and the request consumes it as it starts - which is what stops a cancelled
-    /// <see cref="SendStream"/> from uploading its body anyway.
-    /// </remarks>
-    private CancellationTokenRegistration RegisterAbort(Guid id, CancellationToken cancellationToken)
-        => cancellationToken.CanBeCanceled
-            ? cancellationToken.Register(static state =>
-            {
-                var (j, rid) = ((IJSRuntime, Guid))state!;
-                try { _ = j.InvokeVoid("BitButil.fetch.abort", rid); }
-                catch (JSDisconnectedException) { }
-            }, (js, id))
-            : default;
 
     /// <summary>
     /// Starts the request and immediately returns an <see cref="AbortableFetch"/> abort handle.

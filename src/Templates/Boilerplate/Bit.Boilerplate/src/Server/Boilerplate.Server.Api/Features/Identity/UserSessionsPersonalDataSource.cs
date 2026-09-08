@@ -26,9 +26,9 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
     /// <summary>After the push subscriptions, whose foreign key to a session is <c>SetNull</c>.</summary>
     public int ErasureOrder => 30;
 
-    public string Purpose => "Keeping you signed in on each device, showing you where your account is signed in, and letting you sign a device out remotely.";
+    public string Purpose => "Keeping you signed in on each device, showing you where your account is signed in, and letting you sign a device out remotely. An external application you authorized holds one of these too, which is how you can see it and take its access away.";
 
-    public string Retention => "14 days after a session was last renewed, then deleted by a daily job. Signing a device out deletes its session immediately.";
+    public string Retention => "14 days after a session was last renewed - 7 for one held by an external application - then deleted by a daily job. Signing a device out, or revoking an application, deletes its session immediately.";
 
     //#if (cloudflare == true)
     public string[] Recipients => ["Cloudflare - sits in front of the application and supplies the country and city recorded below."];
@@ -55,6 +55,9 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
                 userSession.CultureName,
                 userSession.AppVersion,
                 userSession.Privileged,
+                OAuthClientId = userSession.OAuthGrant!.ClientId,
+                OAuthClientName = userSession.OAuthGrant!.ClientName,
+                OAuthScope = userSession.OAuthGrant!.Scope,
                 //#if (multitenant == true)
                 userSession.TenantId,
                 //#endif
@@ -75,6 +78,10 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
             session.CultureName,
             session.AppVersion,
             session.Privileged,
+            // Set only when an external application holds this session; otherwise it reads as one of the user's devices.
+            AuthorizedApplication = session.OAuthClientId,
+            AuthorizedApplicationName = session.OAuthClientName,
+            AuthorizedScope = session.OAuthScope,
             //#if (multitenant == true)
             session.TenantId,
             //#endif

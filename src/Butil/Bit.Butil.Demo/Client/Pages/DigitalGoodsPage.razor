@@ -1,0 +1,259 @@
+@page "/digital-goods"
+@inject Bit.Butil.DigitalGoods digitalGoods
+
+<PageTitle>DigitalGoods - Bit.Butil</PageTitle>
+
+<PageHeader Category="Commerce"
+            Title="DigitalGoods"
+            Lead="Read an app store's catalogue and the user's entitlements from inside an installed PWA - the store's own titles and prices, the purchases it has on file, and consuming one that has been used up."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Digital_Goods_API"
+            InjectAs="DigitalGoods digitalGoods" />
+
+<Callout Type="info" Title="Buying is a PaymentRequest">
+    This service only queries. The purchase itself is a
+    <a href="payment-request">PaymentRequest</a> with the store's payment method identifier
+    (<code>https://play.google.com/billing</code>) and the item id in its <code>Data</code>; the
+    purchase then shows up in <code>ListPurchases</code>.
+</Callout>
+
+<Callout Type="warning" Title="Installed apps only - and the server decides">
+    <code>getDigitalGoodsService()</code> only connects inside an app installed from the store it is
+    asking, so <code>Connect</code> returns false in a browser tab. And every entitlement decision
+    belongs on your server, verified against the store's API with a <code>PurchaseToken</code>: a
+    client saying it paid is a claim, not a receipt.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and connection"
+                 Api="IsSupported / Connect"
+                 Description="IsSupported says the function exists; Connect says there is a store behind it. An uninstalled app has the first and not the second, which is why the store UI should be gated on Connect."
+                 Code=@("""
+@inject Bit.Butil.DigitalGoods digitalGoods
+
+var supported = await digitalGoods.IsSupported();
+var connected = await digitalGoods.Connect();   // defaults to Google Play billing
+""")>
+        <div class="field">
+            <span class="field-label">Service provider</span>
+            <input @bind="_provider" style="min-width:24rem" />
+        </div>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="Connect">Connect</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support and connection output" />
+    </DemoSection>
+
+    <DemoSection Title="Item details"
+                 Api="GetDetails"
+                 Description="The store's own title, description and price for each item id, in the user's currency. Render these rather than a copy from your database - the price here is the number the user will actually be charged."
+                 Code=@("""
+var items = await digitalGoods.GetDetails(["coins_100", "pro_monthly"]);
+
+foreach (var item in items)
+{
+    var price = $"{item.Price?.Value} {item.Price?.Currency}";
+}
+""")>
+        <div class="field">
+            <span class="field-label">Item ids (comma-separated)</span>
+            <input @bind="_itemIds" style="min-width:24rem" />
+        </div>
+        <div class="controls">
+            <button @onclick="GetDetails">GetDetails</button>
+        </div>
+        @if (_items.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">@_items.Length item(s)</span>
+                <ul style="margin:0;padding-left:1.2rem">
+                    @foreach (var item in _items)
+                    {
+                        <li>
+                            <strong>@item.Title</strong>
+                            <span> - @(item.Price is null ? "no price" : $"{item.Price.Value} {item.Price.Currency}")</span>
+                            @if (item.Type is not null)
+                            {
+                                <span> (@item.Type)</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        <DemoConsole @ref="detailsOutput" Title="item details output" />
+    </DemoSection>
+
+    <DemoSection Title="Purchases and history"
+                 Api="ListPurchases / ListPurchaseHistory"
+                 Description="ListPurchases is what is active now - unconsumed one-offs and live subscriptions - and what a client restores entitlements from after a reinstall. ListPurchaseHistory is the most recent purchase per item, consumed and expired ones included."
+                 Code=@("""
+var active = await digitalGoods.ListPurchases();
+var history = await digitalGoods.ListPurchaseHistory();
+
+// Send purchase.PurchaseToken to the server; let the server ask the store.
+""")>
+        <div class="controls">
+            <button @onclick="ListPurchases">ListPurchases</button>
+            <button @onclick="ListPurchaseHistory">ListPurchaseHistory</button>
+        </div>
+        <DemoConsole @ref="purchasesOutput" Title="purchases output" />
+    </DemoSection>
+
+    <DemoSection Title="Consume a purchase"
+                 Api="Consume"
+                 Description="Marks a purchase as used up so the item can be bought again - the coin pack the user spent. Consume only after your server has recorded what the purchase bought: consuming first and crediting second loses the purchase entirely if anything in between fails."
+                 Code=@("""
+var consumed = await digitalGoods.Consume(purchase.PurchaseToken);
+""")>
+        <div class="field">
+            <span class="field-label">Purchase token</span>
+            <input @bind="_purchaseToken" style="min-width:24rem" />
+        </div>
+        <div class="controls">
+            <button @onclick="Consume">Consume</button>
+        </div>
+        <DemoConsole @ref="consumeOutput" Title="consume output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="GooglePlayBilling"
+               Signature="const string GooglePlayBilling = &quot;https://play.google.com/billing&quot;"
+               Description="The default service provider, and the payment method identifier a PaymentRequest buys through." />
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.getDigitalGoodsService. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Connect"
+               Signature="ValueTask<bool> Connect(string serviceProvider = GooglePlayBilling)"
+               Description="Connects to a store's billing service. False in a browser tab, where there is no store. The connection is cached." />
+    <ApiMember Name="GetDetails"
+               Signature="ValueTask<DigitalGoodsItem[]> GetDetails(string[] itemIds, string serviceProvider = GooglePlayBilling)"
+               Description="The store's title, description and price per item id. Ids the store does not know are skipped." />
+    <ApiMember Name="ListPurchases"
+               Signature="ValueTask<DigitalGoodsPurchase[]> ListPurchases(string serviceProvider = GooglePlayBilling)"
+               Description="The purchases that are currently active - unconsumed one-offs and live subscriptions." />
+    <ApiMember Name="ListPurchaseHistory"
+               Signature="ValueTask<DigitalGoodsPurchase[]> ListPurchaseHistory(string serviceProvider = GooglePlayBilling)"
+               Description="The most recent purchase per item, including consumed and expired ones." />
+    <ApiMember Name="Consume"
+               Signature="ValueTask<bool> Consume(string purchaseToken, string serviceProvider = GooglePlayBilling)"
+               Description="Marks a purchase as used up so the item can be bought again." />
+    <ApiMember Name="DigitalGoodsItem"
+               Signature="string ItemId, string Title, string? Description, PaymentCurrencyAmount? Price, string? Type, string[] IconUrls, string? SubscriptionPeriod, string? FreeTrialPeriod, PaymentCurrencyAmount? IntroductoryPrice, string? IntroductoryPricePeriod, int? IntroductoryPriceCycles"
+               Description="One item as the store describes it. Periods are ISO 8601 durations; Type is product or subscription." />
+    <ApiMember Name="DigitalGoodsPurchase"
+               Signature="string ItemId, string PurchaseToken"
+               Description="A purchase on file. The token is what your server verifies with the store." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole detailsOutput = default!;
+    private DemoConsole purchasesOutput = default!;
+    private DemoConsole consumeOutput = default!;
+
+    private string _provider = DigitalGoods.GooglePlayBilling;
+    private string _itemIds = "coins_100, pro_monthly";
+    private string _purchaseToken = "";
+    private DigitalGoodsItem[] _items = [];
+
+    private string[] ItemIds => [.. _itemIds.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await digitalGoods.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Connect()
+    {
+        try
+        {
+            var connected = await digitalGoods.Connect(_provider);
+            await supportOutput.Success("Connect →",
+                connected ? "connected" : "no store here - this is the expected answer in a browser tab.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Connect failed →", ex.Message);
+        }
+    }
+
+    private async Task GetDetails()
+    {
+        try
+        {
+            _items = await digitalGoods.GetDetails(ItemIds, _provider);
+
+            if (_items.Length == 0)
+            {
+                await detailsOutput.Warn("GetDetails →", "nothing came back (no store, or no such items).");
+                return;
+            }
+
+            await detailsOutput.Success($"GetDetails → {_items.Length} item(s).");
+        }
+        catch (Exception ex)
+        {
+            await detailsOutput.Error("GetDetails failed →", ex.Message);
+        }
+    }
+
+    private async Task ListPurchases()
+    {
+        try
+        {
+            var purchases = await digitalGoods.ListPurchases(_provider);
+            await Report("ListPurchases", purchases);
+        }
+        catch (Exception ex)
+        {
+            await purchasesOutput.Error("ListPurchases failed →", ex.Message);
+        }
+    }
+
+    private async Task ListPurchaseHistory()
+    {
+        try
+        {
+            var purchases = await digitalGoods.ListPurchaseHistory(_provider);
+            await Report("ListPurchaseHistory", purchases);
+        }
+        catch (Exception ex)
+        {
+            await purchasesOutput.Error("ListPurchaseHistory failed →", ex.Message);
+        }
+    }
+
+    private async Task Report(string api, DigitalGoodsPurchase[] purchases)
+    {
+        if (purchases.Length == 0)
+        {
+            await purchasesOutput.Warn($"{api} →", "none (no store, or nothing bought).");
+            return;
+        }
+
+        _purchaseToken = purchases[0].PurchaseToken;
+        await purchasesOutput.Success($"{api} →", string.Join(", ", purchases.Select(p => p.ItemId)));
+    }
+
+    private async Task Consume()
+    {
+        try
+        {
+            var consumed = await digitalGoods.Consume(_purchaseToken, _provider);
+            await consumeOutput.Success("Consume →", consumed ? "consumed" : "refused (no store, or an unknown token).");
+        }
+        catch (Exception ex)
+        {
+            await consumeOutput.Error("Consume failed →", ex.Message);
+        }
+    }
+}

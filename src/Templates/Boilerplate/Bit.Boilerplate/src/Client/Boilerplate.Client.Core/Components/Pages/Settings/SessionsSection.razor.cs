@@ -1,3 +1,6 @@
+//+:cnd:noEmit
+using Boilerplate.Shared.Features.Identity.OAuth;
+
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class SessionsSection
@@ -91,6 +94,25 @@ public partial class SessionsSection
             revokingSessionIds.Remove(session.Id);
         }
     }
+
+    /// <summary>
+    /// An authorized application is not a device: the fallback below guesses an operating system from the name, which
+    /// made Visual Studio an Apple logo.
+    /// </summary>
+    private static string GetImageUrl(UserSessionDto session)
+    {
+        return string.IsNullOrEmpty(session.OAuthClientId) ? GetImageUrl(session.DeviceInfo) : "unknown.png";
+    }
+
+    /// <summary>What the application may do, from the scopes it was granted - the fact a user revokes on.</summary>
+    private string ScopeDescription(string scope) => scope switch
+    {
+        OAuthScopes.DevMcp => Localizer[nameof(AppStrings.OAuthScopeDevMcpShortDescription)],
+        //#if (signalR == true)
+        OAuthScopes.Chat => Localizer[nameof(AppStrings.OAuthScopeChatShortDescription)],
+        //#endif
+        _ => scope
+    };
 
     private static string GetImageUrl(string? deviceInfo)
     {

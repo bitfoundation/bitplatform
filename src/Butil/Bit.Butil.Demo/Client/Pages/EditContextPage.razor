@@ -1,0 +1,263 @@
+@page "/edit-context"
+@implements IAsyncDisposable
+@inject Bit.Butil.TextEditContext editContext
+
+<PageTitle>TextEditContext - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="TextEditContext"
+            Lead="The EditContext API: text input, IME composition and the thing on screen become three separate concerns instead of one contenteditable element that is all of them at once."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API"
+            InjectAs="TextEditContext editContext" />
+
+<Callout Type="info" Title="Why the name is TextEditContext">
+    Blazor's own <code>Microsoft.AspNetCore.Components.Forms.EditContext</code> is in every
+    component's implicit usings, so a Butil type called <code>EditContext</code> would make the name
+    ambiguous in every razor file that touches forms. The browser type it wraps is still
+    <code>EditContext</code>.
+</Callout>
+
+<Callout Type="warning" Title="This is not a drop-in contenteditable">
+    Attaching a context takes the element out of the DOM's own editing, and everything the browser
+    was doing becomes yours: drawing the caret, painting the selection, drawing the IME's underlines,
+    and telling the platform where the surface is so the candidate window lands in the right place.
+    Reach for it when <code>contenteditable</code> has already failed you - a code editor, a
+    canvas-drawn document - not before. Chromium only.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes EditContext. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.TextEditContext editContext
+
+var supported = await editContext.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="A surface that renders its own text"
+                 Api="Attach"
+                 Description="Attach to a focusable element (give it a tabindex - it does not need to be contenteditable), keep your own model, and render it however you like. Every keystroke, IME composition, dictation and autocorrect arrives as a TextEditContextUpdate: replace [UpdateRangeStart, UpdateRangeEnd) of your buffer with Text. Value is that result computed for you, for an editor that simply re-renders everything."
+                 Code=@("""
+_handle = await editContext.Attach(
+    _surface,
+    onTextUpdate: update =>
+    {
+        _text = update.Value;
+        _caret = update.SelectionStart;
+        InvokeAsync(StateHasChanged);
+    },
+    options: new TextEditContextOptions { Text = _text },
+    onComposition: composing => { _composing = composing; InvokeAsync(StateHasChanged); },
+    onFormatUpdate: formats => { _formats = formats; InvokeAsync(StateHasChanged); });
+""")>
+        <div class="controls">
+            <button @onclick="Attach" disabled="@(_handle is not null)">Attach</button>
+            <button class="danger" @onclick="Detach" disabled="@(_handle is null)">Detach</button>
+        </div>
+        <div @ref="_surface" tabindex="0"
+             style="min-height:3rem;padding:0.75rem;border:1px solid var(--border, #ccc);border-radius:6px;white-space:pre-wrap;outline-offset:2px">
+            @if (string.IsNullOrEmpty(_text))
+            {
+                <span style="opacity:0.6">Attach, click here and type. The text below is rendered from C#, not by the browser.</span>
+            }
+            else
+            {
+                @_text
+            }
+        </div>
+        <div class="field">
+            <span class="field-label">State</span>
+            <span><code>caret @_caret · composing: @_composing · IME formats: @_formats.Length</code></span>
+        </div>
+        <DemoConsole @ref="editOutput" Title="edit context output" />
+    </DemoSection>
+
+    <DemoSection Title="Tell the input method what you changed"
+                 Api="UpdateText / UpdateSelection"
+                 Description="A programmatic edit - a paste, an undo, a completion accepted - has to be reported back, or the IME keeps composing against a buffer that no longer matches what the user sees. This is the classic edit-context bug."
+                 Code=@("""
+// insert at the caret from your own code
+_text = _text.Insert(_caret, inserted);
+await _handle!.UpdateText(_caret, _caret, inserted);
+await _handle.UpdateSelection(_caret + inserted.Length, _caret + inserted.Length);
+""")>
+        <div class="controls">
+            <button @onclick="InsertFromCode" disabled="@(_handle is null)">Insert "[from C#]"</button>
+            <button @onclick="ReadState" disabled="@(_handle is null)">GetText / GetSelection</button>
+        </div>
+        <DemoConsole @ref="updateOutput" Title="update output" />
+    </DemoSection>
+
+    <DemoSection Title="Place the IME candidate window"
+                 Api="UpdateControlBounds / UpdateSelectionBounds"
+                 Description="The platform needs to know where the editing surface is on screen to place the IME's candidate list next to the text being typed. Without it the list can land nowhere near the caret. Report the bounds after every layout change - a resize, a scroll."
+                 Code=@("""
+var rect = await _surface.GetBoundingClientRect();
+await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
+""")>
+        <div class="controls">
+            <button @onclick="ReportBounds" disabled="@(_handle is null)">UpdateControlBounds</button>
+        </div>
+        <DemoConsole @ref="boundsOutput" Title="bounds output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes EditContext." />
+    <ApiMember Name="Attach"
+               Signature="ValueTask<TextEditContextHandle?> Attach(ElementReference element, Action<TextEditContextUpdate> onTextUpdate, TextEditContextOptions? options = null, Action<bool>? onComposition = null, Action<TextEditFormat[]>? onFormatUpdate = null)"
+               Description="Attaches an edit context to an element, taking over its text input. Null when the runtime has no EditContext." />
+    <ApiMember Name="Handle.GetText"
+               Signature="ValueTask<string?> GetText()"
+               Description="The context's current text, or null once detached." />
+    <ApiMember Name="Handle.GetSelection"
+               Signature="ValueTask<TextEditSelection?> GetSelection()"
+               Description="Where the caret or selection is, or null once detached." />
+    <ApiMember Name="Handle.UpdateText"
+               Signature="ValueTask UpdateText(int rangeStart, int rangeEnd, string text)"
+               Description="Tells the input method about a text change your own code made." />
+    <ApiMember Name="Handle.UpdateSelection"
+               Signature="ValueTask UpdateSelection(int start, int end)"
+               Description="Tells the input method where the caret or selection moved to." />
+    <ApiMember Name="Handle.UpdateControlBounds"
+               Signature="ValueTask UpdateControlBounds(double x, double y, double width, double height)"
+               Description="Where the whole editing surface is on screen, so the IME can place its candidate window." />
+    <ApiMember Name="Handle.UpdateSelectionBounds"
+               Signature="ValueTask UpdateSelectionBounds(double x, double y, double width, double height)"
+               Description="Where the selection is on screen - the finer-grained companion to UpdateControlBounds." />
+    <ApiMember Name="Handle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches the context, handing the element back to the DOM's own editing. Always dispose." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every context attached through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole editOutput = default!;
+    private DemoConsole updateOutput = default!;
+    private DemoConsole boundsOutput = default!;
+
+    private ElementReference _surface;
+    private TextEditContextHandle? _handle;
+    private string _text = "";
+    private int _caret;
+    private bool _composing;
+    private TextEditFormat[] _formats = [];
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await editContext.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - Attach() will return null here.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Attach()
+    {
+        try
+        {
+            _handle = await editContext.Attach(
+                _surface,
+                onTextUpdate: async update => await InvokeAsync(() =>
+                {
+                    _text = update.Value;
+                    _caret = update.SelectionStart;
+                    StateHasChanged();
+                }),
+                options: new TextEditContextOptions { Text = _text, SelectionStart = _caret, SelectionEnd = _caret },
+                onComposition: async composing => await InvokeAsync(() =>
+                {
+                    _composing = composing;
+                    StateHasChanged();
+                }),
+                onFormatUpdate: async formats => await InvokeAsync(() =>
+                {
+                    _formats = formats;
+                    StateHasChanged();
+                }));
+
+            if (_handle is null) await editOutput.Warn("Attach →", "null - this engine has no EditContext.");
+            else await editOutput.Success("Attach →", "attached. Click the surface and type.");
+        }
+        catch (Exception ex)
+        {
+            await editOutput.Error("Attach failed →", ex.Message);
+        }
+    }
+
+    private async Task Detach()
+    {
+        if (_handle is not null) await _handle.DisposeAsync();
+        _handle = null;
+        await editOutput.Info("Detached; the element is back under the DOM's own editing.");
+    }
+
+    private async Task InsertFromCode()
+    {
+        try
+        {
+            const string inserted = "[from C#]";
+            var at = Math.Clamp(_caret, 0, _text.Length);
+
+            _text = _text.Insert(at, inserted);
+            _caret = at + inserted.Length;
+
+            await _handle!.UpdateText(at, at, inserted);
+            await _handle.UpdateSelection(_caret, _caret);
+
+            await updateOutput.Success("UpdateText →", $"inserted at {at}; the IME now agrees with the buffer.");
+        }
+        catch (Exception ex)
+        {
+            await updateOutput.Error("UpdateText failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadState()
+    {
+        try
+        {
+            await updateOutput.Success("GetText →", await _handle!.GetText() ?? "(null)");
+            await updateOutput.Success("GetSelection →", await _handle.GetSelection());
+        }
+        catch (Exception ex)
+        {
+            await updateOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task ReportBounds()
+    {
+        try
+        {
+            var rect = await _surface.GetBoundingClientRect();
+            await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
+            await boundsOutput.Success("UpdateControlBounds →", rect);
+        }
+        catch (Exception ex)
+        {
+            await boundsOutput.Error("UpdateControlBounds failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_handle is not null) await _handle.DisposeAsync();
+    }
+}

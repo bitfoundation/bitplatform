@@ -68,7 +68,7 @@
                 </BitText>
                 <CodeBox Language="markdown">@_agentRules</CodeBox>
 
-                <BitMessage Color="BitColor.Info">
+                <BitMessage Color="BitColor.Info" Multiline>
                     Installing the library itself - the packages, the shared styles and scripts, cache
                     busting - is on the <BitLink Href="/getting-started">Getting started</BitLink> page.
                 </BitMessage>
@@ -104,7 +104,7 @@
 
                 @if (_live is false)
                 {
-                    <BitMessage Color="BitColor.Warning">
+                    <BitMessage Color="BitColor.Warning" Multiline>
                         This build of the demo has no HTTP origin to call - the live client below only runs
                         where the site is served over http(s). Read it at
                         <BitLink Href="https://blazorui.bitplatform.dev/mcp-server" Target="_blank">blazorui.bitplatform.dev/mcp-server</BitLink>.

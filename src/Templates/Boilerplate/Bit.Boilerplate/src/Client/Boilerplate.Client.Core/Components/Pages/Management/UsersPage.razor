@@ -190,14 +190,6 @@
                                                     @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
                                                     {
                                                         <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
-                                                        <AuthorizeView Policy="@AppFeatures.System.Logs_View">
-                                                            <BitButton IconOnly AutoLoading
-                                                                       OnClick="WrapHandled(() => ReadUserSessionLogs(session.Id))"
-                                                                       Title="@Localizer[nameof(AppStrings.ReadUserSessionLogsTitle)]"
-                                                                       AriaLabel="@Localizer[nameof(AppStrings.ReadUserSessionLogsTitle)]"
-                                                                       Color="BitColor.SecondaryBackground"
-                                                                       IconName="@BitIconName.Download" />
-                                                        </AuthorizeView>
                                                     }
                                                 </BitText>
                                                 @*#endif*@

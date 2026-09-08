@@ -6,6 +6,13 @@ public class AppClaimTypes
     public const string SESSION_ID = "s-id";
 
     /// <summary>
+    /// Authentication Methods References (RFC 8176). ASP.NET Identity stamps the value <c>mfa</c> on a completed
+    /// two-factor sign-in; this app carries it forward across refreshes (See IdentityController.Refresh).
+    /// <inheritdoc cref="AuthPolicies.TFA_ENABLED"/>
+    /// </summary>
+    public const string AMR = "amr";
+
+    /// <summary>
     /// true/false
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
@@ -36,6 +43,12 @@ public class AppClaimTypes
     /// <see cref="AppFeatures"/>
     /// </summary>
     public const string FEATURES = "features";
+
+    /// <summary>
+    /// The OAuth client a token was delegated to. Only the authorization server's tokens carry it, so its presence is
+    /// how server code knows it is acting for somebody else's app - a different question from which scopes were granted.
+    /// </summary>
+    public const string OAUTH_CLIENT_ID = "client_id";
 
     /// <summary>
     /// The method used for user authentication.

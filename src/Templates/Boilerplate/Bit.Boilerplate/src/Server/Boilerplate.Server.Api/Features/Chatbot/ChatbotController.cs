@@ -1,6 +1,5 @@
 //+:cnd:noEmit
 using System.Diagnostics.Metrics;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.RateLimiting;
 using Boilerplate.Shared.Features.Chatbot;
 
@@ -12,6 +11,10 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
 {
     [AutoInject] private IFusionCache cache = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private ChatbotAnswerSigner answerSigner = default!;
+
+    /// <summary>The largest recording the speech endpoints accept; the Dev MCP reports this value rather than a copy of it.</summary>
+    public const int MaxSpeechUploadSizeBytes = 2 * 1024 * 1024;
 
     // For open telemetry metrics. Both providers bill by characters spoken and seconds heard rather than by request,
     // so a request count says nothing about what speech costs - these are what any limit worth setting is chosen
@@ -64,7 +67,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     /// Turns a recording made by the AI chat panel's microphone into the text it puts in the message box.
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(2 * 1024 * 1024 /*2MB*/)]
+    [RequestSizeLimit(MaxSpeechUploadSizeBytes)]
     [EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]
     public async Task<TranscribeSpeechResponseDto> TranscribeSpeech(IFormFile? file, CancellationToken cancellationToken)
     {
@@ -109,18 +112,18 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     /// <para>
     /// It accepts the text itself rather than the id of a message because nothing stores the conversation -
     /// <c>AppChatbot</c> holds it in memory for the lifetime of one SignalR connection - so there is no id that
-    /// would name an answer. <see cref="RememberAnswer"/> stands in for that id; without it this endpoint reads out
-    /// whatever it is sent, which is a text to speech api billed to whoever runs the app.
+    /// would name an answer. The signature <c>AppChatbot</c> sent with the answer stands in for that id; without it
+    /// this endpoint reads out whatever it is sent, which is a text to speech api billed to whoever runs the app.
     /// </para>
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(2 * 1024 * 1024 /*2MB*/)]
+    [RequestSizeLimit(MaxSpeechUploadSizeBytes)]
     [EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]
     public async Task<IActionResult> SynthesizeSpeech(SynthesizeSpeechRequestDto request, CancellationToken cancellationToken)
     {
         // Before anything is read or reduced: whatever the answer turns out to be worth saying, this caller has to be
         // handing back words this assistant wrote.
-        if (await cache.GetOrDefaultAsync(AnswerCacheKey(request.Text), false, token: cancellationToken) is false)
+        if (answerSigner.Verify(request.Text, request.Signature) is false)
             throw new ForbiddenException().WithData("Reason", "Only an answer this assistant wrote can be read aloud.");
 
         var text = SpeakableText.FromMarkdown(request.Text);
@@ -161,31 +164,6 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
 #pragma warning restore MEAI001
 
         return File(Join(spoken), mediaType!);
-    }
-
-    /// <summary>
-    /// How long an answer stays speakable. Long enough that a user scrolling back to something said early in the
-    /// conversation still gets it, short enough that the record - one small entry per answer - does not accumulate.
-    /// </summary>
-    private static readonly TimeSpan AnswersStaySpeakableFor = TimeSpan.FromHours(2);
-
-    /// <summary>
-    /// Records that this assistant wrote <paramref name="markdown"/>, which is what lets
-    /// <see cref="SynthesizeSpeech"/> read it out. Called by <c>AppChatbot</c> as each answer finishes streaming.
-    /// </summary>
-    public static async Task RememberAnswer(IFusionCache cache, string markdown, CancellationToken cancellationToken)
-    {
-        await cache.SetAsync(AnswerCacheKey(markdown), true, options => options.Duration = AnswersStaySpeakableFor, cancellationToken);
-    }
-
-    /// <summary>
-    /// The markdown as it was written rather than what <see cref="SpeakableText.FromMarkdown"/> makes of it: reducing
-    /// an answer costs a pass of regexes, and on the recording side nobody knows yet whether the speaker will ever be
-    /// pressed. Hashed because the entry is only ever compared for equality.
-    /// </summary>
-    private static string AnswerCacheKey(string markdown)
-    {
-        return $"SpeakableAnswer_{Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(markdown)))}";
     }
 
     /// <summary>
