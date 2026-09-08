@@ -192,6 +192,7 @@
 .bit-acd-hwr {
     display: flex;
     align-items: center;
+    transition: background-color $mot-duration-short $mot-easing 0ms;
 }
 
 .bit-acd-hed {
@@ -226,17 +227,21 @@
     }
 }
 
-// The whole header answers the pointer, so it says so. The rule is chained down from the root rather than
-// reaching for a descendant, so that the disabled state of an outer accordion does not take the hover away
-// from the headers of the accordions nested in its panel.
-.bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr {
+// The whole header answers the pointer, so it says so. What is painted is the header line rather than the
+// button inside it: the Actions slot has to stay outside the button and the heading, so painting the button
+// would leave that strip in the accordion's own color beside a header that has gone darker, reading as a box
+// of its own rather than as the end of the same line. The state is still read off the button, so the paint
+// keeps meaning "a click here toggles" and stays away while the pointer is over the actions.
+// The rule is chained down from the root rather than reaching for a descendant, so that the disabled state of
+// an outer accordion does not take the hover away from the headers of the accordions nested in its panel.
+.bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {
     @media (hover: hover) {
-        &:hover {
+        &:has(> .bit-acd-hed > .bit-acd-hdr:hover) {
             background-color: var(--bit-acd-hov);
         }
     }
 
-    &:active {
+    &:has(> .bit-acd-hed > .bit-acd-hdr:active) {
         background-color: var(--bit-acd-prs);
     }
 }
