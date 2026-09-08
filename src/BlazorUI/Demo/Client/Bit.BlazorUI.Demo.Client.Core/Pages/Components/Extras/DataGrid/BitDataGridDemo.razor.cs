@@ -35,12 +35,31 @@ public partial class BitDataGridDemo : AppComponentBase
 
     // example 5 - grouping
     private readonly List<Product> groupProducts = SampleData.Generate(80);
+    private BitDataGrid<Product>? groupGrid;
 
     private object? DistinctSuppliers(IReadOnlyList<Product> rows)
         => $"{rows.Select(p => p.Supplier).Distinct().Count()} distinct";
 
+    private async Task ExpandAllGroups() { if (groupGrid is not null) await groupGrid.ExpandAllGroupsAsync(); }
+    private async Task CollapseAllGroups() { if (groupGrid is not null) await groupGrid.CollapseAllGroupsAsync(); }
+
     // example 6 - templates
     private readonly List<Product> templateProducts = SampleData.Generate(30);
+
+    // Orders in-stock rows ahead of out-of-stock ones, then by quantity - an ordering the raw numeric
+    // value cannot express on its own.
+    private readonly IComparer<object?> stockComparer = new StockComparer();
+
+    private sealed class StockComparer : IComparer<object?>
+    {
+        public int Compare(object? x, object? y)
+        {
+            var a = x as int? ?? 0;
+            var b = y as int? ?? 0;
+            var inStock = (b == 0).CompareTo(a == 0);
+            return inStock != 0 ? inStock : a.CompareTo(b);
+        }
+    }
 
     // example 7 - columns resize/reorder/freeze
     private readonly List<Product> columnsProducts = SampleData.Generate(40);
@@ -97,20 +116,30 @@ public partial class BitDataGridDemo : AppComponentBase
     private readonly List<Product> emptyData = SampleData.Generate(25);
     private readonly List<Product> emptyNone = new();
     private bool emptyHasData;
+    private bool emptyLoading;
     private List<Product> EmptyCurrent => emptyHasData ? emptyData : emptyNone;
+
+    private async Task SimulateLoading()
+    {
+        emptyLoading = true;
+        StateHasChanged();
+        await Task.Delay(1500);
+        emptyLoading = false;
+        emptyHasData = true;
+    }
 
     // example 20 - borders & striping
     private readonly List<Product> borderStripeProducts = SampleData.Generate(60);
     private bool bordered = true;
     private bool striped = true;
 
-    // example 21 - RTL
+    // example 37 - RTL
     private readonly List<Product> rtlProducts = SampleData.GeneratePersian(60);
 
-    // example 22 - filter operators
+    // example 21 - filter operators
     private readonly List<Product> operatorProducts = SampleData.Generate(150);
 
-    // example 23 - edit validation
+    // example 22 - edit validation
     private readonly List<Product> validationProducts = SampleData.Generate(30);
 
     private string? ValidateName(Product product, object? value)
@@ -122,7 +151,7 @@ public partial class BitDataGridDemo : AppComponentBase
     private string? ValidateStock(Product product, object? value)
         => value is int stock && stock < 0 ? "Stock cannot be negative." : null;
 
-    // example 24 - state persistence
+    // example 23 - state persistence
     private readonly List<Product> stateProducts = SampleData.Generate(120);
     private BitDataGrid<Product>? stateGrid;
     private BitDataGridState? savedGridState;
@@ -143,7 +172,7 @@ public partial class BitDataGridDemo : AppComponentBase
         gridStateStatus = "State restored.";
     }
 
-    // example 25 - server-side virtualization (+ server aggregates)
+    // example 24 - server-side virtualization (+ server aggregates)
     private readonly List<Product> serverVirtualAll = SampleData.Generate(100_000);
 
     private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitDataGridReadRequest request)
@@ -208,13 +237,13 @@ public partial class BitDataGridDemo : AppComponentBase
         return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
     }
 
-    // example 27 - IQueryable data source (an EF Core DbSet would bind the same way)
+    // example 26 - IQueryable data source (an EF Core DbSet would bind the same way)
     private readonly IQueryable<Product> queryableProducts = SampleData.Generate(400).AsQueryable();
 
-    // example 28 - Excel export
+    // example 27 - Excel export
     private readonly List<Product> excelProducts = SampleData.Generate(120);
 
-    // example 33 - export with complex layouts (master-detail + frozen + ColSpan)
+    // example 28 - export with complex layouts (master-detail + frozen + ColSpan)
     private readonly List<Product> complexExportProducts = SampleData.Generate(30);
 
     // example 29 - lazy tree loading
@@ -263,7 +292,20 @@ public partial class BitDataGridDemo : AppComponentBase
     private async Task ApiPageSize50() { if (apiGrid is not null) await apiGrid.SetPageSizeAsync(50); }
     private async Task ApiRefresh() { if (apiGrid is not null) await apiGrid.RefreshAsync(); }
 
-    // example 34 - detail rows from the row & from code
+    private string apiLog = "The grid reports every view change here.";
+
+    private void OnApiSortChange(IReadOnlyList<BitDataGridSortDescriptor> sorts)
+        => apiLog = sorts.Count == 0 ? "Sorting cleared." : $"Sorting by {string.Join(", ", sorts.Select(s => $"{s.ColumnId} {s.Direction}"))}.";
+
+    private void OnApiFilterChange(IReadOnlyList<BitDataGridFilterDescriptor> filters)
+        => apiLog = filters.Count == 0 ? "Filters cleared." : $"{filters.Count} filter(s) active.";
+
+    private void OnApiGroupChange(IReadOnlyList<BitDataGridGroupDescriptor> groups)
+        => apiLog = groups.Count == 0 ? "Grouping cleared." : $"Grouped by {string.Join(" › ", groups.Select(g => g.ColumnId))}.";
+
+    private void OnApiPageChange(int page) => apiLog = $"Moved to page {page}.";
+
+    // example 33 - detail rows from the row & from code
     private readonly List<Product> detailProducts = SampleData.Generate(20);
     private BitDataGrid<Product>? detailGrid;
     private string detailStatus = "Click any row to reveal its details.";
@@ -275,7 +317,47 @@ public partial class BitDataGridDemo : AppComponentBase
     private async Task CollapseAllDetails() { if (detailGrid is not null) await detailGrid.CollapseAllDetailsAsync(); }
     private async Task ToggleFirstDetail() { if (detailGrid is not null) await detailGrid.ToggleDetailAsync(detailProducts[0]); }
 
-    // example 26 - localization
+    // example 34 - quick search
+    private readonly List<Product> searchProducts = SampleData.Generate(200);
+    private string? searchTerm;
+
+    // example 35 - conditional row styling & cell tooltips
+    private readonly List<Product> styledRowProducts = SampleData.Generate(60);
+
+    private static string? RowClassFor(Product p) => p.Stock == 0 ? "row-out-of-stock" : null;
+
+    private static string? RowStyleFor(Product p) => p.Price > 800 ? "font-weight:600;" : null;
+
+    // example 36 - clipboard & range selection
+    private readonly List<Product> clipboardProducts = SampleData.Generate(40);
+    private BitDataGrid<Product>? clipboardGrid;
+    private IReadOnlyList<Product> clipboardSelection = [];
+    private string clipboardStatus = "Select rows, then copy them.";
+
+    private async Task SelectAllRows()
+    {
+        if (clipboardGrid is null) return;
+        await clipboardGrid.SelectAllAsync();
+        clipboardStatus = $"{clipboardSelection.Count} rows selected.";
+    }
+
+    private async Task ClearRowSelection()
+    {
+        if (clipboardGrid is null) return;
+        await clipboardGrid.ClearSelectionAsync();
+        clipboardStatus = "Selection cleared.";
+    }
+
+    private async Task CopySelection()
+    {
+        if (clipboardGrid is null) return;
+        var copied = await clipboardGrid.CopyToClipboardAsync();
+        clipboardStatus = copied > 0
+            ? $"{copied} rows copied to the clipboard."
+            : "Nothing was copied (the clipboard may be unavailable here).";
+    }
+
+    // example 25 - localization
     private readonly List<Product> localizedProducts = SampleData.GeneratePersian(60);
 
     private readonly BitDataGridStrings persianStrings = new()

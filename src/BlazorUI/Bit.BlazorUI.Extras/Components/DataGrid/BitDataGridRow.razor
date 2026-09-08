@@ -5,7 +5,8 @@
      aria-rowindex="@Grid.AriaRowIndex(Item)"
      data-ri="@(Grid.RowReorderEnabled ? Grid.RowDataIndex(Item) : null)"
      aria-selected="@(Grid.SelectionEnabled ? (Selected ? "true" : "false") : null)"
-     aria-expanded="@(RowExpandable ? (Grid.IsDetailExpanded(Item) ? "true" : "false") : null)"
+     aria-level="@TreeLevel"
+     aria-expanded="@RowExpandedState"
      tabindex="@(RowKeyboardToggle ? 0 : (int?)null)"
      @onkeydown="HandleRowKeyDown"
      @ondragover:preventDefault="@(Grid.RowReorderEnabled && !Editing)"
@@ -40,8 +41,12 @@
     {
         specialColIndex++;
         <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            @* Shift+click extends the selection from the last plainly-clicked row. The modifier is read
+               on mousedown because the change event that carries the new value exposes no modifier
+               keys, and mousedown is dispatched before it. *@
             <input type="checkbox" checked="@Selected" disabled="@(!Grid.CanSelectRow(Item))"
                    aria-label="@SelectRowLabel"
+                   @onmousedown="e => Grid.SetRangeSelectPending(e.ShiftKey)"
                    @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
         </div>
     }
@@ -64,7 +69,7 @@
         var cellStyle = Grid.FrozenStyle(column) + (span > 1 ? $"grid-column:span {span};" : "");
 
         <BitDataGridCell TItem="TItem" Grid="Grid" Item="Item" Column="column" ColIndex="colIndex"
-                            CssClass="@CellClass(column)" Style="@cellStyle">
+                            CssClass="@CellClass(column)" Style="@cellStyle" Title="@CellTitle(column)">
             @CellContent(column, colIndex)
         </BitDataGridCell>
     }
@@ -89,7 +94,7 @@
 @if (Grid.HasDetailTemplate && Grid.IsDetailExpanded(Item))
 {
     <div class="bit-dtg-detail-row" role="row">
-        <div class="bit-dtg-detail-content" role="gridcell">
+        <div class="bit-dtg-detail-content" role="gridcell" aria-colindex="1" aria-colspan="@Grid.TotalColumnSpan">
             @Grid.DetailTemplate?.Invoke(Item)
         </div>
     </div>
@@ -114,6 +119,19 @@
     // be reachable by pointer only. Make the row the keyboard control in exactly that case: the toggle
     // column is already a button, and cell navigation already routes Enter through the focused cell.
     private bool RowKeyboardToggle => RowExpandable && !Grid.HasDetailColumn && !Grid.CellNavigation;
+
+    // In a treegrid the row - not the toggle button inside it - is what carries the node's depth, so
+    // assistive tech can report "level 3" while moving between rows. 1-based per ARIA; absent outside
+    // tree mode, where every row is at the same level and the attribute would say nothing.
+    private int? TreeLevel => Grid.IsTreeMode ? Grid.TreeLevel(Item) + 1 : null;
+
+    // The row's expanded state: its tree node's when the row has children (a treegrid puts the state on
+    // the row), otherwise its detail content's. A row that expands neither way reports nothing rather
+    // than advertising a collapsed state that cannot be opened.
+    private string? RowExpandedState
+        => Grid.IsTreeMode && Grid.TreeHasChildren(Item) ? (Grid.IsTreeExpanded(Item) ? "true" : "false")
+         : RowExpandable ? (Grid.IsDetailExpanded(Item) ? "true" : "false")
+         : null;
 
     // Gives the row-selection checkbox an accessible name so screen readers can identify which row is
     // being selected. Uses the first visible column's value as row-specific context when available.
@@ -164,7 +182,9 @@
         }
         else
         {
-            @column.GetFormattedValue(Item)
+            @* Wrapped rather than emitted as bare text: the cell is a flex container, where text-overflow
+               can only ellipsise a real element (see .bit-dtg-cell-text). *@
+            <span class="bit-dtg-cell-text">@column.GetFormattedValue(Item)</span>
         }
     </text>;
 
@@ -176,12 +196,27 @@
             if (Selected) c += " bit-dtg-selected";
             if (Editing) c += " bit-dtg-editing";
             if (RowExpandable) c += " bit-dtg-row-expandable";
+            // The grid's conditional row styling comes last so a caller's class can win over the
+            // built-in state classes it may need to override.
+            if (Grid.RowClass?.Invoke(Item) is { Length: > 0 } custom) c += " " + custom;
             return c;
         }
     }
 
-    private string RowStyle =>
-        $"grid-template-columns:var(--bit-dtg-template);min-height:{Grid.ResolveRowHeight(Item).ToString(System.Globalization.CultureInfo.InvariantCulture)}px;";
+    private string RowStyle
+    {
+        get
+        {
+            var s = $"grid-template-columns:var(--bit-dtg-template);min-height:{Grid.ResolveRowHeight(Item).ToString(System.Globalization.CultureInfo.InvariantCulture)}px;";
+            // Appended after the layout declarations so a caller's style wins on any property it repeats.
+            if (Grid.RowStyle?.Invoke(Item) is { Length: > 0 } custom)
+            {
+                s += custom;
+                if (!custom.EndsWith(';')) s += ";";
+            }
+            return s;
+        }
+    }
 
     private string CellClass(BitDataGridColumn<TItem> column)
     {
@@ -190,6 +225,14 @@
         if (!string.IsNullOrEmpty(column.CellClass)) c += " " + column.CellClass;
         return c;
     }
+
+    // The full cell text as a native tooltip, so a value the column is too narrow to render stays
+    // readable. Only for cells rendering the column's own value: a Template owns its markup - and any
+    // tooltip it wants - and an editor's input must not be covered by one.
+    private string? CellTitle(BitDataGridColumn<TItem> column)
+        => Grid.ColumnShowsTooltip(column) && column.Template is null && !(Editing && Grid.ColumnEditable(column))
+            ? column.GetFormattedValue(Item)
+            : null;
 
     private Task OnRowClick() => Grid.HandleRowClickAsync(Item);
 

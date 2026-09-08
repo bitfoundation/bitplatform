@@ -300,7 +300,9 @@ internal static class BitDataGridExcelWriter
     private static void WriteCell<TItem>(TextWriter writer, BitDataGridColumn<TItem> column, TItem item, int styleIndex)
     {
         var s = styleIndex > 0 ? $" s=\"{styleIndex}\"" : "";
-        var value = column.GetValue(item);
+        // GetExportValue resolves the column's ExportValue selector when one is set (which is what
+        // gives a template-only column a real exported value), and the bound field's value otherwise.
+        var value = column.GetExportValue(item);
         switch (value)
         {
             case null:
@@ -316,7 +318,7 @@ internal static class BitDataGridExcelWriter
             // string instead of a numeric cell.
             case float f when !float.IsFinite(f):
             case double d when !double.IsFinite(d):
-                WriteInlineString(writer, column.GetFormattedValue(item), styleIndex);
+                WriteInlineString(writer, column.GetFormattedExportValue(item), styleIndex);
                 break;
             // Native numeric cells keep their real value so spreadsheet math works on the export;
             // a column Format (e.g. "C2") is presentation-only and intentionally not applied here.
@@ -326,7 +328,7 @@ internal static class BitDataGridExcelWriter
                 writer.Write("</v></c>");
                 break;
             default:
-                WriteInlineString(writer, column.GetFormattedValue(item), styleIndex);
+                WriteInlineString(writer, column.GetFormattedExportValue(item), styleIndex);
                 break;
         }
     }

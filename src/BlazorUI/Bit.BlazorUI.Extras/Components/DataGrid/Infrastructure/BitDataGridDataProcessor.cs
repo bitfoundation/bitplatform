@@ -27,6 +27,42 @@ public static class BitDataGridDataProcessor
         return query.ToList();
     }
 
+    /// <summary>
+    /// Applies the grid-wide quick-search term: a row matches when <b>any</b> searchable column's
+    /// formatted display text contains the term (case-insensitively), so the user searches exactly
+    /// what the grid renders. A blank term matches every row.
+    /// </summary>
+    public static IReadOnlyList<TItem> Search<TItem>(
+        IEnumerable<TItem> source,
+        string? term,
+        IReadOnlyList<BitDataGridColumn<TItem>> columns)
+    {
+        if (string.IsNullOrWhiteSpace(term))
+            return source as IReadOnlyList<TItem> ?? source.ToList();
+
+        // Materialize the searchable columns once instead of re-filtering the column list per row.
+        var searchable = columns.Where(c => c.IsSearchable).ToList();
+        if (searchable.Count == 0) return Array.Empty<TItem>();
+
+        var needle = term.Trim();
+        var result = new List<TItem>();
+        foreach (var item in source)
+        {
+            foreach (var column in searchable)
+            {
+                // GetFormattedExportValue is the column's "value as text": the ExportValue selector
+                // when one is supplied (which is what makes a template-only column searchable), and
+                // the formatted field value otherwise.
+                if (column.GetFormattedExportValue(item).Contains(needle, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Add(item);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     public static IReadOnlyList<TItem> Sort<TItem>(
         IReadOnlyList<TItem> source,
         IReadOnlyList<BitDataGridSortDescriptor> sorts,
@@ -42,7 +78,9 @@ public static class BitDataGridDataProcessor
             // field accessor - so template-only columns with a SortBy participate in sorting too.
             if (!columns.TryGetValue(sort.ColumnId, out var column) || column.SortKey is not { } key)
                 continue;
-            var comparer = BitDataGridValueComparer.Instance;
+            // A column may supply its own comparer (e.g. a domain ordering the default value comparer
+            // can't express); otherwise the shared null-safe value comparer orders the keys.
+            var comparer = column.Comparer ?? BitDataGridValueComparer.Instance;
             if (ordered is null)
             {
                 ordered = sort.Direction == BitDataGridSortDirection.Ascending

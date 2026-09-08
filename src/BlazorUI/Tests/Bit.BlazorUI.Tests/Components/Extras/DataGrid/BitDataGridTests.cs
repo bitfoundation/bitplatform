@@ -1422,4 +1422,847 @@ public class BitDataGridTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { "Name", "Price" }, headers);
         Assert.AreEqual(5, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
     }
+
+    // ------------------------------------------------------------ Quick search
+
+    [TestMethod]
+    public void SearchBoxFiltersAcrossEverySearchableColumn()
+    {
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.ShowSearchBox, true));
+
+        // "err" only appears in names (Cherry, Elderberry), so the text column drives the match.
+        component.Find(".bit-dtg-search-input").Change("err");
+        CollectionAssert.AreEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
+
+        // A term that only the numeric Price column can satisfy still matches: search runs over each
+        // column's rendered text, not just the string ones.
+        component.Find(".bit-dtg-search-input").Change("10");
+        CollectionAssert.AreEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
+
+        component.Find(".bit-dtg-search-clear").Click();
+        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.IsNull(component.Instance.ActiveSearch);
+    }
+
+    [TestMethod]
+    public void SearchSkipsColumnsThatOptOut()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(2);
+            builder.AddComponentParameter(3, "Field", "Price");
+            builder.AddComponentParameter(4, "Searchable", (bool?)false);
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+            parameters.Add(p => p.ShowSearchBox, true);
+        });
+
+        // "10" is only Cherry's price, and that column opted out - so nothing matches.
+        component.Find(".bit-dtg-search-input").Change("10");
+        Assert.AreEqual(0, FirstCellTexts(component).Count);
+        component.Find(".bit-dtg-empty");
+    }
+
+    [TestMethod]
+    public async Task SearchAsyncResetsToFirstPageAndReportsThroughBinding()
+    {
+        string? reported = null;
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.SearchTextChanged, (string? s) => reported = s);
+        });
+
+        await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+
+        await component.InvokeAsync(() => component.Instance.SearchAsync("err"));
+
+        Assert.AreEqual("err", reported);
+        Assert.AreEqual("err", component.Instance.ActiveSearch);
+        Assert.AreEqual(1, component.Instance.CurrentPage, "a new search must return to the first page");
+        Assert.AreEqual(2, component.Instance.TotalCount);
+    }
+
+    [TestMethod]
+    public void SearchTextParameterDrivesTheSearchWithoutClobberingUserInput()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchText, "Cherry");
+        });
+        CollectionAssert.AreEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
+
+        // The parent never binds SearchText back, so a re-render with the same parameter value must not
+        // reset the term the user just typed into the box.
+        component.Find(".bit-dtg-search-input").Change("Date");
+        component.Render(parameters => parameters.Add(p => p.Striped, false));
+        CollectionAssert.AreEqual(new[] { "Date" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task QueryableSearchTranslatesToTheProvider()
+    {
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows().AsQueryable());
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+        });
+
+        // Only the string column is translatable, so the term matches on Name.
+        await component.InvokeAsync(() => component.Instance.SearchAsync("an"));
+        CollectionAssert.AreEqual(new[] { "Banana" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task ServerModeForwardsTheSearchTermInTheReadRequest()
+    {
+        string? seen = null;
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+            parameters.Add(p => p.OnRead, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+            {
+                seen = request.Search;
+                var rows = CreateRows();
+                if (request.Search is { Length: > 0 } term)
+                    rows = rows.Where(r => r.Name.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+                return Task.FromResult(new BitDataGridReadResult<TestRow>(rows, rows.Count));
+            }));
+        });
+
+        await component.InvokeAsync(() => component.Instance.SearchAsync("err"));
+
+        Assert.AreEqual("err", seen);
+        CollectionAssert.AreEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
+    }
+
+    [TestMethod]
+    public async Task StateSnapshotCarriesTheSearchTerm()
+    {
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.ShowSearchBox, true));
+
+        await component.InvokeAsync(() => component.Instance.SearchAsync("err"));
+        var state = component.Instance.GetState();
+        Assert.AreEqual("err", state.Search);
+
+        await component.InvokeAsync(() => component.Instance.SearchAsync(null));
+        Assert.AreEqual(5, FirstCellTexts(component).Count);
+
+        await component.InvokeAsync(() => component.Instance.ApplyStateAsync(state));
+        CollectionAssert.AreEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
+    }
+
+    // ------------------------------------------------------------------ Pager
+
+    [TestMethod]
+    public void PagerOffersThePageSizeActuallyInEffect()
+    {
+        // 8 is not one of the declared options, so without merging it in the select would show "10"
+        // while the grid pages by 8.
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 8);
+        });
+
+        var options = component.FindAll(".bit-dtg-page-size option");
+        var selected = options.Single(o => o.HasAttribute("selected"));
+        Assert.AreEqual("8", selected.GetAttribute("value"));
+        CollectionAssert.AreEqual(new[] { "8", "10", "20", "50", "100" },
+            options.Select(o => o.GetAttribute("value")).ToArray());
+    }
+
+    // ----------------------------------------------------------- Filter row
+
+    [TestMethod]
+    public void FilterRowIsNotRenderedWhenEveryColumnOptsOut()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.AddComponentParameter(2, "Filterable", (bool?)false);
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+            parameters.Add(p => p.Filterable, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-filter-row").Count,
+            "an empty filter row must not be reserved when no column can be filtered");
+    }
+
+    // -------------------------------------------------------- Column chooser
+
+    [TestMethod]
+    public void ColumnChooserRefusesToHideTheLastVisibleColumn()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowToolbar, true);
+            parameters.Add(p => p.ShowColumnChooser, true);
+        });
+
+        component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").Click();
+        var boxes = component.FindAll(".bit-dtg-chooser-item input");
+        Assert.AreEqual(2, boxes.Count);
+
+        boxes[1].Change(false);
+        Assert.AreEqual(1, component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Count);
+
+        // Only one column is left, so its checkbox is disabled and unchecking it is a no-op.
+        var remaining = component.FindAll(".bit-dtg-chooser-item input")[0];
+        Assert.IsTrue(remaining.HasAttribute("disabled"));
+        remaining.Change(false);
+        Assert.AreEqual(1, component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Count,
+            "the grid must never be left with no columns");
+    }
+
+    [TestMethod]
+    public void EscapeClosesTheColumnChooser()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowToolbar, true);
+            parameters.Add(p => p.ShowColumnChooser, true);
+        });
+
+        component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").Click();
+        Assert.AreEqual(1, component.FindAll(".bit-dtg-column-chooser").Count);
+
+        component.Find(".bit-dtg-column-chooser").KeyDown("Escape");
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-column-chooser").Count);
+        Assert.AreEqual("false", component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").GetAttribute("aria-expanded"));
+    }
+
+    // ------------------------------------------------------- Row appearance
+
+    [TestMethod]
+    public void RowClassAndRowStyleDecorateTheirRows()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.RowClass, (Func<TestRow, string?>)(r => r.Price < 0 ? "negative" : null));
+            parameters.Add(p => p.RowStyle, (Func<TestRow, string?>)(r => r.Price < 0 ? "color:red" : null));
+        });
+
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
+        // Apple is the only row with a negative price.
+        Assert.IsTrue(rows[1].ClassList.Contains("negative"));
+        StringAssert.Contains(rows[1].GetAttribute("style"), "color:red;");
+        StringAssert.Contains(rows[1].GetAttribute("style"), "grid-template-columns:",
+            "the caller's style must be appended to the layout style, not replace it");
+        Assert.IsFalse(rows[0].ClassList.Contains("negative"));
+    }
+
+    [TestMethod]
+    public void LoadingTemplateReplacesTheBuiltInSpinner()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(b => b.AddMarkupContent(0, "<span class=\"my-loader\">Fetching…</span>")));
+        });
+
+        component.Find(".bit-dtg-loading .my-loader");
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-spinner").Count);
+        Assert.AreEqual("true", component.Find(".bit-dtg-table").GetAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void CellTooltipsCarryTheFullValueAndRespectPerColumnOptOut()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(2);
+            builder.AddComponentParameter(3, "Field", "Price");
+            builder.AddComponentParameter(4, "ShowTooltip", (bool?)false);
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+            parameters.Add(p => p.ShowCellTooltips, true);
+        });
+
+        var cells = component.FindAll(".bit-dtg-body > .bit-dtg-row")[0].QuerySelectorAll(".bit-dtg-cell");
+        Assert.AreEqual("Banana", cells[0].GetAttribute("title"));
+        Assert.IsNull(cells[1].GetAttribute("title"), "a column can opt out of the grid-level tooltips");
+    }
+
+    // ------------------------------------------------------------- Selection
+
+    [TestMethod]
+    public void ShiftClickSelectsTheRangeFromTheLastClickedRow()
+    {
+        IReadOnlyList<TestRow> selected = [];
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
+        });
+
+        var boxes = component.FindAll(".bit-dtg-cell-select input");
+        boxes[0].Change(true);
+        CollectionAssert.AreEqual(new[] { 1 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+
+        // Shift is read on mousedown, which precedes the change event carrying the new value.
+        var third = component.FindAll(".bit-dtg-cell-select input")[2];
+        third.MouseDown(new MouseEventArgs { ShiftKey = true });
+        third.Change(true);
+
+        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+    }
+
+    [TestMethod]
+    public void ShiftFlagDoesNotLeakIntoTheNextPlainClick()
+    {
+        IReadOnlyList<TestRow> selected = [];
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
+        });
+
+        var boxes = component.FindAll(".bit-dtg-cell-select input");
+        boxes[0].MouseDown(new MouseEventArgs { ShiftKey = true });
+        boxes[0].Change(true);
+
+        // No modifier this time: only the clicked row may be added.
+        var fifth = component.FindAll(".bit-dtg-cell-select input")[4];
+        fifth.MouseDown(new MouseEventArgs());
+        fifth.Change(true);
+
+        CollectionAssert.AreEqual(new[] { 1, 5 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+    }
+
+    [TestMethod]
+    public void CtrlAAndSpaceDriveSelectionFromTheKeyboard()
+    {
+        IReadOnlyList<TestRow> selected = [];
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.CellNavigation, true);
+            parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
+        });
+
+        var cell = component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell:not(.bit-dtg-cell-select)");
+        cell.KeyDown(new KeyboardEventArgs { Key = " " });
+        CollectionAssert.AreEqual(new[] { 1 }, selected.Select(r => r.Id).ToArray());
+
+        component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell:not(.bit-dtg-cell-select)")
+            .KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true });
+        CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+    }
+
+    [TestMethod]
+    public async Task SelectAllAndClearSelectionCoverTheWholeView()
+    {
+        IReadOnlyList<TestRow> selected = [];
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
+        });
+
+        // The header checkbox covers the page; SelectAllAsync covers every row of the view.
+        await component.InvokeAsync(() => component.Instance.SelectAllAsync());
+        Assert.AreEqual(5, selected.Count);
+
+        await component.InvokeAsync(() => component.Instance.ClearSelectionAsync());
+        Assert.AreEqual(0, selected.Count);
+    }
+
+    [TestMethod]
+    public void MultipleSelectionIsAnnouncedThroughAriaMultiselectable()
+    {
+        var single = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Single));
+        Assert.IsNull(single.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
+
+        var multiple = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple));
+        Assert.AreEqual("true", multiple.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
+    }
+
+    // ------------------------------------------------------------ Clipboard
+
+    [TestMethod]
+    public async Task ClipboardCopyWritesTheSelectedRowsAsTabSeparatedText()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(true);
+
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.ClipboardCopy, true);
+            parameters.Add(p => p.SelectedItems, new List<TestRow> { items[0], items[2] });
+        });
+
+        var copied = 0;
+        await component.InvokeAsync(async () => copied = await component.Instance.CopyToClipboardAsync());
+
+        Assert.AreEqual(2, copied);
+        var payload = (string)Context.JSInterop.Invocations["BitBlazorUI.DataGrid.copyToClipboard"].Single().Arguments[0]!;
+        Assert.AreEqual("Name\tPrice\r\nBanana\t2.5\r\nCherry\t10\r\n", payload);
+    }
+
+    [TestMethod]
+    public async Task ClipboardCopyFallsBackToTheFocusedRowAndReportsFailure()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(false);
+
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters => parameters.Add(p => p.ClipboardCopy, true));
+
+        var copied = -1;
+        await component.InvokeAsync(async () => copied = await component.Instance.CopyToClipboardAsync(items[1]));
+
+        Assert.AreEqual(0, copied, "a clipboard the browser refused must be reported as nothing copied");
+        var payload = (string)Context.JSInterop.Invocations["BitBlazorUI.DataGrid.copyToClipboard"].Single().Arguments[0]!;
+        StringAssert.Contains(payload, "Apple\t-5");
+    }
+
+    // --------------------------------------------------------------- Export
+
+    [TestMethod]
+    public void ExportableAndExportValueDecideWhatTheCsvCarries()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(2);
+            builder.AddComponentParameter(3, "Field", "Price");
+            builder.AddComponentParameter(4, "Exportable", (bool?)false);
+            builder.CloseComponent();
+            // A template-only column has nothing to export until ExportValue supplies it.
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(5);
+            builder.AddComponentParameter(6, "ColumnId", "double");
+            builder.AddComponentParameter(7, "Title", "Double");
+            builder.AddComponentParameter(8, "ExportValue", (Func<TestRow, object?>)(r => r.Price * 2));
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        var csv = component.Instance.ToCsv();
+        StringAssert.StartsWith(csv, "Name,Double\r\n");
+        StringAssert.Contains(csv, "Banana,5\r\n");
+        Assert.IsFalse(csv.Contains("Price"), "an Exportable=false column must stay out of the file");
+    }
+
+    [TestMethod]
+    public void CsvRowsEndWithCrLf()
+    {
+        var csv = RenderGrid().Instance.ToCsv();
+        StringAssert.Contains(csv, "\r\n");
+        Assert.AreEqual(6, csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Length,
+            "a header line plus one line per row");
+    }
+
+    [TestMethod]
+    public async Task ExportValueLandsInExcelAsANativeNumber()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "ColumnId", "double");
+            builder.AddComponentParameter(2, "Title", "Double");
+            builder.AddComponentParameter(3, "ExportValue", (Func<TestRow, object?>)(r => r.Id * 2));
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        byte[] bytes = null!;
+        await component.InvokeAsync(async () => bytes = await component.Instance.ToExcelAsync());
+        using var stream = new System.IO.MemoryStream(bytes);
+        using var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read);
+        using var reader = new System.IO.StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        var sheet = reader.ReadToEnd();
+
+        StringAssert.Contains(sheet, "<c><v>2</v></c>", "the computed value must be a native numeric cell");
+        StringAssert.Contains(sheet, "<t xml:space=\"preserve\">Double</t>");
+    }
+
+    [TestMethod]
+    public async Task ExportFileNameNamesTheDownloadedFiles()
+    {
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.ExportFileName, "orders"));
+
+        await component.InvokeAsync(() => component.Instance.ExportCsvAsync());
+
+        var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.download"].Single().Arguments;
+        Assert.AreEqual("orders.csv", args[0]);
+        // Excel decodes a BOM-less CSV with the system code page, so the download carries one.
+        StringAssert.StartsWith((string)args[1]!, "﻿");
+    }
+
+    // -------------------------------------------------------------- Sorting
+
+    [TestMethod]
+    public async Task ColumnComparerOverridesTheDefaultOrdering()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(2);
+            builder.AddComponentParameter(3, "Field", "Price");
+            // Orders by absolute value, which the default value comparer cannot express.
+            builder.AddComponentParameter(4, "Comparer", (IComparer<object?>)new AbsComparer());
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Ascending));
+
+        // |1| < |2.5| < |-5| < |7| < |10|
+        CollectionAssert.AreEqual(new[] { "Elderberry", "Banana", "Apple", "Date", "Cherry" },
+            FirstCellTexts(component).ToArray());
+    }
+
+    private sealed class AbsComparer : IComparer<object?>
+    {
+        public int Compare(object? x, object? y) => Math.Abs((double)(x ?? 0d)).CompareTo(Math.Abs((double)(y ?? 0d)));
+    }
+
+    // ------------------------------------------------------------- Grouping
+
+    [TestMethod]
+    public async Task GroupsInitiallyCollapsedAndExpandCollapseAllFlipEveryLevel()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Groupable, true);
+            parameters.Add(p => p.GroupsInitiallyCollapsed, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
+
+        // Every row is its own group here; collapsed groups render headers but no rows.
+        Assert.AreEqual(5, component.FindAll(".bit-dtg-group-row").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+
+        await component.InvokeAsync(() => component.Instance.ExpandAllGroupsAsync());
+        Assert.AreEqual(5, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+
+        await component.InvokeAsync(() => component.Instance.CollapseAllGroupsAsync());
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+    }
+
+    [TestMethod]
+    public async Task ExpandAllGroupsSurvivesARegrouping()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Groupable, true);
+            parameters.Add(p => p.GroupsInitiallyCollapsed, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
+        await component.InvokeAsync(() => component.Instance.ExpandAllGroupsAsync());
+        await component.InvokeAsync(() => component.Instance.UngroupAsync("Name"));
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Price"));
+
+        Assert.AreEqual(5, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count,
+            "expand-all flips the default every group follows, including groups built later");
+    }
+
+    // --------------------------------------------------------- View events
+
+    [TestMethod]
+    public async Task ViewChangesAreReportedThroughTheirCallbacks()
+    {
+        IReadOnlyList<BitDataGridSortDescriptor>? sorts = null;
+        IReadOnlyList<BitDataGridFilterDescriptor>? filters = null;
+        IReadOnlyList<BitDataGridGroupDescriptor>? groups = null;
+        var page = 0;
+
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.Groupable, true);
+            parameters.Add(p => p.OnSortChange, (IReadOnlyList<BitDataGridSortDescriptor> s) => sorts = s);
+            parameters.Add(p => p.OnFilterChange, (IReadOnlyList<BitDataGridFilterDescriptor> f) => filters = f);
+            parameters.Add(p => p.OnGroupChange, (IReadOnlyList<BitDataGridGroupDescriptor> g) => groups = g);
+            parameters.Add(p => p.OnPageChange, (int p2) => page = p2);
+        });
+
+        component.FindAll(".bit-dtg-header-row .bit-dtg-htext")[0].Click();
+        Assert.AreEqual(1, sorts!.Count);
+        Assert.AreEqual("Name", sorts![0].ColumnId);
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "e"));
+        Assert.AreEqual(1, filters!.Count);
+
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
+        Assert.AreEqual(1, groups!.Count);
+        await component.InvokeAsync(() => component.Instance.ClearGroupsAsync());
+        Assert.AreEqual(0, groups!.Count);
+
+        await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
+        Assert.AreEqual(2, page);
+
+        await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
+        Assert.AreEqual(0, filters!.Count);
+    }
+
+    // ------------------------------------------------------- Column auto-fit
+
+    [TestMethod]
+    public async Task AutoFitSizesTheColumnToItsMeasuredContent()
+    {
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(240d);
+
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
+
+        await component.InvokeAsync(() => component.Instance.AutoFitColumnAsync("Name"));
+
+        var template = component.Find(".bit-dtg-table").GetAttribute("style");
+        StringAssert.Contains(template, "240px", "the measured width must become the column's track");
+    }
+
+    [TestMethod]
+    public async Task AutoFitStaysWithinTheColumnsWidthBounds()
+    {
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(1000d);
+
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.AddComponentParameter(2, "MaxWidth", (int?)180);
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+            parameters.Add(p => p.Resizable, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance.AutoFitColumnAsync("Name"));
+
+        StringAssert.Contains(component.Find(".bit-dtg-table").GetAttribute("style"), "180px");
+    }
+
+    // --------------------------------------------------- Blank filter operators
+
+    [TestMethod]
+    public void BlankOperatorsFilterWithoutAValueAndHideTheEditor()
+    {
+        var rows = CreateRows();
+        rows[2].Name = string.Empty;
+
+        var component = RenderGrid(rows, parameters =>
+        {
+            parameters.Add(p => p.Filterable, true);
+            parameters.Add(p => p.FilterOperators, true);
+        });
+
+        var operators = component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0]
+            .QuerySelectorAll("option").Select(o => o.GetAttribute("value")).ToList();
+        CollectionAssert.Contains(operators, "IsEmpty");
+        CollectionAssert.Contains(operators, "IsNotEmpty");
+
+        // Choosing a value-less operator applies immediately - there is no value left to enter.
+        component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsEmpty");
+
+        CollectionAssert.AreEqual(new[] { "" }, FirstCellTexts(component).ToArray());
+        // The Price column keeps its own editor; only the column that took the blank operator loses one.
+        var nameCell = component.FindAll(".bit-dtg-filter-row .bit-dtg-hcell")[0];
+        Assert.AreEqual(0, nameCell.QuerySelectorAll(".bit-dtg-filter-input").Length,
+            "a value-less operator must not leave an editor that collects nothing");
+
+        component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsNotEmpty");
+        Assert.AreEqual(4, FirstCellTexts(component).Count);
+    }
+
+    [TestMethod]
+    public void SwitchingAwayFromABlankOperatorClearsTheFilter()
+    {
+        var rows = CreateRows();
+        rows[2].Name = string.Empty;
+
+        var component = RenderGrid(rows, parameters =>
+        {
+            parameters.Add(p => p.Filterable, true);
+            parameters.Add(p => p.FilterOperators, true);
+        });
+
+        component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsEmpty");
+        Assert.AreEqual(1, component.Instance.ActiveFilters.Count);
+
+        // No text was ever typed, so the descriptor has nothing to re-apply under the new operator.
+        component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("Contains");
+        Assert.AreEqual(0, component.Instance.ActiveFilters.Count);
+        Assert.AreEqual(5, FirstCellTexts(component).Count);
+    }
+
+    [TestMethod]
+    public async Task ClearingFiltersAlsoResetsTheChosenOperators()
+    {
+        var rows = CreateRows();
+        rows[2].Name = string.Empty;
+
+        var component = RenderGrid(rows, parameters =>
+        {
+            parameters.Add(p => p.Filterable, true);
+            parameters.Add(p => p.FilterOperators, true);
+        });
+
+        component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsEmpty");
+        Assert.AreEqual(1, FirstCellTexts(component).Count);
+
+        await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
+
+        // A value-less operator left selected would show a criterion that is no longer applied, with no
+        // editor to type into - so clearing the filters resets the operator to the column's default too.
+        Assert.AreEqual("Contains", component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].GetAttribute("value"));
+        var nameCell = component.FindAll(".bit-dtg-filter-row .bit-dtg-hcell")[0];
+        Assert.AreEqual(1, nameCell.QuerySelectorAll(".bit-dtg-filter-input").Length);
+        Assert.AreEqual(5, FirstCellTexts(component).Count);
+    }
+
+    // ------------------------------------------------------------- Tree ARIA
+
+    [TestMethod]
+    public void TreeModeReportsItselfAsATreegridWithLevelledRows()
+    {
+        var child = new TestRow { Id = 10, Name = "Child", Price = 1 };
+        var root = new TestRow { Id = 1, Name = "Root", Price = 2 };
+        var children = new Dictionary<int, List<TestRow>> { [1] = [child] };
+
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<TestRow> { root });
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+            parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
+            parameters.Add(p => p.ChildrenSelector, (Func<TestRow, IEnumerable<TestRow>?>)(r =>
+                children.TryGetValue(r.Id, out var c) ? c : null));
+        });
+
+        Assert.AreEqual("treegrid", component.Find(".bit-dtg-table").GetAttribute("role"));
+
+        var rootRow = component.Find(".bit-dtg-body > .bit-dtg-row");
+        Assert.AreEqual("1", rootRow.GetAttribute("aria-level"));
+        Assert.AreEqual("false", rootRow.GetAttribute("aria-expanded"),
+            "a collapsed node must report its expandable state on the row itself");
+
+        component.Find(".bit-dtg-tree-toggle").Click();
+
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
+        Assert.AreEqual("true", rows[0].GetAttribute("aria-expanded"));
+        Assert.AreEqual("2", rows[1].GetAttribute("aria-level"));
+        Assert.IsNull(rows[1].GetAttribute("aria-expanded"), "a leaf must not advertise an expandable state");
+    }
+
+    [TestMethod]
+    public void FlatGridStaysAGridWithNoRowLevels()
+    {
+        var component = RenderGrid();
+
+        Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.IsNull(component.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-level"));
+    }
+
+    // -------------------------------------------------------- Multi-sorting
+
+    [TestMethod]
+    public void ShiftClickAddsToTheSortLikeCtrlClick()
+    {
+        var component = RenderGrid();
+
+        component.FindAll(".bit-dtg-header-row .bit-dtg-htext")[0].Click();
+        component.FindAll(".bit-dtg-header-row .bit-dtg-htext")[1]
+            .Click(new MouseEventArgs { ShiftKey = true });
+
+        var sorts = component.Instance.ActiveSorts;
+        Assert.AreEqual(2, sorts.Count, "Shift+click must extend the sort rather than replace it");
+        CollectionAssert.AreEqual(new[] { "Name", "Price" }, sorts.Select(s => s.ColumnId).ToArray());
+    }
+
+    // ------------------------------------------------------- Range filtering
+
+    [TestMethod]
+    public async Task ApplyRangeFilterKeepsBothBoundsAsOrdinaryDescriptors()
+    {
+        var component = RenderGrid();
+
+        await component.InvokeAsync(() => component.Instance.ApplyRangeFilterAsync("Price", 1d, 7d));
+
+        // Half-open: 1 and 2.5 are in, 7 and 10 are out, -5 is below the lower bound.
+        CollectionAssert.AreEqual(new[] { "Banana", "Elderberry" }, FirstCellTexts(component).OrderBy(t => t).ToArray());
+
+        var filters = component.Instance.ActiveFilters;
+        Assert.AreEqual(2, filters.Count, "a range must travel as two ordinary comparisons");
+        CollectionAssert.AreEqual(
+            new[] { BitDataGridFilterOperator.GreaterThanOrEqual, BitDataGridFilterOperator.LessThan },
+            filters.Select(f => f.Operator).ToArray());
+
+        // A missing bound clears the column instead of applying half a range.
+        await component.InvokeAsync(() => component.Instance.ApplyRangeFilterAsync("Price", null, null));
+        Assert.AreEqual(0, component.Instance.ActiveFilters.Count);
+        Assert.AreEqual(5, FirstCellTexts(component).Count);
+    }
+
+    [TestMethod]
+    public async Task RestoringStateDoesNotEchoBackThroughTheChangeCallbacks()
+    {
+        var sortReports = 0;
+        var component = RenderGrid(configure: parameters =>
+            parameters.Add(p => p.OnSortChange, (IReadOnlyList<BitDataGridSortDescriptor> _) => sortReports++));
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
+        Assert.AreEqual(1, sortReports);
+
+        var state = component.Instance.GetState();
+        await component.InvokeAsync(() => component.Instance.ClearSortsAsync());
+        Assert.AreEqual(2, sortReports);
+
+        await component.InvokeAsync(() => component.Instance.ApplyStateAsync(state));
+        Assert.AreEqual(2, sortReports, "a restore must not feed a persistence handler the state it just supplied");
+        Assert.AreEqual(1, component.Instance.ActiveSorts.Count);
+    }
 }

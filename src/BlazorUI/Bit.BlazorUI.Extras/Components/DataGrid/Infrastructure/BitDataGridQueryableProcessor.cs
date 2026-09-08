@@ -19,6 +19,70 @@ public static class BitDataGridQueryableProcessor
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
         => ApplySorts(ApplyFilters(source, filters, columns), sorts, columns);
 
+    /// <summary>Applies the quick-search term, then the filters and sorts, onto the queryable.</summary>
+    public static IQueryable<TItem> Apply<TItem>(
+        IQueryable<TItem> source,
+        string? search,
+        IReadOnlyList<BitDataGridFilterDescriptor> filters,
+        IReadOnlyList<BitDataGridSortDescriptor> sorts,
+        IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
+        => ApplySorts(ApplyFilters(ApplySearch(source, search, columns.Values), filters, columns), sorts, columns);
+
+    /// <summary>
+    /// Translates the grid-wide quick search into a single OR of case-insensitive <c>Contains</c>
+    /// predicates over the searchable <b>string</b> columns, so the provider runs it at the source
+    /// (e.g. one SQL <c>WHERE … LIKE … OR … LIKE …</c>). Non-string columns are skipped: their text is
+    /// produced by .NET formatting the provider cannot reproduce, so matching them would need the rows
+    /// in memory. With no translatable column the search is left off rather than silently emptying
+    /// the grid.
+    /// </summary>
+    public static IQueryable<TItem> ApplySearch<TItem>(
+        IQueryable<TItem> source,
+        string? search,
+        IEnumerable<BitDataGridColumn<TItem>> columns)
+    {
+        if (string.IsNullOrWhiteSpace(search)) return source;
+
+        var term = search.Trim().ToLower();
+        var toLower = typeof(string).GetMethod(nameof(string.ToLower), Type.EmptyTypes)!;
+        var contains = typeof(string).GetMethod(nameof(string.Contains), new[] { typeof(string) })!;
+
+        ParameterExpression? param = null;
+        Expression? body = null;
+        foreach (var column in columns)
+        {
+            if (!column.IsSearchable || column.Accessor is null) continue;
+            var lambda = column.Accessor.PropertyLambda;
+            if (lambda.Body.Type != typeof(string)) continue;
+
+            // Every column accessor builds its lambda over its own parameter instance, so rebind the
+            // member expressions onto one shared parameter before OR-ing them into a single predicate.
+            param ??= lambda.Parameters[0];
+            var member = ReplaceParameter(lambda.Body, lambda.Parameters[0], param);
+
+            var match = Expression.AndAlso(
+                Expression.NotEqual(member, Expression.Constant(null, typeof(string))),
+                Expression.Call(Expression.Call(member, toLower), contains, Expression.Constant(term)));
+            body = body is null ? match : Expression.OrElse(body, match);
+        }
+
+        return body is null || param is null
+            ? source
+            : source.Where(Expression.Lambda<Func<TItem, bool>>(body, param));
+    }
+
+    private static Expression ReplaceParameter(Expression body, ParameterExpression from, ParameterExpression to)
+        => ReferenceEquals(from, to) ? body : new ParameterRebinder(from, to).Visit(body);
+
+    private sealed class ParameterRebinder : ExpressionVisitor
+    {
+        private readonly ParameterExpression _from;
+        private readonly ParameterExpression _to;
+        public ParameterRebinder(ParameterExpression from, ParameterExpression to) { _from = from; _to = to; }
+        protected override Expression VisitParameter(ParameterExpression node)
+            => ReferenceEquals(node, _from) ? _to : base.VisitParameter(node);
+    }
+
     public static IQueryable<TItem> ApplyFilters<TItem>(
         IQueryable<TItem> source,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,

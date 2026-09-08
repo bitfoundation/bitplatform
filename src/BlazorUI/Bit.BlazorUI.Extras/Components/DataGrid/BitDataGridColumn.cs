@@ -52,6 +52,15 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// Mirrors react-data-grid's <c>sortDescendingFirst</c>.
     /// </summary>
     [Parameter] public bool SortDescendingFirst { get; set; }
+
+    /// <summary>
+    /// Optional custom comparer applied to this column's sort keys, for orderings the default
+    /// null-safe value comparer cannot express (e.g. a domain-specific ranking, or a culture-aware
+    /// string collation). Client-side only: server mode forwards descriptors rather than delegates,
+    /// and a queryable source has no expression tree to translate a comparer into.
+    /// </summary>
+    [Parameter] public IComparer<object?>? Comparer { get; set; }
+
     /// <summary>
     /// Optional validator for inline edits. Receives the row being edited and the proposed (already
     /// type-converted) value; returns an error message to reject it, or <c>null</c> to accept.
@@ -69,6 +78,37 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     [Parameter] public bool? Reorderable { get; set; }
     [Parameter] public bool? Editable { get; set; }
     [Parameter] public bool? Groupable { get; set; }
+
+    /// <summary>
+    /// Whether the grid's quick-search box searches this column. Defaults to every field-bound column,
+    /// so opting a column out (<c>false</c>) narrows the search, and opting a template-only column in
+    /// (<c>true</c>) is only meaningful together with an <see cref="ExportValue"/>-style bound value -
+    /// a column with no value to read matches nothing.
+    /// </summary>
+    [Parameter] public bool? Searchable { get; set; }
+
+    /// <summary>
+    /// Whether the column is included in CSV/Excel exports. Defaults to every column that has a value
+    /// to write (a bound field, or an <see cref="ExportValue"/> selector), so setting <c>false</c>
+    /// keeps a purely presentational column out of the file.
+    /// </summary>
+    [Parameter] public bool? Exportable { get; set; }
+
+    /// <summary>
+    /// Optional value selector used by exports (and the clipboard) instead of the bound field - the
+    /// export counterpart of <see cref="Template"/>. It gives a template-only column a real exported
+    /// value (e.g. a computed total that has no backing property), and lets a bound column export
+    /// something other than what it stores. The value is formatted with <see cref="Format"/> like any
+    /// other, and numeric/boolean values still land in Excel as native cell types.
+    /// </summary>
+    [Parameter] public Func<TItem, object?>? ExportValue { get; set; }
+
+    /// <summary>
+    /// Renders each of this column's cells with a native tooltip carrying its full text, so a value
+    /// clipped by the column width stays readable on hover. Overrides the grid-level
+    /// <c>ShowCellTooltips</c>.
+    /// </summary>
+    [Parameter] public bool? ShowTooltip { get; set; }
 
     /// <summary>Pin the column to the start edge so it stays visible while scrolling horizontally.</summary>
     [Parameter] public bool Frozen { get; set; }
@@ -319,6 +359,21 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         var value = GetValue(item);
         return FormatValue(value);
     }
+
+    /// <summary>Whether the grid's quick search reads this column: a bound (or
+    /// <see cref="ExportValue"/>-backed) column unless <see cref="Searchable"/> says otherwise.</summary>
+    internal bool IsSearchable => Searchable ?? (HasField || ExportValue is not null);
+
+    /// <summary>Whether exports include this column: one that actually has a value to write, unless
+    /// <see cref="Exportable"/> says otherwise.</summary>
+    internal bool IsExportable => Exportable ?? (HasField || ExportValue is not null);
+
+    /// <summary>The raw value an export (or a clipboard copy) writes for a row:
+    /// <see cref="ExportValue"/> when supplied, otherwise the bound field's value.</summary>
+    internal object? GetExportValue(TItem item) => ExportValue is not null ? ExportValue(item) : GetValue(item);
+
+    /// <summary>The display text an export writes for a row (the export value, formatted).</summary>
+    internal string GetFormattedExportValue(TItem item) => FormatValue(GetExportValue(item));
 
     internal string FormatValue(object? value)
     {

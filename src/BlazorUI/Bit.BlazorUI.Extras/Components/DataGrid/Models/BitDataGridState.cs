@@ -21,6 +21,9 @@ public sealed class BitDataGridState
     /// <summary>The user-selected page size, or <c>null</c> when the grid's <c>PageSize</c> parameter applies.</summary>
     public int? PageSize { get; set; }
 
+    /// <summary>The grid-wide quick-search term, or <c>null</c> when no search was active.</summary>
+    public string? Search { get; set; }
+
     public List<BitDataGridSortDescriptor> Sorts { get; set; } = new();
 
     public List<BitDataGridFilterDescriptor> Filters { get; set; } = new();

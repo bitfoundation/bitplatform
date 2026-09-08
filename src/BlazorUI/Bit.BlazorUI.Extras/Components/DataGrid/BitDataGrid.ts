@@ -209,6 +209,63 @@ namespace BitBlazorUI {
             return element ? element.getBoundingClientRect().width : 0;
         }
 
+        // Measures the widest rendered content of one column (its header included) so .NET can
+        // auto-fit the column to it. Cells clip their overflow, so scrollWidth - not the box width -
+        // is what reports the untruncated content; the horizontal padding is added back because
+        // scrollWidth excludes it on a flex container.
+        public static measureColumnContentWidth(root: HTMLElement, ariaColIndex: number): number {
+            if (!root) return 0;
+            const cells = root.querySelectorAll(`[aria-colindex="${ariaColIndex}"]`);
+            let widest = 0;
+            cells.forEach(node => {
+                const cell = node as HTMLElement;
+                // A spanning cell's content belongs to several columns, so it would over-size this one.
+                if (cell.style.gridColumn) return;
+                const styles = getComputedStyle(cell);
+                const padding = parseFloat(styles.paddingLeft || '0') + parseFloat(styles.paddingRight || '0');
+                // The header holds the sort/group/resize affordances next to its label, so measure its
+                // children's extent rather than the label alone.
+                let content = cell.scrollWidth;
+                for (let i = 0; i < cell.children.length; i++) {
+                    const child = cell.children[i] as HTMLElement;
+                    if (child.classList.contains('bit-dtg-resizer')) continue;
+                    content = Math.max(content, child.scrollWidth + padding);
+                }
+                widest = Math.max(widest, content + padding);
+            });
+            // A couple of pixels of slack keeps the fitted column from re-clipping on sub-pixel rounding.
+            return widest > 0 ? Math.ceil(widest) + 2 : 0;
+        }
+
+        // Copies text to the system clipboard, reporting whether it landed. The async Clipboard API is
+        // unavailable on insecure origins and can be denied by permission, so this falls back to the
+        // legacy execCommand path over an off-screen textarea before giving up.
+        public static async copyToClipboard(text: string): Promise<boolean> {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+            } catch { /* fall through to the legacy path */ }
+
+            try {
+                const area = document.createElement('textarea');
+                area.value = text;
+                // Keep it out of view and unfocusable-by-scroll so copying doesn't jump the page.
+                area.setAttribute('readonly', '');
+                area.style.position = 'fixed';
+                area.style.top = '-1000px';
+                area.style.opacity = '0';
+                document.body.appendChild(area);
+                area.select();
+                const ok = document.execCommand('copy');
+                document.body.removeChild(area);
+                return ok;
+            } catch {
+                return false;
+            }
+        }
+
         // Samples the grid's rendered theme (computed styles of representative cells) so a styled
         // Excel export can bake the on-screen colors/fonts into the workbook. The grid's colors come
         // from CSS theme variables that .NET cannot resolve, so this is the only faithful source.
@@ -312,9 +369,11 @@ namespace BitBlazorUI {
     // do this (it's evaluated at render time, can't know the upcoming key, and lags one keystroke), so
     // a single capture-phase listener decides per-key up front. Tab and ordinary typing are left
     // untouched so focus can still leave the grid and editors keep receiving characters.
+    // Space is grid-owned too: it toggles the focused row's selection, so its page-scroll default must
+    // be cancelled exactly like the arrow keys'.
     const cellNavKeys = new Set([
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'Escape', 'F2'
+        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'Escape', 'F2', ' '
     ]);
     // Keys that should stay with a self-managed control nested inside a cell. Escape is intentionally
     // excluded so it keeps bubbling to the grid as the universal "cancel edit" affordance, while the

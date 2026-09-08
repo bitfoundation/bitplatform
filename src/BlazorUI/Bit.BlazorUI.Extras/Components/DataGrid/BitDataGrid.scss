@@ -68,6 +68,35 @@
     cursor: pointer;
 }
 
+/* The last remaining column can't be hidden, so its checkbox is disabled; dim the whole label (not
+   just the box) and drop the pointer affordance so the state reads as unavailable rather than broken. */
+.bit-dtg-chooser-item:has(input:disabled) {
+    opacity: $opa-dis;
+    cursor: default;
+}
+
+/* ---------------------------------------------------------- Quick search */
+.bit-dtg-search {
+    display: inline-flex;
+    align-items: center;
+    gap: spacing(0.25);
+}
+
+.bit-dtg-search-input {
+    padding: spacing(0.625) spacing(1);
+    border: $shp-border-width $shp-border-style $clr-brd-ter;
+    border-radius: $shp-radius-control;
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
+    font: inherit;
+    min-width: rem2(180px);
+}
+
+.bit-dtg-search-input:focus-visible {
+    outline: $shp-focus-ring-width solid $clr-pri;
+    outline-offset: calc(-1 * $shp-focus-ring-width);
+}
+
 /* ---------------------------------------------------------- Viewport */
 .bit-dtg-viewport {
     overflow: auto;
@@ -125,9 +154,20 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
     background: $clr-bg-pri;
+}
+
+/* text-overflow has no effect on a flex container (its text becomes an anonymous flex item), so the
+   ellipsis lives on the wrapper the cell renders its value into. min-width:0 lets that wrapper shrink
+   below its content width - flex items refuse to by default, which is what would clip without an
+   ellipsis in a narrow column. */
+.bit-dtg-cell-text {
+    min-width: 0;
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .bit-dtg-bordered .bit-dtg-cell,
@@ -589,6 +629,14 @@ button.bit-dtg-htext {
     color: $clr-fg-pri;
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-regular;
+}
+
+/* A value-less operator ("is blank") renders no editor beside it, so the dropdown takes the whole row.
+   Declared after the base rule so it wins at equal specificity. */
+.bit-dtg-filter-op-only {
+    flex: 1 1 auto;
+    max-width: 100%;
+    margin-inline-end: 0;
 }
 
 /* ---------------------------------------------------------- Buttons */

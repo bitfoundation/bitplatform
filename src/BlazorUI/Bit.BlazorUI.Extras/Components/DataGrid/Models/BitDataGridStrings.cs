@@ -32,6 +32,21 @@ public class BitDataGridStrings
     /// <summary>Toolbar button that opens the column chooser.</summary>
     public string ColumnsText { get; set; } = "Columns";
 
+    /// <summary>Accessible label of the column-chooser panel.</summary>
+    public string ColumnChooserLabel { get; set; } = "Choose columns";
+
+    /// <summary>Placeholder of the toolbar's quick-search box.</summary>
+    public string SearchPlaceholder { get; set; } = "Search…";
+
+    /// <summary>Accessible label of the toolbar's quick-search box.</summary>
+    public string SearchLabel { get; set; } = "Search all columns";
+
+    /// <summary>Accessible label of the button that clears the quick search.</summary>
+    public string ClearSearchLabel { get; set; } = "Clear search";
+
+    /// <summary>Tooltip of a resizable column's drag handle.</summary>
+    public string ResizeColumnTitle { get; set; } = "Drag to resize, or double-click to fit the content";
+
     public string EditText { get; set; } = "Edit";
     public string DeleteText { get; set; } = "Delete";
     public string SaveText { get; set; } = "Save";
@@ -69,6 +84,8 @@ public class BitDataGridStrings
     public string FilterOpGreaterThanOrEqual { get; set; } = "≥";
     public string FilterOpLessThan { get; set; } = "<";
     public string FilterOpLessThanOrEqual { get; set; } = "≤";
+    public string FilterOpIsEmpty { get; set; } = "Is blank";
+    public string FilterOpIsNotEmpty { get; set; } = "Is not blank";
 
     public string BooleanTrueText { get; set; } = "True";
     public string BooleanFalseText { get; set; } = "False";
@@ -131,6 +148,15 @@ public class BitDataGridStrings
     public string AnnouncementPage { get; set; } = "Page {0} of {1}";
     /// <summary>Announced after a row is deleted (via the Delete button or the Delete key).</summary>
     public string AnnouncementRowDeleted { get; set; } = "Row deleted";
+    /// <summary>{0} = the search term.</summary>
+    public string AnnouncementSearched { get; set; } = "Searching for {0}";
+    public string AnnouncementSearchCleared { get; set; } = "Search cleared";
+    /// <summary>{0} = column title.</summary>
+    public string AnnouncementGrouped { get; set; } = "Grouped by {0}";
+    /// <summary>{0} = column title.</summary>
+    public string AnnouncementUngrouped { get; set; } = "Grouping by {0} removed";
+    /// <summary>Announced after a clipboard copy. {0} = the number of rows copied.</summary>
+    public string AnnouncementRowsCopied { get; set; } = "{0} rows copied to the clipboard";
 
     /// <summary>Footer aggregate labels. {0} = the formatted aggregate value.</summary>
     public string AggregateSumFormat { get; set; } = "Σ {0}";
