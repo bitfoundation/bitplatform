@@ -13,7 +13,7 @@ public sealed class BitChartDataLabelOptions
     /// <summary>Per-element display predicate (value, datasetIndex, dataIndex) => show.</summary>
     public Func<double, int, int, bool>? DisplayFn { get; set; }
     /// <summary>Anchor of the label relative to the element (start = baseline, center, end = tip).</summary>
-    public BitChartAlign Anchor { get; set; } = BitChartAlign.Center;
+    public BitPlacement Anchor { get; set; } = BitPlacement.Center;
     /// <summary>Optional background color drawn behind the label.</summary>
     public string? BackgroundColor { get; set; }
     /// <summary>Corner radius of the label background.</summary>

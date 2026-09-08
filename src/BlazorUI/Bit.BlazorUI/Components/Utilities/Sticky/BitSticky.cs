@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// The component is a thin, dependable wrapper over the browser's own <c>position: sticky</c>: the
 /// content stays in the normal flow - keeping the room it occupies, so nothing jumps when it pins -
 /// until the scroll carries it to an edge of its nearest scrolling container, where it stays while
-/// the rest of the content passes. Which edge is either a <see cref="Position"/> (the two vertical
+/// the rest of the content passes. Which edge is either a <see cref="Placement"/> (the two vertical
 /// edges, the two horizontal ones - named Start and End, so they follow the reading direction - or
 /// both of a pair) or an exact offset from any of the four sides (<see cref="Top"/>,
 /// <see cref="Bottom"/>, <see cref="Left"/>, <see cref="Right"/>). With none of them set, it sticks
@@ -66,7 +66,7 @@ public partial class BitSticky : BitComponentBase
     /// A bare number is read as a pixel count; anything else is used as written, so any CSS length
     /// ("2rem", "10%", "calc(1rem + 2px)") is accepted. Setting any of the four offsets replaces the
     /// default stick-to-top behavior with exactly the edges the offsets name, and an offset set
-    /// alongside a <see cref="Position"/> overrides that side of it.
+    /// alongside a <see cref="Placement"/> overrides that side of it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Bottom { get; set; }
@@ -100,7 +100,7 @@ public partial class BitSticky : BitComponentBase
     /// A bare number is read as a pixel count; anything else is used as written, so any CSS length
     /// is accepted. Horizontal sticking needs a container that scrolls horizontally, and the offset
     /// names a physical side - for a side that follows the reading direction, use the Start and End
-    /// members of <see cref="Position"/> instead.
+    /// members of <see cref="Placement"/> instead.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Left { get; set; }
@@ -126,7 +126,7 @@ public partial class BitSticky : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the finer grained half of <see cref="OnStuckChanged"/>: it names the edges rather than
-    /// only reporting that there are some, so a bar pinned by a <see cref="BitSide"/> that
+    /// only reporting that there are some, so a bar pinned by a <see cref="BitPlacement"/> that
     /// holds a pair of them can tell which of the two is holding it - which side to cast its shadow
     /// toward, which border to draw - and it also reports the move from one of them to the other,
     /// which never flips the boolean. The edges are physical, so a Start sticky reports
@@ -141,14 +141,14 @@ public partial class BitSticky : BitComponentBase
     /// <remarks>
     /// Top, Bottom and TopAndBottom pin the element while the container scrolls vertically; Start,
     /// End and StartAndEnd pin it while the container scrolls horizontally, and follow the reading
-    /// direction (Start is left in LTR and right in RTL). When neither a Position nor any offset is
+    /// direction (Start is left in LTR and right in RTL). When neither a Placement nor any offset is
     /// set, the component sticks to the top.
     /// <br />
     /// Every side but the physical pair is meaningful here: Left and Right fall back to the default, since a
     /// sticky element is pinned along the axis it scrolls on rather than to a side of the screen.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// Specifying the horizontal position of a positioned element from right.
@@ -157,7 +157,7 @@ public partial class BitSticky : BitComponentBase
     /// A bare number is read as a pixel count; anything else is used as written, so any CSS length
     /// is accepted. Horizontal sticking needs a container that scrolls horizontally, and the offset
     /// names a physical side - for a side that follows the reading direction, use the Start and End
-    /// members of <see cref="Position"/> instead.
+    /// members of <see cref="Placement"/> instead.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Right { get; set; }
@@ -195,7 +195,7 @@ public partial class BitSticky : BitComponentBase
     /// A bare number is read as a pixel count; anything else is used as written, so any CSS length
     /// ("2rem", "10%", "calc(1rem + 2px)") is accepted. Setting any of the four offsets replaces the
     /// default stick-to-top behavior with exactly the edges the offsets name, and an offset set
-    /// alongside a <see cref="Position"/> overrides that side of it.
+    /// alongside a <see cref="Placement"/> overrides that side of it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Top { get; set; }
@@ -284,14 +284,14 @@ public partial class BitSticky : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => Position switch
+        ClassBuilder.Register(() => Placement switch
         {
-            BitSide.Top => "bit-stk-top",
-            BitSide.Bottom => "bit-stk-btm",
-            BitSide.TopAndBottom => "bit-stk-tab",
-            BitSide.Start => "bit-stk-srt",
-            BitSide.End => "bit-stk-end",
-            BitSide.StartAndEnd => "bit-stk-sae",
+            BitPlacement.Top => "bit-stk-top",
+            BitPlacement.Bottom => "bit-stk-btm",
+            BitPlacement.TopAndBottom => "bit-stk-tab",
+            BitPlacement.Start => "bit-stk-srt",
+            BitPlacement.End => "bit-stk-end",
+            BitPlacement.StartAndEnd => "bit-stk-sae",
             _ => (Top.HasNoValue() && Bottom.HasNoValue() && Left.HasNoValue() && Right.HasNoValue())
                     ? "bit-stk-top"
                     : string.Empty

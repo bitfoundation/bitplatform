@@ -365,7 +365,7 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "Shape",
-            Type = "BitPersonaShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
             Description = "The outline of the coin: a circle, a rounded square or a sharp one. Supersedes Squared, and wins over it when both are set.",
             LinkType = LinkType.Link,
@@ -895,28 +895,34 @@ public partial class BitPersonaDemo
         new()
         {
             Id = "shape-enum",
-            Name = "BitPersonaShape",
+            Name = "BitShape",
             Description = "The outline of the coin of a BitPersona.",
             Items =
             [
                 new()
                 {
-                    Name = "Circular",
-                    Description = "A circle, which is the shape a picture of a person is shown in.",
-                    Value = "0",
-                },
-                new()
-                {
                     Name = "Rounded",
-                    Description = "A square with the rounded corners of a control, which is the shape most design systems reserve for entities - teams, rooms, service accounts - rather than people.",
-                    Value = "1",
+                    Value = "0",
+                    Description = "The corner radius the current theme gives to this kind of surface."
                 },
                 new()
                 {
                     Name = "Square",
-                    Description = "A square with sharp corners, for a tile or a logo that has to fill the coin edge to edge.",
-                    Value = "2",
+                    Value = "1",
+                    Description = "Sharp corners with no radius at all."
                 },
+                new()
+                {
+                    Name = "Pill",
+                    Value = "2",
+                    Description = "Fully rounded ends: a pill where the box is wider than it is tall, and a circle where the box is square."
+                },
+                new()
+                {
+                    Name = "Circle",
+                    Value = "3",
+                    Description = "A true circle, which takes its diameter from whichever of the height and the width is set."
+                }
             ]
         },
         new()

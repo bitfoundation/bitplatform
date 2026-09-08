@@ -197,7 +197,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow>? selected = null;
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => selected = v));
         });
 
@@ -216,7 +216,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow>? selected = null;
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => selected = v));
         });
 
@@ -1081,7 +1081,7 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid(items, parameters =>
         {
             parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => selected = v));
         });
 
@@ -1410,23 +1410,23 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitSide.Bottom, 0, 1)]
-    [DataRow(BitSide.Top, 1, 0)]
-    [DataRow(BitSide.TopAndBottom, 1, 1)]
+    [DataRow(BitPlacement.Bottom, 0, 1)]
+    [DataRow(BitPlacement.Top, 1, 0)]
+    [DataRow(BitPlacement.TopAndBottom, 1, 1)]
     // A side the grid has no physical place for still leaves the pager under the grid,
     // rather than dropping it from a pageable grid altogether.
-    [DataRow(BitSide.Start, 0, 1)]
-    [DataRow(BitSide.End, 0, 1)]
-    [DataRow(BitSide.Left, 0, 1)]
-    [DataRow(BitSide.Right, 0, 1)]
-    [DataRow(BitSide.StartAndEnd, 0, 1)]
-    public void PagerPositionFallsBackToUnderTheGrid(BitSide position, int expectedAbove, int expectedBelow)
+    [DataRow(BitPlacement.Start, 0, 1)]
+    [DataRow(BitPlacement.End, 0, 1)]
+    [DataRow(BitPlacement.Left, 0, 1)]
+    [DataRow(BitPlacement.Right, 0, 1)]
+    [DataRow(BitPlacement.StartAndEnd, 0, 1)]
+    public void PagerPositionFallsBackToUnderTheGrid(BitPlacement position, int expectedAbove, int expectedBelow)
     {
         var component = RenderGrid(configure: parameters =>
         {
             parameters.Add(p => p.Pageable, true);
             parameters.Add(p => p.PageSize, 2);
-            parameters.Add(p => p.PagerPosition, position);
+            parameters.Add(p => p.PagerPlacement, position);
         });
 
         // Both matches in document order, so the viewport's index says which side each pager is on.

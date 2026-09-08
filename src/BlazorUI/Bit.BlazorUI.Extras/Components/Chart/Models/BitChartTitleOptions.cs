@@ -14,8 +14,8 @@ public sealed class BitChartTitleOptions
     /// here; every other side, the physical pair included, leaves the title at the top. Use <see cref="Align"/>
     /// to move it along the edge it is drawn against.
     /// </remarks>
-    public BitSide Position { get; set; } = BitSide.Top;
-    public BitChartAlign Align { get; set; } = BitChartAlign.Center;
+    public BitPlacement Placement { get; set; } = BitPlacement.Top;
+    public BitPlacement Align { get; set; } = BitPlacement.Center;
     public BitChartFont Font { get; set; } = new() { Size = 16, Weight = "bold" };
     public BitChartPadding Padding { get; set; } = 10;
 }

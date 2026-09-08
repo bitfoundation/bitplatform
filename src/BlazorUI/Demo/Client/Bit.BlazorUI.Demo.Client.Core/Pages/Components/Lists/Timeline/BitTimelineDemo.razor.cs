@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class BitTimelineDemo
 {
@@ -70,8 +70,8 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "LineVariant",
-            Type = "BitTimelineLineVariant?",
+            Name = "LineStyle",
+            Type = "BitLineStyle?",
             DefaultValue = "null",
             Description = "The way the connecting line of the timeline is painted, which the items can override one by one.",
             LinkType = LinkType.Link,
@@ -228,8 +228,8 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "LineVariant",
-                   Type = "BitTimelineLineVariant?",
+                   Name = "LineStyle",
+                   Type = "BitLineStyle?",
                    DefaultValue = "null",
                    Description = "The way the connecting line of the item is painted, overriding the line variant of the timeline.",
                    LinkType = LinkType.Link,
@@ -393,8 +393,8 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "LineVariant",
-                   Type = "BitTimelineLineVariant?",
+                   Name = "LineStyle",
+                   Type = "BitLineStyle?",
                    DefaultValue = "null",
                    Description = "The way the connecting line of the option is painted, overriding the line variant of the timeline.",
                    LinkType = LinkType.Link,
@@ -572,10 +572,10 @@ public partial class BitTimelineDemo
                 },
                 new()
                 {
-                    Name = "LineVariant",
-                    Type = "BitNameSelectorPair<TItem, BitTimelineLineVariant?>",
-                    DefaultValue = "new(nameof(BitTimelineItem.LineVariant))",
-                    Description = "LineVariant field name and selector of the custom input class.",
+                    Name = "LineStyle",
+                    Type = "BitNameSelectorPair<TItem, BitLineStyle?>",
+                    DefaultValue = "new(nameof(BitTimelineItem.LineStyle))",
+                    Description = "LineStyle field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -918,27 +918,33 @@ public partial class BitTimelineDemo
         new()
         {
             Id = "line-variant-enum",
-            Name = "BitTimelineLineVariant",
+            Name = "BitLineStyle",
             Description = "Determines how the connecting line of the timeline is painted.",
             Items =
             [
                 new()
                 {
-                    Name= "Solid",
-                    Description="An uninterrupted line.",
-                    Value="0",
+                    Name = "Solid",
+                    Value = "0",
+                    Description = "A continuous line."
                 },
                 new()
                 {
-                    Name= "Dashed",
-                    Description="A line drawn as a series of dashes, which usually marks a stretch of the timeline as pending or estimated.",
-                    Value="1",
+                    Name = "Dashed",
+                    Value = "1",
+                    Description = "A line of short dashes."
                 },
                 new()
                 {
-                    Name= "Dotted",
-                    Description="A line drawn as a series of dots, a lighter version of the dashed line.",
-                    Value="2",
+                    Name = "Dotted",
+                    Value = "2",
+                    Description = "A line of dots."
+                },
+                new()
+                {
+                    Name = "Double",
+                    Value = "3",
+                    Description = "Two parallel lines with a gap between them, which needs a line at least three pixels thick."
                 }
             ]
         },

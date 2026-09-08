@@ -145,32 +145,32 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="LabelPosition" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
+<DemoExample Title="LabelPlacement" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
     <div>Places the content of each option on any of the four sides of its radio circle. End is the default and renders the circle first; Start renders the content first and additionally aligns the options to the end of the group, so the circles line up in one column once the group is wider than its options (which is what the FullWidth section combines it with). Top and Bottom stack the content above or below the circle. Options rendered as image or icon tiles lay their own content out and are not affected.</div>
     <br />
     <div class="example-content column">
-        <BitChoiceGroup Label="End (default)" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPosition="BitSide.End" Horizontal>
+        <BitChoiceGroup Label="End (default)" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPlacement="BitPlacement.End" Horizontal>
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
             <BitChoiceGroupOption Text="Option D" Value="@("D")" />
         </BitChoiceGroup>
 
-        <BitChoiceGroup Label="Start" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPosition="BitSide.Start" Horizontal>
+        <BitChoiceGroup Label="Start" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPlacement="BitPlacement.Start" Horizontal>
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
             <BitChoiceGroupOption Text="Option D" Value="@("D")" />
         </BitChoiceGroup>
 
-        <BitChoiceGroup Label="Top" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPosition="BitSide.Top" Horizontal>
+        <BitChoiceGroup Label="Top" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPlacement="BitPlacement.Top" Horizontal>
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
             <BitChoiceGroupOption Text="Option D" Value="@("D")" />
         </BitChoiceGroup>
 
-        <BitChoiceGroup Label="Bottom" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPosition="BitSide.Bottom" Horizontal>
+        <BitChoiceGroup Label="Bottom" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPlacement="BitPlacement.Bottom" Horizontal>
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
@@ -491,7 +491,7 @@
 </DemoExample>
 
 <DemoExample Title="FullWidth" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
-    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest option, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the options additionally share that width in equal columns. In the vertical layout every option row spans the full width, so LabelPosition.Start now has room to push the options to the far edge; stretching the option label over that row as well turns it into the label-at-the-start, circle-at-the-end list found in settings pages.</div>
+    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest option, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the options additionally share that width in equal columns. In the vertical layout every option row spans the full width, so LabelPlacement.Start now has room to push the options to the far edge; stretching the option label over that row as well turns it into the label-at-the-start, circle-at-the-end list found in settings pages.</div>
     <br />
     <div class="example-content column">
         <div class="example-box">
@@ -511,7 +511,7 @@
             </BitChoiceGroup>
         </div>
         <div class="example-box">
-            <BitChoiceGroup Label="FullWidth + LabelPosition.Start (options at the far edge)" DefaultValue="@("A")" LabelPosition="BitSide.Start" FullWidth TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroup Label="FullWidth + LabelPlacement.Start (options at the far edge)" DefaultValue="@("A")" LabelPlacement="BitPlacement.Start" FullWidth TItem="BitChoiceGroupOption<string>" TValue="string">
                 <BitChoiceGroupOption Text="Option A" Value="@("A")" />
                 <BitChoiceGroupOption Text="Option B" Value="@("B")" />
                 <BitChoiceGroupOption Text="Option C" Value="@("C")" />
@@ -519,9 +519,9 @@
             </BitChoiceGroup>
         </div>
         <div class="example-box">
-            <BitChoiceGroup Label="FullWidth + LabelPosition.Start + stretched option label (settings list)"
+            <BitChoiceGroup Label="FullWidth + LabelPlacement.Start + stretched option label (settings list)"
                             DefaultValue="@("A")"
-                            LabelPosition="BitSide.Start" FullWidth
+                            LabelPlacement="BitPlacement.Start" FullWidth
                             Styles="@(new() { ItemLabel = "width: 100%; justify-content: space-between;" })"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
                 <BitChoiceGroupOption Text="Option A" Value="@("A")" />

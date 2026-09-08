@@ -299,10 +299,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
-    /// Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.
+    /// Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? Label { get; set; }
@@ -631,11 +631,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-nfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitSide.Bottom => "bit-nfl-lbt",
-            BitSide.Start => "bit-nfl-lst",
-            BitSide.End => "bit-nfl-led",
+            BitPlacement.Bottom => "bit-nfl-lbt",
+            BitPlacement.Start => "bit-nfl-lst",
+            BitPlacement.End => "bit-nfl-led",
             _ => "bit-nfl-ltp"
         });
 

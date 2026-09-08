@@ -22,11 +22,11 @@ public partial class BitActionButtonDemo
 <BitActionButton IconOnly IconName=""@BitIconName.Phone"" AriaLabel=""Call"" />";
 
     private readonly string example2RazorCode = @"
-<BitActionButton IconPosition=""BitIconPosition.Start"" IconName=""@BitIconName.AddFriend"">
+<BitActionButton IconPlacement=""BitPlacement.Start"" IconName=""@BitIconName.AddFriend"">
     Start (default)
 </BitActionButton>
 
-<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.AddFriend"">
+<BitActionButton IconPlacement=""BitPlacement.End"" IconName=""@BitIconName.AddFriend"">
     End
 </BitActionButton>";
 
@@ -132,7 +132,7 @@ private void HandleInvalidSubmit()
     FullWidth
 </BitActionButton>
 
-<BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.Forward"">
+<BitActionButton FullWidth IconPlacement=""BitPlacement.End"" IconName=""@BitIconName.Forward"">
     FullWidth with end icon
 </BitActionButton>";
 

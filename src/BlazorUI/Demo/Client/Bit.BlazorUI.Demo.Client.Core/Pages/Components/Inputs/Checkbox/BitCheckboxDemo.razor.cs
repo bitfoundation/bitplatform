@@ -129,8 +129,8 @@ public partial class BitCheckboxDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitSide?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the label in regards to the checkbox box. Takes precedence over Reversed when both are set.",
             LinkType = LinkType.Link,
@@ -453,7 +453,7 @@ public partial class BitCheckboxDemo
         new()
         {
             Id = "label-position-enum",
-            Name = "BitSide",
+            Name = "BitPlacement",
             Description = "The position of the label in regards to the checkbox box.",
             Items =
             [
@@ -473,13 +473,13 @@ public partial class BitCheckboxDemo
                 {
                     Name = "Start",
                     Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
                     Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
                 new()
                 {
@@ -495,14 +495,20 @@ public partial class BitCheckboxDemo
                 },
                 new()
                 {
-                    Name = "TopAndBottom",
+                    Name = "Center",
                     Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
                     Description = "Both edges of the block axis at once."
                 },
                 new()
                 {
                     Name = "StartAndEnd",
-                    Value = "7",
+                    Value = "8",
                     Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
                 }
             ]

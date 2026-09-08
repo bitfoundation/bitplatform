@@ -127,7 +127,7 @@ public abstract class BitLoadingBase : BitComponentBase
     /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// The custom content of the label of the loading component.
@@ -264,10 +264,10 @@ public abstract class BitLoadingBase : BitComponentBase
                     Label = label;
                     parametersDictionary.Remove(parameter.Key);
                     break;
-                case nameof(LabelPosition):
-                    var labelPosition = (BitSide?)parameter.Value;
-                    if (LabelPosition != labelPosition) ClassBuilder.Reset();
-                    LabelPosition = labelPosition;
+                case nameof(LabelPlacement):
+                    var labelPosition = (BitPlacement?)parameter.Value;
+                    if (LabelPlacement != labelPosition) ClassBuilder.Reset();
+                    LabelPlacement = labelPosition;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(LabelTemplate):
@@ -427,12 +427,12 @@ public abstract class BitLoadingBase : BitComponentBase
 
         ClassBuilder.Register(() => Paused ? "bit-ldn-pau" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitSide.Top => "bit-ldn-ltp",
-            BitSide.Bottom => "bit-ldn-lbm",
-            BitSide.Start => "bit-ldn-lst",
-            BitSide.End => "bit-ldn-led",
+            BitPlacement.Top => "bit-ldn-ltp",
+            BitPlacement.Bottom => "bit-ldn-lbm",
+            BitPlacement.Start => "bit-ldn-lst",
+            BitPlacement.End => "bit-ldn-led",
             _ => "bit-ldn-ltp"
         });
 

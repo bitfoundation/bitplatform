@@ -264,7 +264,7 @@ public partial class BitTagDemo
         new()
         {
             Name = "Shape",
-            Type = "BitTagShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
             Description = "The corner shape of the tag.",
             LinkType = LinkType.Link,
@@ -653,27 +653,33 @@ public partial class BitTagDemo
         new()
         {
             Id = "shape-enum",
-            Name = "BitTagShape",
+            Name = "BitShape",
             Description = "Determines the corner shape of the BitTag.",
             Items =
             [
                 new()
                 {
-                    Name= "Rounded",
-                    Description="Takes the chip corner of the current theme, which is a pill in Cupertino and a small radius in Fluent and Material.",
-                    Value="0",
+                    Name = "Rounded",
+                    Value = "0",
+                    Description = "The corner radius the current theme gives to this kind of surface."
                 },
                 new()
                 {
-                    Name= "Circular",
-                    Description="Rounds the corner fully, so the tag is always a pill whatever the theme says.",
-                    Value="1",
+                    Name = "Square",
+                    Value = "1",
+                    Description = "Sharp corners with no radius at all."
                 },
                 new()
                 {
-                    Name= "Square",
-                    Description="Drops the corner altogether, so the tag is a rectangle.",
-                    Value="2",
+                    Name = "Pill",
+                    Value = "2",
+                    Description = "Fully rounded ends: a pill where the box is wider than it is tall, and a circle where the box is square."
+                },
+                new()
+                {
+                    Name = "Circle",
+                    Value = "3",
+                    Description = "A true circle, which takes its diameter from whichever of the height and the width is set."
                 }
             ]
         },
@@ -937,9 +943,9 @@ public partial class BitTagDemo
 <BitTag Text=""Text"" Variant=""BitVariant.Text"" IsEnabled=""false"" />";
 
     private readonly string example3RazorCode = @"
-<BitTag Text=""Rounded"" Shape=""BitTagShape.Rounded"" />
-<BitTag Text=""Circular"" Shape=""BitTagShape.Circular"" />
-<BitTag Text=""Square"" Shape=""BitTagShape.Square"" />";
+<BitTag Text=""Rounded"" Shape=""BitShape.Rounded"" />
+<BitTag Text=""Circular"" Shape=""BitShape.Pill"" />
+<BitTag Text=""Square"" Shape=""BitShape.Square"" />";
 
     private readonly string example4RazorCode = @"
 <BitTag Text=""Calendar"" IconName=""@BitIconName.Calendar"" />

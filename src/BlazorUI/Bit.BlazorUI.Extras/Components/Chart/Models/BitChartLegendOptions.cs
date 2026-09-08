@@ -11,8 +11,8 @@ public sealed class BitChartLegendOptions
     /// A chart is laid out physically, so only Top, Bottom, Left and Right are meaningful here; any other side
     /// leaves the legend at the top.
     /// </remarks>
-    public BitSide Position { get; set; } = BitSide.Top;
-    public BitChartAlign Align { get; set; } = BitChartAlign.Center;
+    public BitPlacement Placement { get; set; } = BitPlacement.Top;
+    public BitPlacement Align { get; set; } = BitPlacement.Center;
     public bool Reverse { get; set; }
     /// <summary>Allow clicking a legend item to toggle dataset/data visibility.</summary>
     public bool OnClickToggle { get; set; } = true;

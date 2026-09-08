@@ -1945,7 +1945,7 @@ public class BitCircularTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IconPosition, BitIconPosition.Start);
+            parameters.Add(p => p.IconPlacement, BitPlacement.Start);
         });
 
         Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-lic"));

@@ -124,7 +124,7 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Used to customize the label for the checkbox.
@@ -262,12 +262,12 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         ClassBuilder.Register(() => Reversed ? "bit-chb-rvs" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitSide.Top => "bit-chb-ltp",
-            BitSide.Bottom => "bit-chb-lbt",
-            BitSide.Start => "bit-chb-lst",
-            BitSide.End => "bit-chb-lnd",
+            BitPlacement.Top => "bit-chb-ltp",
+            BitPlacement.Bottom => "bit-chb-lbt",
+            BitPlacement.Start => "bit-chb-lst",
+            BitPlacement.End => "bit-chb-lnd",
             _ => string.Empty
         });
 

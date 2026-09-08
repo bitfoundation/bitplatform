@@ -55,7 +55,7 @@
         <div>
             <b>Reversed</b> swaps the two sides, putting the label before the box - the usual layout when the
             BitCheckbox sits at the end of a settings row. It is the single-flag shorthand of the more general
-            <b>LabelPosition</b> parameter demonstrated in the next section.
+            <b>LabelPlacement</b> parameter demonstrated in the next section.
         </div>
         <br />
         <BitCheckbox Label="Reversed" Reversed />
@@ -67,17 +67,17 @@
 
     <DemoExample Title="Label position" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            <b>LabelPosition</b> places the label on any of the four sides of the box: <b>End</b> is the default
+            <b>LabelPlacement</b> places the label on any of the four sides of the box: <b>End</b> is the default
             reading order, <b>Start</b> matches what <b>Reversed</b> does, and <b>Top</b> and <b>Bottom</b> stack the
             label above or below - handy in dense toolbars and table headers. Wherever the label sits, it stays part
             of the click target. It takes precedence over <b>Reversed</b> when both are set.
         </div>
         <br />
         <div class="example-box">
-            <BitCheckbox Label="End" LabelPosition="BitSide.End" />
-            <BitCheckbox Label="Start" LabelPosition="BitSide.Start" />
-            <BitCheckbox Label="Top" LabelPosition="BitSide.Top" />
-            <BitCheckbox Label="Bottom" LabelPosition="BitSide.Bottom" />
+            <BitCheckbox Label="End" LabelPlacement="BitPlacement.End" />
+            <BitCheckbox Label="Start" LabelPlacement="BitPlacement.Start" />
+            <BitCheckbox Label="Top" LabelPlacement="BitPlacement.Top" />
+            <BitCheckbox Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
         </div>
     </DemoExample>
 

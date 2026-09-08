@@ -284,14 +284,14 @@ public partial class BitPivot : BitComponentBase
     [Parameter] public string? OverflowIconName { get; set; }
 
     /// <summary>
-    /// Position of the pivot header.
+    /// Placement of the pivot header.
     /// </summary>
     /// <remarks>
     /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
     /// fall back to the default.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The aria-label of the previous button in the Slide overflow behavior (default: Previous).
@@ -375,7 +375,7 @@ public partial class BitPivot : BitComponentBase
 
     protected override string RootElementClass => "bit-pvt";
 
-    private bool _isVertical => Position is BitSide.Start or BitSide.End;
+    private bool _isVertical => Placement is BitPlacement.Start or BitPlacement.End;
 
     private string _MenuId => $"{_Id}-mnu";
 
@@ -447,12 +447,12 @@ public partial class BitPivot : BitComponentBase
             _ => "bit-pvt-non"
         });
 
-        ClassBuilder.Register(() => Position switch
+        ClassBuilder.Register(() => Placement switch
         {
-            BitSide.Top => "bit-pvt-top",
-            BitSide.Bottom => "bit-pvt-btm",
-            BitSide.Start => "bit-pvt-sta",
-            BitSide.End => "bit-pvt-end",
+            BitPlacement.Top => "bit-pvt-top",
+            BitPlacement.Bottom => "bit-pvt-btm",
+            BitPlacement.Start => "bit-pvt-sta",
+            BitPlacement.End => "bit-pvt-end",
             _ => "bit-pvt-top"
         });
 
@@ -532,7 +532,7 @@ public partial class BitPivot : BitComponentBase
         var reorderable = Reorderable || _allItems.Exists(i => i.Reorderable is true);
         var needsJs = behavior is BitPivotOverflowBehavior.Menu or BitPivotOverflowBehavior.Slide || reorderable;
         var rtl = Dir is BitDir.Rtl;
-        var vertical = Position is BitSide.Start or BitSide.End;
+        var vertical = Placement is BitPlacement.Start or BitPlacement.End;
 
         if (_jsSetupRunning is false && (_setupBehavior != behavior
                                       || _setupReorderable != reorderable

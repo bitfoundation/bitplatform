@@ -417,7 +417,7 @@ public partial class BitPanel : BitComponentBase
     /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
     /// fall back to the default.
     /// </remarks>
-    [Parameter] public BitSide? Position { get; set; }
+    [Parameter] public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The ARIA role the panel reports itself under, which takes over from the <c>dialog</c> it is announced
@@ -907,19 +907,19 @@ public partial class BitPanel : BitComponentBase
                                         && AbsolutePosition is false
                                         && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
 
-    // The edge the panel actually slides in from. BitSide carries sides a panel has no styles for - the physical
+    // The edge the panel actually slides in from. BitPlacement carries sides a panel has no styles for - the physical
     // pair and the two combined values - so every consumer of the parameter goes through this rather than through
-    // Position itself, which is what keeps the class it draws, the axis it locks the swipe to and the value the
+    // Placement itself, which is what keeps the class it draws, the axis it locks the swipe to and the value the
     // gesture is registered with from ever disagreeing with each other.
-    private BitSide EffectivePosition => Position switch
+    private BitPlacement EffectivePosition => Placement switch
     {
-        BitSide.Start or BitSide.End or BitSide.Top or BitSide.Bottom => Position.Value,
-        _ => BitSide.End
+        BitPlacement.Start or BitPlacement.End or BitPlacement.Top or BitPlacement.Bottom => Placement.Value,
+        _ => BitPlacement.End
     };
 
     // Whether the panel slides in along the horizontal axis, which is what decides both the axis the swipe
     // gesture is locked to and which of the two coordinates the swipe callbacks are given.
-    private bool IsHorizontal => EffectivePosition is BitSide.Start or BitSide.End;
+    private bool IsHorizontal => EffectivePosition is BitPlacement.Start or BitPlacement.End;
 
     // Whether the content of the panel is in the page. It goes in on the first opening and comes back out
     // once the panel has finished sliding away, so every opening starts over; a KeepMounted panel keeps it
@@ -1012,9 +1012,9 @@ public partial class BitPanel : BitComponentBase
 
         classes.Add(EffectivePosition switch
         {
-            BitSide.Start => "bit-pnl-start",
-            BitSide.Top => "bit-pnl-top",
-            BitSide.Bottom => "bit-pnl-bottom",
+            BitPlacement.Start => "bit-pnl-start",
+            BitPlacement.Top => "bit-pnl-top",
+            BitPlacement.Bottom => "bit-pnl-bottom",
             _ => "bit-pnl-end"
         });
 

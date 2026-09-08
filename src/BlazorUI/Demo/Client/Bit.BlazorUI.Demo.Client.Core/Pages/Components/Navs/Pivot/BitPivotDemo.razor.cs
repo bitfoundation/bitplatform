@@ -308,10 +308,10 @@ public partial class BitPivotDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitSide",
-            DefaultValue = "BitSide.Top",
-            Description = "Position of the pivot header.",
+            Name = "Placement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.Top",
+            Description = "Placement of the pivot header.",
             LinkType = LinkType.Link,
             Href = "#pivotPosition-enum",
         },
@@ -921,7 +921,7 @@ public partial class BitPivotDemo
         new()
         {
             Id = "pivotPosition-enum",
-            Name = "BitSide",
+            Name = "BitPlacement",
             Description = "",
             Items =
             [
@@ -941,13 +941,13 @@ public partial class BitPivotDemo
                 {
                     Name = "Start",
                     Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
                     Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
                 new()
                 {
@@ -963,14 +963,20 @@ public partial class BitPivotDemo
                 },
                 new()
                 {
-                    Name = "TopAndBottom",
+                    Name = "Center",
                     Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
                     Description = "Both edges of the block axis at once."
                 },
                 new()
                 {
                     Name = "StartAndEnd",
-                    Value = "7",
+                    Value = "8",
                     Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
                 }
             ]
@@ -1229,7 +1235,7 @@ public partial class BitPivotDemo
 </BitPivot>";
 
     private readonly string example7RazorCode = @"
-<BitPivot Position=""BitSide.Top"">
+<BitPivot Placement=""BitPlacement.Top"">
     <BitPivotItem HeaderText=""File"">
         <h3>Pivot #1: File</h3>
         <div>Everything that has been saved to this workspace, newest first.</div>
@@ -1244,19 +1250,19 @@ public partial class BitPivotDemo
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitSide.Bottom"">
+<BitPivot Placement=""BitPlacement.Bottom"">
     <BitPivotItem HeaderText=""File"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Shared"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitSide.Start"">
+<BitPivot Placement=""BitPlacement.Start"">
     <BitPivotItem HeaderText=""File"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitSide.End"">
+<BitPivot Placement=""BitPlacement.End"">
     <BitPivotItem HeaderText=""File"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
@@ -1309,7 +1315,7 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""@BitSide.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
+<BitPivot Placement=""@BitPlacement.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
     <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
@@ -1319,7 +1325,7 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""@BitSide.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Slide"" Style=""height:200px"">
+<BitPivot Placement=""@BitPlacement.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Slide"" Style=""height:200px"">
     <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
@@ -1329,7 +1335,7 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""@BitSide.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"" Style=""height:200px"">
+<BitPivot Placement=""@BitPlacement.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"" Style=""height:200px"">
     <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
@@ -1905,7 +1911,7 @@ private void AddPivotTab()
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Dir=""BitDir.Rtl"" Position=""BitSide.Start"">
+<BitPivot Dir=""BitDir.Rtl"" Placement=""BitPlacement.Start"">
     <BitPivotItem HeaderText=""اسناد"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
     </BitPivotItem>
@@ -1917,7 +1923,7 @@ private void AddPivotTab()
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Dir=""BitDir.Rtl"" Position=""BitSide.End"">
+<BitPivot Dir=""BitDir.Rtl"" Placement=""BitPlacement.End"">
     <BitPivotItem HeaderText=""اسناد"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
     </BitPivotItem>

@@ -241,8 +241,8 @@ public partial class BitDropMenuDemo
         },
         new()
         {
-            Name = "PanelPosition",
-            Type = "BitSide?",
+            Name = "PanelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the responsive panel to show on the screen.",
             LinkType = LinkType.Link,
@@ -544,7 +544,7 @@ public partial class BitDropMenuDemo
         new()
         {
             Id = "panel-position-enum",
-            Name = "BitSide",
+            Name = "BitPlacement",
             Description = "Determines the edge the responsive panel slides in from.",
             Items =
             [
@@ -564,13 +564,13 @@ public partial class BitDropMenuDemo
                 {
                     Name = "Start",
                     Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
                     Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
                 new()
                 {
@@ -586,14 +586,20 @@ public partial class BitDropMenuDemo
                 },
                 new()
                 {
-                    Name = "TopAndBottom",
+                    Name = "Center",
                     Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
                     Description = "Both edges of the block axis at once."
                 },
                 new()
                 {
                     Name = "StartAndEnd",
-                    Value = "7",
+                    Value = "8",
                     Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
                 }
             ]

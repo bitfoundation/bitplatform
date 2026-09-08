@@ -296,8 +296,8 @@ public partial class BitSwiperDemo
         },
         new()
         {
-            Name = "Snap",
-            Type = "BitSwiperSnap?",
+            Name = "SnapAlign",
+            Type = "BitScrollSnapAlign?",
             DefaultValue = "null",
             Description = "Settles the swiper on an item instead of leaving it wherever the scrolling ran out, and chooses where that item comes to rest.",
             LinkType = LinkType.Link,
@@ -452,13 +452,34 @@ public partial class BitSwiperDemo
         new()
         {
             Id = "snap-enum",
-            Name = "BitSwiperSnap",
+            Name = "BitScrollSnapAlign",
             Description = "The place an item of a BitSwiper comes to rest at when the swiper snaps.",
             Items =
             [
-                new() { Name = "Start", Description = "The item settles with its leading edge at the start of the swiper.", Value = "0" },
-                new() { Name = "Center", Description = "The item settles in the middle of the swiper.", Value = "1" },
-                new() { Name = "End", Description = "The item settles with its trailing edge at the end of the swiper.", Value = "2" },
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                    Description = "The children carry no snap position of their own."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "1",
+                    Description = "Each child comes to rest at the start of the pane."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "2",
+                    Description = "Each child comes to rest in the middle of the pane."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "Each child comes to rest at the end of the pane."
+                }
             ]
         },
         new()
@@ -741,7 +762,7 @@ public partial class BitSwiperDemo
     private readonly string example4RazorCode = boxStyle + @"
 
 
-<BitSwiper Snap=""BitSwiperSnap.Start"" Gap=""0.5rem"" VisibleItemsCount=""3"">
+<BitSwiper SnapAlign=""BitScrollSnapAlign.Start"" Gap=""0.5rem"" VisibleItemsCount=""3"">
     @for (int i = 1; i <= 12; i++)
     {
         var index = i;
@@ -749,7 +770,7 @@ public partial class BitSwiperDemo
     }
 </BitSwiper>
 
-<BitSwiper Snap=""BitSwiperSnap.Center"" Gap=""0.5rem"" VisibleItemsCount=""3"">
+<BitSwiper SnapAlign=""BitScrollSnapAlign.Center"" Gap=""0.5rem"" VisibleItemsCount=""3"">
     @for (int i = 1; i <= 12; i++)
     {
         var index = i;
@@ -757,7 +778,7 @@ public partial class BitSwiperDemo
     }
 </BitSwiper>
 
-<BitSwiper Snap=""BitSwiperSnap.End"" Gap=""0.5rem"" VisibleItemsCount=""3"">
+<BitSwiper SnapAlign=""BitScrollSnapAlign.End"" Gap=""0.5rem"" VisibleItemsCount=""3"">
     @for (int i = 1; i <= 12; i++)
     {
         var index = i;
@@ -768,7 +789,7 @@ public partial class BitSwiperDemo
     private readonly string example5RazorCode = cardStyle + @"
 
 
-<BitSwiper VisibleItemsCount=""4"" ScrollItemsCount=""2"" Gap=""0.5rem"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper VisibleItemsCount=""4"" ScrollItemsCount=""2"" Gap=""0.5rem"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -777,7 +798,7 @@ public partial class BitSwiperDemo
 </BitSwiper>
 
 <BitSwiper VisibleItemsCount=""1"" VisibleItemsCountSm=""2"" VisibleItemsCountMd=""3"" VisibleItemsCountLg=""5""
-           Gap=""0.5rem"" Snap=""BitSwiperSnap.Start"">
+           Gap=""0.5rem"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -799,7 +820,7 @@ public partial class BitSwiperDemo
     private readonly string example7RazorCode = boxStyle + @"
 
 
-<BitSwiper Vertical Style=""height: 200px"" Gap=""0.5rem"" Snap=""BitSwiperSnap.Start"" AriaLabel=""Vertical items"">
+<BitSwiper Vertical Style=""height: 200px"" Gap=""0.5rem"" SnapAlign=""BitScrollSnapAlign.Start"" AriaLabel=""Vertical items"">
     @for (int i = 1; i <= 12; i++)
     {
         var index = i;
@@ -810,7 +831,7 @@ public partial class BitSwiperDemo
     private readonly string example8RazorCode = boxStyle + @"
 
 
-<BitSwiper ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -818,7 +839,7 @@ public partial class BitSwiperDemo
     }
 </BitSwiper>
 
-<BitSwiper ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     <DotTemplate Context=""index""><span>@(index + 1)</span></DotTemplate>
     <ChildContent>
         @for (int i = 1; i <= 16; i++)
@@ -832,7 +853,7 @@ public partial class BitSwiperDemo
     private readonly string example9RazorCode = boxStyle + @"
 
 
-<BitSwiper AutoPlay AutoPlayInterval=""2000"" Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper AutoPlay AutoPlayInterval=""2000"" Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -841,7 +862,7 @@ public partial class BitSwiperDemo
 </BitSwiper>
 
 <BitSwiper AutoPlay AutoPlayInterval=""1500"" ShowDots ShowPlayPause StopOnInteraction
-           Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+           Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -852,7 +873,7 @@ public partial class BitSwiperDemo
     private readonly string example10RazorCode = boxStyle + @"
 
 
-<BitSwiper Wheel NoDrag Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper Wheel NoDrag Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -871,7 +892,7 @@ public partial class BitSwiperDemo
     private readonly string example11RazorCode = boxStyle + @"
 
 
-<BitSwiper AnimationDuration=""1.5"" Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper AnimationDuration=""1.5"" Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -879,7 +900,7 @@ public partial class BitSwiperDemo
     }
 </BitSwiper>
 
-<BitSwiper AnimationDuration=""0"" Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper AnimationDuration=""0"" Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -890,7 +911,7 @@ public partial class BitSwiperDemo
     private readonly string example12RazorCode = boxStyle + @"
 
 
-<BitSwiper DefaultItem=""7"" Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper DefaultItem=""7"" Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -902,7 +923,7 @@ public partial class BitSwiperDemo
 
 
 <BitSwiper @ref=""swiper"" HideNextPrev Gap=""0.5rem"" VisibleItemsCount=""4""
-           Snap=""BitSwiperSnap.Start"" OnChange=""v => currentIndex = v"">
+           SnapAlign=""BitScrollSnapAlign.Start"" OnChange=""v => currentIndex = v"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;
@@ -943,7 +964,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
            ShowPlayPause
            Gap=""0.5rem""
            VisibleItemsCount=""3""
-           Snap=""BitSwiperSnap.Start""
+           SnapAlign=""BitScrollSnapAlign.Start""
            AriaLabel=""Landscape photos""
            ItemAriaLabelFormat=""Photo {0} of {1}""
            DotAriaLabel=""Photo group""
@@ -965,7 +986,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     private readonly string example15RazorCode = cardStyle + @"
 
 
-<BitSwiper ShowDots Color=""BitColor.Primary"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Color=""BitColor.Primary"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -973,7 +994,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     }
 </BitSwiper>
 
-<BitSwiper ShowDots Color=""BitColor.Success"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Color=""BitColor.Success"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -981,7 +1002,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     }
 </BitSwiper>
 
-<BitSwiper ShowDots Color=""BitColor.Warning"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Color=""BitColor.Warning"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -989,7 +1010,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     }
 </BitSwiper>
 
-<BitSwiper ShowDots Color=""BitColor.Error"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Color=""BitColor.Error"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -997,7 +1018,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     }
 </BitSwiper>
 
-<BitSwiper ShowDots Accent=""BitColorKind.Secondary"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Accent=""BitColorKind.Secondary"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -1005,7 +1026,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     }
 </BitSwiper>
 
-<BitSwiper ShowDots Accent=""BitColorKind.Tertiary"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Accent=""BitColorKind.Tertiary"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -1048,7 +1069,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     private readonly string example17RazorCode = cardStyle + @"
 
 
-<BitSwiper ShowDots Size=""BitSize.Small"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Size=""BitSize.Small"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -1056,7 +1077,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     }
 </BitSwiper>
 
-<BitSwiper ShowDots Size=""BitSize.Medium"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Size=""BitSize.Medium"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -1064,7 +1085,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     }
 </BitSwiper>
 
-<BitSwiper ShowDots Size=""BitSize.Large"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper ShowDots Size=""BitSize.Large"" Gap=""0.5rem"" VisibleItemsCount=""2"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;
@@ -1086,7 +1107,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
 <BitSwiper ShowDots
            Gap=""0.5rem""
            VisibleItemsCount=""4""
-           Snap=""BitSwiperSnap.Start""
+           SnapAlign=""BitScrollSnapAlign.Start""
            Style=""padding: 0.5rem; border-radius: 0.5rem; background: rgba(128,128,128,0.15)""
            Classes=""@(new() { CurrentItem = ""custom-item"" })""
            Styles=""@(new() { Buttons = ""color: white; background-color: rgba(0,0,0,0.35); width: 2.5rem;"",
@@ -1101,7 +1122,7 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
     private readonly string example19RazorCode = boxStyle + @"
 
 
-<BitSwiper Dir=""BitDir.Rtl"" ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" Snap=""BitSwiperSnap.Start"">
+<BitSwiper Dir=""BitDir.Rtl"" ShowDots Gap=""0.5rem"" VisibleItemsCount=""4"" SnapAlign=""BitScrollSnapAlign.Start"">
     @for (int i = 1; i <= 16; i++)
     {
         var index = i;

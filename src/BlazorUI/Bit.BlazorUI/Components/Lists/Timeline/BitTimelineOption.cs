@@ -66,7 +66,7 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// <summary>
     /// The way the connecting line of the timeline option is painted, overriding the line variant of the timeline.
     /// </summary>
-    [Parameter] public BitTimelineLineVariant? LineVariant { get; set; }
+    [Parameter] public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// Click event handler of the timeline option.

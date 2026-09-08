@@ -50,21 +50,21 @@
                 <b>Pill</b> for a button, a tag or a chip, and <b>Circle</b> for an avatar or a round icon.
                 <br /><br />
                 A circle is as wide as it is tall whichever of the two was given, so <b>Height</b> and <b>Width</b> are interchangeable on it, and
-                <b>Circle="true"</b> stays as the short spelling of <b>Shape="BitShimmerShape.Circle"</b>.
+                <b>Circle="true"</b> stays as the short spelling of <b>Shape="BitShape.Circle"</b>.
             </div>
             <br /><br />
             <div>Rounded (default)</div>
             <BitShimmer Height="2rem" />
             <br />
             <div>Square</div>
-            <BitShimmer Shape="BitShimmerShape.Square" Height="2rem" />
+            <BitShimmer Shape="BitShape.Square" Height="2rem" />
             <br />
             <div>Pill</div>
-            <BitShimmer Shape="BitShimmerShape.Pill" Height="2rem" Width="8rem" />
+            <BitShimmer Shape="BitShape.Pill" Height="2rem" Width="8rem" />
             <br />
             <div>Circle</div>
             <BitStack Horizontal Alignment="BitAlignment.Center">
-                <BitShimmer Shape="BitShimmerShape.Circle" Height="3rem" />
+                <BitShimmer Shape="BitShape.Circle" Height="3rem" />
                 <BitShimmer Circle Width="4rem" />
             </BitStack>
         </DemoExample>
@@ -86,7 +86,7 @@
             <BitShimmer Height="2rem" Radius="1rem" />
             <br />
             <div>Radius="0" (over a Pill, which it wins over)</div>
-            <BitShimmer Height="2rem" Shape="BitShimmerShape.Pill" Radius="0" />
+            <BitShimmer Height="2rem" Shape="BitShape.Pill" Radius="0" />
         </DemoExample>
 
         <DemoExample Title="Lines" RazorCode="@example4RazorCode" Id="example4">

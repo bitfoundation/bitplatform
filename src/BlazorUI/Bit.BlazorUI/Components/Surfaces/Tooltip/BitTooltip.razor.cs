@@ -100,18 +100,18 @@ public partial class BitTooltip : BitComponentBase
 
 
     /// <summary>
-    /// Where along <see cref="Side"/> the tooltip lines up with its anchor (default is centered on it).
+    /// Where along <see cref="Placement"/> the tooltip lines up with its anchor (default is centered on it).
     /// </summary>
     /// <remarks>
     /// The axis is the one the side leaves free: a tooltip above or below its anchor is aligned horizontally,
     /// one beside it vertically. Start and End are logical, so an alignment on the horizontal axis follows the
     /// reading direction while one on the vertical axis reads top to bottom in either. Left and Right are
     /// physical and keep a tooltip above or below its anchor on the same side of the screen in both reading
-    /// directions, the way <see cref="Side"/>'s own physical pair does; beside the anchor the free axis has no
+    /// directions, the way <see cref="Placement"/>'s own physical pair does; beside the anchor the free axis has no
     /// left or right, so they center the tooltip along it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSideAlignment Alignment { get; set; } = BitSideAlignment.Center;
+    public BitPlacement Alignment { get; set; } = BitPlacement.Center;
 
     /// <summary>
     /// Alias of ChildContent.
@@ -321,7 +321,7 @@ public partial class BitTooltip : BitComponentBase
     /// fixed layout. The two combined values are not meaningful here and leave the tooltip above its anchor.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide Side { get; set; } = BitSide.Top;
+    public BitPlacement Placement { get; set; } = BitPlacement.Top;
 
     /// <summary>
     /// The size of the tooltip, which sets the size of its text and the padding around it.
@@ -928,15 +928,15 @@ public partial class BitTooltip : BitComponentBase
 
     // The side of the screen the tooltip lands on. The physical values are already it; the logical pair is
     // read against the direction; the two combined values name no single side, so they leave the tooltip
-    // where an unset Side would put it.
-    private BitSide PhysicalSide => Side switch
+    // where an unset Placement would put it.
+    private BitPlacement PhysicalPlacement => Placement switch
     {
-        BitSide.Bottom => BitSide.Bottom,
-        BitSide.Left => BitSide.Left,
-        BitSide.Right => BitSide.Right,
-        BitSide.Start => Dir == BitDir.Rtl ? BitSide.Right : BitSide.Left,
-        BitSide.End => Dir == BitDir.Rtl ? BitSide.Left : BitSide.Right,
-        _ => BitSide.Top
+        BitPlacement.Bottom => BitPlacement.Bottom,
+        BitPlacement.Left => BitPlacement.Left,
+        BitPlacement.Right => BitPlacement.Right,
+        BitPlacement.Start => Dir == BitDir.Rtl ? BitPlacement.Right : BitPlacement.Left,
+        BitPlacement.End => Dir == BitDir.Rtl ? BitPlacement.Left : BitPlacement.Right,
+        _ => BitPlacement.Top
     };
 
     // The logical pair turns around with the direction, but only on the horizontal axis: a tooltip beside its
@@ -944,29 +944,29 @@ public partial class BitTooltip : BitComponentBase
     // not turn around - it already names a side of the screen, so it is returned as the class map's own Start
     // and End, which the map draws as the left and the right - and it only means anything where that axis has
     // a left and a right, so beside the anchor it falls back to the default.
-    private BitSideAlignment PhysicalAlignment
+    private BitPlacement PhysicalAlignment
     {
         get
         {
-            var horizontal = PhysicalSide is BitSide.Top or BitSide.Bottom;
+            var horizontal = PhysicalPlacement is BitPlacement.Top or BitPlacement.Bottom;
 
-            if (Alignment is BitSideAlignment.Left)
+            if (Alignment is BitPlacement.Left)
             {
-                return horizontal ? BitSideAlignment.Start : BitSideAlignment.Center;
+                return horizontal ? BitPlacement.Start : BitPlacement.Center;
             }
 
-            if (Alignment is BitSideAlignment.Right)
+            if (Alignment is BitPlacement.Right)
             {
-                return horizontal ? BitSideAlignment.End : BitSideAlignment.Center;
+                return horizontal ? BitPlacement.End : BitPlacement.Center;
             }
 
             if (Dir != BitDir.Rtl || horizontal is false) return Alignment;
 
             return Alignment switch
             {
-                BitSideAlignment.Start => BitSideAlignment.End,
-                BitSideAlignment.End => BitSideAlignment.Start,
-                _ => BitSideAlignment.Center
+                BitPlacement.Start => BitPlacement.End,
+                BitPlacement.End => BitPlacement.Start,
+                _ => BitPlacement.Center
             };
         }
     }
@@ -975,22 +975,22 @@ public partial class BitTooltip : BitComponentBase
     {
         var visibility = IsShown ? "bit-ttp-vis " : string.Empty;
 
-        var position = (PhysicalSide, PhysicalAlignment) switch
+        var position = (PhysicalPlacement, PhysicalAlignment) switch
         {
-            (BitSide.Top, BitSideAlignment.Start) => "bit-ttp-tlf",
-            (BitSide.Top, BitSideAlignment.End) => "bit-ttp-trg",
-            (BitSide.Top, _) => "bit-ttp-top",
+            (BitPlacement.Top, BitPlacement.Start) => "bit-ttp-tlf",
+            (BitPlacement.Top, BitPlacement.End) => "bit-ttp-trg",
+            (BitPlacement.Top, _) => "bit-ttp-top",
 
-            (BitSide.Bottom, BitSideAlignment.Start) => "bit-ttp-blf",
-            (BitSide.Bottom, BitSideAlignment.End) => "bit-ttp-brg",
-            (BitSide.Bottom, _) => "bit-ttp-btm",
+            (BitPlacement.Bottom, BitPlacement.Start) => "bit-ttp-blf",
+            (BitPlacement.Bottom, BitPlacement.End) => "bit-ttp-brg",
+            (BitPlacement.Bottom, _) => "bit-ttp-btm",
 
-            (BitSide.Left, BitSideAlignment.Start) => "bit-ttp-ltp",
-            (BitSide.Left, BitSideAlignment.End) => "bit-ttp-lbm",
-            (BitSide.Left, _) => "bit-ttp-lft",
+            (BitPlacement.Left, BitPlacement.Start) => "bit-ttp-ltp",
+            (BitPlacement.Left, BitPlacement.End) => "bit-ttp-lbm",
+            (BitPlacement.Left, _) => "bit-ttp-lft",
 
-            (BitSide.Right, BitSideAlignment.Start) => "bit-ttp-rtp",
-            (BitSide.Right, BitSideAlignment.End) => "bit-ttp-rbm",
+            (BitPlacement.Right, BitPlacement.Start) => "bit-ttp-rtp",
+            (BitPlacement.Right, BitPlacement.End) => "bit-ttp-rbm",
             _ => "bit-ttp-rgt"
         };
 

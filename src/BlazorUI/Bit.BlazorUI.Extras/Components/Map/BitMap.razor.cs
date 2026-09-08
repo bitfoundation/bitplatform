@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace Bit.BlazorUI;
@@ -814,7 +814,16 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         ["tooltipHtml"] = m.TooltipHtml?.Value,
         ["tooltipText"] = m.TooltipText,
         ["tooltipPermanent"] = m.TooltipPermanent,
-        ["tooltipDirection"] = m.TooltipDirection.ToString().ToLowerInvariant(),
+        // Leaflet's own direction names; anything BitPlacement can say that Leaflet cannot leaves it to auto.
+        ["tooltipDirection"] = m.TooltipPlacement switch
+        {
+            BitPlacement.Top => "top",
+            BitPlacement.Bottom => "bottom",
+            BitPlacement.Left => "left",
+            BitPlacement.Right => "right",
+            BitPlacement.Center => "center",
+            _ => "auto"
+        },
         ["draggable"] = m.Draggable,
         ["iconUrl"] = m.IconUrl,
         ["iconWidth"] = m.IconWidth,
@@ -841,7 +850,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         TooltipHtml = prev.TooltipHtml,
         TooltipText = prev.TooltipText,
         TooltipPermanent = prev.TooltipPermanent,
-        TooltipDirection = prev.TooltipDirection,
+        TooltipPlacement = prev.TooltipPlacement,
         Title = prev.Title,
         Draggable = prev.Draggable,
         IconUrl = prev.IconUrl,

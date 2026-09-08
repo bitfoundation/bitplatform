@@ -394,10 +394,12 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// Determines the side of the input the TimePicker's icon is rendered on (default is the end side).
     /// </summary>
     /// <remarks>
-    /// The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
+    /// other placement leaves the icon on the end side. The side follows the reading direction: Start is the
+    /// left of an LTR input and the right of an RTL one.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition IconPosition { get; set; } = BitIconPosition.End;
+    public BitPlacement IconPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// Custom TimePicker icon template
@@ -750,7 +752,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         ClassBuilder.Register(GetSizeClass);
 
-        ClassBuilder.Register(() => IconPosition is BitIconPosition.Start ? "bit-tpc-lic" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.Start ? "bit-tpc-lic" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-tpc-und" : string.Empty);
 
@@ -809,7 +811,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             // so a picker that never becomes a sheet does not get a gesture that would close it out of nowhere.
             if (Responsive && Standalone is false)
             {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitSide.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
 
                 // The setup is a round trip, so the picker can be gone by the time it comes back - at a point
                 // where DisposeAsync had nothing to tear down yet. The gesture it registered would outlive the

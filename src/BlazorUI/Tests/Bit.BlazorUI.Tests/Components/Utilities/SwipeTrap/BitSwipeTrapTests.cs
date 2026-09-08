@@ -449,15 +449,15 @@ public class BitSwipeTrapTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(10, 2, BitSwipeDirection.Right),
-        DataRow(-5, 1, BitSwipeDirection.Left),
-        DataRow(2, 9, BitSwipeDirection.Bottom),
-        DataRow(3, -7, BitSwipeDirection.Top),
-        DataRow(5, 5, BitSwipeDirection.Right),
-        DataRow(-5, -5, BitSwipeDirection.Left),
-        DataRow(5, -5, BitSwipeDirection.Right),
-        DataRow(-5, 5, BitSwipeDirection.Left)]
-    public async Task BitSwipeTrapShouldInvokeOnTrigger(int diffX, int diffY, BitSwipeDirection expectedDirection)
+        DataRow(10, 2, BitPlacement.Right),
+        DataRow(-5, 1, BitPlacement.Left),
+        DataRow(2, 9, BitPlacement.Bottom),
+        DataRow(3, -7, BitPlacement.Top),
+        DataRow(5, 5, BitPlacement.Right),
+        DataRow(-5, -5, BitPlacement.Left),
+        DataRow(5, -5, BitPlacement.Right),
+        DataRow(-5, 5, BitPlacement.Left)]
+    public async Task BitSwipeTrapShouldInvokeOnTrigger(int diffX, int diffY, BitPlacement expectedDirection)
     {
         BitSwipeTrapTriggerArgs? triggerArgs = null;
 

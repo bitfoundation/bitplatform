@@ -186,7 +186,7 @@
     <div>
         The <strong>Toggle</strong> turns the group into a single-select one, where at most one button is toggled at a
         time
-        (a shorthand for <strong>SelectionMode="BitButtonGroupSelectionMode.Single"</strong>). It renders as a
+        (a shorthand for <strong>SelectionMode="BitSelectionMode.Single"</strong>). It renders as a
         <strong>radiogroup</strong> whose buttons report their state through <strong>aria-checked</strong>. The
         component
         writes the toggle state back onto the class through the field named by the <strong>IsToggled</strong> selector,
@@ -312,20 +312,20 @@
     <br /><br />
     <div class="example-content">
         <div>Binding:</div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple"
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple"
                         Items="formatCustoms" NameSelectors="multiNameSelectors" @bind-ToggleKeys="formatKeys" />
         <div>Toggle keys: <b>@string.Join(", ", formatKeys ?? [])</b></div>
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>MaxToggles</strong> caps how many buttons can be toggled at once:</div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" MaxToggles="2"
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple" MaxToggles="2"
                         Items="maxToggleCustoms" NameSelectors="multiNameSelectors" DefaultToggleKeys="@defaultKeys" />
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>FixedToggle</strong> keeps at least one button toggled:</div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" FixedToggle
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple" FixedToggle
                         Items="fixedToggleCustoms" NameSelectors="multiNameSelectors" DefaultToggleKeys="@defaultKeys" />
     </div>
 </DemoExample>
@@ -443,14 +443,14 @@
     <div class="example-content">
         <div>Single</div>
         <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="indicatorSingleCustoms"
+                        SelectionMode="BitSelectionMode.Single" Items="indicatorSingleCustoms"
                         NameSelectors="multiNameSelectors" DefaultToggleKey="list" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Multiple</div>
         <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple" Items="indicatorMultipleCustoms"
+                        SelectionMode="BitSelectionMode.Multiple" Items="indicatorMultipleCustoms"
                         NameSelectors="multiNameSelectors" DefaultToggleKeys="@indicatorDefaultKeys" />
     </div>
 </DemoExample>
@@ -555,14 +555,14 @@
     <div class="example-content">
         <div>Tab into the group, then navigate it using the arrow, Home, and End keys:</div>
         <BitButtonGroup AriaLabel="Text alignment" Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="a11yCustoms" NameSelectors="a11yNameSelectors"
+                        SelectionMode="BitSelectionMode.Single" Items="a11yCustoms" NameSelectors="a11yNameSelectors"
                         DefaultToggleKey="start" />
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>SelectOnFocus</strong> makes the selection follow the keyboard focus:</div>
         <BitButtonGroup AriaLabel="Text alignment (selection follows focus)" SelectOnFocus Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="selectOnFocusCustoms"
+                        SelectionMode="BitSelectionMode.Single" Items="selectOnFocusCustoms"
                         NameSelectors="a11yNameSelectors" DefaultToggleKey="start" />
     </div>
     <br /><br />

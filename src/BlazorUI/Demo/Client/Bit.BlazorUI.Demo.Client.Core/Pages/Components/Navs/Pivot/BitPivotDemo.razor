@@ -169,18 +169,18 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Position" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Placement" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            The <strong>Position</strong> moves the header to any of the four sides of the content:
+            The <strong>Placement</strong> moves the header to any of the four sides of the content:
             <strong>Top</strong> (the default), <strong>Bottom</strong>, <strong>Start</strong> and
             <strong>End</strong>. Start and End lay the headers out in a column and turn the selection
             indicator on its side, and the tablist reports itself as vertical so that the up and down
             arrows are what navigate it.
         </div>
         <br />
-        <div>Pivot Position: <b>Top</b></div><br />
+        <div>Pivot Placement: <b>Top</b></div><br />
         <div class="box">
-            <BitPivot Position="BitSide.Top">
+            <BitPivot Placement="BitPlacement.Top">
                 <BitPivotItem HeaderText="File">
                     <h3>Pivot #1: File</h3>
                     <div>Everything that has been saved to this workspace, newest first.</div>
@@ -196,9 +196,9 @@
             </BitPivot>
         </div>
         <br /><br />
-        <div>Pivot Position: <b>Bottom</b></div><br />
+        <div>Pivot Placement: <b>Bottom</b></div><br />
         <div class="box">
-            <BitPivot Position="BitSide.Bottom">
+            <BitPivot Placement="BitPlacement.Bottom">
                 <BitPivotItem HeaderText="File">
                     <h3>Pivot #1: File</h3>
                     <div>Everything that has been saved to this workspace, newest first.</div>
@@ -214,9 +214,9 @@
             </BitPivot>
         </div>
         <br /><br />
-        <div>Pivot Position: <b>Start</b></div><br />
+        <div>Pivot Placement: <b>Start</b></div><br />
         <div class="box">
-            <BitPivot Position="BitSide.Start">
+            <BitPivot Placement="BitPlacement.Start">
                 <BitPivotItem HeaderText="File">
                     <h3>Pivot #1: File</h3>
                     <div>Everything that has been saved to this workspace, newest first.</div>
@@ -232,9 +232,9 @@
             </BitPivot>
         </div>
         <br /><br />
-        <div>Pivot Position: <b>End</b></div><br />
+        <div>Pivot Placement: <b>End</b></div><br />
         <div class="box">
-            <BitPivot Position="BitSide.End">
+            <BitPivot Placement="BitPlacement.End">
                 <BitPivotItem HeaderText="File">
                     <h3>Pivot #1: File</h3>
                     <div>Everything that has been saved to this workspace, newest first.</div>
@@ -343,7 +343,7 @@
         </div>
         <br /><br />
 
-        <div>The overflow behavior also works with a vertical header (<b>Position</b> set to <b>Start</b> or
+        <div>The overflow behavior also works with a vertical header (<b>Placement</b> set to <b>Start</b> or
             <b>End</b>). A constrained height is required for the header to overflow vertically.
         </div>
         <br />
@@ -351,7 +351,7 @@
         <div><b>Menu</b> (vertical):</div>
         <br />
         <div class="box">
-            <BitPivot Position="@BitSide.Start" OverflowBehavior="@BitPivotOverflowBehavior.Menu"
+            <BitPivot Placement="@BitPlacement.Start" OverflowBehavior="@BitPivotOverflowBehavior.Menu"
                       Style="height:200px">
                 <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
                 <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
@@ -367,7 +367,7 @@
         <div><b>Slide</b> (vertical):</div>
         <br />
         <div class="box">
-            <BitPivot Position="@BitSide.Start" OverflowBehavior="@BitPivotOverflowBehavior.Slide"
+            <BitPivot Placement="@BitPlacement.Start" OverflowBehavior="@BitPivotOverflowBehavior.Slide"
                       Style="height:200px">
                 <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
                 <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
@@ -383,7 +383,7 @@
         <div><b>Scroll</b> (vertical):</div>
         <br />
         <div class="box">
-            <BitPivot Position="@BitSide.Start" OverflowBehavior="@BitPivotOverflowBehavior.Scroll"
+            <BitPivot Placement="@BitPlacement.Start" OverflowBehavior="@BitPivotOverflowBehavior.Scroll"
                       Style="height:200px">
                 <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
                 <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
@@ -1221,7 +1221,7 @@
         </div>
         <br /><br /><br />
         <div class="box">
-            <BitPivot Dir="BitDir.Rtl" Position="BitSide.Start">
+            <BitPivot Dir="BitDir.Rtl" Placement="BitPlacement.Start">
                 <BitPivotItem HeaderText="اسناد">
                     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                 </BitPivotItem>
@@ -1235,7 +1235,7 @@
         </div>
         <br /><br /><br />
         <div class="box">
-            <BitPivot Dir="BitDir.Rtl" Position="BitSide.End">
+            <BitPivot Dir="BitDir.Rtl" Placement="BitPlacement.End">
                 <BitPivotItem HeaderText="اسناد">
                     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                 </BitPivotItem>

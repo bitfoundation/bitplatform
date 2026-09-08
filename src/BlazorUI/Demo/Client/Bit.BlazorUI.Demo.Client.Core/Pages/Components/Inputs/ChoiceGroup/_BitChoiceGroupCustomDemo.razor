@@ -120,30 +120,30 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="LabelPosition" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+<DemoExample Title="LabelPlacement" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>Places the content of each item on any of the four sides of its radio circle. End is the default and renders the circle first; Start renders the content first and additionally aligns the items to the end of the group, so the circles line up in one column once the group is wider than its items (which is what the FullWidth section combines it with). Top and Bottom stack the content above or below the circle. Items rendered as image or icon tiles lay their own content out and are not affected.</div>
     <br />
     <div class="example-content column">
         <BitChoiceGroup Label="End (default)"
-                        LabelPosition="BitSide.End" Horizontal
+                        LabelPlacement="BitPlacement.End" Horizontal
                         DefaultValue="@("A")"
                         Items="basicCustoms"
                         NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
 
         <BitChoiceGroup Label="Start"
-                        LabelPosition="BitSide.Start" Horizontal
+                        LabelPlacement="BitPlacement.Start" Horizontal
                         DefaultValue="@("A")"
                         Items="basicCustoms"
                         NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
 
         <BitChoiceGroup Label="Top"
-                        LabelPosition="BitSide.Top" Horizontal
+                        LabelPlacement="BitPlacement.Top" Horizontal
                         DefaultValue="@("A")"
                         Items="basicCustoms"
                         NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
 
         <BitChoiceGroup Label="Bottom"
-                        LabelPosition="BitSide.Bottom" Horizontal
+                        LabelPlacement="BitPlacement.Bottom" Horizontal
                         DefaultValue="@("A")"
                         Items="basicCustoms"
                         NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
@@ -398,7 +398,7 @@
 </DemoExample>
 
 <DemoExample Title="FullWidth" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
-    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest item, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the items additionally share that width in equal columns. In the vertical layout every item row spans the full width, so LabelPosition.Start now has room to push the items to the far edge; stretching the item label over that row as well turns it into the label-at-the-start, circle-at-the-end list found in settings pages.</div>
+    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest item, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the items additionally share that width in equal columns. In the vertical layout every item row spans the full width, so LabelPlacement.Start now has room to push the items to the far edge; stretching the item label over that row as well turns it into the label-at-the-start, circle-at-the-end list found in settings pages.</div>
     <br />
     <div class="example-content column">
         <div class="example-box">
@@ -418,18 +418,18 @@
                                                      Value = { Name = nameof(Order.ItemValue) } })" />
         </div>
         <div class="example-box">
-            <BitChoiceGroup Label="FullWidth + LabelPosition.Start (items at the far edge)"
+            <BitChoiceGroup Label="FullWidth + LabelPlacement.Start (items at the far edge)"
                             Items="basicCustoms"
                             DefaultValue="@("A")"
-                            LabelPosition="BitSide.Start" FullWidth
+                            LabelPlacement="BitPlacement.Start" FullWidth
                             NameSelectors="@(new() { Text = { Name = nameof(Order.Name) },
                                                      Value = { Name = nameof(Order.ItemValue) } })" />
         </div>
         <div class="example-box">
-            <BitChoiceGroup Label="FullWidth + LabelPosition.Start + stretched item label (settings list)"
+            <BitChoiceGroup Label="FullWidth + LabelPlacement.Start + stretched item label (settings list)"
                             Items="basicCustoms"
                             DefaultValue="@("A")"
-                            LabelPosition="BitSide.Start" FullWidth
+                            LabelPlacement="BitPlacement.Start" FullWidth
                             Styles="@(new() { ItemLabel = "width: 100%; justify-content: space-between;" })"
                             NameSelectors="@(new() { Text = { Name = nameof(Order.Name) },
                                                      Value = { Name = nameof(Order.ItemValue) } })" />

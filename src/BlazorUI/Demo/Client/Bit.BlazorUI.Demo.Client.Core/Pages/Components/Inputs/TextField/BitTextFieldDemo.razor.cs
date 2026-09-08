@@ -235,8 +235,8 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitSide?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes with: above the input in the default one, and next to it in the Underlined one.",
             LinkType = LinkType.Link,
@@ -929,7 +929,7 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Id = "label-position-enum",
-            Name = "BitSide",
+            Name = "BitPlacement",
             Description = "Defines the positions a label can take relative to the control it belongs to.",
             Items =
             [
@@ -949,13 +949,13 @@ public partial class BitTextFieldDemo : IDisposable
                 {
                     Name = "Start",
                     Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
                     Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
                 new()
                 {
@@ -971,14 +971,20 @@ public partial class BitTextFieldDemo : IDisposable
                 },
                 new()
                 {
-                    Name = "TopAndBottom",
+                    Name = "Center",
                     Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
                     Description = "Both edges of the block axis at once."
                 },
                 new()
                 {
                     Name = "StartAndEnd",
-                    Value = "7",
+                    Value = "8",
                     Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
                 }
             ]
@@ -1890,16 +1896,16 @@ private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString
 private BitTextField? selectionRef;";
 
     private readonly string example17RazorCode = @"
-<BitTextField Label=""Top"" LabelPosition=""BitSide.Top"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Bottom"" LabelPosition=""BitSide.Bottom"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Start"" LabelPosition=""BitSide.Start"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""End"" LabelPosition=""BitSide.End"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Top"" LabelPlacement=""BitPlacement.Top"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Start"" LabelPlacement=""BitPlacement.Start"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""End"" LabelPlacement=""BitPlacement.End"" Placeholder=""Enter a text..."" />
 
 <BitTextField Label=""Start + Required + a counter""
               Required
               ShowCount
               MaxLength=""20""
-              LabelPosition=""BitSide.Start""
+              LabelPlacement=""BitPlacement.Start""
               Description=""The footer keeps its own line under the whole row."" />";
 
     private readonly string example18RazorCode = @"

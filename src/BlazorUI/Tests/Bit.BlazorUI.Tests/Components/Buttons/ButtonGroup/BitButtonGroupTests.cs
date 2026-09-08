@@ -116,7 +116,7 @@ public class BitButtonGroupTests : BunitTestContext
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
             parameters.Add(p => p.DefaultToggleKey, "b");
         });
 
@@ -147,7 +147,7 @@ public class BitButtonGroupTests : BunitTestContext
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.ToggleKeysChanged, (IEnumerable<string>? keys) => toggleKeys = keys);
         });
 
@@ -183,7 +183,7 @@ public class BitButtonGroupTests : BunitTestContext
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.MaxToggles, 2);
         });
 
@@ -206,7 +206,7 @@ public class BitButtonGroupTests : BunitTestContext
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.FixedToggle, true);
             parameters.Add(p => p.DefaultToggleKeys, new[] { "a" });
         });
@@ -232,7 +232,7 @@ public class BitButtonGroupTests : BunitTestContext
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
             parameters.Add(p => p.DefaultToggleKey, "b");
         });
 
@@ -246,7 +246,7 @@ public class BitButtonGroupTests : BunitTestContext
         var notNavigable = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
             parameters.Add(p => p.DefaultToggleKey, "b");
             parameters.Add(p => p.Navigable, false);
         });
@@ -268,7 +268,7 @@ public class BitButtonGroupTests : BunitTestContext
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
             parameters.Add(p => p.DefaultToggleKey, "b");
         });
 
@@ -309,7 +309,7 @@ public class BitButtonGroupTests : BunitTestContext
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
             parameters.Add(p => p.SelectOnFocus, true);
             parameters.Add(p => p.DefaultToggleKey, "a");
         });
@@ -487,7 +487,7 @@ public class BitButtonGroupTests : BunitTestContext
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
             parameters.Add(p => p.ShowSelectionIndicator, true);
             parameters.Add(p => p.DefaultToggleKey, "a");
         });

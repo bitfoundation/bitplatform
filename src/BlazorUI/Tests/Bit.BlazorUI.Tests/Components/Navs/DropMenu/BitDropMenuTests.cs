@@ -589,34 +589,34 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitSide.Start, "bit-drm-sta")]
-    [DataRow(BitSide.End, "bit-drm-end")]
-    [DataRow(BitSide.Top, "bit-drm-top")]
-    [DataRow(BitSide.Bottom, "bit-drm-btm")]
-    public void BitDropMenuShouldAddPanelPositionClass(BitSide position, string expectedClass)
+    [DataRow(BitPlacement.Start, "bit-drm-sta")]
+    [DataRow(BitPlacement.End, "bit-drm-end")]
+    [DataRow(BitPlacement.Top, "bit-drm-top")]
+    [DataRow(BitPlacement.Bottom, "bit-drm-btm")]
+    public void BitDropMenuShouldAddPanelPositionClass(BitPlacement position, string expectedClass)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.Responsive, true);
-            parameters.Add(p => p.PanelPosition, position);
+            parameters.Add(p => p.PanelPlacement, position);
         });
 
         Assert.IsTrue(component.Find(".bit-drm-cal").ClassList.Contains(expectedClass));
     }
 
     [TestMethod]
-    [DataRow(BitSide.Start, BitSwipeOrientation.Horizontal)]
-    [DataRow(BitSide.End, BitSwipeOrientation.Horizontal)]
-    [DataRow(BitSide.Top, BitSwipeOrientation.Vertical)]
-    [DataRow(BitSide.Bottom, BitSwipeOrientation.Vertical)]
-    public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitSide position, BitSwipeOrientation expected)
+    [DataRow(BitPlacement.Start, BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.End, BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Top, BitSwipeOrientation.Vertical)]
+    [DataRow(BitPlacement.Bottom, BitSwipeOrientation.Vertical)]
+    public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitPlacement position, BitSwipeOrientation expected)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.Responsive, true);
-            parameters.Add(p => p.PanelPosition, position);
+            parameters.Add(p => p.PanelPlacement, position);
         });
 
         var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swipes.setup");

@@ -1147,18 +1147,18 @@ public class BitProgressTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitSide.Bottom, null),
-        DataRow(BitSide.Top, "bit-prb-gpt"),
-        DataRow(BitSide.Start, "bit-prb-gps"),
-        DataRow(BitSide.End, "bit-prb-gpe")
+        DataRow(BitPlacement.Bottom, null),
+        DataRow(BitPlacement.Top, "bit-prb-gpt"),
+        DataRow(BitPlacement.Start, "bit-prb-gps"),
+        DataRow(BitPlacement.End, "bit-prb-gpe")
     ]
-    public void BitProgressGapPositionTest(BitSide position, string? expectedClass)
+    public void BitProgressGapPositionTest(BitPlacement position, string? expectedClass)
     {
         var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Circular, true);
             parameters.Add(p => p.GapDegree, 90);
-            parameters.Add(p => p.GapPosition, position);
+            parameters.Add(p => p.GapPlacement, position);
         });
 
         var classList = component.Find(".bit-prb").ClassList;
@@ -1170,7 +1170,7 @@ public class BitProgressTests : BunitTestContext
         }
     }
 
-    // GapPosition is not nullable, so a gauge that does not ask for a side gets the one the property is
+    // GapPlacement is not nullable, so a gauge that does not ask for a side gets the one the property is
     // initialised with. The bottom is where a gauge is opened, and it is the only side with no class of its
     // own, so this is what says the default did not drift to a side that does have one.
     [TestMethod]
@@ -1196,7 +1196,7 @@ public class BitProgressTests : BunitTestContext
         var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Circular, true);
-            parameters.Add(p => p.GapPosition, BitSide.Top);
+            parameters.Add(p => p.GapPlacement, BitPlacement.Top);
         });
 
         Assert.IsFalse(component.Find(".bit-prb").ClassList.Contains("bit-prb-gpt"));
@@ -1213,7 +1213,7 @@ public class BitProgressTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-prb").ClassList.Contains("bit-prb-gpt"));
 
-        component.Render(parameters => parameters.Add(p => p.GapPosition, BitSide.Top));
+        component.Render(parameters => parameters.Add(p => p.GapPlacement, BitPlacement.Top));
 
         Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains("bit-prb-gpt"));
     }

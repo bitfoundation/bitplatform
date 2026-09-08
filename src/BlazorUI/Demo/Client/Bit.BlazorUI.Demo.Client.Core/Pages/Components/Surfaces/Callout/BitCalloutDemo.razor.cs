@@ -7,11 +7,11 @@ public partial class BitCalloutDemo
         new()
         {
             Name = "Alignment",
-            Type = "BitSideAlignment?",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "How the callout is lined up with its anchor along the axis it is not placed on. It defaults to Start, and only Start, Center and End are meaningful here: the physical pair aligns to the start, since the axis the callout is aligned on is not known until it is opened.",
             LinkType = LinkType.Link,
-            Href = "#side-alignment-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -257,7 +257,7 @@ public partial class BitCalloutDemo
             Name = "NoFlip",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the callout on the Side it was asked for even when there is not enough room for it there, instead of flipping it to the opposite side."
+            Description = "Keeps the callout on the Placement it was asked for even when there is not enough room for it there, instead of flipping it to the opposite side."
         },
         new()
         {
@@ -303,12 +303,12 @@ public partial class BitCalloutDemo
         },
         new()
         {
-            Name = "PanelPosition",
-            Type = "BitSide?",
+            Name = "PanelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The edge of the screen the responsive panel slides in from, for a ResponsiveMode of Panel. It defaults to End.",
             LinkType = LinkType.Link,
-            Href = "#side-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -356,12 +356,12 @@ public partial class BitCalloutDemo
         },
         new()
         {
-            Name = "Side",
-            Type = "BitSide?",
+            Name = "Placement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The side of the anchor the callout is placed on when there is room for it there. It wins over Direction, falls back to the opposite side, and then to Direction.",
             LinkType = LinkType.Link,
-            Href = "#side-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -503,7 +503,7 @@ public partial class BitCalloutDemo
                 {
                     Name = "Panel",
                     Value = "1",
-                    Description = "Enables the panel responsive mode, whose edge comes from the PanelPosition parameter."
+                    Description = "Enables the panel responsive mode, whose edge comes from the PanelPlacement parameter."
                 },
                 new()
                 {
@@ -521,8 +521,8 @@ public partial class BitCalloutDemo
         },
         new()
         {
-            Id = "side-enum",
-            Name = "BitSide",
+            Id = "placement-enum",
+            Name = "BitPlacement",
             Description = "",
             Items =
             [
@@ -542,13 +542,13 @@ public partial class BitCalloutDemo
                 {
                     Name = "Start",
                     Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
                     Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
                 new()
                 {
@@ -564,54 +564,21 @@ public partial class BitCalloutDemo
                 },
                 new()
                 {
-                    Name = "TopAndBottom",
+                    Name = "Center",
                     Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
                     Description = "Both edges of the block axis at once."
                 },
                 new()
                 {
                     Name = "StartAndEnd",
-                    Value = "7",
+                    Value = "8",
                     Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
-                }
-            ]
-        },
-        new()
-        {
-            Id = "side-alignment-enum",
-            Name = "BitSideAlignment",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Value = "0",
-                    Description = "Lined up with the start of the side: the left edge in LTR (the right in RTL) for a surface above or below its anchor, the top edge for one beside it."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "1",
-                    Description = "Centered along the side."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "2",
-                    Description = "Lined up with the end of the side: the right edge in LTR (the left in RTL) for a surface above or below its anchor, the bottom edge for one beside it."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "3",
-                    Description = "Lined up with the left edge, in both reading directions. The callout does not honor it: which side it is placed on is settled by the room it finds, so it aligns to the start instead."
-                },
-                new()
-                {
-                    Name = "Right",
-                    Value = "4",
-                    Description = "Lined up with the right edge, in both reading directions. The callout does not honor it: which side it is placed on is settled by the room it finds, so it aligns to the start instead."
                 }
             ]
         },
@@ -908,9 +875,9 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Side=""BitSide.Top"" ShowArrow Gap=""8"">
+<BitCallout Placement=""BitPlacement.Top"" ShowArrow Gap=""8"">
     <Anchor>
-        <BitButton Variant=""BitVariant.Outline"">Side: Top</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">Placement: Top</BitButton>
     </Anchor>
     <Content>
         <div class=""callout-content"">
@@ -919,9 +886,9 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Side=""BitSide.End"" ShowArrow Gap=""8"">
+<BitCallout Placement=""BitPlacement.End"" ShowArrow Gap=""8"">
     <Anchor>
-        <BitButton Variant=""BitVariant.Outline"">Side: End</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">Placement: End</BitButton>
     </Anchor>
     <Content>
         <div class=""callout-content"">
@@ -930,9 +897,9 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Side=""BitSide.Top"" NoFlip ShowArrow Gap=""8"">
+<BitCallout Placement=""BitPlacement.Top"" NoFlip ShowArrow Gap=""8"">
     <Anchor>
-        <BitButton Variant=""BitVariant.Outline"">Side: Top, NoFlip</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">Placement: Top, NoFlip</BitButton>
     </Anchor>
     <Content>
         <div class=""callout-content"">
@@ -944,7 +911,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Alignment=""BitSideAlignment.Center"" ShowArrow Gap=""8"">
+<BitCallout Alignment=""BitPlacement.Center"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">A wide anchor, centered alignment</BitButton>
     </Anchor>
@@ -953,7 +920,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Alignment=""BitSideAlignment.End"" ShowArrow Gap=""8"">
+<BitCallout Alignment=""BitPlacement.End"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">A wide anchor, end alignment</BitButton>
     </Anchor>
@@ -962,7 +929,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Side=""BitSide.End"" Alignment=""BitSideAlignment.Center"" ShowArrow Gap=""8"">
+<BitCallout Placement=""BitPlacement.End"" Alignment=""BitPlacement.Center"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">Beside, centered</BitButton>
     </Anchor>
@@ -987,7 +954,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout Alignment=""BitSideAlignment.End"" AlignmentOffset=""32"" ShowArrow Gap=""8"">
+<BitCallout Alignment=""BitPlacement.End"" AlignmentOffset=""32"" ShowArrow Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Text"">End alignment, offset of 32px</BitButton>
     </Anchor>
@@ -1009,7 +976,7 @@ private bool isOpen;";
     </Content>
 </BitCallout>
 
-<BitCallout @ref=""callout4"" Side=""BitSide.Top"" ShowArrow Gap=""8"" MinWidth=""14rem"">
+<BitCallout @ref=""callout4"" Placement=""BitPlacement.Top"" ShowArrow Gap=""8"" MinWidth=""14rem"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Reposition</BitButton>
     </Anchor>
@@ -1184,7 +1151,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 </BitCallout>";
 
     private readonly string example10RazorCode = @"
-<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitSide.End"">
+<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPlacement=""BitPlacement.End"">
     <Anchor>
         <BitButton>End panel</BitButton>
     </Anchor>
@@ -1200,7 +1167,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
     </Content>
 </BitCallout>
 
-<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitSide.Start"">
+<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPlacement=""BitPlacement.Start"">
     <Anchor>
         <BitButton>Start panel</BitButton>
     </Anchor>
@@ -1378,7 +1345,7 @@ private string autoCloseAction = ""none"";";
                 <BitCheckbox Label=""Active"" />
                 <BitCheckbox Label=""Archived"" />
 
-                <BitCallout ShowArrow Gap=""8"" Side=""BitSide.End"">
+                <BitCallout ShowArrow Gap=""8"" Placement=""BitPlacement.End"">
                     <Anchor>
                         <BitButton Variant=""BitVariant.Outline"">More options</BitButton>
                     </Anchor>
@@ -1387,7 +1354,7 @@ private string autoCloseAction = ""none"";";
                             <BitStack Gap=""0.25rem"">
                                 <BitText>The panel behind is still open.</BitText>
 
-                                <BitCallout ShowArrow Gap=""8"" AutoClose Side=""BitSide.End"">
+                                <BitCallout ShowArrow Gap=""8"" AutoClose Placement=""BitPlacement.End"">
                                     <Anchor>
                                         <BitButton Variant=""BitVariant.Text"">One more level</BitButton>
                                     </Anchor>

@@ -277,7 +277,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Shows the custom label for text field.
@@ -664,12 +664,12 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         // Leaving the position unset renders no class at all, so each variant keeps the layout it comes
         // with instead of every field suddenly being laid out by the same rule.
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitSide.Top => "bit-tfl-ltp",
-            BitSide.Bottom => "bit-tfl-lbt",
-            BitSide.Start => "bit-tfl-lst",
-            BitSide.End => "bit-tfl-led",
+            BitPlacement.Top => "bit-tfl-ltp",
+            BitPlacement.Bottom => "bit-tfl-lbt",
+            BitPlacement.Start => "bit-tfl-lst",
+            BitPlacement.End => "bit-tfl-led",
             _ => string.Empty
         });
 

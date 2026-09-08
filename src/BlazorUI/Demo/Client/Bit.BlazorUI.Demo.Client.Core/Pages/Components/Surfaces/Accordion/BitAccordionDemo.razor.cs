@@ -96,8 +96,8 @@ public partial class BitAccordionDemo
         },
         new()
         {
-            Name = "ExpanderIconPosition",
-            Type = "BitIconPosition?",
+            Name = "ExpanderIconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Gets or sets the side of the header the expander icon sits on. The default value is End.",
             LinkType = LinkType.Link,
@@ -354,21 +354,63 @@ public partial class BitAccordionDemo
         new()
         {
             Id = "icon-position-enum",
-            Name = "BitIconPosition",
+            Name = "BitPlacement",
             Description = "Describes the placement of an icon relative to other content.",
             Items =
             [
                 new()
                 {
-                    Name = "Start",
+                    Name = "Top",
                     Value = "0",
-                    Description = "The icon renders before the content."
+                    Description = "The top edge."
+                },
+                new()
+                {
+                    Name = "Bottom",
+                    Value = "1",
+                    Description = "The bottom edge."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
-                    Value = "1",
-                    Description = "The icon renders after the content."
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
+                },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "8",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
                 }
             ]
         },
@@ -663,10 +705,10 @@ public partial class BitAccordionDemo
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 
-<BitAccordion Title=""Start"" ExpanderIconPosition=""BitIconPosition.Start"">
+<BitAccordion Title=""Start"" ExpanderIconPlacement=""BitPlacement.Start"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""Start with an icon"" IconName=""@BitIconName.Settings"" ExpanderIconPosition=""BitIconPosition.Start"">
+<BitAccordion Title=""Start with an icon"" IconName=""@BitIconName.Settings"" ExpanderIconPlacement=""BitPlacement.Start"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 

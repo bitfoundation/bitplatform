@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Swipers (touch slider) let people show their slides in a swiping row.
@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// The items are laid out side by side inside a scrolling box, so the swiper scrolls freely through them
 /// instead of paging like a <see cref="BitCarousel"/> does: the items keep whatever size they were given
 /// (or take one from <see cref="VisibleItemsCount"/>), and the swiper comes to rest wherever it was left,
-/// unless <see cref="Snap"/> asks it to settle on an item. It can be driven with its own next/prev
+/// unless <see cref="SnapAlign"/> asks it to settle on an item. It can be driven with its own next/prev
 /// buttons, with the dots below it, by dragging it, with the keyboard, with the mouse wheel, from
 /// application code through <see cref="GoNext"/>/<see cref="GoPrev"/>/<see cref="GoTo(int)"/>, or on its
 /// own with <see cref="AutoPlay"/>.
@@ -393,14 +393,14 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The value chooses where the item it settles on comes to rest: at the start of the swiper, in its
-    /// middle, or at its end. Without it the swiper scrolls freely, which is what a rail of items that are
-    /// read side by side wants.
+    /// middle, or at its end. Leaving it unset - or setting it to <see cref="BitScrollSnapAlign.None"/> -
+    /// lets the swiper scroll freely, which is what a rail of items that are read side by side wants.
     /// <br />
     /// The snapping itself is the browser's (CSS scroll snapping), so a touch swipe settles the same way a
     /// navigation does.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSwiperSnap? Snap { get; set; }
+    public BitScrollSnapAlign? SnapAlign { get; set; }
 
     /// <summary>
     /// Stops the auto scrolling as soon as the swiper is navigated through one of its own controls.
@@ -743,11 +743,11 @@ public partial class BitSwiper : BitComponentBase
 
         ClassBuilder.Register(() => (NoDrag || IsEnabled is false) ? "bit-swp-ndr" : string.Empty);
 
-        ClassBuilder.Register(() => Snap switch
+        ClassBuilder.Register(() => SnapAlign switch
         {
-            BitSwiperSnap.Start => "bit-swp-snp bit-swp-sns",
-            BitSwiperSnap.Center => "bit-swp-snp bit-swp-snc",
-            BitSwiperSnap.End => "bit-swp-snp bit-swp-sne",
+            BitScrollSnapAlign.Start => "bit-swp-snp bit-swp-sns",
+            BitScrollSnapAlign.Center => "bit-swp-snp bit-swp-snc",
+            BitScrollSnapAlign.End => "bit-swp-snp bit-swp-sne",
             _ => string.Empty
         });
 
@@ -910,11 +910,13 @@ public partial class BitSwiper : BitComponentBase
             NoDrag = NoDrag,
             Wheel = Wheel,
             Enabled = IsEnabled,
-            Snap = Snap is not null,
-            Align = Snap switch
+            // None is the snap type that says "do not snap", so it has to read the same way an unset SnapAlign
+            // does - the class builder above already leaves both of them without the snapping classes.
+            Snap = SnapAlign is not null and not BitScrollSnapAlign.None,
+            Align = SnapAlign switch
             {
-                BitSwiperSnap.Center => 0.5,
-                BitSwiperSnap.End => 1,
+                BitScrollSnapAlign.Center => 0.5,
+                BitScrollSnapAlign.End => 1,
                 _ => 0
             },
             Duration = Math.Max(0, AnimationDuration),
@@ -930,7 +932,7 @@ public partial class BitSwiper : BitComponentBase
     private string ComputeOptionsSignature()
     {
         return FormattableString.Invariant(
-            $"{Vertical}|{NoDrag}|{Wheel}|{IsEnabled}|{Snap}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}");
+            $"{Vertical}|{NoDrag}|{Wheel}|{IsEnabled}|{SnapAlign}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}");
     }
 
     private async Task RegisterPreventKeysAsync()

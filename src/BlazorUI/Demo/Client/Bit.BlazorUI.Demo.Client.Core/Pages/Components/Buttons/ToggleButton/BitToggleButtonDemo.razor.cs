@@ -152,8 +152,8 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the icon relative to the content of the toggle button.",
             LinkType = LinkType.Link,
@@ -182,12 +182,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "LoadingLabelPosition",
-            Type = "BitSide",
-            DefaultValue = "BitSide.End",
+            Name = "LoadingLabelPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
             Description = "The position of the loading label in regards to the spinner icon.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#icon-position-enum",
         },
         new()
         {
@@ -663,29 +663,8 @@ public partial class BitToggleButtonDemo
         new()
         {
             Id = "icon-position-enum",
-            Name = "BitIconPosition",
+            Name = "BitPlacement",
             Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Value = "0",
-                    Description = "The icon renders before the content."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "1",
-                    Description = "The icon renders after the content."
-                }
-            ]
-        },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitSide",
-            Description = "Determines the position of the loading label in regards to the spinner icon.",
             Items =
             [
                 new()
@@ -704,13 +683,13 @@ public partial class BitToggleButtonDemo
                 {
                     Name = "Start",
                     Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
                     Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
                 new()
                 {
@@ -726,14 +705,20 @@ public partial class BitToggleButtonDemo
                 },
                 new()
                 {
-                    Name = "TopAndBottom",
+                    Name = "Center",
                     Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
                     Description = "Both edges of the block axis at once."
                 },
                 new()
                 {
                     Name = "StartAndEnd",
-                    Value = "7",
+                    Value = "8",
                     Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
                 }
             ]

@@ -1,23 +1,23 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Interactive legend controls" RazorCode="@liveRazorCode" CsharpCode="@liveCsharpCode" Id="legend-live">
-    <div class="example-desc">Position, alignment, a legend title, point-style markers and reversed order. Click any item to toggle its dataset &mdash; the chart recomputes instantly.</div>
+    <div class="example-desc">Placement, alignment, a legend title, point-style markers and reversed order. Click any item to toggle its dataset &mdash; the chart recomputes instantly.</div>
     <div class="controls">
         <label>
-            Position
+            Placement
             <select @bind="_position">
-                <option value="@BitSide.Top">Top</option>
-                <option value="@BitSide.Bottom">Bottom</option>
-                <option value="@BitSide.Left">Left</option>
-                <option value="@BitSide.Right">Right</option>
+                <option value="@BitPlacement.Top">Top</option>
+                <option value="@BitPlacement.Bottom">Bottom</option>
+                <option value="@BitPlacement.Left">Left</option>
+                <option value="@BitPlacement.Right">Right</option>
             </select>
         </label>
         <label>
             Align
             <select @bind="_align">
-                <option value="@BitChartAlign.Start">Start</option>
-                <option value="@BitChartAlign.Center">Center</option>
-                <option value="@BitChartAlign.End">End</option>
+                <option value="@BitPlacement.Start">Start</option>
+                <option value="@BitPlacement.Center">Center</option>
+                <option value="@BitPlacement.End">End</option>
             </select>
         </label>
         <label><input type="checkbox" @bind="_usePointStyle" /> Point style</label>

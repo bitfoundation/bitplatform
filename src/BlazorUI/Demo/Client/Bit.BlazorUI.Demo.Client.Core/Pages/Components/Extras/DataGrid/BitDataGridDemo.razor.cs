@@ -13,7 +13,7 @@ public partial class BitDataGridDemo : AppComponentBase
 
     // example 3 - selection
     private readonly List<Product> selectionProducts = SampleData.Generate(60);
-    private BitDataGridSelectionMode selectionMode = BitDataGridSelectionMode.Multiple;
+    private BitSelectionMode selectionMode = BitSelectionMode.Multiple;
     private IReadOnlyList<Product> selectedProducts = new List<Product>();
 
     // Switching to Single must drop any extra selections so the bound state (and the "N selected"
@@ -21,7 +21,7 @@ public partial class BitDataGridDemo : AppComponentBase
     // trimmed selection back to this controlled binding.
     private void SelectSingleMode()
     {
-        selectionMode = BitDataGridSelectionMode.Single;
+        selectionMode = BitSelectionMode.Single;
         if (selectedProducts.Count > 1)
         {
             selectedProducts = selectedProducts.Take(1).ToList();

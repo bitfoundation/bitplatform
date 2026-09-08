@@ -168,11 +168,11 @@ private double bufferPercent = 40;";
              AriaValueText=""@($""{20 + gaugeValue / 5:F0} degrees"")"" />
 
 <BitProgress Circular Rounded AriaLabel=""Gauge with the gap at the top"" GapDegree=""120"" Diameter=""80"" Thickness=""8"" Percent=""gaugeValue""
-             GapPosition=""BitSide.Top"" />
+             GapPlacement=""BitPlacement.Top"" />
 <BitProgress Circular Rounded AriaLabel=""Gauge with the gap at the start"" GapDegree=""120"" Diameter=""80"" Thickness=""8"" Percent=""gaugeValue""
-             GapPosition=""BitSide.Start"" />
+             GapPlacement=""BitPlacement.Start"" />
 <BitProgress Circular Rounded AriaLabel=""Gauge with the gap at the end"" GapDegree=""120"" Diameter=""80"" Thickness=""8"" Percent=""gaugeValue""
-             GapPosition=""BitSide.End"" />";
+             GapPlacement=""BitPlacement.End"" />";
     private readonly string example13CsharpCode = @"
 private double gaugeValue = 65;";
 

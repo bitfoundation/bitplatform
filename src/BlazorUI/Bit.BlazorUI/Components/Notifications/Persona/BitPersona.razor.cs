@@ -449,11 +449,17 @@ public partial class BitPersona : BitComponentBase
     /// The outline of the coin: a circle, a rounded square or a sharp one. The default is a circle.
     /// </summary>
     /// <remarks>
+    /// Only <see cref="BitShape.Pill"/>, <see cref="BitShape.Rounded"/> and <see cref="BitShape.Square"/> mean
+    /// anything here. The coin is square, so a fully rounded one is the circle a picture of a person is shown
+    /// in - which is why the default is <see cref="BitShape.Pill"/> and not a shape named after the circle it
+    /// draws. <see cref="BitShape.Circle"/> would ask the coin for proportions it already has, and leaves it
+    /// as it is.
+    /// <br />
     /// This supersedes <see cref="Squared"/>, which is the same thing said with a flag and can only reach
-    /// <see cref="BitPersonaShape.Rounded"/>. When both are set, this one wins.
+    /// <see cref="BitShape.Rounded"/>. When both are set, this one wins.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitPersonaShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
@@ -496,7 +502,7 @@ public partial class BitPersona : BitComponentBase
     /// If true, renders the coin with a rounded square shape instead of the default circular shape.
     /// </summary>
     /// <remarks>
-    /// This is the shorthand for <see cref="BitPersonaShape.Rounded"/>. Set <see cref="Shape"/> instead to
+    /// This is the shorthand for <see cref="BitShape.Rounded"/>. Set <see cref="Shape"/> instead to
     /// reach the sharp square as well; a <see cref="Shape"/> of its own takes precedence over this.
     /// </remarks>
     [Parameter, ResetClassBuilder]
@@ -591,8 +597,8 @@ public partial class BitPersona : BitComponentBase
 
         ClassBuilder.Register(() => GetShape() switch
         {
-            BitPersonaShape.Rounded => "bit-prs-sqr",
-            BitPersonaShape.Square => "bit-prs-sqr bit-prs-sqs",
+            BitShape.Rounded => "bit-prs-sqr",
+            BitShape.Square => "bit-prs-sqr bit-prs-sqs",
             _ => string.Empty
         });
 
@@ -618,7 +624,7 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// The shape actually in force, which <see cref="Squared"/> can only ever ask for the rounded square of.
     /// </summary>
-    private BitPersonaShape GetShape() => Shape ?? (Squared ? BitPersonaShape.Rounded : BitPersonaShape.Circular);
+    private BitShape GetShape() => Shape ?? (Squared ? BitShape.Rounded : BitShape.Pill);
 
     private string? GetPresentationClass()
     {
@@ -644,7 +650,7 @@ public partial class BitPersona : BitComponentBase
         string? inset = null;
         // The dot keeps the same share of the coin a size class gives it, so a custom coin size stays in proportion.
         var presentationSize = CoinSize.Value / 4D;
-        if (GetShape() is not BitPersonaShape.Circular)
+        if (GetShape() is not BitShape.Pill)
         {
             // Retuned as the knob the stylesheet reads rather than as a side of its own, so the nudge follows
             // the dot to whichever corner the writing direction and Reversed between them put it in.

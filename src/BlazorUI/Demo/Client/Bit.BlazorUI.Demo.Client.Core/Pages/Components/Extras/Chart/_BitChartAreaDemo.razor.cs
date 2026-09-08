@@ -9,12 +9,12 @@ public partial class _BitChartAreaDemo
 
     private readonly BitChartOptions _legendBottom = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private readonly BitChartOptions _stacked = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
         Scales =
         {
             ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category },
@@ -116,7 +116,7 @@ private BitChartData Gradient() => new()
     private readonly string stackedCsharpCode = @"
 private readonly BitChartOptions _stacked = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
     Scales =
     {
         [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Category },
@@ -139,7 +139,7 @@ private BitChartData Stacked() => new()
     private readonly string rangeCsharpCode = @"
 private readonly BitChartOptions _legendBottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };
 
 private BitChartData Range() => new()
@@ -158,7 +158,7 @@ private BitChartData Range() => new()
     private readonly string boundariesCsharpCode = @"
 private readonly BitChartOptions _legendBottom = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitSide.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };
 
 private BitChartData Boundaries() => new()

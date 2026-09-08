@@ -47,7 +47,7 @@
 
     <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            The label of the BitNumberField can be positioned on any side of the input using the <b>LabelPosition</b> parameter,
+            The label of the BitNumberField can be positioned on any side of the input using the <b>LabelPlacement</b> parameter,
             and can be fully customized (with any markup or components) using the <b>LabelTemplate</b>.
         </div>
         <br />
@@ -56,11 +56,11 @@
             <br />
             <BitNumberField Label="Top (default)" TValue="int" />
             <br />
-            <BitNumberField Label="Start" LabelPosition="BitSide.Start" TValue="int" />
+            <BitNumberField Label="Start" LabelPlacement="BitPlacement.Start" TValue="int" />
             <br />
-            <BitNumberField Label="End" LabelPosition="BitSide.End" TValue="int" />
+            <BitNumberField Label="End" LabelPlacement="BitPlacement.End" TValue="int" />
             <br />
-            <BitNumberField Label="Bottom" LabelPosition="BitSide.Bottom" TValue="int" />
+            <BitNumberField Label="Bottom" LabelPlacement="BitPlacement.Bottom" TValue="int" />
             <br /><br /><br /><br />
             <div>LabelTemplate:</div>
             <br />
@@ -101,7 +101,7 @@
             </BitNumberField>
             <br />
             <BitNumberField Label="Label on the side" TValue="int"
-                            LabelPosition="BitSide.Start"
+                            LabelPlacement="BitPlacement.Start"
                             Description="The hint wraps onto a line of its own." />
         </div>
     </DemoExample>
@@ -915,7 +915,7 @@
                 <CascadingValue Value="BitDir.Rtl">
                     <BitNumberField Label="برچسب در بالا" TValue="int" Mode="BitSpinButtonMode.Compact" />
                     <br />
-                    <BitNumberField Label="برچسب در کنار" TValue="int" LabelPosition="BitSide.Start" />
+                    <BitNumberField Label="برچسب در کنار" TValue="int" LabelPlacement="BitPlacement.Start" />
                     <br />
                     <BitNumberField TValue="int" Required />
                     <br />

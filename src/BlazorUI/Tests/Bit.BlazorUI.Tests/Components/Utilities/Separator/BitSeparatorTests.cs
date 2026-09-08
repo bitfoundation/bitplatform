@@ -298,11 +298,11 @@ public class BitSeparatorTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitSeparatorAlignContent.Start),
-        DataRow(BitSeparatorAlignContent.Center),
-        DataRow(BitSeparatorAlignContent.End)
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.Center),
+        DataRow(BitPlacement.End)
     ]
-    public void BitSeparatorShouldRespectAlignContent(BitSeparatorAlignContent alignContent)
+    public void BitSeparatorShouldRespectAlignContent(BitPlacement alignContent)
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
@@ -311,8 +311,8 @@ public class BitSeparatorTests : BunitTestContext
 
         var cssClass = alignContent switch
         {
-            BitSeparatorAlignContent.Start => "bit-spr-srt",
-            BitSeparatorAlignContent.End => "bit-spr-end",
+            BitPlacement.Start => "bit-spr-srt",
+            BitPlacement.End => "bit-spr-end",
             _ => "bit-spr-ctr"
         };
 
@@ -633,12 +633,12 @@ public class BitSeparatorTests : BunitTestContext
 
     [TestMethod,
         DataRow(null),
-        DataRow(BitSeparatorLineStyle.Solid),
-        DataRow(BitSeparatorLineStyle.Dashed),
-        DataRow(BitSeparatorLineStyle.Dotted),
-        DataRow(BitSeparatorLineStyle.Double)
+        DataRow(BitLineStyle.Solid),
+        DataRow(BitLineStyle.Dashed),
+        DataRow(BitLineStyle.Dotted),
+        DataRow(BitLineStyle.Double)
     ]
-    public void BitSeparatorShouldRespectLineStyle(BitSeparatorLineStyle? lineStyle)
+    public void BitSeparatorShouldRespectLineStyle(BitLineStyle? lineStyle)
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
@@ -647,9 +647,9 @@ public class BitSeparatorTests : BunitTestContext
 
         var cssClass = lineStyle switch
         {
-            BitSeparatorLineStyle.Dashed => "bit-spr-dsh ",
-            BitSeparatorLineStyle.Dotted => "bit-spr-dot ",
-            BitSeparatorLineStyle.Double => "bit-spr-dbl ",
+            BitLineStyle.Dashed => "bit-spr-dsh ",
+            BitLineStyle.Dotted => "bit-spr-dot ",
+            BitLineStyle.Double => "bit-spr-dbl ",
             _ => null
         };
 
@@ -665,7 +665,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.LineStyle, BitSeparatorLineStyle.Dashed);
+            parameters.Add(p => p.LineStyle, BitLineStyle.Dashed);
         });
 
         component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-dsh bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
@@ -862,7 +862,7 @@ public class BitSeparatorTests : BunitTestContext
             parameters.Add(p => p.Thickness, "3px");
             parameters.Add(p => p.ContentOffset, "2rem");
             parameters.Add(p => p.Inset, "1rem");
-            parameters.Add(p => p.AlignContent, BitSeparatorAlignContent.Start);
+            parameters.Add(p => p.AlignContent, BitPlacement.Start);
             parameters.AddChildContent("Bit Blazor UI");
         });
 
@@ -881,7 +881,7 @@ public class BitSeparatorTests : BunitTestContext
         var component = RenderComponent<BitSeparator>(parameters =>
         {
             parameters.Add(p => p.Vertical, true);
-            parameters.Add(p => p.AlignContent, BitSeparatorAlignContent.End);
+            parameters.Add(p => p.AlignContent, BitPlacement.End);
             parameters.Add(p => p.ContentOffset, "25%");
             parameters.AddChildContent("<span>Bit</span>");
         });

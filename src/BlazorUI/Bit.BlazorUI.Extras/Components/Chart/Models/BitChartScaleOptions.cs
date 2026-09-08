@@ -16,7 +16,7 @@ public sealed class BitChartScaleOptions
     /// A chart is laid out physically, so only Top, Bottom, Left and Right are meaningful here; any other side
     /// is read as the default for the axis.
     /// </remarks>
-    public BitSide? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     public double? Min { get; set; }
     public double? Max { get; set; }

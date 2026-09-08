@@ -253,25 +253,25 @@ private readonly List<Order> iconCustoms =
 
     private readonly string example5RazorCode = @"
 <BitChoiceGroup Label=""End (default)""
-                LabelPosition=""BitSide.End"" Horizontal
+                LabelPlacement=""BitPlacement.End"" Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""Start""
-                LabelPosition=""BitSide.Start"" Horizontal
+                LabelPlacement=""BitPlacement.Start"" Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""Top""
-                LabelPosition=""BitSide.Top"" Horizontal
+                LabelPlacement=""BitPlacement.Top"" Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""Bottom""
-                LabelPosition=""BitSide.Bottom"" Horizontal
+                LabelPlacement=""BitPlacement.Bottom"" Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />";
@@ -829,17 +829,17 @@ private readonly List<Order> deploymentCustoms =
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (items at the far edge)""
+<BitChoiceGroup Label=""FullWidth + LabelPlacement.Start (items at the far edge)""
                 Items=""basicCustoms""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitSide.Start"" FullWidth
+                LabelPlacement=""BitPlacement.Start"" FullWidth
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + stretched item label (settings list)""
+<BitChoiceGroup Label=""FullWidth + LabelPlacement.Start + stretched item label (settings list)""
                 Items=""basicCustoms""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitSide.Start"" FullWidth
+                LabelPlacement=""BitPlacement.Start"" FullWidth
                 Styles=""@(new() { ItemLabel = ""width: 100%; justify-content: space-between;"" })""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />";

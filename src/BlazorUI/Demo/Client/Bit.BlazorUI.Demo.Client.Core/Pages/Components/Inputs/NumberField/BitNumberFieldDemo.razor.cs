@@ -238,8 +238,8 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitSide?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the label in regards to the field (Top by default).",
             LinkType = LinkType.Link,
@@ -250,7 +250,7 @@ public partial class BitNumberFieldDemo
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.",
+            Description = "Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.",
         },
         new()
         {
@@ -728,7 +728,7 @@ public partial class BitNumberFieldDemo
         new()
         {
             Id = "labelPosition-enum",
-            Name = "BitSide",
+            Name = "BitPlacement",
             Description = "",
             Items =
             [
@@ -748,13 +748,13 @@ public partial class BitNumberFieldDemo
                 {
                     Name = "Start",
                     Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
                     Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
                 new()
                 {
@@ -770,14 +770,20 @@ public partial class BitNumberFieldDemo
                 },
                 new()
                 {
-                    Name = "TopAndBottom",
+                    Name = "Center",
                     Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
                     Description = "Both edges of the block axis at once."
                 },
                 new()
                 {
                     Name = "StartAndEnd",
-                    Value = "7",
+                    Value = "8",
                     Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
                 }
             ]

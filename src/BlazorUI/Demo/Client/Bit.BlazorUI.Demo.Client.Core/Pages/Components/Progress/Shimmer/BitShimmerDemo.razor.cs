@@ -34,7 +34,7 @@ public partial class BitShimmerDemo
             Name = "Circle",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the shimmer as circle instead of a rectangle. This is the short spelling of Shape=\"BitShimmerShape.Circle\", which wins over it when both are set."
+            Description = "Renders the shimmer as circle instead of a rectangle. This is the short spelling of Shape=\"BitShape.Circle\", which wins over it when both are set."
         },
         new()
         {
@@ -178,7 +178,7 @@ public partial class BitShimmerDemo
         new()
         {
             Name = "Shape",
-            Type = "BitShimmerShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
             Description = "The shape of the placeholder the shimmer draws: a circle for an avatar, a pill for a button or a tag, a square for an image that meets its container edge to edge.",
             LinkType = LinkType.Link,
@@ -317,33 +317,33 @@ public partial class BitShimmerDemo
         new()
         {
             Id = "shape-enum",
-            Name = "BitShimmerShape",
+            Name = "BitShape",
             Description = "Determines the shape of the placeholder the BitShimmer draws.",
             Items =
             [
                 new()
                 {
-                    Name= "Rounded",
-                    Description="A rectangle with the small corner radius of the theme, which is what a line of text or a block of content reads as.",
-                    Value="0",
+                    Name = "Rounded",
+                    Value = "0",
+                    Description = "The corner radius the current theme gives to this kind of surface."
                 },
                 new()
                 {
-                    Name= "Square",
-                    Description="A rectangle with no corner radius at all, for content that meets its container edge to edge.",
-                    Value="1",
+                    Name = "Square",
+                    Value = "1",
+                    Description = "Sharp corners with no radius at all."
                 },
                 new()
                 {
-                    Name= "Pill",
-                    Description="A rectangle with fully rounded ends, which is what a button, a tag or a chip reads as.",
-                    Value="2",
+                    Name = "Pill",
+                    Value = "2",
+                    Description = "Fully rounded ends: a pill where the box is wider than it is tall, and a circle where the box is square."
                 },
                 new()
                 {
-                    Name= "Circle",
-                    Description="A circle, which is what an avatar or a round icon reads as. It takes its diameter from whichever of the height and the width is set, and ignores Lines.",
-                    Value="3",
+                    Name = "Circle",
+                    Value = "3",
+                    Description = "A true circle, which takes its diameter from whichever of the height and the width is set."
                 }
             ]
         },

@@ -8,30 +8,30 @@ namespace Bit.BlazorUI.Tests.Components.Extras.Chart;
 [TestClass]
 public class BitChartTests : BunitTestContext
 {
-    private static BitChartConfig CreateConfig(BitSide legendPosition) => new(
+    private static BitChartConfig CreateConfig(BitPlacement legendPosition) => new(
         BitChartType.Bar,
         new BitChartData
         {
             Labels = ["A", "B"],
             Datasets = [new BitChartDataset { Label = "Series", Data = [1, 2] }]
         },
-        new BitChartOptions { Plugins = { Legend = { Position = legendPosition } } });
+        new BitChartOptions { Plugins = { Legend = { Placement = legendPosition } } });
 
-    private IRenderedComponent<BitChart> RenderChart(BitSide legendPosition)
+    private IRenderedComponent<BitChart> RenderChart(BitPlacement legendPosition)
         => RenderComponent<BitChart>(parameters => parameters.Add(p => p.Config, CreateConfig(legendPosition)));
 
     [TestMethod]
-    [DataRow(BitSide.Top, "bc-root")]
-    [DataRow(BitSide.Bottom, "bc-root")]
-    [DataRow(BitSide.Left, "bc-mid")]
-    [DataRow(BitSide.Right, "bc-mid")]
+    [DataRow(BitPlacement.Top, "bc-root")]
+    [DataRow(BitPlacement.Bottom, "bc-root")]
+    [DataRow(BitPlacement.Left, "bc-mid")]
+    [DataRow(BitPlacement.Right, "bc-mid")]
     // A chart is laid out physically, so the logical and combined sides have no edge of their own
     // here - they leave the legend at the top instead of dropping it.
-    [DataRow(BitSide.Start, "bc-root")]
-    [DataRow(BitSide.End, "bc-root")]
-    [DataRow(BitSide.TopAndBottom, "bc-root")]
-    [DataRow(BitSide.StartAndEnd, "bc-root")]
-    public void LegendPositionFallsBackToTheTop(BitSide position, string expectedParentClass)
+    [DataRow(BitPlacement.Start, "bc-root")]
+    [DataRow(BitPlacement.End, "bc-root")]
+    [DataRow(BitPlacement.TopAndBottom, "bc-root")]
+    [DataRow(BitPlacement.StartAndEnd, "bc-root")]
+    public void LegendPositionFallsBackToTheTop(BitPlacement position, string expectedParentClass)
     {
         var component = RenderChart(position);
 
@@ -45,12 +45,12 @@ public class BitChartTests : BunitTestContext
     public void LegendPositionDecidesTheLegendOrientation()
     {
         // Only the two physical inline sides stack the items vertically; every other side is a row.
-        foreach (var position in new[] { BitSide.Left, BitSide.Right })
+        foreach (var position in new[] { BitPlacement.Left, BitPlacement.Right })
         {
             Assert.IsTrue(RenderChart(position).Find(".bc-legend").ClassList.Contains("bc-legend-v"));
         }
 
-        foreach (var position in new[] { BitSide.Top, BitSide.Bottom, BitSide.Start, BitSide.End, BitSide.TopAndBottom, BitSide.StartAndEnd })
+        foreach (var position in new[] { BitPlacement.Top, BitPlacement.Bottom, BitPlacement.Start, BitPlacement.End, BitPlacement.TopAndBottom, BitPlacement.StartAndEnd })
         {
             Assert.IsTrue(RenderChart(position).Find(".bc-legend").ClassList.Contains("bc-legend-h"));
         }

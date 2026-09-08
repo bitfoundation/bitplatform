@@ -115,7 +115,7 @@ public partial class BitProgress : BitComponentBase
     /// Only Top, Bottom, Start and End are meaningful here; any other side leaves the gap at the bottom.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide GapPosition { get; set; } = BitSide.Bottom;
+    public BitPlacement GapPlacement { get; set; } = BitPlacement.Bottom;
 
     /// <summary>
     /// Reports that something is running without saying how far along it is: the bar sweeps and the ring spins
@@ -316,11 +316,11 @@ public partial class BitProgress : BitComponentBase
 
         ClassBuilder.Register(() => _HasSegments ? "bit-prb-seg" : string.Empty);
 
-        ClassBuilder.Register(() => _HasGap is false ? string.Empty : GapPosition switch
+        ClassBuilder.Register(() => _HasGap is false ? string.Empty : GapPlacement switch
         {
-            BitSide.Top => "bit-prb-gap bit-prb-gpt",
-            BitSide.Start => "bit-prb-gap bit-prb-gps",
-            BitSide.End => "bit-prb-gap bit-prb-gpe",
+            BitPlacement.Top => "bit-prb-gap bit-prb-gpt",
+            BitPlacement.Start => "bit-prb-gap bit-prb-gps",
+            BitPlacement.End => "bit-prb-gap bit-prb-gpe",
             _ => "bit-prb-gap"
         });
 

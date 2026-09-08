@@ -3,6 +3,23 @@
 Guidance for the bit BlazorUI component library and its demo app. Coding style comes from the
 `.editorconfig` at the root of the `src` folder ([../CLAUDE.md](../CLAUDE.md)).
 
+## Never edit outside this folder
+
+**`src/BlazorUI` is the edit boundary, and it holds for every task.** The library, Extras, Legacy,
+Icons, Assets, the source generators, the demo app and the tests are all inside it, so the work belongs
+here. Every sibling under `src/` - `Templates` (the Boilerplate), `Butil`, `Bswup`, `Besql`, `Bmotion`,
+`Brouter`, `Websites`, `CodeAnalyzers`, the rest - and the repo root are off limits, no matter what a
+change in here does to them.
+
+This bites hardest on a rename or a deletion in the public API: the Boilerplate consumes bit BlazorUI,
+so retiring a type leaves it referencing something that no longer exists. That is still not a reason
+to edit it. **Report what broke and where, and leave the fix to the maintainer** - the templates are
+versioned and released on their own schedule, and a BlazorUI branch that carries template changes is a
+branch that cannot be merged on its own.
+
+So: grep the whole repo to *find out* what a change reaches, and say so. Only write inside
+`src/BlazorUI`.
+
 ## Demo pages
 
 A component's demo page is

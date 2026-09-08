@@ -166,7 +166,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// Determines how many items can be toggled at the same time.
     /// When not set, it falls back to Single if the Toggle parameter is enabled, otherwise None.
     /// </summary>
-    [Parameter] public BitButtonGroupSelectionMode? SelectionMode { get; set; }
+    [Parameter] public BitSelectionMode? SelectionMode { get; set; }
 
     /// <summary>
     /// Renders a check mark at the start of the toggled buttons.
@@ -219,7 +219,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The effective selection mode, which falls back to the legacy Toggle parameter when SelectionMode is not set.
     /// </summary>
-    internal BitButtonGroupSelectionMode _Mode => SelectionMode ?? (Toggle ? BitButtonGroupSelectionMode.Single : BitButtonGroupSelectionMode.None);
+    internal BitSelectionMode _Mode => SelectionMode ?? (Toggle ? BitSelectionMode.Single : BitSelectionMode.None);
 
 
 
@@ -242,7 +242,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         _items.Add(item);
 
-        if (_Mode is BitButtonGroupSelectionMode.Single)
+        if (_Mode is BitSelectionMode.Single)
         {
             var toggleKey = string.Empty;
 
@@ -260,7 +260,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 _ = UpdateItemToggle(item, false);
             }
         }
-        else if (_Mode is BitButtonGroupSelectionMode.Multiple)
+        else if (_Mode is BitSelectionMode.Multiple)
         {
             var toggleKeys = ToggleKeysHasBeenSet ? ToggleKeys : DefaultToggleKeys;
 
@@ -381,7 +381,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (Items is not null && Items.Any())
         {
-            if (_Mode is BitButtonGroupSelectionMode.Single)
+            if (_Mode is BitSelectionMode.Single)
             {
                 var toggleKey = string.Empty;
 
@@ -401,7 +401,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                     await UpdateItemToggle(item, false);
                 }
             }
-            else if (_Mode is BitButtonGroupSelectionMode.Multiple)
+            else if (_Mode is BitSelectionMode.Multiple)
             {
                 IEnumerable<string>? toggleKeys = null;
 
@@ -449,7 +449,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
-        if (_Mode is BitButtonGroupSelectionMode.Multiple &&
+        if (_Mode is BitSelectionMode.Multiple &&
             (_internalToggleKeys is null
                 ? ToggleKeys is not null
                 : ToggleKeys is null || _internalToggleKeys.SequenceEqual(ToggleKeys) is false))
@@ -629,7 +629,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string? GetItemRole()
     {
-        return _Mode is BitButtonGroupSelectionMode.Single ? "radio" : null;
+        return _Mode is BitSelectionMode.Single ? "radio" : null;
     }
 
     /// <summary>
@@ -638,14 +638,14 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string? GetItemAriaPressed(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.Multiple) return null;
+        if (_Mode is not BitSelectionMode.Multiple) return null;
 
         return IsItemToggled(item) ? "true" : "false";
     }
 
     internal string? GetItemAriaChecked(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.Single) return null;
+        if (_Mode is not BitSelectionMode.Single) return null;
 
         return IsItemToggled(item) ? "true" : "false";
     }
@@ -655,8 +655,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string _RootRole => _Mode switch
     {
-        BitButtonGroupSelectionMode.Single => "radiogroup",
-        BitButtonGroupSelectionMode.Multiple => Navigable ? "toolbar" : "group",
+        BitSelectionMode.Single => "radiogroup",
+        BitSelectionMode.Multiple => Navigable ? "toolbar" : "group",
         _ => Navigable ? "toolbar" : "group"
     };
 
@@ -768,7 +768,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (IconOnly) return null;
 
-        if (_Mode is not BitButtonGroupSelectionMode.None)
+        if (_Mode is not BitSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -793,7 +793,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal string? GetItemTitle(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.None)
+        if (_Mode is not BitSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -818,7 +818,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal BitIconInfo? GetItemIcon(TItem item)
     {
-        if (_Mode is not BitButtonGroupSelectionMode.None)
+        if (_Mode is not BitSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -846,13 +846,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (item is null) return;
         if (_items is null || _items.Count == 0) return;
 
-        if (_Mode is BitButtonGroupSelectionMode.Multiple)
+        if (_Mode is BitSelectionMode.Multiple)
         {
             await UpdateItemToggleMultiple(item);
             return;
         }
 
-        if (_Mode is not BitButtonGroupSelectionMode.Single) return;
+        if (_Mode is not BitSelectionMode.Single) return;
         if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
 
         string? toggleKey = GetItemKey(_toggleItem);
@@ -951,7 +951,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     private bool IsItemToggled(TItem item)
     {
-        return _Mode is BitButtonGroupSelectionMode.Multiple
+        return _Mode is BitSelectionMode.Multiple
                 ? _toggledItems.Contains(item)
                 : _toggleItem == item;
     }

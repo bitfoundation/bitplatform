@@ -7,7 +7,7 @@ internal static class SwipesJsRuntimeExtensions
     internal static ValueTask BitSwipesSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(this IJSRuntime js,
              string id,
              decimal trigger,
-             BitSide position,
+             BitPlacement position,
              bool isRtl,
              BitSwipeOrientation orientationLock,
              DotNetObjectReference<T>? dotnetObj,

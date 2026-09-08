@@ -246,7 +246,7 @@ public partial class BitDropMenu : BitComponentBase
     /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
     /// fall back to the default.
     /// </remarks>
-    [Parameter] public BitSide? PanelPosition { get; set; }
+    [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
     /// <summary>
     /// Renders the drop menu in responsive mode on small screens.
@@ -988,14 +988,14 @@ public partial class BitDropMenu : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    // The edge the responsive panel slides in from. BitSide carries sides a panel has no styles for - the
+    // The edge the responsive panel slides in from. BitPlacement carries sides a panel has no styles for - the
     // physical pair and the two combined values - so every consumer goes through this rather than through
-    // PanelPosition itself, which keeps the class it draws, the axis it locks the swipe to and the value the
+    // PanelPlacement itself, which keeps the class it draws, the axis it locks the swipe to and the value the
     // gesture is registered with from ever disagreeing with each other.
-    private BitSide EffectivePanelPosition => PanelPosition switch
+    private BitPlacement EffectivePanelPosition => PanelPlacement switch
     {
-        BitSide.Start or BitSide.Top or BitSide.Bottom => PanelPosition.Value,
-        _ => BitSide.End
+        BitPlacement.Start or BitPlacement.Top or BitPlacement.Bottom => PanelPlacement.Value,
+        _ => BitPlacement.End
     };
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.
@@ -1024,7 +1024,7 @@ public partial class BitDropMenu : BitComponentBase
                 // The axis the panel is swiped away along is the one it slid in on, and the lock is what
                 // takes that axis from the page: a top or bottom panel dragged with the wrong lock follows
                 // the finger while the page scrolls out from under it at the same time.
-                orientationLock: EffectivePanelPosition is BitSide.Top or BitSide.Bottom
+                orientationLock: EffectivePanelPosition is BitPlacement.Top or BitPlacement.Bottom
                                     ? BitSwipeOrientation.Vertical
                                     : BitSwipeOrientation.Horizontal,
                 dotnetObj: _swipesDotnetObj,
@@ -1089,9 +1089,9 @@ public partial class BitDropMenu : BitComponentBase
 
             classes.Add(EffectivePanelPosition switch
             {
-                BitSide.Start => "bit-drm-sta",
-                BitSide.Top => "bit-drm-top",
-                BitSide.Bottom => "bit-drm-btm",
+                BitPlacement.Start => "bit-drm-sta",
+                BitPlacement.Top => "bit-drm-top",
+                BitPlacement.Bottom => "bit-drm-btm",
                 _ => "bit-drm-end"
             });
         }

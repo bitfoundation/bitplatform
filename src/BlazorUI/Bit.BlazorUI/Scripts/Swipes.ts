@@ -1,4 +1,4 @@
-﻿namespace BitBlazorUI {
+namespace BitBlazorUI {
     export class Swipes {
         private static _swipes: BitSwipe[] = [];
 
@@ -293,9 +293,10 @@
         }
     }
 
-    // Mirrors BitSide on the C# side, which is handed over as its numeric value. The members that a swipe can
-    // never be set up for - the physical pair and the two combined values - are left out: the C# side resolves
-    // its side to one of these four before the call.
+    // Mirrors the first four members of BitPlacement on the C# side, which is handed over as its numeric
+    // value - so nothing may be inserted before End there without moving these. The placements a swipe can
+    // never be set up for - the physical pair, Center and the two combined values - are left out: the C#
+    // side resolves its placement to one of these four before the call.
     enum BitSwipePosition {
         Top = 0,
         Bottom = 1,

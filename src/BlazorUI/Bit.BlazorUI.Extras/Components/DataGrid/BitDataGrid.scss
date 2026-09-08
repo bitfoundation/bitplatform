@@ -140,8 +140,19 @@
     text-align: center;
 }
 
-.bit-dtg-right {
+/* The logical pair turns around with the reading direction; the physical pair deliberately does not. */
+.bit-dtg-end {
     justify-content: flex-end;
+    text-align: end;
+}
+
+.bit-dtg-left {
+    justify-content: left;
+    text-align: left;
+}
+
+.bit-dtg-right {
+    justify-content: right;
     text-align: right;
 }
 

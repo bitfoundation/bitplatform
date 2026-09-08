@@ -265,7 +265,7 @@
             <b>Direction</b> declares which sides the callout may be placed on, and it picks the one with the
             most room among them: <b>TopAndBottom</b> (the default) keeps it above or below the anchor, while
             <b>All</b> also lets it move beside the anchor when neither of those has room, where it is aligned
-            with the top of the anchor. <b>Side</b> asks for one side by name and wins over Direction where it
+            with the top of the anchor. <b>Placement</b> asks for one side by name and wins over Direction where it
             has the room; it is a preference rather than a demand, so a callout that does not fit there is
             placed on the opposite side, and only when neither fits does Direction decide as usual - unless
             <b>NoFlip</b> holds it to the side it was asked for whatever the room there, which is what a
@@ -321,9 +321,9 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Side="BitSide.Top" ShowArrow Gap="8">
+            <BitCallout Placement="BitPlacement.Top" ShowArrow Gap="8">
                 <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Side: Top</BitButton>
+                    <BitButton Variant="BitVariant.Outline">Placement: Top</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
@@ -332,9 +332,9 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Side="BitSide.End" ShowArrow Gap="8">
+            <BitCallout Placement="BitPlacement.End" ShowArrow Gap="8">
                 <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Side: End</BitButton>
+                    <BitButton Variant="BitVariant.Outline">Placement: End</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
@@ -343,9 +343,9 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Side="BitSide.Top" NoFlip ShowArrow Gap="8">
+            <BitCallout Placement="BitPlacement.Top" NoFlip ShowArrow Gap="8">
                 <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Side: Top, NoFlip</BitButton>
+                    <BitButton Variant="BitVariant.Outline">Placement: Top, NoFlip</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
@@ -357,7 +357,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Alignment="BitSideAlignment.Center" ShowArrow Gap="8">
+            <BitCallout Alignment="BitPlacement.Center" ShowArrow Gap="8">
                 <Anchor>
                     <BitButton Variant="BitVariant.Text">A wide anchor, centered alignment</BitButton>
                 </Anchor>
@@ -366,7 +366,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Alignment="BitSideAlignment.End" ShowArrow Gap="8">
+            <BitCallout Alignment="BitPlacement.End" ShowArrow Gap="8">
                 <Anchor>
                     <BitButton Variant="BitVariant.Text">A wide anchor, end alignment</BitButton>
                 </Anchor>
@@ -375,7 +375,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Side="BitSide.End" Alignment="BitSideAlignment.Center" ShowArrow Gap="8">
+            <BitCallout Placement="BitPlacement.End" Alignment="BitPlacement.Center" ShowArrow Gap="8">
                 <Anchor>
                     <BitButton Variant="BitVariant.Text">Beside, centered</BitButton>
                 </Anchor>
@@ -400,7 +400,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Alignment="BitSideAlignment.End" AlignmentOffset="32" ShowArrow Gap="8">
+            <BitCallout Alignment="BitPlacement.End" AlignmentOffset="32" ShowArrow Gap="8">
                 <Anchor>
                     <BitButton Variant="BitVariant.Text">End alignment, offset of 32px</BitButton>
                 </Anchor>
@@ -422,7 +422,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout @ref="callout4" Side="BitSide.Top" ShowArrow Gap="8" MinWidth="14rem">
+            <BitCallout @ref="callout4" Placement="BitPlacement.Top" ShowArrow Gap="8" MinWidth="14rem">
                 <Anchor>
                     <BitButton Variant="BitVariant.Outline">Reposition</BitButton>
                 </Anchor>
@@ -586,14 +586,14 @@
         <div>
             <b>ResponsiveMode</b> turns the callout into a panel on small screens (under 600px), which slides
             in from an edge of the screen and is swiped away along the same axis it slid in on. <b>Panel</b>
-            takes its edge from <b>PanelPosition</b> - Start or End for a side panel - while <b>Top</b> and
+            takes its edge from <b>PanelPlacement</b> - Start or End for a side panel - while <b>Top</b> and
             <b>Bottom</b> are sheets that come down from the top or up from the bottom. Point
             <b>ScrollContainerId</b> at the scrollable element inside the content so the swipe gesture does
             not fight its scrolling. Resize the window to see it.
         </div>
         <br />
         <div class="example-box">
-            <BitCallout ResponsiveMode="BitResponsiveMode.Panel" PanelPosition="BitSide.End">
+            <BitCallout ResponsiveMode="BitResponsiveMode.Panel" PanelPlacement="BitPlacement.End">
                 <Anchor>
                     <BitButton>End panel</BitButton>
                 </Anchor>
@@ -609,7 +609,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout ResponsiveMode="BitResponsiveMode.Panel" PanelPosition="BitSide.Start">
+            <BitCallout ResponsiveMode="BitResponsiveMode.Panel" PanelPlacement="BitPlacement.Start">
                 <Anchor>
                     <BitButton>Start panel</BitButton>
                 </Anchor>
@@ -879,7 +879,7 @@
                             <BitCheckbox Label="Active" />
                             <BitCheckbox Label="Archived" />
 
-                            <BitCallout ShowArrow Gap="8" Side="BitSide.End">
+                            <BitCallout ShowArrow Gap="8" Placement="BitPlacement.End">
                                 <Anchor>
                                     <BitButton Variant="BitVariant.Outline">More options</BitButton>
                                 </Anchor>
@@ -888,7 +888,7 @@
                                         <BitStack Gap="0.25rem">
                                             <BitText>The panel behind is still open.</BitText>
 
-                                            <BitCallout ShowArrow Gap="8" AutoClose Side="BitSide.End">
+                                            <BitCallout ShowArrow Gap="8" AutoClose Placement="BitPlacement.End">
                                                 <Anchor>
                                                     <BitButton Variant="BitVariant.Text">One more level</BitButton>
                                                 </Anchor>

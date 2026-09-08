@@ -749,17 +749,17 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private bool HasPointData => _config.Data.Datasets.Any(d => d.Points is { Count: > 0 });
 
-    private static string AlignToFlex(BitChartAlign a) => a switch
+    private static string AlignToFlex(BitPlacement a) => a switch
     {
-        BitChartAlign.Start => "flex-start",
-        BitChartAlign.End => "flex-end",
+        BitPlacement.Start => "flex-start",
+        BitPlacement.End => "flex-end",
         _ => "center"
     };
 
-    private static string TextAlign(BitChartAlign a) => a switch
+    private static string TextAlign(BitPlacement a) => a switch
     {
-        BitChartAlign.Start => "left",
-        BitChartAlign.End => "right",
+        BitPlacement.Start => "left",
+        BitPlacement.End => "right",
         _ => "center"
     };
 

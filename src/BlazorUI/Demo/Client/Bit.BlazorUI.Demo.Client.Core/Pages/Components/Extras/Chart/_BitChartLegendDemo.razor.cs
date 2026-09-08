@@ -2,8 +2,8 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class _BitChartLegendDemo
 {
-    private BitSide _position = BitSide.Top;
-    private BitChartAlign _align = BitChartAlign.Center;
+    private BitPlacement _position = BitPlacement.Top;
+    private BitPlacement _align = BitPlacement.Center;
     private bool _usePointStyle;
     private bool _reverse;
 
@@ -11,7 +11,7 @@ public partial class _BitChartLegendDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Title = "Product lines" }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom, Title = "Product lines" }
         }
     };
 
@@ -19,7 +19,7 @@ public partial class _BitChartLegendDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
         }
     };
 
@@ -29,7 +29,7 @@ public partial class _BitChartLegendDemo
         {
             Legend = new BitChartLegendOptions
             {
-                Position = _position, Align = _align, Reverse = _reverse,
+                Placement = _position, Align = _align, Reverse = _reverse,
                 Labels = new BitChartLegendLabelOptions { UsePointStyle = _usePointStyle }
             }
         }
@@ -65,8 +65,8 @@ public partial class _BitChartLegendDemo
 
 <BitChart Type=""BitChartType.Line"" Data=""MultiSeries()"" Options=""Live()"" />";
     private readonly string liveCsharpCode = @"
-private BitSide _position = BitSide.Top;
-private BitChartAlign _align = BitChartAlign.Center;
+private BitPlacement _position = BitPlacement.Top;
+private BitPlacement _align = BitPlacement.Center;
 private bool _usePointStyle;
 private bool _reverse;
 
@@ -76,7 +76,7 @@ private BitChartOptions Live() => new()
     {
         Legend = new BitChartLegendOptions
         {
-            Position = _position, Align = _align, Reverse = _reverse,
+            Placement = _position, Align = _align, Reverse = _reverse,
             Labels = new BitChartLegendLabelOptions { UsePointStyle = _usePointStyle }
         }
     }
@@ -99,7 +99,7 @@ private readonly BitChartOptions _titled = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Title = ""Product lines"" }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom, Title = ""Product lines"" }
     }
 };
 // Revenue(): 3 datasets (Product A/B/C) over Jan..Jul";
@@ -110,7 +110,7 @@ private readonly BitChartOptions _pointStyle = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitSide.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom, Labels = new BitChartLegendLabelOptions { UsePointStyle = true } }
     }
 };
 

@@ -45,24 +45,24 @@ public class BitPivotTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(BitSide.Top),
-         DataRow(BitSide.Bottom),
-         DataRow(BitSide.Start),
-         DataRow(BitSide.End)
+         DataRow(BitPlacement.Top),
+         DataRow(BitPlacement.Bottom),
+         DataRow(BitPlacement.Start),
+         DataRow(BitPlacement.End)
     ]
-    public void BitPivotShouldRespectPosition(BitSide position)
+    public void BitPivotShouldRespectPosition(BitPlacement position)
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Placement, position);
         });
 
         var positionClass = position switch
         {
-            BitSide.Top => "bit-pvt-top",
-            BitSide.Bottom => "bit-pvt-btm",
-            BitSide.Start => "bit-pvt-sta",
-            BitSide.End => "bit-pvt-end",
+            BitPlacement.Top => "bit-pvt-top",
+            BitPlacement.Bottom => "bit-pvt-btm",
+            BitPlacement.Start => "bit-pvt-sta",
+            BitPlacement.End => "bit-pvt-end",
             _ => string.Empty
         };
 
@@ -153,7 +153,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, BitSide.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
         });
 
         Assert.AreEqual("vertical", component.Find(".bit-pvt-hct").GetAttribute("aria-orientation"));
@@ -494,7 +494,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, BitSide.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
         });
@@ -1450,7 +1450,7 @@ public class BitPivotTests : BunitTestContext
 
         RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, BitSide.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
         });
 

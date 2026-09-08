@@ -5,7 +5,7 @@ public sealed class BitChartTitleModel
 {
     public string Text { get; set; } = "";
     public string Color { get; set; } = "#333";
-    public BitSide Position { get; set; } = BitSide.Top;
-    public BitChartAlign Align { get; set; } = BitChartAlign.Center;
+    public BitPlacement Placement { get; set; } = BitPlacement.Top;
+    public BitPlacement Align { get; set; } = BitPlacement.Center;
     public BitChartFont Font { get; set; } = new();
 }

@@ -45,7 +45,7 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Gets or sets the edge of the scrolling container the element pins to.
     /// </summary>
-    public BitSide? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// Gets or sets the horizontal offset the element pins at from the right edge.
@@ -108,9 +108,9 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
             bitSticky.StyleBuilder.Reset();
         }
 
-        if (Position.HasValue && bitSticky.HasNotBeenSet(nameof(Position)))
+        if (Placement.HasValue && bitSticky.HasNotBeenSet(nameof(Placement)))
         {
-            bitSticky.Position = Position.Value;
+            bitSticky.Placement = Placement.Value;
 
             bitSticky.ClassBuilder.Reset();
         }

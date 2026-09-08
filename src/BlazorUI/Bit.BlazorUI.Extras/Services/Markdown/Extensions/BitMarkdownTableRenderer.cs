@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Rendering;
+﻿using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI;
 
@@ -47,11 +47,16 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
     private static void AddAlignment(RenderTreeBuilder b, BitMarkdownTableNode table, int col)
     {
         if (col >= table.Alignments.Count) return;
+        // Only the BitTextAlign values that are text-align keywords in their own right can be written out;
+        // the cascade keywords would say something the table never asked for.
         string? align = table.Alignments[col] switch
         {
-            BitMarkdownColumnAlignment.Left => "left",
-            BitMarkdownColumnAlignment.Center => "center",
-            BitMarkdownColumnAlignment.Right => "right",
+            BitTextAlign.Left => "left",
+            BitTextAlign.Center => "center",
+            BitTextAlign.Right => "right",
+            BitTextAlign.Start => "start",
+            BitTextAlign.End => "end",
+            BitTextAlign.Justify => "justify",
             _ => null
         };
         if (align is not null)

@@ -135,7 +135,7 @@ public partial class BitToggle : BitInputBase<bool>
     /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSide? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Custom label of the toggle.
@@ -350,12 +350,12 @@ public partial class BitToggle : BitInputBase<bool>
 
         ClassBuilder.Register(() => Reversed ? "bit-tgl-rvs" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitSide.Top => "bit-tgl-ltp",
-            BitSide.Bottom => "bit-tgl-lbt",
-            BitSide.Start => "bit-tgl-lst",
-            BitSide.End => "bit-tgl-lnd",
+            BitPlacement.Top => "bit-tgl-ltp",
+            BitPlacement.Bottom => "bit-tgl-lbt",
+            BitPlacement.Start => "bit-tgl-lst",
+            BitPlacement.End => "bit-tgl-lnd",
             _ => string.Empty
         });
 

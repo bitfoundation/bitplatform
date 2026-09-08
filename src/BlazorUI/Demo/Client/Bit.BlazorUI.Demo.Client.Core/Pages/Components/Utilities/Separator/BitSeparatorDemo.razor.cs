@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Separator;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Separator;
 
 public partial class BitSeparatorDemo
 {
@@ -7,7 +7,7 @@ public partial class BitSeparatorDemo
         new()
         {
             Name = "AlignContent",
-            Type = "BitSeparatorAlignContent?",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the content should be aligned in the separator. Defaults to the center of the line.",
             LinkType = LinkType.Link,
@@ -87,7 +87,7 @@ public partial class BitSeparatorDemo
         new()
         {
             Name = "LineStyle",
-            Type = "BitSeparatorLineStyle?",
+            Type = "BitLineStyle?",
             DefaultValue = "null",
             Description = "The style the line of the separator is drawn in: solid, dashed, dotted or double.",
             LinkType = LinkType.Link,
@@ -159,61 +159,97 @@ public partial class BitSeparatorDemo
         new()
         {
             Id = "separator-align-enum",
-            Name = "BitSeparatorAlignContent",
+            Name = "BitPlacement",
             Description = "Where the content of the separator sits along its line.",
             Items =
             [
                 new()
                 {
-                    Name = "Start",
-                    Description = "The content sits at the start of the line - the top of a vertical separator.",
+                    Name = "Top",
                     Value = "0",
+                    Description = "The top edge."
                 },
                 new()
                 {
-                    Name = "Center",
-                    Description = "The content sits at the middle of the line, which is the default.",
+                    Name = "Bottom",
                     Value = "1",
+                    Description = "The bottom edge."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "2",
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
-                    Description = "The content sits at the end of the line - the bottom of a vertical separator.",
-                    Value = "2",
+                    Value = "3",
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
+                new()
+                {
+                    Name = "Left",
+                    Value = "4",
+                    Description = "The left edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Right",
+                    Value = "5",
+                    Description = "The right edge, in both reading directions."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
+                    Description = "Both edges of the block axis at once."
+                },
+                new()
+                {
+                    Name = "StartAndEnd",
+                    Value = "8",
+                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
+                }
             ]
         },
         new()
         {
             Id = "separator-line-style-enum",
-            Name = "BitSeparatorLineStyle",
+            Name = "BitLineStyle",
             Description = "The style the line of the separator is drawn in.",
             Items =
             [
                 new()
                 {
                     Name = "Solid",
-                    Description = "A continuous line, which is the default.",
                     Value = "0",
+                    Description = "A continuous line."
                 },
                 new()
                 {
                     Name = "Dashed",
-                    Description = "A line of short dashes.",
                     Value = "1",
+                    Description = "A line of short dashes."
                 },
                 new()
                 {
                     Name = "Dotted",
-                    Description = "A line of dots.",
                     Value = "2",
+                    Description = "A line of dots."
                 },
                 new()
                 {
                     Name = "Double",
-                    Description = "Two parallel lines with a gap between them, which needs a line of at least three pixels to have room to be drawn.",
                     Value = "3",
-                },
+                    Description = "Two parallel lines with a gap between them, which needs a line at least three pixels thick."
+                }
             ]
         },
         new()

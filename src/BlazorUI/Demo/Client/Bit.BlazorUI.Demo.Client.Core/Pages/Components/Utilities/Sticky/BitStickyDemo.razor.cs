@@ -66,10 +66,10 @@ public partial class BitStickyDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitSide?",
+            Name = "Placement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The edge of the scrolling container the element pins to. Start and End follow the reading direction. When neither a Position nor any offset is set, the component sticks to the top.",
+            Description = "The edge of the scrolling container the element pins to. Start and End follow the reading direction. When neither a Placement nor any offset is set, the component sticks to the top.",
             Href = "#sticky-position-enum",
             LinkType = LinkType.Link,
         },
@@ -142,7 +142,7 @@ public partial class BitStickyDemo
         new()
         {
             Id = "sticky-position-enum",
-            Name = "BitSide",
+            Name = "BitPlacement",
             Description = "The edges of the scrolling container a BitSticky pins itself to.",
             Items =
             [
@@ -162,13 +162,13 @@ public partial class BitStickyDemo
                 {
                     Name = "Start",
                     Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL."
+                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
                 },
                 new()
                 {
                     Name = "End",
                     Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL."
+                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
                 },
                 new()
                 {
@@ -184,14 +184,20 @@ public partial class BitStickyDemo
                 },
                 new()
                 {
-                    Name = "TopAndBottom",
+                    Name = "Center",
                     Value = "6",
+                    Description = "The middle of the axis, against neither edge."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "7",
                     Description = "Both edges of the block axis at once."
                 },
                 new()
                 {
                     Name = "StartAndEnd",
-                    Value = "7",
+                    Value = "8",
                     Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
                 }
             ]
@@ -320,7 +326,7 @@ public partial class BitStickyDemo
         are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </p>
 
-    <BitSticky Class=""sticky"" Position=""@BitSide.Top"">Stick to Top</BitSticky>
+    <BitSticky Class=""sticky"" Placement=""@BitPlacement.Top"">Stick to Top</BitSticky>
 
     <div>
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
@@ -379,7 +385,7 @@ public partial class BitStickyDemo
         begins here, in this quiet moment where everything is possible.
     </div>
 
-    <BitSticky Class=""sticky"" Position=""@BitSide.Bottom"">Stick to Bottom</BitSticky>
+    <BitSticky Class=""sticky"" Placement=""@BitPlacement.Bottom"">Stick to Bottom</BitSticky>
 
     <div>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
@@ -415,7 +421,7 @@ public partial class BitStickyDemo
         shaped into meaning, and the emotions ready to resonate with every reader.
     </div>
 
-    <BitSticky Class=""sticky"" Position=""@BitSide.TopAndBottom"">Stick to Top and Bottom</BitSticky>
+    <BitSticky Class=""sticky"" Placement=""@BitPlacement.TopAndBottom"">Stick to Top and Bottom</BitSticky>
 
     <div>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
@@ -467,7 +473,7 @@ public partial class BitStickyDemo
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
     </p>
 
-    <BitSticky Class=""sticky"" Position=""@BitSide.Start"">Stick to Start</BitSticky>
+    <BitSticky Class=""sticky"" Placement=""@BitPlacement.Start"">Stick to Start</BitSticky>
 
     <p>
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
@@ -480,7 +486,7 @@ public partial class BitStickyDemo
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
     </p>
 
-    <BitSticky Class=""sticky"" Position=""@BitSide.End"">Stick to End</BitSticky>
+    <BitSticky Class=""sticky"" Placement=""@BitPlacement.End"">Stick to End</BitSticky>
 
     <p>
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
@@ -493,7 +499,7 @@ public partial class BitStickyDemo
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
     </p>
 
-    <BitSticky Class=""sticky"" Position=""@BitSide.StartAndEnd"">Stick to Start and End</BitSticky>
+    <BitSticky Class=""sticky"" Placement=""@BitPlacement.StartAndEnd"">Stick to Start and End</BitSticky>
 
     <p>
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
@@ -833,7 +839,7 @@ private bool isStuck;";
     </p>
 
     <BitSticky Class=""sticky edge-shadow""
-               Position=""@BitSide.TopAndBottom""
+               Placement=""@BitPlacement.TopAndBottom""
                OnStuckEdgesChanged=""v => stuckEdges = v"">
         @(stuckEdges is BitStickyEdges.None ? ""Travelling with the content"" : $""Pinned to {stuckEdges}"")
     </BitSticky>
@@ -892,7 +898,7 @@ private BitStickyEdges stuckEdges;";
         These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
     </p>
 
-    <BitSticky Element=""footer"" Class=""sticky"" Position=""@BitSide.Bottom"">A sticky footer element</BitSticky>
+    <BitSticky Element=""footer"" Class=""sticky"" Placement=""@BitPlacement.Bottom"">A sticky footer element</BitSticky>
 </div>
 
 
@@ -1124,7 +1130,7 @@ private bool isStickyEnabled = true;";
         روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
     </p>
 
-    <BitSticky Dir=""BitDir.Rtl"" Class=""sticky"" Position=""@BitSide.Start"">چسبیده به آغاز</BitSticky>
+    <BitSticky Dir=""BitDir.Rtl"" Class=""sticky"" Placement=""@BitPlacement.Start"">چسبیده به آغاز</BitSticky>
 
     <p>
         روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
@@ -1137,7 +1143,7 @@ private bool isStickyEnabled = true;";
         روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
     </p>
 
-    <BitSticky Dir=""BitDir.Rtl"" Class=""sticky"" Position=""@BitSide.End"">چسبیده به پایان</BitSticky>
+    <BitSticky Dir=""BitDir.Rtl"" Class=""sticky"" Placement=""@BitPlacement.End"">چسبیده به پایان</BitSticky>
 
     <p>
         روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.

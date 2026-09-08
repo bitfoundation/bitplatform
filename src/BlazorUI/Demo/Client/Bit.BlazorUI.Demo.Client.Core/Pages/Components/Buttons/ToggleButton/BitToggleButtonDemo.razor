@@ -83,7 +83,7 @@
     <DemoExample Title="Icons" RazorCode="@example4RazorCode" Id="example4">
         <div>
             Icons follow the same shape as the text: <b>IconName</b> for both states, <b>OnIconName</b> and
-            <b>OffIconName</b> for one each. <b>IconPosition</b> moves the icon after the content, and <b>IconOnly</b>
+            <b>OffIconName</b> for one each. <b>IconPlacement</b> moves the icon after the content, and <b>IconOnly</b>
             drops the text and squares up the padding for a compact, toolbar-style button - which leaves nothing behind
             to name it, so give an icon-only BitToggleButton an <b>AriaLabel</b>.
         </div><br />
@@ -94,10 +94,10 @@
         <BitToggleButton OnText="Muted" OnIconName="@BitIconName.MicOff"
                          OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
         <br /><br /><br /><br />
-        <div>IconPosition:</div><br />
+        <div>IconPlacement:</div><br />
         <div class="example-box">
-            <BitToggleButton IconPosition="BitIconPosition.Start" Text="Start" IconName="@BitIconName.Microphone" />
-            <BitToggleButton IconPosition="BitIconPosition.End" Text="End" IconName="@BitIconName.Microphone" />
+            <BitToggleButton IconPlacement="BitPlacement.Start" Text="Start" IconName="@BitIconName.Microphone" />
+            <BitToggleButton IconPlacement="BitPlacement.End" Text="End" IconName="@BitIconName.Microphone" />
         </div>
         <br /><br /><br />
         <div>No text:</div><br />
@@ -303,14 +303,14 @@
         </div>
         <br /><br /><br />
         <div>
-            <b>LoadingLabel</b> puts a word next to the spinner, and <b>LoadingLabelPosition</b> places it on any of
+            <b>LoadingLabel</b> puts a word next to the spinner, and <b>LoadingLabelPlacement</b> places it on any of
             the four sides:
         </div><br />
         <div class="example-box">
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitSide.End" Text="End" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitSide.Start" Text="Start" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitSide.Top" Text="Top" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitSide.Bottom" Text="Bottom" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.End" Text="End" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Start" Text="Start" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Top" Text="Top" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Bottom" Text="Bottom" />
         </div>
         <br /><br /><br />
         <div><b>LoadingTemplate</b> replaces the spinner and the label altogether:</div><br />

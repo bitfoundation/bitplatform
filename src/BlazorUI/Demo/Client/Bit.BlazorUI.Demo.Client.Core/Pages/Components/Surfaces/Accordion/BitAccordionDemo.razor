@@ -77,7 +77,7 @@
     <DemoExample Title="Expander icon" RazorCode="@example5RazorCode" Id="example5">
         <div>
             The expander is the chevron that turns over as the panel opens. <code>ExpanderIconName</code> and
-            <code>ExpanderIcon</code> replace it, <code>ExpanderIconPosition</code> moves it to the start of the header,
+            <code>ExpanderIcon</code> replace it, <code>ExpanderIconPlacement</code> moves it to the start of the header,
             <code>HideExpanderIcon</code> removes it, and <code>NoExpanderRotation</code> keeps it still. Giving an
             <code>ExpandedExpanderIconName</code> swaps the icon for another one while the panel is open, which also
             stops the rotation - a swapped icon already reports the state on its own. For an expander that is not an
@@ -95,11 +95,11 @@
         </div>
         <br /><br />
         <div class="example-content">
-            <div>ExpanderIconPosition:</div>
-            <BitAccordion Title="Start" ExpanderIconPosition="BitIconPosition.Start">
+            <div>ExpanderIconPlacement:</div>
+            <BitAccordion Title="Start" ExpanderIconPlacement="BitPlacement.Start">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
-            <BitAccordion Title="Start with an icon" IconName="@BitIconName.Settings" ExpanderIconPosition="BitIconPosition.Start">
+            <BitAccordion Title="Start with an icon" IconName="@BitIconName.Settings" ExpanderIconPlacement="BitPlacement.Start">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
         </div>
