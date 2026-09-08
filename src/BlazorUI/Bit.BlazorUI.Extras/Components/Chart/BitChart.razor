@@ -27,7 +27,8 @@
 
         <div class="bit-cht-plot" @ref="_plotEl">
             <svg class="bit-cht-svg" viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="img"
-                 aria-label="@ChartAriaLabel" aria-describedby="@(GenerateTable ? TableId : null)"
+                 aria-roledescription="chart"
+                 aria-label="@ChartAriaLabel" aria-describedby="@DescribedBy"
                  style="@AnimStyle" tabindex="@(_scene.Elements.Count > 0 ? 0 : -1)"
                  @onkeydown="OnKeyDown" @onblur="OnBlur">
                 <defs>
@@ -72,13 +73,18 @@
                     }
                 </g>
                 @* Invisible per-index hit areas. They sit below the data so an element under the
-                   pointer always wins, and make the chart hoverable across the whole plot. *@
+                   pointer always wins, and make the chart hoverable across the whole plot. The
+                   pointerdown handler is what gives a touch screen - which never hovers - the same
+                   tooltip on a tap. *@
                 <g class="bit-cht-bands">
                     @foreach (var band in _scene.HitBands)
                     {
                         <rect class="bit-cht-band" x="@BitChartSvg.N(band.X)" y="@BitChartSvg.N(band.Y)"
                               width="@BitChartSvg.N(band.Width)" height="@BitChartSvg.N(band.Height)"
-                              fill="transparent" @onmouseenter="() => OnEnterBand(band)" @onmouseleave="OnLeave" />
+                              fill="transparent" @onmouseenter="() => OnEnterBand(band)" @onmouseleave="OnLeave"
+                              @onpointerdown="args => OnPointerDownBand(args, band)"
+                              @onclick="() => OnClickBand(band)"
+                              style="@(OnElementClick.HasDelegate ? "cursor:pointer" : "cursor:default")" />
                     }
                 </g>
                 <g class="@SeriesGroupClass" @key="(_animKey, 2)" clip-path="@ClipRef">
@@ -93,6 +99,7 @@
                         var el = _scene.Elements[ei];
                         <g class="@ElementClass(el)"
                            @onmouseenter="() => OnEnter(el)" @onmouseleave="OnLeave"
+                           @onpointerdown="args => OnPointerDownElement(args, el)"
                            @onclick="() => OnClickElement(el)" style="@ElementStyle(ei)">
                             <BitChartSvgPrimitive Node="el.Shape" />
                             @if (el.BorderShape is { } bs)
@@ -221,6 +228,11 @@
         @RenderTitle(titleBottom, "bit-cht-ttl")
     }
 
+    @if (ShowNavigationHint)
+    {
+        <div class="bit-cht-sr" id="@HintId">@NavigationHint</div>
+    }
+
     @if (GenerateTable)
     {
         @RenderDataTable()
@@ -288,7 +300,7 @@
         bool vertical = legend.Position is BitChartPosition.Left or BitChartPosition.Right;
         <div class="bit-cht-lgd @(vertical ? "bit-cht-lgd-v" : "bit-cht-lgd-h")"
              role="group" aria-label="@(legend.Title ?? "Chart legend")"
-             style="justify-content:@AlignToFlex(legend.Align);gap:4px @(BitChartSvg.N(legend.Labels.Padding))px">
+             style="justify-content:@AlignToFlex(legend.Align);gap:4px @(BitChartSvg.N(legend.Labels.Padding))px@(legend.MaxHeight is { } mh ? $";max-height:{BitChartSvg.N(mh)}px;overflow-y:auto" : "")">
             @if (!string.IsNullOrEmpty(legend.Title))
             {
                 <div class="bit-cht-lgd-ttl">@legend.Title</div>
@@ -355,10 +367,11 @@
             }
             else
             {
+                var columns = TableColumnLimit;
                 <thead>
                     <tr>
                         <th scope="col">Series</th>
-                        @foreach (var label in data.Labels)
+                        @foreach (var label in data.Labels.Take(columns))
                         {
                             <th scope="col">@label</th>
                         }
@@ -371,16 +384,16 @@
                             <th scope="row">@(ds.Label ?? "Series")</th>
                             @if (ds.RangeData is { } ranges)
                             {
-                                @foreach (var r in ranges)
+                                @foreach (var r in ranges.Take(columns))
                                 {
                                     <td>@(r is { } rr ? $"{Fmt(rr.Low)}–{Fmt(rr.High)}" : "")</td>
                                 }
                             }
                             else
                             {
-                                @foreach (var v in ds.Data)
+                                @for (int ci = 0; ci < Math.Min(columns, ds.Data.Count); ci++)
                                 {
-                                    <td>@(v is { } vv ? Fmt(vv) : "")</td>
+                                    <td>@CellText(ds, ci)</td>
                                 }
                             }
                         </tr>

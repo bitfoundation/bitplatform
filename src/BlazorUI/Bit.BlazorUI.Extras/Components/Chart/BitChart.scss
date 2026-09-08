@@ -69,8 +69,9 @@
     pointer-events: none;
 }
 
+// The cursor is set inline, from whether the chart has a click handler at all.
 .bit-cht-band {
-    cursor: default;
+    outline: none;
 }
 
 // ---- legend ----

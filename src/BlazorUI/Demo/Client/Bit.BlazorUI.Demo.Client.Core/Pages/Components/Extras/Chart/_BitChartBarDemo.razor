@@ -101,3 +101,26 @@
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Overlay()" Options="_bottom" /></div></div>
 </DemoExample>
+
+<DemoExample Title="Error bars" RazorCode="@errorBarsRazorCode" CsharpCode="@errorBarsCsharpCode" Id="bar-error-bars">
+    <div class="example-desc">
+        <code>ErrorData</code> hangs an uncertainty interval off each value and draws it as a capped whisker through
+        the bar's tip &mdash; a confidence band, a measurement tolerance, a spread. A <code>BitChartErrorBar</code> is
+        built from one number for a symmetric interval or two for an asymmetric one, a <code>null</code> entry leaves
+        that value bare, and the interval is named in the tooltip so it is read as well as seen.
+        <code>ErrorBarColor</code>, <code>ErrorBarWidth</code> and <code>ErrorBarCapWidth</code> style it; lines and
+        scatter points take the same property.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Measured()" Options="_bottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Waterfall" RazorCode="@waterfallRazorCode" CsharpCode="@waterfallCsharpCode" Id="bar-waterfall">
+    <div class="example-desc">
+        A waterfall shows how a starting figure becomes an ending one, and it needs nothing the chart does not
+        already have: <code>RangeData</code> floats each bar between the running total before and after the step,
+        and <code>BackgroundColorFn</code> colors it by direction &mdash; green for a gain, red for a loss, neutral
+        for the totals that sit on the axis. A <code>Callbacks.Label</code> then reports the step rather than the
+        two ends of the bar.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Waterfall()" Options="_waterfall" /></div></div>
+</DemoExample>

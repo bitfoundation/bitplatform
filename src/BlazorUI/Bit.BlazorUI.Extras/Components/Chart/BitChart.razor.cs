@@ -52,6 +52,25 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public int MaxTableRows { get; set; } = 500;
 
+    /// <summary>
+    /// Upper bound on the columns the screen-reader table renders. A value series is one table row with
+    /// a cell per category, so a long series is wide rather than tall and the row cap alone would not
+    /// stop it; past this limit the table shows the first columns and its caption says how many were
+    /// left out. Ignored for point (scatter/bubble) data, whose table is three fixed columns.
+    /// </summary>
+    [Parameter] public int MaxTableColumns { get; set; } = 100;
+
+    /// <summary>
+    /// A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by the
+    /// chart's <c>aria-describedby</c> alongside the data table. Without it the chart announces itself
+    /// as a picture and nothing says the arrow keys do anything. Set it to null or an empty string to
+    /// leave it out; it is only rendered when there is data to navigate.
+    /// </summary>
+    [Parameter] public string? NavigationHint { get; set; } =
+        "Interactive chart. Use the left and right arrow keys to move through a series, "
+        + "the up and down arrow keys to move between series, Home and End for the first and last value, "
+        + "Enter to select, and Escape to leave.";
+
     /// <summary>Message shown in place of the plot when there is nothing to draw.</summary>
     [Parameter] public string NoDataText { get; set; } = "No data to display";
 
@@ -106,6 +125,13 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     private int _focusIndex = -1;
     private string? _liveMessage;
 
+    // What the current hover/focus points at, in data coordinates rather than by element identity.
+    // A rebuild replaces every element object, so this is what lets an active tooltip - or the
+    // keyboard position - survive a re-render driven by the parent, a resize, or a zoom.
+    private (int Ds, int Di)? _hoverAnchor;
+    private bool _hoverForceIndex;
+    private (int Ds, int Di)? _focusKey;
+
     // Increments to (re)play entry animations: on data change and after the first size measurement.
     private int _animKey;
     private long _lastSig = long.MinValue;
@@ -116,7 +142,8 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     private ElementReference _plotEl;
     private IJSObjectReference? _zoomHandle;
     private DotNetObjectReference<BitChart>? _dotRef;
-    private bool _zoomRegistered;
+    /// <summary>What the gesture bridge is currently registered for; null until the first attempt.</summary>
+    private string? _zoomSignature;
 
     // Drag-zoom selection box in viewBox coordinates (x, y, w, h).
     private (double X, double Y, double W, double H)? _dragBox;
@@ -153,10 +180,25 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
             }
         }
 
-        if (_zoomRegistered || !_config.Options.Zoom.Enabled || _scene.IsRadialOrCircular)
-            return;
-        _zoomRegistered = true;
+        // The gesture bridge is keyed by what it was asked to listen for, so turning zoom off (or
+        // switching between panning and drag-to-zoom) at runtime tears the old listeners down instead
+        // of leaving the chart reacting to gestures it no longer offers.
         var z = _config.Options.Zoom;
+        bool wantZoom = z.Enabled && !_scene.IsRadialOrCircular;
+        bool pan = z.Pan && !z.DragZoom;
+        string signature = wantZoom ? $"{z.Wheel}|{pan}|{z.DragZoom}" : "";
+        if (_zoomSignature == signature) return;
+
+        if (_zoomHandle is not null)
+        {
+            try { await _zoomHandle.InvokeVoidAsync("dispose"); await _zoomHandle.DisposeAsync(); }
+            catch (JSDisconnectedException) { }
+            catch (Exception) { }
+            _zoomHandle = null;
+        }
+        _zoomSignature = signature;
+        if (!wantZoom) return;
+
         try
         {
             _dotRef ??= DotNetObjectReference.Create(this);
@@ -164,12 +206,12 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
             // anonymous type members in release builds, which breaks System.Text.Json
             // serialization during the JS interop call.
             _zoomHandle = await JS.BitChartRegister(_plotEl, _dotRef,
-                new BitChartZoomPayload { Wheel = z.Wheel, Pan = z.Pan && !z.DragZoom, Drag = z.DragZoom });
+                new BitChartZoomPayload { Wheel = z.Wheel, Pan = pan, Drag = z.DragZoom });
         }
         catch
         {
-            // Interop unavailable (e.g. during prerender) - zoom stays inert.
-            _zoomRegistered = false;
+            // Interop unavailable (e.g. during prerender) - zoom stays inert until the next render.
+            _zoomSignature = null;
         }
     }
 
@@ -205,6 +247,26 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         AfterZoom();
     }
 
+    /// <summary>
+    /// Invoked while two fingers pinch the chart. Unlike the wheel, which arrives in notches and steps by
+    /// a fixed fraction, a pinch reports how far apart the fingers have moved, so the zoom follows it
+    /// continuously: spreading them (a scale above 1) zooms in around the point between them.
+    /// </summary>
+    [JSInvokable]
+    public void OnPinchZoom(double fracX, double fracY, double scale)
+    {
+        if (!double.IsFinite(scale) || scale <= 0) return;
+        double factor = 1 / scale;
+        foreach (var id in AxesForMode())
+        {
+            double t = AxisFraction(id, fracX, fracY);
+            var (min, max) = CurrentRange(id);
+            double cursor = min + t * (max - min);
+            ApplyRange(id, cursor - (cursor - min) * factor, cursor + (max - cursor) * factor);
+        }
+        AfterZoom();
+    }
+
     [JSInvokable]
     public void OnDragMove(double x0, double y0, double x1, double y1)
     {
@@ -233,18 +295,27 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// How an axis is laid out. Which axis runs across the plot follows the chart's index axis, not the
+    /// axis' name: the value axes of a horizontal-bar chart are the horizontal ones. The fallback covers
+    /// a scene with no cartesian layout, where nothing will be zoomed anyway.
+    /// </summary>
+    private (bool Horizontal, bool MinAtFar) Orientation(string id)
+        => _scene.AxisOrientations.TryGetValue(id, out var o) ? o : (id == "x", id != "x");
+
+    /// <summary>
     /// Converts an element fraction (0..1) to a 0..1 position along an axis, via the plot area. A
     /// reversed axis runs the other way, so the fraction is flipped with it - otherwise wheel zoom and
     /// pan would move away from the pointer.
     /// </summary>
     private double AxisFraction(string id, double fracX, double fracY)
     {
+        var (horizontal, minAtFar) = Orientation(id);
         double t;
         if (_scene.PlotArea is not { } p)
         {
-            t = id == "x" ? fracX : 1 - fracY;
+            t = horizontal ? fracX : minAtFar ? 1 - fracY : fracY;
         }
-        else if (id == "x")
+        else if (horizontal)
         {
             double x = fracX * _vw;
             t = p.Width <= 0 ? 0 : Math.Clamp((x - p.Left) / p.Width, 0, 1);
@@ -252,7 +323,8 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         else
         {
             double y = fracY * _vh;
-            t = p.Height <= 0 ? 0 : Math.Clamp(1 - (y - p.Top) / p.Height, 0, 1);
+            double along = p.Height <= 0 ? 0 : Math.Clamp((y - p.Top) / p.Height, 0, 1);
+            t = minAtFar ? 1 - along : along;
         }
         return _scene.ReversedAxes.Contains(id) ? 1 - t : t;
     }
@@ -264,7 +336,9 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         {
             var (min, max) = CurrentRange(id);
             double span = max - min;
-            double delta = id == "x" ? -dx * span : dy * span;
+            var (horizontal, minAtFar) = Orientation(id);
+            // Dragging moves the data with the pointer, so the range moves against it.
+            double delta = horizontal ? -dx * span : (minAtFar ? dy : -dy) * span;
             if (_scene.ReversedAxes.Contains(id)) delta = -delta;
             ApplyRange(id, min + delta, max + delta);
         }
@@ -293,6 +367,72 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// <summary>The visible range of an axis (its zoomed range when zoomed, else the full data range).</summary>
     public (double Min, double Max)? GetAxisRange(string axisId)
         => _scene.AxisRanges.TryGetValue(axisId, out var r) ? r : null;
+
+    // ---- imperative API ----
+
+    /// <summary>
+    /// Rebuilds and redraws the chart from its current data and options. Blazor only re-renders a
+    /// component when a parameter it can compare changes, so mutating the <see cref="Data"/> object in
+    /// place - appending a point to a live series, editing a value - leaves the chart showing the old
+    /// scene until this is called. Mirrors Chart.js's <c>chart.update()</c>.
+    /// </summary>
+    public void Refresh()
+    {
+        Recompute();
+        StateHasChanged();
+    }
+
+    /// <summary>Whether a dataset is currently drawn (neither hidden through the legend nor by
+    /// <see cref="BitChartDataset.Hidden"/>).</summary>
+    public bool IsDatasetVisible(int datasetIndex)
+    {
+        if (datasetIndex < 0 || datasetIndex >= _config.Data.Datasets.Count) return false;
+        return !_config.Data.Datasets[datasetIndex].Hidden && !_state.IsDatasetHidden(datasetIndex);
+    }
+
+    /// <summary>
+    /// Shows or hides a dataset, exactly as clicking its legend entry would. A dataset whose
+    /// <see cref="BitChartDataset.Hidden"/> is set stays hidden: that is the data's own answer, and
+    /// this only drives the chart's own visibility state.
+    /// </summary>
+    public void SetDatasetVisible(int datasetIndex, bool visible)
+    {
+        if (datasetIndex < 0 || datasetIndex >= _config.Data.Datasets.Count) return;
+        bool changed = visible ? _state.HiddenDatasets.Remove(datasetIndex) : _state.HiddenDatasets.Add(datasetIndex);
+        if (!changed) return;
+        Refresh();
+    }
+
+    /// <summary>Flips a dataset between shown and hidden. Mirrors Chart.js's <c>hide</c>/<c>show</c> pair.</summary>
+    public void ToggleDataset(int datasetIndex) => SetDatasetVisible(datasetIndex, !IsDatasetVisible(datasetIndex));
+
+    /// <summary>Whether a data index (a pie/doughnut/polar-area slice) is currently drawn.</summary>
+    public bool IsDataIndexVisible(int dataIndex) => !_state.IsIndexHidden(dataIndex);
+
+    /// <summary>
+    /// Shows or hides one data index across the chart - the slice-level counterpart of
+    /// <see cref="SetDatasetVisible"/>, used by the pie/doughnut/polar-area legend. Mirrors Chart.js's
+    /// <c>toggleDataVisibility</c>.
+    /// </summary>
+    public void SetDataIndexVisible(int dataIndex, bool visible)
+    {
+        if (dataIndex < 0) return;
+        bool changed = visible ? _state.HiddenIndices.Remove(dataIndex) : _state.HiddenIndices.Add(dataIndex);
+        if (!changed) return;
+        Refresh();
+    }
+
+    /// <summary>Flips one data index between shown and hidden.</summary>
+    public void ToggleDataIndex(int dataIndex) => SetDataIndexVisible(dataIndex, IsDataIndexVisible(dataIndex) is false);
+
+    /// <summary>Brings back every dataset and data index hidden through the legend or the API.</summary>
+    public void ResetVisibility()
+    {
+        if (_state.HiddenDatasets.Count == 0 && _state.HiddenIndices.Count == 0) return;
+        _state.HiddenDatasets.Clear();
+        _state.HiddenIndices.Clear();
+        Refresh();
+    }
 
     /// <summary>
     /// Stores a new range for an axis, honoring the configured zoom limits so the chart can neither be
@@ -336,14 +476,19 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         if (OnZoomChange.HasDelegate) _ = OnZoomChange.InvokeAsync();
     }
 
+    /// <summary>
+    /// The axes a gesture moves. The mode names a direction on screen, not an axis id: X is whatever
+    /// runs across the plot, which on a horizontal-bar chart is the value axis and not the one called
+    /// "x", and which includes a secondary x axis rather than only the primary one.
+    /// </summary>
     private IEnumerable<string> AxesForMode()
     {
         var mode = _config.Options.Zoom.Mode;
         foreach (var id in _scene.ZoomableAxes)
         {
-            bool isX = id == "x";
-            if (mode == BitChartZoomMode.X && !isX) continue;
-            if (mode == BitChartZoomMode.Y && isX) continue;
+            bool horizontal = Orientation(id).Horizontal;
+            if (mode == BitChartZoomMode.X && !horizontal) continue;
+            if (mode == BitChartZoomMode.Y && horizontal) continue;
             yield return id;
         }
     }
@@ -373,8 +518,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
             _vh = responsive && _measuredHeight is { } mh && mh > 0 ? mh : basis / aspect;
 
         _scene = new BitChartRenderer(_config, _state, _vw, _vh, _instanceId).Render();
-        ClearHover();
-        _focusIndex = -1;
+        RestoreInteraction();
 
         // Decide whether to (re)play the entry animation. We key off a signature of the data
         // values (not pixel positions), so data changes replay the animation while resize/zoom/pan
@@ -390,6 +534,50 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
             _animKey++;
 
         _initialized = true;
+    }
+
+    /// <summary>
+    /// Re-points the hover and keyboard position at the freshly built scene. Every element object is
+    /// new after a render, so an active tooltip would otherwise blink out on any re-render the reader
+    /// did not ask for - a parent's <c>StateHasChanged</c>, a container resize, a zoom step. The
+    /// position is re-found by (dataset, index); when the data it pointed at is gone (hidden through
+    /// the legend, say) the interaction is simply dropped. Nothing is raised: no one interacted.
+    /// </summary>
+    private void RestoreInteraction()
+    {
+        var anchor = _hoverAnchor;
+        bool forceIndex = _hoverForceIndex;
+        var focusKey = _focusKey;
+
+        ClearHover();
+        _focusIndex = -1;
+
+        if (focusKey is { } fk)
+        {
+            int at = _scene.Elements.FindIndex(e => e.DatasetIndex == fk.Ds && e.DataIndex == fk.Di);
+            if (at >= 0)
+            {
+                _focusIndex = at;
+                var el = _scene.Elements[at];
+                BuildHover(el);
+                _hoverNodes.Add(FocusOutline(el));
+                _liveMessage = Describe(el);
+                return;
+            }
+            _focusKey = null;
+            _liveMessage = null;
+            // The data being walked is gone - hidden through the legend, or removed. Anyone tracking the
+            // active element has to be told, or they keep showing a reading the chart no longer has.
+            NotifyHover();
+            return;
+        }
+
+        if (anchor is not { } a) return;
+
+        if (_scene.Elements.FirstOrDefault(e => e.DatasetIndex == a.Ds && e.DataIndex == a.Di) is { } hovered)
+            BuildHover(hovered, forceIndex);
+        else
+            NotifyHover();
     }
 
     /// <summary>A cheap signature of the data values driving the chart (changes when data changes).
@@ -429,10 +617,23 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// </summary>
     private void OnEnterBand(BitChartHitBand band)
     {
-        var rep = _scene.Elements.FirstOrDefault(el => el.DataIndex == band.DataIndex);
-        if (rep is null) return;
+        if (RepresentativeOf(band) is not { } rep) return;
         BuildHover(rep, forceIndexGroup: true);
         NotifyHover();
+    }
+
+    /// <summary>The element a band stands for: the first one at that index.</summary>
+    private BitChartDataElement? RepresentativeOf(BitChartHitBand band)
+        => _scene.Elements.FirstOrDefault(el => el.DataIndex == band.DataIndex);
+
+    /// <summary>
+    /// Clicking the plate between the elements reports the index under the pointer, matching what
+    /// hovering there already does - with non-intersecting interaction the whole plot is the target,
+    /// so a click that lands beside a thin line should not be silently dropped.
+    /// </summary>
+    private async Task OnClickBand(BitChartHitBand band)
+    {
+        if (RepresentativeOf(band) is { } rep) await OnClickElement(rep);
     }
 
     private void OnLeave()
@@ -441,10 +642,31 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         NotifyHover();
     }
 
+    /// <summary>
+    /// A touch screen never hovers, so a tap has to do the work <c>mouseenter</c> does with a mouse.
+    /// Only non-mouse pointers are handled: a mouse has already hovered by the time it presses, and
+    /// re-running the hover there would rebuild the tooltip twice for one click.
+    /// </summary>
+    private void OnPointerDownElement(PointerEventArgs args, BitChartDataElement e)
+    {
+        if (IsMouse(args)) return;
+        OnEnter(e);
+    }
+
+    private void OnPointerDownBand(PointerEventArgs args, BitChartHitBand band)
+    {
+        if (IsMouse(args)) return;
+        OnEnterBand(band);
+    }
+
+    private static bool IsMouse(PointerEventArgs args)
+        => string.IsNullOrEmpty(args.PointerType) || args.PointerType == "mouse";
+
     private void OnBlur()
     {
         if (_focusIndex < 0) return;
         _focusIndex = -1;
+        _focusKey = null;
         ClearHover();
         _liveMessage = null;
         NotifyHover();
@@ -461,12 +683,15 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         _activeTooltip = null;
         _tooltipContext = null;
         _hoverNodes.Clear();
+        _hoverAnchor = null;
     }
 
     private void BuildHover(BitChartDataElement e, bool forceIndexGroup = false)
     {
         _active.Clear();
         _hoverNodes.Clear();
+        _hoverAnchor = (e.DatasetIndex, e.DataIndex);
+        _hoverForceIndex = forceIndexGroup;
         var tip = _config.Options.Plugins.Tooltip;
         var mode = tip.Mode ?? _config.Options.Interaction.Mode;
 
@@ -530,11 +755,21 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
             for (int i = 0; i < combined.Items.Count && i < items.Count; i++)
                 if (cb.LabelColor(items[i]) is { } lc) combined.Items[i].Color = lc;
 
-        // Positioner.
+        // Positioner. Averaging runs along the axis the active items share - the index axis - so on a
+        // horizontal-bar chart that is the vertical one, and the tooltip is put beside the group rather
+        // than in the middle of it.
         if (tip.Position == BitChartTooltipPositioner.Average && _active.Count > 0)
         {
-            combined.AnchorX = _active.Average(a => a.CenterX);
-            combined.AnchorY = _active.Min(a => a.Tooltip.AnchorY);
+            if (_config.Options.IndexAxis == BitChartIndexAxis.Y && !_scene.IsRadialOrCircular)
+            {
+                combined.AnchorX = _active.Max(a => a.Tooltip.AnchorX);
+                combined.AnchorY = _active.Average(a => a.CenterY);
+            }
+            else
+            {
+                combined.AnchorX = _active.Average(a => a.CenterX);
+                combined.AnchorY = _active.Min(a => a.Tooltip.AnchorY);
+            }
         }
         _activeTooltip = combined;
 
@@ -635,13 +870,19 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         if (n == 0) return;
         switch (e.Key)
         {
+            // Left/right walk the series the reader is on; up/down step between the series at the same
+            // category, which is how a multi-series chart is actually compared.
             case "ArrowRight":
-            case "ArrowDown":
-                Move(1);
+                MoveWithinSeries(1);
                 break;
             case "ArrowLeft":
+                MoveWithinSeries(-1);
+                break;
+            case "ArrowDown":
+                MoveAcrossSeries(1);
+                break;
             case "ArrowUp":
-                Move(-1);
+                MoveAcrossSeries(-1);
                 break;
             case "Home":
                 SetFocus(0);
@@ -655,6 +896,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
                 break;
             case "Escape":
                 _focusIndex = -1;
+                _focusKey = null;
                 ClearHover();
                 _liveMessage = null;
                 NotifyHover();
@@ -662,40 +904,99 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         }
     }
 
-    private void Move(int dir)
+    /// <summary>Steps to the next/previous element of the series the reader is currently on, wrapping
+    /// within it. With nothing focused yet it enters the chart at the appropriate end.</summary>
+    private void MoveWithinSeries(int dir)
     {
         int n = _scene.Elements.Count;
-        if (_focusIndex < 0) SetFocus(dir > 0 ? 0 : n - 1);
-        else SetFocus((_focusIndex + dir + n) % n);
+        if (_focusIndex < 0 || _focusIndex >= n) { SetFocus(dir > 0 ? 0 : n - 1); return; }
+
+        int current = _scene.Elements[_focusIndex].DatasetIndex;
+        var series = new List<int>();
+        for (int i = 0; i < n; i++)
+            if (_scene.Elements[i].DatasetIndex == current) series.Add(i);
+
+        int at = series.IndexOf(_focusIndex);
+        if (at < 0) { SetFocus((_focusIndex + dir + n) % n); return; }
+        SetFocus(series[(at + dir + series.Count) % series.Count]);
+    }
+
+    /// <summary>
+    /// Steps to the neighbouring series at the same category. When that series has nothing at this
+    /// category - a null, or a shorter series - the nearest category it does have is taken, so the keys
+    /// never dead-end. A chart of one series has nothing to step between, so the vertical keys keep
+    /// walking the data instead of doing nothing.
+    /// </summary>
+    private void MoveAcrossSeries(int dir)
+    {
+        int n = _scene.Elements.Count;
+        if (_focusIndex < 0 || _focusIndex >= n) { SetFocus(dir > 0 ? 0 : n - 1); return; }
+
+        var current = _scene.Elements[_focusIndex];
+        var datasets = _scene.Elements.Select(x => x.DatasetIndex).Distinct().OrderBy(i => i).ToList();
+        if (datasets.Count < 2) { MoveWithinSeries(dir); return; }
+
+        int at = datasets.IndexOf(current.DatasetIndex);
+        int target = datasets[(at + dir + datasets.Count) % datasets.Count];
+
+        int best = -1, bestDistance = int.MaxValue;
+        for (int i = 0; i < n; i++)
+        {
+            var el = _scene.Elements[i];
+            if (el.DatasetIndex != target) continue;
+            int distance = Math.Abs(el.DataIndex - current.DataIndex);
+            if (distance >= bestDistance) continue;
+            bestDistance = distance;
+            best = i;
+        }
+        if (best >= 0) SetFocus(best);
     }
 
     private void SetFocus(int i)
     {
         _focusIndex = i;
         var el = _scene.Elements[i];
+        _focusKey = (el.DatasetIndex, el.DataIndex);
         BuildHover(el);
         _hoverNodes.Add(FocusOutline(el));
-        _liveMessage = Describe(el, i);
+        _liveMessage = Describe(el);
         NotifyHover();
     }
 
+    /// <summary>
+    /// The ring drawn around the keyboard position. It traces the element's own outline rather than a
+    /// stand-in shape: a rounded bar and an arc are both paths, and a circle around an arc's centroid
+    /// would sit inside the ring it is supposed to be marking.
+    /// </summary>
     private static BitChartSvgNode FocusOutline(BitChartDataElement el) => el.Shape switch
     {
         BitChartSvgRect r => new BitChartSvgRect { X = r.X - 2, Y = r.Y - 2, Width = r.Width + 4, Height = r.Height + 4, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
         BitChartSvgCircle c => new BitChartSvgCircle { Cx = c.Cx, Cy = c.Cy, R = c.R + 5, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
+        BitChartSvgPath p => new BitChartSvgPath { D = p.D, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
+        BitChartSvgPolygon poly => new BitChartSvgPolygon { Points = [.. poly.Points], Closed = poly.Closed, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
         _ => new BitChartSvgCircle { Cx = el.CenterX, Cy = el.CenterY, R = 8, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" }
     };
 
     /// <summary>
     /// What the live region says about the focused element. The position is included because a reader
-    /// stepping through the data has no other way to tell how far along the series they are.
+    /// stepping through the data has no other way to tell how far along they are, and it is counted
+    /// within the series - the run the left/right keys actually walk. Which series they are on is
+    /// announced only when there is more than one to be on.
     /// </summary>
-    private string Describe(BitChartDataElement el, int index)
+    private string Describe(BitChartDataElement el)
     {
         var parts = new List<string>();
         if (!string.IsNullOrEmpty(el.Tooltip.Title)) parts.Add(el.Tooltip.Title!);
         foreach (var item in el.Tooltip.Items) parts.Add(item.Text);
-        parts.Add($"{index + 1} of {_scene.Elements.Count}");
+
+        var series = _scene.Elements.Where(x => x.DatasetIndex == el.DatasetIndex).ToList();
+        int at = series.IndexOf(el);
+        parts.Add($"{(at < 0 ? 1 : at + 1)} of {series.Count}");
+
+        var datasets = _scene.Elements.Select(x => x.DatasetIndex).Distinct().OrderBy(i => i).ToList();
+        if (datasets.Count > 1)
+            parts.Add($"series {datasets.IndexOf(el.DatasetIndex) + 1} of {datasets.Count}");
+
         return string.Join(", ", parts);
     }
 
@@ -721,12 +1022,46 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private string TableId => $"{_instanceId}-table";
 
+    private string HintId => $"{_instanceId}-hint";
+
+    /// <summary>True when the keyboard hint is worth rendering: there is data to walk and text to say it with.</summary>
+    private bool ShowNavigationHint => !string.IsNullOrWhiteSpace(NavigationHint) && _scene.Elements.Count > 0;
+
+    /// <summary>
+    /// What the chart points its <c>aria-describedby</c> at: the how-to-navigate sentence and the data
+    /// table, in that order, and null when it has neither.
+    /// </summary>
+    private string? DescribedBy
+    {
+        get
+        {
+            if (ShowNavigationHint && GenerateTable) return $"{HintId} {TableId}";
+            if (ShowNavigationHint) return HintId;
+            return GenerateTable ? TableId : null;
+        }
+    }
+
     private string? ClipId => _scene.PlotArea is null ? null : $"{_instanceId}-clip";
     private string? ClipRef => ClipId is null ? null : $"url(#{ClipId})";
 
     private CultureInfo Culture => _config.Options.Culture ?? CultureInfo.InvariantCulture;
 
     private string Fmt(double v) => v.ToString(Culture);
+
+    /// <summary>
+    /// One cell of the screen-reader table. The tooltip names an error interval beside the value, so the
+    /// table - which is what a reader has instead of the tooltip - has to name it too.
+    /// </summary>
+    private string CellText(BitChartDataset ds, int dataIndex)
+    {
+        if (dataIndex >= ds.Data.Count || ds.Data[dataIndex] is not { } value) return "";
+        string text = Fmt(value);
+        if (ds.ErrorData is not { } errors || dataIndex >= errors.Count || errors[dataIndex] is not { } e) return text;
+
+        double minus = Math.Abs(e.Minus), plus = Math.Abs(e.Plus);
+        if (minus <= 0 && plus <= 0) return text;
+        return e.IsSymmetric ? $"{text} ±{Fmt(plus)}" : $"{text} +{Fmt(plus)}/-{Fmt(minus)}";
+    }
 
     private bool AnimationEnabled => _config.Options.Animation.Animate;
 
@@ -903,10 +1238,13 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         left = Math.Clamp(left, 2, Math.Max(2, _vw - width - 2));
         top = Math.Clamp(top, 2, Math.Max(2, _vh - height - 2));
 
-        // Percentages keep the tooltip aligned with the SVG, which scales with the container.
+        // Percentages keep the tooltip aligned with the SVG, which scales with the container. An
+        // explicit MaxWidth also lets the text wrap, which is what makes a prose tooltip readable.
+        double maxWidth = t.MaxWidth ?? Math.Max(80, _vw - 8);
         string style =
             $"left:{BitChartSvg.N(Pct(left, _vw))}%;top:{BitChartSvg.N(Pct(top, _vh))}%;" +
-            $"transform:translateZ(0);max-width:{BitChartSvg.N(Math.Max(80, _vw - 8))}px";
+            $"transform:translateZ(0);max-width:{BitChartSvg.N(maxWidth)}px" +
+            (t.MaxWidth is null ? "" : ";white-space:normal");
 
         // The caret sits on the edge facing the anchor, at the anchor's horizontal position.
         double caretLeft = Math.Clamp(ax - left, caret + 2, Math.Max(caret + 2, width - caret - 2));
@@ -952,10 +1290,31 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private bool TableTruncated => MaxTableRows > 0 && TableRowCount > MaxTableRows;
 
+    /// <summary>Total columns the value table would render without a cap (one per category).</summary>
+    private int TableColumnCount => HasPointData
+        ? 3
+        : Math.Max(_config.Data.Labels.Count, _config.Data.Datasets.Count == 0 ? 0 : _config.Data.Datasets.Max(d => d.Count));
+
+    /// <summary>The number of category columns actually rendered.</summary>
+    private int TableColumnLimit => HasPointData || MaxTableColumns <= 0
+        ? int.MaxValue
+        : MaxTableColumns;
+
+    private bool TableColumnsTruncated => !HasPointData && MaxTableColumns > 0 && TableColumnCount > MaxTableColumns;
+
     /// <summary>Caption of the screen-reader table, which also carries the truncation notice.</summary>
-    private string TableCaption => TableTruncated
-        ? $"{ChartAriaLabel} Showing the first {MaxTableRows.ToString("N0", Culture)} of {TableRowCount.ToString("N0", Culture)} rows."
-        : ChartAriaLabel;
+    private string TableCaption
+    {
+        get
+        {
+            var caption = ChartAriaLabel;
+            if (TableTruncated)
+                caption += $" Showing the first {MaxTableRows.ToString("N0", Culture)} of {TableRowCount.ToString("N0", Culture)} rows.";
+            if (TableColumnsTruncated)
+                caption += $" Showing the first {MaxTableColumns.ToString("N0", Culture)} of {TableColumnCount.ToString("N0", Culture)} columns.";
+            return caption;
+        }
+    }
 
     /// <summary>
     /// The side a title actually renders on. Left and right titles run down the side of the plot

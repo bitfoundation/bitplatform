@@ -53,6 +53,14 @@ public sealed class BitChartScene
     /// <summary>Axis ids drawn in reverse, so pointer gestures can be mapped back the right way round.</summary>
     public HashSet<string> ReversedAxes { get; } = new();
 
+    /// <summary>
+    /// How each axis is laid out, which is what lets a pointer gesture be mapped back onto it. An axis
+    /// runs across the plot or down it depending on the chart's index axis - the value axes of a
+    /// horizontal-bar chart are the horizontal ones - and a vertical value axis additionally has its
+    /// minimum at the bottom, i.e. at the far pixel rather than the near one.
+    /// </summary>
+    public Dictionary<string, (bool Horizontal, bool MinAtFarPixel)> AxisOrientations { get; } = new();
+
     /// <summary>True when the configuration produced nothing to draw (no datasets, or all empty/hidden).</summary>
     public bool IsEmpty { get; set; }
 }

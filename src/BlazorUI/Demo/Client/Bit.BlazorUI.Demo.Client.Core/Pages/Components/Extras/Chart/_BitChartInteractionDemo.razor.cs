@@ -104,4 +104,37 @@ private bool _hasData = true;
 private void ToggleEmpty() => _hasData = !_hasData;
 
 private BitChartData EmptyDemoData() => _hasData ? Revenue() : new BitChartData();";
+
+    private string? _linked;
+
+    private readonly BitChartOptions _linkedOptions = new()
+    {
+        Interaction = new BitChartInteractionOptions { Mode = BitChartInteractionMode.Index },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    };
+
+    /// <summary>Both charts report through here; a null context means the pointer has left.</summary>
+    private void Link(BitChartTooltipContext? context)
+        => _linked = context is null
+            ? null
+            : $"{context.Title}: " + string.Join(", ", context.Points.Select(p => $"{p.Label} {p.FormattedValue}"));
+
+    private readonly string linkedRazorCode = @"<div>@(_linked ?? ""Hover either chart"")</div>
+
+<BitChart Type=""BitChartType.Bar"" Data=""Revenue()"" Options=""_linkedOptions"" OnElementHover=""Link"" />
+<BitChart Type=""BitChartType.Line"" Data=""MonthlySales()"" Options=""_linkedOptions"" OnElementHover=""Link"" />";
+    private readonly string linkedCsharpCode = @"
+private string? _linked;
+
+private readonly BitChartOptions _linkedOptions = new()
+{
+    Interaction = new BitChartInteractionOptions { Mode = BitChartInteractionMode.Index },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+};
+
+// Both charts report through here; a null context means the pointer has left.
+private void Link(BitChartTooltipContext? context)
+    => _linked = context is null
+        ? null
+        : $""{context.Title}: "" + string.Join("", "", context.Points.Select(p => $""{p.Label} {p.FormattedValue}""));";
 }

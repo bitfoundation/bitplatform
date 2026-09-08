@@ -228,4 +228,47 @@ private BitChartData Markers() => new()
             BorderColor = ""#ff9f40"", PointBackgroundColor = ""#ff9f40"", PointStyle = BitChartPointStyle.RectRot, PointRadius = 5, Tension = 0.3 }
     }
 };";
+
+    private readonly BitChartOptions _wrapped = new()
+    {
+        Plugins = new BitChartPluginOptions
+        {
+            Legend = new BitChartLegendOptions { Display = false },
+            Tooltip = new BitChartTooltipOptions
+            {
+                MaxWidth = 240,
+                Callbacks = new BitChartTooltipCallbacks
+                {
+                    AfterBody = items => items.Count == 0
+                        ? null
+                        : $"The index blends affordability, transit coverage and air quality, "
+                          + $"rebased so the median country reads 70. {items[0].Label} is "
+                          + $"{(items[0].Value >= 70 ? "above" : "below")} that median."
+                }
+            }
+        }
+    };
+
+    private readonly string wrappedRazorCode = @"<BitChart Type=""BitChartType.Bar"" Data=""Countries()"" Options=""_wrapped"" />";
+    private readonly string wrappedCsharpCode = @"
+private readonly BitChartOptions _wrapped = new()
+{
+    Plugins = new BitChartPluginOptions
+    {
+        Legend = new BitChartLegendOptions { Display = false },
+        Tooltip = new BitChartTooltipOptions
+        {
+            // A width is what lets the box wrap; without one every row stays on a single line.
+            MaxWidth = 240,
+            Callbacks = new BitChartTooltipCallbacks
+            {
+                AfterBody = items => items.Count == 0
+                    ? null
+                    : $""The index blends affordability, transit coverage and air quality, ""
+                      + $""rebased so the median country reads 70. {items[0].Label} is ""
+                      + $""{(items[0].Value >= 70 ? ""above"" : ""below"")} that median.""
+            }
+        }
+    }
+};";
 }

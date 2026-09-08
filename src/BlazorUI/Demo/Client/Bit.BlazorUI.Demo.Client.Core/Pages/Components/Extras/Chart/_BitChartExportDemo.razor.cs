@@ -23,6 +23,32 @@ public partial class _BitChartExportDemo
 
     private void ShowCsv() => _csv = _csvChart?.ToCsv();
 
+    private BitChart? _imageChart;
+    private string? _dataUrl;
+    private string? _markup;
+
+    private readonly BitChartOptions _imageOptions = new()
+    {
+        CutoutPercentage = 55,
+        Plugins = new BitChartPluginOptions
+        {
+            Title = new BitChartTitleOptions { Display = true, Text = "Traffic by source" },
+            Legend = new BitChartLegendOptions { Position = BitChartPosition.Right }
+        }
+    };
+
+    private async Task ShowImage()
+    {
+        if (_imageChart is null) return;
+        _dataUrl = await _imageChart.ToBase64ImageAsync(scale: 1);
+    }
+
+    private async Task ShowMarkup()
+    {
+        if (_imageChart is null) return;
+        _markup = await _imageChart.ToSvgStringAsync();
+    }
+
 
     private readonly string exportRazorCode = @"<BitButton Variant=""BitVariant.Outline"" OnClick=""ExportSvg"">Download SVG</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ExportPng"">Download PNG</BitButton>
@@ -61,4 +87,28 @@ private BitChart? _csvChart;
 private string? _csv;
 
 private void ShowCsv() => _csv = _csvChart!.ToCsv();";
+
+    private readonly string imageRazorCode = @"<BitButton Variant=""BitVariant.Outline"" OnClick=""ShowImage"">Render to a data URL</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ShowMarkup"">Show the SVG markup</BitButton>
+
+@if (_dataUrl is not null)
+{
+    <img src=""@_dataUrl"" alt=""A snapshot of the chart"" />
+}
+@if (_markup is not null)
+{
+    <pre>@_markup</pre>
+}
+
+<BitChart @ref=""_imageChart"" Type=""BitChartType.Doughnut"" Data=""Traffic()"" Options=""_imageOptions"" />";
+    private readonly string imageCsharpCode = @"
+private BitChart? _imageChart;
+private string? _dataUrl;
+private string? _markup;
+
+// scale 1 matches the on-screen size; pass 2 for a high-density snapshot.
+private async Task ShowImage() => _dataUrl = await _imageChart!.ToBase64ImageAsync(scale: 1);
+
+// The theme tokens the chart references are resolved into the markup, so it stands alone.
+private async Task ShowMarkup() => _markup = await _imageChart!.ToSvgStringAsync();";
 }

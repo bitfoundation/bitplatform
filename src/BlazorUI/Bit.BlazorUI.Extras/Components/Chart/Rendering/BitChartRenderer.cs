@@ -239,6 +239,15 @@ public sealed partial class BitChartRenderer
         }
     }
 
+    /// <summary>
+    /// Whether a scale draws itself. A sparkline is defined by having no chrome at all, so it silences
+    /// every axis here rather than asking each caller to remember the option.
+    /// </summary>
+    private bool ScaleVisible(BitChartScaleOptions o) => o.Display && !_options.Sparkline;
+
+    /// <summary>Whether a radial scale draws the category labels around its perimeter.</summary>
+    private bool PointLabelsVisible(BitChartScaleOptions o) => o.PointLabels.Display && !_options.Sparkline;
+
     /// <summary>Effective position of a scale, without writing the default back onto the caller's object.</summary>
     private static BitChartPosition PositionOf(BitChartScaleOptions o, BitChartPosition fallback) => o.Position ?? fallback;
 
@@ -293,7 +302,7 @@ public sealed partial class BitChartRenderer
     private void BuildLegend(BitChartScene scene)
     {
         var lo = _options.Plugins.Legend;
-        if (!lo.Display) return;
+        if (!lo.Display || _options.Sparkline) return;
 
         var legend = new BitChartLegendModel
         {
@@ -303,7 +312,8 @@ public sealed partial class BitChartRenderer
             Align = lo.Align,
             Labels = lo.Labels,
             Title = lo.Title,
-            OnClickToggle = lo.OnClickToggle
+            OnClickToggle = lo.OnClickToggle,
+            MaxHeight = lo.MaxHeight
         };
 
         if (_config.Type is BitChartType.Pie or BitChartType.Doughnut or BitChartType.PolarArea)
@@ -351,7 +361,7 @@ public sealed partial class BitChartRenderer
 
     private BitChartTitleModel? BuildTitle(BitChartTitleOptions o)
     {
-        if (!o.Display || string.IsNullOrEmpty(o.Text)) return null;
+        if (!o.Display || _options.Sparkline || string.IsNullOrEmpty(o.Text)) return null;
         return new BitChartTitleModel
         {
             Text = o.Text,

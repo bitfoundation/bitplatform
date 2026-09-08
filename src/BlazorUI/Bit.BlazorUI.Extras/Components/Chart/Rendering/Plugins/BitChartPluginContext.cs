@@ -20,11 +20,21 @@ public sealed class BitChartPluginContext
 
     internal BitChartAxisScale? IndexScale { get; init; }
     internal Dictionary<string, BitChartAxisScale>? ValueScales { get; init; }
-    internal bool IndexIsCategory { get; init; }
 
-    /// <summary>Pixel position along the index axis for a category index.</summary>
-    public double XForIndex(int index, bool centered = true)
-        => IndexScale?.PixelForIndex(index, centered) ?? 0;
+    /// <summary>True when the index axis is a category axis, so indexes - not raw values - place things along it.</summary>
+    public bool IndexIsCategory { get; init; }
+
+    /// <summary>
+    /// Whether categories sit in the middle of their band rather than on its edge. Bars force the
+    /// centered layout, so anything drawn over the data has to follow the same choice or it lands half
+    /// a band away from the points it is annotating.
+    /// </summary>
+    public bool IndexCentered { get; init; }
+
+    /// <summary>Pixel position along the index axis for a category index. Follows the chart's own
+    /// band placement unless the caller overrides it.</summary>
+    public double XForIndex(int index, bool? centered = null)
+        => IndexScale?.PixelForIndex(index, centered ?? IndexCentered) ?? 0;
 
     /// <summary>Pixel position along the index axis for a raw value (linear/time axes).</summary>
     public double XForValue(double value) => IndexScale?.PixelFor(value) ?? 0;

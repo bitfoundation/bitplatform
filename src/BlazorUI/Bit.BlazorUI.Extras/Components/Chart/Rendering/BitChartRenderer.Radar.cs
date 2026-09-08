@@ -16,7 +16,7 @@ public sealed partial class BitChartRenderer
 
         // Reserve room for the point labels around the perimeter. The labels are measured rather than
         // assumed: a long category name reaching out sideways would otherwise be cut off by the chart box.
-        double labelPad = rOpts.PointLabels.Display
+        double labelPad = PointLabelsVisible(rOpts)
             ? PointLabelReserve(rOpts.PointLabels, _data.Labels, n, startForLabels, angleStepForLabels)
             : 8;
         double cx = area.CenterX;
@@ -40,8 +40,15 @@ public sealed partial class BitChartRenderer
         double angleStep = angleStepForLabels;
         double start = startForLabels;
 
+        var pctx = new BitChartPluginContext
+        {
+            Scene = scene, Config = _config, IsCartesian = false,
+            CenterX = cx, CenterY = cy, InnerRadius = 0, OuterRadius = maxR
+        };
+        foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(pctx);
+
         // Grid rings (polygons by default, circles when grid.circular).
-        if (rOpts.Display && rOpts.Grid.Display)
+        if (ScaleVisible(rOpts) && rOpts.Grid.Display)
         {
             foreach (var t in rScale.Ticks)
             {
@@ -70,7 +77,7 @@ public sealed partial class BitChartRenderer
             double a = start + angleStep * i;
             double ex = cx + Math.Cos(a) * maxR;
             double ey = cy + Math.Sin(a) * maxR;
-            if (rOpts.Display && rOpts.AngleLines)
+            if (ScaleVisible(rOpts) && rOpts.AngleLines)
                 scene.Background.Add(new BitChartSvgLine
                 {
                     X1 = cx, Y1 = cy, X2 = ex, Y2 = ey,
@@ -78,7 +85,7 @@ public sealed partial class BitChartRenderer
                     Dash = BitChartSvg.Dash(rOpts.AngleLineDash)
                 });
 
-            if (rOpts.PointLabels.Display)
+            if (PointLabelsVisible(rOpts))
             {
                 var pl = rOpts.PointLabels;
                 double lx = cx + Math.Cos(a) * (maxR + pl.Padding + 4);
@@ -95,7 +102,7 @@ public sealed partial class BitChartRenderer
         }
 
         // Radial tick labels (with optional backdrop).
-        if (rOpts.Display && rOpts.Ticks.Display)
+        if (ScaleVisible(rOpts) && rOpts.Ticks.Display)
         {
             foreach (var t in rScale.Ticks)
             {
@@ -137,5 +144,7 @@ public sealed partial class BitChartRenderer
                 foreach (var p in verts)
                     AddPoint(scene, ds, d, p.di, p.x, p.y, ds.Data[p.di] ?? 0, Math.Max(3, ResolvePointRadius(ds)), border);
         }
+
+        foreach (var plugin in _options.Plugins.Custom) plugin.AfterDatasetsDraw(pctx);
     }
 }

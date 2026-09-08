@@ -21,6 +21,13 @@ public sealed class BitChartTooltipOptions
     public BitChartFont BodyFont { get; set; } = new();
     public BitChartFont FooterFont { get; set; } = new() { Weight = "bold" };
     public double Padding { get; set; } = 6;
+
+    /// <summary>
+    /// Caps the tooltip's width in pixels and wraps its text at that point. Without one the box stays on
+    /// a single line per row, which is right for a value but wrong for a sentence, so a callback that
+    /// returns prose wants a width here.
+    /// </summary>
+    public double? MaxWidth { get; set; }
     public double CornerRadius { get; set; } = 6;
     public bool DisplayColors { get; set; } = true;
     /// <summary>Render the color swatch using the dataset point style instead of a square.</summary>

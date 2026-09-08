@@ -40,3 +40,12 @@
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
 </DemoExample>
+
+<DemoExample Title="Wrapping a longer note" RazorCode="@wrappedRazorCode" CsharpCode="@wrappedCsharpCode" Id="tooltips-wrapped">
+    <div class="example-desc">
+        A tooltip keeps each row on one line, which is right for a value and wrong for a sentence.
+        <code>MaxWidth</code> caps the box in pixels and lets the text wrap inside it, so a callback that returns
+        prose &mdash; an explanation, a caveat, a definition &mdash; stays readable instead of running off the chart.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Countries()" Options="_wrapped" /></div></div>
+</DemoExample>

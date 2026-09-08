@@ -1235,4 +1235,882 @@ public class BitChartRendererTests
         Assert.IsTrue(scene.Background.OfType<BitChartSvgCircle>().Any(),
             "the scale named by RAxisID must be the one the chart uses");
     }
+
+    // ---- percentage stacking ----
+
+    private static BitChartConfig PercentStack(params double?[][] series)
+    {
+        var data = new BitChartData { Labels = { "A", "B", "C" } };
+        foreach (var s in series)
+            data.Datasets.Add(new BitChartDataset { Data = s.ToList(), Stack = "s" });
+        var options = new BitChartOptions
+        {
+            Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Stacked = true, Stacked100 = true } }
+        };
+        return new BitChartConfig(BitChartType.Bar, data, options);
+    }
+
+    [TestMethod]
+    public void APercentageStackOfPositivesShouldSpanZeroToAHundred()
+    {
+        var scene = Render(PercentStack([1, 2, 3], [3, 2, 1]));
+
+        var range = scene.AxisRanges["y"];
+        Assert.AreEqual(0, range.Min, 1e-6);
+        Assert.AreEqual(100, range.Max, 1e-6);
+    }
+
+    [TestMethod]
+    public void APercentageStackWithNegativesShouldMakeRoomBelowTheBaseline()
+    {
+        // Every category is 50% up and 50% down, so the axis has to reach -50 for the bars to be drawn.
+        var scene = Render(PercentStack([10, 10, 10], [-10, -10, -10]));
+
+        var range = scene.AxisRanges["y"];
+        Assert.IsTrue(range.Min <= -50, $"a negative share must stay inside the axis, but it stops at {range.Min}");
+        Assert.IsTrue(range.Max >= 50, $"the positive share must stay inside the axis, but it stops at {range.Max}");
+    }
+
+    [TestMethod]
+    public void EveryPercentageStackedBarShouldBeDrawnInsideThePlot()
+    {
+        var scene = Render(PercentStack([10, 10, 10], [-10, -10, -10]));
+        var plot = scene.PlotArea!.Value;
+
+        Assert.AreEqual(6, scene.Elements.Count);
+        foreach (var el in scene.Elements)
+        {
+            var r = (BitChartSvgRect)el.Shape;
+            Assert.IsTrue(r.Y >= plot.Top - 0.5 && r.Y + r.Height <= plot.Bottom + 0.5,
+                $"a bar spanning {r.Y}..{r.Y + r.Height} is clipped out of the plot {plot.Top}..{plot.Bottom}");
+        }
+    }
+
+    // ---- tick label rotation ----
+
+    [TestMethod]
+    public void MinRotationShouldSlantLabelsThatWouldHaveFitAnyway()
+    {
+        var options = new BitChartOptions();
+        options.Scales["x"] = new BitChartScaleOptions
+        {
+            Id = "x", Type = BitChartScaleType.Category, Ticks = { MinRotation = 30 }
+        };
+
+        var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
+
+        // Short labels over a wide axis fit horizontally, but MinRotation is an instruction, not a fallback.
+        Assert.IsTrue(scene.Background.OfType<BitChartSvgText>().Any(t => Math.Abs(t.Rotation - 30) < 1e-6),
+            "MinRotation must be applied even when the labels would have fitted unrotated");
+    }
+
+    [TestMethod]
+    public void LabelsThatFitShouldStayHorizontalWithoutAMinRotation()
+    {
+        var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3)));
+
+        Assert.IsTrue(scene.Background.OfType<BitChartSvgText>().All(t => Math.Abs(t.Rotation) < 1e-6));
+    }
+
+    // ---- polar area ----
+
+    [TestMethod]
+    public void HidingThePolarAreaDatasetShouldEmptyTheChart()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B", "C" },
+            Datasets = { new BitChartDataset { Data = { 1, 2, 3 }, Hidden = true } }
+        };
+
+        var scene = Render(new BitChartConfig(BitChartType.PolarArea, data));
+
+        Assert.AreEqual(0, scene.Elements.Count, "a hidden dataset must not still be drawn");
+        Assert.IsTrue(scene.IsEmpty);
+    }
+
+    [TestMethod]
+    public void PolarAreaShouldDrawTheFirstVisibleDataset()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B", "C" },
+            Datasets =
+            {
+                new BitChartDataset { Data = { 1, 2, 3 }, Hidden = true },
+                new BitChartDataset { Data = { 4, 5, 6 } }
+            }
+        };
+
+        var scene = Render(new BitChartConfig(BitChartType.PolarArea, data));
+
+        Assert.AreEqual(3, scene.Elements.Count);
+        Assert.IsTrue(scene.Elements.All(e => e.DatasetIndex == 1),
+            "the visible dataset is the one that should be drawn, not the hidden first one");
+    }
+
+    [TestMethod]
+    public void APolarWedgeBelowTheScaleMinimumShouldNotInvertThroughTheCenter()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B" },
+            Datasets = { new BitChartDataset { Data = { 5, 10 } } }
+        };
+        var options = new BitChartOptions
+        {
+            Scales = { ["r"] = new BitChartScaleOptions { Id = "r", Type = BitChartScaleType.RadialLinear, Min = 8 } }
+        };
+
+        var scene = Render(new BitChartConfig(BitChartType.PolarArea, data, options));
+
+        // The 5 sits below the axis minimum: it collapses to nothing rather than drawing a wedge
+        // through the far side of the center.
+        Assert.AreEqual(2, scene.Elements.Count);
+        foreach (var el in scene.Elements)
+            Assert.IsFalse(((BitChartSvgPath)el.Shape).D.Contains('-'),
+                "no arc coordinate should come out negative from a clamped radius");
+    }
+
+    // ---- plugins on radial charts ----
+
+    private sealed class ProbePlugin : IBitChartPlugin
+    {
+        public string Id => "probe";
+        public int Before, After;
+        public bool SawCartesian;
+        public double OuterRadius;
+        public void BeforeDatasetsDraw(BitChartPluginContext ctx) { Before++; SawCartesian = ctx.IsCartesian; OuterRadius = ctx.OuterRadius; }
+        public void AfterDatasetsDraw(BitChartPluginContext ctx) => After++;
+    }
+
+    [TestMethod]
+    [DataRow(BitChartType.Radar)]
+    [DataRow(BitChartType.PolarArea)]
+    [DataRow(BitChartType.Doughnut)]
+    public void PluginsShouldRunOnEveryRadialChartType(BitChartType type)
+    {
+        var probe = new ProbePlugin();
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(probe);
+
+        Render(new BitChartConfig(type, Bars(1, 2, 3), options));
+
+        Assert.AreEqual(1, probe.Before, $"{type} must give plugins their before-draw hook");
+        Assert.AreEqual(1, probe.After, $"{type} must give plugins their after-draw hook");
+        Assert.IsFalse(probe.SawCartesian);
+        Assert.IsTrue(probe.OuterRadius > 0, "a radial context has to carry the geometry plugins draw against");
+    }
+
+    [TestMethod]
+    public void TheCenterTextPluginShouldAlsoWorkOnARadarChart()
+    {
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(new BitChartCenterTextPlugin("87", "score"));
+
+        var scene = Render(new BitChartConfig(BitChartType.Radar, Bars(1, 2, 3), options));
+
+        var texts = scene.Foreground.OfType<BitChartSvgText>().Select(t => t.Text).ToList();
+        CollectionAssert.Contains(texts, "87");
+        CollectionAssert.Contains(texts, "score");
+    }
+
+    // ---- arcs: corner radius and ring weight ----
+
+    [TestMethod]
+    public void ArcBorderRadiusShouldRoundTheArcInsteadOfLeavingItSquare()
+    {
+        var square = Render(new BitChartConfig(BitChartType.Doughnut, Bars(1, 2, 3)));
+        var data = Bars(1, 2, 3);
+        data.Datasets[0].BorderRadius = 6;
+        var rounded = Render(new BitChartConfig(BitChartType.Doughnut, data));
+
+        string plain = ((BitChartSvgPath)square.Elements[0].Shape).D;
+        string curved = ((BitChartSvgPath)rounded.Elements[0].Shape).D;
+
+        Assert.IsFalse(plain.Contains('Q'), "a plain arc is made of straight edges and circular arcs");
+        Assert.IsTrue(curved.Contains('Q'), "a rounded arc fillets its corners with quadratic curves");
+    }
+
+    [TestMethod]
+    public void ARoundedPieWedgeShouldStillStartAtTheCenter()
+    {
+        var data = Bars(1, 2, 3);
+        data.Datasets[0].BorderRadius = 40;   // deliberately larger than the wedge can take
+        var scene = Render(new BitChartConfig(BitChartType.Pie, data));
+
+        foreach (var el in scene.Elements)
+            StringAssert.StartsWith(((BitChartSvgPath)el.Shape).D, "M ",
+                "a pie wedge is still drawn from its point outwards");
+    }
+
+    [TestMethod]
+    public void AFullCircleShouldIgnoreArcRounding()
+    {
+        var data = new BitChartData { Labels = { "Only" }, Datasets = { new BitChartDataset { Data = { 1 } } } };
+        data.Datasets[0].BorderRadius = 8;
+        var scene = Render(new BitChartConfig(BitChartType.Doughnut, data));
+
+        // A single slice sweeps the whole circle, so it has no corners to round.
+        Assert.IsFalse(((BitChartSvgPath)scene.Elements[0].Shape).D.Contains('Q'));
+    }
+
+    [TestMethod]
+    public void RingWeightShouldShareTheRadiusOutInProportion()
+    {
+        // The radial midpoint of a ring is where its band sits, so growing one band moves its own
+        // midpoint and, with it, the boundary between the two.
+        static double MidRadius(int datasetIndex, double outerWeight, double innerWeight)
+        {
+            var data = new BitChartData
+            {
+                Labels = { "A", "B" },
+                Datasets =
+                {
+                    new BitChartDataset { Data = { 1, 1 }, Weight = outerWeight },
+                    new BitChartDataset { Data = { 1, 1 }, Weight = innerWeight }
+                }
+            };
+            var scene = Render(new BitChartConfig(BitChartType.Doughnut, data));
+            var el = scene.Elements.First(e => e.DatasetIndex == datasetIndex);
+            double dx = el.CenterX - scene.Width / 2;
+            double dy = el.CenterY - scene.Height / 2;
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
+
+        Assert.IsTrue(MidRadius(0, 2, 1) < MidRadius(0, 1, 1),
+            "a heavier outer ring claims radius inwards, so its own midpoint moves towards the center");
+        Assert.IsTrue(MidRadius(1, 1, 2) > MidRadius(1, 1, 1),
+            "a heavier inner ring claims radius outwards, so its own midpoint moves away from the center");
+    }
+
+    [TestMethod]
+    public void EqualRingWeightsShouldSplitTheRadiusEvenly()
+    {
+        static double MidRadius(BitChartScene scene, int datasetIndex)
+        {
+            var el = scene.Elements.First(e => e.DatasetIndex == datasetIndex);
+            double dx = el.CenterX - scene.Width / 2;
+            double dy = el.CenterY - scene.Height / 2;
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
+
+        var two = new BitChartData
+        {
+            Labels = { "A", "B" },
+            Datasets = { new BitChartDataset { Data = { 1, 1 } }, new BitChartDataset { Data = { 1, 1 } } }
+        };
+        var one = new BitChartData
+        {
+            Labels = { "A", "B" },
+            Datasets = { new BitChartDataset { Data = { 1, 1 } } }
+        };
+
+        var split = Render(new BitChartConfig(BitChartType.Doughnut, two));
+        var whole = Render(new BitChartConfig(BitChartType.Doughnut, one));
+
+        // Default weight is 1 everywhere, so the two bands must straddle the single ring's midpoint.
+        double outer = MidRadius(split, 0), inner = MidRadius(split, 1);
+        Assert.AreEqual(MidRadius(whole, 0), (outer + inner) / 2, 0.01,
+            "equal weights have to keep the even split the chart had before weights existed");
+    }
+
+    // ---- sparkline ----
+
+    [TestMethod]
+    public void ASparklineShouldDropEveryPieceOfChrome()
+    {
+        var options = new BitChartOptions
+        {
+            Sparkline = true,
+            Plugins = new BitChartPluginOptions
+            {
+                Title = new BitChartTitleOptions { Display = true, Text = "Trend" },
+                Legend = new BitChartLegendOptions { Display = true }
+            }
+        };
+
+        var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
+
+        Assert.IsNull(scene.Title, "a sparkline carries no title");
+        Assert.IsNull(scene.Legend, "a sparkline carries no legend");
+        Assert.AreEqual(0, scene.Background.Count, "a sparkline draws no axis, grid or tick label");
+    }
+
+    [TestMethod]
+    public void ASparklineShouldGiveTheWholeBoxToTheSeries()
+    {
+        var plain = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3)));
+        var spark = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), new BitChartOptions { Sparkline = true }));
+
+        Assert.IsTrue(spark.PlotArea!.Value.Width > plain.PlotArea!.Value.Width);
+        Assert.IsTrue(spark.PlotArea!.Value.Height > plain.PlotArea!.Value.Height);
+    }
+
+    [TestMethod]
+    public void ASparklineShouldStillBeInteractiveAndDescribable()
+    {
+        var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), new BitChartOptions { Sparkline = true }));
+
+        Assert.AreEqual(3, scene.Elements.Count, "dropping the chrome must not drop the data");
+        Assert.IsTrue(scene.HitBands.Count > 0, "the plot stays hoverable");
+    }
+
+    [TestMethod]
+    public void ASparklineOnARadarChartShouldDropItsPerimeterLabels()
+    {
+        var spark = Render(new BitChartConfig(BitChartType.Radar, Bars(1, 2, 3), new BitChartOptions { Sparkline = true }));
+
+        Assert.IsFalse(spark.Background.OfType<BitChartSvgText>().Any(),
+            "a sparkline radar draws no point labels or radial ticks");
+    }
+
+    // ---- trendlines ----
+
+    private static BitChartScene Trend(BitChartTrendline trendline, BitChartType type = BitChartType.Line,
+        BitChartData? data = null)
+    {
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(new BitChartTrendlinePlugin(trendline));
+        return Render(new BitChartConfig(type, data ?? Bars(1, 2, 3), options));
+    }
+
+    [TestMethod]
+    public void ALinearTrendlineShouldFollowTheSlopeOfItsDataset()
+    {
+        var rising = Trend(new BitChartTrendline { DatasetIndex = 0 }, data: Bars(1, 2, 3));
+        var falling = Trend(new BitChartTrendline { DatasetIndex = 0 }, data: Bars(3, 2, 1));
+
+        // A rising series maps to a falling pixel path (y grows downwards), and vice versa.
+        Assert.IsTrue(EndY(rising) < StartY(rising), "a rising series must give a rising trend line");
+        Assert.IsTrue(EndY(falling) > StartY(falling), "a falling series must give a falling trend line");
+    }
+
+    private static BitChartSvgPath TrendPath(BitChartScene scene)
+        => scene.Foreground.OfType<BitChartSvgPath>().Last();
+
+    private static double StartY(BitChartScene scene) => PathPoints(TrendPath(scene))[0].Y;
+    private static double EndY(BitChartScene scene) => PathPoints(TrendPath(scene))[^1].Y;
+
+    private static List<(double X, double Y)> PathPoints(BitChartSvgPath path)
+    {
+        var points = new List<(double, double)>();
+        foreach (var token in path.D.Split([' '], StringSplitOptions.RemoveEmptyEntries)
+                                   .Where(t => t is not ("M" or "L")).Chunk(2))
+            points.Add((double.Parse(token[0], CultureInfo.InvariantCulture),
+                        double.Parse(token[1], CultureInfo.InvariantCulture)));
+        return points;
+    }
+
+    [TestMethod]
+    public void AnExtendedTrendlineShouldReachBothEdgesOfThePlot()
+    {
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0, Extend = true });
+        var plot = scene.PlotArea!.Value;
+        var points = PathPoints(TrendPath(scene));
+
+        Assert.AreEqual(plot.Left, points[0].X, 0.01);
+        Assert.AreEqual(plot.Right, points[^1].X, 0.01);
+    }
+
+    [TestMethod]
+    public void AnUnextendedTrendlineShouldStopAtTheData()
+    {
+        // Bars center their categories, so the first and last of them sit inside the plot - which is
+        // exactly where an unextended fit has to begin and end.
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, BitChartType.Bar);
+        var plot = scene.PlotArea!.Value;
+        var points = PathPoints(TrendPath(scene));
+
+        Assert.AreEqual(scene.Elements.First(e => e.DataIndex == 0).CenterX, points[0].X, 0.5);
+        Assert.AreEqual(scene.Elements.First(e => e.DataIndex == 2).CenterX, points[^1].X, 0.5);
+        Assert.IsTrue(points[0].X > plot.Left, "the fit starts at the first point, not the edge");
+        Assert.IsTrue(points[^1].X < plot.Right, "the fit ends at the last point, not the edge");
+    }
+
+    [TestMethod]
+    public void AMovingAverageShouldHaveOneVertexPerDataPoint()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B", "C", "D", "E" },
+            Datasets = { new BitChartDataset { Data = { 10, 0, 10, 0, 10 } } }
+        };
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0, Kind = BitChartTrendlineKind.MovingAverage, Period = 2 },
+            data: data);
+
+        Assert.AreEqual(5, PathPoints(TrendPath(scene)).Count);
+    }
+
+    [TestMethod]
+    public void AnAverageTrendlineShouldBeFlat()
+    {
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0, Kind = BitChartTrendlineKind.Average },
+            data: Bars(1, 5, 9));
+        var points = PathPoints(TrendPath(scene));
+
+        Assert.AreEqual(points[0].Y, points[^1].Y, 0.01, "the mean does not slope");
+    }
+
+    [TestMethod]
+    public void ATrendlineShouldSitOnTheValuesItWasFittedTo()
+    {
+        // The mean of 1, 5, 9 is 5, which is exactly where the middle point of the series is drawn.
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0, Kind = BitChartTrendlineKind.Average },
+            data: Bars(1, 5, 9));
+
+        double middle = scene.Elements.Single(e => e.DataIndex == 1).CenterY;
+        Assert.AreEqual(middle, PathPoints(TrendPath(scene))[0].Y, 0.5);
+    }
+
+    [TestMethod]
+    public void ATrendlineOverBarsShouldLandOnTheBarCenters()
+    {
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0, Kind = BitChartTrendlineKind.MovingAverage, Period = 1 },
+            BitChartType.Bar);
+        var points = PathPoints(TrendPath(scene));
+
+        // Bars center their category in its band, so the fit has to be placed the same way.
+        for (int i = 0; i < scene.Elements.Count; i++)
+            Assert.AreEqual(scene.Elements[i].CenterX, points[i].X, 0.5,
+                "a trend line over bars must follow the same band placement the bars use");
+    }
+
+    [TestMethod]
+    public void AHiddenDatasetShouldTakeItsTrendlineWithIt()
+    {
+        var data = Bars(1, 2, 3);
+        data.Datasets[0].Hidden = true;
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, data: data);
+
+        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any());
+    }
+
+    [TestMethod]
+    public void ATrendlineNamingADatasetThatIsNotThereShouldDrawNothing()
+    {
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 7 });
+
+        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any());
+    }
+
+    [TestMethod]
+    public void ATrendlineLabelShouldBeDrawnInAPillInsideThePlot()
+    {
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0, Label = "trend" });
+        var plot = scene.PlotArea!.Value;
+
+        var pill = scene.Foreground.OfType<BitChartSvgRect>().Last();
+        Assert.IsTrue(pill.X >= plot.Left - 0.01 && pill.X + pill.Width <= plot.Right + 0.01);
+        Assert.IsTrue(pill.Y >= plot.Top - 0.01 && pill.Y + pill.Height <= plot.Bottom + 0.01);
+        CollectionAssert.Contains(scene.Foreground.OfType<BitChartSvgText>().Select(t => t.Text).ToList(), "trend");
+    }
+
+    [TestMethod]
+    public void ATrendlineShouldOnlyDrawOnCartesianCharts()
+    {
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, BitChartType.Doughnut);
+
+        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any(),
+            "there is no plot to fit a line across on a circular chart");
+    }
+
+    [TestMethod]
+    public void ATrendlineShouldBeAbleToDrawUnderTheDatasets()
+    {
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0, DrawBehindDatasets = true });
+
+        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any());
+        Assert.IsTrue(scene.Background.OfType<BitChartSvgPath>().Any());
+    }
+
+    [TestMethod]
+    public void ATrendlineOfOnePointShouldDrawNothingRatherThanThrow()
+    {
+        var data = new BitChartData { Labels = { "A" }, Datasets = { new BitChartDataset { Data = { 5 } } } };
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, data: data);
+
+        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any());
+    }
+
+    [TestMethod]
+    public void ATrendlineOverAFlatSeriesShouldStillBeDrawn()
+    {
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, data: Bars(4, 4, 4));
+        var points = PathPoints(TrendPath(scene));
+
+        Assert.AreEqual(points[0].Y, points[^1].Y, 0.01);
+    }
+
+    [TestMethod]
+    public void ATrendlineOverScatterPointsShouldUseTheirOwnXValues()
+    {
+        var data = new BitChartData
+        {
+            Datasets =
+            {
+                new BitChartDataset
+                {
+                    Points =
+                    [
+                        new BitChartDataPoint(0, 1),
+                        new BitChartDataPoint(5, 3),
+                        new BitChartDataPoint(10, 5)
+                    ]
+                }
+            }
+        };
+        var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, BitChartType.Scatter, data);
+        var points = PathPoints(TrendPath(scene));
+
+        // Perfectly collinear points: the fit has to pass through the first and last of them.
+        Assert.AreEqual(scene.Elements.First(e => e.DataIndex == 0).CenterY, points[0].Y, 0.5);
+        Assert.AreEqual(scene.Elements.First(e => e.DataIndex == 2).CenterY, points[^1].Y, 0.5);
+    }
+
+    // ---- error bars ----
+
+    private static BitChartData WithErrors(BitChartType _, params BitChartErrorBar?[] errors)
+    {
+        var data = Bars(10, 20, 30);
+        data.Datasets[0].ErrorData = errors.ToList();
+        return data;
+    }
+
+    [TestMethod]
+    [DataRow(BitChartType.Bar)]
+    [DataRow(BitChartType.Line)]
+    public void AnErrorBarShouldSpanItsIntervalWithACapAtEachEnd(BitChartType type)
+    {
+        var scene = Render(new BitChartConfig(type, WithErrors(type, 5, 5, 5)));
+
+        // One whisker plus two caps per point, on top of anything else the chart puts in the foreground.
+        var lines = scene.Foreground.OfType<BitChartSvgLine>().ToList();
+        Assert.AreEqual(9, lines.Count);
+    }
+
+    [TestMethod]
+    public void AnErrorBarShouldReachTheValuesItWasGiven()
+    {
+        var options = new BitChartOptions
+        {
+            Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Min = 0, Max = 40 } }
+        };
+        var scene = Render(new BitChartConfig(BitChartType.Bar, WithErrors(BitChartType.Bar, null, 5, null), options));
+        var plot = scene.PlotArea!.Value;
+
+        // The whisker is the tall line; its ends must land where 15 and 25 do on the axis.
+        var whisker = scene.Foreground.OfType<BitChartSvgLine>()
+            .OrderByDescending(l => Math.Abs(l.Y2 - l.Y1)).First();
+        double Pixel(double v) => plot.Bottom - (v - 0) / 40 * plot.Height;
+
+        Assert.AreEqual(Pixel(15), Math.Max(whisker.Y1, whisker.Y2), 0.5);
+        Assert.AreEqual(Pixel(25), Math.Min(whisker.Y1, whisker.Y2), 0.5);
+    }
+
+    [TestMethod]
+    public void AnAsymmetricErrorBarShouldUseBothArms()
+    {
+        var options = new BitChartOptions
+        {
+            Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Min = 0, Max = 40 } }
+        };
+        var data = WithErrors(BitChartType.Bar, null, new BitChartErrorBar(2, 8), null);
+        var scene = Render(new BitChartConfig(BitChartType.Bar, data, options));
+        var plot = scene.PlotArea!.Value;
+
+        var whisker = scene.Foreground.OfType<BitChartSvgLine>()
+            .OrderByDescending(l => Math.Abs(l.Y2 - l.Y1)).First();
+        double Pixel(double v) => plot.Bottom - v / 40 * plot.Height;
+
+        Assert.AreEqual(Pixel(18), Math.Max(whisker.Y1, whisker.Y2), 0.5);
+        Assert.AreEqual(Pixel(28), Math.Min(whisker.Y1, whisker.Y2), 0.5);
+    }
+
+    [TestMethod]
+    public void ANullErrorEntryShouldLeaveThatPointWithoutAWhisker()
+    {
+        var scene = Render(new BitChartConfig(BitChartType.Bar, WithErrors(BitChartType.Bar, 3, null, 3)));
+
+        Assert.AreEqual(6, scene.Foreground.OfType<BitChartSvgLine>().Count());
+    }
+
+    [TestMethod]
+    public void AZeroCapWidthShouldDrawABareWhisker()
+    {
+        var data = WithErrors(BitChartType.Bar, 5, 5, 5);
+        data.Datasets[0].ErrorBarCapWidth = 0;
+        var scene = Render(new BitChartConfig(BitChartType.Bar, data));
+
+        Assert.AreEqual(3, scene.Foreground.OfType<BitChartSvgLine>().Count());
+    }
+
+    [TestMethod]
+    public void HorizontalBarsShouldLayTheirErrorBarsAlongTheValueAxis()
+    {
+        var options = new BitChartOptions { IndexAxis = BitChartIndexAxis.Y };
+        var scene = Render(new BitChartConfig(BitChartType.Bar, WithErrors(BitChartType.Bar, 5, 5, 5), options));
+
+        var whiskers = scene.Foreground.OfType<BitChartSvgLine>()
+            .Where(l => Math.Abs(l.X2 - l.X1) > Math.Abs(l.Y2 - l.Y1)).ToList();
+        Assert.AreEqual(3, whiskers.Count, "the whisker follows the value axis, which now runs across the plot");
+    }
+
+    [TestMethod]
+    public void AnErrorBarShouldBeNamedInTheTooltip()
+    {
+        var symmetric = Render(new BitChartConfig(BitChartType.Bar, WithErrors(BitChartType.Bar, 5, 5, 5)));
+        StringAssert.Contains(symmetric.Elements[0].Tooltip.Items[0].Text, "±5");
+
+        var data = WithErrors(BitChartType.Bar, new BitChartErrorBar(1, 3), null, null);
+        var asymmetric = Render(new BitChartConfig(BitChartType.Bar, data));
+        StringAssert.Contains(asymmetric.Elements[0].Tooltip.Items[0].Text, "+3/-1");
+    }
+
+    [TestMethod]
+    public void ADatasetWithoutErrorDataShouldReadExactlyAsBefore()
+    {
+        var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(10, 20, 30)));
+
+        Assert.IsFalse(scene.Elements[0].Tooltip.Items[0].Text.Contains('±'));
+        Assert.AreEqual(0, scene.Foreground.OfType<BitChartSvgLine>().Count());
+    }
+
+    [TestMethod]
+    public void ErrorBarsShouldFollowTheirOwnBarInAGroup()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B" },
+            Datasets =
+            {
+                new BitChartDataset { Data = { 10, 10 }, ErrorData = [1, 1] },
+                new BitChartDataset { Data = { 10, 10 }, ErrorData = [1, 1] }
+            }
+        };
+        var scene = Render(new BitChartConfig(BitChartType.Bar, data));
+
+        // Each whisker sits over the bar it belongs to, not over the shared category center.
+        var whiskerCenters = scene.Foreground.OfType<BitChartSvgLine>()
+            .Where(l => Math.Abs(l.Y2 - l.Y1) > Math.Abs(l.X2 - l.X1))
+            .Select(l => Math.Round(l.X1, 3)).OrderBy(x => x).ToList();
+        var barCenters = scene.Elements.Select(e => Math.Round(e.CenterX, 3)).OrderBy(x => x).ToList();
+        CollectionAssert.AreEqual(barCenters, whiskerCenters);
+    }
+
+    // ---- ellipse and polygon annotations ----
+
+    private static BitChartScene Annotated(BitChartAnnotation annotation)
+    {
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(new BitChartAnnotationPlugin(annotation));
+        return Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
+    }
+
+    [TestMethod]
+    public void AnEllipseAnnotationShouldBeInscribedInItsBounds()
+    {
+        var scene = Annotated(new BitChartAnnotation
+        {
+            Kind = BitChartAnnotationKind.Ellipse,
+            XMin = 0, XMax = 2, YMin = 1, YMax = 3, XIsIndex = true
+        });
+
+        var path = scene.Foreground.OfType<BitChartSvgPath>().Single();
+        StringAssert.Contains(path.D, "A ", "an ellipse is drawn from arcs");
+        Assert.IsTrue(path.D.EndsWith("Z"), "and it closes");
+    }
+
+    [TestMethod]
+    public void AnEllipseWithNoExtentShouldDrawNothing()
+    {
+        var scene = Annotated(new BitChartAnnotation
+        {
+            Kind = BitChartAnnotationKind.Ellipse,
+            XMin = 1, XMax = 1, YMin = 2, YMax = 2, XIsIndex = true
+        });
+
+        Assert.AreEqual(0, scene.Foreground.OfType<BitChartSvgPath>().Count());
+    }
+
+    [TestMethod]
+    [DataRow(3)]
+    [DataRow(6)]
+    public void APolygonAnnotationShouldHaveTheSidesItWasAskedFor(int sides)
+    {
+        var scene = Annotated(new BitChartAnnotation
+        {
+            Kind = BitChartAnnotationKind.Polygon,
+            Sides = sides, Radius = 15, XMin = 1, Value = 2, XIsIndex = true
+        });
+
+        var poly = scene.Foreground.OfType<BitChartSvgPolygon>().Single();
+        Assert.AreEqual(sides, poly.Points.Count);
+        Assert.IsTrue(poly.Closed);
+    }
+
+    [TestMethod]
+    public void APolygonAnnotationShouldPointUpwardsByDefault()
+    {
+        var scene = Annotated(new BitChartAnnotation
+        {
+            Kind = BitChartAnnotationKind.Polygon,
+            Sides = 3, Radius = 15, XMin = 1, Value = 2, XIsIndex = true
+        });
+
+        var poly = scene.Foreground.OfType<BitChartSvgPolygon>().Single();
+        double top = poly.Points.Min(p => p.Y);
+        Assert.AreEqual(1, poly.Points.Count(p => Math.Abs(p.Y - top) < 0.01),
+            "a triangle drawn from the top has exactly one vertex up there");
+    }
+
+    [TestMethod]
+    public void APolygonAnnotationShouldRotate()
+    {
+        BitChartSvgPolygon Poly(double rotation) => Annotated(new BitChartAnnotation
+        {
+            Kind = BitChartAnnotationKind.Polygon,
+            Sides = 3, Radius = 15, XMin = 1, Value = 2, XIsIndex = true, Rotation = rotation
+        }).Foreground.OfType<BitChartSvgPolygon>().Single();
+
+        Assert.AreNotEqual(Math.Round(Poly(0).Points[0].Y, 3), Math.Round(Poly(180).Points[0].Y, 3));
+    }
+
+    [TestMethod]
+    public void APointAnnotationShouldTakeAnExplicitRadius()
+    {
+        var scene = Annotated(new BitChartAnnotation
+        {
+            Kind = BitChartAnnotationKind.Point, XMin = 1, Value = 2, XIsIndex = true, Radius = 9
+        });
+
+        Assert.AreEqual(9, scene.Foreground.OfType<BitChartSvgCircle>().Single().R, 1e-6);
+    }
+
+    // ---- legend and tooltip sizing ----
+
+    [TestMethod]
+    public void TheLegendShouldCarryItsHeightCapThroughToTheScene()
+    {
+        var options = new BitChartOptions { Plugins = { Legend = { MaxHeight = 60 } } };
+        var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
+
+        Assert.AreEqual(60, scene.Legend!.MaxHeight);
+    }
+
+    // ---- pointer gestures map onto the axes the chart actually drew ----
+
+    [TestMethod]
+    public void AVerticalChartShouldReportItsAxesAsItDrewThem()
+    {
+        var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3)));
+
+        Assert.AreEqual((true, false), scene.AxisOrientations["x"], "the index axis runs across the plot");
+        Assert.AreEqual((false, true), scene.AxisOrientations["y"], "the value axis runs up it, minimum at the bottom");
+    }
+
+    [TestMethod]
+    public void AHorizontalChartShouldReportTheSwappedAxes()
+    {
+        var options = new BitChartOptions { IndexAxis = BitChartIndexAxis.Y };
+        var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
+
+        Assert.AreEqual((false, false), scene.AxisOrientations["x"], "the categories now run down the plot");
+        Assert.AreEqual((true, false), scene.AxisOrientations["y"], "and the values run across it");
+    }
+
+    [TestMethod]
+    public void ASecondaryXAxisShouldBeReportedAsHorizontalToo()
+    {
+        var data = new BitChartData
+        {
+            Datasets =
+            {
+                new BitChartDataset { Points = [new(0, 1), new(1, 2)] },
+                new BitChartDataset { Points = [new(0, 3), new(1, 4)], XAxisID = "x2" }
+            }
+        };
+        var scene = Render(new BitChartConfig(BitChartType.Scatter, data));
+
+        Assert.AreEqual((true, false), scene.AxisOrientations["x2"]);
+    }
+
+    [TestMethod]
+    public void ATimeAxisShouldPrintItsMonthsInTheChartsCulture()
+    {
+        var data = new BitChartData
+        {
+            Datasets =
+            {
+                new BitChartDataset
+                {
+                    Points =
+                    [
+                        new BitChartDataPoint(new DateTime(2026, 1, 15).ToOADate(), 1),
+                        new BitChartDataPoint(new DateTime(2026, 6, 15).ToOADate(), 2)
+                    ]
+                }
+            }
+        };
+        BitChartOptions Options(CultureInfo? culture) => new()
+        {
+            Culture = culture,
+            Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Time } }
+        };
+
+        var french = Render(new BitChartConfig(BitChartType.Line, data, Options(new CultureInfo("fr-FR"))));
+        var invariant = Render(new BitChartConfig(BitChartType.Line, data, Options(null)));
+
+        static List<string> Labels(BitChartScene scene) =>
+            scene.Background.OfType<BitChartSvgText>().Select(t => t.Text).ToList();
+
+        // The chart already formats its numbers with the culture; its dates have to follow. The axis
+        // ticks on month boundaries, so March is the one both renders are certain to carry.
+        CollectionAssert.Contains(Labels(french), "mars 2026",
+            "a French chart must not print English month names, but drew: " + string.Join(" | ", Labels(french)));
+        CollectionAssert.Contains(Labels(invariant), "Mar 2026");
+    }
+
+    [TestMethod]
+    public void APercentageStackShouldNotDrawErrorBarsItCannotPlace()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B" },
+            Datasets =
+            {
+                new BitChartDataset { Data = { 10, 20 }, ErrorData = [2, 2], Stack = "s" },
+                new BitChartDataset { Data = { 30, 40 }, Stack = "s" }
+            }
+        };
+        var options = new BitChartOptions
+        {
+            Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Stacked = true, Stacked100 = true } }
+        };
+
+        var scene = Render(new BitChartConfig(BitChartType.Bar, data, options));
+
+        // The values are rescaled to percentages; an interval still in the original units would land
+        // somewhere meaningless, so it is left out rather than drawn wrong.
+        Assert.AreEqual(0, scene.Foreground.OfType<BitChartSvgLine>().Count());
+    }
+
+    // ---- a numeric index axis reads value datasets too ----
+
+    [TestMethod]
+    public void ANumericIndexAxisShouldSpanAValueDatasetsIndexes()
+    {
+        var data = new BitChartData
+        {
+            Datasets = { new BitChartDataset { Data = { 5, 6, 7, 8, 9 } } }
+        };
+        var options = new BitChartOptions
+        {
+            Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear } }
+        };
+        var scene = Render(new BitChartConfig(BitChartType.Line, data, options));
+
+        Assert.AreEqual(0, scene.AxisRanges["x"].Min, 1e-6);
+        Assert.AreEqual(4, scene.AxisRanges["x"].Max, 1e-6, "five values span indexes 0 to 4, not 0 to 1");
+    }
 }

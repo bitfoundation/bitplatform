@@ -19,6 +19,22 @@ public sealed class BitChartDataset
     /// <summary>Point data for scatter/bubble charts. When set, takes precedence over <see cref="Data"/>.</summary>
     public List<BitChartDataPoint>? Points { get; set; }
 
+    /// <summary>
+    /// Per-index uncertainty, drawn as a whisker through the value: a bar's tip, a line or scatter
+    /// point, each with a cap at both ends. A null entry leaves that point without one. The interval is
+    /// also named in the tooltip. Cartesian charts only.
+    /// </summary>
+    public List<BitChartErrorBar?>? ErrorData { get; set; }
+
+    /// <summary>Color of the error-bar whisker. When null it follows the primary foreground token.</summary>
+    public string? ErrorBarColor { get; set; }
+
+    /// <summary>Thickness of the error-bar whisker and its caps.</summary>
+    public double ErrorBarWidth { get; set; } = 1.5;
+
+    /// <summary>Full width of the caps at the ends of an error bar. Zero draws a bare whisker.</summary>
+    public double ErrorBarCapWidth { get; set; } = 8;
+
     /// <summary>Optional per-dataset type override for mixed charts.</summary>
     public BitChartType? Type { get; set; }
 
@@ -111,6 +127,11 @@ public sealed class BitChartDataset
     public double? MaxBarThickness { get; set; }
     public double BarPercentage { get; set; } = 0.9;
     public double CategoryPercentage { get; set; } = 0.8;
+    /// <summary>
+    /// Corner radius in pixels. On a bar it rounds the corners away from the baseline (see
+    /// <see cref="BorderSkipped"/>); on a pie, doughnut or polar-area arc it rounds the arc's own
+    /// corners, mirroring Chart.js's shared <c>borderRadius</c>.
+    /// </summary>
     public double BorderRadius { get; set; }
     /// <summary>Optional per-corner bar radius. When set, overrides <see cref="BorderRadius"/>.</summary>
     public BitChartBorderRadiusCorners? BorderRadiusCorners { get; set; }
@@ -132,6 +153,13 @@ public sealed class BitChartDataset
     public double Offset { get; set; }
     /// <summary>Angular gap (in pixels along the outer edge) left between neighbouring arcs.</summary>
     public double SpacingArc { get; set; }
+
+    /// <summary>
+    /// Relative thickness of this dataset's ring in a multi-dataset pie or doughnut. The available
+    /// radius is shared out in proportion to the weights, so a dataset with weight 2 gets a band twice
+    /// as thick as one left at the default of 1. Mirrors Chart.js's arc dataset <c>weight</c>.
+    /// </summary>
+    public double Weight { get; set; } = 1;
 
     // ---- Axis assignment / stacking / ordering ----
     public string XAxisID { get; set; } = "x";

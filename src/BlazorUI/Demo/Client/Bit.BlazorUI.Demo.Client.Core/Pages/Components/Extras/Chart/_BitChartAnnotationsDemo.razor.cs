@@ -4,6 +4,7 @@ public partial class _BitChartAnnotationsDemo
 {
     private BitChartOptions _lines = default!;
     private BitChartOptions _box = default!;
+    private BitChartOptions _shapes = default!;
 
     protected override void OnInitialized()
     {
@@ -32,6 +33,36 @@ public partial class _BitChartAnnotationsDemo
                     new BitChartAnnotationPlugin(
                         new BitChartAnnotation { Kind = BitChartAnnotationKind.Box, XIsIndex = true, XMin = 2, XMax = 4, Color = "#9966ff", FillColor = "rgba(153,102,255,0.12)", LineWidth = 1, DrawBehindDatasets = true },
                         new BitChartAnnotation { Orientation = BitChartLineOrientation.Vertical, XIsIndex = true, Value = 3, Color = "#ff9f40", LineWidth = 2, Label = "Launch" }
+                    )
+                }
+            }
+        };
+
+        _shapes = new BitChartOptions
+        {
+            Plugins = new BitChartPluginOptions
+            {
+                Legend = new BitChartLegendOptions { Display = false },
+                Custom =
+                {
+                    new BitChartAnnotationPlugin(
+                        new BitChartAnnotation
+                        {
+                            Kind = BitChartAnnotationKind.Ellipse, XIsIndex = true,
+                            XMin = 4, XMax = 6, YMin = 65, YMax = 100,
+                            Color = "#2ecc71", FillColor = "rgba(46,204,113,0.12)", Label = "Best run"
+                        },
+                        new BitChartAnnotation
+                        {
+                            Kind = BitChartAnnotationKind.Polygon, XIsIndex = true,
+                            XMin = 3, Value = 35, Sides = 3, Radius = 12,
+                            Color = "#ff6384", Label = "Dip"
+                        },
+                        new BitChartAnnotation
+                        {
+                            Kind = BitChartAnnotationKind.Point, XIsIndex = true,
+                            XMin = 1, Value = 45, Radius = 7, Color = "#9966ff"
+                        }
                     )
                 }
             }
@@ -109,5 +140,39 @@ private BitChartData Bars() => new()
 {
     Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
     Datasets = { new BitChartDataset { Label = ""Sales"", Data = new() { 30, 42, 55, 70, 64, 48, 52 }, BackgroundColor = ""#36a2eb"" } }
+};";
+
+    private readonly string shapesRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Series()"" Options=""_shapes"" />";
+    private readonly string shapesCsharpCode = @"
+_shapes = new BitChartOptions
+{
+    Plugins = new BitChartPluginOptions
+    {
+        Legend = new BitChartLegendOptions { Display = false },
+        Custom =
+        {
+            new BitChartAnnotationPlugin(
+                // An ellipse takes the same bounds a box does, and is inscribed in them.
+                new BitChartAnnotation
+                {
+                    Kind = BitChartAnnotationKind.Ellipse, XIsIndex = true,
+                    XMin = 4, XMax = 6, YMin = 65, YMax = 100,
+                    Color = ""#2ecc71"", FillColor = ""rgba(46,204,113,0.12)"", Label = ""Best run""
+                },
+                // A polygon is centered on one coordinate, sized in pixels, and points up by default.
+                new BitChartAnnotation
+                {
+                    Kind = BitChartAnnotationKind.Polygon, XIsIndex = true,
+                    XMin = 3, Value = 35, Sides = 3, Radius = 12,
+                    Color = ""#ff6384"", Label = ""Dip""
+                },
+                new BitChartAnnotation
+                {
+                    Kind = BitChartAnnotationKind.Point, XIsIndex = true,
+                    XMin = 1, Value = 45, Radius = 7, Color = ""#9966ff""
+                }
+            )
+        }
+    }
 };";
 }

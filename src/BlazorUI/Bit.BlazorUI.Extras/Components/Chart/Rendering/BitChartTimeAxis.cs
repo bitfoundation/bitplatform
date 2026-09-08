@@ -21,18 +21,27 @@ public static class BitChartTimeAxis
         return BitChartTimeUnit.Year;
     }
 
-    public static string DefaultFormat(DateTime d, BitChartTimeUnit unit) => unit switch
+    /// <summary>
+    /// The label a tick gets when the caller supplies no formatter. Month and day names come from the
+    /// chart's culture, so a localized chart does not end up printing French numbers next to English
+    /// months; the invariant culture is the default, which keeps output stable.
+    /// </summary>
+    public static string DefaultFormat(DateTime d, BitChartTimeUnit unit, CultureInfo? culture = null)
     {
-        BitChartTimeUnit.Millisecond => d.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture),
-        BitChartTimeUnit.Second => d.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
-        BitChartTimeUnit.Minute => d.ToString("HH:mm", CultureInfo.InvariantCulture),
-        BitChartTimeUnit.Hour => d.ToString("HH:mm", CultureInfo.InvariantCulture),
-        BitChartTimeUnit.Day => d.ToString("MMM d", CultureInfo.InvariantCulture),
-        BitChartTimeUnit.Week => d.ToString("MMM d", CultureInfo.InvariantCulture),
-        BitChartTimeUnit.Month => d.ToString("MMM yyyy", CultureInfo.InvariantCulture),
-        BitChartTimeUnit.Quarter => $"Q{(d.Month - 1) / 3 + 1} {d.Year}",
-        _ => d.Year.ToString(CultureInfo.InvariantCulture)
-    };
+        var c = culture ?? CultureInfo.InvariantCulture;
+        return unit switch
+        {
+            BitChartTimeUnit.Millisecond => d.ToString("HH:mm:ss.fff", c),
+            BitChartTimeUnit.Second => d.ToString("HH:mm:ss", c),
+            BitChartTimeUnit.Minute => d.ToString("HH:mm", c),
+            BitChartTimeUnit.Hour => d.ToString("HH:mm", c),
+            BitChartTimeUnit.Day => d.ToString("MMM d", c),
+            BitChartTimeUnit.Week => d.ToString("MMM d", c),
+            BitChartTimeUnit.Month => d.ToString("MMM yyyy", c),
+            BitChartTimeUnit.Quarter => $"Q{(d.Month - 1) / 3 + 1} {d.Year.ToString(c)}",
+            _ => d.Year.ToString(c)
+        };
+    }
 
     private static DateTime Floor(DateTime d, BitChartTimeUnit unit) => unit switch
     {
@@ -90,7 +99,7 @@ public static class BitChartTimeAxis
 
     /// <summary>Generates (oaDateValue, label) ticks between min and max.</summary>
     public static List<(double Value, string Label)> Ticks(double minOa, double maxOa, BitChartTimeUnit unit,
-        Func<DateTime, string>? format, int maxTicks = 11)
+        Func<DateTime, string>? format, int maxTicks = 11, CultureInfo? culture = null)
     {
         var min = ToDate(minOa);
         var max = ToDate(maxOa);
@@ -111,12 +120,12 @@ public static class BitChartTimeAxis
         while (cur <= max)
         {
             if (cur >= min)
-                ticks.Add((cur.ToOADate(), (format ?? (d => DefaultFormat(d, unit)))(cur)));
+                ticks.Add((cur.ToOADate(), (format ?? (d => DefaultFormat(d, unit, culture)))(cur)));
             if (ticks.Count > maxTicks * 3) break;
             if (!TryNext(cur, unit, step, out cur)) break;
         }
         if (ticks.Count == 0)
-            ticks.Add((minOa, (format ?? (d => DefaultFormat(d, unit)))(min)));
+            ticks.Add((minOa, (format ?? (d => DefaultFormat(d, unit, culture)))(min)));
         return ticks;
     }
 }

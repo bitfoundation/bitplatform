@@ -41,7 +41,7 @@ public sealed partial class BitChartRenderer
             valueScales[id] = scale;
             if (so.Reverse) scene.ReversedAxes.Add(id);
             if (so.Type != BitChartScaleType.Category) scene.ZoomableAxes.Add(id);
-            if (!so.Display) continue;
+            if (!ScaleVisible(so)) continue;
             switch (PositionOf(so, IsVertical ? BitChartPosition.Left : BitChartPosition.Bottom))
             {
                 case BitChartPosition.Right or BitChartPosition.Top: rightAxes.Add(scale); break;
@@ -89,7 +89,7 @@ public sealed partial class BitChartRenderer
             if (so.Reverse) scene.ReversedAxes.Add(id);
             scene.ZoomableAxes.Add(id);
             if (id == "x") indexScale = xs;
-            if (so.Display)
+            if (ScaleVisible(so))
             {
                 if (PositionOf(so, BitChartPosition.Bottom) == BitChartPosition.Top) topXAxes.Add(xs);
                 else bottomXAxes.Add(xs);
@@ -108,7 +108,7 @@ public sealed partial class BitChartRenderer
             rightReserve = rightAxes.Sum(ReserveAxisWidth);
 
             // Auto-rotate category labels on the bottom (x) axis when they don't fit.
-            if (indexIsCategory && indexScaleOpts.Display && indexScaleOpts.Ticks.Display)
+            if (indexIsCategory && ScaleVisible(indexScaleOpts) && indexScaleOpts.Ticks.Display)
                 indexScale.LabelRotation = ComputeIndexLabelRotation(indexScale, area.Width - leftReserve - rightReserve);
 
             bottomReserve = bottomXAxes.Sum(ReserveAxisHeight);
@@ -161,8 +161,18 @@ public sealed partial class BitChartRenderer
         scene.PlotArea = plot;
 
         scene.AxisRanges["x"] = (indexScale.Min, indexScale.Max);
-        foreach (var (id, s) in xScales) scene.AxisRanges[id] = (s.Min, s.Max);
-        foreach (var (id, s) in valueScales) scene.AxisRanges[id] = (s.Min, s.Max);
+        foreach (var (id, s) in xScales)
+        {
+            scene.AxisRanges[id] = (s.Min, s.Max);
+            // An index axis always starts at the near pixel: left of a vertical chart, top of a horizontal one.
+            scene.AxisOrientations[id] = (IsVertical, false);
+        }
+        foreach (var (id, s) in valueScales)
+        {
+            scene.AxisRanges[id] = (s.Min, s.Max);
+            // A vertical value axis is the one drawn bottom-up, so its minimum sits at the far pixel.
+            scene.AxisOrientations[id] = (!IsVertical, IsVertical);
+        }
 
         var ctx = new BitChartPluginContext
         {
@@ -172,7 +182,8 @@ public sealed partial class BitChartRenderer
             IsCartesian = true,
             IndexScale = indexScale,
             ValueScales = valueScales,
-            IndexIsCategory = indexIsCategory
+            IndexIsCategory = indexIsCategory,
+            IndexCentered = HasBars()
         };
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(ctx);
 
@@ -290,7 +301,7 @@ public sealed partial class BitChartRenderer
     private double ReserveAxisHeight(BitChartAxisScale scale)
     {
         var o = scale.Options;
-        if (!o.Display) return 0;
+        if (!ScaleVisible(o)) return 0;
         double h = 0;
         if (o.Grid.DrawTicks) h += o.Grid.TickLength;
         if (o.Ticks.Display)
@@ -326,7 +337,9 @@ public sealed partial class BitChartRenderer
         if (maxLabel <= 0) return 0;
 
         double band = availWidth / Math.Max(1, scale.Ticks.Count);
-        if (maxLabel <= band * 0.95) return 0;   // fits horizontally
+        // Labels that fit still honour MinRotation, which is how a caller asks for slanted labels
+        // unconditionally rather than only once they collide.
+        if (maxLabel <= band * 0.95) return Math.Clamp(tk.MinRotation, 0, tk.MaxRotation);
 
         // Rotate just enough so the horizontal footprint fits the band, clamped to limits.
         double ratio = Math.Clamp(band / maxLabel, -1, 1);
@@ -344,7 +357,7 @@ public sealed partial class BitChartRenderer
 
         var o = scale.Options;
         double w;
-        if (!o.Display)
+        if (!ScaleVisible(o))
         {
             w = 0;
         }
@@ -374,13 +387,53 @@ public sealed partial class BitChartRenderer
     private string StackKey(BitChartDataset ds)
         => (EffectiveType(ds) == BitChartType.Bar ? "bar:" : "line:") + (ds.Stack ?? "default");
 
+    /// <summary>
+    /// The extent of a percentage-stacked axis. Each category is normalized against the sum of the
+    /// absolute values in it, so the positive share of a category can never exceed 100 and its negative
+    /// share can never fall below -100. Taking a flat 0..100 would clip every negative contribution out
+    /// of the plot, so the real shares are measured and the axis is sized to what is actually drawn.
+    /// </summary>
+    private (double, double) ComputePercentStackExtent(string axisId)
+    {
+        var totals = new Dictionary<(string stack, int index), double>();
+        var shares = new Dictionary<(string stack, int index, int sign), double>();
+
+        for (int d = 0; d < _data.Datasets.Count; d++)
+        {
+            var ds = _data.Datasets[d];
+            if (ds.YAxisID != axisId || IsHidden(d, ds)) continue;
+            string key = StackKey(ds);
+            for (int i = 0; i < ds.Data.Count; i++)
+            {
+                if (ds.Data[i] is not { } v) continue;
+                totals[(key, i)] = totals.GetValueOrDefault((key, i), 0) + Math.Abs(v);
+                int sign = v >= 0 ? 1 : -1;
+                shares[(key, i, sign)] = shares.GetValueOrDefault((key, i, sign), 0) + v;
+            }
+        }
+
+        double min = 0, max = 0;
+        foreach (var ((stack, index, _), sum) in shares)
+        {
+            double total = totals.GetValueOrDefault((stack, index), 0);
+            if (total <= 0) continue;
+            double pct = sum / total * 100;
+            min = Math.Min(min, pct);
+            max = Math.Max(max, pct);
+        }
+
+        // Nothing (or nothing but zeroes) to measure: keep the classic full-height 0..100 axis.
+        if (min == 0 && max == 0) return (0, 100);
+        return (min, max);
+    }
+
     private (double, double) ComputeValueExtent(string axisId)
     {
         double min = double.PositiveInfinity, max = double.NegativeInfinity;
         var scaleOpts = Scale(axisId);
 
         if (scaleOpts.Stacked && scaleOpts.Stacked100)
-            return (0, 100);
+            return ComputePercentStackExtent(axisId);
 
         if (scaleOpts.Stacked)
         {
@@ -444,6 +497,9 @@ public sealed partial class BitChartRenderer
             if (IsHidden(d, ds)) continue;
             if (ds.Points is { } pts)
                 foreach (var p in pts) { min = Math.Min(min, p.X); max = Math.Max(max, p.X); }
+            // A value dataset on a numeric index axis is laid out by its index, so that is its extent.
+            // Without this it would contribute nothing and the axis would fall back to a bare 0..1.
+            else if (ds.Data.Count > 0) { min = Math.Min(min, 0); max = Math.Max(max, ds.Data.Count - 1); }
         }
         if (double.IsInfinity(min)) { min = 0; max = 1; }
         return (min, max);

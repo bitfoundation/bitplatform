@@ -12,6 +12,15 @@ public sealed class BitChartOptions
 
     public BitChartIndexAxis IndexAxis { get; set; } = BitChartIndexAxis.X;
 
+    /// <summary>
+    /// Draws the chart as a sparkline: every piece of chrome around the data - axes, grid lines, tick
+    /// labels, legend, title and subtitle - is dropped so the series fills the whole box. It is a
+    /// presentation switch only: nothing is removed from the data, so tooltips, keyboard navigation and
+    /// the screen-reader table still describe the full series. Meant for the small inline trend charts
+    /// that sit inside a KPI tile or a table cell.
+    /// </summary>
+    public bool Sparkline { get; set; }
+
     public BitChartLayoutOptions Layout { get; set; } = new();
     public BitChartInteractionOptions Interaction { get; set; } = new();
     public BitChartAnimationOptions Animation { get; set; } = new();

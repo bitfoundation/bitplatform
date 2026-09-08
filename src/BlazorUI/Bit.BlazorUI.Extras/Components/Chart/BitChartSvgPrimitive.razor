@@ -50,7 +50,9 @@
         {
             <polyline points="@PolyPoints(poly)" fill="none" stroke="@poly.Stroke"
                       stroke-width="@BitChartSvg.N(poly.StrokeWidth)" opacity="@BitChartSvg.N(poly.Opacity)"
-                      transform="@poly.Transform" class="@poly.CssClass" />
+                      transform="@poly.Transform" class="@poly.CssClass">
+                @if (!string.IsNullOrEmpty(poly.Title)) { <title>@poly.Title</title> }
+            </polyline>
         }
         break;
 

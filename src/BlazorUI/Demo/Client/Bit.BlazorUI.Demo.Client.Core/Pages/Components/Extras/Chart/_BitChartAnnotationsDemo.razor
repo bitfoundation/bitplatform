@@ -16,3 +16,13 @@
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Bars()" Options="_box" /></div></div>
 </DemoExample>
+
+<DemoExample Title="Ellipse, polygon and point" RazorCode="@shapesRazorCode" CsharpCode="@shapesCsharpCode" Id="annotations-shapes">
+    <div class="example-desc">
+        Beyond lines and boxes, an annotation can be an <code>Ellipse</code> inscribed in the same XMin/XMax and
+        YMin/YMax bounds &mdash; for circling a cluster rather than boxing it &mdash; a regular <code>Polygon</code> of
+        any <code>Sides</code>, <code>Radius</code> and <code>Rotation</code>, or a <code>Point</code>. All four are
+        placed in data coordinates and take a <code>Label</code>, so they follow the values as the chart resizes.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_shapes" /></div></div>
+</DemoExample>

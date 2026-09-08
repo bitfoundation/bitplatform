@@ -19,6 +19,44 @@ public partial class _BitChartLocalizationDemo
         Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Ticks = new BitChartTickOptions { Format = "C0" } } }
     };
 
+    private string _dateCulture = "fr-FR";
+
+    private BitChartOptions DateOptions() => new()
+    {
+        Culture = CultureInfo.GetCultureInfo(_dateCulture),
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Time } }
+    };
+
+    private readonly BitChartOptions _wide = new()
+    {
+        Culture = CultureInfo.GetCultureInfo("ja-JP"),
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Scales =
+        {
+            ["y"] = new BitChartScaleOptions
+            {
+                Id = "y",
+                Title = new BitChartScaleTitleOptions { Display = true, Text = "売上高（百万円）" }
+            }
+        }
+    };
+
+    private BitChartData Japanese() => new()
+    {
+        Labels = { "東京都", "大阪府", "愛知県", "福岡県", "北海道", "京都府" },
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Label = "今年度",
+                Data = BitChartSampleData.V(320, 245, 198, 162, 140, 121),
+                BackgroundColor = "#36a2eb",
+                BorderRadius = 4
+            }
+        }
+    };
+
     private readonly BitChartOptions _rtl = new()
     {
         Plugins = new BitChartPluginOptions
@@ -88,6 +126,49 @@ private BitChartData Persian() => new()
     {
         new BitChartDataset { Label = ""درآمد"", Data = new() { 120, 190, 160, 250 }, BackgroundColor = ""#4bc0c0"", BorderRadius = 4 },
         new BitChartDataset { Label = ""هزینه"", Data = new() { 80, 120, 110, 150 }, BackgroundColor = ""#ff9f40"", BorderRadius = 4 }
+    }
+};";
+
+    private readonly string datesRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""TimeSeries()"" Options=""DateOptions()"" />";
+    private readonly string datesCsharpCode = @"
+private string _dateCulture = ""fr-FR"";
+
+// The culture drives the month and day names on a time axis as well as the numbers.
+private BitChartOptions DateOptions() => new()
+{
+    Culture = CultureInfo.GetCultureInfo(_dateCulture),
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Scales = { [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Time } }
+};";
+
+    private readonly string wideRazorCode = @"<BitChart Type=""BitChartType.Bar"" Data=""Japanese()"" Options=""_wide"" />";
+    private readonly string wideCsharpCode = @"
+private readonly BitChartOptions _wide = new()
+{
+    Culture = CultureInfo.GetCultureInfo(""ja-JP""),
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Scales =
+    {
+        [""y""] = new BitChartScaleOptions
+        {
+            Id = ""y"",
+            Title = new BitChartScaleTitleOptions { Display = true, Text = ""売上高（百万円）"" }
+        }
+    }
+};
+
+private BitChartData Japanese() => new()
+{
+    Labels = { ""東京都"", ""大阪府"", ""愛知県"", ""福岡県"", ""北海道"", ""京都府"" },
+    Datasets =
+    {
+        new BitChartDataset
+        {
+            Label = ""今年度"",
+            Data = new() { 320, 245, 198, 162, 140, 121 },
+            BackgroundColor = ""#36a2eb"",
+            BorderRadius = 4
+        }
     }
 };";
 }

@@ -251,7 +251,7 @@ public sealed partial class BitChartRenderer
 
                 string text = isRange
                     ? $"{(ds.Label is null ? "" : ds.Label + ": ")}[{FormatNumber(baseVal, "0.##")}, {FormatNumber(topVal, "0.##")}]"
-                    : BuildItemText(ds, i, di, tooltipVal, bg);
+                    : BuildItemText(ds, i, di, tooltipVal, bg) + ErrorSuffix(ds, di);
 
                 scene.Elements.Add(new BitChartDataElement
                 {
@@ -276,8 +276,66 @@ public sealed partial class BitChartRenderer
                 });
 
                 if (!isRange)
+                {
+                    // Centered on the bar's own tip, so a grouped bar keeps its whisker over itself.
+                    // A percentage stack rescales every value, which would leave the interval - still in
+                    // the original units - pointing at the wrong place, so it is left out there.
+                    if (!stacked100) AddErrorBar(scene, ds, di, topVal, slotCenter, vScale);
                     AddBarDataLabel(scene, tooltipVal, rect, signFinal, i, di);
+                }
             }
+        }
+    }
+
+    /// <summary>The error bar attached to one index, if the dataset has one there.</summary>
+    private static BitChartErrorBar? ErrorAt(BitChartDataset ds, int dataIndex)
+        => ds.ErrorData is { } errors && dataIndex >= 0 && dataIndex < errors.Count ? errors[dataIndex] : null;
+
+    /// <summary>
+    /// The interval a tooltip names after the value, so the uncertainty is readable and not only
+    /// visible. A symmetric interval reads as a single plus-minus; an asymmetric one names both arms.
+    /// </summary>
+    private string ErrorSuffix(BitChartDataset ds, int dataIndex)
+    {
+        if (ErrorAt(ds, dataIndex) is not { } e) return "";
+        double minus = Math.Abs(e.Minus), plus = Math.Abs(e.Plus);
+        if (minus <= 0 && plus <= 0) return "";
+        return e.IsSymmetric
+            ? $" ±{FormatNumber(plus, "0.##")}"
+            : $" +{FormatNumber(plus, "0.##")}/-{FormatNumber(minus, "0.##")}";
+    }
+
+    /// <summary>
+    /// Draws the whisker for one value: a line spanning the interval along the value axis, with a cap at
+    /// each end. It goes in the foreground so it stays legible over the bar or point it belongs to.
+    /// </summary>
+    private void AddErrorBar(BitChartScene scene, BitChartDataset ds, int dataIndex, double value,
+        double centerAlongIndexAxis, BitChartAxisScale valueScale)
+    {
+        if (ErrorAt(ds, dataIndex) is not { } e) return;
+        double minus = Math.Abs(e.Minus), plus = Math.Abs(e.Plus);
+        if (minus <= 0 && plus <= 0) return;
+
+        double low = valueScale.PixelFor(value - minus);
+        double high = valueScale.PixelFor(value + plus);
+        string color = ds.ErrorBarColor ?? "var(--bit-clr-fg-pri, #1A1A1A)";
+        double width = ds.ErrorBarWidth;
+        double cap = Math.Max(0, ds.ErrorBarCapWidth) / 2;
+        double c = centerAlongIndexAxis;
+
+        if (IsVertical)
+        {
+            scene.Foreground.Add(new BitChartSvgLine { X1 = c, Y1 = low, X2 = c, Y2 = high, Stroke = color, StrokeWidth = width });
+            if (cap <= 0) return;
+            scene.Foreground.Add(new BitChartSvgLine { X1 = c - cap, Y1 = low, X2 = c + cap, Y2 = low, Stroke = color, StrokeWidth = width });
+            scene.Foreground.Add(new BitChartSvgLine { X1 = c - cap, Y1 = high, X2 = c + cap, Y2 = high, Stroke = color, StrokeWidth = width });
+        }
+        else
+        {
+            scene.Foreground.Add(new BitChartSvgLine { X1 = low, Y1 = c, X2 = high, Y2 = c, Stroke = color, StrokeWidth = width });
+            if (cap <= 0) return;
+            scene.Foreground.Add(new BitChartSvgLine { X1 = low, Y1 = c - cap, X2 = low, Y2 = c + cap, Stroke = color, StrokeWidth = width });
+            scene.Foreground.Add(new BitChartSvgLine { X1 = high, Y1 = c - cap, X2 = high, Y2 = c + cap, Stroke = color, StrokeWidth = width });
         }
     }
 
@@ -511,7 +569,7 @@ public sealed partial class BitChartRenderer
 
         if (ds.PointStyle != BitChartPointStyle.None)
             foreach (var p in pts)
-                AddPoint(scene, ds, dsIndex, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border);
+                AddPoint(scene, ds, dsIndex, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border, valueScale: vScale);
 
         return fillPaint;
     }
@@ -635,7 +693,7 @@ public sealed partial class BitChartRenderer
 
                 if (ds.PointStyle != BitChartPointStyle.None)
                     foreach (var p in topPts)
-                        AddPoint(scene, ds, i, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border);
+                        AddPoint(scene, ds, i, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border, valueScale: vScale);
             }
         }
     }
@@ -651,12 +709,13 @@ public sealed partial class BitChartRenderer
             double x = indexScale.PixelFor(p.X);
             double y = vScale.PixelFor(p.Y);
             double r = bubble ? (p.R ?? 5) : Math.Max(4, ResolvePointRadius(ds));
-            AddPoint(scene, ds, dsIndex, di, x, y, p.Y, r, border, p.X);
+            AddPoint(scene, ds, dsIndex, di, x, y, p.Y, r, border, p.X, vScale);
         }
     }
 
     private void AddPoint(BitChartScene scene, BitChartDataset ds, int dsIndex, int di,
-        double x, double y, double value, double radius, string border, double? xValue = null)
+        double x, double y, double value, double radius, string border, double? xValue = null,
+        BitChartAxisScale? valueScale = null)
     {
         var ctx = Ctx(ds, dsIndex, di, value);
         double r = ds.PointRadiusFn?.Invoke(ctx) ?? radius;
@@ -680,9 +739,14 @@ public sealed partial class BitChartRenderer
         var hoverShape = BitChartPointShapes.Build(style == BitChartPointStyle.None ? BitChartPointStyle.Circle : style,
             x, y, Math.Max(hr, 3), hFill, hStroke, hbw, ds.PointRotation);
 
-        string text = xValue is { } xv
+        string text = (xValue is { } xv
             ? $"({FormatNumber(xv, "0.##")}, {FormatNumber(value, "0.##")})"
-            : BuildItemText(ds, dsIndex, di, value, fill);
+            : BuildItemText(ds, dsIndex, di, value, fill)) + ErrorSuffix(ds, di);
+
+        // A whisker needs the value axis to convert its interval, so it is only drawn where the caller
+        // could hand one over - which is every cartesian call site, but not the radar's.
+        if (valueScale is not null)
+            AddErrorBar(scene, ds, di, value, IsVertical ? x : y, valueScale);
 
         scene.Elements.Add(new BitChartDataElement
         {

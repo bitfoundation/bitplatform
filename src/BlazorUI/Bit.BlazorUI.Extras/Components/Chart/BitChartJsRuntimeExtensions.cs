@@ -36,6 +36,17 @@ internal static class BitChartJsRuntimeExtensions
         return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.exportPng", element, fileName, scale, background);
     }
 
+    public static ValueTask<string?> BitChartToSvgString(this IJSRuntime jsRuntime, ElementReference element, string? background)
+    {
+        return jsRuntime.InvokeAsync<string?>("BitBlazorUI.BitChart.toSvgString", element, background);
+    }
+
+    public static ValueTask<string?> BitChartToDataUrl(this IJSRuntime jsRuntime, ElementReference element,
+                                                      string mimeType, double scale, string? background)
+    {
+        return jsRuntime.InvokeAsync<string?>("BitBlazorUI.BitChart.toDataUrl", element, mimeType, scale, background);
+    }
+
     public static ValueTask BitChartDownloadText(this IJSRuntime jsRuntime, string fileName, string content, string mimeType)
     {
         return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitChart.downloadText", fileName, content, mimeType);

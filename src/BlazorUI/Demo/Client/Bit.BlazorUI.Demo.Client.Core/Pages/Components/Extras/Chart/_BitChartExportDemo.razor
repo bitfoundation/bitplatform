@@ -5,7 +5,8 @@
         Because the chart is a live SVG element, it can hand itself over as a file. Capture the component with
         <code>@@ref</code> and call <code>ExportSvgAsync</code> for a vector file (theme tokens are resolved into
         it so it looks right outside the app), <code>ExportPngAsync</code> for a raster image at the pixel ratio
-        you pass, or <code>ExportCsvAsync</code> for the underlying values &mdash; formatted with the chart's culture.
+        you pass, or <code>ExportCsvAsync</code> for the underlying values &mdash; formatted with the chart's culture
+        and written with a byte order mark, so a file of non-Latin labels opens correctly in a spreadsheet.
     </div>
     <div class="buttons-container" style="gap:.5rem">
         <BitButton Variant="BitVariant.Outline" OnClick="ExportSvg">Download SVG</BitButton>
@@ -29,4 +30,26 @@
         <pre class="csv-preview">@_csv</pre>
     }
     <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_csvChart" RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_options" /></div></div>
+</DemoExample>
+
+<DemoExample Title="The picture without downloading it" RazorCode="@imageRazorCode" CsharpCode="@imageCsharpCode" Id="export-image">
+    <div class="example-desc">
+        <code>ToSvgStringAsync()</code> hands back the same standalone markup the SVG download writes, and
+        <code>ToBase64ImageAsync()</code> the same raster picture as a <code>data:</code> URL &mdash; the counterpart
+        of Chart.js's <code>toBase64Image</code>. Neither touches the file system, so the chart can go straight into a
+        report, an email body or an <code>img</code> tag, as the preview below does.
+    </div>
+    <div class="buttons-container" style="gap:.5rem">
+        <BitButton Variant="BitVariant.Outline" OnClick="ShowImage">Render to a data URL</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="ShowMarkup">Show the SVG markup</BitButton>
+    </div>
+    @if (_dataUrl is not null)
+    {
+        <div class="buttons-container"><img class="chart-snapshot" src="@_dataUrl" alt="A snapshot of the chart" /></div>
+    }
+    @if (_markup is not null)
+    {
+        <pre class="csv-preview">@_markup</pre>
+    }
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_imageChart" RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="BitChartSampleData.Traffic()" Options="_imageOptions" /></div></div>
 </DemoExample>

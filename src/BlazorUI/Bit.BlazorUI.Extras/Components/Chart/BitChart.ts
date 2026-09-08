@@ -59,6 +59,15 @@ namespace BitBlazorUI {
         public static register(element: HTMLElement, dotnet: DotNetObject, opts: BitChartZoomOptions) {
             const state = { panning: false, lastX: 0, lastY: 0, startX: 0, startY: 0 };
 
+            // Live touch/pen contacts, so a second finger can be recognised as a pinch.
+            const contacts = new Map<number, { x: number, y: number }>();
+            let pinchDistance = 0;
+
+            // The browser's own pan/zoom would otherwise consume the gesture before it reaches us,
+            // which is why a touch drag does nothing on a chart that has not opted out of it.
+            const previousTouchAction = element.style.touchAction;
+            if (opts.pan || opts.drag || opts.wheel) element.style.touchAction = 'none';
+
             function frac(e: { clientX: number, clientY: number }) {
                 const r = element.getBoundingClientRect();
                 return {
@@ -74,8 +83,26 @@ namespace BitBlazorUI {
                 dotnet.invokeMethodAsync('OnWheelZoom', f.x, f.y, e.deltaY);
             }
 
+            function distance() {
+                const points = Array.from(contacts.values());
+                const dx = points[0].x - points[1].x;
+                const dy = points[0].y - points[1].y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
             function onDown(e: PointerEvent) {
                 if (e.button !== 0) return;
+                // Contacts are tracked whatever the pan settings are: pinching is the touch equivalent
+                // of the wheel, so it belongs to zoom rather than to panning.
+                if (e.pointerType !== 'mouse' && (opts.wheel || opts.pan || opts.drag)) {
+                    contacts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                    if (contacts.size === 2) {
+                        // A second finger turns the gesture into a pinch, so the pan stops here.
+                        state.panning = false;
+                        pinchDistance = distance();
+                        return;
+                    }
+                }
                 if (!opts.pan && !opts.drag) return;
                 state.panning = true;
                 state.lastX = e.clientX;
@@ -87,6 +114,24 @@ namespace BitBlazorUI {
             }
 
             function onMove(e: PointerEvent) {
+                if (contacts.has(e.pointerId)) contacts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+                if (contacts.size === 2 && opts.wheel) {
+                    const next = distance();
+                    if (pinchDistance > 0 && next > 0) {
+                        const points = Array.from(contacts.values());
+                        const r = element.getBoundingClientRect();
+                        const midX = (points[0].x + points[1].x) / 2;
+                        const midY = (points[0].y + points[1].y) / 2;
+                        dotnet.invokeMethodAsync('OnPinchZoom',
+                            r.width ? (midX - r.left) / r.width : 0.5,
+                            r.height ? (midY - r.top) / r.height : 0.5,
+                            next / pinchDistance);
+                    }
+                    pinchDistance = next;
+                    return;
+                }
+
                 if (!state.panning) return;
                 const r = element.getBoundingClientRect();
                 if (opts.drag) {
@@ -105,6 +150,8 @@ namespace BitBlazorUI {
             }
 
             function onUp(e: PointerEvent) {
+                contacts.delete(e.pointerId);
+                if (contacts.size < 2) pinchDistance = 0;
                 if (!state.panning) return;
                 state.panning = false;
                 element.style.cursor = '';
@@ -126,6 +173,7 @@ namespace BitBlazorUI {
             element.addEventListener('pointerdown', onDown);
             element.addEventListener('pointermove', onMove);
             window.addEventListener('pointerup', onUp);
+            window.addEventListener('pointercancel', onUp);
             element.addEventListener('dblclick', onDouble);
 
             return {
@@ -134,7 +182,9 @@ namespace BitBlazorUI {
                     element.removeEventListener('pointerdown', onDown);
                     element.removeEventListener('pointermove', onMove);
                     window.removeEventListener('pointerup', onUp);
+                    window.removeEventListener('pointercancel', onUp);
                     element.removeEventListener('dblclick', onDouble);
+                    element.style.touchAction = previousTouchAction;
                 }
             };
         }
@@ -186,9 +236,10 @@ namespace BitBlazorUI {
             return true;
         }
 
-        public static async exportPng(element: HTMLElement, fileName: string, scale: number, background: string | null) {
+        // Rasterizes the serialized SVG onto a canvas the caller can then read as a blob or a data URL.
+        private static async rasterize(element: HTMLElement, scale: number, background: string | null) {
             const markup = BitChart.serialize(element, background);
-            if (!markup) return false;
+            if (!markup) return null;
             const svg = element.querySelector('svg') as SVGSVGElement;
             const box = svg.getBoundingClientRect();
             const ratio = Math.max(1, scale || 1);
@@ -209,23 +260,46 @@ namespace BitBlazorUI {
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
-                if (!ctx) return false;
+                if (!ctx) return null;
                 if (background) {
                     ctx.fillStyle = background;
                     ctx.fillRect(0, 0, width, height);
                 }
                 ctx.drawImage(image, 0, 0, width, height);
-                const blob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                if (!blob) return false;
-                BitChart.downloadBlob(fileName || 'chart.png', blob);
-                return true;
+                return canvas;
             } finally {
                 URL.revokeObjectURL(url);
             }
         }
 
+        public static async exportPng(element: HTMLElement, fileName: string, scale: number, background: string | null) {
+            const canvas = await BitChart.rasterize(element, scale, background);
+            if (!canvas) return false;
+            const blob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (!blob) return false;
+            BitChart.downloadBlob(fileName || 'chart.png', blob);
+            return true;
+        }
+
+        // Returns the standalone SVG markup instead of downloading it, so the caller can embed,
+        // upload or store the picture itself.
+        public static toSvgString(element: HTMLElement, background: string | null) {
+            return BitChart.serialize(element, background);
+        }
+
+        // Returns the rasterized chart as a data URL (the same picture exportPng downloads).
+        public static async toDataUrl(element: HTMLElement, mimeType: string, scale: number, background: string | null) {
+            const canvas = await BitChart.rasterize(element, scale, background);
+            if (!canvas) return null;
+            return canvas.toDataURL(mimeType || 'image/png');
+        }
+
         public static downloadText(fileName: string, content: string, mimeType: string) {
-            BitChart.downloadBlob(fileName || 'chart.csv', new Blob([content], { type: mimeType || 'text/plain;charset=utf-8' }));
+            const type = mimeType || 'text/plain;charset=utf-8';
+            // Spreadsheets read a CSV as the local codepage unless it opens with a byte order mark, so a
+            // file of Japanese or Persian labels arrives as mojibake without one.
+            const parts = type.indexOf('text/csv') === 0 ? ['﻿', content] : [content];
+            BitChart.downloadBlob(fileName || 'chart.csv', new Blob(parts, { type }));
         }
 
         private static downloadBlob(fileName: string, blob: Blob) {

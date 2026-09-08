@@ -50,3 +50,13 @@
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="Exploded()" Options="_exploded" /></div></div>
 </DemoExample>
+
+<DemoExample Title="Rounded arcs and ring weights" RazorCode="@roundedRingsRazorCode" CsharpCode="@roundedRingsCsharpCode" Id="pie-rounded-rings">
+    <div class="example-desc">
+        <code>BorderRadius</code> rounds an arc's own corners &mdash; the same property that rounds a bar &mdash;
+        clamped to half the ring's thickness so a wedge can never fold in on itself. <code>Weight</code> shares the
+        available radius out between the rings of a multi-dataset doughnut, so the series that matters can be given
+        the thicker band instead of every ring getting an equal slice of the radius.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="Weighted()" Options="_rounded" /></div></div>
+</DemoExample>

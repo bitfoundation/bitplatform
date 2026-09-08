@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/chart"
             Title="Chart"
-            Description="Native Blazor charting component rendered entirely with SVG - no JavaScript charting engine and no canvas - covering line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts with scales, legends, tooltips, annotations, animations, zoom, export and full keyboard and screen-reader support." />
+            Description="Native Blazor charting component rendered entirely with SVG - no JavaScript charting engine and no canvas - covering line, bar, area, pie, doughnut, polar area, radar, scatter, bubble, sparkline and mixed charts with scales, legends, tooltips, annotations, trendlines, animations, zoom, live updates, export and full keyboard and screen-reader support." />
 
 <DemoPage Name="Chart"
-          Description="A native Blazor charting component: the whole scene - scales, layout, geometry, hit testing - is computed in C# and rendered as plain SVG, so charts work in prerendering and static SSR, need no canvas, and stay crisp at any size. The API mirrors Chart.js: give it a BitChartType plus BitChartData and BitChartOptions (or one BitChartConfig). It draws line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts, with multiple axes, stacking, time and log scales, tooltips, data labels, annotations, scriptable per-element styling, entry animations and zoom/pan. Colors follow the bit theme tokens, so every preset and both schemes re-skin it for free; every chart is keyboard navigable and ships a visually hidden data table for screen readers, and can export itself as SVG, PNG or CSV."
+          Description="A native Blazor charting component: the whole scene - scales, layout, geometry, hit testing - is computed in C# and rendered as plain SVG, so charts work in prerendering and static SSR, need no canvas, and stay crisp at any size. The API mirrors Chart.js: give it a BitChartType plus BitChartData and BitChartOptions (or one BitChartConfig). It draws line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts - or a chrome-free sparkline - with multiple axes, stacking, time and log scales, tooltips, data labels, annotations, trendlines, scriptable per-element styling, entry animations and zoom/pan. Refresh() and the visibility API drive it from code for live feeds. Colors follow the bit theme tokens, so every preset and both schemes re-skin it for free; every chart is navigable by keyboard and by touch and ships a visually hidden data table for screen readers, and can hand itself over as SVG, PNG, a data URL or CSV."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -85,6 +85,9 @@
                 <BitPivotItem HeaderText="Annotations" Key="annotations">
                     <_BitChartAnnotationsDemo />
                 </BitPivotItem>
+                <BitPivotItem HeaderText="Trendlines" Key="trendlines">
+                    <_BitChartTrendlinesDemo />
+                </BitPivotItem>
                 <BitPivotItem HeaderText="Animations" Key="animations">
                     <_BitChartAnimationsDemo />
                 </BitPivotItem>
@@ -93,6 +96,9 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Zoom & Pan" Key="zoom">
                     <_BitChartZoomDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Live data" Key="live">
+                    <_BitChartLiveDemo />
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Localization" Key="localization">
                     <_BitChartLocalizationDemo />

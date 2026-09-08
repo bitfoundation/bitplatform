@@ -172,4 +172,39 @@ private BitChartData Exploded() => new()
         }
     }
 };";
+
+    private readonly BitChartOptions _rounded = new()
+    {
+        CutoutPercentage = 35,
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+    };
+
+    private BitChartData Weighted() => new()
+    {
+        Labels = { "Mobile", "Desktop", "Tablet" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "2026", Data = BitChartSampleData.V(62, 28, 10), BorderRadius = 8, SpacingArc = 4, Weight = 2 },
+            new BitChartDataset { Label = "2025", Data = BitChartSampleData.V(55, 35, 10), BorderRadius = 8, SpacingArc = 4, Weight = 1 }
+        }
+    };
+
+    private readonly string roundedRingsRazorCode = @"<BitChart Type=""BitChartType.Doughnut"" Data=""Weighted()"" Options=""_rounded"" />";
+    private readonly string roundedRingsCsharpCode = @"
+private readonly BitChartOptions _rounded = new()
+{
+    CutoutPercentage = 35,
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+};
+
+private BitChartData Weighted() => new()
+{
+    Labels = { ""Mobile"", ""Desktop"", ""Tablet"" },
+    Datasets =
+    {
+        // Weight 2 vs 1: the outer ring gets two thirds of the available radius.
+        new BitChartDataset { Label = ""2026"", Data = new() { 62, 28, 10 }, BorderRadius = 8, SpacingArc = 4, Weight = 2 },
+        new BitChartDataset { Label = ""2025"", Data = new() { 55, 35, 10 }, BorderRadius = 8, SpacingArc = 4, Weight = 1 }
+    }
+};";
 }

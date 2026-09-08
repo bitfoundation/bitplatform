@@ -24,6 +24,16 @@ public sealed class BitChartAnnotation
     public double LineWidth { get; set; } = 2;
     public List<double>? Dash { get; set; }
 
+    /// <summary>Number of sides of a <see cref="BitChartAnnotationKind.Polygon"/> (3 = triangle).</summary>
+    public int Sides { get; set; } = 3;
+
+    /// <summary>Radius in pixels of a <see cref="BitChartAnnotationKind.Polygon"/> or a
+    /// <see cref="BitChartAnnotationKind.Point"/>. When null a point sizes itself from its line width.</summary>
+    public double? Radius { get; set; }
+
+    /// <summary>Rotation in degrees of a <see cref="BitChartAnnotationKind.Polygon"/>.</summary>
+    public double Rotation { get; set; }
+
     public string? Label { get; set; }
     public string LabelColor { get; set; } = "#fff";
     public string LabelBackground { get; set; } = "#ff6384";

@@ -170,7 +170,7 @@ public sealed partial class BitChartRenderer
     private void DrawIndexAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double baseline)
     {
         var o = axis.Options;
-        if (!o.Display) return;
+        if (!ScaleVisible(o)) return;
         var g = o.Grid;
         var tk = o.Ticks;
         bool centered = HasBars();
@@ -280,7 +280,7 @@ public sealed partial class BitChartRenderer
     private void DrawSecondaryXAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double baselineY, bool atBottom)
     {
         var o = axis.Options;
-        if (!o.Display) return;
+        if (!ScaleVisible(o)) return;
         var g = o.Grid;
         var tk = o.Ticks;
         int dir = atBottom ? 1 : -1;

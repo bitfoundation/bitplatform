@@ -104,6 +104,37 @@ public class BitChartUtilsTests
     }
 
     [TestMethod]
+    [DataRow("日本語", "Japanese")]
+    [DataRow("中文标签", "Chinese")]
+    [DataRow("한국어", "Korean")]
+    public void TextMeasureShouldTreatFullWidthScriptsAsFullEms(string text, string script)
+    {
+        // A CJK glyph fills an em; measuring it at the Latin average would reserve far too little
+        // room and the axis labels would then overlap.
+        Assert.AreEqual(text.Length * 12, BitChartTextMeasure.Width(text, 12), 0.001, script);
+    }
+
+    [TestMethod]
+    public void AFullWidthLabelShouldMeasureWiderThanTheSameCountOfLatinLetters()
+    {
+        Assert.IsTrue(BitChartTextMeasure.Width("東京都", 12) > BitChartTextMeasure.Width("abc", 12));
+    }
+
+    [TestMethod]
+    public void TextMeasureShouldIgnoreCombiningMarks()
+    {
+        // "e" plus a combining acute is one glyph wide, not two.
+        Assert.AreEqual(BitChartTextMeasure.Width("e", 12), BitChartTextMeasure.Width("é", 12), 0.001);
+    }
+
+    [TestMethod]
+    public void TextMeasureShouldStillHandleUnknownLatinLikeCharacters()
+    {
+        // Beyond the table but not full-width: measured at the average rather than dropped.
+        Assert.IsTrue(BitChartTextMeasure.Width("Ω", 12) > 0);
+    }
+
+    [TestMethod]
     public void MultilineWidthShouldReturnTheWidestLine()
     {
         double expected = BitChartTextMeasure.Width("wide line here", 12);
@@ -227,6 +258,35 @@ public class BitChartUtilsTests
     public void QuarterFormatShouldNumberTheQuarter()
     {
         Assert.AreEqual("Q2 2026", BitChartTimeAxis.DefaultFormat(new DateTime(2026, 5, 1), BitChartTimeUnit.Quarter));
+    }
+
+    [TestMethod]
+    public void TimeAxisLabelsShouldFollowTheCultureTheyAreGiven()
+    {
+        var may = new DateTime(2026, 5, 1);
+
+        Assert.AreEqual("May 2026", BitChartTimeAxis.DefaultFormat(may, BitChartTimeUnit.Month));
+        Assert.AreEqual("mai 2026", BitChartTimeAxis.DefaultFormat(may, BitChartTimeUnit.Month, new CultureInfo("fr-FR")));
+    }
+
+    [TestMethod]
+    public void TimeAxisTicksShouldCarryTheCultureIntoTheirLabels()
+    {
+        var start = new DateTime(2026, 1, 1);
+        var ticks = BitChartTimeAxis.Ticks(start.ToOADate(), start.AddDays(120).ToOADate(),
+            BitChartTimeUnit.Month, null, 10, new CultureInfo("fr-FR"));
+
+        Assert.IsTrue(ticks.Any(t => t.Label.StartsWith("janv")), string.Join("|", ticks.Select(t => t.Label)));
+    }
+
+    [TestMethod]
+    public void TimeAxisShouldStayInvariantWhenNoCultureIsGiven()
+    {
+        var start = new DateTime(2026, 1, 1);
+        var ticks = BitChartTimeAxis.Ticks(start.ToOADate(), start.AddDays(120).ToOADate(),
+            BitChartTimeUnit.Month, null, 10);
+
+        Assert.IsTrue(ticks.Any(t => t.Label.StartsWith("Jan")), string.Join("|", ticks.Select(t => t.Label)));
     }
 
     // ---- point shapes ----

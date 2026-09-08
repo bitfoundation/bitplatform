@@ -81,7 +81,65 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
             {
                 double x = a.XMin is { } xv ? X(xv, a.XIsIndex) : plot.CenterX;
                 double y = ctx.YForValue(a.Value, a.AxisId);
-                add(new BitChartSvgCircle { Cx = x, Cy = y, R = a.LineWidth * 2 + 2, Fill = a.FillColor ?? a.Color, Stroke = a.Color, StrokeWidth = a.LineWidth });
+                add(new BitChartSvgCircle
+                {
+                    Cx = x, Cy = y, R = a.Radius ?? a.LineWidth * 2 + 2,
+                    Fill = a.FillColor ?? a.Color, Stroke = a.Color, StrokeWidth = a.LineWidth
+                });
+                if (!string.IsNullOrEmpty(a.Label))
+                    AddLabel(add, a, x, y - (a.Radius ?? a.LineWidth * 2 + 2) - a.LabelFont.LineHeightPx, "middle");
+                break;
+            }
+
+            case BitChartAnnotationKind.Ellipse:
+            {
+                double x1 = a.XMin is { } xm ? X(xm, a.XIsIndex) : plot.Left;
+                double x2 = a.XMax is { } xM ? X(xM, a.XIsIndex) : plot.Right;
+                double y1 = a.YMax is { } yM ? ctx.YForValue(yM, a.AxisId) : plot.Top;
+                double y2 = a.YMin is { } ym ? ctx.YForValue(ym, a.AxisId) : plot.Bottom;
+
+                double cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+                double rx = Math.Abs(x2 - x1) / 2, ry = Math.Abs(y2 - y1) / 2;
+                if (rx <= 0 || ry <= 0) break;
+
+                // Two half-turn arcs make a closed ellipse without needing a primitive of its own.
+                add(new BitChartSvgPath
+                {
+                    D = $"M {BitChartSvg.N(cx - rx)} {BitChartSvg.N(cy)} " +
+                        $"A {BitChartSvg.N(rx)} {BitChartSvg.N(ry)} 0 1 0 {BitChartSvg.N(cx + rx)} {BitChartSvg.N(cy)} " +
+                        $"A {BitChartSvg.N(rx)} {BitChartSvg.N(ry)} 0 1 0 {BitChartSvg.N(cx - rx)} {BitChartSvg.N(cy)} Z",
+                    Fill = a.FillColor ?? BitChartColorUtil.WithAlpha(a.Color, 0.15),
+                    Stroke = a.Color, StrokeWidth = a.LineWidth,
+                    Dash = BitChartSvg.Dash(a.Dash)
+                });
+                if (!string.IsNullOrEmpty(a.Label))
+                    AddLabel(add, a, cx, cy, "middle");
+                break;
+            }
+
+            case BitChartAnnotationKind.Polygon:
+            {
+                double cx = a.XMin is { } xv ? X(xv, a.XIsIndex) : plot.CenterX;
+                double cy = ctx.YForValue(a.Value, a.AxisId);
+                double r = a.Radius ?? 12;
+                int sides = Math.Max(3, a.Sides);
+                if (r <= 0) break;
+
+                var poly = new BitChartSvgPolygon
+                {
+                    Fill = a.FillColor ?? BitChartColorUtil.WithAlpha(a.Color, 0.2),
+                    Stroke = a.Color, StrokeWidth = a.LineWidth
+                };
+                // Starts at the top so a triangle points up, which is what a reader expects of one.
+                double start = -Math.PI / 2 + a.Rotation * Math.PI / 180;
+                for (int i = 0; i < sides; i++)
+                {
+                    double angle = start + 2 * Math.PI * i / sides;
+                    poly.Points.Add((cx + Math.Cos(angle) * r, cy + Math.Sin(angle) * r));
+                }
+                add(poly);
+                if (!string.IsNullOrEmpty(a.Label))
+                    AddLabel(add, a, cx, cy - r - a.LabelFont.LineHeightPx, "middle");
                 break;
             }
 

@@ -185,7 +185,7 @@ public sealed class BitChartAxisScale
     private void BuildTimeTicks()
     {
         int maxTicks = FitTickLimit(Options.Ticks.Count ?? Options.Ticks.MaxTicksLimit ?? 11);
-        foreach (var (value, label) in BitChartTimeAxis.Ticks(Min, Max, Options.TimeUnit, Options.TimeFormat, maxTicks))
+        foreach (var (value, label) in BitChartTimeAxis.Ticks(Min, Max, Options.TimeUnit, Options.TimeFormat, maxTicks, Culture))
             Ticks.Add(new BitChartAxisTick(value, label, PixelFor(value)));
     }
 

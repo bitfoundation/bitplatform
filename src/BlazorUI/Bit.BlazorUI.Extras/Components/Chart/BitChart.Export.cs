@@ -47,6 +47,46 @@ public partial class BitChart
         }
     }
 
+    /// <summary>
+    /// Returns the chart as standalone SVG markup instead of downloading it - for embedding it in a
+    /// report, mailing it, or storing it - with the theme tokens it references resolved into the markup
+    /// so it looks the same outside the app.
+    /// </summary>
+    /// <param name="backgroundColor">Optional background painted behind the chart (SVG is transparent by default).</param>
+    /// <returns>The SVG markup, or null when the chart has not been rendered in a browser yet.</returns>
+    public async Task<string?> ToSvgStringAsync(string? backgroundColor = null)
+    {
+        try
+        {
+            return await JS.BitChartToSvgString(_plotEl, backgroundColor);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Returns the chart as a rasterized <c>data:</c> URL - the same picture <see cref="ExportPngAsync"/>
+    /// downloads - ready to drop into an <c>img</c> src or a PDF. Mirrors Chart.js's <c>toBase64Image</c>.
+    /// </summary>
+    /// <param name="mimeType">Image type to encode; <c>image/png</c> by default (<c>image/jpeg</c> and <c>image/webp</c> also work).</param>
+    /// <param name="scale">Pixel ratio; 2 (the default) produces a crisp image on high-density displays.</param>
+    /// <param name="backgroundColor">Background painted behind the chart; PNG is transparent without it.</param>
+    /// <returns>The data URL, or null when the chart has not been rendered in a browser yet.</returns>
+    public async Task<string?> ToBase64ImageAsync(string mimeType = "image/png", double scale = 2,
+        string? backgroundColor = "#ffffff")
+    {
+        try
+        {
+            return await JS.BitChartToDataUrl(_plotEl, mimeType, scale <= 0 ? 1 : scale, backgroundColor);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     /// <summary>Downloads the chart's data as a <c>.csv</c> file.</summary>
     /// <param name="fileName">File name to save as; defaults to <c>chart.csv</c>.</param>
     /// <returns>True when the file was produced.</returns>

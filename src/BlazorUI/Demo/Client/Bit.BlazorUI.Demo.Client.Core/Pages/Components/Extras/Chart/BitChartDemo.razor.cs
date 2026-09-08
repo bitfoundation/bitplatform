@@ -98,10 +98,31 @@ public partial class BitChartDemo
         },
         new()
         {
+            Name = "NavigationHint",
+            Type = "string?",
+            DefaultValue = "\"Interactive chart. Use the left and right arrow keys...\"",
+            Description = "A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by aria-describedby alongside the data table. Only rendered when there is data to navigate; set it to null to leave it out."
+        },
+        new()
+        {
             Name = "GenerateTable",
             Type = "bool",
             DefaultValue = "true",
             Description = "Renders a visually-hidden data table for screen readers and points the chart's aria-describedby at it."
+        },
+        new()
+        {
+            Name = "MaxTableRows",
+            Type = "int",
+            DefaultValue = "500",
+            Description = "Upper bound on the rows the screen-reader table renders, so a long series does not put tens of thousands of hidden nodes in the DOM. Past the limit the caption says how many rows were left out."
+        },
+        new()
+        {
+            Name = "MaxTableColumns",
+            Type = "int",
+            DefaultValue = "100",
+            Description = "Upper bound on the columns the screen-reader table renders. A value series is one row with a cell per category, so a long one is wide rather than tall and the row cap alone would not contain it. Ignored for scatter and bubble data, whose table is three fixed columns."
         },
         new()
         {
@@ -161,6 +182,54 @@ public partial class BitChartDemo
     [
         new()
         {
+            Name = "Refresh",
+            Type = "void Refresh()",
+            Description = "Rebuilds and redraws the chart from its current data and options. Blazor only re-renders on a parameter change it can see, so mutating the same BitChartData in place - appending to a live series, editing a value - needs this call. The counterpart of Chart.js's chart.update()."
+        },
+        new()
+        {
+            Name = "IsDatasetVisible",
+            Type = "bool IsDatasetVisible(int datasetIndex)",
+            Description = "Whether a dataset is currently drawn, i.e. hidden neither through the legend nor by BitChartDataset.Hidden."
+        },
+        new()
+        {
+            Name = "SetDatasetVisible",
+            Type = "void SetDatasetVisible(int datasetIndex, bool visible)",
+            Description = "Shows or hides a dataset, exactly as clicking its legend entry would; the axes re-scale around what is left."
+        },
+        new()
+        {
+            Name = "ToggleDataset",
+            Type = "void ToggleDataset(int datasetIndex)",
+            Description = "Flips a dataset between shown and hidden."
+        },
+        new()
+        {
+            Name = "IsDataIndexVisible",
+            Type = "bool IsDataIndexVisible(int dataIndex)",
+            Description = "Whether a data index - a pie, doughnut or polar-area slice - is currently drawn."
+        },
+        new()
+        {
+            Name = "SetDataIndexVisible",
+            Type = "void SetDataIndexVisible(int dataIndex, bool visible)",
+            Description = "Shows or hides one data index across the chart, the slice-level counterpart of SetDatasetVisible."
+        },
+        new()
+        {
+            Name = "ToggleDataIndex",
+            Type = "void ToggleDataIndex(int dataIndex)",
+            Description = "Flips one data index between shown and hidden."
+        },
+        new()
+        {
+            Name = "ResetVisibility",
+            Type = "void ResetVisibility()",
+            Description = "Brings back every dataset and data index hidden through the legend or the API."
+        },
+        new()
+        {
             Name = "ResetZoom",
             Type = "void ResetZoom()",
             Description = "Clears every zoom/pan override and returns the chart to the full data range."
@@ -200,6 +269,18 @@ public partial class BitChartDemo
             Name = "ToCsv",
             Type = "string ToCsv()",
             Description = "Returns the chart's data as CSV text: one row per series for value datasets, one row per point for scatter and bubble datasets."
+        },
+        new()
+        {
+            Name = "ToSvgStringAsync",
+            Type = "Task<string?> ToSvgStringAsync(string? backgroundColor = null)",
+            Description = "Returns the chart as standalone SVG markup instead of downloading it, with the theme tokens it references resolved into the markup. Null when the chart has not been rendered in a browser yet."
+        },
+        new()
+        {
+            Name = "ToBase64ImageAsync",
+            Type = "Task<string?> ToBase64ImageAsync(string mimeType = \"image/png\", double scale = 2, string? backgroundColor = \"#ffffff\")",
+            Description = "Returns the rasterized chart as a data: URL - the same picture ExportPngAsync downloads - ready for an img src or a PDF. Mirrors Chart.js's toBase64Image."
         },
     ];
 
@@ -433,7 +514,7 @@ public partial class BitChartDemo
                     Name = "BorderRadius",
                     Type = "double",
                     DefaultValue = "0",
-                    Description = "Bar corner radius. Only the corners away from the skipped (baseline) edge are rounded; BorderRadiusCorners overrides each corner."
+                    Description = "Corner radius. On a bar only the corners away from the skipped (baseline) edge are rounded, and BorderRadiusCorners overrides each corner; on a pie, doughnut or polar-area arc it rounds the arc's own corners, clamped to half the ring's thickness."
                 },
                 new()
                 {
@@ -441,6 +522,27 @@ public partial class BitChartDemo
                     Type = "double",
                     DefaultValue = "0 / 0 / 6",
                     Description = "Arc geometry: how far every slice sits from the center, the gap left between neighbouring slices, and the extra distance the hovered slice pops out."
+                },
+                new()
+                {
+                    Name = "Weight",
+                    Type = "double",
+                    DefaultValue = "1",
+                    Description = "Relative thickness of this dataset's ring in a multi-dataset pie or doughnut. The available radius is shared out in proportion to the weights."
+                },
+                new()
+                {
+                    Name = "ErrorData",
+                    Type = "List<BitChartErrorBar?>?",
+                    DefaultValue = "null",
+                    Description = "Per-index uncertainty, drawn as a capped whisker through the value and named in the tooltip. A BitChartErrorBar comes from one number (symmetric) or two (asymmetric); a null entry leaves that value bare. Cartesian charts only."
+                },
+                new()
+                {
+                    Name = "ErrorBarColor / ErrorBarWidth / ErrorBarCapWidth",
+                    Type = "string? / double / double",
+                    DefaultValue = "null / 1.5 / 8",
+                    Description = "Error-bar styling. A null color follows the primary foreground token; a zero cap width draws a bare whisker."
                 },
                 new()
                 {
@@ -499,6 +601,13 @@ public partial class BitChartDemo
                     Type = "BitChartIndexAxis",
                     DefaultValue = "BitChartIndexAxis.X",
                     Description = "The axis the data index runs along: X for vertical bars, Y for horizontal ones."
+                },
+                new()
+                {
+                    Name = "Sparkline",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Draws the chart as a sparkline: axes, grid, tick labels, legend, title and subtitle are all dropped so the series fills the box. A presentation switch only - tooltips, keyboard navigation and the screen-reader table still describe the full series."
                 },
                 new()
                 {
@@ -562,6 +671,64 @@ public partial class BitChartDemo
                     Type = "double",
                     DefaultValue = "50 / 360 / -90",
                     Description = "Doughnut hole size, sweep and starting angle. A 180 degree sweep turns a doughnut into a gauge."
+                },
+            ]
+        },
+        new()
+        {
+            Id = "chart-trendline",
+            Title = "BitChartTrendline",
+            Description = "One fitted line drawn over a dataset by BitChartTrendlinePlugin, which is registered through Options.Plugins.Custom. Cartesian charts only.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "DatasetIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "Index of the dataset the line is fitted to. A dataset hidden through the legend takes its trend line with it."
+                },
+                new()
+                {
+                    Name = "Kind",
+                    Type = "BitChartTrendlineKind",
+                    DefaultValue = "BitChartTrendlineKind.Linear",
+                    Description = "Linear for a least-squares regression, MovingAverage for a trailing average over Period points, or Average for a flat line at the series mean."
+                },
+                new()
+                {
+                    Name = "Period",
+                    Type = "int",
+                    DefaultValue = "5",
+                    Description = "Window of the trailing moving average. Ignored by the other kinds."
+                },
+                new()
+                {
+                    Name = "Extend",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Projects a straight fit out to both edges of the plot instead of stopping at the first and last data point. Ignored by MovingAverage, which has no meaning outside the data."
+                },
+                new()
+                {
+                    Name = "Color / LineWidth / Dash",
+                    Type = "string? / double / List<double>?",
+                    DefaultValue = "null / 2 / [6, 4]",
+                    Description = "Line styling. A null color follows the dataset's own border color; the dash is what keeps the fit from reading as another measured series - set it to null for a solid line."
+                },
+                new()
+                {
+                    Name = "Label / LabelColor / LabelBackground / LabelFont",
+                    Type = "string? / string / string? / BitChartFont",
+                    DefaultValue = "null / #fff / null / 11px bold",
+                    Description = "An optional pill drawn at the end of the line, pinned inside the plot so it stays readable at the edge."
+                },
+                new()
+                {
+                    Name = "DrawBehindDatasets",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Draws the line under the datasets rather than over them."
                 },
             ]
         },

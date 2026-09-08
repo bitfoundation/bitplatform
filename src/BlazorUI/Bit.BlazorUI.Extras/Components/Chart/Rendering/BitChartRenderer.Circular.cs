@@ -32,7 +32,12 @@ public sealed partial class BitChartRenderer
 
         double ringOuter = maxR;
         double ringInner = maxR * cutout;
-        double ringThickness = (ringOuter - ringInner) / datasets.Count;
+
+        // Ring thickness is shared out by weight, so one dataset can be given a thicker band than the
+        // others. With every weight left at its default of 1 this is an even split, exactly as before.
+        double ringSpan = ringOuter - ringInner;
+        double totalWeight = datasets.Sum(t => Math.Max(0, t.ds.Weight));
+        if (totalWeight <= 0) totalWeight = datasets.Count;
 
         var ctx = new BitChartPluginContext
         {
@@ -41,11 +46,13 @@ public sealed partial class BitChartRenderer
         };
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(ctx);
 
+        double ringCursor = ringOuter;
         for (int ri = 0; ri < datasets.Count; ri++)
         {
             var (ds, dsIndex) = datasets[ri];
-            double outer = ringOuter - ringThickness * ri;
-            double inner = outer - ringThickness;
+            double outer = ringCursor;
+            double inner = outer - ringSpan * (Math.Max(0, ds.Weight) / totalWeight);
+            ringCursor = inner;
 
             double total = 0;
             for (int i = 0; i < ds.Data.Count; i++)
@@ -78,7 +85,7 @@ public sealed partial class BitChartRenderer
 
                 var path = new BitChartSvgPath
                 {
-                    D = ArcPath(cx + ox, cy + oy, inner, outer, d0, d1),
+                    D = ArcPath(cx + ox, cy + oy, inner, outer, d0, d1, ds.BorderRadius),
                     Fill = bg,
                     Stroke = borderColor,
                     StrokeWidth = arcBorderWidth
@@ -91,7 +98,7 @@ public sealed partial class BitChartRenderer
                     ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, dsIndex, i, true, v, active: true) : BitChartColorUtil.Adjust(bg, 0.08));
                 var hoverPath = new BitChartSvgPath
                 {
-                    D = ArcPath(cx + Math.Cos(mid) * hoverOffset, cy + Math.Sin(mid) * hoverOffset, inner, outer, d0, d1),
+                    D = ArcPath(cx + Math.Cos(mid) * hoverOffset, cy + Math.Sin(mid) * hoverOffset, inner, outer, d0, d1, ds.BorderRadius),
                     Fill = hoverBg,
                     Stroke = ds.HoverBorderColor ?? borderColor,
                     StrokeWidth = ds.HoverBorderWidth ?? arcBorderWidth
@@ -142,9 +149,13 @@ public sealed partial class BitChartRenderer
 
     private void RenderPolarArea(BitChartScene scene, double cx, double cy, double maxR)
     {
-        var ds = _data.Datasets.FirstOrDefault();
-        if (ds is null) return;
-        int dsIndex = 0;
+        // The polar scale is shared by the whole chart, so it draws the first *visible* dataset -
+        // hiding it from the legend has to empty the chart rather than leave it drawn.
+        int dsIndex = -1;
+        for (int k = 0; k < _data.Datasets.Count; k++)
+            if (!IsHidden(k, _data.Datasets[k])) { dsIndex = k; break; }
+        if (dsIndex < 0) return;
+        var ds = _data.Datasets[dsIndex];
         int n = ds.Data.Count;
         if (n == 0) return;
 
@@ -158,7 +169,7 @@ public sealed partial class BitChartRenderer
         double rotation = (_options.RotationDegrees + rOpts.StartAngle) * Math.PI / 180;
 
         // Reserve room for perimeter point labels, measured the same way the radar chart does.
-        if (rOpts.PointLabels.Display && _data.Labels.Count > 0)
+        if (PointLabelsVisible(rOpts) && _data.Labels.Count > 0)
             maxR -= PointLabelReserve(rOpts.PointLabels, _data.Labels, n, rotation + sliceAngle / 2, sliceAngle);
         if (maxR <= 0) return;
 
@@ -166,8 +177,15 @@ public sealed partial class BitChartRenderer
         rScale.SetDataRange(0, maxVal);
         rScale.SetPixelRange(0, maxR);
 
+        var pctx = new BitChartPluginContext
+        {
+            Scene = scene, Config = _config, IsCartesian = false,
+            CenterX = cx, CenterY = cy, InnerRadius = 0, OuterRadius = maxR
+        };
+        foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(pctx);
+
         // Radial grid circles.
-        if (rOpts.Display && rOpts.Grid.Display)
+        if (ScaleVisible(rOpts) && rOpts.Grid.Display)
         {
             foreach (var t in rScale.Ticks)
             {
@@ -186,17 +204,19 @@ public sealed partial class BitChartRenderer
             double a0 = angle, a1 = angle + sliceAngle;
             angle = a1;
             double halfGap = ds.SpacingArc > 0 && maxR > 0 ? Math.Min(ds.SpacingArc / 2 / maxR, sliceAngle / 4) : 0;
-            double r = rScale.PixelFor(v);
+            // A value below the scale minimum maps to a negative radius, which would draw the wedge
+            // inside out through the center; a polar wedge simply has no length there.
+            double r = Math.Clamp(rScale.PixelFor(v), 0, maxR);
             string bg = ResolveBackground(ds, dsIndex, i, true);
             var path = new BitChartSvgPath
             {
-                D = ArcPath(cx, cy, 0, r, a0 + halfGap, a1 - halfGap),
+                D = ArcPath(cx, cy, 0, r, a0 + halfGap, a1 - halfGap, ds.BorderRadius),
                 Fill = BitChartColorUtil.WithAlpha(bg, 0.7),
                 Stroke = bg, StrokeWidth = arcBorderWidth
             };
             var hoverPath = new BitChartSvgPath
             {
-                D = ArcPath(cx, cy, 0, r, a0 + halfGap, a1 - halfGap),
+                D = ArcPath(cx, cy, 0, r, a0 + halfGap, a1 - halfGap, ds.BorderRadius),
                 Fill = BitChartColorUtil.WithAlpha(ds.HoverBackgroundColor ?? BitChartColorUtil.Adjust(bg, -0.1), 0.85),
                 Stroke = ds.HoverBorderColor ?? bg, StrokeWidth = ds.HoverBorderWidth ?? arcBorderWidth
             };
@@ -225,7 +245,7 @@ public sealed partial class BitChartRenderer
         }
 
         // Perimeter category (point) labels.
-        if (rOpts.PointLabels.Display && _data.Labels.Count > 0)
+        if (PointLabelsVisible(rOpts) && _data.Labels.Count > 0)
         {
             var pl = rOpts.PointLabels;
             double a = rotation;
@@ -247,6 +267,8 @@ public sealed partial class BitChartRenderer
                 });
             }
         }
+
+        foreach (var plugin in _options.Plugins.Custom) plugin.AfterDatasetsDraw(pctx);
     }
 
     /// <summary>
@@ -288,6 +310,78 @@ public sealed partial class BitChartRenderer
             X = cx + 4, Y = cy - rr, Text = label, Fill = rOpts.Ticks.Color,
             FontSize = rOpts.Ticks.Font.Size, FontFamily = rOpts.Ticks.Font.Family, Anchor = "start", Baseline = "central"
         });
+    }
+
+    /// <summary>
+    /// Builds an arc path, rounding its corners when the dataset asks for it. A zero radius - or an arc
+    /// that has come round to a full circle, which has no corners to round - falls through to the plain
+    /// path, so nothing changes for the charts that never set one.
+    /// </summary>
+    private static string ArcPath(double cx, double cy, double inner, double outer, double a0, double a1, double cornerRadius)
+        => cornerRadius > 0 && a1 - a0 < 2 * Math.PI - 1e-3
+            ? RoundedArcPath(cx, cy, inner, outer, a0, a1, cornerRadius)
+            : ArcPath(cx, cy, inner, outer, a0, a1);
+
+    /// <summary>
+    /// Builds an arc/ring path whose corners are rounded, mirroring Chart.js's arc <c>borderRadius</c>.
+    /// Each corner is cut back along both edges that meet there and reconnected with a quadratic curve
+    /// through the true corner point, which reads as a fillet at any radius and cannot self-intersect:
+    /// the radius is clamped to half the ring's thickness and half its arc length first. A pie arc has
+    /// no inner edge, so only the two outer corners are rounded - its point sits at the center.
+    /// </summary>
+    private static string RoundedArcPath(double cx, double cy, double inner, double outer, double a0, double a1, double radius)
+    {
+        double span = a1 - a0;
+        double thickness = outer - Math.Max(0, inner);
+        if (span <= 0 || thickness <= 0) return ArcPath(cx, cy, inner, outer, a0, a1);
+
+        // The outer edge is the longest, so it decides how much of a corner there is room for.
+        double r = Math.Min(radius, thickness / 2);
+        r = Math.Min(r, span * outer / 2);
+        if (r <= 0.01) return ArcPath(cx, cy, inner, outer, a0, a1);
+
+        (double X, double Y) P(double rad, double ang) => (cx + rad * Math.Cos(ang), cy + rad * Math.Sin(ang));
+        static string M((double X, double Y) p) => $"M {BitChartSvg.N(p.X)} {BitChartSvg.N(p.Y)} ";
+        static string L((double X, double Y) p) => $"L {BitChartSvg.N(p.X)} {BitChartSvg.N(p.Y)} ";
+        static string Q((double X, double Y) c, (double X, double Y) p)
+            => $"Q {BitChartSvg.N(c.X)} {BitChartSvg.N(c.Y)}, {BitChartSvg.N(p.X)} {BitChartSvg.N(p.Y)} ";
+        string A(double rad, (double X, double Y) p, int sweep, double from, double to)
+            => $"A {BitChartSvg.N(rad)} {BitChartSvg.N(rad)} 0 {(Math.Abs(to - from) > Math.PI ? 1 : 0)} {sweep} {BitChartSvg.N(p.X)} {BitChartSvg.N(p.Y)} ";
+
+        // Angular size of the corner on each edge: the same arc length r, so a tighter radius covers
+        // more angle on the inner edge than on the outer one.
+        double outerCut = r / outer;
+        double oa0 = a0 + outerCut, oa1 = a1 - outerCut;
+        if (oa1 < oa0) { double mid = (a0 + a1) / 2; oa0 = oa1 = mid; }
+
+        var sb = new System.Text.StringBuilder();
+        if (inner <= 0.01)
+        {
+            // Pie wedge: center → rounded outer start → outer arc → rounded outer end → center.
+            sb.Append(M((cx, cy)));
+            sb.Append(L(P(outer - r, a0)));
+            sb.Append(Q(P(outer, a0), P(outer, oa0)));
+            sb.Append(A(outer, P(outer, oa1), 1, oa0, oa1));
+            sb.Append(Q(P(outer, a1), P(outer - r, a1)));
+            sb.Append('Z');
+            return sb.ToString();
+        }
+
+        double innerCut = Math.Min(r / inner, span / 2);
+        double ia0 = a0 + innerCut, ia1 = a1 - innerCut;
+        if (ia1 < ia0) { double mid = (a0 + a1) / 2; ia0 = ia1 = mid; }
+
+        sb.Append(M(P(inner + r, a0)));
+        sb.Append(L(P(outer - r, a0)));
+        sb.Append(Q(P(outer, a0), P(outer, oa0)));
+        sb.Append(A(outer, P(outer, oa1), 1, oa0, oa1));
+        sb.Append(Q(P(outer, a1), P(outer - r, a1)));
+        sb.Append(L(P(inner + r, a1)));
+        sb.Append(Q(P(inner, a1), P(inner, ia1)));
+        sb.Append(A(inner, P(inner, ia0), 0, ia1, ia0));
+        sb.Append(Q(P(inner, a0), P(inner + r, a0)));
+        sb.Append('Z');
+        return sb.ToString();
     }
 
     /// <summary>Builds an SVG arc/ring path. Handles full circles.</summary>

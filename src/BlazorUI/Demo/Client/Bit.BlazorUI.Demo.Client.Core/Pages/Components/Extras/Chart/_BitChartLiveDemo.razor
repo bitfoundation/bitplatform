@@ -1,0 +1,39 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+@implements IDisposable
+
+<DemoExample Title="Streaming updates" RazorCode="@streamRazorCode" CsharpCode="@streamCsharpCode" Id="live-streaming">
+    <div class="example-desc">
+        Blazor only re-renders when a parameter it can compare changes, so appending a reading to the same
+        <code>BitChartData</code> object leaves the chart showing the old scene. <code>Refresh()</code> is what tells
+        it to rebuild from the data as it now stands &mdash; the counterpart of Chart.js's <code>chart.update()</code>
+        &mdash; which is all a live feed needs. An open tooltip keeps pointing at the reading it was on rather than
+        blinking out on every tick.
+    </div>
+    <div class="buttons-container" style="gap:.5rem">
+        <BitButton Variant="BitVariant.Outline" OnClick="Toggle">@(_timer is null ? "Start" : "Stop")</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="AddReading">Add one reading</BitButton>
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_live" RespectReducedMotion="false" Type="BitChartType.Line" Data="_stream" Options="_streamOptions" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Showing and hiding series from code" RazorCode="@visibilityRazorCode" CsharpCode="@visibilityCsharpCode" Id="live-visibility">
+    <div class="example-desc">
+        The legend's toggle is also an API: <code>ToggleDataset</code>, <code>SetDatasetVisible</code> and
+        <code>IsDatasetVisible</code> drive the same state from your own controls, <code>ToggleDataIndex</code> does it
+        per slice for pie, doughnut and polar-area charts, and <code>ResetVisibility</code> brings everything back.
+        Hiding a series re-scales the axes around what is left, exactly as clicking its legend entry would.
+    </div>
+    <div class="controls">
+        @for (int i = 0; i < _revenue.Datasets.Count; i++)
+        {
+            var index = i;
+            <label>
+                <input type="checkbox" checked="@(_visibility?.IsDatasetVisible(index) ?? true)"
+                       @onchange="() => _visibility?.ToggleDataset(index)" />
+                @_revenue.Datasets[index].Label
+            </label>
+        }
+        <BitButton Variant="BitVariant.Outline" OnClick="() => _visibility?.ResetVisibility()">Show all</BitButton>
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_visibility" RespectReducedMotion="false" Type="BitChartType.Bar" Data="_revenue" Options="_visibilityOptions" /></div></div>
+</DemoExample>
