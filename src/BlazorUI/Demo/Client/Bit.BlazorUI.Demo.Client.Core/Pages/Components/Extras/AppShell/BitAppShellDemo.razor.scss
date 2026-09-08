@@ -90,3 +90,9 @@
 ::deep .styled-main {
     background-image: linear-gradient(var(--bit-clr-bg-sec), transparent 6rem);
 }
+
+// The overflow example needs something wider than the shell to overflow it sideways.
+.wide-row {
+    width: 140%;
+    white-space: nowrap;
+}

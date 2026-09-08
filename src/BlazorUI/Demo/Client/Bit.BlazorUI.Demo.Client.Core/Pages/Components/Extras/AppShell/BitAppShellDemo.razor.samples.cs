@@ -17,8 +17,17 @@ public partial class BitAppShellDemo
 
     private readonly string example2RazorCode = @"
 <BitToggle @bind-Value=""noInsets"" Text=""NoInsets"" />
+<BitToggle @bind-Value=""noTopInset"" Text=""NoTopInset"" />
+<BitToggle @bind-Value=""noBottomInset"" Text=""NoBottomInset"" />
+<BitToggle @bind-Value=""noStartInset"" Text=""NoStartInset"" />
+<BitToggle @bind-Value=""noEndInset"" Text=""NoEndInset"" />
 
-<BitAppShell NoInsets=""noInsets"" Styles=""insetStyles"">
+<BitAppShell NoInsets=""noInsets""
+             NoEndInset=""noEndInset""
+             NoTopInset=""noTopInset""
+             NoStartInset=""noStartInset""
+             NoBottomInset=""noBottomInset""
+             Styles=""insetStyles"">
     <div class=""page-body"">
         @foreach (var i in Enumerable.Range(1, 12))
         {
@@ -28,6 +37,10 @@ public partial class BitAppShellDemo
 </BitAppShell>";
     private readonly string example2CsharpCode = @"
 private bool noInsets;
+private bool noTopInset;
+private bool noEndInset;
+private bool noStartInset;
+private bool noBottomInset;
 
 // The four bars are sized from env(safe-area-inset-*), which is 0 on a desktop browser,
 // so this example gives them a size and a color of their own to make them visible.
@@ -40,7 +53,9 @@ private readonly BitAppShellClassStyles insetStyles = new()
 };";
 
     private readonly string example3RazorCode = @"
-<BitAppShell AvoidKeyboard>
+<div>Keyboard inset: <b>@keyboardInset.ToString(""0"")</b> px</div>
+
+<BitAppShell AvoidKeyboard OnKeyboardInsetChanged=""HandleKeyboardInset"">
     <div class=""page"">
         <div class=""page-body"">
             @foreach (var i in Enumerable.Range(1, 10))
@@ -58,6 +73,9 @@ private readonly BitAppShellClassStyles insetStyles = new()
 </BitAppShell>";
     private readonly string example3CsharpCode = @"
 private string? message;
+private double keyboardInset;
+
+private void HandleKeyboardInset(double inset) { keyboardInset = inset; StateHasChanged(); }
 
 // .composer { position: sticky; bottom: 0; }
 //
@@ -232,6 +250,89 @@ private void RenameUser()
 }";
 
     private readonly string example10RazorCode = @"
+<BitToggle @bind-Value=""clipOverflowX"" Text=""OverflowX: Hidden"" />
+<BitToggle @bind-Value=""stableGutter"" Text=""Gutter: Stable"" />
+<BitToggle @bind-Value=""shortOverflowPage"" Text=""Short page"" />
+
+<BitAppShell Gutter=""@(stableGutter ? BitScrollbarGutter.Stable : null)""
+             OverflowX=""@(clipOverflowX ? BitOverflow.Hidden : null)"">
+    <div class=""page-body"">
+        <div class=""row wide-row"">A row wider than the shell</div>
+        @foreach (var i in Enumerable.Range(1, shortOverflowPage ? 1 : 20))
+        {
+            <div class=""row"">Row @i</div>
+        }
+    </div>
+</BitAppShell>";
+    private readonly string example10CsharpCode = @"
+private bool stableGutter;
+private bool clipOverflowX;
+private bool shortOverflowPage;";
+
+    private readonly string example11RazorCode = @"
+<BitToggle @bind-Value=""stickyPadding"" Text=""ScrollPadding: 2.5rem (the height of the header)"" />
+
+<BitButton OnClick=""ScrollToPaddedRow"">ScrollToElement(row 15)</BitButton>
+<BitButton OnClick=""() => paddingShell?.GoToTop()"">GoToTop</BitButton>
+
+<BitAppShell @ref=""paddingShell"" ScrollPadding=""@paddingValue"">
+    <div class=""page"">
+        @* Stuck to the top of the scrolling middle, which is what the padding leaves room for. *@
+        <div class=""page-head"">A header stuck to the top of the shell</div>
+        <div class=""page-body"">
+            @foreach (var i in Enumerable.Range(1, 30))
+            {
+                <div class=""row"" id=""@(i == 15 ? ""padded-row"" : null)"">
+                    Row @i @(i == 15 ? ""(the target)"" : null)
+                </div>
+            }
+        </div>
+    </div>
+</BitAppShell>";
+    private readonly string example11CsharpCode = @"
+private bool stickyPadding;
+private BitAppShell? paddingShell;
+
+private string? paddingValue => stickyPadding ? ""2.5rem 0 0 0"" : null;
+
+private Task ScrollToPaddedRow() => paddingShell?.ScrollToElement(""padded-row"") ?? Task.CompletedTask;";
+
+    private readonly string example12RazorCode = @"
+<BitToggle @bind-Value=""autoScroll"" Text=""AutoScroll"" />
+<BitToggle @bind-Value=""preserveScroll"" Text=""PreserveScroll"" />
+
+<BitButton OnClick=""AppendMessage"">Append to the end</BitButton>
+<BitButton OnClick=""PrependMessages"">Prepend 5 older</BitButton>
+<BitButton OnClick=""() => feedShell?.Refresh()"">Refresh</BitButton>
+
+<BitAppShell @ref=""feedShell"" AutoScroll=""autoScroll"" PreserveScroll=""preserveScroll"">
+    <div class=""page-body"">
+        @foreach (var message in feed)
+        {
+            <div class=""row"">@message</div>
+        }
+    </div>
+</BitAppShell>";
+    private readonly string example12CsharpCode = @"
+private bool autoScroll = true;
+private bool preserveScroll = true;
+private int feedNext = 13;
+private int feedOlder;
+private BitAppShell? feedShell;
+private readonly List<string> feed = [.. Enumerable.Range(1, 12).Select(i => $""Message {i}"")];
+
+private void AppendMessage() => feed.Add($""Message {feedNext++}"");
+
+// Older content lands ABOVE what the reader is looking at, which is the arrival PreserveScroll is for.
+private void PrependMessages()
+{
+    for (var i = 0; i < 5; i++)
+    {
+        feed.Insert(0, $""Older message {--feedOlder}"");
+    }
+}";
+
+    private readonly string example13RazorCode = @"
 <BitAppShell Classes=""shellClasses"" Styles=""shellStyles"">
     <div class=""page-body"">
         @foreach (var i in Enumerable.Range(1, 12))
@@ -240,7 +341,7 @@ private void RenameUser()
         }
     </div>
 </BitAppShell>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly BitAppShellClassStyles shellStyles = new()
 {
     Root = ""border-radius:0.5rem;overflow:hidden"",
@@ -254,7 +355,7 @@ private readonly BitAppShellClassStyles shellClasses = new()
     Main = ""styled-main"",
 };";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitAppShell Dir=""BitDir.Rtl"" Styles=""insetStyles"">
     <div class=""page-body"">
         @foreach (var i in Enumerable.Range(1, 12))

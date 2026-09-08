@@ -14,6 +14,11 @@ namespace Bit.BlazorUI;
 /// <br />
 /// The safe area insets are read from <c>env(safe-area-inset-*)</c>, which the browser only reports as
 /// anything other than zero on a page whose viewport meta tag carries <c>viewport-fit=cover</c>.
+/// <br />
+/// What it measures is published on its root as CSS variables, so a page can lay its own chrome out
+/// against the same numbers: <c>--bit-ash-inset-top</c>, <c>--bit-ash-inset-bottom</c>,
+/// <c>--bit-ash-inset-start</c> and <c>--bit-ash-inset-end</c> for the four safe areas, and
+/// <c>--bit-ash-keyboard-inset</c> for how much of the shell the on-screen keyboard is covering.
 /// </remarks>
 [SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
 public partial class BitAppShell : BitComponentBase
@@ -66,6 +71,30 @@ public partial class BitAppShell : BitComponentBase
     [Parameter] public bool AutoGoToTop { get; set; }
 
     /// <summary>
+    /// Keeps the main container of the app shell pinned to the end of its content as the content grows.
+    /// </summary>
+    /// <remarks>
+    /// This is what the chat, the log or the console of a shell wants: the newest content is at the end and
+    /// the shell stays there on its own. It pins the container as soon as it is turned on, and after that
+    /// only while the reader left it standing at the end - a reader who scrolled up to read something is
+    /// not dragged back down by the next arrival, and scrolling back to the end takes the pinning up again.
+    /// <see cref="AutoScrollThreshold"/> decides how near the end still counts as being at it, and
+    /// <see cref="ScrollBehavior"/> how the moves it makes are animated.
+    /// </remarks>
+    [Parameter] public bool AutoScroll { get; set; }
+
+    /// <summary>
+    /// How near the end of the content (in pixels) the main container has to have been left for
+    /// <see cref="AutoScroll"/> to keep pinning it there.
+    /// </summary>
+    /// <remarks>
+    /// The default of 0 asks the reader to be at the very end, which is the strictest reading and the one a
+    /// chat usually wants. A larger value keeps the pinning going while they are within that many pixels of
+    /// it, so a line or two of slack does not count as having scrolled away.
+    /// </remarks>
+    [Parameter] public int AutoScrollThreshold { get; set; }
+
+    /// <summary>
     /// Takes the height of the on-screen keyboard off the scrolling area of the app shell while it is
     /// open, so the content is laid out in the room that is actually left rather than behind it.
     /// </summary>
@@ -75,9 +104,19 @@ public partial class BitAppShell : BitComponentBase
     /// goes on believing it owns a screen whose bottom is now covered. With this on, the shell publishes
     /// the covered height on its root as the <c>--bit-ash-keyboard-inset</c> CSS variable and takes it off
     /// the height of the middle, which is what brings a bottom bar declared inside the shell back above
-    /// the keyboard. It reports 0 - and so does nothing - wherever the browser shrinks the layout viewport
-    /// itself, which is every desktop browser and any page asking for
-    /// <c>interactive-widget=resizes-content</c>.
+    /// the keyboard. The bottom safe area inset is given up for as long as the keyboard is open, since what
+    /// that inset keeps clear is covered by the keyboard anyway and a band of background above it would be
+    /// room taken from the content for nothing.
+    /// <br />
+    /// The root is also marked with the <c>data-bit-ash-keyboard</c> attribute while the keyboard is up -
+    /// which is what the chrome that hides itself while the reader is typing can be styled against - and
+    /// the same measurement is reported to <see cref="OnKeyboardInsetChanged"/> for whatever cannot be
+    /// placed in CSS alone.
+    /// <br />
+    /// It reports 0 - and so does nothing - wherever the browser shrinks the layout viewport itself, which
+    /// is every desktop browser and any page asking for <c>interactive-widget=resizes-content</c>, and it
+    /// leaves the measurement alone while the page is pinch-zoomed, since a zoomed page shrinks its visual
+    /// viewport in exactly the way an open keyboard does.
     /// </remarks>
     [Parameter] public bool AvoidKeyboard { get; set; }
 
@@ -90,6 +129,48 @@ public partial class BitAppShell : BitComponentBase
     /// Custom CSS classes for different parts of the app shell.
     /// </summary>
     [Parameter] public BitAppShellClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Pins the app shell to the four edges of the screen, so that it fills the window whatever height the
+    /// page around it has.
+    /// </summary>
+    /// <remarks>
+    /// The app shell otherwise fills the room it is given, which means the <c>html</c> and the <c>body</c>
+    /// of the host page have to be given a height of their own for it to have any - the commonest reason a
+    /// shell is reported as having no height at all. This takes the page out of the question: the shell is
+    /// positioned against the viewport instead, which is what the shell of an application wants anyway,
+    /// since nothing is meant to be laid out around it or scrolled past it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder] public bool FullScreen { get; set; }
+
+    /// <summary>
+    /// Reserves the room the scrollbar of the main container takes, whether or not there is anything left
+    /// to scroll.
+    /// </summary>
+    /// <remarks>
+    /// This is the CSS <c>scrollbar-gutter</c> property, and the one scroller of an application is where it
+    /// earns its keep: without it, every navigation between a page long enough to scroll and a page that is
+    /// not moves the whole layout sideways by the width of a scrollbar. It costs nothing at all where the
+    /// platform draws its scrollbars over the content, which is every mobile browser.
+    /// </remarks>
+    [Parameter] public BitScrollbarGutter? Gutter { get; set; }
+
+    /// <summary>
+    /// Removes the bottom safe area inset of the app shell, leaving the other three where they are.
+    /// </summary>
+    /// <remarks>
+    /// For the application that insets that one edge itself - a bottom bar padding itself by the inset so
+    /// that its background paints behind the home indicator, in a shell that still keeps the status bar and
+    /// the rounded sides clear. <see cref="NoInsets"/> is the same thing for all four edges at once.
+    /// </remarks>
+    [Parameter, ResetClassBuilder] public bool NoBottomInset { get; set; }
+
+    /// <summary>
+    /// Removes the trailing side safe area inset of the app shell - the one on the right of a left-to-right
+    /// shell and on the left of a right-to-left one - leaving the other three where they are.
+    /// See <see cref="NoBottomInset"/>.
+    /// </summary>
+    [Parameter, ResetClassBuilder] public bool NoEndInset { get; set; }
 
     /// <summary>
     /// Removes the safe area insets, so the four edges of the app shell are not inset at all and the
@@ -111,6 +192,35 @@ public partial class BitAppShell : BitComponentBase
     [Parameter] public bool NoScroll { get; set; }
 
     /// <summary>
+    /// Removes the leading side safe area inset of the app shell - the one on the left of a left-to-right
+    /// shell and on the right of a right-to-left one - leaving the other three where they are.
+    /// See <see cref="NoBottomInset"/>.
+    /// </summary>
+    [Parameter, ResetClassBuilder] public bool NoStartInset { get; set; }
+
+    /// <summary>
+    /// Removes the top safe area inset of the app shell, leaving the other three where they are.
+    /// </summary>
+    /// <remarks>
+    /// For the application that insets that one edge itself - a header padding itself by the inset so that
+    /// its background paints behind the status bar, in a shell that still keeps the home indicator clear,
+    /// which is the commonest half of an edge-to-edge layout. See <see cref="NoBottomInset"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder] public bool NoTopInset { get; set; }
+
+    /// <summary>
+    /// Callback for how much of the app shell the on-screen keyboard covers, in pixels, raised as that
+    /// changes and with 0 as the keyboard closes.
+    /// </summary>
+    /// <remarks>
+    /// It is what <see cref="AvoidKeyboard"/> publishes as the <c>--bit-ash-keyboard-inset</c> CSS
+    /// variable, handed to the page as a number as well so the chrome that cannot be placed in CSS alone -
+    /// a map to re-center, a list to keep the selected row of in view - can be moved with it. Nothing is
+    /// measured, and so nothing is reported, on a shell that has not asked to avoid the keyboard.
+    /// </remarks>
+    [Parameter] public EventCallback<double> OnKeyboardInsetChanged { get; set; }
+
+    /// <summary>
     /// Callback for when the main container of the app shell reaches the bottom of its content.
     /// </summary>
     /// <remarks>
@@ -118,6 +228,22 @@ public partial class BitAppShell : BitComponentBase
     /// counts as having reached it is <see cref="ReachOffset"/>.
     /// </remarks>
     [Parameter] public EventCallback OnReachedBottom { get; set; }
+    /// <summary>
+    /// Callback for when the main container of the app shell reaches the visual left edge of its content.
+    /// See <see cref="OnReachedBottom"/>.
+    /// </summary>
+    /// <remarks>
+    /// The edge is the one on the screen rather than the one in reading order, so it is the same edge in a
+    /// right-to-left shell.
+    /// </remarks>
+    [Parameter] public EventCallback OnReachedLeft { get; set; }
+
+    /// <summary>
+    /// Callback for when the main container of the app shell reaches the visual right edge of its content.
+    /// See <see cref="OnReachedLeft"/>.
+    /// </summary>
+    [Parameter] public EventCallback OnReachedRight { get; set; }
+
 
     /// <summary>
     /// Callback for when the main container of the app shell reaches the top of its content.
@@ -146,6 +272,24 @@ public partial class BitAppShell : BitComponentBase
     [Parameter] public EventCallback<BitScrollOffset> OnScrollStart { get; set; }
 
     /// <summary>
+    /// What the main container of the app shell does with content that overflows it sideways.
+    /// </summary>
+    /// <remarks>
+    /// The main container scrolls along both axes, which is what an application laying a page out wider
+    /// than the screen needs. Set this to <see cref="BitOverflow.Hidden"/> to clip that overflow instead,
+    /// so the one element a few pixels too wide cannot leave the whole application scrollable sideways -
+    /// the commonest layout bug of a mobile web app. <see cref="NoScroll"/> takes both axes away at once
+    /// and wins over this.
+    /// </remarks>
+    [Parameter] public BitOverflow? OverflowX { get; set; }
+
+    /// <summary>
+    /// What the main container of the app shell does with content that overflows it downwards.
+    /// See <see cref="OverflowX"/>.
+    /// </summary>
+    [Parameter] public BitOverflow? OverflowY { get; set; }
+
+    /// <summary>
     /// Determines what happens when the main container of the app shell is scrolled past its edge.
     /// </summary>
     /// <remarks>
@@ -170,6 +314,23 @@ public partial class BitAppShell : BitComponentBase
     /// store over from the first.
     /// </remarks>
     [Parameter] public bool PersistScroll { get; set; }
+    /// <summary>
+    /// Keeps the reader's place when content is added above what they are looking at.
+    /// </summary>
+    /// <remarks>
+    /// This is the other half of an endless list: a page of older messages arriving at the top of a
+    /// conversation is as tall as the messages in it, and without this it pushes what the reader was
+    /// reading that far down the screen. With it the container is moved down by exactly what arrived, so
+    /// what they were looking at does not move at all.
+    /// <br />
+    /// Every engine but WebKit already does this on its own (it is the CSS <c>overflow-anchor</c>
+    /// behavior), so this changes nothing where the browser is anchoring the container and brings the rest
+    /// - Safari, most of all - up to the same behavior. It is worth pairing with <see cref="OnReachedTop"/>
+    /// and a <see cref="ReachOffset"/> of about a screenful, so the fetch starts before the reader is at
+    /// the top rather than once they are.
+    /// </remarks>
+    [Parameter] public bool PreserveScroll { get; set; }
+
 
     /// <summary>
     /// How near an edge (in pixels) counts as having reached it, for <see cref="OnReachedTop"/> and
@@ -187,12 +348,49 @@ public partial class BitAppShell : BitComponentBase
     /// under the reduced motion preference unless <c>ForceAnimation</c> is set.
     /// </remarks>
     [Parameter] public BitScrollBehavior? ScrollBehavior { get; set; }
+    /// <summary>
+    /// The room the main container of the app shell keeps between its edges and anything scrolled into
+    /// view inside it, as any CSS length.
+    /// </summary>
+    /// <remarks>
+    /// This is the CSS <c>scroll-padding</c> property, and it is what keeps a header stuck to the top of
+    /// the shell from covering whatever was just scrolled to - by a fragment navigation, by the browser
+    /// bringing a focused field into view, or by <see cref="ScrollToElement"/>, which reads it as well so
+    /// that the moves this component makes leave the same room the browser's own do. The other scrolling
+    /// methods take an absolute position or a distance and are left alone by it.
+    /// <br />
+    /// A shell whose header is the height of the top safe area plus a bar of its own can say so:
+    /// <c>ScrollPadding="calc(var(--bit-ash-inset-top) + 3rem) 0 0 0"</c>.
+    /// </remarks>
+    [Parameter] public string? ScrollPadding { get; set; }
+
 
     /// <summary>
     /// The shortest interval (in milliseconds) between two <see cref="OnScroll"/> reports.
     /// The default of 0 reports once per animation frame.
     /// </summary>
     [Parameter] public int ScrollThrottle { get; set; }
+
+    /// <summary>
+    /// Sizes the four inset bars from the largest safe areas the device can ask for rather than from the
+    /// ones it is asking for right now, so the layout is not relaid out as the browser's own chrome slides
+    /// in and out.
+    /// </summary>
+    /// <remarks>
+    /// The insets a browser reports are not constants: an edge-to-edge Chrome on Android retracts its
+    /// bottom bar as the reader scrolls down and brings it back on the way up, and the bottom inset follows
+    /// it the whole way - so the bar sized from it, and everything laid out against it, is moved on every
+    /// frame of that slide. With this on the shell is sized from the static maximums instead
+    /// (<c>env(safe-area-max-inset-*)</c>): the layout is laid out once, for the room left when nothing is
+    /// retracted, and the browser slides its own chrome over the background of an inset bar rather than
+    /// over the content. It costs that much room on the screen for as long as the chrome is retracted,
+    /// which is the trade being made.
+    /// <br />
+    /// A browser that does not report the maximums - which is every one but Chromium 135 and later, and
+    /// every platform whose insets do not move in the first place - is left reading the insets it does
+    /// report, so this changes nothing there.
+    /// </remarks>
+    [Parameter, ResetClassBuilder] public bool StableInsets { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the app shell.
@@ -286,18 +484,52 @@ public partial class BitAppShell : BitComponentBase
     /// <param name="offset">How much room (in pixels) to leave above it, for a sticky header of the page.</param>
     /// <param name="smooth">Whether the move is animated. Honors the reduced motion preference.</param>
     /// <param name="alignment">Where in the container the element comes to rest.</param>
+    /// <param name="behavior">
+    /// How the move is made, which wins over <paramref name="smooth"/> where both are given. When it is
+    /// not given either, <paramref name="smooth"/> decides.
+    /// </param>
     public async Task ScrollToElement(string elementId,
                                       double offset = 0,
                                       bool smooth = true,
-                                      BitScrollAlignment alignment = BitScrollAlignment.Start)
+                                      BitScrollAlignment alignment = BitScrollAlignment.Start,
+                                      BitScrollBehavior? behavior = null)
     {
         if (_containerRef.HasValue is false || elementId.HasNoValue()) return;
+
+        // The behavior is the same argument every other move of this component takes, and it wins over the
+        // older flag beside it where both are given. Left out, the flag decides, so a call written before
+        // there was a behavior to pass still means what it did.
+        var animated = behavior switch
+        {
+            BitScrollBehavior.Smooth => true,
+            BitScrollBehavior.Instant => false,
+            BitScrollBehavior.Auto => ScrollBehavior is null or BitScrollBehavior.Smooth,
+            _ => smooth
+        };
 
         await InvokeJs(() => _js.BitScrollablePaneScrollToElement(_containerRef!.Value,
                                                                   elementId,
                                                                   offset,
-                                                                  smooth,
+                                                                  animated,
                                                                   alignment.ToString().ToLowerInvariant()));
+    }
+
+    /// <summary>
+    /// Re-measures the main container of the app shell and reports whatever has changed since it was last
+    /// measured.
+    /// </summary>
+    /// <remarks>
+    /// The container watches both its own size and its content on its own, so this is only for the changes
+    /// neither of those can see - a web font that finished loading, an image that settled at a size the
+    /// markup never named - after which the edge callbacks and the pinning of <see cref="AutoScroll"/> are
+    /// brought back up to date. It does nothing on a shell that asked for none of them, since such a shell
+    /// has no browser side to bring up to date.
+    /// </remarks>
+    public async Task Refresh()
+    {
+        if (_paneSetup is false) return;
+
+        await InvokeJs(() => _js.BitScrollablePaneRefresh(UniqueId));
     }
 
     /// <summary>
@@ -325,11 +557,18 @@ public partial class BitAppShell : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The positions are kept for the whole session, so an application that signs a user out calls this
-    /// to keep the next one from being put back where the previous one was.
+    /// to keep the next one from being put back where the previous one was. Given a url, only that one page
+    /// is forgotten, which is what a page whose content has been replaced under the reader - a list that was
+    /// filtered, a search that was run again - wants, since the position it was left at no longer points at
+    /// anything.
     /// </remarks>
-    public async Task ClearPersistedScroll()
+    /// <param name="url">
+    /// The url to forget, exactly as <c>NavigationManager.Uri</c> reports it. When it is not given, every
+    /// position is forgotten.
+    /// </param>
+    public async Task ClearPersistedScroll(string? url = null)
     {
-        await InvokeJs(() => _js.BitAppShellClearScrolls());
+        await InvokeJs(() => _js.BitAppShellClearScrolls(url));
     }
 
 
@@ -343,6 +582,22 @@ public partial class BitAppShell : BitComponentBase
         // The insets are the four bars around the main container, so the flag that removes them belongs
         // on the root all four of them are sized from.
         ClassBuilder.Register(() => NoInsets ? "bit-ash-nin" : string.Empty);
+
+        // And each of the four can be taken back to zero on its own, for the application that insets that
+        // one edge itself: a header painting behind the status bar over a shell that still keeps the home
+        // indicator clear is an edge-to-edge layout of the top edge alone. The two side ones are the
+        // LOGICAL edges, so each of them stays with the reading direction the bars are laid out in.
+        ClassBuilder.Register(() => FullScreen ? "bit-ash-fsc" : string.Empty);
+
+        // Written before the flags that take an inset away, and the stylesheet keeps them in that order,
+        // so a shell asking for both is left with the edge removed rather than with the largest inset the
+        // device can ask for.
+        ClassBuilder.Register(() => StableInsets ? "bit-ash-sin" : string.Empty);
+
+        ClassBuilder.Register(() => NoTopInset ? "bit-ash-nit" : string.Empty);
+        ClassBuilder.Register(() => NoBottomInset ? "bit-ash-nib" : string.Empty);
+        ClassBuilder.Register(() => NoStartInset ? "bit-ash-nis" : string.Empty);
+        ClassBuilder.Register(() => NoEndInset ? "bit-ash-nie" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -368,21 +623,63 @@ public partial class BitAppShell : BitComponentBase
     {
         get
         {
-            var overscroll = Overscroll switch
-            {
-                BitOverscroll.Auto => "overscroll-behavior:auto",
-                BitOverscroll.Contain => "overscroll-behavior:contain",
-                BitOverscroll.None => "overscroll-behavior:none",
-                _ => null
-            };
+            // Everything the scrolling container is styled with lands in this one attribute, in the order
+            // the declarations override one another in: whatever the page wrote first, then the ones this
+            // component derives from its parameters, and NoScroll over all of it - so a shell the reader
+            // is not to be able to move is never left movable by an overflow the page happened to write.
+            List<string?> declarations =
+            [
+                Styles?.Main?.TrimEnd().TrimEnd(';'),
 
-            if (Styles?.Main.HasValue() is not true) return overscroll;
+                Overscroll switch
+                {
+                    BitOverscroll.Auto => "overscroll-behavior:auto",
+                    BitOverscroll.Contain => "overscroll-behavior:contain",
+                    BitOverscroll.None => "overscroll-behavior:none",
+                    _ => null
+                },
 
-            if (overscroll is null) return Styles.Main;
+                // Each axis is spelled out as its own longhand rather than folded into the shorthand,
+                // which would also reset the axis it was not asked about.
+                OverflowX switch
+                {
+                    BitOverflow.Auto => "overflow-x:auto",
+                    BitOverflow.Hidden => "overflow-x:hidden",
+                    BitOverflow.Scroll => "overflow-x:scroll",
+                    BitOverflow.Visible => "overflow-x:visible",
+                    _ => null
+                },
+
+                OverflowY switch
+                {
+                    BitOverflow.Auto => "overflow-y:auto",
+                    BitOverflow.Hidden => "overflow-y:hidden",
+                    BitOverflow.Scroll => "overflow-y:scroll",
+                    BitOverflow.Visible => "overflow-y:visible",
+                    _ => null
+                },
+
+                // Auto is the initial value, which the container already has.
+                Gutter switch
+                {
+                    BitScrollbarGutter.Stable => "scrollbar-gutter:stable",
+                    BitScrollbarGutter.BothEdges => "scrollbar-gutter:stable both-edges",
+                    _ => null
+                },
+
+                ScrollPadding.HasValue() ? $"scroll-padding:{ScrollPadding}" : null,
+
+                // The class of the container says this as well, but a style attribute wins over a class:
+                // an overflow written into Styles.Main, or an axis asked for above, would otherwise leave
+                // the container scrollable after all.
+                NoScroll ? "overflow:hidden" : null,
+            ];
 
             // Two declarations landing in the same style attribute are only two declarations while a
             // semicolon stands between them.
-            return Styles.Main!.TrimEnd().EndsWith(';') ? $"{Styles.Main}{overscroll}" : $"{Styles.Main};{overscroll}";
+            var style = string.Join(';', declarations.Where(d => d.HasValue()));
+
+            return style.HasValue() ? style : null;
         }
     }
 
@@ -456,9 +753,19 @@ public partial class BitAppShell : BitComponentBase
 
         _keyboardSetup = AvoidKeyboard;
 
-        await InvokeJs(() => AvoidKeyboard
-            ? _js.BitAppShellSetupKeyboard(UniqueId, RootElement)
-            : _js.BitAppShellDisposeKeyboard(UniqueId));
+        if (AvoidKeyboard is false)
+        {
+            await InvokeJs(() => _js.BitAppShellDisposeKeyboard(UniqueId));
+            return;
+        }
+
+        // The reference is handed over whether or not anything is listening for the measurement, since a
+        // page that starts listening later would otherwise have to make the shell set its tracking up
+        // again to be heard; the browser side only calls back when the measurement CHANGES, which is once
+        // or twice per keyboard rather than per frame.
+        _dotnetObj ??= DotNetObjectReference.Create(this);
+
+        await InvokeJs(() => _js.BitAppShellSetupKeyboard(UniqueId, RootElement, _dotnetObj));
     }
 
     // The scroll reporting is driven by the very engine BitScrollablePane uses, so there is not a second
@@ -508,9 +815,12 @@ public partial class BitAppShell : BitComponentBase
         var scrollEnd = OnScrollEnd.HasDelegate;
         var top = OnReachedTop.HasDelegate;
         var bottom = OnReachedBottom.HasDelegate;
+        var left = OnReachedLeft.HasDelegate;
+        var right = OnReachedRight.HasDelegate;
 
         if (scroll is false && scrollStart is false && scrollEnd is false &&
-            top is false && bottom is false && NoScroll is false) return null;
+            top is false && bottom is false && left is false && right is false &&
+            NoScroll is false && AutoScroll is false && PreserveScroll is false) return null;
 
         return new()
         {
@@ -519,9 +829,14 @@ public partial class BitAppShell : BitComponentBase
             ScrollEnd = scrollEnd,
             Top = top,
             Bottom = bottom,
+            Left = left,
+            Right = right,
             Offset = ReachOffset,
             Throttle = ScrollThrottle,
             NoScroll = NoScroll,
+            AutoScroll = AutoScroll,
+            AutoScrollThreshold = AutoScrollThreshold,
+            Preserve = PreserveScroll,
             Smooth = ScrollBehavior is null or BitScrollBehavior.Smooth,
         };
     }
@@ -651,12 +966,22 @@ public partial class BitAppShell : BitComponentBase
         {
             "top" => OnReachedTop,
             "bottom" => OnReachedBottom,
+            "left" => OnReachedLeft,
+            "right" => OnReachedRight,
             _ => default
         };
 
         if (callback.HasDelegate is false) return;
 
         await callback.InvokeAsync();
+    }
+
+    [JSInvokable("OnKeyboardInset")]
+    public async Task _OnKeyboardInset(double inset)
+    {
+        if (IsDisposed || OnKeyboardInsetChanged.HasDelegate is false) return;
+
+        await OnKeyboardInsetChanged.InvokeAsync(inset);
     }
 
 

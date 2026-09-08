@@ -21,6 +21,12 @@ $bit-ash-inset-zindex: 999999;
     // which is what puts the measured height here from the browser side; a page can read it to place
     // chrome of its own against the same number.
     --bit-ash-keyboard-inset: 0px;
+    // How much of the bottom inset is still worth keeping while the keyboard is open. The inset is there
+    // to keep content off the home indicator, and the keyboard is already covering everything that far up
+    // the screen - so a bar of the shell's background left below the content and above the keyboard is
+    // room taken from the content for nothing at all. What the keyboard has taken over is taken off here,
+    // and the middle below is sized from this rather than from the inset itself.
+    --bit-ash-inset-bottom-visible: max(0px, calc(var(--bit-ash-inset-bottom) - var(--bit-ash-keyboard-inset)));
 
     width: 100%;
     height: 100%;
@@ -29,11 +35,51 @@ $bit-ash-inset-zindex: 999999;
     background-color: $clr-bg-pri;
 }
 
+// The insets a browser reports change while its own retractable UI slides in and out - the bottom bar of
+// an edge-to-edge Chrome on Android does it on every scroll - which moves the two bars sized from them on
+// every frame of that slide. Asked for stable insets, the shell is sized from the STATIC maximums of the
+// same four instead: the layout is laid out once, for the room left when nothing is retracted, and the
+// browser slides its UI over the background of a bar rather than over the content.
+.bit-ash-sin {
+    --bit-ash-inset-top: #{$bit-env-max-inset-top};
+    --bit-ash-inset-bottom: #{$bit-env-max-inset-bottom};
+    --bit-ash-inset-start: #{$bit-env-max-inset-inline-start};
+    --bit-ash-inset-end: #{$bit-env-max-inset-inline-end};
+}
+
 .bit-ash-nin {
     --bit-ash-inset-top: 0px;
     --bit-ash-inset-bottom: 0px;
     --bit-ash-inset-start: 0px;
     --bit-ash-inset-end: 0px;
+}
+
+// And one edge at a time, for the application that insets that edge itself. These come after both rules
+// above, so an edge taken away stays away whether the shell was asked for stable insets or for none: a
+// shell asking for both has asked for one edge to be gone, and the other three to be sized either way.
+.bit-ash-nit {
+    --bit-ash-inset-top: 0px;
+}
+
+.bit-ash-nib {
+    --bit-ash-inset-bottom: 0px;
+}
+
+.bit-ash-nis {
+    --bit-ash-inset-start: 0px;
+}
+
+.bit-ash-nie {
+    --bit-ash-inset-end: 0px;
+}
+
+// The shell of an application owns the window: nothing is laid out around it and nothing is scrolled
+// past it, so it can be positioned against the viewport rather than sized by whatever room the page gives
+// it - which is what saves the host page from having to carry a height of its own down through html and
+// body. The height above resolves against the viewport here, so both ways of asking agree.
+.bit-ash-fsc {
+    inset: 0;
+    position: fixed;
 }
 
 .bit-ash-top {
@@ -46,14 +92,14 @@ $bit-ash-inset-zindex: 999999;
 .bit-ash-bottom {
     width: 100%;
     z-index: $bit-ash-inset-zindex;
-    height: var(--bit-ash-inset-bottom);
+    height: var(--bit-ash-inset-bottom-visible);
     background-color: $clr-bg-pri;
 }
 
 .bit-ash-center {
     width: 100%;
     display: flex;
-    height: calc(100% - var(--bit-ash-inset-top) - var(--bit-ash-inset-bottom) - var(--bit-ash-keyboard-inset));
+    height: calc(100% - var(--bit-ash-inset-top) - var(--bit-ash-inset-bottom-visible) - var(--bit-ash-keyboard-inset));
 }
 
 .bit-ash-main {

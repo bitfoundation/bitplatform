@@ -20,7 +20,7 @@
          class="bit-ash-center @Classes?.Center"
          dir="@Dir?.ToString().ToLower()">
         <div style="@Styles?.Left" class="bit-ash-left @Classes?.Left"></div>
-        <div id="@MainContainerId" @ref="_containerRef" style="@_MainStyle" class="@_MainClass">
+        <div id="@MainContainerId" @ref="_containerRef" style="@_MainStyle" class="@_MainClass" data-bit-ash-main>
             <CascadingValue Name="@BitAppShell.Container" Value="_containerRef">
                 <BitCascadingValueProvider Values="Values" ValueList="ValueList">
                     @ChildContent

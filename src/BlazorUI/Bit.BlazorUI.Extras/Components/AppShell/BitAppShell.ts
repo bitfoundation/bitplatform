@@ -24,6 +24,15 @@ namespace BitBlazorUI {
 
         private static _flushBound = false;
 
+        // How long a restore keeps trying to reach a position the content is not tall enough for yet, and
+        // what it is trying to reach: -1 while nothing is being restored, which is also what tells the
+        // scroll listener that the moves it is seeing are the reader's own.
+        private static RESTORE_WINDOW = 2000;
+        private static _restoreTop = -1;
+        private static _restoreEnd = 0;
+        private static _restoreFrame = 0;
+        private static _restoreEvents = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+
         public static initScroll(container: HTMLElement, url: string) {
             AppShell._container = container;
             AppShell._currentUrl = url;
@@ -33,14 +42,19 @@ namespace BitBlazorUI {
             // belongs to the first url of the session; a shell whose persistence is turned on again later
             // would otherwise be handed a position from a page it has long since navigated away from.
             AppShell.PreScroll = 0;
+            // A page opened at a position of 0 is left exactly where it is rather than being sent to the
+            // top: the browser may already have scrolled the container to the fragment of the url it was
+            // opened at, and a restore of a position nobody ever stored would undo it.
             if (AppShell._scrolls[url]! > 0) {
-                AppShell._container.scrollTo({ top: AppShell._scrolls[url], behavior: 'instant' });
+                AppShell.restore(AppShell._scrolls[url]);
             }
             AppShell.addScroll();
             AppShell.bindFlush();
         }
 
         public static locationChangedScroll() {
+            // Whatever was being restored belongs to the page being left.
+            AppShell.cancelRestore();
             // The position of the page being left is written out now rather than being left to the frame
             // a pending store is waiting on: the next thing to happen is a render of the new page, and a
             // scroll of the container to the new page's position would be read by that pending store as
@@ -52,11 +66,12 @@ namespace BitBlazorUI {
         public static afterRenderScroll(url: string) {
             AppShell._currentUrl = url;
             AppShell.storeScroll(url, AppShell._scrolls[url]);
-            AppShell._container?.scrollTo({ top: AppShell._scrolls[url], behavior: 'instant' });
+            AppShell.restore(AppShell._scrolls[url]);
             AppShell.addScroll();
         }
 
         public static disposeScroll() {
+            AppShell.cancelRestore();
             AppShell.flush();
             AppShell.removeScroll();
             AppShell.unbindFlush();
@@ -65,8 +80,18 @@ namespace BitBlazorUI {
 
         // Empties the stored positions, both the ones in hand and the ones in session storage, so that an
         // application that signs a user out does not restore the previous one's place in the pages the
-        // next one visits.
-        public static clearScrolls() {
+        // next one visits. Given a url, only that page is forgotten - a page whose content has been
+        // replaced under the reader is no longer at the position it was left at.
+        public static clearScrolls(url?: string) {
+            AppShell.cancelRestore();
+
+            if (url) {
+                delete AppShell._scrolls[url];
+                AppShell._dirty = true;
+                AppShell.flush();
+                return;
+            }
+
             AppShell._scrolls = {};
             AppShell.cancelFrame();
             AppShell._dirty = false;
@@ -87,7 +112,93 @@ namespace BitBlazorUI {
         }
 
         private static onScroll() {
+            // A move this class is making itself is not the reader's place to keep. Without this the
+            // scroll event of a restore that the content was not tall enough for yet would store the
+            // position it was CLAMPED to, and the place being restored to would be lost on the way to it.
+            if (AppShell._restoreTop >= 0) return;
+
             AppShell.storeScroll(AppShell._currentUrl, AppShell._container?.scrollTop);
+        }
+
+        // Puts the container back where the url was left. The content of a page being returned to is
+        // rarely as tall as it will be by the time it has finished arriving - a fetch still in flight, an
+        // image without a size in its markup, a virtualized list that has only rendered its first screen -
+        // and a container that is not tall enough yet clamps the move to wherever it can reach. So the
+        // move is repeated as the content grows, until it lands or until the window below is spent.
+        private static restore(top: number | undefined) {
+            AppShell.cancelRestore();
+
+            const container = AppShell._container;
+            if (!container) return;
+
+            const target = Math.max(0, top || 0);
+
+            container.scrollTo({ top: target, behavior: 'instant' });
+
+            // The top of the content is where a page that was never scrolled opens, and it is reachable
+            // however short the content is, so there is nothing to wait for.
+            if (target === 0) return;
+
+            AppShell._restoreTop = target;
+            AppShell._restoreEnd = AppShell.now() + AppShell.RESTORE_WINDOW;
+            AppShell.bindRestoreCancel();
+            AppShell._restoreFrame = requestAnimationFrame(AppShell.restoreStep);
+        }
+
+        private static restoreStep() {
+            AppShell._restoreFrame = 0;
+
+            const container = AppShell._container;
+            const target = AppShell._restoreTop;
+            if (!container || target < 0) return;
+
+            const max = Math.max(0, container.scrollHeight - container.clientHeight);
+            const reachable = Math.min(target, max);
+
+            if (Math.abs(container.scrollTop - reachable) > 1) {
+                container.scrollTo({ top: target, behavior: 'instant' });
+            }
+
+            // Landed, or out of time. Either way what was stored for this url is left as it was, so a
+            // page whose content never grew that far is still put back there the next time it is opened.
+            if (max >= target - 1 || AppShell.now() >= AppShell._restoreEnd) {
+                AppShell.cancelRestore();
+                return;
+            }
+
+            AppShell._restoreFrame = requestAnimationFrame(AppShell.restoreStep);
+        }
+
+        private static cancelRestore() {
+            if (AppShell._restoreFrame) {
+                cancelAnimationFrame(AppShell._restoreFrame);
+                AppShell._restoreFrame = 0;
+            }
+
+            AppShell._restoreTop = -1;
+            AppShell.unbindRestoreCancel();
+        }
+
+        // Being put back where they left off is worth nothing to a reader who is already going somewhere
+        // else, so the first thing they do gives up on the restore. The four events are the ways a scroll
+        // is asked for that are not this class asking for it; the scroll event itself is not one of them,
+        // since every move the restore makes raises one.
+        private static bindRestoreCancel() {
+            AppShell._restoreEvents.forEach(e =>
+                window.addEventListener(e, AppShell.cancelRestore, { passive: true, capture: true }));
+        }
+
+        private static unbindRestoreCancel() {
+            AppShell._restoreEvents.forEach(e =>
+                window.removeEventListener(e, AppShell.cancelRestore, { capture: true } as any));
+        }
+
+        private static now(): number {
+            try {
+                return performance.now();
+            } catch {
+                return Date.now();
+            }
         }
 
         private static storeScroll(url: string, value: number | undefined) {
@@ -196,9 +307,9 @@ namespace BitBlazorUI {
         // instead - a page asking for `interactive-widget=resizes-content`, or a desktop browser - the two
         // viewports keep matching and this reports 0, which is the right answer: there is nothing left to
         // take off a height that has already been taken off.
-        private static _keyboards: { [key: string]: { element: HTMLElement, handler: () => void, frame: number, last: number } } = {};
+        private static _keyboards: { [key: string]: { element: HTMLElement, handler: () => void, frame: number, last: number, dotnetObj?: DotNetObject } } = {};
 
-        public static setupKeyboard(id: string, element: HTMLElement) {
+        public static setupKeyboard(id: string, element: HTMLElement, dotnetObj?: DotNetObject) {
             if (!element) return;
 
             AppShell.disposeKeyboard(id);
@@ -206,20 +317,47 @@ namespace BitBlazorUI {
             const viewport = window.visualViewport;
             if (!viewport) return;
 
-            const state = { element, handler: () => { }, frame: 0, last: -1 };
+            const state = { element, handler: () => { }, frame: 0, last: -1, dotnetObj };
 
             const measure = () => {
                 state.frame = 0;
 
+                // A pinch-zoomed page shrinks its visual viewport in exactly the way an open keyboard
+                // does, so measuring through one would report a keyboard that is not there - and taking
+                // that much off the shell while the reader is zoomed in is the one thing worse than
+                // ignoring the keyboard. The measurement is left at whatever it was until the zoom is let
+                // go of, which keeps an open keyboard accounted for through a zoom as well.
+                if (Math.abs((viewport.scale || 1) - 1) > 0.01) return;
+
+                // The height of the LAYOUT viewport, which is what the keyboard does not shrink on the
+                // platforms this is for - read off the document element rather than as window.innerHeight
+                // because that one counts the horizontal scrollbar the visual viewport height leaves out,
+                // and the difference between the two would be reported as a keyboard of that height.
+                const layout = document.documentElement?.clientHeight || window.innerHeight;
+
                 // offsetTop is how far the visual viewport has itself been pushed down the layout one,
                 // which is what a page scrolled by the browser to keep a focused field in view leaves
                 // behind; without it the keyboard would appear to grow by that much.
-                const inset = Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop));
+                const inset = Math.max(0, Math.round(layout - viewport.height - viewport.offsetTop));
 
                 if (inset === state.last) return;
 
                 state.last = inset;
                 state.element.style.setProperty('--bit-ash-keyboard-inset', `${inset}px`);
+
+                // A marker for the CSS that cannot be written against a length - the bottom bar a shell
+                // hides while the reader is typing, the map that drops its controls - so a page does not
+                // have to round-trip through C# to know the keyboard is up.
+                if (inset > 0) {
+                    state.element.setAttribute('data-bit-ash-keyboard', '');
+                } else {
+                    state.element.removeAttribute('data-bit-ash-keyboard');
+                }
+
+                // And the same number for the page that has to place something in C# rather than in CSS.
+                // It is sent on the change rather than per frame, and a failed send is a shell that has
+                // gone away between the measurement and the call, which is nothing this can act on.
+                state.dotnetObj?.invokeMethodAsync('OnKeyboardInset', inset).catch(() => { });
             };
 
             state.handler = () => {
@@ -252,19 +390,35 @@ namespace BitBlazorUI {
             }
 
             state.element.style.removeProperty('--bit-ash-keyboard-inset');
+            state.element.removeAttribute('data-bit-ash-keyboard');
         }
     }
 }
 
 (function () {
-    // The scrolling the reader does before Blazor has started, on the shell rendered by the server. It is
-    // read off the well-known id the FIRST shell of a page carries, since that is the only one that can
-    // exist at this point: the element is in the server's markup, and a second shell is something only a
-    // started application can render.
-    const container = document.getElementById('BitAppShell-container');
-    if (!container) return;
+    // The scrolling the reader does before Blazor has started, on the shell rendered by the server. Only
+    // the FIRST shell of a page can be scrolled at this point, since it is the one in the server's markup
+    // and a second shell is something only a started application can render.
+    function bind() {
+        // The well-known id first, then the attribute every app shell's container carries whatever its id
+        // is: a shell given an Id of its own derives its container id from that one, and the scrolling
+        // done before Blazor has started is worth keeping for it too.
+        const container = document.getElementById('BitAppShell-container')
+            ?? document.querySelector<HTMLElement>('[data-bit-ash-main]');
 
-    container.addEventListener('scroll', () => {
-        BitBlazorUI.AppShell.PreScroll = container.scrollTop;
-    }, { passive: true });
+        if (!container) return false;
+
+        container.addEventListener('scroll', () => {
+            BitBlazorUI.AppShell.PreScroll = container.scrollTop;
+        }, { passive: true });
+
+        return true;
+    }
+
+    // The script is meant to run after the markup it is looking for, which is where a Blazor host page puts
+    // it. A page that loads it from the head instead is still served, by looking again once the document
+    // has been parsed - the scrolling this keeps is the reader's, and it only happens after that anyway.
+    if (bind() === false && document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => { bind(); }, { once: true });
+    }
 }());

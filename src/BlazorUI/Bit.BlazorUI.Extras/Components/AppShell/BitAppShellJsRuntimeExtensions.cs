@@ -22,14 +22,17 @@ internal static class BitAppShellJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.disposeScroll");
     }
 
-    internal static ValueTask BitAppShellClearScrolls(this IJSRuntime jsRuntime)
+    internal static ValueTask BitAppShellClearScrolls(this IJSRuntime jsRuntime, string? url = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.clearScrolls");
+        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.clearScrolls", url);
     }
 
-    internal static ValueTask BitAppShellSetupKeyboard(this IJSRuntime jsRuntime, string id, ElementReference element)
+    internal static ValueTask BitAppShellSetupKeyboard<T>(this IJSRuntime jsRuntime,
+                                                          string id,
+                                                          ElementReference element,
+                                                          DotNetObjectReference<T> dotnetObj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.setupKeyboard", id, element);
+        return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.setupKeyboard", id, element, dotnetObj);
     }
 
     internal static ValueTask BitAppShellDisposeKeyboard(this IJSRuntime jsRuntime, string id)

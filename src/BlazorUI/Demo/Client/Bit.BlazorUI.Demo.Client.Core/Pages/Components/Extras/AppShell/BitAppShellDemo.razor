@@ -2,12 +2,12 @@
 
 <PageOutlet Url="components/appshell"
             Title="AppShell"
-            Description="BitAppShell is the outermost container of a cross-platform app: it insets the four edges of the screen by the device safe areas, owns the one region the app scrolls in, keeps the reader's place across navigation, and cascades that scroller to every surface inside it." />
+            Description="BitAppShell is the outermost container of a cross-platform app: it insets the four edges of the screen by the device safe areas, makes room for the on-screen keyboard, owns the one region the app scrolls in, keeps the reader's place across navigation, and cascades that scroller to every surface inside it." />
 
 <div>
     <DemoPage Name="AppShell"
               SecondaryNames="@(["AppLayout", "AppContainer", "SafeArea"])"
-              Description="BitAppShell is the outermost element of an application. It insets the four edges of the screen by the safe areas the device reports - the notch, the rounded corners, the home indicator - so the content never lands underneath any of them, and paints those four bars in the background color of the theme. Inside them it owns the one region the application scrolls in, which is what makes a Blazor app scroll like an app rather than like a page: the header and the footer stay put, only the middle moves, and the scroller is cascaded to every surface declared inside the shell, so a Modal, a Panel, a Dialog or an Overlay holds the right region without being told which one it is. On top of that it can send the reader to the top of each page they navigate to, or put them back exactly where they left each page off; report where it stands as it is scrolled and call back as it reaches either end; be scrolled from code with GoToTop, GoToBottom, ScrollTo, ScrollBy and ScrollToElement; and hand a list of cascading values down to everything it contains."
+              Description="BitAppShell is the outermost element of an application. It insets the four edges of the screen by the safe areas the device reports - the notch, the rounded corners, the home indicator - so the content never lands underneath any of them, paints those four bars in the background color of the theme, and gives any one of those edges back to a layout that insets it itself. Inside them it owns the one region the application scrolls in, which is what makes a Blazor app scroll like an app rather than like a page: the header and the footer stay put, only the middle moves, and the scroller is cascaded to every surface declared inside the shell, so a Modal, a Panel, a Dialog or an Overlay holds the right region without being told which one it is. That scroller is a full one - overflow per axis, a reserved scrollbar gutter, scroll padding for a sticky header, pinning to the end as content arrives and keeping the reader's place as content lands above them - and it takes the height of the on-screen keyboard off itself while one is open. On top of that the shell can send the reader to the top of each page they navigate to, or put them back exactly where they left each page off; report where it stands as it is scrolled and call back as it reaches an edge; be scrolled from code with GoToTop, GoToBottom, ScrollTo, ScrollBy and ScrollToElement; and hand a list of cascading values down to everything it contains."
               Parameters="componentParameters"
               PublicMembers="componentPublicMembers"
               SubClasses="componentSubClasses"
@@ -30,10 +30,27 @@
             <BitText>
                 The app shell belongs in <b>MainLayout</b>, wrapped around everything the application renders,
                 and it fills whatever room it is given - so the <b>html</b> and <b>body</b> of the host page
-                need a height of their own for it to have any. The examples below put one inside a box of a
-                fixed height instead, which is the only way to show a full-screen container on a page that is
-                already inside one; each also carries an <b>Id</b>, since the id of the shell's scrolling
-                container is derived from it and only one element of a page can carry a given id.
+                need a height of their own for it to have any, unless <b>FullScreen</b> is set, which pins the
+                shell to the four edges of the window instead and takes the host page out of the question. The
+                examples below can do neither: they put a shell inside a box of a fixed height, which is the
+                only way to show a full-screen container on a page that is already inside one. Each also
+                carries an <b>Id</b>, since the id of the shell's scrolling container is derived from it and
+                only one element of a page can carry a given id.
+            </BitText>
+            <br />
+            <BitText>
+                A component that has to work on the region the application scrolls in, rather than on one of
+                its own, is pointed at the shell's container: <b>BitPullToRefresh</b> and
+                <b>BitInfiniteScrolling</b> take a <b>ScrollerSelector</b> of <b>#BitAppShell-container</b> -
+                or, for a shell with an <b>Id</b>, the <b>MainContainerId</b> of that shell. A
+                <b>BitModal</b>, <b>BitPanel</b>, <b>BitDialog</b> or <b>BitOverlay</b> needs none of that:
+                the shell cascades its container and they read it.
+            </BitText>
+            <br />
+            <BitText>
+                The scrolling middle of the shell is a flex row, so a page put inside it is laid out as one
+                flex item: give the element that holds the page a <b>width</b> of 100% - or make it the flex
+                column the page is - and it fills the shell rather than shrinking to fit its own content.
             </BitText>
             <br />
             <BitText>
@@ -79,13 +96,46 @@
                 <div>
                     <b>NoInsets</b> takes all four back to zero for an edge-to-edge layout - the one where the
                     application insets its own chrome instead, so a header's background paints behind the
-                    status bar rather than below it.
+                    status bar rather than below it. <b>NoTopInset</b>, <b>NoBottomInset</b>,
+                    <b>NoStartInset</b> and <b>NoEndInset</b> do the same to one edge at a time, which is what
+                    a layout that goes edge to edge at the top while still keeping the home indicator clear
+                    asks for. The two side ones are the logical edges, so each stays with the reading
+                    direction the bars are laid out in.
+                </div>
+                <br />
+                <div>
+                    Each bar is sized from a CSS variable of its own - <b>--bit-ash-inset-top</b>,
+                    <b>--bit-ash-inset-bottom</b>, <b>--bit-ash-inset-start</b> and
+                    <b>--bit-ash-inset-end</b> - which the page can read to inset chrome of its own by the
+                    same amount, or override to give one edge a bigger inset than the device asked for.
+                </div>
+                <br />
+                <div>
+                    The insets a browser reports are not constants: an edge-to-edge Chrome on Android
+                    retracts its bottom bar as the reader scrolls down and brings it back on the way up, and
+                    the inset follows it the whole way - so everything laid out against it moves on every
+                    frame of that slide. <b>StableInsets</b> sizes the bars from the static maximums instead,
+                    which lays the shell out once for the room left when nothing is retracted and lets the
+                    browser slide its own chrome over the background of a bar rather than over the content.
+                    A browser that does not report those maximums is left reading the insets it does report.
                 </div>
                 <br /><br />
-                <BitToggle @bind-Value="noInsets" Text="NoInsets" />
+                <div class="btn-row">
+                    <BitToggle @bind-Value="noInsets" Text="NoInsets" />
+                    <BitToggle @bind-Value="noTopInset" Text="NoTopInset" />
+                    <BitToggle @bind-Value="noBottomInset" Text="NoBottomInset" />
+                    <BitToggle @bind-Value="noStartInset" Text="NoStartInset" />
+                    <BitToggle @bind-Value="noEndInset" Text="NoEndInset" />
+                </div>
                 <br />
                 <div class="shell-box">
-                    <BitAppShell Id="insets-shell" NoInsets="noInsets" Styles="insetStyles">
+                    <BitAppShell Id="insets-shell"
+                                 NoInsets="noInsets"
+                                 NoEndInset="noEndInset"
+                                 NoTopInset="noTopInset"
+                                 NoStartInset="noStartInset"
+                                 NoBottomInset="noBottomInset"
+                                 Styles="insetStyles">
                         <div class="page-body">
                             @foreach (var i in Enumerable.Range(1, 12))
                             {
@@ -111,7 +161,16 @@
                     is laid out in the room that is actually left. A page can read the same variable to
                     place chrome of its own against it. It measures 0, and so does nothing at all, wherever
                     the browser shrinks the layout viewport itself: every desktop browser, and any page
-                    asking for <b>interactive-widget=resizes-content</b>.
+                    asking for <b>interactive-widget=resizes-content</b>. What the bottom safe area inset was
+                    keeping clear is covered by the keyboard as well, so that inset is given up for as long
+                    as the keyboard is open rather than left as a band of background above it.
+                </div>
+                <br />
+                <div>
+                    The shell also marks itself with the <b>data-bit-ash-keyboard</b> attribute while the
+                    keyboard is up, which is what a bottom bar that hides itself while the reader is typing
+                    can be styled against, and reports the same measurement to C# through
+                    <b>OnKeyboardInsetChanged</b> for the chrome that cannot be placed in CSS alone.
                 </div>
                 <br /><br />
                 <div class="note">
@@ -119,8 +178,12 @@
                     browser there is no keyboard to make room for, so nothing moves.
                 </div>
                 <br />
+                <div class="readout">
+                    <div>Keyboard inset: <b>@keyboardInset.ToString("0")</b> px</div>
+                </div>
+                <br />
                 <div class="shell-box">
-                    <BitAppShell Id="keyboard-shell" AvoidKeyboard>
+                    <BitAppShell Id="keyboard-shell" AvoidKeyboard OnKeyboardInsetChanged="HandleKeyboardInset">
                         <div class="page">
                             <div class="page-body">
                                 @foreach (var i in Enumerable.Range(1, 10))
@@ -186,7 +249,10 @@
                     <b>OnScrollEnd</b> bracket a whole gesture, and <b>OnReachedTop</b> / <b>OnReachedBottom</b>
                     fire once per arrival at either end rather than on every frame that stays there -
                     <b>ReachOffset</b> decides how near counts as arrived, which is what loading the next page
-                    of an endless list a little before the reader gets there is built on.
+                    of an endless list a little before the reader gets there is built on. <b>OnReachedLeft</b>
+                    and <b>OnReachedRight</b> are the same two for the horizontal axis, and they are the edges
+                    on the screen rather than in reading order, so they mean the same thing in a right-to-left
+                    shell.
                 </div>
                 <br />
                 <div>
@@ -297,8 +363,19 @@
                     than at its top. The positions are kept per url in session storage, so they survive a reload
                     and are gone when the tab is; it takes precedence over <b>AutoGoToTop</b>, and
                     <b>ClearPersistedScroll</b> forgets all of them - which is what an application calls when it
-                    signs a user out. Neither of them reacts to a navigation that only changes the fragment of
-                    the url, so an in-page anchor still works.
+                    signs a user out - or, given a url, just that one page, for a list that has been filtered or
+                    a search that has been run again under the reader, where the position it was left at no
+                    longer points at anything. Neither of them reacts to a navigation that only changes the
+                    fragment of the url, so an in-page anchor still works.
+                </div>
+                <br />
+                <div>
+                    A position is put back the moment the page renders, and kept being put back over the next
+                    couple of seconds as the content of that page arrives - a fetch still in flight, an image
+                    without a size in its markup, a list that has only rendered its first screen - since a
+                    container that is not tall enough yet can only be scrolled as far as it goes. The first
+                    thing the reader does gives up on it: being put back where they left off is worth nothing
+                    against where they are going now.
                 </div>
                 <br /><br />
                 <div class="note">
@@ -333,7 +410,132 @@
                 <BitButton OnClick="RenameUser">Change the cascaded name</BitButton>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <DemoExample Title="Overflow & gutter" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+                <div>
+                    The scrolling middle takes whatever overflows it along both axes, which is what an
+                    application that lays a page out wider than the screen needs. <b>OverflowX</b> and
+                    <b>OverflowY</b> decide that per axis: <b>Hidden</b> clips the overflow instead of
+                    offering it, which is how the one element a few pixels too wide is kept from leaving the
+                    whole application scrollable sideways - the commonest layout bug of a mobile web app.
+                    <b>NoScroll</b> takes both axes away at once and wins over either of them.
+                </div>
+                <br />
+                <div>
+                    <b>Gutter</b> reserves the room the scrollbar takes whether or not there is anything left
+                    to scroll. On the one scroller of an application that is worth having: without it, every
+                    navigation between a page long enough to scroll and a page that is not moves the whole
+                    layout sideways by the width of a scrollbar. It costs nothing where the platform draws
+                    its scrollbars over the content, which is every mobile browser - turn the short page on
+                    and off below to see the difference on a desktop one.
+                </div>
+                <br /><br />
+                <div class="btn-row">
+                    <BitToggle @bind-Value="clipOverflowX" Text="OverflowX: Hidden" />
+                    <BitToggle @bind-Value="stableGutter" Text="Gutter: Stable" />
+                    <BitToggle @bind-Value="shortOverflowPage" Text="Short page" />
+                </div>
+                <br />
+                <div class="shell-box">
+                    <BitAppShell Id="overflow-shell"
+                                 Gutter="@(stableGutter ? BitScrollbarGutter.Stable : null)"
+                                 OverflowX="@(clipOverflowX ? BitOverflow.Hidden : null)">
+                        <div class="page-body">
+                            <div class="row wide-row">A row wider than the shell</div>
+                            @foreach (var i in Enumerable.Range(1, shortOverflowPage ? 1 : 20))
+                            {
+                                <div class="row">Row @i</div>
+                            }
+                        </div>
+                    </BitAppShell>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Scroll padding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+                <div>
+                    A header stuck to the top of the shell covers whatever is scrolled to underneath it - by
+                    a fragment navigation, by the browser bringing a focused field into view, or by
+                    <b>ScrollToElement</b>. <b>ScrollPadding</b> is the room the shell keeps between its
+                    edges and anything scrolled into view inside it, so the move stops that much short and
+                    what was scrolled to lands below the header rather than behind it.
+                </div>
+                <br />
+                <div>
+                    It takes any CSS length, and the insets of the shell can be part of it: a padding of
+                    <b>calc(var(--bit-ash-inset-top) + 3rem)</b> is a header as tall as the status bar and a
+                    bar of its own. The moves that take an absolute position or a distance - <b>ScrollTo</b>,
+                    <b>ScrollBy</b>, <b>GoToTop</b> - are left alone by it.
+                </div>
+                <br /><br />
+                <BitToggle @bind-Value="stickyPadding" Text="ScrollPadding: 2.5rem (the height of the header)" />
+                <br />
+                <div class="btn-row">
+                    <BitButton OnClick="ScrollToPaddedRow">ScrollToElement(row 15)</BitButton>
+                    <BitButton OnClick="() => paddingShell?.GoToTop()">GoToTop</BitButton>
+                </div>
+                <br />
+                <div class="shell-box">
+                    <BitAppShell Id="padding-shell" @ref="paddingShell" ScrollPadding="@paddingValue">
+                        <div class="page">
+                            <div class="page-head">A header stuck to the top of the shell</div>
+                            <div class="page-body">
+                                @foreach (var i in Enumerable.Range(1, 30))
+                                {
+                                    <div class="row" id="@(i == 15 ? "padded-row" : null)">
+                                        Row @i @(i == 15 ? "(the target)" : null)
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </BitAppShell>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Endless content" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+                <div>
+                    <b>AutoScroll</b> keeps the shell pinned to the end of its content as the content grows,
+                    which is what a chat, a log or a console wants. It only keeps pinning while the reader
+                    left it standing at the end, so someone who scrolled up to read something is not dragged
+                    back down by the next arrival, and scrolling back to the end takes the pinning up again;
+                    <b>AutoScrollThreshold</b> says how near the end still counts as being at it.
+                </div>
+                <br />
+                <div>
+                    <b>PreserveScroll</b> is the other half of an endless list: a page of older content
+                    arriving above what the reader is looking at would otherwise push it that far down the
+                    screen, and with this the shell is moved by exactly what arrived, so nothing appears to
+                    move at all. It is worth pairing with <b>OnReachedTop</b> and a <b>ReachOffset</b> of
+                    about a screenful. <b>Refresh</b> re-measures the shell for the changes neither its own
+                    size nor its content announce - a web font that has finished loading, an image that
+                    settled at a size its markup never named.
+                </div>
+                <br /><br />
+                <div class="btn-row">
+                    <BitToggle @bind-Value="autoScroll" Text="AutoScroll" />
+                    <BitToggle @bind-Value="preserveScroll" Text="PreserveScroll" />
+                </div>
+                <br />
+                <div class="btn-row">
+                    <BitButton OnClick="AppendMessage">Append to the end</BitButton>
+                    <BitButton OnClick="PrependMessages">Prepend 5 older</BitButton>
+                    <BitButton OnClick="() => feedShell?.Refresh()">Refresh</BitButton>
+                </div>
+                <br />
+                <div class="shell-box">
+                    <BitAppShell Id="feed-shell"
+                                 @ref="feedShell"
+                                 AutoScroll="autoScroll"
+                                 PreserveScroll="preserveScroll">
+                        <div class="page-body">
+                            @foreach (var message in feed)
+                            {
+                                <div class="row">@message</div>
+                            }
+                        </div>
+                    </BitAppShell>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
                 <div>
                     <b>Style</b> and <b>Class</b> reach the root of the shell, and <b>Styles</b> and
                     <b>Classes</b> reach each of its seven parts by name: <b>Root</b>, <b>Top</b>,
@@ -354,7 +556,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+            <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
                 <div>
                     Set <b>Dir</b> to <b>Rtl</b> to lay the shell out right to left. The two side bars follow
                     the reading direction while staying tied to the physical edge each safe area belongs to,

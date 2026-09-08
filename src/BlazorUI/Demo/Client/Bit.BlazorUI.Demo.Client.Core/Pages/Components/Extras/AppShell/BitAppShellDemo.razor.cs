@@ -3,14 +3,35 @@
 public partial class BitAppShellDemo
 {
     private bool noInsets;
+    private bool noTopInset;
+    private bool noEndInset;
+    private bool noStartInset;
+    private bool noBottomInset;
+
     private bool noScroll;
     private bool instantScroll;
 
-    private string? message;
+    private bool stableGutter;
+    private bool clipOverflowX;
+    private bool shortOverflowPage;
 
-    private BitAppShell? scrollShell;
-    private BitAppShell? behaviorShell;
+    private bool stickyPadding;
+    private string? paddingValue => stickyPadding ? "2.5rem 0 0 0" : null;
+
+    private bool autoScroll = true;
+    private bool preserveScroll = true;
+    private int feedNext = 13;
+    private int feedOlder;
+    private readonly List<string> feed = [.. Enumerable.Range(1, 12).Select(i => $"Message {i}")];
+
+    private string? message;
+    private double keyboardInset;
+
+    private BitAppShell? feedShell;
     private BitAppShell? clipShell;
+    private BitAppShell? scrollShell;
+    private BitAppShell? paddingShell;
+    private BitAppShell? behaviorShell;
 
     private string offsetText = "-";
 
@@ -84,6 +105,21 @@ public partial class BitAppShellDemo
 
     private void HandleReachedBottom() { reachedEdge = "bottom"; StateHasChanged(); }
 
+    private void HandleKeyboardInset(double inset) { keyboardInset = inset; StateHasChanged(); }
+
+    private Task ScrollToPaddedRow() => paddingShell?.ScrollToElement("padded-row") ?? Task.CompletedTask;
+
+    private void AppendMessage() => feed.Add($"Message {feedNext++}");
+
+    // Older content lands ABOVE what the reader is looking at, which is the arrival PreserveScroll is for.
+    private void PrependMessages()
+    {
+        for (var i = 0; i < 5; i++)
+        {
+            feed.Insert(0, $"Older message {--feedOlder}");
+        }
+    }
+
 
 
     private readonly List<ComponentParameter> componentParameters =
@@ -97,10 +133,24 @@ public partial class BitAppShellDemo
          },
          new()
          {
+            Name = "AutoScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the main container pinned to the end of its content as the content grows, for as long as the reader left it standing at the end.",
+         },
+         new()
+         {
+            Name = "AutoScrollThreshold",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "How near the end of the content (in pixels) the main container has to have been left for AutoScroll to keep pinning it there.",
+         },
+         new()
+         {
             Name = "AvoidKeyboard",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Takes the height of the on-screen keyboard off the scrolling area while it is open, and publishes it on the root as the --bit-ash-keyboard-inset CSS variable. It measures 0 wherever the browser shrinks the layout viewport itself.",
+            Description = "Takes the height of the on-screen keyboard off the scrolling area while it is open, publishes it on the root as the --bit-ash-keyboard-inset CSS variable and marks the root with the data-bit-ash-keyboard attribute. It measures 0 wherever the browser shrinks the layout viewport itself.",
          },
          new()
          {
@@ -120,6 +170,36 @@ public partial class BitAppShellDemo
          },
          new()
          {
+            Name = "FullScreen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Pins the app shell to the four edges of the screen, so it fills the window whatever height the page around it has - which is what saves the host page from carrying a height of its own down through html and body.",
+         },
+         new()
+         {
+            Name = "Gutter",
+            Type = "BitScrollbarGutter?",
+            DefaultValue = "null",
+            Description = "Reserves the room the scrollbar of the main container takes, whether or not there is anything left to scroll, so the layout does not shift between a page that scrolls and a page that does not.",
+            LinkType = LinkType.Link,
+            Href = "#scrollbar-gutter-enum"
+         },
+         new()
+         {
+            Name = "NoBottomInset",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the bottom safe area inset of the app shell, leaving the other three where they are.",
+         },
+         new()
+         {
+            Name = "NoEndInset",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the trailing side safe area inset of the app shell - the right of a left-to-right shell - leaving the other three where they are.",
+         },
+         new()
+         {
             Name = "NoInsets",
             Type = "bool",
             DefaultValue = "false",
@@ -134,10 +214,45 @@ public partial class BitAppShellDemo
          },
          new()
          {
+            Name = "NoStartInset",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the leading side safe area inset of the app shell - the left of a left-to-right shell - leaving the other three where they are.",
+         },
+         new()
+         {
+            Name = "NoTopInset",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the top safe area inset of the app shell, leaving the other three where they are.",
+         },
+         new()
+         {
+            Name = "OnKeyboardInsetChanged",
+            Type = "EventCallback<double>",
+            DefaultValue = "",
+            Description = "Callback for how much of the app shell the on-screen keyboard covers, in pixels, raised as that changes and with 0 as it closes. Only a shell with AvoidKeyboard set measures it at all.",
+         },
+         new()
+         {
             Name = "OnReachedBottom",
             Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when the main container reaches the bottom of its content, raised once per arrival rather than on every frame that stays there.",
+         },
+         new()
+         {
+            Name = "OnReachedLeft",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when the main container reaches the visual left edge of its content, which is the same edge whichever way the shell reads.",
+         },
+         new()
+         {
+            Name = "OnReachedRight",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when the main container reaches the visual right edge of its content.",
          },
          new()
          {
@@ -175,6 +290,24 @@ public partial class BitAppShellDemo
          },
          new()
          {
+            Name = "OverflowX",
+            Type = "BitOverflow?",
+            DefaultValue = "null",
+            Description = "What the main container does with content that overflows it sideways. Hidden clips it instead of offering it, and NoScroll wins over both axes.",
+            LinkType = LinkType.Link,
+            Href = "#overflow-enum"
+         },
+         new()
+         {
+            Name = "OverflowY",
+            Type = "BitOverflow?",
+            DefaultValue = "null",
+            Description = "What the main container does with content that overflows it downwards. See OverflowX.",
+            LinkType = LinkType.Link,
+            Href = "#overflow-enum"
+         },
+         new()
+         {
             Name = "Overscroll",
             Type = "BitOverscroll?",
             DefaultValue = "null",
@@ -188,6 +321,13 @@ public partial class BitAppShellDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Persists scroll position of the main container per url in session storage and restores it on navigation. A fragment-only navigation is left alone.",
+         },
+         new()
+         {
+            Name = "PreserveScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the place of the reader when content is added above what they are looking at, which is what an endless list growing upwards needs.",
          },
          new()
          {
@@ -207,10 +347,24 @@ public partial class BitAppShellDemo
          },
          new()
          {
+            Name = "ScrollPadding",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The room the main container keeps between its edges and anything scrolled into view inside it, as any CSS length - which is what keeps a header stuck to the top of the shell from covering what was just scrolled to.",
+         },
+         new()
+         {
             Name = "ScrollThrottle",
             Type = "int",
             DefaultValue = "0",
             Description = "The shortest interval (in milliseconds) between two OnScroll reports. The default of 0 reports once per animation frame.",
+         },
+         new()
+         {
+            Name = "StableInsets",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sizes the four inset bars from the largest safe areas the device can ask for rather than from the ones it is asking for right now, so the layout is not relaid out as the browser slides its own chrome in and out.",
          },
          new()
          {
@@ -246,9 +400,9 @@ public partial class BitAppShellDemo
         new()
         {
             Name = "ClearPersistedScroll",
-            Type = "Func<Task>",
+            Type = "Func<string?, Task>",
             DefaultValue = "",
-            Description = "Forgets every scroll position PersistScroll has kept, for the pages of this app shell and of any other.",
+            Description = "Forgets every scroll position PersistScroll has kept, for the pages of this app shell and of any other - or, given a url, only the position kept for that one page.",
         },
         new()
         {
@@ -307,6 +461,13 @@ public partial class BitAppShellDemo
         },
         new()
         {
+            Name = "Refresh",
+            Type = "Func<Task>",
+            DefaultValue = "",
+            Description = "Re-measures the main container and reports whatever has changed since it was last measured - for the changes neither its own size nor its content announce, such as a web font that has finished loading.",
+        },
+        new()
+        {
             Name = "ScrollBy",
             Type = "Func<double, double, BitScrollBehavior?, Task>",
             DefaultValue = "",
@@ -326,7 +487,7 @@ public partial class BitAppShellDemo
         new()
         {
             Name = "ScrollToElement",
-            Type = "Func<string, double, bool, BitScrollAlignment, Task>",
+            Type = "Func<string, double, bool, BitScrollAlignment, BitScrollBehavior?, Task>",
             DefaultValue = "",
             Description = "Brings an element inside the main container into view by scrolling the container itself rather than every scroller the page sits in.",
             LinkType = LinkType.Link,
@@ -573,6 +734,66 @@ public partial class BitAppShellDemo
                 {
                     Name= "Auto",
                     Description="Scroll behavior is determined by the computed value of scroll-behavior.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "overflow-enum",
+            Name = "BitOverflow",
+            Description = "What the main container of the app shell does with content that overflows it along one axis.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Auto",
+                    Description="A scrollbar is offered along that axis when the content overflows, and nothing is shown when it does not.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Hidden",
+                    Description="The overflow is clipped and no scrollbar is offered, though the axis can still be moved through the scrolling methods of the component.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Scroll",
+                    Description="A scrollbar is always shown along that axis, whether or not there is anything to scroll.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Visible",
+                    Description="The overflow is neither clipped nor scrollable, so it is painted outside the container.",
+                    Value="3",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "scrollbar-gutter-enum",
+            Name = "BitScrollbarGutter",
+            Description = "How much room the main container of the app shell reserves for its scrollbar.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Auto",
+                    Description="The initial value: a classic scrollbar takes its room only while there is something to scroll, and an overlay scrollbar takes none at all.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Stable",
+                    Description="The room is reserved whether or not there is anything to scroll, so the layout does not shift as pages of different lengths follow one another.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "BothEdges",
+                    Description="Like Stable, with the same room reserved on the opposite edge as well, so the content stays centered.",
                     Value="2",
                 }
             ]
