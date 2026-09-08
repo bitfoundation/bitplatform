@@ -1,0 +1,267 @@
+@page "/selection"
+@implements IAsyncDisposable
+@inject Bit.Butil.Selection selection
+@inject Bit.Butil.Sanitizer sanitizer
+
+<PageTitle>Butil - Selection Samples</PageTitle>
+
+<PageHeader Category="DOM"
+            Title="Selection & Sanitizer"
+            Lead="Read and edit what the user has selected - highlight it, replace it, save and restore a caret - and sanitize untrusted markup with the browser's own filter."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Selection" />
+
+<pre>
+@@inject Bit.Butil.Selection selection
+
+var text = await selection.GetText();
+await selection.Surround("mark");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Read the selection" Api="Get / GetText / GetHtml"
+              Description="Select part of the paragraph below, then read it back - as text, as markup, or with its offsets.">
+        <p @ref="_sample">
+            Select any part of <b>this paragraph</b> - including some of its <i>markup</i> - and then
+            press a button. Everything here works on whatever is selected right now.
+        </p>
+        <div class="controls">
+            <button @onclick="Read">Get / GetText</button>
+            <button class="secondary" @onclick="ReadHtml">GetHtml</button>
+            <button class="secondary" @onclick="Measure">GetBoundingRect</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Change and edit it" Api="SelectElementContents / Surround / ReplaceWithText"
+              Description="Surround is the highlighting primitive. It returns false when the selection's ends are in different elements - normal for a user's selection, not an error.">
+        <div class="controls">
+            <button @onclick="SelectAll">SelectElementContents</button>
+            <button @onclick="Highlight">Surround in &lt;mark&gt;</button>
+            <button class="secondary" @onclick="Redact">ReplaceWithText</button>
+            <button class="secondary" @onclick="Clear">RemoveAll</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Save and restore a caret" Api="GetRangeIn / SelectRange"
+              Description="Character offsets inside one element survive markup changing around the text, which is what makes them safe across a re-render.">
+        <div class="field">
+            <span class="field-label">Saved offsets</span>
+            <input value="@(_saved is null ? "" : $"{_saved.Start} to {_saved.End}")" readonly placeholder="Select something, then save" />
+        </div>
+        <div class="controls">
+            <button @onclick="Save">GetRangeIn</button>
+            <button class="secondary" @onclick="Restore">SelectRange</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Sanitize untrusted markup" Api="Sanitizer.Sanitize"
+              Description="The browser's own XSS filter as a string in, string out. When the API is missing it returns null rather than the input untouched.">
+        <div class="controls">
+            <button @onclick="SanitizeHostile">Sanitize a hostile fragment</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Follow the selection" Api="OnChange"
+              Description="selectionchange fires on every caret move, so read inside the handler rather than doing work per event.">
+        <div class="controls">
+            <button @onclick="ToggleWatch">@(_subscription is null ? "Start watching" : "Stop watching")</button>
+            <span class="result-pill">Changes seen: <b>@_changeCount</b></span>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="selection output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private ElementReference _sample;
+    private SelectionOffsets? _saved;
+    private ButilSubscription? _subscription;
+    private int _changeCount;
+
+    private const string Hostile = """<p onclick="steal()">Hello</p><script>steal()</script><img src=x onerror="steal()">""";
+
+    private async Task Read()
+    {
+        try
+        {
+            var current = await selection.Get();
+
+            if (current is null || string.IsNullOrEmpty(current.Text))
+            {
+                await output.Warn("Nothing is selected.");
+                return;
+            }
+
+            await output.Success("GetText →", current.Text);
+            await output.Info($"Collapsed: {current.IsCollapsed}, ranges: {current.RangeCount}, offsets {current.AnchorOffset}-{current.FocusOffset}.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Get failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadHtml()
+    {
+        try
+        {
+            var html = await selection.GetHtml();
+            if (string.IsNullOrEmpty(html)) await output.Warn("Nothing is selected.");
+            else await output.Success("GetHtml →", html);
+        }
+        catch (Exception ex)
+        {
+            await output.Error("GetHtml failed →", ex.Message);
+        }
+    }
+
+    private async Task Measure()
+    {
+        try
+        {
+            var box = await selection.GetBoundingRect();
+
+            if (box is null) await output.Warn("Nothing is selected.");
+            else await output.Success("GetBoundingRect →", $"x {box.X:0}, y {box.Y:0}, {box.Width:0}×{box.Height:0}.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("GetBoundingRect failed →", ex.Message);
+        }
+    }
+
+    private async Task SelectAll()
+    {
+        try
+        {
+            await output.Info("SelectElementContents →", await selection.SelectElementContents(_sample));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("SelectElementContents failed →", ex.Message);
+        }
+    }
+
+    private async Task Highlight()
+    {
+        try
+        {
+            var wrapped = await selection.Surround("mark");
+
+            if (wrapped) await output.Success("Surround → wrapped.");
+            else await output.Warn("Surround → refused: the selection's ends are in different elements, or nothing is selected.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Surround failed →", ex.Message);
+        }
+    }
+
+    private async Task Redact()
+    {
+        try
+        {
+            await output.Info("ReplaceWithText →", await selection.ReplaceWithText("[redacted]"));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("ReplaceWithText failed →", ex.Message);
+        }
+    }
+
+    private async Task Clear()
+    {
+        try
+        {
+            await selection.RemoveAll();
+            await output.Info("RemoveAll → the selection is gone.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("RemoveAll failed →", ex.Message);
+        }
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            _saved = await selection.GetRangeIn(_sample);
+
+            if (_saved is null) await output.Warn("GetRangeIn → nothing is selected inside the paragraph.");
+            else await output.Success("GetRangeIn →", $"{_saved.Start} to {_saved.End}.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("GetRangeIn failed →", ex.Message);
+        }
+    }
+
+    private async Task Restore()
+    {
+        if (_saved is null)
+        {
+            await output.Warn("Save some offsets first.");
+            return;
+        }
+
+        try
+        {
+            var ok = await selection.SelectRange(_sample, _saved.Start, _saved.End);
+            if (ok) await output.Success("SelectRange →", await selection.GetText());
+            else await output.Warn("SelectRange → those offsets no longer exist.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("SelectRange failed →", ex.Message);
+        }
+    }
+
+    private async Task SanitizeHostile()
+    {
+        try
+        {
+            var clean = await sanitizer.Sanitize(Hostile);
+
+            if (clean is null) await output.Warn("Sanitize → null - this browser has no sanitizing sink.");
+            else await output.Success("Sanitize →", clean);
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Sanitize failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleWatch()
+    {
+        try
+        {
+            if (_subscription is not null)
+            {
+                await _subscription.DisposeAsync();
+                _subscription = null;
+                await output.Info("Stopped watching.");
+                return;
+            }
+
+            _changeCount = 0;
+            _subscription = await selection.OnChange(() =>
+            {
+                _changeCount++;
+                InvokeAsync(StateHasChanged);
+            });
+
+            await output.Success("Watching selectionchange.");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("OnChange failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
+}

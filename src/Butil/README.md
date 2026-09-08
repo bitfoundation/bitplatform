@@ -81,6 +81,8 @@ registering everything.
 | `Location` | Read and mutate the current URL, reload, navigate |
 | `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory |
 | `UserAgent` | Parsed user-agent brands, platform and mobile-ness (UA Client Hints) |
+| `Url` | `URL`, `URLSearchParams` and `URLPattern`: parse and edit URLs as the browser does, and match routes |
+| `Speculation` | Speculation rules (prefetch/prerender), `document.prerendering` and the activation event |
 
 ### Screen & diagnostics
 
@@ -112,6 +114,9 @@ registering everything.
 | `DocumentPictureInPicture` | Put arbitrary DOM in an always-on-top window - not just a video |
 | `ViewTransition` | Animate between two states of the page, the browser doing the work |
 | Media element extensions | Play, pause, seek, volume and rate on any `<audio>`/`<video>` |
+| `Selection` | The user's selection and the `Range` operations on it: highlight, replace, measure, restore a caret |
+| `Ink` | Delegated ink trails - the compositor draws ahead of your rendering |
+| `HandwritingRecognition` | Strokes to text, using a model already on the device |
 
 ### Storage
 
@@ -138,6 +143,8 @@ registering everything.
 | `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
 | `Fetch` | The fetch API with full request/response control and progress |
 | `Compression` | Gzip and deflate through the browser's native codec |
+| `TextEncoding` | `TextDecoder`/`TextEncoder`: the legacy code pages .NET on WebAssembly doesn't carry |
+| `StructuredClone` | Deep-copy a value, and test whether `postMessage`/IndexedDB/`pushState` will take it |
 | `DataTransfer` | Drag-and-drop payloads: dropped files, `getData`/`setData` items, `dropEffect`, `setDragImage` |
 | `LocalFonts` | List installed fonts, and read one's raw font file |
 
@@ -192,6 +199,8 @@ registering everything.
 | `ContactPicker` | Let users pick contacts to share with your app |
 | `EyeDropper` | Sample any pixel colour on the screen |
 | `BarcodeDetector` | Find QR codes and barcodes in a camera frame or an image |
+| `FaceDetector` | Where faces are in an image or a frame - detection, never recognition |
+| `TextDetector` | Read printed text out of an image or a frame |
 
 ### Identity & permissions
 
@@ -204,6 +213,14 @@ registering everything.
 | `DigitalCredentials` | Present a verifiable credential from the user's wallet |
 | `Permissions` | Query the state of any browser permission |
 | `Notification` | Request permission and show system notifications |
+
+### Security & privacy
+
+| Service | What it wraps |
+| --- | --- |
+| `Sanitizer` | The HTML Sanitizer API standalone: sanitize to a string, or with a configuration you reuse |
+| `TrustedTypes` | Policies for the dangerous sinks, and the violations a report-only CSP surfaces |
+| `PrivacySandbox` | Topics, Attribution Reporting, Private State Tokens and fenced frames |
 
 ### Commerce
 
@@ -222,6 +239,7 @@ registering everything.
 | `WebAudio` | The Web Audio graph: buffers, oscillators, filters, analysers, reverb, spatial panning and worklets |
 | `MediaRecorder` | Record a camera, microphone or screen share to a file |
 | `MediaSession` | Lock-screen metadata and hardware media-key handlers |
+| `RegionCapture` / `ElementCapture` | Narrow a screen share of this tab to one element - by rectangle, or by its own content |
 | `MediaSource` | Media Source Extensions: feed a media element with segments you fetched yourself |
 | `MediaCapabilities` | Whether a codec will decode smoothly and power-efficiently, before you commit to it |
 | `EncryptedMedia` | DRM playback: key systems, key sessions and licence exchange |
@@ -324,8 +342,8 @@ published trimmed - a Blazor WebAssembly publish is - the package's build logic 
 through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
 Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
-that injects `Clipboard`, `LocalStorage` and `Window` ships about 8 KB of JavaScript instead of the
-251 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+that injects `Clipboard`, `LocalStorage` and `Window` ships about 7 KB of JavaScript instead of the
+274 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
 a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
 trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping

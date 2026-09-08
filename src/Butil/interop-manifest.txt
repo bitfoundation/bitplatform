@@ -1,5 +1,5 @@
 # Bit.Butil interop contract captured from an untrimmed build. Regenerate with: dotnet run -c Release
-@services|AbortController,AudioOutput,BackgroundFetch,BackgroundSync,BarcodeDetector,Battery,Bluetooth,BroadcastChannel,CacheStorage,Canvas,Clipboard,Compression,ComputePressure,Console,ContactPicker,ContentIndex,Cookie,CookieStore,Credentials,Crypto,Css,DataTransfer,DeviceOrientation,DevicePosture,DigitalCredentials,DigitalGoods,Document,DocumentPictureInPicture,Dom,EncryptedMedia,EventSource,EyeDropper,FedCm,Fetch,FileReader,FileSystem,Gamepad,Geolocation,Hid,History,IdleDetector,IndexedDb,Keyboard,LocalFonts,LocalStorage,Location,MediaCapabilities,MediaDevices,MediaRecorder,MediaSession,MediaSource,MessageChannel,Midi,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,OriginPrivateFileSystem,PaymentHandler,PaymentRequest,Performance,Permissions,PictureInPicture,Presentation,Push,RemotePlayback,Reporting,Scheduler,Screen,ScreenOrientation,Sensors,Serial,ServiceWorker,SessionStorage,ShadowDom,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageBuckets,StorageManager,Streams,Usb,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebCodecs,WebLocks,WebOtp,WebRtc,WebSocket,WebTransport,WebXr,Window,WindowManagement,WindowMessaging,Worker
+@services|AbortController,AudioOutput,BackgroundFetch,BackgroundSync,BarcodeDetector,Battery,Bluetooth,BroadcastChannel,CacheStorage,Canvas,Clipboard,Compression,ComputePressure,Console,ContactPicker,ContentIndex,Cookie,CookieStore,Credentials,Crypto,Css,DataTransfer,DeviceOrientation,DevicePosture,DigitalCredentials,DigitalGoods,Document,DocumentPictureInPicture,Dom,ElementCapture,EncryptedMedia,EventSource,EyeDropper,FaceDetector,FedCm,Fetch,FileReader,FileSystem,Gamepad,Geolocation,HandwritingRecognition,Hid,History,IdleDetector,IndexedDb,Ink,Keyboard,LocalFonts,LocalStorage,Location,MediaCapabilities,MediaDevices,MediaRecorder,MediaSession,MediaSource,MessageChannel,Midi,Navigation,Navigator,NetworkInformation,Nfc,Notification,ObjectUrls,OriginPrivateFileSystem,PaymentHandler,PaymentRequest,Performance,Permissions,PictureInPicture,Presentation,PrivacySandbox,Push,RegionCapture,RemotePlayback,Reporting,Sanitizer,Scheduler,Screen,ScreenOrientation,Selection,Sensors,Serial,ServiceWorker,SessionStorage,ShadowDom,Speculation,SpeechRecognition,SpeechSynthesis,StorageAccess,StorageBuckets,StorageManager,Streams,StructuredClone,TextDetector,TextEncoding,TrustedTypes,Url,Usb,UserAgent,ViewTransition,VisualViewport,WakeLock,WebAudio,WebAuthn,WebCodecs,WebLocks,WebOtp,WebRtc,WebSocket,WebTransport,WebXr,Window,WindowManagement,WindowMessaging,Worker
 Bit.Butil.AbortController|J|-|1|InvokeAbort|
 Bit.Butil.AudioDecoderHandle|J|-|0|InvokeAudioDecoderData,InvokeAudioDecoderError|
 Bit.Butil.AudioEncoderHandle|J|-|0|InvokeAudioEncoderChunk,InvokeAudioEncoderError|
@@ -61,14 +61,17 @@ Bit.Butil.RtcStat|-|P|1||Id,Type,Values
 Bit.Butil.Scheduler|J|-|1|InvokeAnimationFrame,InvokeIdleCallback,InvokeScheduledTask|
 Bit.Butil.Screen|J|-|1|InvokeScreenChange|
 Bit.Butil.ScreenOrientation|J|-|1|InvokeScreenOrientationChange|
+Bit.Butil.Selection|J|-|1|InvokeSelectionChange|
 Bit.Butil.Sensors|J|-|1|InvokeSensorError,InvokeSensorReading|
 Bit.Butil.Serial|J|-|1|InvokeSerialConnected,InvokeSerialData,InvokeSerialDisconnected,InvokeSerialError|
 Bit.Butil.ServiceWorker|J|-|1|InvokeServiceWorkerControllerChange,InvokeServiceWorkerMessage|
 Bit.Butil.SessionStorage|J|-|1|InvokeStorageEvent|
+Bit.Butil.Speculation|J|-|1|InvokePrerenderingChange|
 Bit.Butil.SpeechRecognition|J|-|1|InvokeSpeechRecognitionEnd,InvokeSpeechRecognitionError,InvokeSpeechRecognitionResult|
 Bit.Butil.StreamChunk|-|P|1||Data,Done,Error
 Bit.Butil.StreamedResponseDto|-|P|1||Error,Ok,Status,StatusText,TotalBytes,Url
 Bit.Butil.Streams|J|-|1|InvokeSinkChunk,InvokeSinkClose|
+Bit.Butil.TrustedTypes|J|-|1|InvokeTrustedTypeViolation|
 Bit.Butil.Usb|J|-|1|InvokeUsbConnected,InvokeUsbDisconnected|
 Bit.Butil.VideoDecoderHandle|J|-|0|InvokeVideoDecoderError,InvokeVideoDecoderFrame|
 Bit.Butil.VideoEncoderHandle|J|-|0|InvokeVideoEncoderChunk,InvokeVideoEncoderError|
@@ -82,4 +85,4 @@ Bit.Butil.WindowManagement|J|-|1|InvokeScreensChange|
 Bit.Butil.WindowMessaging|J|-|1|InvokeWindowMessage|
 Bit.Butil.Worker|J|-|1|InvokeWorkerError,InvokeWorkerMessage|
 Bit.Butil.XrSessionHandle|J|-|0|InvokeXrInput,InvokeXrPose,InvokeXrSessionEnd|
-@count|82
+@count|85

@@ -97,7 +97,7 @@ public static class BitButil
     /// Enables the synchronous in-process ("fast") invoke path for the APIs that opt into it.
     /// <br/>
     /// Only APIs backed by synchronous JavaScript functions (for example <see cref="LocalStorage"/>,
-    /// <see cref="SessionStorage"/>, <see cref="Cookie"/>, <see cref="Console"/> and <see cref="Location"/>)
+    /// <see cref="SessionStorage"/>, <see cref="Cookie"/>, <see cref="Console"/>, <see cref="Location"/> and <see cref="History"/>)
     /// use this path; everything that wraps an asynchronous (Promise-returning) browser API always runs
     /// asynchronously regardless of this setting, so enabling it can't break those calls.
     /// Only effective on Blazor WebAssembly (where an <see cref="Microsoft.JSInterop.IJSInProcessRuntime"/> is available).
