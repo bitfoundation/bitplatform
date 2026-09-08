@@ -7,6 +7,7 @@
 <DemoPage Name="ErrorBoundary"
           Description="BitErrorBoundary wraps a part of the page and catches whatever the components inside it throw, rendering a themed, recoverable error UI in their place instead of letting one failure tear the whole app down. It builds on Blazor's own ErrorBoundary, adding a complete default UI (icon, title, message, optional exception details and Refresh / Home / Recover actions), templates for every part of it, logging, callbacks, automatic recovery on navigation or on a change of state, and a way in for the exceptions the renderer never sees."
           Parameters="componentParameters"
+          SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers"
           GitHubExtrasUrl="ErrorBoundary/BitErrorBoundary.razor"
@@ -63,11 +64,15 @@
         <DemoExample Title="Exception details" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 <b>ShowException</b> renders the exception's full text - message, type and stack trace - under the
-                title. It is what a developer needs while building, and it is internal detail in front of a user once
-                the app is deployed, so it is off by default and belongs behind an environment check.
+                title, in a block that scrolls and takes the keyboard focus so it stays reachable.
+                <b>ShowCopyButton</b> puts that same text on the clipboard instead, which is what turns a screenshot
+                of an error into something searchable in a bug report; the button says <b>CopiedText</b> for a moment
+                afterwards, since a copy leaves nothing else on the screen to show for itself. Both are what a
+                developer needs while building and internal detail in front of a user once the app is deployed, so
+                both are off by default and belong behind an environment check.
             </div>
             <br />
-            <BitErrorBoundary ShowException>
+            <BitErrorBoundary ShowException ShowCopyButton>
                 <BitButton OnClick="ThrowException">Throw an exception</BitButton>
             </BitErrorBoundary>
         </DemoExample>
@@ -104,7 +109,8 @@
                 <b>Home</b> navigates to <b>HomeUrl</b> (the site root unless you name another), and <b>Recover</b>
                 clears the error and renders the content again - so it only helps once whatever threw has been put
                 right, which is why it is the one to hide when nothing about the failure will have changed by the time
-                the reader clicks it. Each has its own text parameter and its own <b>Hide...Button</b>, and
+                the reader clicks it. Each has its own text parameter and its own <b>Hide...Button</b>, the Copy
+                button joins them in the same row wherever <b>ShowCopyButton</b> is set, and
                 <b>AdditionalButtons</b> appends to the row rather than replacing it.
             </div>
             <br />
@@ -127,7 +133,10 @@
             <div>
                 <b>Footer</b> replaces the whole row of default buttons while keeping the icon, the title and the
                 message of the default UI - the middle ground between accepting the built-in actions and writing the
-                error UI from scratch. A boundary that sets it never renders <b>AdditionalButtons</b>.
+                error UI from scratch. What it replaces is the buttons and not the row: it is rendered in the same
+                footer element they were laid out in, so it keeps their wrapping row and is reached by
+                <b>Classes.Footer</b> and <b>Styles.Footer</b> exactly as they are. A boundary that sets it never
+                renders <b>AdditionalButtons</b>.
             </div>
             <br />
             <BitErrorBoundary @ref="footerBoundary" Title="The upload failed">
@@ -170,7 +179,9 @@
             <div>
                 <b>OnError</b> runs before the error UI is rendered, which is where the exception is reported to
                 whatever collects them, and <b>OnRecover</b> runs on every route back out of the errored state - the
-                Recover button, the <b>Recover</b> method, <b>RecoverKeys</b> and <b>RecoverOnNavigation</b> alike. The
+                Recover button, the <b>Recover</b> method, <b>RecoverKeys</b> and <b>RecoverOnNavigation</b> alike.
+                Which of them it was arrives as a <b>BitErrorBoundaryRecoverReason</b>, since a reader who asked to
+                try again is waiting for something to happen while a boundary that cleared itself is not. The
                 boundary also logs through the app's <b>IErrorBoundaryLogger</b>, exactly as Blazor's own boundary
                 does; <b>NoLogging</b> turns that off where <b>OnError</b> already reports the exception elsewhere.
             </div>
@@ -179,7 +190,10 @@
                 <BitButton OnClick="ThrowException">Throw an exception</BitButton>
             </BitErrorBoundary>
             <br />
-            <div>Caught: @errorCount &nbsp;|&nbsp; Recovered: @recoverCount &nbsp;|&nbsp; Last: @(lastError ?? "-")</div>
+            <div>
+                Caught: @errorCount &nbsp;|&nbsp; Recovered: @recoverCount &nbsp;|&nbsp;
+                Last error: @(lastError ?? "-") &nbsp;|&nbsp; Last recovery: @(lastRecoverReason?.ToString() ?? "-")
+            </div>
         </DemoExample>
 
         <DemoExample Title="Capture" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
@@ -239,7 +253,28 @@
             <BitButton Variant="BitVariant.Outline" OnClick="NavigateInPlace">Navigate</BitButton>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                The error UI is an assertive live region with the <b>alert</b> role, so a screen reader announces it
+                where it appeared - the content it replaced is gone and nothing else on the page says so.
+                <b>AutoFocus</b> also carries the reader to it, which is what a boundary around a whole page wants,
+                where whatever had the focus went with the content. The exception block scrolls and holds nothing
+                that can take the focus, so it takes it itself and is named as a region by <b>ExceptionLabel</b>;
+                an empty label drops the name and the role with it. Every one of the underlying attributes -
+                <b>role</b>, <b>aria-live</b>, <b>aria-atomic</b>, <b>tabindex</b> - can be written as a plain HTML
+                attribute on the boundary, and what you write wins over what the boundary would have written.
+            </div>
+            <br />
+            <BitErrorBoundary AutoFocus ShowException
+                              ExceptionLabel="What the server said"
+                              aria-atomic="false"
+                              Title="This page could not be shown"
+                              Message="The focus is moved here as the error appears, so a keyboard is already where the way out is.">
+                <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+            </BitErrorBoundary>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 The icon also takes a <b>BitIconInfo</b>, which renders whatever CSS classes an external library needs.
                 Use the <b>Fa</b>, <b>Bi</b> and <b>Css</b> helpers, or pass the classes as a plain string.
@@ -257,11 +292,11 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
+        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" CodeFiles="@example14CodeFiles" Id="example14">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root of the error UI, and <b>Styles</b> and <b>Classes</b>
                 reach each part of it by name - the icon, the title, the message, the exception block, the footer and
-                each of the three buttons. None of them touch the boundary's own content: while nothing has been
+                each of its buttons. None of them touch the boundary's own content: while nothing has been
                 caught there is no element of the boundary's to style.
             </div>
             <br />
@@ -282,7 +317,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>Use BitErrorBoundary in right-to-left (RTL).</div>
             <br />
             <div dir="rtl">

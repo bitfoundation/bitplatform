@@ -23,10 +23,17 @@ namespace Bit.BlazorUI;
 public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 {
     private BitDir? _dir;
+    private bool _copied;
     private bool _isDisposed;
+    private int _copyToken;
+    private bool _autoFocusPending;
+    private bool _recoverKeysSeen;
     private object?[]? _recoverKeys;
+    private ElementReference _rootRef;
     private Exception? _capturedException;
     private BitErrorBoundaryContext? _context;
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
@@ -59,7 +66,10 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// <remarks>
     /// The error UI already announces itself to a screen reader as an assertive live region, so this is
     /// for the case where the reader should also be carried to it - a boundary around a whole page,
-    /// where whatever had the focus is gone.
+    /// where whatever had the focus is gone. The focus is asked for once per error rather than left to
+    /// the <c>autofocus</c> attribute, which browsers honor only for elements that were in the document
+    /// as it loaded; an error UI drawn by <see cref="ErrorTemplate"/> or <c>ErrorContent</c> has no
+    /// element of the boundary's to move it to, so where the focus lands there is the template's own.
     /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
 
@@ -84,6 +94,24 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// The text the Copy button carries while what it copied is still on the clipboard.
+    /// <br />
+    /// The default value is <strong>"Copied"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A copy leaves nothing on the screen to show for itself, so the button says so for a moment - the
+    /// alternative is a reader who cannot tell whether the click did anything and copies again.
+    /// </remarks>
+    [Parameter] public string? CopiedText { get; set; }
+
+    /// <summary>
+    /// The text of the Copy button.
+    /// <br />
+    /// The default value is <strong>"Copy details"</strong>.
+    /// </summary>
+    [Parameter] public string? CopyText { get; set; }
+
+    /// <summary>
     /// Gets or sets the text directionality of the boundary's error UI.
     /// </summary>
     [Parameter]
@@ -104,8 +132,24 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     [Parameter] public RenderFragment<BitErrorBoundaryContext>? ErrorTemplate { get; set; }
 
     /// <summary>
+    /// The accessible name of the exception details block rendered by <see cref="ShowException"/>.
+    /// <br />
+    /// The default value is <strong>"Exception details"</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The block scrolls and holds nothing that can take the focus, so it takes the focus itself to stay
+    /// reachable with a keyboard - and a focusable region with no name is a stop a screen reader has
+    /// nothing to announce for. An empty value drops the name and the region role with it.
+    /// </remarks>
+    [Parameter] public string? ExceptionLabel { get; set; }
+
+    /// <summary>
     /// The footer content of the boundary, replacing the default Refresh, Home and Recover buttons.
     /// </summary>
+    /// <remarks>
+    /// It is rendered in the same footer element the default buttons are laid out in, so it keeps their
+    /// row layout and is reached by <c>Classes.Footer</c> and <c>Styles.Footer</c> exactly as they are.
+    /// </remarks>
     [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>
@@ -207,9 +251,11 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// <remarks>
     /// Called by every route back: the Recover button, <see cref="Recover"/>,
     /// <see cref="RecoverOnNavigation"/> and <see cref="RecoverKeys"/>. It is where the state that made
-    /// the content throw is put right, so that recovering does not simply throw again.
+    /// the content throw is put right, so that recovering does not simply throw again. Which of the
+    /// routes it was arrives as a <see cref="BitErrorBoundaryRecoverReason"/>, since a reader who asked
+    /// to try again is waiting for something to happen while a boundary that cleared itself is not.
     /// </remarks>
-    [Parameter] public EventCallback OnRecover { get; set; }
+    [Parameter] public EventCallback<BitErrorBoundaryRecoverReason> OnRecover { get; set; }
 
     /// <summary>
     /// The values that recover the boundary as they change.
@@ -243,6 +289,21 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// The text of the Refresh button.
     /// </summary>
     [Parameter] public string? RefreshText { get; set; }
+
+    /// <summary>
+    /// Renders a Copy button in the footer of the default error UI, putting the exception's full text on
+    /// the clipboard.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// What a reader can copy is what they can paste into a support ticket or a bug report, which is the
+    /// difference between a screenshot of an error and something searchable. It copies the same text
+    /// <see cref="ShowException"/> renders, so like it, it is internal detail in front of whoever is
+    /// looking at the screen and belongs behind the same environment check in a deployed app - unless
+    /// the app is the one asking for the report.
+    /// </remarks>
+    [Parameter] public bool ShowCopyButton { get; set; }
 
     /// <summary>
     /// Whether the actual exception information should be shown or not.
@@ -345,7 +406,7 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     {
         if (RecoverCore() is false) return;
 
-        _ = OnRecover.InvokeAsync();
+        _ = OnRecover.InvokeAsync(BitErrorBoundaryRecoverReason.Manual);
     }
 
     /// <summary>
@@ -371,18 +432,27 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
         // The first pass has nothing to compare against: a boundary has caught nothing yet when its
         // parameters are first set, so taking the initial keys for a change would recover nothing anyway.
-        if (_recoverKeys is not null && keys is not null && keys.SequenceEqual(_recoverKeys) is false)
+        // What is compared afterwards is the sequence and not the array, so that a boundary whose keys
+        // appear or disappear altogether - null one render and a list the next - sees that as the change
+        // it is rather than as nothing at all.
+        if (_recoverKeysSeen && KeysChanged(_recoverKeys, keys))
         {
             RecoverOnKeysChanged();
         }
 
         _recoverKeys = keys;
+        _recoverKeysSeen = true;
 
         base.OnParametersSet();
     }
 
     protected override async Task OnErrorAsync(Exception exception)
     {
+        // Latched here rather than read off AutoFocus at render time, so that the focus is moved once as
+        // the error UI appears and never again on the renders that follow it - a reader who tabbed away
+        // from the error is not dragged back to it by an unrelated re-render.
+        _autoFocusPending = AutoFocus;
+
         if (NoLogging is false)
         {
             // Registered by every Blazor host, and by nothing at all in a bare test renderer, so it is
@@ -404,6 +474,34 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         }
 
         await OnError.InvokeAsync(exception);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The autofocus attribute is only honored for elements that are in the initial document, and an
+        // error UI never is: it is rendered into a page that is already up. So the boundary asks for the
+        // focus itself, on the first render of each error - the attribute stays on the element for the
+        // one case that is not this one, an error UI that is already there when the document loads.
+        if (_autoFocusPending is false) return;
+
+        _autoFocusPending = false;
+
+        // Nothing of the boundary's is on the page while a template is drawing the error UI, so there is
+        // no element of its own for it to move the focus to - that is the template's own to make.
+        if (CurrentException is null || ErrorTemplate is not null || ErrorContent is not null) return;
+
+        try
+        {
+            await _rootRef.FocusAsync();
+        }
+        catch (Exception)
+        {
+            // A boundary that cannot move the focus - a torn-down circuit, an error UI replaced by a
+            // template with no root element of the boundary's - is still a boundary, and losing the
+            // error UI over it would be the one failure worth avoiding here.
+        }
     }
 
     public void Dispose()
@@ -466,14 +564,21 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// <summary>The heading the error UI carries, which an explicitly empty Title drops.</summary>
     private string? _Title => Title ?? "Oops, Something went wrong...";
 
+    /// <summary>The accessible name of the exception details block, which an explicitly empty one drops.</summary>
+    private string? _ExceptionLabel => ExceptionLabel is null ? "Exception details" : (ExceptionLabel.HasValue() ? ExceptionLabel : null);
+
     /// <summary>The glyph the error UI draws in place of its own illustration, or null where it draws it.</summary>
     private BitIconInfo? _Icon => BitIconInfo.From(Icon, IconName);
 
     /// <summary>Whether anything is left for the default footer to hold.</summary>
     private bool _HasFooter => AdditionalButtons is not null
+                            || ShowCopyButton
                             || HideRefreshButton is false
                             || HideHomeButton is false
                             || HideRecoverButton is false;
+
+    /// <summary>The text the Copy button carries, which is what it says it did while it has just done it.</summary>
+    private string _CopyButtonText => _copied ? (CopiedText ?? "Copied") : (CopyText ?? "Copy details");
 
     /// <summary>
     /// The context an <see cref="ErrorTemplate"/> is handed, rebuilt only as the exception it carries
@@ -518,6 +623,17 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         builder.CloseComponent();
     };
 
+    /// <summary>
+    /// Whether two readings of <see cref="RecoverKeys"/> differ, counting the list appearing or
+    /// disappearing altogether as a difference and two empty readings as none.
+    /// </summary>
+    private static bool KeysChanged(object?[]? oldKeys, object?[]? newKeys)
+    {
+        if (oldKeys is null || newKeys is null) return (oldKeys?.Length ?? 0) != (newKeys?.Length ?? 0);
+
+        return oldKeys.SequenceEqual(newKeys) is false;
+    }
+
     private static string? JoinStyles(string? style, string? extraStyle)
     {
         if (style.HasNoValue()) return extraStyle;
@@ -532,10 +648,18 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// </summary>
     private bool RecoverCore()
     {
+        if (_isDisposed) return false;
+
         var wasErrored = CurrentException is not null;
         var wasCaptured = _capturedException is not null;
 
         _capturedException = null;
+
+        // The error UI it was to be moved to is on its way out, so a focus that has not happened yet is
+        // one that must not happen at all - it would land on an element that is no longer there. The
+        // copy message goes with it: it belongs to the error that is being cleared.
+        _copied = false;
+        _autoFocusPending = false;
 
         // Renders on its own only when it had an exception to clear, which is why the captured-but-not-
         // yet-thrown case has to ask for the render itself.
@@ -549,18 +673,59 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         return wasErrored || wasCaptured;
     }
 
-    private async Task HandleRecover()
+    /// <summary>
+    /// Puts the exception's full text on the clipboard, saying so on the button for a moment afterwards.
+    /// </summary>
+    private async Task HandleCopy()
+    {
+        var exception = CurrentException;
+
+        if (exception is null) return;
+
+        try
+        {
+            await _js.BitExtrasCopyToClipboard(exception.ToString());
+        }
+        catch (Exception)
+        {
+            // A clipboard that is not there to be written to - a browser that denies it, a circuit that
+            // is already going - leaves the button saying what it still offers to do, which is the truth.
+            return;
+        }
+
+        if (_isDisposed) return;
+
+        _copied = true;
+
+        // Each copy owns the message it put up, so that the one before it timing out does not take down
+        // the one that has only just gone up.
+        var token = ++_copyToken;
+
+        StateHasChanged();
+
+        await Task.Delay(2000);
+
+        // The boundary may have recovered or been torn down while the message was up, and a copy that is
+        // two seconds stale is not worth a render of its own.
+        if (_isDisposed || _copied is false || _copyToken != token) return;
+
+        _copied = false;
+
+        StateHasChanged();
+    }
+
+    private async Task HandleRecover(BitErrorBoundaryRecoverReason reason)
     {
         if (RecoverCore() is false) return;
 
-        await OnRecover.InvokeAsync();
+        await OnRecover.InvokeAsync(reason);
     }
 
     private void RecoverOnKeysChanged()
     {
         if (CurrentException is null && _capturedException is null) return;
 
-        _ = HandleRecover();
+        _ = HandleRecover(BitErrorBoundaryRecoverReason.Keys);
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
@@ -570,6 +735,6 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         if (CurrentException is null && _capturedException is null) return;
 
         // LocationChanged is raised off the renderer's synchronization context in a Blazor Server app.
-        _ = InvokeAsync(HandleRecover);
+        _ = InvokeAsync(() => HandleRecover(BitErrorBoundaryRecoverReason.Navigation));
     }
 }

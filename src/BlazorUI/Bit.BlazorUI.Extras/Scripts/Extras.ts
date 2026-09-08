@@ -65,6 +65,37 @@ namespace BitBlazorUI {
             } catch (e) { console.error('BitBlazorUI.Extras.scrollOptionIntoView:', e); }
         }
 
+        // Puts text on the clipboard, throwing when it could not be done so that the caller can tell.
+        // The async Clipboard API is the only one that works without a user gesture heuristic, but it
+        // is unavailable outside a secure context and in a few older browsers, so a hidden textarea and
+        // the deprecated execCommand stand in for it there rather than leaving the copy silently undone.
+        public static async copyToClipboard(text: string) {
+            text ??= '';
+
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                return;
+            }
+
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.setAttribute('aria-hidden', 'true');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            textarea.style.pointerEvents = 'none';
+            document.body.appendChild(textarea);
+
+            try {
+                textarea.select();
+                if (!document.execCommand('copy')) {
+                    throw new Error('the copy command was rejected');
+                }
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
         private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
         public static async initScripts(scripts: string[], isModule: boolean) {
             const key = scripts.join('|');

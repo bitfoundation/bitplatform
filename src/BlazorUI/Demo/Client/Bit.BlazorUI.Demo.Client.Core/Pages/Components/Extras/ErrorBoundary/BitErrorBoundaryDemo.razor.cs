@@ -18,7 +18,7 @@ public partial class BitErrorBoundaryDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves the browser focus to the error UI as it appears.",
+            Description = "Moves the browser focus to the error UI as it appears, once per error. An error UI drawn by ErrorTemplate or ErrorContent has no element of the boundary's to move it to.",
         },
         new()
         {
@@ -52,6 +52,20 @@ public partial class BitErrorBoundaryDemo
         },
         new()
         {
+            Name = "CopiedText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text the Copy button carries while what it copied is still on the clipboard. Defaults to \"Copied\".",
+        },
+        new()
+        {
+            Name = "CopyText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the Copy button. Defaults to \"Copy details\".",
+        },
+        new()
+        {
             Name = "Dir",
             Type = "BitDir?",
             DefaultValue = "null",
@@ -77,10 +91,17 @@ public partial class BitErrorBoundaryDemo
         },
         new()
         {
+            Name = "ExceptionLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name of the exception details block rendered by ShowException. Defaults to \"Exception details\", and an empty value drops the name and the region role with it.",
+        },
+        new()
+        {
             Name = "Footer",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The footer content of the boundary, replacing the default Refresh, Home and Recover buttons.",
+            Description = "The footer content of the boundary, replacing the default Refresh, Home and Recover buttons while keeping the footer element they are laid out in.",
         },
         new()
         {
@@ -190,9 +211,11 @@ public partial class BitErrorBoundaryDemo
         new()
         {
             Name = "OnRecover",
-            Type = "EventCallback",
+            Type = "EventCallback<BitErrorBoundaryRecoverReason>",
             DefaultValue = "",
-            Description = "The callback for when the boundary leaves its errored state, by any of the routes back out of it.",
+            Description = "The callback for when the boundary leaves its errored state, receiving which of the routes back out of it was taken.",
+            LinkType = LinkType.Link,
+            Href = "#recover-reason-enum",
         },
         new()
         {
@@ -221,6 +244,13 @@ public partial class BitErrorBoundaryDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The text of the Refresh button.",
+        },
+        new()
+        {
+            Name = "ShowCopyButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a Copy button in the footer of the default error UI, putting the exception's full text on the clipboard.",
         },
         new()
         {
@@ -344,7 +374,7 @@ public partial class BitErrorBoundaryDemo
                     Name = "Footer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the footer of the BitErrorBoundary.",
+                    Description = "Custom CSS classes/styles for the footer of the BitErrorBoundary, which holds a replaced Footer exactly as it holds the default buttons.",
                 },
                 new()
                 {
@@ -366,6 +396,13 @@ public partial class BitErrorBoundaryDemo
                     Type = "BitButtonClassStyles?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the Recover button of the BitErrorBoundary.",
+                },
+                new()
+                {
+                    Name = "CopyButton",
+                    Type = "BitButtonClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Copy button of the BitErrorBoundary.",
                 },
             ]
         },
@@ -406,12 +443,46 @@ public partial class BitErrorBoundaryDemo
 
 
 
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "recover-reason-enum",
+            Name = "BitErrorBoundaryRecoverReason",
+            Description = "What took the boundary out of its errored state, handed to OnRecover.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Manual",
+                    Description = "The Recover button of the default error UI, the Recover action of an ErrorTemplate's context, or a call to the Recover method.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Keys",
+                    Description = "One of the values of RecoverKeys differed from what the boundary last saw.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Navigation",
+                    Description = "The reader navigated to another location while RecoverOnNavigation was set.",
+                    Value = "2",
+                },
+            ]
+        },
+    ];
+
+
+
     private int errorCount;
     private int navigateCount;
     private int recoverCount;
     private int reportedCount;
     private int selectedRecord = 1;
     private string? lastError;
+    private BitErrorBoundaryRecoverReason? lastRecoverReason;
     private BitErrorBoundary? footerBoundary;
     private BitErrorBoundary? captureBoundary;
 
@@ -428,9 +499,10 @@ public partial class BitErrorBoundaryDemo
         lastError = exception.Message;
     }
 
-    private void HandleRecover()
+    private void HandleRecover(BitErrorBoundaryRecoverReason reason)
     {
         recoverCount++;
+        lastRecoverReason = reason;
     }
 
     private void CaptureFromReference()
@@ -468,7 +540,7 @@ private void ThrowException()
 }";
 
     private readonly string example3RazorCode = @"
-<BitErrorBoundary ShowException>
+<BitErrorBoundary ShowException ShowCopyButton>
     <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
 </BitErrorBoundary>";
     private readonly string example3CsharpCode = @"
@@ -567,11 +639,15 @@ private void ThrowException()
     <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
 </BitErrorBoundary>
 
-<div>Caught: @errorCount &nbsp;|&nbsp; Recovered: @recoverCount &nbsp;|&nbsp; Last: @(lastError ?? ""-"")</div>";
+<div>
+    Caught: @errorCount &nbsp;|&nbsp; Recovered: @recoverCount &nbsp;|&nbsp;
+    Last error: @(lastError ?? ""-"") &nbsp;|&nbsp; Last recovery: @(lastRecoverReason?.ToString() ?? ""-"")
+</div>";
     private readonly string example8CsharpCode = @"
 private int errorCount;
 private int recoverCount;
 private string? lastError;
+private BitErrorBoundaryRecoverReason? lastRecoverReason;
 
 private void ThrowException()
 {
@@ -584,9 +660,10 @@ private void HandleError(Exception exception)
     lastError = exception.Message;
 }
 
-private void HandleRecover()
+private void HandleRecover(BitErrorBoundaryRecoverReason reason)
 {
     recoverCount++;
+    lastRecoverReason = reason;
 }";
 
     private readonly string example9RazorCode = @"
@@ -683,6 +760,20 @@ private void NavigateInPlace()
 }";
 
     private readonly string example12RazorCode = @"
+<BitErrorBoundary AutoFocus ShowException
+                  ExceptionLabel=""What the server said""
+                  aria-atomic=""false""
+                  Title=""This page could not be shown""
+                  Message=""The focus is moved here as the error appears, so a keyboard is already where the way out is."">
+    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
+</BitErrorBoundary>";
+    private readonly string example12CsharpCode = @"
+private void ThrowException()
+{
+    throw new Exception(""This is an exception!"");
+}";
+
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -693,13 +784,13 @@ private void NavigateInPlace()
 <BitErrorBoundary Icon=""@BitIconInfo.Bi(""exclamation-octagon-fill"")"" Title=""Bootstrap Icons"">
     <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
 </BitErrorBoundary>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private void ThrowException()
 {
     throw new Exception(""This is an exception!"");
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitErrorBoundary Title=""Styles""
                   Message=""Every part reached by name.""
                   Styles=""@(new() { Root = ""background: linear-gradient(180deg, #7c1d1d, transparent) #240a0a; border-radius: 0.5rem"",
@@ -714,12 +805,12 @@ private void ThrowException()
                   Classes=""@(new() { Root = ""custom-erb"", Title = ""custom-erb-ttl"", RecoverButton = new() { Root = ""custom-erb-btn"" } })"">
     <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
 </BitErrorBoundary>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private void ThrowException()
 {
     throw new Exception(""This is an exception!"");
 }";
-    private const string example13ScssCode = @"::deep {
+    private const string example14ScssCode = @"::deep {
     .custom-erb {
         border-radius: 0.5rem;
         background: linear-gradient(180deg, #3e0f0f, transparent) #000;
@@ -744,12 +835,12 @@ private void ThrowException()
         background-color: #8f0101;
     }
 }";
-    private readonly DemoCodeFile[] example13CodeFiles =
+    private readonly DemoCodeFile[] example14CodeFiles =
     [
-        new("BitErrorBoundaryDemo.razor.scss", example13ScssCode),
+        new("BitErrorBoundaryDemo.razor.scss", example14ScssCode),
     ];
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <div dir=""rtl"">
     <BitErrorBoundary Dir=""BitDir.Rtl""
                       Title=""اوه، مشکلی پیش آمد...""
@@ -761,7 +852,7 @@ private void ThrowException()
         <BitButton OnClick=""ThrowException"">ایجاد خطا</BitButton>
     </BitErrorBoundary>
 </div>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private void ThrowException()
 {
     throw new Exception(""This is an exception!"");

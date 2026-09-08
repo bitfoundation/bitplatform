@@ -35,7 +35,8 @@ public class BitErrorBoundaryClassStyles
     public string? Exception { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the footer of the BitErrorBoundary.
+    /// Custom CSS classes/styles for the footer of the BitErrorBoundary, which holds a replaced
+    /// <see cref="BitErrorBoundary.Footer"/> exactly as it holds the default buttons.
     /// </summary>
     public string? Footer { get; set; }
 
@@ -53,4 +54,9 @@ public class BitErrorBoundaryClassStyles
     /// Custom CSS classes/styles for the Recover button of the BitErrorBoundary.
     /// </summary>
     public BitButtonClassStyles? RecoverButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the Copy button of the BitErrorBoundary.
+    /// </summary>
+    public BitButtonClassStyles? CopyButton { get; set; }
 }

@@ -127,7 +127,130 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("err"));
         });
 
-        Assert.AreEqual("0", component.Find(".bit-erb-exp").GetAttribute("tabindex"));
+        var block = component.Find(".bit-erb-exp");
+
+        Assert.AreEqual("0", block.GetAttribute("tabindex"));
+
+        // A focusable stop with no name is one a screen reader has nothing to announce for.
+        Assert.AreEqual("region", block.GetAttribute("role"));
+        Assert.AreEqual("Exception details", block.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldApplyACustomExceptionLabel()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ShowException, true);
+            parameters.Add(p => p.ExceptionLabel, "What the server said");
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var block = component.Find(".bit-erb-exp");
+
+        Assert.AreEqual("region", block.GetAttribute("role"));
+        Assert.AreEqual("What the server said", block.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldDropTheExceptionRegionWithAnEmptyExceptionLabel()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ShowException, true);
+            parameters.Add(p => p.ExceptionLabel, string.Empty);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var block = component.Find(".bit-erb-exp");
+
+        // A landmark nobody can tell apart is worse than no landmark at all.
+        Assert.IsFalse(block.HasAttribute("role"));
+        Assert.AreEqual("0", block.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNotRenderTheCopyButtonByDefault()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var buttons = component.FindAll(".bit-erb-ftr button");
+
+        Assert.AreEqual(3, buttons.Count);
+        Assert.IsFalse(component.Markup.Contains("Copy details", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryCopyButtonShouldPutTheExceptionOnTheClipboard()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ShowCopyButton, true);
+            parameters.Add(p => p.ChildContent, ThrowingContent("copy me"));
+        });
+
+        var copyButton = component.FindAll(".bit-erb-ftr button").First(btn => btn.TextContent.Contains("Copy details", StringComparison.Ordinal));
+
+        copyButton.Click();
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Extras.copyToClipboard"].Single();
+
+        StringAssert.Contains((string)invocation.Arguments[0]!, "copy me");
+
+        // A copy leaves nothing else on the screen to show for itself, so the button says what it did.
+        StringAssert.Contains(component.Find(".bit-erb-ftr").TextContent, "Copied");
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryCopyButtonShouldCarryCustomTexts()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ShowCopyButton, true);
+            parameters.Add(p => p.CopyText, "Take the details");
+            parameters.Add(p => p.CopiedText, "On the clipboard");
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var copyButton = component.FindAll(".bit-erb-ftr button").First(btn => btn.TextContent.Contains("Take the details", StringComparison.Ordinal));
+
+        copyButton.Click();
+
+        StringAssert.Contains(component.Find(".bit-erb-ftr").TextContent, "On the clipboard");
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldRenderTheFooterForTheCopyButtonAlone()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.HideRefreshButton, true);
+            parameters.Add(p => p.HideHomeButton, true);
+            parameters.Add(p => p.HideRecoverButton, true);
+            parameters.Add(p => p.ShowCopyButton, true);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-erb-ftr button").Count);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldApplyTheCopyButtonClassesAndStyles()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ShowCopyButton, true);
+            parameters.Add(p => p.Classes, new BitErrorBoundaryClassStyles { CopyButton = new() { Root = "custom-copy" } });
+            parameters.Add(p => p.Styles, new BitErrorBoundaryClassStyles { CopyButton = new() { Root = "letter-spacing:2px" } });
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var copyButton = component.Find(".bit-erb-ftr .custom-copy");
+
+        StringAssert.Contains(copyButton.GetAttribute("style"), "letter-spacing:2px");
     }
 
     [TestMethod]
@@ -245,7 +368,43 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("err"));
         });
 
-        component.Find(".custom-footer");
+        // Replacing the buttons and not the row: the custom footer lands in the same footer element the
+        // default buttons are laid out in, which is what keeps them lined up rather than stacked.
+        var footer = component.Find(".bit-erb-ftr");
+
+        Assert.AreEqual(1, footer.QuerySelectorAll(".custom-footer").Length);
+        Assert.AreEqual(0, footer.QuerySelectorAll("button").Length);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldApplyTheFooterClassAndStyleToACustomFooter()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.Footer, (RenderFragment)(b => b.AddMarkupContent(0, "<div class=\"custom-footer\">Custom</div>")));
+            parameters.Add(p => p.Classes, new BitErrorBoundaryClassStyles { Footer = "custom-ftr-class" });
+            parameters.Add(p => p.Styles, new BitErrorBoundaryClassStyles { Footer = "gap:2rem" });
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var footer = component.Find(".bit-erb-ftr");
+
+        StringAssert.Contains(footer.ClassName, "custom-ftr-class");
+        StringAssert.Contains(footer.GetAttribute("style"), "gap:2rem");
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNotRenderAFooterWithNothingToPutInIt()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.HideRefreshButton, true);
+            parameters.Add(p => p.HideHomeButton, true);
+            parameters.Add(p => p.HideRecoverButton, true);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        component.Find(".bit-erb");
 
         Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-erb-ftr"));
     }
@@ -368,9 +527,10 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         ThrowOnceComponent.Reset();
 
         var recovered = 0;
+        BitErrorBoundaryRecoverReason? lastReason = null;
         var component = RenderComponent<BitErrorBoundary>(parameters =>
         {
-            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create(this, () => recovered++));
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, reason => { recovered++; lastReason = reason; }));
             parameters.AddChildContent(b =>
             {
                 b.OpenComponent<ThrowOnceComponent>(0);
@@ -381,21 +541,50 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         component.FindAll("button").First(btn => btn.TextContent.Contains("Recover", StringComparison.OrdinalIgnoreCase)).Click();
 
         Assert.AreEqual(1, recovered);
+        Assert.AreEqual(BitErrorBoundaryRecoverReason.Manual, lastReason);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryRecoverMethodShouldRaiseOnRecoverAsManual()
+    {
+        ThrowOnceComponent.Reset();
+
+        var recovered = 0;
+        BitErrorBoundaryRecoverReason? lastReason = null;
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, reason => { recovered++; lastReason = reason; }));
+            parameters.AddChildContent(b =>
+            {
+                b.OpenComponent<ThrowOnceComponent>(0);
+                b.CloseComponent();
+            });
+        });
+
+        component.Find(".bit-erb");
+
+        component.InvokeAsync(component.Instance.Recover);
+
+        component.Find(".throw-once-safe");
+        Assert.AreEqual(1, recovered);
+        Assert.AreEqual(BitErrorBoundaryRecoverReason.Manual, lastReason);
     }
 
     [TestMethod]
     public void BitErrorBoundaryRecoverShouldDoNothingWithoutAnError()
     {
         var recovered = 0;
+        BitErrorBoundaryRecoverReason? lastReason = null;
         var component = RenderComponent<BitErrorBoundary>(parameters =>
         {
-            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create(this, () => recovered++));
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, reason => { recovered++; lastReason = reason; }));
             parameters.AddChildContent("<div class=\"safe\">Hello</div>");
         });
 
         component.InvokeAsync(component.Instance.Recover);
 
         Assert.AreEqual(0, recovered);
+        Assert.IsNull(lastReason);
         component.Find(".safe");
     }
 
@@ -653,6 +842,65 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         Assert.IsTrue(errorRoot.HasAttribute("autofocus"));
         Assert.AreEqual("-1", errorRoot.GetAttribute("tabindex"));
+
+        // The attribute alone is not the feature: an error UI is rendered into a document that is already
+        // up, where autofocus is not honored, so the boundary has to ask for the focus itself.
+        Context.JSInterop.VerifyFocusAsyncInvoke();
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNotMoveTheFocusWithoutAutoFocus()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var errorRoot = component.Find(".bit-erb");
+
+        Assert.IsFalse(errorRoot.HasAttribute("autofocus"));
+        Assert.IsFalse(errorRoot.HasAttribute("tabindex"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldMoveTheFocusOnlyOncePerError()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        component.Find(".bit-erb");
+
+        var focusCount = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.Title, "Another title");
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        Assert.AreEqual(focusCount, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNotMoveTheFocusWithAnErrorTemplate()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.ErrorTemplate, (RenderFragment<BitErrorBoundaryContext>)(ctx => b => b.AddMarkupContent(0, "<div class=\"tpl\">Template</div>")));
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        component.Find(".tpl");
+
+        // There is no element of the boundary's on the page for it to move the focus to - that is the
+        // template's own to make.
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]
@@ -808,10 +1056,11 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         ThrowSwitchComponent.Reset();
 
         var recovered = 0;
+        BitErrorBoundaryRecoverReason? lastReason = null;
         var component = RenderComponent<BitErrorBoundary>(parameters =>
         {
             parameters.Add(p => p.RecoverKeys, [1]);
-            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create(this, () => recovered++));
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, reason => { recovered++; lastReason = reason; }));
             parameters.AddChildContent(b =>
             {
                 b.OpenComponent<ThrowSwitchComponent>(0);
@@ -827,6 +1076,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         component.Find(".throw-switch-safe");
         Assert.AreEqual(1, recovered);
+        Assert.AreEqual(BitErrorBoundaryRecoverReason.Keys, lastReason);
     }
 
     [TestMethod]
@@ -860,15 +1110,87 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryShouldRecoverOnNavigation()
+    public void BitErrorBoundaryShouldRecoverWhenRecoverKeysAppear()
+    {
+        ThrowSwitchComponent.Reset();
+
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.AddChildContent(b =>
+            {
+                b.OpenComponent<ThrowSwitchComponent>(0);
+                b.CloseComponent();
+            });
+        });
+
+        component.Find(".bit-erb");
+
+        ThrowSwitchComponent.ShouldThrow = false;
+
+        // A list of keys that was not there and now is differs from what the boundary last saw, which is
+        // the change it is rather than nothing at all.
+        component.Render(parameters => parameters.Add(p => p.RecoverKeys, [1]));
+
+        component.Find(".throw-switch-safe");
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldRecoverWhenRecoverKeysDisappear()
+    {
+        ThrowSwitchComponent.Reset();
+
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.RecoverKeys, [1]);
+            parameters.AddChildContent(b =>
+            {
+                b.OpenComponent<ThrowSwitchComponent>(0);
+                b.CloseComponent();
+            });
+        });
+
+        component.Find(".bit-erb");
+
+        ThrowSwitchComponent.ShouldThrow = false;
+
+        component.Render(parameters => parameters.Add(p => p.RecoverKeys, (System.Collections.Generic.IEnumerable<object?>?)null));
+
+        component.Find(".throw-switch-safe");
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldNotRecoverOnTheFirstRenderWithRecoverKeys()
     {
         ThrowSwitchComponent.Reset();
 
         var recovered = 0;
         var component = RenderComponent<BitErrorBoundary>(parameters =>
         {
+            parameters.Add(p => p.RecoverKeys, [1]);
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, _ => recovered++));
+            parameters.AddChildContent(b =>
+            {
+                b.OpenComponent<ThrowSwitchComponent>(0);
+                b.CloseComponent();
+            });
+        });
+
+        component.Find(".bit-erb");
+
+        Assert.AreEqual(0, recovered);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldRecoverOnNavigation()
+    {
+        ThrowSwitchComponent.Reset();
+
+        var recovered = 0;
+        BitErrorBoundaryRecoverReason? lastReason = null;
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
             parameters.Add(p => p.RecoverOnNavigation, true);
-            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create(this, () => recovered++));
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, reason => { recovered++; lastReason = reason; }));
             parameters.AddChildContent(b =>
             {
                 b.OpenComponent<ThrowSwitchComponent>(0);
@@ -884,6 +1206,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         component.WaitForAssertion(() => component.Find(".throw-switch-safe"));
         Assert.AreEqual(1, recovered);
+        Assert.AreEqual(BitErrorBoundaryRecoverReason.Navigation, lastReason);
     }
 
     [TestMethod]
