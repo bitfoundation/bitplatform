@@ -29,4 +29,14 @@ public class AnimationOptions
 
     /// <summary>Composite operation: <c>"replace"</c>, <c>"add"</c>, <c>"accumulate"</c>.</summary>
     public string Composite { get; set; } = "replace";
+
+    /// <summary>
+    /// Drives the animation from a scroll position rather than from the clock. Null (the default)
+    /// leaves it time-based.
+    /// </summary>
+    /// <remarks>
+    /// When set, <see cref="Duration"/>, <see cref="Delay"/> and <see cref="EndDelay"/> are not sent -
+    /// see <see cref="AnimationTimelineOptions"/>.
+    /// </remarks>
+    public AnimationTimelineOptions? Timeline { get; set; }
 }

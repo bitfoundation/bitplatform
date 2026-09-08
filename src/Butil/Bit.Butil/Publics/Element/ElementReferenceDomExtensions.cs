@@ -350,6 +350,44 @@ public static class ElementReferenceDomExtensions
     public static async ValueTask<int> QuerySelectorAllCount(this ElementReference element, string selectors)
         => await ElementReferenceExtensions.GetRuntime(element).Invoke<int>("BitButil.element.querySelectorAllCount", element, selectors);
 
+    /// <summary>
+    /// True when the runtime implements <c>Element.moveBefore()</c>.
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public static async ValueTask<bool> IsMoveBeforeSupported(this ElementReference element)
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.isMoveBeforeSupported");
+
+    /// <summary>
+    /// Moves <paramref name="node"/> into this element, before <paramref name="reference"/>, <b>without
+    /// disconnecting it</b> from the document on the way.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Node/moveBefore">https://developer.mozilla.org/en-US/docs/Web/API/Node/moveBefore</see>
+    /// </summary>
+    /// <param name="element">The new parent.</param>
+    /// <param name="node">The node to move.</param>
+    /// <param name="reference">
+    /// The child to insert before. Pass null to append at the end.
+    /// </param>
+    /// <returns>
+    /// False when the runtime has no <c>moveBefore</c>, or the move was rejected - across documents,
+    /// or into the node's own subtree.
+    /// </returns>
+    /// <remarks>
+    /// The difference from an ordinary insert is what <i>doesn't</i> happen: an iframe keeps its
+    /// document instead of reloading, a playing video keeps playing, a running animation isn't
+    /// restarted, and focus stays where it was. Reparenting with <c>insertBefore</c> tears all of
+    /// that down, which is why moving a node has historically been something to avoid.
+    /// <br/>
+    /// Blazor owns the DOM it rendered and a diff can undo this on the next render - use it for
+    /// elements Blazor doesn't re-render.
+    /// </remarks>
+    public static async ValueTask<bool> MoveBefore(this ElementReference element, ElementReference node, ElementReference? reference = null)
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.moveBefore", element, node, reference);
+
     private static string PositionName(InsertPosition position) => position switch
     {
         InsertPosition.BeforeBegin => "beforebegin",

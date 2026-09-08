@@ -1,6 +1,8 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
+    const CSSNS = () => (window as any).CSS;
+
     // Stylesheets this module made, so .NET can go on editing one after it is in the document.
     const _sheets: { [id: string]: { sheet?: any; element?: HTMLStyleElement } } = {};
 
@@ -12,15 +14,34 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return entry.element ? entry.element.sheet : entry.sheet;
     }
 
+    // A CSSStyleValue does not cross interop, so every value is flattened to the same shape: the
+    // numeric part and its unit when it has one, plus the text the value serializes to.
+    function toValue(value: any) {
+        if (value === null || value === undefined) return null;
+        const isNumeric = typeof value.value === 'number';
+        return {
+            value: isNumeric ? value.value : 0,
+            unit: isNumeric ? (value.unit ?? '') : '',
+            text: typeof value.toString === 'function' ? value.toString() : String(value),
+            isNumeric
+        };
+    }
+
     butil.css = {
         isSupported() { return typeof window.getComputedStyle === 'function'; },
-        isSupportsAvailable() { return typeof (window as any).CSS?.supports === 'function'; },
-        isRegisterPropertyAvailable() { return typeof (window as any).CSS?.registerProperty === 'function'; },
+        isSupportsAvailable() { return typeof CSSNS()?.supports === 'function'; },
+        isRegisterPropertyAvailable() { return typeof CSSNS()?.registerProperty === 'function'; },
         isConstructableStyleSheetAvailable() {
             try { return typeof CSSStyleSheet === 'function' && 'replaceSync' in CSSStyleSheet.prototype; }
             catch { return false; }
         },
-        isHighlightAvailable() { return typeof (window as any).Highlight === 'function' && !!(window as any).CSS?.highlights; },
+        isHighlightAvailable() { return typeof (window as any).Highlight === 'function' && !!CSSNS()?.highlights; },
+
+        // The Typed OM's unit factories (CSS.px and friends) are what the style-map half of this
+        // module needs, and they ship separately from getComputedStyle - hence its own probe.
+        isTypedOmAvailable() { return typeof CSSNS()?.px === 'function'; },
+        supportsPaintWorklet() { return !!CSSNS()?.paintWorklet; },
+        supportsLayoutWorklet() { return !!CSSNS()?.layoutWorklet; },
 
         // The resolved value of each named property: what the element is actually rendered with,
         // after the cascade, inheritance, and the browser's own resolution of relative units into
@@ -49,13 +70,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         supports(property: string, value: string) {
-            const CSSApi = (window as any).CSS;
+            const CSSApi = CSSNS();
             if (typeof CSSApi?.supports !== 'function') return false;
             try { return CSSApi.supports(property, value); } catch { return false; }
         },
 
         supportsCondition(condition: string) {
-            const CSSApi = (window as any).CSS;
+            const CSSApi = CSSNS();
             if (typeof CSSApi?.supports !== 'function') return false;
             try { return CSSApi.supports(condition); } catch { return false; }
         },
@@ -63,7 +84,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Makes a string safe to put in a selector. An id that starts with a digit, or contains a
         // dot, is legal HTML and illegal CSS without this.
         escape(value: string) {
-            const CSSApi = (window as any).CSS;
+            const CSSApi = CSSNS();
             if (typeof CSSApi?.escape !== 'function') return value;
             try { return CSSApi.escape(value); } catch { return value; }
         },
@@ -72,7 +93,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // transitioned - an unregistered custom property is just a string, and strings do not
         // interpolate.
         registerProperty(name: string, syntax: string, inherits: boolean, initialValue: string | null) {
-            const CSSApi = (window as any).CSS;
+            const CSSApi = CSSNS();
             if (typeof CSSApi?.registerProperty !== 'function') return 'not supported';
             try {
                 const definition: any = { name, syntax, inherits };
@@ -83,6 +104,32 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 // Registering the same name twice throws, and so does a syntax the browser does not
                 // understand. Both are answers rather than crashes.
                 return e?.message ?? String(e);
+            }
+        },
+
+        // Houdini's paint worklet: a script that draws a custom paint() image the way a canvas does,
+        // but as a live CSS value. It runs in its own global scope with no DOM, which is what makes
+        // it fast and what makes it unable to reach anything in the page.
+        async addPaintWorklet(url: string) {
+            const worklet = CSSNS()?.paintWorklet;
+            if (!worklet?.addModule) return false;
+            try {
+                await worklet.addModule(url);
+                return true;
+            } catch {
+                // The module 404'd, or threw while registering its paint class.
+                return false;
+            }
+        },
+
+        async addLayoutWorklet(url: string) {
+            const worklet = CSSNS()?.layoutWorklet;
+            if (!worklet?.addModule) return false;
+            try {
+                await worklet.addModule(url);
+                return true;
+            } catch {
+                return false;
             }
         },
 
@@ -157,7 +204,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         highlightText(name: string, element: any, search: string, caseSensitive: boolean) {
             if (!element || !search) return 0;
             const HighlightCtor = (window as any).Highlight;
-            const highlights = (window as any).CSS?.highlights;
+            const highlights = CSSNS()?.highlights;
             if (typeof HighlightCtor !== 'function' || !highlights) return -1;
 
             const needle = caseSensitive ? search : search.toLowerCase();
@@ -183,7 +230,79 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         clearHighlight(name: string) {
-            (window as any).CSS?.highlights?.delete(name);
+            CSSNS()?.highlights?.delete(name);
+        },
+
+        // -- The per-element half of the Typed OM ------------------------------------------------
+
+        computedValue(element: HTMLElement, property: string) {
+            const map = (element as any)?.computedStyleMap?.();
+            if (!map) return null;
+            try { return toValue(map.get(property)); } catch { return null; }
+        },
+
+        computedProperties(element: HTMLElement) {
+            const map = (element as any)?.computedStyleMap?.();
+            if (!map) return [];
+            // A StylePropertyMapReadOnly is iterable as [property, values]; only the names are worth
+            // flattening here, since the full computed set is hundreds of entries.
+            return Array.from(map, ([property]: any) => property);
+        },
+
+        styleValue(element: HTMLElement, property: string) {
+            const map = (element as any)?.attributeStyleMap;
+            if (!map) return null;
+            try { return toValue(map.get(property)); } catch { return null; }
+        },
+
+        setStyleValue(element: HTMLElement, property: string, value: number, unit: string) {
+            const map = (element as any)?.attributeStyleMap;
+            const css = CSSNS();
+            if (!map || !css) return false;
+            try {
+                // A typed number goes in as a CSSUnitValue, which is the point of the API: no string
+                // parsing on the way in, no string parsing on the way back out.
+                const factory = unit ? css[unit] : css.number;
+                map.set(property, typeof factory === 'function' ? factory.call(css, value) : value);
+                return true;
+            } catch {
+                return false;
+            }
+        },
+
+        setStyleText(element: HTMLElement, property: string, value: string) {
+            const map = (element as any)?.attributeStyleMap;
+            if (!map) return false;
+            try {
+                map.set(property, value);
+                return true;
+            } catch {
+                return false;
+            }
+        },
+
+        deleteStyleValue(element: HTMLElement, property: string) {
+            const map = (element as any)?.attributeStyleMap;
+            if (!map) return false;
+            try {
+                map.delete(property);
+                return true;
+            } catch {
+                return false;
+            }
+        },
+
+        clearStyleValues(element: HTMLElement) {
+            const map = (element as any)?.attributeStyleMap;
+            if (!map) return false;
+            map.clear();
+            return true;
+        },
+
+        styleProperties(element: HTMLElement) {
+            const map = (element as any)?.attributeStyleMap;
+            if (!map) return [];
+            return Array.from(map, ([property]: any) => property);
         },
 
         disposeAll() {

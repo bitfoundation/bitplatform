@@ -6,7 +6,7 @@
 
 <PageHeader Category="DOM &amp; Interaction"
             Title="Css"
-            Lead="The CSS object model: what an element is actually rendered with, what the browser understands, stylesheets you can edit, and highlights painted over text without touching the DOM."
+            Lead="The CSS object model: what an element is actually rendered with, what the browser understands, stylesheets you can edit, highlights painted over text without touching the DOM, animatable custom properties, Houdini worklets, and the typed style maps that give you a length as a number instead of a string."
             MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model"
             InjectAs="Css css" />
 
@@ -19,8 +19,8 @@
 
 <div class="stack">
     <DemoSection Title="Support check"
-                 Api="IsSupported / IsSupportsAvailable / IsRegisterPropertyAvailable / IsConstructableStyleSheetAvailable / IsHighlightAvailable"
-                 Description="getComputedStyle and CSS.supports are everywhere. registerProperty, constructable stylesheets and the Custom Highlight API are newer. CreateStyleSheet works either way - where constructable sheets are missing it appends a style element instead."
+                 Api="IsSupported / IsSupportsAvailable / IsRegisterPropertyAvailable / IsConstructableStyleSheetAvailable / IsHighlightAvailable / IsTypedOmAvailable"
+                 Description="getComputedStyle and CSS.supports are everywhere. registerProperty, constructable stylesheets, the Custom Highlight API and the Typed OM are newer. CreateStyleSheet works either way - where constructable sheets are missing it appends a style element instead."
                  Code=@("""
 @inject Bit.Butil.Css css
 
@@ -29,6 +29,7 @@ var supports = await css.IsSupportsAvailable();
 var register = await css.IsRegisterPropertyAvailable();
 var sheets = await css.IsConstructableStyleSheetAvailable();
 var highlight = await css.IsHighlightAvailable();
+var typedOm = await css.IsTypedOmAvailable();
 """)>
         <div class="controls">
             <button @onclick="CheckSupported">Check support</button>
@@ -106,9 +107,18 @@ await _sheet.DisposeAsync();   // removes it from the document
 
     <DemoSection Title="Animating a custom property"
                  Api="RegisterProperty"
-                 Description="An unregistered custom property is just a string to the browser, and strings do not interpolate - which is why a transition on --brand does nothing at all until it is registered. Registering says what it holds, and from then on it animates like any other value. Registering the same name twice fails, so do it once at startup."
+                 Description="An unregistered custom property is just a string to the browser, and strings do not interpolate - which is why a transition on --brand does nothing at all until it is registered. Registering says what it holds, and from then on it animates like any other value. Registering the same name twice fails, so do it once at startup. The CssPropertyDefinition overload is the same call with the arguments in an object, answering a bool instead of the reason."
                  Code=@("""
 var error = await css.RegisterProperty("--butil-accent", "<color>", inherits: false, initialValue: "#6366f1");
+
+// or, as an object, when you only need a yes/no:
+var registered = await css.RegisterProperty(new CssPropertyDefinition
+{
+    Name = "--brand-hue",
+    Syntax = "<number>",
+    InitialValue = "210",
+    Inherits = true
+});
 
 // and now this transitions rather than snapping:
 // .thing { transition: --butil-accent 400ms; background: var(--butil-accent) }
@@ -116,6 +126,7 @@ var error = await css.RegisterProperty("--butil-accent", "<color>", inherits: fa
         <div class="controls">
             <button @onclick="RegisterAccent">RegisterProperty</button>
             <button class="secondary" @onclick="ToggleAccent">Toggle the accent</button>
+            <button class="secondary" @onclick="RegisterDefinition">RegisterProperty(CssPropertyDefinition)</button>
         </div>
         <div @ref="_accentBox" class="css-accent">a transition on a custom property</div>
         <style>
@@ -146,12 +157,71 @@ await css.ClearHighlight("search");
         </p>
         <DemoConsole @ref="highlightOutput" Title="highlight output" />
     </DemoSection>
+
+    <DemoSection Title="Read computed values as numbers"
+                 Api="ElementReference.GetComputedValue / GetComputedProperties"
+                 Description="The Typed OM half. Computed, so this reflects the cascade and layout - a percentage width comes back resolved to pixels, as a Value and a Unit, rather than as the string '320px'. Non-numeric values (a keyword, a colour) come back with IsNumeric false and only Text filled in. Chromium only: where IsStyleMapSupported is false these return null."
+                 Code=@("""
+var width = await _box.GetComputedValue("width");
+// width.Value == 320, width.Unit == "px"
+""")>
+        <div @ref="_box" style="padding:1rem;border:1px solid var(--border,#ccc);border-radius:6px;width:60%">
+            A box to measure.
+        </div>
+        <div class="controls">
+            <button @onclick="ReadTypedComputed">GetComputedValue("width")</button>
+            <button @onclick="CountTypedComputed">GetComputedProperties</button>
+        </div>
+        <DemoConsole @ref="typedComputedOutput" Title="typed computed style output" />
+    </DemoSection>
+
+    <DemoSection Title="Write inline styles without string building"
+                 Api="ElementReference.SetStyleValue / SetStyleText / GetStyleValue / DeleteStyleValue / ClearStyleValues"
+                 Description="SetStyleValue takes a number and a unit factory name (px, percent, deg, rem, fr, s…); SetStyleText takes text, for values that aren't a number and a unit. No chance of building a malformed declaration - an invalid value is rejected rather than silently ignored. Blazor owns the DOM it rendered and a diff can undo these on the next render - the same caveat as any inline-style write."
+                 Code=@("""
+await _box.SetStyleValue("width", 60, "percent");
+await _box.SetStyleText("border-color", "rebeccapurple");
+
+var set = await _box.GetStyleValue("width");
+await _box.DeleteStyleValue("width");
+""")>
+        <div class="controls">
+            <button @onclick="SetWidth">SetStyleValue(width, 40%)</button>
+            <button @onclick="SetBorder">SetStyleText(border-color)</button>
+            <button @onclick="ReadInline">GetStyleValue</button>
+            <button class="danger" @onclick="ClearInline">ClearStyleValues</button>
+        </div>
+        <DemoConsole @ref="inlineOutput" Title="inline style output" />
+    </DemoSection>
+
+    <DemoSection Title="Houdini worklets"
+                 Api="SupportsPaintWorklet / SupportsLayoutWorklet / AddPaintWorklet / AddLayoutWorklet"
+                 Description="A paint worklet draws a custom paint() image the way a canvas does, but as a live CSS value. It runs in its own global scope with no DOM - it receives the size and the custom properties it declared an interest in, and draws. The module is fetched as a real file, so it cannot be bundled into the app's own JS. The layout worklet is behind a flag even in Chromium."
+                 Code=@("""
+if (await css.SupportsPaintWorklet())
+{
+    await css.AddPaintWorklet("/worklets/checkerboard.js");
+    // background-image: paint(checkerboard);
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckWorklets">SupportsPaintWorklet / SupportsLayoutWorklet</button>
+        </div>
+        <DemoConsole @ref="workletOutput" Title="worklet output" />
+    </DemoSection>
 </div>
 
 <Callout Type="warning" Title="Reading a style costs something">
     Computing a style forces layout if anything has changed since the last one, which is why reading
     a style inside a loop that also writes one is the classic way to make a page crawl. Read what you
     need in one call, then write.
+</Callout>
+
+<Callout Type="warning" Title="The typed style maps are Chromium only">
+    Where <code>IsTypedOmAvailable</code> (or an element's <code>IsStyleMapSupported</code>) is false
+    the style-map methods return null or false, so the ordinary string-based style APIs remain the
+    portable choice. <code>GetComputedStyle</code>, <code>Supports</code> and <code>Escape</code>
+    work everywhere.
 </Callout>
 
 <ApiTable Title="API reference">
@@ -161,6 +231,9 @@ await css.ClearHighlight("search");
     <ApiMember Name="IsSupportsAvailable / IsRegisterPropertyAvailable / IsConstructableStyleSheetAvailable / IsHighlightAvailable"
                Signature="ValueTask<bool> ...()"
                Description="The per-feature checks. CreateStyleSheet works where constructable sheets are missing, by appending a style element instead." />
+    <ApiMember Name="IsTypedOmAvailable"
+               Signature="ValueTask<bool> IsTypedOmAvailable()"
+               Description="True when the runtime implements the CSS Typed OM's unit factories (CSS.px and friends), which is what gates the style-map element extensions." />
     <ApiMember Name="GetComputedStyle"
                Signature="ValueTask<Dictionary<string, string>?> GetComputedStyle(ElementReference element, string[] properties, string? pseudoElement = null)"
                Description="Resolved values for the named properties, in CSS spelling. A pseudo-element like ::before is only readable this way." />
@@ -179,6 +252,18 @@ await css.ClearHighlight("search");
     <ApiMember Name="RegisterProperty"
                Signature='ValueTask&lt;string?&gt; RegisterProperty(string name, string syntax = "*", bool inherits = false, string? initialValue = null)'
                Description="Teaches the browser what a custom property holds, which is what lets it be animated. Null on success, or the reason it failed." />
+    <ApiMember Name="RegisterProperty"
+               Signature="ValueTask<bool> RegisterProperty(CssPropertyDefinition definition)"
+               Description="The same registration from an object. False when already registered, the initial value doesn't parse, or there is no registerProperty here." />
+    <ApiMember Name="SupportsPaintWorklet / SupportsLayoutWorklet"
+               Signature="ValueTask<bool> SupportsPaintWorklet(), SupportsLayoutWorklet()"
+               Description="True when the runtime implements the Houdini paint / layout worklet." />
+    <ApiMember Name="AddPaintWorklet"
+               Signature="ValueTask<bool> AddPaintWorklet(string url)"
+               Description="Loads a paint worklet module." />
+    <ApiMember Name="AddLayoutWorklet"
+               Signature="ValueTask<bool> AddLayoutWorklet(string url)"
+               Description="Loads a layout worklet module." />
     <ApiMember Name="CreateStyleSheet"
                Signature="ValueTask<StyleSheetHandle?> CreateStyleSheet()"
                Description="A stylesheet of your own, already in the document." />
@@ -191,6 +276,33 @@ await css.ClearHighlight("search");
     <ApiMember Name="StyleSheetHandle.InsertRule / DeleteRule / GetRules / Replace"
                Signature="ValueTask<int> InsertRule(string rule, int index = -1); ValueTask<bool> DeleteRule(int index); ValueTask<string[]> GetRules(); ValueTask<bool> Replace(string css)"
                Description="Editing the sheet. InsertRule answers -1 for a rule the parser rejected. Replace is simpler than tracking indices." />
+    <ApiMember Name="ElementReference.GetComputedValue"
+               Signature="ValueTask<CssValue?> GetComputedValue(string property)"
+               Description="Reads a computed value as a number and a unit." />
+    <ApiMember Name="ElementReference.GetComputedProperties"
+               Signature="ValueTask<string[]> GetComputedProperties()"
+               Description="Every property name in the element's computed style map." />
+    <ApiMember Name="ElementReference.GetStyleValue"
+               Signature="ValueTask<CssValue?> GetStyleValue(string property)"
+               Description="Reads an inline style value as a number and a unit." />
+    <ApiMember Name="ElementReference.SetStyleValue"
+               Signature="ValueTask<bool> SetStyleValue(string property, double value, string unit = 'px')"
+               Description="Writes an inline style value as a typed number." />
+    <ApiMember Name="ElementReference.SetStyleText"
+               Signature="ValueTask<bool> SetStyleText(string property, string value)"
+               Description="Writes an inline style value from text, with validation." />
+    <ApiMember Name="ElementReference.DeleteStyleValue"
+               Signature="ValueTask<bool> DeleteStyleValue(string property)"
+               Description="Removes one inline style property." />
+    <ApiMember Name="ElementReference.ClearStyleValues"
+               Signature="ValueTask<bool> ClearStyleValues()"
+               Description="Removes every inline style property." />
+    <ApiMember Name="ElementReference.GetStyleProperties"
+               Signature="ValueTask<string[]> GetStyleProperties()"
+               Description="Every property name currently set inline." />
+    <ApiMember Name="ElementReference.IsStyleMapSupported"
+               Signature="ValueTask<bool> IsStyleMapSupported()"
+               Description="True when the runtime implements the CSS Typed OM." />
 </ApiTable>
 
 @code {
@@ -200,10 +312,14 @@ await css.ClearHighlight("search");
     private DemoConsole sheetOutput = default!;
     private DemoConsole registerOutput = default!;
     private DemoConsole highlightOutput = default!;
+    private DemoConsole typedComputedOutput = default!;
+    private DemoConsole inlineOutput = default!;
+    private DemoConsole workletOutput = default!;
 
     private ElementReference _sample;
     private ElementReference _prose;
     private ElementReference _accentBox;
+    private ElementReference _box;
 
     private StyleSheetHandle? _sheet;
     private bool _accentToggled;
@@ -222,6 +338,7 @@ await css.ClearHighlight("search");
             await supportOutput.Success("IsRegisterPropertyAvailable →", await css.IsRegisterPropertyAvailable());
             await supportOutput.Success("IsConstructableStyleSheetAvailable →", await css.IsConstructableStyleSheetAvailable());
             await supportOutput.Success("IsHighlightAvailable →", await css.IsHighlightAvailable());
+            await supportOutput.Success("IsTypedOmAvailable →", await css.IsTypedOmAvailable());
         }
         catch (Exception ex)
         {
@@ -382,6 +499,27 @@ await css.ClearHighlight("search");
         }
     }
 
+    private async Task RegisterDefinition()
+    {
+        try
+        {
+            var registered = await css.RegisterProperty(new CssPropertyDefinition
+            {
+                Name = "--butil-demo-hue",
+                Syntax = "<number>",
+                InitialValue = "210",
+                Inherits = true
+            });
+
+            if (registered) await registerOutput.Success("RegisterProperty(CssPropertyDefinition) →", "registered; --butil-demo-hue is now animatable.");
+            else await registerOutput.Warn("RegisterProperty(CssPropertyDefinition) →", "false - already registered, or no registerProperty here.");
+        }
+        catch (Exception ex)
+        {
+            await registerOutput.Error("RegisterProperty failed →", ex.Message);
+        }
+    }
+
     private async Task ToggleAccent()
     {
         try
@@ -426,6 +564,99 @@ await css.ClearHighlight("search");
     {
         await css.ClearHighlight("butil-search");
         await highlightOutput.Log("Cleared.");
+    }
+
+    private async Task ReadTypedComputed()
+    {
+        try
+        {
+            var width = await _box.GetComputedValue("width");
+            if (width is null) await typedComputedOutput.Warn("GetComputedValue →", "null - no CSS Typed OM here.");
+            else await typedComputedOutput.Success("GetComputedValue(\"width\") →", width);
+        }
+        catch (Exception ex)
+        {
+            await typedComputedOutput.Error("GetComputedValue failed →", ex.Message);
+        }
+    }
+
+    private async Task CountTypedComputed()
+    {
+        try
+        {
+            var properties = await _box.GetComputedProperties();
+            await typedComputedOutput.Success("GetComputedProperties →", $"{properties.Length} properties.");
+        }
+        catch (Exception ex)
+        {
+            await typedComputedOutput.Error("GetComputedProperties failed →", ex.Message);
+        }
+    }
+
+    private async Task SetWidth()
+    {
+        try
+        {
+            var set = await _box.SetStyleValue("width", 40, "percent");
+            if (set) await inlineOutput.Success("SetStyleValue →", "width: 40%");
+            else await inlineOutput.Warn("SetStyleValue →", "false - no CSS Typed OM here.");
+        }
+        catch (Exception ex)
+        {
+            await inlineOutput.Error("SetStyleValue failed →", ex.Message);
+        }
+    }
+
+    private async Task SetBorder()
+    {
+        try
+        {
+            var set = await _box.SetStyleText("border-color", "rebeccapurple");
+            if (set) await inlineOutput.Success("SetStyleText →", "border-color is now an inline style.");
+            else await inlineOutput.Warn("SetStyleText →", "false - the property name or the value was rejected.");
+        }
+        catch (Exception ex)
+        {
+            await inlineOutput.Error("SetStyleText failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadInline()
+    {
+        try
+        {
+            await inlineOutput.Success("GetStyleValue(\"width\") →", await _box.GetStyleValue("width"));
+            await inlineOutput.Success("GetStyleProperties →", await _box.GetStyleProperties());
+        }
+        catch (Exception ex)
+        {
+            await inlineOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearInline()
+    {
+        try
+        {
+            await inlineOutput.Success("ClearStyleValues →", await _box.ClearStyleValues());
+        }
+        catch (Exception ex)
+        {
+            await inlineOutput.Error("ClearStyleValues failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckWorklets()
+    {
+        try
+        {
+            await workletOutput.Success("SupportsPaintWorklet →", await css.SupportsPaintWorklet());
+            await workletOutput.Success("SupportsLayoutWorklet →", await css.SupportsLayoutWorklet());
+        }
+        catch (Exception ex)
+        {
+            await workletOutput.Error("Worklet check failed →", ex.Message);
+        }
     }
 
     public async ValueTask DisposeAsync()

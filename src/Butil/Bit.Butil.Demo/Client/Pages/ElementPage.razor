@@ -665,6 +665,38 @@ await _video.Pause();
     }
     <DemoConsole @ref="mediaOutput" Title="media output" />
 </DemoSection>
+
+<DemoSection Title="Move a node without tearing it down"
+             Api="MoveBefore / IsMoveBeforeSupported"
+             Description="Reparenting with insertBefore disconnects the node first, and everything living inside it goes with it: an iframe reloads, a playing video stops, a running animation restarts, focus is lost. moveBefore does the same move without the disconnection - which is what makes moving a node a reasonable thing to do at all. Pass null as the reference to append at the end."
+             Code=@("""
+// move `card` into `column`, before `marker`
+var moved = await column.MoveBefore(card, marker);
+
+// or append it at the end
+await column.MoveBefore(card);
+""")>
+    <div class="controls">
+        <button @onclick="CheckMoveBefore">IsMoveBeforeSupported</button>
+        <button @onclick="MoveTheFrame">Move the iframe to the other column</button>
+    </div>
+    <div style="display:flex;gap:1rem;margin-top:0.5rem">
+        <div @ref="moveLeft" style="flex:1;min-height:5rem;padding:0.5rem;border:1px dashed var(--border,#ccc);border-radius:6px">
+            @* Rendered once and never re-rendered: the move is done by the browser, not by Blazor,
+               so nothing here may depend on state that changes when the button is clicked. *@
+            <iframe @ref="movedFrame" src="about:blank" title="A frame that keeps its document across the move"
+                    style="width:100%;height:3.5rem;border:0"></iframe>
+        </div>
+        <div @ref="moveRight" style="flex:1;min-height:5rem;padding:0.5rem;border:1px dashed var(--border,#ccc);border-radius:6px">
+            <span style="opacity:0.7">Target column</span>
+        </div>
+    </div>
+    <p class="section-desc">
+        Blazor owns the DOM it rendered, so a re-render can undo the move - use this for elements
+        Blazor does not re-render.
+    </p>
+    <DemoConsole @ref="moveOutput" Title="moveBefore output" />
+</DemoSection>
 </div>
 
 <Callout Type="warning" Title="Dispose element event subscriptions">
@@ -750,6 +782,8 @@ await _video.Pause();
     <ApiMember Name="After / Before / Append / Prepend" Signature="ValueTask Append(params string[] nodes)" Description="Inserts text nodes around or inside the element. Strings only - an ElementReference cannot be handed back from JavaScript." />
     <ApiMember Name="ReplaceChildren / ReplaceWith" Signature="ValueTask ReplaceChildren(params string[] nodes) · ValueTask ReplaceWith(params string[] nodes)" Description="Replaces the element's children, or the element itself. Passing nothing to ReplaceChildren empties it." />
     <ApiMember Name="InsertAdjacentHtml" Signature="ValueTask InsertAdjacentHtml(InsertPosition position, string html)" Description="Parses markup and inserts it without reparsing existing children. Bypasses Blazor encoding - trusted input only." />
+    <ApiMember Name="IsMoveBeforeSupported" Signature="ValueTask<bool> IsMoveBeforeSupported()" Description="True when the runtime implements Element.moveBefore()." />
+    <ApiMember Name="MoveBefore" Signature="ValueTask<bool> MoveBefore(ElementReference node, ElementReference? reference = null)" Description="Moves a node into this element, before the reference (or at the end when null), without disconnecting it - iframes keep loading, animations keep running, focus is preserved." />
     <ApiMember Name="InsertAdjacentText" Signature="ValueTask InsertAdjacentText(InsertPosition position, string text)" Description="Inserts a text node at the given position. Markup in the string stays text." />
     <ApiMember Name="GetHtml" Signature="ValueTask&lt;string&gt; GetHtml(GetHtmlOptions? options = null)" Description="Serializes the contents, optionally including serializable shadow roots - which InnerHtml always leaves out." />
     <ApiMember Name="SetHtml" Signature="ValueTask SetHtml(string html)" Description="Replaces the contents, sanitized by the browser. Throws where unsupported rather than falling back to a write that skips the sanitizer." />
@@ -824,6 +858,12 @@ await _video.Pause();
     private ElementReference popoverRef;
     private ElementReference queryBoxRef;
     private ElementReference wrappingTextRef;
+    private ElementReference moveLeft;
+    private ElementReference moveRight;
+    private ElementReference movedFrame;
+
+    private DemoConsole moveOutput = default!;
+    private bool frameOnLeft = true;
 
     private int syntheticClicks;
     private bool ariaExpanded;
@@ -1536,6 +1576,45 @@ await _video.Pause();
             await targetRef.GetAutofocus(),
             await targetRef.GetAutocorrect(),
             await targetRef.GetOuterText()));
+
+    private async Task CheckMoveBefore()
+    {
+        try
+        {
+            var supported = await moveLeft.IsMoveBeforeSupported();
+            if (supported) await moveOutput.Success("IsMoveBeforeSupported →", true);
+            else await moveOutput.Warn("IsMoveBeforeSupported →", "false - moving would have to go through insertBefore, which tears the node down.");
+        }
+        catch (Exception ex)
+        {
+            await moveOutput.Error("IsMoveBeforeSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task MoveTheFrame()
+    {
+        try
+        {
+            var target = frameOnLeft ? moveRight : moveLeft;
+            var moved = await target.MoveBefore(movedFrame);
+
+            if (moved)
+            {
+                // The browser moved the element; Blazor's render tree is untouched, which is exactly
+                // why the markup above must not re-render around it.
+                frameOnLeft = !frameOnLeft;
+                await moveOutput.Success("MoveBefore →", "moved. The iframe kept its document rather than reloading.");
+            }
+            else
+            {
+                await moveOutput.Warn("MoveBefore →", "false - no moveBefore here, or the move was rejected.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await moveOutput.Error("MoveBefore failed →", ex.Message);
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {

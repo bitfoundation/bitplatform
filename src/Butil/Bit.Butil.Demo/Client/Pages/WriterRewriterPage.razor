@@ -1,0 +1,358 @@
+@page "/writer-rewriter"
+@implements IAsyncDisposable
+@inject Bit.Butil.Writer writer
+@inject Bit.Butil.Rewriter rewriter
+
+<PageTitle>Writer & Rewriter - Bit.Butil</PageTitle>
+
+<PageHeader Category="Built-in AI"
+            Title="Writer & Rewriter"
+            Lead="Two halves of the same idea, on the device: Writer produces new text from a short prompt, Rewriter transforms text you already have."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Writer"
+            InjectAs="Writer writer, Rewriter rewriter" />
+
+<Callout Type="info" Title="Absolute vs relative">
+    <code>WriterOptions</code> says what to aim for - <code>"short"</code>, <code>"formal"</code>.
+    <code>RewriterOptions</code> says which way to <i>move</i> - <code>"shorter"</code>,
+    <code>"more-formal"</code>, <code>"as-is"</code>. That difference is the whole distinction
+    between the two APIs.
+</Callout>
+
+<Callout Type="warning" Title="Chromium only, model downloaded on first use">
+    Probe <code>Availability</code>, <code>Create</code> from a user gesture, and <b>dispose the
+    session</b>. See <a href="/language-model">LanguageModel</a> for the whole story.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and availability"
+                 Api="IsSupported / Availability"
+                 Description="Each API is probed separately - a runtime can ship one and not the other."
+                 Code=@("""
+@inject Bit.Butil.Writer writer
+@inject Bit.Butil.Rewriter rewriter
+
+var canWrite = await writer.Availability(new WriterOptions { Tone = "formal" });
+var canRewrite = await rewriter.Availability(new RewriterOptions { Length = "shorter" });
+""")>
+        <div class="controls">
+            <button @onclick="CheckWriter">Writer.Availability</button>
+            <button @onclick="CheckRewriter">Rewriter.Availability</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Write from a prompt"
+                 Api="Writer.Create / Write / WriteStreaming"
+                 Description="The prompt says what to write; SharedContext says what everything in this session is about, and the per-call context describes this one piece. WriteStreaming is the shape a 'draft this for me' button wants."
+                 Code=@("""
+await using var session = await writer.Create(new WriterOptions
+{
+    Tone = "neutral",
+    Length = "short",
+    Format = "plain-text",
+    SharedContext = "Replies from a support inbox."
+});
+
+var draft = await session!.Write("A polite decline of a meeting invitation.");
+""")>
+        <div class="field">
+            <span class="field-label">Prompt</span>
+            <input @bind="_writePrompt" />
+        </div>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Tone</span>
+                <select @bind="_writeTone">
+                    <option value="neutral">neutral</option>
+                    <option value="formal">formal</option>
+                    <option value="casual">casual</option>
+                </select>
+            </label>
+            <label class="field">
+                <span class="field-label">Length</span>
+                <select @bind="_writeLength">
+                    <option value="short">short</option>
+                    <option value="medium">medium</option>
+                    <option value="long">long</option>
+                </select>
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="CreateWriter" disabled="@(_writerSession is not null || _creatingWriter)">Create</button>
+            <button @onclick="Write" disabled="@(_writerSession is null)">Write</button>
+            <button @onclick="WriteStreaming" disabled="@(_writerSession is null)">WriteStreaming</button>
+            <button class="danger" @onclick="DisposeWriter" disabled="@(_writerSession is null)">Dispose</button>
+        </div>
+        @if (string.IsNullOrEmpty(_written) is false)
+        {
+            <div class="field">
+                <span class="field-label">Written</span>
+                <span>@_written</span>
+            </div>
+        }
+        <DemoConsole @ref="writeOutput" Title="writer output" />
+    </DemoSection>
+
+    <DemoSection Title="Rewrite existing text"
+                 Api="Rewriter.Create / Rewrite / RewriteStreaming"
+                 Description="Tone and length here are directions, not targets: 'more-formal', 'shorter', or 'as-is' to leave that axis alone. The per-call context is what changes the result most - 'this is going to a customer' does more than any option."
+                 Code=@("""
+await using var session = await rewriter.Create(new RewriterOptions
+{
+    Tone = "more-formal",
+    Length = "shorter"
+});
+
+var polished = await session!.Rewrite(draft, context: "This is going to a customer.");
+""")>
+        <div class="field">
+            <span class="field-label">Text to rewrite</span>
+            <textarea rows="3" @bind="_rewriteInput"></textarea>
+        </div>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Tone</span>
+                <select @bind="_rewriteTone">
+                    <option value="as-is">as-is</option>
+                    <option value="more-formal">more-formal</option>
+                    <option value="more-casual">more-casual</option>
+                </select>
+            </label>
+            <label class="field">
+                <span class="field-label">Length</span>
+                <select @bind="_rewriteLength">
+                    <option value="as-is">as-is</option>
+                    <option value="shorter">shorter</option>
+                    <option value="longer">longer</option>
+                </select>
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="CreateRewriter" disabled="@(_rewriterSession is not null || _creatingRewriter)">Create</button>
+            <button @onclick="Rewrite" disabled="@(_rewriterSession is null)">Rewrite</button>
+            <button @onclick="RewriteStreaming" disabled="@(_rewriterSession is null)">RewriteStreaming</button>
+            <button class="danger" @onclick="DisposeRewriter" disabled="@(_rewriterSession is null)">Dispose</button>
+        </div>
+        @if (string.IsNullOrEmpty(_rewritten) is false)
+        {
+            <div class="field">
+                <span class="field-label">Rewritten</span>
+                <span>@_rewritten</span>
+            </div>
+        }
+        <DemoConsole @ref="rewriteOutput" Title="rewriter output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="Writer.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes the Writer API." />
+    <ApiMember Name="Writer.Availability"
+               Signature="ValueTask<AiAvailability> Availability() / Availability(WriterOptions options)"
+               Description="Whether a writer can be created right now, and whether that means a download first." />
+    <ApiMember Name="Writer.Create"
+               Signature="ValueTask<WriterSession?> Create(WriterOptions? options = null, Action<double>? onDownloadProgress = null)"
+               Description="Creates a writer. Call from a user gesture; the first creation downloads the model." />
+    <ApiMember Name="WriterSession.Write"
+               Signature="ValueTask<string?> Write(string input, string? context = null)"
+               Description="Writes text from a prompt and waits for the whole result." />
+    <ApiMember Name="WriterSession.WriteStreaming"
+               Signature="Task<string> WriteStreaming(string input, Action<string>? onChunk = null, string? context = null)"
+               Description="Writes text from a prompt, reporting it as it is generated." />
+    <ApiMember Name="WriterSession.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
+    <ApiMember Name="Rewriter.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes the Rewriter API." />
+    <ApiMember Name="Rewriter.Availability"
+               Signature="ValueTask<AiAvailability> Availability() / Availability(RewriterOptions options)"
+               Description="Whether a rewriter can be created right now, and whether that means a download first." />
+    <ApiMember Name="Rewriter.Create"
+               Signature="ValueTask<RewriterSession?> Create(RewriterOptions? options = null, Action<double>? onDownloadProgress = null)"
+               Description="Creates a rewriter. Call from a user gesture; the first creation downloads the model." />
+    <ApiMember Name="RewriterSession.Rewrite"
+               Signature="ValueTask<string?> Rewrite(string input, string? context = null)"
+               Description="Rewrites a piece of text the way the session was configured to." />
+    <ApiMember Name="RewriterSession.RewriteStreaming"
+               Signature="Task<string> RewriteStreaming(string input, Action<string>? onChunk = null, string? context = null)"
+               Description="Rewrites a piece of text, reporting it as it is generated." />
+    <ApiMember Name="RewriterSession.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole writeOutput = default!;
+    private DemoConsole rewriteOutput = default!;
+
+    private WriterSession? _writerSession;
+    private RewriterSession? _rewriterSession;
+
+    // Create is slow enough to be clicked twice, and the second session would overwrite - and leak -
+    // the first: the buttons only know to disable themselves once the session has been assigned.
+    private bool _creatingWriter;
+    private bool _creatingRewriter;
+
+    private string _writePrompt = "A polite decline of a meeting invitation.";
+    private string _writeTone = "neutral";
+    private string _writeLength = "short";
+    private string _written = "";
+
+    private string _rewriteInput = "hey - cant make the thing tomorrow, sorry!!";
+    private string _rewriteTone = "more-formal";
+    private string _rewriteLength = "as-is";
+    private string _rewritten = "";
+
+    private async Task CheckWriter()
+    {
+        try
+        {
+            await supportOutput.Success("Writer.Availability →", await writer.Availability(new WriterOptions { Tone = _writeTone, Length = _writeLength }));
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Writer.Availability failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckRewriter()
+    {
+        try
+        {
+            await supportOutput.Success("Rewriter.Availability →", await rewriter.Availability(new RewriterOptions { Tone = _rewriteTone, Length = _rewriteLength }));
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Rewriter.Availability failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateWriter()
+    {
+        if (_creatingWriter) return;
+
+        _creatingWriter = true;
+        try
+        {
+            _writerSession = await writer.Create(new WriterOptions { Tone = _writeTone, Length = _writeLength, Format = "plain-text" });
+            if (_writerSession is null) await writeOutput.Warn("Create →", "null - the runtime refused, or the download was declined.");
+            else await writeOutput.Success("Create →", $"session {_writerSession.Id}");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("Create failed →", ex.Message);
+        }
+        finally
+        {
+            _creatingWriter = false;
+        }
+    }
+
+    private async Task DisposeWriter()
+    {
+        if (_writerSession is not null) await _writerSession.DisposeAsync();
+        _writerSession = null;
+        await writeOutput.Info("Writer session disposed.");
+    }
+
+    private async Task Write()
+    {
+        try
+        {
+            _written = await _writerSession!.Write(_writePrompt) ?? "";
+            await writeOutput.Success("Write →", _written.Length == 0 ? "(null - the session is gone)" : $"{_written.Length} characters.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("Write failed →", ex.Message);
+        }
+    }
+
+    private async Task WriteStreaming()
+    {
+        try
+        {
+            _written = "";
+            var whole = await _writerSession!.WriteStreaming(_writePrompt, async chunk => await InvokeAsync(() =>
+            {
+                _written += chunk;
+                StateHasChanged();
+            }));
+
+            await writeOutput.Success("WriteStreaming →", $"{whole.Length} characters.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error("WriteStreaming failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateRewriter()
+    {
+        if (_creatingRewriter) return;
+
+        _creatingRewriter = true;
+        try
+        {
+            _rewriterSession = await rewriter.Create(new RewriterOptions { Tone = _rewriteTone, Length = _rewriteLength, Format = "plain-text" });
+            if (_rewriterSession is null) await rewriteOutput.Warn("Create →", "null - the runtime refused, or the download was declined.");
+            else await rewriteOutput.Success("Create →", $"session {_rewriterSession.Id}");
+        }
+        catch (Exception ex)
+        {
+            await rewriteOutput.Error("Create failed →", ex.Message);
+        }
+        finally
+        {
+            _creatingRewriter = false;
+        }
+    }
+
+    private async Task DisposeRewriter()
+    {
+        if (_rewriterSession is not null) await _rewriterSession.DisposeAsync();
+        _rewriterSession = null;
+        await rewriteOutput.Info("Rewriter session disposed.");
+    }
+
+    private async Task Rewrite()
+    {
+        try
+        {
+            _rewritten = await _rewriterSession!.Rewrite(_rewriteInput) ?? "";
+            await rewriteOutput.Success("Rewrite →", _rewritten.Length == 0 ? "(null - the session is gone)" : _rewritten);
+        }
+        catch (Exception ex)
+        {
+            await rewriteOutput.Error("Rewrite failed →", ex.Message);
+        }
+    }
+
+    private async Task RewriteStreaming()
+    {
+        try
+        {
+            _rewritten = "";
+            var whole = await _rewriterSession!.RewriteStreaming(_rewriteInput, async chunk => await InvokeAsync(() =>
+            {
+                _rewritten += chunk;
+                StateHasChanged();
+            }));
+
+            await rewriteOutput.Success("RewriteStreaming →", $"{whole.Length} characters.");
+        }
+        catch (Exception ex)
+        {
+            await rewriteOutput.Error("RewriteStreaming failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_writerSession is not null) await _writerSession.DisposeAsync();
+        if (_rewriterSession is not null) await _rewriterSession.DisposeAsync();
+    }
+}

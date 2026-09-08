@@ -38,4 +38,18 @@ public class DisplayMediaOptions
 
     /// <summary>When true, the current tab is pre-selected in the picker.</summary>
     public bool? PreferCurrentTab { get; set; }
+
+    /// <summary>
+    /// Whether the captured tab or window is brought to the front when capture starts:
+    /// <c>"focus-captured-surface"</c> (the browser's default) or <c>"no-focus-change"</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CaptureController/setFocusBehavior">CaptureController.setFocusBehavior()</see>
+    /// </summary>
+    /// <remarks>
+    /// The one to set for a recorder or a conferencing tool, where the user picks a surface and then
+    /// stays on <i>this</i> page - the default would yank them away from it. Only meaningful for tab
+    /// and window capture; capturing a whole monitor focuses nothing either way. Ignored by runtimes
+    /// without <c>CaptureController</c>.
+    /// </remarks>
+    public string? FocusBehavior { get; set; }
 }
