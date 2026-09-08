@@ -32,19 +32,21 @@ else
     @* An assertive live region with the alert role, so the error is read out where it appeared rather
        than only seen: the content it replaced is gone and nothing else on the page says so.
        An attribute written after the splat wins over the one the page passed in through HtmlAttributes,
-       so the accessibility attributes below read what came in with them and write it back rather than
-       their own value over it. The id and the dir are not among them: parameters are matched by name
-       without regard to case, so an id or a dir written as a plain attribute lands on the Id and the Dir
-       parameters and never reaches HtmlAttributes at all. *@
+       so every attribute below reads what came in with them and resolves against it rather than writing
+       its own value over it - a null written after the splat does not leave the splatted attribute alone,
+       it removes it. Markup rarely reaches HtmlAttributes with an id, a dir, a class or a style, since
+       parameters are matched by name without regard to case and those four land on Id, Dir, Class and
+       Style instead; a dictionary handed to HtmlAttributes as a whole carries them all the same, which
+       is what the fallbacks here and the merges in _RootClass / _RootStyle are for. *@
     <div @ref="_rootRef"
          @attributes="HtmlAttributes"
-         id="@Id"
+         id="@(Id ?? _Splat("id"))"
          role="@(_Splat("role") ?? "alert")"
          aria-live="@(_Splat("aria-live") ?? "assertive")"
          aria-atomic="@(_Splat("aria-atomic") ?? "true")"
          autofocus="@AutoFocus"
          tabindex="@(_Splat("tabindex") ?? (AutoFocus ? "-1" : null))"
-         dir="@Dir?.ToString().ToLower()"
+         dir="@(Dir?.ToString().ToLower() ?? _Splat("dir"))"
          style="@_RootStyle"
          class="@_RootClass">
         @if (HideIcon is false)

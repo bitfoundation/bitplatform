@@ -522,16 +522,24 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
 
     /// <summary>The class list of the error UI's root element.</summary>
+    /// <remarks>
+    /// A class the page put in the HtmlAttributes dictionary is merged in rather than left to the splat,
+    /// which the class attribute the element writes itself would otherwise overwrite altogether.
+    /// </remarks>
     private string _RootClass => string.Join(' ', new[]
     {
         "bit-erb",
         Dir == BitDir.Rtl ? "bit-rtl" : null,
         Classes?.Root,
-        Class
+        Class,
+        _Splat("class")
     }.Where(c => c.HasValue()));
 
     /// <summary>The style declarations of the error UI's root element.</summary>
-    private string? _RootStyle => JoinStyles(Styles?.Root, Style);
+    /// <remarks>
+    /// Merges a splatted style for the same reason <see cref="_RootClass"/> merges a splatted class.
+    /// </remarks>
+    private string? _RootStyle => JoinStyles(JoinStyles(Styles?.Root, Style), _Splat("style"));
 
     /// <summary>
     /// The value of an attribute the page wrote as a plain HTML attribute rather than as a parameter.

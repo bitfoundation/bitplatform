@@ -812,6 +812,71 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitErrorBoundaryShouldKeepSplattedIdAndDirWhenTheParametersAreNotSet()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.HtmlAttributes, new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["id"] = "splatted-id",
+                ["dir"] = "rtl"
+            });
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var errorRoot = component.Find(".bit-erb");
+
+        Assert.AreEqual("splatted-id", errorRoot.GetAttribute("id"));
+        Assert.AreEqual("rtl", errorRoot.GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryIdAndDirParametersShouldWinOverTheSplattedOnes()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-boundary");
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+            parameters.Add(p => p.HtmlAttributes, new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["id"] = "splatted-id",
+                ["dir"] = "rtl"
+            });
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var errorRoot = component.Find(".bit-erb");
+
+        Assert.AreEqual("the-boundary", errorRoot.GetAttribute("id"));
+        Assert.AreEqual("ltr", errorRoot.GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldMergeTheSplattedClassAndStyle()
+    {
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "color: red");
+            parameters.Add(p => p.HtmlAttributes, new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["class"] = "splatted-class",
+                ["style"] = "font-weight: bold"
+            });
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var errorRoot = component.Find(".bit-erb");
+        var style = errorRoot.GetAttribute("style");
+
+        StringAssert.Contains(errorRoot.ClassName, "bit-erb");
+        StringAssert.Contains(errorRoot.ClassName, "custom-class");
+        StringAssert.Contains(errorRoot.ClassName, "splatted-class");
+        StringAssert.Contains(style, "color: red");
+        StringAssert.Contains(style, "font-weight: bold");
+    }
+
+    [TestMethod]
     [DataRow(BitDir.Rtl, "rtl", true)]
     [DataRow(BitDir.Ltr, "ltr", false)]
     [DataRow(BitDir.Auto, "auto", false)]
