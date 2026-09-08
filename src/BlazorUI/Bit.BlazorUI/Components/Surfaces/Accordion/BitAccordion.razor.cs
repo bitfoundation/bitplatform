@@ -516,6 +516,12 @@ public partial class BitAccordion : BitComponentBase
         // where it is - it just does not act on it.
         if (ReadOnly) return;
 
+        // A header that reports itself as busy - an awaited OnToggling of its own, or the Busy parameter of a
+        // list that owns the expansion - is not a toggle that answers, so the click stops here rather than
+        // starting a change behind the busy cursor. Expand, Collapse and Toggle are the way the app itself
+        // drives the accordion, and they are not turned away by this.
+        if (_IsBusy) return;
+
         await AssignExpanded(IsExpanded is false, BitAccordionToggleReason.Click);
     }
 

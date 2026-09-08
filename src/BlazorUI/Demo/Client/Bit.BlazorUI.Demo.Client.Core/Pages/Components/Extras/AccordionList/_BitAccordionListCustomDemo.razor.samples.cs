@@ -176,7 +176,7 @@ protected override void OnInitialized()
         item.Clicked = _ => { clickCounter++; StateHasChanged(); };
     }
 }
-" + sectionCsharpCode;
+" + basicItemsCsharpCode;
 
     private readonly string example9RazorCode = @"
 <BitCheckbox @bind-Value=""lockToggling"" Label=""Refuse every toggle"" />
