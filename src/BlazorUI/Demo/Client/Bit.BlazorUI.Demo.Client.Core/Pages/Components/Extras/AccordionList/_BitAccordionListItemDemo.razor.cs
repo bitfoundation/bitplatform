@@ -5,6 +5,8 @@ public partial class _BitAccordionListItemDemo
     private int clickCounter;
     private int readOnlyClickCount;
     private bool lockToggling;
+    private bool slowToggling;
+    private bool showEmptyItems;
     private string? expandedTitle;
     private string? collapsedTitle;
     private string? toggledTitle;
@@ -81,6 +83,16 @@ public partial class _BitAccordionListItemDemo
         new() { Title = "کاربران", Description = "شما در حال حاضر مالک نیستید", Body = BodyFor("لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است.") },
     ];
 
+    private readonly List<BitAccordionListItem> noItems = [];
+
+    private readonly List<BitAccordionListItem> scrollItems =
+    [
+        new() { Key = "scroll-1", Title = "First section", Description = "Opens without moving anything", Body = BodyFor(Story1) },
+        new() { Key = "scroll-2", Title = "Second section", Description = "Sits just below the fold", Body = BodyFor($"{Story2} {Story3}") },
+        new() { Key = "scroll-3", Title = "Third section", Description = "Is scrolled to when it opens", Body = BodyFor($"{Story3} {Story1}") },
+        new() { Key = "scroll-4", Title = "Fourth section", Description = "Is scrolled to when it opens", Body = BodyFor($"{Story1} {Story2}") },
+    ];
+
     private readonly List<BitAccordionListItem> eventsItems =
     [
         new() { Title = "General settings", Description = "The general settings of the application", Body = BodyFor(Story1) },
@@ -103,9 +115,15 @@ public partial class _BitAccordionListItemDemo
         }
     }
 
-    private void HandleOnToggling(BitAccordionListToggleArgs<BitAccordionListItem> args)
+    private async Task HandleOnToggling(BitAccordionListToggleArgs<BitAccordionListItem> args)
     {
         togglingReport = $"{args.Item.Title} is {(args.IsExpanding ? "expanding" : "collapsing")} ({args.Reason})";
+
+        // The header of this item reports itself as aria-busy for as long as the callback is awaited.
+        if (slowToggling)
+        {
+            await Task.Delay(1000);
+        }
 
         args.Cancel = lockToggling;
     }

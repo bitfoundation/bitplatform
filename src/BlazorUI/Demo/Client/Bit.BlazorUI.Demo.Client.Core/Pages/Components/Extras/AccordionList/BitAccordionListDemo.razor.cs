@@ -142,6 +142,13 @@ public partial class BitAccordionListDemo
         },
         new()
         {
+            Name = "EmptyContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content to render in place of the items when the list has none. A list built from Options or ChildContent only knows it is empty once its options have had their turn to register, so its empty content takes the render after the first; a list built from Items shows it right away.",
+        },
+        new()
+        {
             Name = "Gap",
             Type = "int?",
             DefaultValue = "null",
@@ -193,6 +200,13 @@ public partial class BitAccordionListDemo
         },
         new()
         {
+            Name = "MaxExpanded",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The greatest number of items that can be expanded at the same time in multiple-expand mode. Expanding one more closes the panel that has been open the longest, so nothing is ever turned away. A value below 1 is no limit at all, the cap applies to ExpandAll and to the default and bound keys as well, and it means nothing outside of Multiple.",
+        },
+        new()
+        {
             Name = "Multiple",
             Type = "bool",
             DefaultValue = "false",
@@ -234,6 +248,13 @@ public partial class BitAccordionListDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps the expander icon of every item still instead of turning it over when the item is expanded.",
+        },
+        new()
+        {
+            Name = "NoNavigationLoop",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the keyboard navigation of Navigable at the two ends of the list instead of wrapping it around from the last header to the first and back. The Home and End keys still reach both ends either way.",
         },
         new()
         {
@@ -280,6 +301,13 @@ public partial class BitAccordionListDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Leaves every item where it is: the headers keep their colors and their place in the tab order and report themselves as aria-disabled, but they no longer answer the pointer or the keyboard. Can be overridden per item.",
+        },
+        new()
+        {
+            Name = "ScrollIntoViewOnExpand",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Brings the item that has just been expanded into view, moving it as little as the browser can - so nothing happens to one that is already in view - and instantly rather than smoothly for a reader who has asked for less motion. It covers every way a panel opens: a click, one of the public methods, and the bound keys.",
         },
         new()
         {

@@ -10,21 +10,39 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitAccordionList<TItem> : BitComponentBase where TItem : class
 {
+    // The keys the header of an item answers on top of the Tab key. They are suppressed on a listener of
+    // the browser's own, since Blazor's preventDefault directive cannot be decided per key, and a header
+    // that moves the focus while the page scrolls under it moves the reader twice.
+    private static readonly string[] _navigationKeys = ["ArrowDown", "ArrowUp", "Home", "End"];
+
     private int _optionKeySeed;
     private bool _isToggling;
     private bool _oldMultiple;
+    private bool _hasRendered;
     private bool _pendingBoundKeysPush;
+    private bool _preventKeysRegistered;
+    private bool _collectingOptionOrder;
+    private string? _togglingKey;
     private List<TItem> _items = [];
     private List<TItem>? _oldItems;
     private string? _internalExpandedKey;
     private List<string> _internalExpandedKeys = [];
     private BitAccordionListClassStyles? _oldClasses;
     private BitAccordionListClassStyles? _oldStyles;
+    private readonly List<TItem> _optionOrder = [];
+    private readonly List<TItem> _pendingScrolls = [];
     private readonly HashSet<string> _expandedKeys = new(StringComparer.Ordinal);
+    // The order the keys were expanded in, which is what MaxExpanded closes the oldest panel by. It is kept
+    // beside the set rather than in it, since a HashSet has no order of its own.
+    private readonly List<string> _expandOrder = [];
     private readonly Dictionary<TItem, string> _fallbackKeys = new(ReferenceComparer.Instance);
     private readonly Dictionary<TItem, _BitAccordionListItem<TItem>> _itemRefs = new(ReferenceComparer.Instance);
     internal BitAccordionClassStyles? _itemClasses;
     internal BitAccordionClassStyles? _itemStyles;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -151,6 +169,16 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     [Parameter] public bool ExpandOnPrint { get; set; }
 
     /// <summary>
+    /// The custom content to render in place of the items when the list has none.
+    /// </summary>
+    /// <remarks>
+    /// A list built from <see cref="Options"/> or <see cref="ChildContent"/> only knows it is empty once its
+    /// options have had their turn to register, so the empty content of one takes the render after the first
+    /// rather than the first itself; a list built from <see cref="Items"/> shows it right away.
+    /// </remarks>
+    [Parameter] public RenderFragment? EmptyContent { get; set; }
+
+    /// <summary>
     /// The space (gap) in pixels between the accordion items.
     /// </summary>
     [Parameter, ResetStyleBuilder] public int? Gap { get; set; }
@@ -191,7 +219,21 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     [Parameter] public string? MaxHeight { get; set; }
 
     /// <summary>
+    /// Gets or sets the greatest number of items that can be expanded at the same time in multiple-expand
+    /// mode. Expanding one more closes the panel that has been open the longest.
+    /// </summary>
+    /// <remarks>
+    /// Nothing is turned away: a click always opens the panel it was aimed at, which is what tells this apart
+    /// from a limit that leaves a header answering nothing. A value below 1 is no limit at all, and the cap
+    /// applies to <see cref="ExpandAll"/> and to the default and the bound keys as well - the ones beyond it
+    /// are the ones dropped. It means nothing outside of <see cref="Multiple"/>, where one panel is the limit
+    /// already.
+    /// </remarks>
+    [Parameter] public int? MaxExpanded { get; set; }
+
+    /// <summary>
     /// Enables the multiple-expand mode in which more than one item can be expanded at the same time.
+    /// <see cref="MaxExpanded"/> caps how many of them may be.
     /// </summary>
     [Parameter, ResetClassBuilder] public bool Multiple { get; set; }
 
@@ -228,6 +270,17 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// Keeps the expander icon of every item still instead of turning it over when the item is expanded.
     /// </summary>
     [Parameter] public bool NoExpanderRotation { get; set; }
+
+    /// <summary>
+    /// Stops the keyboard navigation of <see cref="Navigable"/> at the two ends of the list instead of
+    /// wrapping it around from the last header to the first and back.
+    /// </summary>
+    /// <remarks>
+    /// The two are the <c>linear</c> and the <c>circular</c> navigation other libraries offer: wrapping
+    /// keeps the arrow keys moving forever, while stopping tells the reader where the list ends. The Home
+    /// and End keys still reach both ends either way.
+    /// </remarks>
+    [Parameter] public bool NoNavigationLoop { get; set; }
 
     /// <summary>
     /// The callback that is called when an item is collapsed.
@@ -288,6 +341,20 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     [Parameter] public bool ReadOnly { get; set; }
 
     /// <summary>
+    /// Brings the item that has just been expanded into view, so that a panel opened at the bottom of the
+    /// window is not left off the screen it was opened on.
+    /// </summary>
+    /// <remarks>
+    /// The item is moved as little as the browser can move it, so nothing happens to one that is already in
+    /// view, and the scroll is instant rather than smooth for a reader who has asked for less motion. It
+    /// covers the ways a single panel opens - a click on its header, <see cref="Expand(string)"/>,
+    /// <see cref="Toggle(string)"/> and the bound keys - and runs when the panel is put on screen rather than
+    /// when the transition that opens it ends. <see cref="ExpandAll"/> scrolls to nothing: there is no one
+    /// panel it opened.
+    /// </remarks>
+    [Parameter] public bool ScrollIntoViewOnExpand { get; set; }
+
+    /// <summary>
     /// Gets or sets the size of all the accordion items, which drives the padding of the headers and of the
     /// contents and the size of the titles.
     /// <br />
@@ -335,6 +402,10 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         {
             if (GetIsEnabled(item) is false) continue;
 
+            // The cap is a cap on the whole list, so ExpandAll stops at it rather than opening every panel
+            // and letting each one close the one before it.
+            if (_MaxExpanded is int max && _expandedKeys.Count >= max) break;
+
             var key = GetItemKey(item);
             if (key.HasNoValue() || _expandedKeys.Contains(key!)) continue;
 
@@ -372,7 +443,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         var orphans = _expandedKeys.Where(k => FindItem(k) is null).ToArray();
         if (orphans.Length > 0)
         {
-            foreach (var orphan in orphans) _expandedKeys.Remove(orphan);
+            foreach (var orphan in orphans) RemoveExpandedKey(orphan);
             changed = true;
         }
 
@@ -469,7 +540,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
         if (ShouldExpandOnRegister(option.Key!, option.IsExpanded))
         {
-            _expandedKeys.Add(option.Key!);
+            AddExpandedKey(option.Key!);
             _internalExpandedKeys = GetOrderedExpandedKeys();
             _internalExpandedKey = _internalExpandedKeys.FirstOrDefault();
 
@@ -526,7 +597,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         var wasExpanded = false;
         if (option.Key.HasValue())
         {
-            wasExpanded = _expandedKeys.Remove(option.Key!);
+            wasExpanded = RemoveExpandedKey(option.Key!);
         }
 
         // When a removed option was expanded, refresh the internal representations and the
@@ -537,6 +608,34 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         }
 
         StateHasChanged();
+    }
+
+    // An option registers itself when it is initialized, which is the markup order only for the options that
+    // were there on the first render: one added conditionally later registers behind every option that was
+    // already there, wherever in the markup it sits. So the order is read back from the render itself - the
+    // options render in markup order - and _items is put back into it once the render is over. It is what the
+    // keyboard navigation walks and what the expanded keys are reported in, so it has to be the order the
+    // reader sees rather than the order the options happened to arrive in.
+    internal void BeginOptionsOrder()
+    {
+        // A pass that is already open is left as it is: registering an option asks the list to render again,
+        // and that second render lands in the same batch as the first - so clearing here would throw away
+        // the very order the options had just reported.
+        if (_collectingOptionOrder) return;
+
+        _optionOrder.Clear();
+        _collectingOptionOrder = true;
+    }
+
+    internal void ReportOptionOrder(BitAccordionListOption option)
+    {
+        if (_collectingOptionOrder is false) return;
+
+        var item = (option as TItem)!;
+
+        if (_optionOrder.Any(i => ReferenceEquals(i, item))) return;
+
+        _optionOrder.Add(item);
     }
 
     internal void RegisterItem(TItem item, _BitAccordionListItem<TItem> itemRef)
@@ -596,8 +695,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         {
             var kept = GetOrderedExpandedKeys().FirstOrDefault();
 
-            _expandedKeys.Clear();
-            if (kept.HasValue()) _expandedKeys.Add(kept!);
+            ClearExpandedKeys();
+            if (kept.HasValue()) AddExpandedKey(kept!);
 
             SyncItemsExpandedState();
 
@@ -617,6 +716,15 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             if (ExpandedKeysHasBeenSet && (ExpandedKeys ?? []).SequenceEqual(_internalExpandedKeys) is false)
             {
                 SyncFromExpandedKeys(ExpandedKeys);
+
+                // Not every set of keys survives the way in whole: the ones beyond MaxExpanded are dropped,
+                // and so are the empty and the repeated ones. The page is told what the list actually holds
+                // rather than being left with a value it does not show - and rather than being read again as
+                // a change on every render that follows.
+                if ((ExpandedKeys ?? []).SequenceEqual(_internalExpandedKeys) is false)
+                {
+                    _pendingBoundKeysPush = true;
+                }
             }
         }
         else
@@ -625,6 +733,26 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             {
                 SyncFromExpandedKey(ExpandedKey);
             }
+        }
+
+        // A cap that arrives - or is lowered - while more panels are open than it allows closes the oldest of
+        // them, the same way opening one more would have. Everything that adds a key already stops at the cap,
+        // so this is only about the cap itself changing.
+        if (_MaxExpanded is int max && _expandedKeys.Count > max)
+        {
+            foreach (var key in _expandOrder.Take(_expandedKeys.Count - max).ToArray())
+            {
+                RemoveExpandedKey(key);
+            }
+
+            SyncItemsExpandedState();
+
+            _internalExpandedKeys = GetOrderedExpandedKeys();
+            _internalExpandedKey = _internalExpandedKeys.FirstOrDefault();
+
+            // The push is deferred to the end of the render, since a parameter set is no place to call back
+            // into the page that is setting them.
+            _pendingBoundKeysPush = true;
         }
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
@@ -636,6 +764,20 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // A list of options only knows it is empty once its options have had their turn to register, and the
+        // first render is where that is learned - so the empty content it was given needs a render of its own
+        // to appear in. Nothing else would ask for one: an empty list has no option to report anything.
+        var showEmptyContent = _ShowEmptyContent;
+
+        _hasRendered = true;
+
+        if (showEmptyContent is false && _ShowEmptyContent)
+        {
+            StateHasChanged();
+        }
+
+        await ReorderOptions();
+
         if (_pendingBoundKeysPush)
         {
             _pendingBoundKeysPush = false;
@@ -643,7 +785,89 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             await PushBoundKeys();
         }
 
+        await UpdatePreventedKeys();
+
+        await ScrollPendingItemsIntoView();
+
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    // Puts _items back into the order the options were rendered in, which is their markup order.
+    private async Task ReorderOptions()
+    {
+        if (_collectingOptionOrder)
+        {
+            _collectingOptionOrder = false;
+
+            // A pass in which not every option had its turn says nothing about the order of the ones that
+            // did, so it is thrown away rather than guessed at. Blazor hands a child its parameters again
+            // only when one of them has actually changed, so a list whose options carry nothing but
+            // constants - no content, no template, no handler - can render without any of them reporting.
+            var complete = _optionOrder.Count == _items.Count;
+            var order = complete ? _optionOrder.ToArray() : [];
+
+            _optionOrder.Clear();
+
+            if (complete is false || _items.SequenceEqual(order, ReferenceComparer.Instance)) return;
+
+            _items = [.. order];
+
+            // Nothing on screen depends on the order - the options render their own items in place - but the
+            // keys the list reports do, so they are pushed again where the order changed them.
+            if (GetOrderedExpandedKeys().SequenceEqual(_internalExpandedKeys) is false)
+            {
+                await UpdateBoundKeys();
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    // The navigation keys are suppressed on a listener of the browser's own, and only for a key pressed on
+    // one of this list's own item headers: the same keys pressed inside a panel belong to whatever the panel
+    // holds, and the ones pressed on the headers of a list nested in a panel belong to that list.
+    private async Task UpdatePreventedKeys()
+    {
+        var wanted = Navigable && IsEnabled;
+
+        if (wanted == _preventKeysRegistered) return;
+
+        try
+        {
+            if (wanted)
+            {
+                await _js.BitExtrasSetPreventKeys(RootElement, _navigationKeys, ".bit-acd-hdr", ".bit-acl");
+            }
+            else
+            {
+                await _js.BitExtrasDisposePreventKeys(RootElement);
+            }
+
+            _preventKeysRegistered = wanted;
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task ScrollPendingItemsIntoView()
+    {
+        if (_pendingScrolls.Count == 0) return;
+
+        var items = _pendingScrolls.ToArray();
+        _pendingScrolls.Clear();
+
+        foreach (var item in items)
+        {
+            if (_itemRefs.TryGetValue(item, out var itemRef) is false) continue;
+
+            var element = itemRef.GetElement();
+            if (element is null) continue;
+
+            try
+            {
+                await _js.BitExtrasScrollIntoView(element.Value);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
     }
 
 
@@ -694,7 +918,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         var surviving = preserveCurrent ? GetSurvivingExpandedKeys() : null;
         var selfExpanded = GetSelfExpandedKeys();
 
-        _expandedKeys.Clear();
+        ClearExpandedKeys();
 
         // Controlled values take precedence over what was there before, which takes precedence over the
         // default values, which take precedence over the items' own IsExpanded.
@@ -739,7 +963,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
                 key = selfExpanded.FirstOrDefault();
             }
 
-            if (key.HasValue()) _expandedKeys.Add(key!);
+            if (key.HasValue()) AddExpandedKey(key!);
         }
 
         SyncItemsExpandedState();
@@ -763,9 +987,54 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         foreach (var key in keys)
         {
             if (key.HasNoValue()) continue;
-            _expandedKeys.Add(key);
+            AddExpandedKey(key);
             if (Multiple is false) break;
+
+            // The keys beyond the cap are the ones dropped, so a set of defaults or of bound keys longer
+            // than MaxExpanded opens the first of them rather than none of them.
+            if (_MaxExpanded is int max && _expandedKeys.Count >= max) break;
         }
+    }
+
+    // The three of them are what keeps _expandOrder - the order the panels were opened in, which is what
+    // MaxExpanded closes the oldest one by - beside the set that answers whether a key is expanded at all.
+    private bool AddExpandedKey(string key)
+    {
+        if (_expandedKeys.Add(key) is false) return false;
+
+        _expandOrder.Add(key);
+
+        return true;
+    }
+
+    private bool RemoveExpandedKey(string key)
+    {
+        if (_expandedKeys.Remove(key) is false) return false;
+
+        _expandOrder.Remove(key);
+
+        return true;
+    }
+
+    private void ClearExpandedKeys()
+    {
+        _expandedKeys.Clear();
+        _expandOrder.Clear();
+    }
+
+    // A cap of its own only means something where more than one panel can be open at a time, and a value
+    // below one is no cap at all rather than a list nothing can be opened in.
+    private int? _MaxExpanded => (Multiple && MaxExpanded is > 0) ? MaxExpanded : null;
+
+    // The keys that have to close for the one being opened to fit under the cap, oldest first.
+    private string[] GetOverflowKeys(string key)
+    {
+        if (_MaxExpanded is not int max) return [];
+
+        var overflow = _expandedKeys.Count + 1 - max;
+        if (overflow <= 0) return [];
+
+        return [.. _expandOrder.Where(k => k != key).Take(overflow)];
     }
 
     private void SyncItemsExpandedState()
@@ -805,18 +1074,54 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     private void SyncFromExpandedKey(string? key)
     {
-        _expandedKeys.Clear();
-        if (key.HasValue()) _expandedKeys.Add(key!);
+        // Read before the set is replaced, so that a panel the page has just opened through the binding is
+        // brought into view the way a click on its header would have brought it.
+        var opened = OpenedKeysOf(key.HasValue() ? [key!] : []);
+
+        ClearExpandedKeys();
+        if (key.HasValue()) AddExpandedKey(key!);
         SyncItemsExpandedState();
         _internalExpandedKey = key;
+
+        QueueScrollIntoView(opened);
     }
 
     private void SyncFromExpandedKeys(IEnumerable<string>? keys)
     {
-        _expandedKeys.Clear();
+        var opened = OpenedKeysOf(keys ?? []);
+
+        ClearExpandedKeys();
         if (keys is not null) AddExpandedKeys(keys);
         SyncItemsExpandedState();
         _internalExpandedKeys = GetOrderedExpandedKeys();
+
+        QueueScrollIntoView(opened);
+    }
+
+    // The keys of the incoming set that are not expanded yet - the panels the change is about to open.
+    private List<string> OpenedKeysOf(IEnumerable<string> keys)
+    {
+        return ScrollIntoViewOnExpand is false ? [] : [.. keys.Where(k => k.HasValue() && _expandedKeys.Contains(k) is false)];
+    }
+
+    private void QueueScrollIntoView(IEnumerable<string> keys)
+    {
+        foreach (var key in keys)
+        {
+            var item = FindItem(key);
+            if (item is not null) QueueScrollIntoView(item);
+        }
+    }
+
+    // The scroll is left to the render that puts the panel on screen: the item it belongs to can be one
+    // that is only rendered by the change being applied here.
+    private void QueueScrollIntoView(TItem item)
+    {
+        if (ScrollIntoViewOnExpand is false) return;
+
+        if (_pendingScrolls.Any(i => ReferenceEquals(i, item))) return;
+
+        _pendingScrolls.Add(item);
     }
 
     internal async Task HandleOnItemClick(TItem item)
@@ -861,9 +1166,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             _ => focusables.Count - 1
         };
 
-        // The navigation wraps around at both ends of the list.
-        if (next < 0) next = focusables.Count - 1;
-        else if (next >= focusables.Count) next = 0;
+        // The navigation wraps around at both ends of the list, unless it was asked to stop there.
+        if (next < 0) next = NoNavigationLoop ? 0 : focusables.Count - 1;
+        else if (next >= focusables.Count) next = NoNavigationLoop ? focusables.Count - 1 : 0;
 
         await FocusItemCore(focusables[next]);
     }
@@ -883,15 +1188,22 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     private async Task ToggleItem(TItem item, string key, bool expand, BitAccordionToggleReason reason)
     {
         // Read before the expansion is applied, since applying it adds the new key to the set. A cancelled
-        // expansion therefore leaves the previously expanded item exactly where it was.
-        var others = (expand && Multiple is false) ? _expandedKeys.Where(k => k != key).ToArray() : [];
+        // expansion therefore leaves the previously expanded item(s) exactly where they were.
+        //
+        // In single-expand mode that is every other panel; in multiple-expand mode under a MaxExpanded cap
+        // it is the oldest of them, as many as the one being opened needs to fit.
+        var others = expand
+                   ? (Multiple ? GetOverflowKeys(key) : [.. _expandedKeys.Where(k => k != key)])
+                   : [];
 
         if (await ApplyToggle(item, key, expand, reason) is false) return;
 
-        // Collapse the item(s) that were expanded before, in single-expand mode.
+        if (expand) QueueScrollIntoView(item);
+
+        // Collapse the item(s) that were expanded before.
         foreach (var otherKey in others)
         {
-            if (_expandedKeys.Remove(otherKey) is false) continue;
+            if (RemoveExpandedKey(otherKey) is false) continue;
 
             var otherItem = FindItem(otherKey);
             if (otherItem is null) continue;
@@ -923,6 +1235,12 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             if (_isToggling) return false;
 
             _isToggling = true;
+            _togglingKey = key;
+
+            // Nothing toggles the list while the callback is running, so the header of the item it was
+            // asked about says as much - aria-busy for a screen reader, a busy cursor for a pointer -
+            // rather than going on looking like a toggle that answers at once.
+            await RefreshAndRender();
 
             try
             {
@@ -939,18 +1257,21 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             finally
             {
                 _isToggling = false;
+                _togglingKey = null;
+
+                await RefreshAndRender();
             }
         }
 
         if (expand)
         {
-            _expandedKeys.Add(key);
+            AddExpandedKey(key);
             SetIsExpanded(item, true);
             await OnExpand.InvokeAsync(item);
         }
         else
         {
-            _expandedKeys.Remove(key);
+            RemoveExpandedKey(key);
             SetIsExpanded(item, false);
             await OnCollapse.InvokeAsync(item);
         }
@@ -1075,6 +1396,25 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         var key = GetItemKey(item);
         return key.HasValue() && _expandedKeys.Contains(key!);
     }
+
+    // The header of the item an awaited OnToggling was asked about, and only that one: the rest of the list
+    // is not doing anything, it is only refusing to start something else while this one is being decided.
+    internal bool IsItemBusy(TItem item)
+    {
+        if (_togglingKey is null) return false;
+
+        return GetItemKey(item) == _togglingKey;
+    }
+
+    // A list built from options only knows it is empty once its options have had their turn to register, so
+    // the empty content of one waits for the render after the first rather than flashing on the first.
+    private bool _ShowEmptyContent => EmptyContent is not null
+                                   && _items.Count == 0
+                                   && ((Options ?? ChildContent) is null || _hasRendered);
+
+    // A label on a plain container is dropped by a screen reader, so the list that carries one says what it
+    // is. It is rendered before the splatted attributes, so a role the page sets itself still wins over it.
+    private string? _Role => AriaLabel.HasValue() ? "group" : null;
 
     // The header of the one panel that has to stay open reports itself as aria-disabled, the way the WAI-ARIA
     // authoring practices ask a header whose panel cannot be collapsed to.
@@ -1756,6 +2096,25 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         {
             item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
         }
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing && _preventKeysRegistered)
+        {
+            _preventKeysRegistered = false;
+
+            try
+            {
+                await _js.BitExtrasDisposePreventKeys(RootElement);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (ObjectDisposedException) { } // we can ignore this exception here
+        }
+
+        await base.DisposeAsync(disposing);
     }
 
 

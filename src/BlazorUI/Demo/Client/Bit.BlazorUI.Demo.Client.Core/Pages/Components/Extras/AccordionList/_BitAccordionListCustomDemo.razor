@@ -13,10 +13,20 @@
 <DemoExample Title="Multiple" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>
         <code>Multiple</code> lets more than one item stay open at the same time; each header then toggles only its
-        own panel.
+        own panel. <code>MaxExpanded</code> puts a ceiling on how many of them may be open at once: opening one
+        more closes the panel that has been open the longest, so a click always opens the panel it was aimed at
+        rather than being turned away by a header that answers nothing.
     </div>
     <br />
-    <BitAccordionList Multiple Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    <div class="example-content">
+        <div>Multiple:</div>
+        <BitAccordionList Multiple Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>At most two panels open at once:</div>
+        <BitAccordionList Multiple MaxExpanded="2" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
 </DemoExample>
 
 <DemoExample Title="DefaultExpanded" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
@@ -156,10 +166,13 @@
         <code>Cancel</code> on its arguments. They carry the item, its key, whether it is about to expand and what
         asked for the change - a click on the header, or one of the public methods. The callback is awaited, so it
         can also load the content of the panel or ask for a confirmation first, and nothing else toggles the list
-        while it runs.
+        while it runs - the header it was asked about says as much while it waits, reporting itself as
+        <code>aria-busy</code> and taking a busy cursor, rather than going on looking like a toggle that answers
+        at once.
     </div>
     <br />
     <BitCheckbox @bind-Value="lockToggling" Label="Refuse every toggle" />
+    <BitCheckbox @bind-Value="slowToggling" Label="Take a second to decide" />
     <br />
     <BitAccordionList Items="keyedItems"
                       TItem="Section"
@@ -292,8 +305,9 @@
         WAI-ARIA accordion pattern asks for. <code>HeadingLevel</code> puts the headers at the right depth of the
         heading outline of the page (3 by default, clamped to 1..6). <code>Navigable</code>, which is on by
         default, adds the ArrowUp, ArrowDown, Home and End keys on top of Tab: they move the focus between the
-        headers, wrap around at both ends and skip the disabled items, while the same keys pressed inside a panel
-        are left to whatever the panel holds. <code>NoContentRegion</code> drops the landmark role from the panels,
+        headers without scrolling the page under it, wrap around at both ends - <code>NoNavigationLoop</code>
+        stops them there instead - and skip the disabled items, while the same keys pressed inside a panel are
+        left to whatever the panel holds. <code>NoContentRegion</code> drops the landmark role from the panels,
         which the authoring practices ask for beyond about six panels that can all be open at once, and
         <code>AriaLabel</code> names the list itself. A header that does not name itself - an icon-only
         <code>HeaderTemplate</code> - takes a <code>HeaderAriaLabel</code> of its own, which names both the toggle
@@ -306,6 +320,7 @@
                       NameSelectors="nameSelectors"
                       HeadingLevel="2"
                       NoContentRegion
+                      NoNavigationLoop
                       AriaLabel="Application settings" />
 </DemoExample>
 
@@ -350,7 +365,39 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="Empty content" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+    <div>
+        <code>EmptyContent</code> is what the list draws in place of the items while it has none, so a collection
+        that is still loading, or one a filter has emptied, says so instead of leaving a blank where a list is
+        meant to be.
+    </div>
+    <br />
+    <BitCheckbox @bind-Value="showEmptyItems" Label="Show the items" />
+    <br />
+    <BitAccordionList Items="@(showEmptyItems ? basicItems : noItems)" TItem="Section" NameSelectors="nameSelectors">
+        <EmptyContent>
+            <BitText Typography="BitTypography.Body2">There is nothing to show here yet.</BitText>
+        </EmptyContent>
+    </BitAccordionList>
+</DemoExample>
+
+<DemoExample Title="Scroll into view" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+    <div>
+        <code>ScrollIntoViewOnExpand</code> brings the item that has just been expanded into view, so a panel
+        opened at the bottom of the window is not left off the screen it was opened on. The item is moved as
+        little as the browser can move it, so nothing happens to one that is already in view, and the scroll is
+        instant rather than smooth for a reader who has asked for less motion. It covers the ways a single panel opens:
+        a click on its header, <code>Expand</code>, <code>Toggle</code> and the bound keys - <code>ExpandAll</code> scrolls to nothing, since there is no one panel it opened.
+    </div>
+    <br />
+    <div>Open the last panels of this box: the list follows them without the box being scrolled by hand.</div>
+    <br />
+    <div class="scroll-box">
+        <BitAccordionList ScrollIntoViewOnExpand Items="scrollItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
     <div>
         <code>Background</code> and <code>Border</code> take a <code>BitColorKind</code> and repaint every item of
         the list, down to the shades its header takes under the pointer.
@@ -369,7 +416,7 @@
                       Border="BitColorKind.Transparent" />
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
     <div>
         <code>ExpanderIcon</code>, <code>ExpandedExpanderIcon</code> and the member mapped to <code>Icon</code>
         take a <code>BitIconInfo</code> rather than the name of a built-in icon, so the list can be dressed in the
@@ -391,7 +438,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
     <div>
         <code>Size</code> drives the padding of the headers and of the panels and the type scale of every item -
         the title, the description, the icons and the text of the panel - so a list can be tuned to how much room
@@ -414,7 +461,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
     <div>
         <code>Style</code> and <code>Class</code> dress the root element of the list, while <code>Styles</code> and
         <code>Classes</code> reach each part of every item on its own - the header, the title, the expander icon,
@@ -443,7 +490,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24" PreventRenderForMcpClient>
     <div>
         <code>Dir="BitDir.Rtl"</code> mirrors the whole list: the expander icon moves to the other end of the
         header and the padding follows the writing direction with it.

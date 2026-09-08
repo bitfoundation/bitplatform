@@ -51,6 +51,17 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
+    /// Reports the header as busy while something the page is doing on the accordion's behalf is still
+    /// running - the awaited work of a list that owns the expansion, most of all.
+    /// </summary>
+    /// <remarks>
+    /// The header says as much - <c>aria-busy</c> for a screen reader, a busy cursor for a pointer - rather
+    /// than going on looking like a toggle that answers at once. An accordion whose own
+    /// <see cref="OnToggling"/> is being awaited reports itself as busy without being told to.
+    /// </remarks>
+    [Parameter] public bool Busy { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the accordion.
     /// </summary>
     [Parameter] public BitAccordionClassStyles? Classes { get; set; }
@@ -360,6 +371,10 @@ public partial class BitAccordion : BitComponentBase
     // A region is not an interactive element, so it earns a tab stop only where it has something the
     // keyboard could not otherwise reach: the scroll of a content that is taller than its MaxHeight.
     private bool _IsContentFocusable => IsExpanded && MaxHeight.HasValue();
+
+    // The header answers nothing while an awaited OnToggling of its own is running, and nothing while the
+    // page - a BitAccordionList that owns the expansion - says so through the Busy parameter either.
+    private bool _IsBusy => _isToggling || Busy;
 
     // A one-way bound IsExpanded is owned by the page that hands it over: the accordion cannot move it, so
     // nothing it would report about a move of its own would be true.

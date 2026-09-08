@@ -24,18 +24,35 @@ namespace BitBlazorUI {
         // value is evaluated at render time and therefore only applies to the *next* key event
         // -- this evaluates the actual key of the *current* event, so stale state can never
         // block typing, Space, or Tab.
-        public static setPreventKeys(element: HTMLElement, keys: string[]) {
+        //
+        // The two optional selectors narrow the listener to the elements the keys really belong to,
+        // for a container that also holds content of its own: targetSelector is what the key must
+        // have been pressed on, and scopeSelector the container that element must belong to - so a
+        // list of panels can suppress the page scroll of its own headers without touching the same
+        // keys pressed inside a panel, or on the headers of another list nested in one.
+        public static setPreventKeys(element: HTMLElement, keys: string[], targetSelector?: string, scopeSelector?: string) {
             if (!element) return;
 
             const el = element as any;
             el.bitPreventKeys = keys ?? [];
+            el.bitPreventKeysTarget = targetSelector;
+            el.bitPreventKeysScope = scopeSelector;
 
             if (!el.bitPreventKeysHandler) {
                 el.bitPreventKeysHandler = (e: KeyboardEvent) => {
                     const ks: string[] = el.bitPreventKeys ?? [];
-                    if (ks.indexOf(e.key) !== -1) {
-                        e.preventDefault();
+                    if (ks.indexOf(e.key) === -1) return;
+
+                    const target: string | undefined = el.bitPreventKeysTarget;
+                    if (target) {
+                        const node = e.target as Element;
+                        if (!node || typeof node.matches !== 'function' || !node.matches(target)) return;
+
+                        const scope: string | undefined = el.bitPreventKeysScope;
+                        if (scope && node.closest(scope) !== element) return;
                     }
+
+                    e.preventDefault();
                 };
                 element.addEventListener('keydown', el.bitPreventKeysHandler);
             }
@@ -50,6 +67,27 @@ namespace BitBlazorUI {
                 delete el.bitPreventKeysHandler;
             }
             delete el.bitPreventKeys;
+            delete el.bitPreventKeysTarget;
+            delete el.bitPreventKeysScope;
+        }
+
+        // Brings the element into view with the least movement that puts it there ('nearest'), so a panel
+        // that opens below the fold is shown without the page jumping under a reader who could already see
+        // it. The smooth scroll is a courtesy rather than a requirement, so it is dropped for a reader who
+        // has asked for less motion.
+        public static scrollIntoView(element: HTMLElement) {
+            if (!element) return;
+
+            try {
+                const reduced = typeof window.matchMedia === 'function'
+                    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                element.scrollIntoView({
+                    behavior: reduced ? 'auto' : 'smooth',
+                    block: 'nearest',
+                    inline: 'nearest'
+                });
+            } catch (e) { console.error('BitBlazorUI.Extras.scrollIntoView:', e); }
         }
 
         // Scrolls the option element into the visible area of its scroll container using

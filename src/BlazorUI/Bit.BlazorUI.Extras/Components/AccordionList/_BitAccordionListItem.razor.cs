@@ -14,6 +14,10 @@ public partial class _BitAccordionListItem<TItem> : ComponentBase, IDisposable w
 
     internal ValueTask FocusAsync() => _accordion?.FocusAsync() ?? ValueTask.CompletedTask;
 
+    // The root element of the accordion the item renders, which is the box the list scrolls into view: the
+    // wrapper around it generates none of its own (display: contents) and could not be scrolled to.
+    internal ElementReference? GetElement() => _accordion?.RootElement;
+
 
 
     protected override void OnParametersSet()

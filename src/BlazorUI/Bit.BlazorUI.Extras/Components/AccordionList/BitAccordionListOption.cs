@@ -164,6 +164,17 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
 
     // Renders the option's item in place, so the rendered order of the items always follows the
     // markup order of the options, even when an option is added or removed conditionally later on.
+    protected override void OnParametersSet()
+    {
+        // The list hands its options their parameters in markup order, every one of them, every time it
+        // renders - which is the order the list wants its items in, and not the order they registered
+        // themselves in once one of them has been added conditionally. A render of the option's own is no
+        // use here: only the option that was just added has one when it is added.
+        Parent?.ReportOptionOrder(this);
+
+        base.OnParametersSet();
+    }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         if (Parent is null) return;

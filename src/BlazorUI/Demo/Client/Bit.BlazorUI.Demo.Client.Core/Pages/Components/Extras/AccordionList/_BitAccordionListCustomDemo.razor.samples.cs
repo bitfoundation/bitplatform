@@ -54,7 +54,9 @@ private readonly List<Section> basicItems =
     private readonly string example1CsharpCode = basicItemsCsharpCode;
 
     private readonly string example2RazorCode = @"
-<BitAccordionList Multiple Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />";
+<BitAccordionList Multiple Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />
+
+<BitAccordionList Multiple MaxExpanded=""2"" Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />";
     private readonly string example2CsharpCode = basicItemsCsharpCode;
 
     private readonly string example3RazorCode = @"
@@ -169,17 +171,25 @@ protected override void OnInitialized()
 
     private readonly string example9RazorCode = @"
 <BitCheckbox @bind-Value=""lockToggling"" Label=""Refuse every toggle"" />
+<BitCheckbox @bind-Value=""slowToggling"" Label=""Take a second to decide"" />
 
 <BitAccordionList Items=""keyedItems"" TItem=""Section"" NameSelectors=""nameSelectors"" OnToggling=""HandleOnToggling"" />
 
 <div>Last request: <b>@togglingReport</b></div>";
     private readonly string example9CsharpCode = @"
 private bool lockToggling;
+private bool slowToggling;
 private string? togglingReport;
 
-private void HandleOnToggling(BitAccordionListToggleArgs<Section> args)
+private async Task HandleOnToggling(BitAccordionListToggleArgs<Section> args)
 {
     togglingReport = $""{args.Item.Name} is {(args.IsExpanding ? ""expanding"" : ""collapsing"")} ({args.Reason})"";
+
+    // The header of this item reports itself as aria-busy for as long as the callback is awaited.
+    if (slowToggling)
+    {
+        await Task.Delay(1000);
+    }
 
     args.Cancel = lockToggling;
 }
@@ -287,6 +297,7 @@ private static RenderFragment<Section> TimestampBody() => section => builder =>
                   NameSelectors=""nameSelectors""
                   HeadingLevel=""2""
                   NoContentRegion
+                  NoNavigationLoop
                   AriaLabel=""Application settings"" />";
     private readonly string example15CsharpCode = basicItemsCsharpCode;
 
@@ -303,6 +314,34 @@ private static RenderFragment<Section> TimestampBody() => section => builder =>
     private readonly string example17CsharpCode = basicItemsCsharpCode;
 
     private readonly string example18RazorCode = @"
+<BitCheckbox @bind-Value=""showEmptyItems"" Label=""Show the items"" />
+
+<BitAccordionList Items=""@(showEmptyItems ? basicItems : noItems)"" TItem=""Section"" NameSelectors=""nameSelectors"">
+    <EmptyContent>
+        <BitText Typography=""BitTypography.Body2"">There is nothing to show here yet.</BitText>
+    </EmptyContent>
+</BitAccordionList>";
+    private readonly string example18CsharpCode = @"
+private bool showEmptyItems;
+
+private readonly List<Section> noItems = [];
+" + basicItemsCsharpCode;
+
+    private readonly string example19RazorCode = @"
+<div class=""scroll-box"">
+    <BitAccordionList ScrollIntoViewOnExpand Items=""scrollItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />
+</div>";
+    private readonly string example19CsharpCode = @"
+private readonly List<Section> scrollItems =
+[
+    new() { Id = ""scroll-1"", Name = ""First section"", Info = ""Opens without moving anything"", Content = BodyFor(""Once upon a time, ..."") },
+    new() { Id = ""scroll-2"", Name = ""Second section"", Info = ""Sits just below the fold"", Content = BodyFor(""Every story starts with a blank canvas, ..."") },
+    new() { Id = ""scroll-3"", Name = ""Third section"", Info = ""Is scrolled to when it opens"", Content = BodyFor(""In the beginning, there is silence, ..."") },
+    new() { Id = ""scroll-4"", Name = ""Fourth section"", Info = ""Is scrolled to when it opens"", Content = BodyFor(""Once upon a time, ..."") },
+];
+" + sectionCsharpCode;
+
+    private readonly string example20RazorCode = @"
 <BitAccordionList Items=""basicItems""
                   TItem=""Section""
                   NameSelectors=""nameSelectors""
@@ -314,16 +353,16 @@ private static RenderFragment<Section> TimestampBody() => section => builder =>
                   NameSelectors=""nameSelectors""
                   Background=""BitColorKind.Tertiary""
                   Border=""BitColorKind.Transparent"" />";
-    private readonly string example18CsharpCode = basicItemsCsharpCode;
+    private readonly string example20CsharpCode = basicItemsCsharpCode;
 
-    private readonly string example19RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitAccordionList Items=""faItems"" TItem=""Section"" NameSelectors=""nameSelectors"" ExpanderIcon=""@BitIconInfo.Fa(""solid angle-down"")"" />
 
 <BitAccordionList Items=""biItems"" TItem=""Section"" NameSelectors=""nameSelectors"" ExpanderIcon=""@BitIconInfo.Bi(""chevron-down"")"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private readonly List<Section> faItems =
 [
     new() { Id = ""general"", Name = ""General settings"", Info = ""The general settings of the application"", CustomGlyph = BitIconInfo.Fa(""solid gear""), Content = BodyFor(""Once upon a time, ..."") },
@@ -337,15 +376,15 @@ private readonly List<Section> biItems =
 ];
 " + sectionCsharpCode;
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitAccordionList Size=""BitSize.Small"" Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />
 
 <BitAccordionList Size=""BitSize.Medium"" Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />
 
 <BitAccordionList Size=""BitSize.Large"" Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />";
-    private readonly string example20CsharpCode = basicItemsCsharpCode;
+    private readonly string example22CsharpCode = basicItemsCsharpCode;
 
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <style>
     .custom-item {
         color: peachpuff;
@@ -373,11 +412,11 @@ private readonly List<Section> biItems =
                   TItem=""Section""
                   NameSelectors=""nameSelectors""
                   Classes=""@(new() { ItemTitle = ""custom-title"", ItemExpanded = ""custom-expanded"" })"" />";
-    private readonly string example21CsharpCode = basicItemsCsharpCode;
+    private readonly string example23CsharpCode = basicItemsCsharpCode;
 
-    private readonly string example22RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitAccordionList Dir=""BitDir.Rtl"" Items=""rtlItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private readonly List<Section> rtlItems =
 [
     new() { Id = ""general"", Name = ""تنظیمات عمومی"", Info = ""تنظیمات کلی برنامه"", Content = BodyFor(""لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است."") },

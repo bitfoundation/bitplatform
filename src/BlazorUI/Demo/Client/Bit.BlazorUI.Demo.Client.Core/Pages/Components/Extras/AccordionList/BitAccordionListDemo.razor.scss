@@ -5,6 +5,15 @@
         flex-flow: column;
     }
 
+    // A scroll of its own, so the ScrollIntoViewOnExpand example can be seen without the page moving.
+    .scroll-box {
+        padding: 0.5rem;
+        max-block-size: 12rem;
+        overflow-y: auto;
+        border-radius: 0.25rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+
     .custom-item {
         color: peachpuff;
         background-color: tomato;

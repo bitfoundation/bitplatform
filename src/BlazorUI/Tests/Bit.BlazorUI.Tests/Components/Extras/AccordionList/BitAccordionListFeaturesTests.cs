@@ -850,6 +850,290 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count));
     }
 
+    [TestMethod]
+    public void BitAccordionListMaxExpandedShouldCloseTheOldestPanel()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.MaxExpanded, 2);
+        });
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+        component.FindAll(".bit-acd-hdr")[1].Click();
+
+        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.GetExpandedKeys().ToArray());
+
+        // The third one is opened all the same - nothing is turned away - and the one that was opened first
+        // is the one that closes for it.
+        component.FindAll(".bit-acd-hdr")[2].Click();
+
+        CollectionAssert.AreEqual(new[] { "b", "c" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.IsFalse(component.FindAll(".bit-acd-con")[0].ClassList.Contains("bit-acd-cex"));
+        Assert.IsTrue(component.FindAll(".bit-acd-con")[2].ClassList.Contains("bit-acd-cex"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListMaxExpandedShouldCapTheDefaultExpandedKeys()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.MaxExpanded, 2);
+            parameters.Add(p => p.DefaultExpandedKeys, ["a", "b", "c"]);
+        });
+
+        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.GetExpandedKeys().ToArray());
+    }
+
+    [TestMethod]
+    public async Task BitAccordionListMaxExpandedShouldCapExpandAll()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.MaxExpanded, 2);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExpandAll());
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-acd-con.bit-acd-cex").Count));
+    }
+
+    [TestMethod]
+    public void BitAccordionListMaxExpandedShouldMeanNothingOutsideOfTheMultipleExpandMode()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.MaxExpanded, 2);
+        });
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+        component.FindAll(".bit-acd-hdr")[1].Click();
+
+        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+    }
+
+    [TestMethod]
+    public void BitAccordionListMaxExpandedBelowOneShouldBeNoCapAtAll()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.MaxExpanded, 0);
+            parameters.Add(p => p.DefaultExpandedKeys, ["a", "b", "c"]);
+        });
+
+        Assert.AreEqual(3, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListMaxExpandedShouldCloseTheOldestPanelsWhenItIsLowered()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.DefaultExpandedKeys, ["a", "b", "c"]);
+        });
+
+        Assert.AreEqual(3, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+
+        component.Render(parameters => parameters.Add(p => p.MaxExpanded, 1));
+
+        CollectionAssert.AreEqual(new[] { "c" }, component.Instance.GetExpandedKeys().ToArray());
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldPushBackABoundSetThatTheCapTrimmed()
+    {
+        var bound = new List<string> { "a", "b", "c" };
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.MaxExpanded, 2);
+            parameters.Add(p => p.ExpandedKeys, bound);
+            parameters.Add(p => p.ExpandedKeysChanged, keys => bound = [.. keys ?? []]);
+        });
+
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a", "b" }, bound.ToArray()));
+        Assert.AreEqual(2, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListNoNavigationLoopShouldStopAtTheEndsOfTheList()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.NoNavigationLoop, true);
+        });
+
+        // The focus itself is a JS call the loose interop swallows, so what is asserted here is that the
+        // navigation past either end runs without throwing and leaves the expanded state alone.
+        var wrappers = component.FindAll(".bit-acl-itm");
+        wrappers[0].KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        wrappers[2].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldRenderTheEmptyContentOnlyWhileTheListIsEmpty()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, []);
+            parameters.Add(p => p.EmptyContent, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>")));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".no-items").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-acd").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Items, GetItems()));
+
+        Assert.AreEqual(0, component.FindAll(".no-items").Count);
+        Assert.AreEqual(3, component.FindAll(".bit-acd").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldRenderTheEmptyContentOfAListOfOptions()
+    {
+        // A list of options only knows it is empty once its options have had their turn to register, so the
+        // empty content needs a render of its own - and an empty list has no option to ask for one.
+        var component = RenderComponent<BitAccordionList<BitAccordionListOption>>(parameters =>
+        {
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder => { }));
+            parameters.Add(p => p.EmptyContent, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>")));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".no-items").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldNameItselfAsAGroupOnlyWhenItCarriesALabel()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        // A label on a plain container is dropped by a screen reader, so the role comes with the label
+        // rather than being there for a list that has nothing to be named by.
+        Assert.IsNull(component.Find(".bit-acl").GetAttribute("role"));
+
+        component.Render(parameters => parameters.Add(p => p.AriaLabel, "settings"));
+
+        Assert.AreEqual("group", component.Find(".bit-acl").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldLeaveARoleOfThePagesOwnAlone()
+    {
+        var component = RenderComponent<BitAccordionListHtmlAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        Assert.AreEqual("region", component.Find(".bit-acl").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public async Task BitAccordionListShouldReportTheItemAsBusyWhileAnAwaitedOnTogglingRuns()
+    {
+        var gate = new TaskCompletionSource();
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.OnToggling, EventCallback.Factory.Create<BitAccordionListToggleArgs<BitAccordionListItem>>(this, async _ => await gate.Task));
+        });
+
+        var click = component.InvokeAsync(() => component.Find(".bit-acd-hdr").Click());
+
+        // The header of the item the callback was asked about says it is busy; the rest of the list is only
+        // refusing to start something else while this one is being decided.
+        component.WaitForAssertion(() => Assert.AreEqual("true", component.FindAll(".bit-acd-hdr")[0].GetAttribute("aria-busy")));
+        Assert.IsTrue(component.FindAll(".bit-acd-hdr")[0].ClassList.Contains("bit-acd-bsy"));
+        Assert.IsNull(component.FindAll(".bit-acd-hdr")[1].GetAttribute("aria-busy"));
+
+        gate.SetResult();
+        await click;
+
+        component.WaitForAssertion(() => Assert.IsNull(component.FindAll(".bit-acd-hdr")[0].GetAttribute("aria-busy")));
+        Assert.IsTrue(component.FindAll(".bit-acd-con")[0].ClassList.Contains("bit-acd-cex"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldSuppressTheDefaultActionOfItsNavigationKeys()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        // The keys are suppressed on a listener of the browser's own - Blazor's preventDefault directive
+        // cannot be decided per key - and only for a key pressed on one of this list's own headers.
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys");
+
+        CollectionAssert.AreEqual(new[] { "ArrowDown", "ArrowUp", "Home", "End" }, (string[])invocation.Arguments[1]!);
+        Assert.AreEqual(".bit-acd-hdr", invocation.Arguments[2]);
+        Assert.AreEqual(".bit-acl", invocation.Arguments[3]);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldNotSuppressAnyKeyWhenItIsNotNavigable()
+    {
+        RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Navigable, false);
+        });
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldScrollAnExpandedItemIntoView()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.ScrollIntoViewOnExpand, true);
+        });
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+
+        component.FindAll(".bit-acd-hdr")[1].Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+
+        // A collapse takes nothing off the screen that was not already there.
+        component.FindAll(".bit-acd-hdr")[1].Click();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldNotScrollAnythingIntoViewWithoutBeingAskedTo()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        component.FindAll(".bit-acd-hdr")[1].Click();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+    }
+
     public class KeylessItem
     {
         public string? Name { get; set; }

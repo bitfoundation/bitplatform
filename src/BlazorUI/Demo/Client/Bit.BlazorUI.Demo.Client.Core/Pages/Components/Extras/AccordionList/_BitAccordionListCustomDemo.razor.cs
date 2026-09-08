@@ -5,6 +5,8 @@ public partial class _BitAccordionListCustomDemo
     private int clickCounter;
     private int readOnlyClickCount;
     private bool lockToggling;
+    private bool slowToggling;
+    private bool showEmptyItems;
     private string? expandedTitle;
     private string? collapsedTitle;
     private string? toggledTitle;
@@ -98,6 +100,16 @@ public partial class _BitAccordionListCustomDemo
         new() { Id = "users", Name = "کاربران", Info = "شما در حال حاضر مالک نیستید", Content = BodyFor("لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است.") },
     ];
 
+    private readonly List<Section> noItems = [];
+
+    private readonly List<Section> scrollItems =
+    [
+        new() { Id = "scroll-1", Name = "First section", Info = "Opens without moving anything", Content = BodyFor(Story1) },
+        new() { Id = "scroll-2", Name = "Second section", Info = "Sits just below the fold", Content = BodyFor($"{Story2} {Story3}") },
+        new() { Id = "scroll-3", Name = "Third section", Info = "Is scrolled to when it opens", Content = BodyFor($"{Story3} {Story1}") },
+        new() { Id = "scroll-4", Name = "Fourth section", Info = "Is scrolled to when it opens", Content = BodyFor($"{Story1} {Story2}") },
+    ];
+
     private readonly List<Section> eventsItems =
     [
         new() { Id = "general", Name = "General settings", Info = "The general settings of the application", Content = BodyFor(Story1) },
@@ -120,9 +132,15 @@ public partial class _BitAccordionListCustomDemo
         }
     }
 
-    private void HandleOnToggling(BitAccordionListToggleArgs<Section> args)
+    private async Task HandleOnToggling(BitAccordionListToggleArgs<Section> args)
     {
         togglingReport = $"{args.Item.Name} is {(args.IsExpanding ? "expanding" : "collapsing")} ({args.Reason})";
+
+        // The header of this item reports itself as aria-busy for as long as the callback is awaited.
+        if (slowToggling)
+        {
+            await Task.Delay(1000);
+        }
 
         args.Cancel = lockToggling;
     }

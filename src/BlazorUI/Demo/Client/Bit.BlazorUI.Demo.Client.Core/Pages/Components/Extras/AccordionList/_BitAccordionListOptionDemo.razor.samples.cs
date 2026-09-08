@@ -26,6 +26,18 @@ public partial class _BitAccordionListOptionDemo
     <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
         In the beginning, there is silence, ...
     </BitAccordionListOption>
+</BitAccordionList>
+
+<BitAccordionList Multiple MaxExpanded=""2"" TItem=""BitAccordionListOption"">
+    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
+        Once upon a time, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"">
+        Every story starts with a blank canvas, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
+        In the beginning, there is silence, ...
+    </BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example3RazorCode = @"
@@ -148,6 +160,7 @@ private string? toggledTitle;";
 
     private readonly string example9RazorCode = @"
 <BitCheckbox @bind-Value=""lockToggling"" Label=""Refuse every toggle"" />
+<BitCheckbox @bind-Value=""slowToggling"" Label=""Take a second to decide"" />
 
 <BitAccordionList TItem=""BitAccordionListOption"" OnToggling=""HandleOnToggling"">
     <BitAccordionListOption Key=""general"" Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
@@ -157,11 +170,18 @@ private string? toggledTitle;";
 <div>Last request: <b>@togglingReport</b></div>";
     private readonly string example9CsharpCode = @"
 private bool lockToggling;
+private bool slowToggling;
 private string? togglingReport;
 
-private void HandleOnToggling(BitAccordionListToggleArgs<BitAccordionListOption> args)
+private async Task HandleOnToggling(BitAccordionListToggleArgs<BitAccordionListOption> args)
 {
     togglingReport = $""{args.Item.Title} is {(args.IsExpanding ? ""expanding"" : ""collapsing"")} ({args.Reason})"";
+
+    // The header of this option reports itself as aria-busy for as long as the callback is awaited.
+    if (slowToggling)
+    {
+        await Task.Delay(1000);
+    }
 
     args.Cancel = lockToggling;
 }";
@@ -276,6 +296,7 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
                   TItem=""BitAccordionListOption""
                   HeadingLevel=""2""
                   NoContentRegion
+                  NoNavigationLoop
                   AriaLabel=""Application settings"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
@@ -305,6 +326,34 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
 </BitAccordionList>";
 
     private readonly string example18RazorCode = @"
+<BitCheckbox @bind-Value=""showEmptyItems"" Label=""Show the options"" />
+
+<BitAccordionList TItem=""BitAccordionListOption"">
+    <EmptyContent>
+        <BitText Typography=""BitTypography.Body2"">There is nothing to show here yet.</BitText>
+    </EmptyContent>
+    <Options>
+        @if (showEmptyItems)
+        {
+            <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
+            <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+        }
+    </Options>
+</BitAccordionList>";
+    private readonly string example18CsharpCode = @"
+private bool showEmptyItems;";
+
+    private readonly string example19RazorCode = @"
+<div class=""scroll-box"">
+    <BitAccordionList ScrollIntoViewOnExpand TItem=""BitAccordionListOption"">
+        <BitAccordionListOption Title=""First section"">Once upon a time, ...</BitAccordionListOption>
+        <BitAccordionListOption Title=""Second section"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+        <BitAccordionListOption Title=""Third section"">In the beginning, there is silence, ...</BitAccordionListOption>
+        <BitAccordionListOption Title=""Fourth section"">Once upon a time, ...</BitAccordionListOption>
+    </BitAccordionList>
+</div>";
+
+    private readonly string example20RazorCode = @"
 <BitAccordionList Background=""BitColorKind.Secondary"" Border=""BitColorKind.Tertiary"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
@@ -315,7 +364,7 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
 </BitAccordionList>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -329,7 +378,7 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
     <BitAccordionListOption Title=""Users"" Icon=""@BitIconInfo.Bi(""person"")"">Every story starts with a blank canvas, ...</BitAccordionListOption>
 </BitAccordionList>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitAccordionList Size=""BitSize.Small"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
 </BitAccordionList>
@@ -342,7 +391,7 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
 </BitAccordionList>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <style>
     .custom-item {
         color: peachpuff;
@@ -379,7 +428,7 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
 </BitAccordionList>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitAccordionList Dir=""BitDir.Rtl"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""تنظیمات عمومی"" Description=""تنظیمات کلی برنامه"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است.
