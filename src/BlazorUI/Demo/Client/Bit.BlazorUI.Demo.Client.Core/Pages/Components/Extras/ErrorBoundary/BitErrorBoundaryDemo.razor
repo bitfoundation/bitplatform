@@ -1,12 +1,14 @@
-@page "/components/errorboundary"
+﻿@page "/components/errorboundary"
 
 <PageOutlet Url="components/errorboundary"
             Title="ErrorBoundary"
-            Description="BitErrorBoundary is a simple error boundary to handle exceptions happening in its children." />
+            Description="BitErrorBoundary catches the exceptions thrown inside it and renders a recoverable error UI in their place." />
 
 <DemoPage Name="ErrorBoundary"
-          Description="BitErrorBoundary is a simple error boundary to handle exceptions happening in its children."
+          Description="BitErrorBoundary wraps a part of the page and catches whatever the components inside it throw, rendering a themed, recoverable error UI in their place instead of letting one failure tear the whole app down. It builds on Blazor's own ErrorBoundary, adding a complete default UI (icon, title, message, optional exception details and Refresh / Home / Recover actions), templates for every part of it, logging, callbacks, automatic recovery on navigation or on a change of state, and a way in for the exceptions the renderer never sees."
           Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
           GitHubExtrasUrl="ErrorBoundary/BitErrorBoundary.razor"
           GitHubDemoUrl="Extras/ErrorBoundary/BitErrorBoundaryDemo.razor">
     <NotesTemplate>
@@ -21,12 +23,279 @@
             nuget package, as described in the Optional steps of the
             <BitLink Href="/getting-started">Getting started</BitLink> page.
         </BitText>
+        <br />
+        <BitText>
+            A boundary catches what the components inside it throw while they render, while their lifecycle methods
+            run, and while they handle an event. It does not catch what never reaches the renderer - a fire-and-forget
+            task, a timer callback, a JS interop callback - nor anything thrown outside it. Use
+            <b>Capture</b> for those, and scope boundaries narrowly: the closer a boundary sits to what failed, the
+            more of the page survives the failure.
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Wrap anything that can fail. While nothing has thrown, the boundary renders its content and no element
+                of its own; the first exception replaces that content with the default error UI - the illustration, the
+                title, and a footer offering to reload the page, to leave for the home page, or to simply try rendering
+                the content again.
+            </div>
+            <br />
             <BitErrorBoundary>
                 <BitButton OnClick="ThrowException">Throw an exception</BitButton>
             </BitErrorBoundary>
+        </DemoExample>
+
+        <DemoExample Title="Title & message" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Title</b> replaces the default heading and <b>Message</b> adds a line under it. The title says that
+                something broke; the message is where whoever is looking at the screen is told what it means for them
+                and what to do next, which is the difference between an error page that reads as an apology and one
+                that reads as an instruction.
+            </div>
+            <br />
+            <BitErrorBoundary Title="This report could not be built"
+                              Message="The numbers behind it are still being imported. Try again in a minute, or head back to the dashboard.">
+                <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+            </BitErrorBoundary>
+        </DemoExample>
+
+        <DemoExample Title="Exception details" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>ShowException</b> renders the exception's full text - message, type and stack trace - under the
+                title. It is what a developer needs while building, and it is internal detail in front of a user once
+                the app is deployed, so it is off by default and belongs behind an environment check.
+            </div>
+            <br />
+            <BitErrorBoundary ShowException>
+                <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+            </BitErrorBoundary>
+        </DemoExample>
+
+        <DemoExample Title="Icon" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The built-in illustration is drawn in the theme's error color, so it re-skins with everything else.
+                <b>IconName</b> swaps it for a glyph of the Fluent icon set, <b>IconTemplate</b> for markup of your own,
+                and <b>HideIcon</b> drops it altogether - which is what a boundary around a small region wants, where a
+                64 pixel illustration is louder than whatever failed.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitErrorBoundary IconName="@BitIconName.ErrorBadge" Title="Something went wrong">
+                    <BitButton OnClick="ThrowException">Throw (IconName)</BitButton>
+                </BitErrorBoundary>
+                <BitErrorBoundary Title="Something went wrong">
+                    <ChildContent>
+                        <BitButton OnClick="ThrowException">Throw (IconTemplate)</BitButton>
+                    </ChildContent>
+                    <IconTemplate>
+                        <BitText Typography="BitTypography.H2">🛠️</BitText>
+                    </IconTemplate>
+                </BitErrorBoundary>
+                <BitErrorBoundary HideIcon Title="Something went wrong">
+                    <BitButton OnClick="ThrowException">Throw (HideIcon)</BitButton>
+                </BitErrorBoundary>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Buttons" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                The three default actions are independent. <b>Refresh</b> reloads the page in the browser,
+                <b>Home</b> navigates to <b>HomeUrl</b> (the site root unless you name another), and <b>Recover</b>
+                clears the error and renders the content again - so it only helps once whatever threw has been put
+                right, which is why it is the one to hide when nothing about the failure will have changed by the time
+                the reader clicks it. Each has its own text parameter and its own <b>Hide...Button</b>, and
+                <b>AdditionalButtons</b> appends to the row rather than replacing it.
+            </div>
+            <br />
+            <BitErrorBoundary HideRefreshButton
+                              HomeUrl="/components/errorboundary"
+                              HomeText="Back to the docs"
+                              RecoverText="Try again">
+                <ChildContent>
+                    <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                </ChildContent>
+                <AdditionalButtons>
+                    <BitButton Variant="BitVariant.Text" OnClick="() => reportedCount++">
+                        Report (@reportedCount)
+                    </BitButton>
+                </AdditionalButtons>
+            </BitErrorBoundary>
+        </DemoExample>
+
+        <DemoExample Title="Footer" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Footer</b> replaces the whole row of default buttons while keeping the icon, the title and the
+                message of the default UI - the middle ground between accepting the built-in actions and writing the
+                error UI from scratch. A boundary that sets it never renders <b>AdditionalButtons</b>.
+            </div>
+            <br />
+            <BitErrorBoundary @ref="footerBoundary" Title="The upload failed">
+                <ChildContent>
+                    <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                </ChildContent>
+                <Footer>
+                    <BitButton Size="BitSize.Small" OnClick="() => footerBoundary?.Recover()">Try again</BitButton>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="() => reportedCount++">
+                        Report (@reportedCount)
+                    </BitButton>
+                </Footer>
+            </BitErrorBoundary>
+        </DemoExample>
+
+        <DemoExample Title="Error template" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>ErrorTemplate</b> replaces the error UI outright and is handed a context carrying the exception
+                along with the boundary's own <b>Recover</b>, <b>Refresh</b> and <b>GoHome</b> actions, so a retry
+                button is one <b>@@context.Recover</b> away with no component reference to wire up. The inherited
+                <b>ErrorContent</b> template still works and receives the exception alone; where both are set,
+                <b>ErrorTemplate</b> wins.
+            </div>
+            <br />
+            <BitErrorBoundary>
+                <ChildContent>
+                    <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                </ChildContent>
+                <ErrorTemplate Context="error">
+                    <BitMessage Color="BitColor.Error" Multiline>
+                        <b>@error.Exception.Message</b>
+                        <br />
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="error.Recover">Try again</BitButton>
+                    </BitMessage>
+                </ErrorTemplate>
+            </BitErrorBoundary>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>OnError</b> runs before the error UI is rendered, which is where the exception is reported to
+                whatever collects them, and <b>OnRecover</b> runs on every route back out of the errored state - the
+                Recover button, the <b>Recover</b> method, <b>RecoverKeys</b> and <b>RecoverOnNavigation</b> alike. The
+                boundary also logs through the app's <b>IErrorBoundaryLogger</b>, exactly as Blazor's own boundary
+                does; <b>NoLogging</b> turns that off where <b>OnError</b> already reports the exception elsewhere.
+            </div>
+            <br />
+            <BitErrorBoundary OnError="HandleError" OnRecover="HandleRecover">
+                <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+            </BitErrorBoundary>
+            <br />
+            <div>Caught: @errorCount &nbsp;|&nbsp; Recovered: @recoverCount &nbsp;|&nbsp; Last: @(lastError ?? "-")</div>
+        </DemoExample>
+
+        <DemoExample Title="Capture" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
+            <div>
+                A boundary only ever sees what the renderer routes to it, which leaves out everything thrown where
+                nothing is awaiting it - a fire-and-forget task, a timer, a JS interop callback, an exception a page
+                caught itself and wants shown. <b>Capture</b> hands the boundary one of those and puts it into exactly
+                the state a caught exception would: logged, reported through <b>OnError</b>, counted against
+                <b>MaximumErrorCount</b> and rendered. Reach the boundary through <b>@@ref</b>, or - since it cascades
+                itself to its content - through a cascading parameter from anywhere inside it, which is the Blazor
+                counterpart of React's <b>showBoundary</b>. Use <b>CaptureAsync</b> off the renderer's thread.
+            </div>
+            <br />
+            <BitErrorBoundary @ref="captureBoundary" ShowException>
+                <BitButton OnClick="CaptureFromReference">Capture through @@ref</BitButton>
+                <_BitErrorBoundaryCaptureDemo />
+            </BitErrorBoundary>
+        </DemoExample>
+
+        <DemoExample Title="Recover keys" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                An errored boundary keeps showing its error UI until something clears it, and what makes the content
+                worth rendering again is usually a change somewhere else - a different record selected, a filter reset,
+                a retry counter bumped. List those values in <b>RecoverKeys</b> and the boundary recovers itself the
+                moment any of them differs from what it last saw, which is React's <b>resetKeys</b> without the
+                component reference.
+            </div>
+            <br />
+            <BitErrorBoundary RecoverKeys="@(new object?[] { selectedRecord })" HideRefreshButton HideHomeButton HideRecoverButton
+                              Title="This record could not be shown"
+                              Message="Pick another one and the boundary clears itself.">
+                <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+            </BitErrorBoundary>
+            <br />
+            <div class="example-content">
+                <BitButton Variant="BitVariant.Outline" OnClick="() => selectedRecord = 1">Record 1</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => selectedRecord = 2">Record 2</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => selectedRecord = 3">Record 3</BitButton>
+            </div>
+            <div>Selected record: @selectedRecord</div>
+        </DemoExample>
+
+        <DemoExample Title="Recover on navigation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                A boundary wrapping the body of a layout outlives the page that threw, so without help its error UI
+                stays on screen wherever the reader goes next. <b>RecoverOnNavigation</b> clears it on the next
+                location change, which is what makes a single app-wide boundary usable. A narrowly scoped boundary has
+                no use for it - it is torn down with the page it belongs to.
+            </div>
+            <br />
+            <BitErrorBoundary RecoverOnNavigation HideRefreshButton HideHomeButton HideRecoverButton
+                              Title="Something went wrong"
+                              Message="Navigate anywhere and this clears itself.">
+                <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+            </BitErrorBoundary>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="NavigateInPlace">Navigate</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                The icon also takes a <b>BitIconInfo</b>, which renders whatever CSS classes an external library needs.
+                Use the <b>Fa</b>, <b>Bi</b> and <b>Css</b> helpers, or pass the classes as a plain string.
+            </div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+            <div class="example-content">
+                <BitErrorBoundary Icon="@BitIconInfo.Fa("solid triangle-exclamation")" Title="FontAwesome">
+                    <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                </BitErrorBoundary>
+                <BitErrorBoundary Icon="@BitIconInfo.Bi("exclamation-octagon-fill")" Title="Bootstrap Icons">
+                    <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                </BitErrorBoundary>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root of the error UI, and <b>Styles</b> and <b>Classes</b>
+                reach each part of it by name - the icon, the title, the message, the exception block, the footer and
+                each of the three buttons. None of them touch the boundary's own content: while nothing has been
+                caught there is no element of the boundary's to style.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitErrorBoundary Title="Styles"
+                                  Message="Every part reached by name."
+                                  Styles="@(new() { Root = "background: linear-gradient(180deg, #7c1d1d, transparent) #240a0a; border-radius: 0.5rem",
+                                                    Title = "color: #ffd9d9",
+                                                    Message = "color: #ffb4b4",
+                                                    RecoverButton = new() { Root = "border-radius: 1rem" } })">
+                    <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                </BitErrorBoundary>
+                <BitErrorBoundary Title="Classes"
+                                  Message="Every part reached by name."
+                                  Classes="@(new() { Root = "custom-erb", Title = "custom-erb-ttl", RecoverButton = new() { Root = "custom-erb-btn" } })">
+                    <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                </BitErrorBoundary>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>Use BitErrorBoundary in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitErrorBoundary Dir="BitDir.Rtl"
+                                  Title="اوه، مشکلی پیش آمد..."
+                                  Message="لطفاً دوباره تلاش کنید یا به صفحه اصلی بازگردید."
+                                  HomeText="خانه"
+                                  RefreshText="بارگذاری مجدد"
+                                  RecoverText="تلاش دوباره"
+                                  HomeUrl="/components/errorboundary">
+                    <BitButton OnClick="ThrowException">ایجاد خطا</BitButton>
+                </BitErrorBoundary>
+            </div>
         </DemoExample>
     </Examples>
 </DemoPage>

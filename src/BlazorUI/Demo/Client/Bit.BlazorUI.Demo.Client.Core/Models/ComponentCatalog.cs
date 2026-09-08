@@ -472,7 +472,7 @@ public static class ComponentCatalog
         ["AppShell"] = "The cross-platform application container: safe areas, scroll state, chrome.",
         ["Chart"] = "A native Blazor charting component rendered entirely with SVG.",
         ["DataGrid"] = "An information-rich grid with sorting, filtering, paging and virtualization.",
-        ["ErrorBoundary"] = "Catches exceptions thrown by its children and renders a fallback.",
+        ["ErrorBoundary"] = "Catches exceptions thrown by its children and renders a recoverable fallback UI.",
         ["Flag"] = "Renders the flag of a country from its code.",
         ["FullCalendar"] = "A scheduler with day, week, month, year, agenda and resource views.",
         ["InfiniteScrolling"] = "Loads the next page of a list as the reader reaches the bottom.",

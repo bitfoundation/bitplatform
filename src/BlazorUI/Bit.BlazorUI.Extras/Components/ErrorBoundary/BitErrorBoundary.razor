@@ -3,7 +3,25 @@
 
 @if (CurrentException is null)
 {
-    @(Body ?? ChildContent)
+    @* The boundary cascades itself so that anything inside it can hand it an exception the renderer
+       never saw - the Blazor counterpart of react-error-boundary's useErrorBoundary/showBoundary.
+       Fixed, because the value is the component instance and never changes. *@
+    <CascadingValue TValue="BitErrorBoundary" Value="this" IsFixed="true">
+        @(Body ?? ChildContent)
+    </CascadingValue>
+
+    @* What Capture left behind, thrown from a child so that the renderer routes it back here as it
+       routes anything else the content throws. See _BitErrorBoundaryThrower. *@
+    var captured = TakeCapturedException();
+
+    if (captured is not null)
+    {
+        @RenderThrower(captured)
+    }
+}
+else if (ErrorTemplate is not null)
+{
+    @ErrorTemplate(_Context)
 }
 else if (ErrorContent is not null)
 {
@@ -11,20 +29,73 @@ else if (ErrorContent is not null)
 }
 else
 {
-    <div class="bit-erb">
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <path d="M30.268 3C31.0378 1.66666 32.9622 1.66667 33.7321 3L57.9808 45C58.7506 46.3333 57.7883 48 56.2487 48H7.75129C6.21169 48 5.24944 46.3333 6.01924 45L30.268 3Z" fill="#FFDAD4" />
-            <path d="M29.0025 24C29.0025 22.8954 29.8979 22 31.0025 22H32C33.1046 22 34 22.8954 34 24V32.5C34 33.6046 33.1046 34.5 32 34.5H31.0025C29.8979 34.5 29.0025 33.6046 29.0025 32.5V24ZM29 39C29 37.8954 29.8954 37 31 37H31.9975C33.1021 37 33.9975 37.8954 33.9975 39V40C33.9975 41.1046 33.1021 42 31.9975 42H31C29.8954 42 29 41.1046 29 40V39Z" fill="#A4262C" />
-        </svg>
+    @* An assertive live region with the alert role, so the error is read out where it appeared rather
+       than only seen: the content it replaced is gone and nothing else on the page says so.
+       An attribute written after the splat wins over the one the page passed in through HtmlAttributes,
+       so the accessibility attributes below read what came in with them and write it back rather than
+       their own value over it. The id and the dir are not among them: parameters are matched by name
+       without regard to case, so an id or a dir written as a plain attribute lands on the Id and the Dir
+       parameters and never reaches HtmlAttributes at all. *@
+    <div @attributes="HtmlAttributes"
+         id="@Id"
+         role="@(_Splat("role") ?? "alert")"
+         aria-live="@(_Splat("aria-live") ?? "assertive")"
+         aria-atomic="@(_Splat("aria-atomic") ?? "true")"
+         autofocus="@AutoFocus"
+         tabindex="@(_Splat("tabindex") ?? (AutoFocus ? "-1" : null))"
+         dir="@Dir?.ToString().ToLower()"
+         style="@_RootStyle"
+         class="@_RootClass">
+        @if (HideIcon is false)
+        {
+            if (IconTemplate is not null)
+            {
+                @IconTemplate
+            }
+            else if (_Icon is not null)
+            {
+                <i style="@Styles?.Icon" class="bit-erb-ico @_Icon.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
+            }
+            else
+            {
+                @* The two fills are the error color of the theme rather than two literals, so the
+                   illustration re-skins with everything else - and the pale one is the same color at a
+                   fraction of its alpha, which keeps the glyph readable on it in both schemes. *@
+                <svg style="@Styles?.Icon" class="bit-erb-svg @Classes?.Icon"
+                     width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true" focusable="false">
+                    <path class="bit-erb-svg-bg" d="M30.268 3C31.0378 1.66666 32.9622 1.66667 33.7321 3L57.9808 45C58.7506 46.3333 57.7883 48 56.2487 48H7.75129C6.21169 48 5.24944 46.3333 6.01924 45L30.268 3Z" />
+                    <path class="bit-erb-svg-fg" d="M29.0025 24C29.0025 22.8954 29.8979 22 31.0025 22H32C33.1046 22 34 22.8954 34 24V32.5C34 33.6046 33.1046 34.5 32 34.5H31.0025C29.8979 34.5 29.0025 33.6046 29.0025 32.5V24ZM29 39C29 37.8954 29.8954 37 31 37H31.9975C33.1021 37 33.9975 37.8954 33.9975 39V40C33.9975 41.1046 33.1021 42 31.9975 42H31C29.8954 42 29 41.1046 29 40V39Z" />
+                </svg>
+            }
+        }
 
-        <BitText Color="BitColor.Error" Typography="BitTypography.H3">
-            @(Title ?? "Oops, Something went wrong...")
-        </BitText>
+        @* An empty Title is how the heading is dropped altogether - a heading element with nothing in it
+           is a stop with nothing to read out, which is worse than no heading at all. *@
+        @if (_Title.HasValue())
+        {
+            <BitText Color="BitColor.Error"
+                     Typography="BitTypography.H3"
+                     Style="@Styles?.Title"
+                     Class="@($"bit-erb-ttl {Classes?.Title}")">
+                @_Title
+            </BitText>
+        }
+
+        @if (Message.HasValue())
+        {
+            <BitText Typography="BitTypography.Body1"
+                     Style="@Styles?.Message"
+                     Class="@($"bit-erb-msg {Classes?.Message}")">
+                @Message
+            </BitText>
+        }
 
         @if (ShowException)
         {
-            <div class="bit-erb-exp">
-                @CurrentException?.ToString()
+            @* A scrolling block is only reachable with a keyboard while something in it can take the
+               focus, and a stack trace holds nothing that can - so the block itself takes it. *@
+            <div style="@Styles?.Exception" class="bit-erb-exp @Classes?.Exception" tabindex="0">
+                @CurrentException.ToString()
             </div>
         }
 
@@ -32,12 +103,27 @@ else
         {
             @Footer
         }
-        else
+        else if (_HasFooter)
         {
-            <div class="bit-erb-ftr">
-                <BitButton OnClick="Refresh">@(RefreshText ?? "Refresh")</BitButton>
-                <BitButton OnClick="GoHome" Variant="BitVariant.Outline">@(HomeText ?? "Home")</BitButton>
-                <BitButton OnClick="Recover" Variant="BitVariant.Outline">@(RecoverText ?? "Recover")</BitButton>
+            <div style="@Styles?.Footer" class="bit-erb-ftr @Classes?.Footer">
+                @if (HideRefreshButton is false)
+                {
+                    <BitButton OnClick="Refresh" Styles="Styles?.RefreshButton" Classes="Classes?.RefreshButton">
+                        @(RefreshText ?? "Refresh")
+                    </BitButton>
+                }
+                @if (HideHomeButton is false)
+                {
+                    <BitButton OnClick="GoHome" Variant="BitVariant.Outline" Styles="Styles?.HomeButton" Classes="Classes?.HomeButton">
+                        @(HomeText ?? "Home")
+                    </BitButton>
+                }
+                @if (HideRecoverButton is false)
+                {
+                    <BitButton OnClick="HandleRecover" Variant="BitVariant.Outline" Styles="Styles?.RecoverButton" Classes="Classes?.RecoverButton">
+                        @(RecoverText ?? "Recover")
+                    </BitButton>
+                }
                 @if (AdditionalButtons is not null)
                 {
                     @AdditionalButtons
