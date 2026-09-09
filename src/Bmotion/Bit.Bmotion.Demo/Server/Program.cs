@@ -21,16 +21,10 @@ builder.Services.AddMcpServer()
     .WithResourcesFromAssembly()
     .WithPromptsFromAssembly();
 
-// The site is reached through a proxy that forwards over plain http. Without this, UseHttpsRedirection
-// below answers every request with a redirect to the url it already asked for, and the absolute urls the
-// endpoints build come out as http.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.All;
     options.ForwardedHostHeaderName = "X-Host";
-    // The proxy is not on loopback, so the default trust lists would ignore the headers outright. A
-    // ForwardLimit of 1 is what keeps a client's own entry unreachable, to the left of the one the
-    // front end appends.
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
     options.ForwardLimit = 1;

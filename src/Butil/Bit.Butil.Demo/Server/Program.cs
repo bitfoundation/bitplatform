@@ -101,16 +101,10 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddRequestTimeouts(options =>
     options.AddPolicy(StreamingPolicy, new RequestTimeoutPolicy { Timeout = TimeSpan.FromMinutes(5) }));
 
-// The site is reached through a proxy that forwards over plain http. Without this, UseHttpsRedirection
-// below answers every request with a redirect to the url it already asked for, and the absolute urls
-// Origin() builds for robots.txt, sitemap.xml and llms.txt come out as http.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.All;
     options.ForwardedHostHeaderName = "X-Host";
-    // The proxy is not on loopback, so the default trust lists would ignore the headers outright. A
-    // ForwardLimit of 1 is what keeps a client's own entry unreachable, to the left of the one the front
-    // end appends - which also decides the rate limiter's partition key above.
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
     options.ForwardLimit = 1;
