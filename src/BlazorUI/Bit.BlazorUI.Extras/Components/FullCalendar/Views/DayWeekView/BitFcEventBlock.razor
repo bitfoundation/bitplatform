@@ -25,12 +25,12 @@
     }
 }
 
-<div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses"
+<div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses @Event.CssClass"
      style="@blockStyle"
      title="@tooltip"
      role="button"
      tabindex="0"
-     draggable="@(State.ReadOnly ? "false" : "true")"
+     draggable="@(CanEdit ? "true" : "false")"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
@@ -38,7 +38,7 @@
      @onclick:stopPropagation="true"
      @onkeydown:stopPropagation="true">
 
-    @if (!State.ReadOnly)
+    @if (CanEdit)
     {
         <div id="@_topHandleId"
              class="bit-bfc-resize-handle bit-bfc-resize-handle-top"
@@ -69,7 +69,7 @@
         }
     }
 
-    @if (!State.ReadOnly)
+    @if (CanEdit)
     {
         <div id="@_bottomHandleId"
              class="bit-bfc-resize-handle bit-bfc-resize-handle-bottom"

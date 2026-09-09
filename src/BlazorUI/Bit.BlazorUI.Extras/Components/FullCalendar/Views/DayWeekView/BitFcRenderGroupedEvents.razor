@@ -9,7 +9,7 @@
 {
     @foreach (var ev in group)
     {
-        var style = BitFullCalendarHelpers.GetEventBlockStyle(ev, Day, groupIndex, GroupedEvents.Count);
+        var style = BitFullCalendarHelpers.GetEventBlockStyle(ev, Day, groupIndex, GroupedEvents.Count, State.VisibleStartHour);
 
         // Determine how many columns this event really needs. Counting every lane that touches ev
         // overcounts: lanes whose events are staggered (each overlaps ev but never coexist with one

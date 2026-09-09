@@ -1,3 +1,3 @@
 @namespace Bit.BlazorUI
 
-<button type="button" class="bit-bfc-btn bit-bfc-btn-sm" @onclick="State.GoToToday">@Texts.BitFcTodayButton</button>
+<button type="button" class="bit-bfc-btn bit-bfc-btn-sm" @onclick="State.GoToToday" disabled="@(State.IsDateInAllowedRange(DateTime.Today) is false)">@Texts.TodayButton</button>

@@ -3,7 +3,7 @@
 
 @*
   Timeline mode - Week view.
-  Resources × (7 days × 24 hours) hour-precision columns.
+  Resources × (visible days × visible hours) hour-precision columns.
   Two-row time header: top row spans each day, bottom row shows hourly slots.
 *@
 
@@ -14,8 +14,11 @@
     const int rowPadding = 4;
     const int minRowHeight = 60;
 
-    var weekStart = BitFullCalendarHelpers.StartOfWeek(State.SelectedDate, State.Culture);
-    var weekDays = Enumerable.Range(0, 7).Select(i => weekStart.AddDays(i)).ToArray();
+    var weekStart = BitFullCalendarHelpers.StartOfWeek(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
+    // Hidden weekdays are dropped from the axis, so a work-week timeline is as narrow as the grid.
+    var weekDays = BitFullCalendarHelpers.GetWeekDates(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
+    var visibleHours = State.VisibleHours.ToArray();
+    var hoursPerDay = visibleHours.Length;
 
     var resources = State.Resources;
     var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
@@ -50,7 +53,10 @@
     var hasUnassignedEvents = perDay.Any(m => m.TryGetValue(_unassignedKey, out var l) && l.Count > 0);
     var hasUnassigned = hasUnassignedEvents || resourceIds.Count == 0;
     var unassignedLaneCount = hasUnassigned ? LaneCountFor(_unassignedKey) : 1;
-    var totalColumns = 7 * 24;
+    var totalColumns = weekDays.Length * hoursPerDay;
+    // The rendered row and day order is what the roving tabindex walks.
+    _rowKeys = hasUnassigned ? [.. resourceIds, _unassignedKey] : [.. resourceIds];
+    _weekDays = weekDays;
 
     // Pick the day and hour cell that should be in view after render: today's day if it falls
     // inside the visible week, otherwise the first day. Within that day, the start-of-day hour.
@@ -71,17 +77,17 @@
             @foreach (var d in weekDays)
             {
                 var isToday = d.Date == DateTime.Today;
-                <div class="bit-bfc-tl-day-header @(isToday ? "today" : "")" style="width:@(24 * hourWidth)px;">
+                <div class="bit-bfc-tl-day-header @(isToday ? "today" : "")" style="width:@(hoursPerDay * hourWidth)px;">
                     <span class="bit-bfc-tl-day-header-name">@d.ToString("ddd", State.Culture)</span>
                     <span class="bit-bfc-tl-day-header-date">@d.ToString("M/d", State.Culture)</span>
                 </div>
             }
         </div>
         <div class="bit-bfc-tl-time-row bit-bfc-tl-time-row-slots">
-            @for (var di = 0; di < 7; di++)
+            @for (var di = 0; di < weekDays.Length; di++)
             {
                 var dayIndex = di;
-                @for (var h = 0; h < 24; h++)
+                @foreach (var h in visibleHours)
                 {
                     var hour = h;
                     var isScrollTarget = dayIndex == scrollDayIdx && hour == scrollHour;
@@ -94,51 +100,16 @@
     </HeaderContent>
 
     <RowContent Context="resource">
-        @{ var rowKey = resource.Id; var rowLabel = resource.Title; }
-        @for (var di = 0; di < 7; di++)
+        @for (var di = 0; di < weekDays.Length; di++)
         {
             var dayIndex = di;
             var day = weekDays[dayIndex];
-            var dayOffsetPx = dayIndex * 24 * hourWidth;
+            var dayOffsetPx = dayIndex * hoursPerDay * hourWidth;
             var dayMap = perDay[dayIndex];
 
-            @for (var h = 0; h < 24; h++)
-            {
-                var hour = h;
-                var leftPx = dayOffsetPx + (hour * hourWidth);
-                var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 0;
-                var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 30;
-                <div class="bit-bfc-tl-cell" style="inset-inline-start:@(leftPx)px;width:@(hourWidth)px;">
-                    <div class="bit-bfc-tl-cell-slot @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
-                         style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:50%;"
-                         role="@_slotRole"
-                         tabindex="@_slotTabIndex"
-                         aria-label="@SlotAriaLabel(rowLabel, day, hour, 0)"
-                         @ondragenter="() => OnDragEnter(rowKey, day, hour, 0)"
-                         @ondragover:preventDefault="true"
-                         @ondrop="() => OnDrop(rowKey, day, hour, 0)"
-                         @onclick="() => OnSlotClickAsync(rowKey, day, hour, 0)"
-                         @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 0)"></div>
-                    <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
-                         role="@_slotRole"
-                         tabindex="@_slotTabIndex"
-                         aria-label="@SlotAriaLabel(rowLabel, day, hour, 30)"
-                         @ondragenter="() => OnDragEnter(rowKey, day, hour, 30)"
-                         @ondragover:preventDefault="true"
-                         @ondrop="() => OnDrop(rowKey, day, hour, 30)"
-                         @onclick="() => OnSlotClickAsync(rowKey, day, hour, 30)"
-                         @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 30)"></div>
-                    @if (!State.ReadOnly)
-                    {
-                        <div class="bit-bfc-cell-add-hint" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            @Texts.AddEventHoverHint
-                        </div>
-                    }
-                </div>
-            }
+            @RowCells((resource.Id, resource.Title, day, dayOffsetPx))
 
-            @if (!string.IsNullOrEmpty(rowKey) && dayMap.TryGetValue(rowKey, out var lanes))
+            @if (!string.IsNullOrEmpty(resource.Id) && dayMap.TryGetValue(resource.Id, out var lanes))
             {
                 @RenderLanes(lanes, day, dayOffsetPx)
             }
@@ -146,44 +117,16 @@
     </RowContent>
 
     <UnassignedRowContent>
-        @{ var rowKey = _unassignedKey; var rowLabel = Texts.NoResourceLabel; }
-        @for (var di = 0; di < 7; di++)
+        @for (var di = 0; di < weekDays.Length; di++)
         {
             var dayIndex = di;
             var day = weekDays[dayIndex];
-            var dayOffsetPx = dayIndex * 24 * hourWidth;
+            var dayOffsetPx = dayIndex * hoursPerDay * hourWidth;
             var dayMap = perDay[dayIndex];
 
-            @for (var h = 0; h < 24; h++)
-            {
-                var hour = h;
-                var leftPx = dayOffsetPx + (hour * hourWidth);
-                var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 0;
-                var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 30;
-                <div class="bit-bfc-tl-cell" style="inset-inline-start:@(leftPx)px;width:@(hourWidth)px;">
-                    <div class="bit-bfc-tl-cell-slot @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
-                         style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:50%;"
-                         role="@_slotRole"
-                         tabindex="@_slotTabIndex"
-                         aria-label="@SlotAriaLabel(rowLabel, day, hour, 0)"
-                         @ondragenter="() => OnDragEnter(rowKey, day, hour, 0)"
-                         @ondragover:preventDefault="true"
-                         @ondrop="() => OnDrop(rowKey, day, hour, 0)"
-                         @onclick="() => OnSlotClickAsync(rowKey, day, hour, 0)"
-                         @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 0)"></div>
-                    <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
-                         role="@_slotRole"
-                         tabindex="@_slotTabIndex"
-                         aria-label="@SlotAriaLabel(rowLabel, day, hour, 30)"
-                         @ondragenter="() => OnDragEnter(rowKey, day, hour, 30)"
-                         @ondragover:preventDefault="true"
-                         @ondrop="() => OnDrop(rowKey, day, hour, 30)"
-                         @onclick="() => OnSlotClickAsync(rowKey, day, hour, 30)"
-                         @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 30)"></div>
-                </div>
-            }
+            @RowCells((_unassignedKey, Texts.NoResourceLabel, day, dayOffsetPx))
 
-            @if (!string.IsNullOrEmpty(rowKey) && dayMap.TryGetValue(rowKey, out var lanes))
+            @if (dayMap.TryGetValue(_unassignedKey, out var lanes))
             {
                 @RenderLanes(lanes, day, dayOffsetPx)
             }
@@ -201,3 +144,50 @@
     <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
 }
 
+@code {
+    // One day's worth of drop targets for a row. The resource rows and the trailing "unassigned"
+    // row draw the same cells, so they are written once and rendered with the row's key and label.
+    private RenderFragment<(string Key, string Label, DateTime Day, int DayOffsetPx)> RowCells => row =>
+        @<text>
+            @{
+                const int cellHourWidth = BitFullCalendarHelpers.TimelineHourWidthPx;
+                var inv = System.Globalization.CultureInfo.InvariantCulture;
+                var slots = State.SlotMinutes;
+                var slotWidthPercent = 100.0 / slots.Length;
+                var hours = State.VisibleHours.ToArray();
+            }
+            @for (var hi = 0; hi < hours.Length; hi++)
+            {
+                var hour = hours[hi];
+                var leftPx = row.DayOffsetPx + (hi * cellHourWidth);
+                <div class="bit-bfc-tl-cell" style="inset-inline-start:@(leftPx)px;width:@(cellHourWidth)px;">
+                    @for (var si = 0; si < slots.Length; si++)
+                    {
+                        var slotIndex = si;
+                        var minute = slots[si];
+                        var isPreview = State.IsDragging && _dragResourceId == row.Key && _dragDay == row.Day.Date && _dragHour == hour && _dragMinute == minute;
+                        var startPercent = (slotIndex * slotWidthPercent).ToString("F4", inv);
+                        var widthPercent = slotWidthPercent.ToString("F4", inv);
+                        <div class="@(slotIndex == 0 ? "bit-bfc-tl-cell-slot" : "bit-bfc-tl-cell-half") @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
+                             id="@SlotElementId(row.Key, row.Day, hour, minute)"
+                             style="position:absolute;top:0;bottom:0;inset-inline-start:@(startPercent)%;inset-inline-end:auto;width:@(widthPercent)%;"
+                             role="@_slotRole"
+                             tabindex="@SlotTabIndex(row.Key, row.Day, hour, minute)"
+                             aria-label="@SlotAriaLabel(row.Label, row.Day, hour, minute)"
+                             @ondragenter="() => OnDragEnter(row.Key, row.Day, hour, minute)"
+                             @ondragover:preventDefault="true"
+                             @ondrop="() => OnDrop(row.Key, row.Day, hour, minute)"
+                             @onclick="() => OnSlotClickAsync(row.Key, row.Day, hour, minute)"
+                             @onkeydown="e => OnSlotKeyDownAsync(e, row.Key, row.Day, hour, minute)"></div>
+                    }
+                    @if (!State.ReadOnly)
+                    {
+                        <div class="bit-bfc-cell-add-hint" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            @Texts.AddEventHoverHint
+                        </div>
+                    }
+                </div>
+            }
+        </text>;
+}

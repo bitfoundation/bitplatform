@@ -1,7 +1,9 @@
 @using System.Globalization
 @namespace Bit.BlazorUI
 
-<div class="bit-bfc-dtp" tabindex="-1" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
+@* Escape closes the picker's own popup first and stops there, so it never dismisses the dialog the
+   picker sits in while the popup is still open. *@
+<div class="bit-bfc-dtp" tabindex="-1" @onkeydown="OnKeyDown" @onkeydown:stopPropagation="_isOpen" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
     <button type="button" class="bit-bfc-dtp-trigger" @onclick="ToggleOpen" aria-expanded="@(_isOpen ? "true" : "false")" aria-label="@GetTriggerAriaLabel()">
         <span>@GetDisplayText()</span>
         <span class="bit-bfc-dtp-trigger-icon">&#9662;</span>

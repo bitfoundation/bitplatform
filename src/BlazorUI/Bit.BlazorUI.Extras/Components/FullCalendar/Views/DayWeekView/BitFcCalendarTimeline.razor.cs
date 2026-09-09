@@ -40,7 +40,9 @@ public partial class BitFcCalendarTimeline
 
     private void UpdatePosition()
     {
-        _positionPx = BitFullCalendarHelpers.GetCurrentTimeLineTopPx();
+        // Measured from the grid's first rendered hour, so a grid that starts at 08:00 puts the
+        // marker where the clock time actually falls instead of an hour-height per skipped hour off.
+        _positionPx = BitFullCalendarHelpers.GetCurrentTimeLineTopPx(State.VisibleStartHour);
     }
 
     public void Dispose()

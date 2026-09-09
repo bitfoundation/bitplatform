@@ -12,6 +12,18 @@ public partial class BitFcDayCell
     [Parameter] public Dictionary<string, int> EventPositions { get; set; } = new();
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
+    /// <summary>
+    /// True while this cell owns the month grid's single tab stop. The month view moves it with the
+    /// arrow keys so the grid never puts one stop in the tab order per day.
+    /// </summary>
+    [Parameter] public bool IsRovingCell { get; set; }
+
+    /// <summary>DOM id of the cell's add button, so the month view can move focus onto it.</summary>
+    [Parameter] public string? AddButtonId { get; set; }
+
+    /// <summary>Raised for every key pressed on the add button, together with this cell's date.</summary>
+    [Parameter] public EventCallback<(DateTime Date, KeyboardEventArgs Args)> OnCellKeyDown { get; set; }
+
     private bool _showEventList;
     private bool _showAddDialog;
     private DateTime _addDraftStart;
@@ -28,7 +40,12 @@ public partial class BitFcDayCell
     }
     private void CloseEventDetails() => _selectedEvent = null;
 
-    private async Task OnCellClick()    {
+    private async Task OnCellClick()
+    {
+        // A date outside the allowed window is not navigable, so the whole click is inert there.
+        if (State.IsDateInAllowedRange(Cell.Date) is false)
+            return;
+
         State.SetSelectedDate(Cell.Date);
 
         // Selecting the date above is navigation and stays available in read-only mode; only the
@@ -39,7 +56,8 @@ public partial class BitFcDayCell
         // Build the draft once and use it for both the external add handler and the built-in dialog
         // fallback so they always agree on the start date/time. Seed from the calendar's start-of-day
         // hour (matching the other month-view add entry points) instead of DateTime.Now.Hour.
-        var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(Cell.Date, State.StartOfDayHour);
+        var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
+            Cell.Date, State.StartOfDayHour, 0, State.SlotDurationMinutes);
 
         if (OnAddClick.HasDelegate)
         {
@@ -67,6 +85,15 @@ public partial class BitFcDayCell
 
     private async Task OnDrop()
     {
+        // Dropping onto a date the calendar cannot navigate to would move the event out of sight,
+        // so the gesture is dropped (and reported) instead of committed.
+        if (State.IsDateInAllowedRange(Cell.Date) is false)
+        {
+            State.EndDrag();
+            Notifier.ReportRefusal(BitFullCalendarChangeRefusal.OutOfRange);
+            return;
+        }
+
         await Notifier.HandleDropAsync(Cell.Date);
     }
 }

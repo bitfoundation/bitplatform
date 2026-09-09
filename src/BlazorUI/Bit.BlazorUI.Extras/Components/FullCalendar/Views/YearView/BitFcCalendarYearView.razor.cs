@@ -12,6 +12,9 @@ public partial class BitFcCalendarYearView
 
     private void GoToMonth(DateTime month)
     {
+        if (State.IsDateInAllowedRange(month) is false)
+            return;
+
         State.SetSelectedDate(month);
 
         // Drilling into a month is an indirect route to the month view; when the consumer excluded

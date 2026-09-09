@@ -28,6 +28,13 @@ public partial class BitFcEventListDialog : IAsyncDisposable
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
     }
 
+    private async Task OnDialogKeyDown(KeyboardEventArgs e)
+    {
+        // Escape is the standard way out of a modal. While the details overlay is open it owns the key.
+        if (e.Key is "Escape" or "Esc" && _showDetails is false)
+            await OnClose.InvokeAsync();
+    }
+
     private async Task SelectEvent(BitFullCalendarEvent ev)
     {
         if (OnEventClick.HasDelegate)

@@ -68,6 +68,14 @@ public partial class BitFcDateTimePicker : IDisposable
 
     private void ToggleOpen() => _isOpen = !_isOpen;
 
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        // Escape closes the popup rather than the surrounding dialog; the markup stops the event
+        // there while the popup is open so the two do not close together.
+        if (_isOpen && e.Key is "Escape" or "Esc")
+            _isOpen = false;
+    }
+
     private void ShowPreviousMonth()
     {
         _visibleMonthAnchor = GetFirstDayOfMonth(ActiveCalendar.AddMonths(_visibleMonthAnchor, -1));

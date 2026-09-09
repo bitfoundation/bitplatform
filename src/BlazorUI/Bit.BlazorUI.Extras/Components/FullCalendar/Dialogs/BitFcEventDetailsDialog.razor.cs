@@ -20,6 +20,27 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     private ElementReference _dialogRef;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
 
+    /// <summary>
+    /// True while the edit and delete actions are offered: the calendar has to be editable AND the
+    /// event itself must not be locked with <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// </summary>
+    private bool CanEdit => State.ReadOnly is false && Event.IsReadOnly is false;
+
+    /// <summary>Display name of the assigned resource, or the "unassigned" label when there is none.</summary>
+    private string ResourceTitle
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Event.Resource))
+                return Texts.NoResourceLabel;
+
+            var match = State.Resources.FirstOrDefault(r => string.Equals(r.Id, Event.Resource, StringComparison.Ordinal));
+            // An id with no matching resource is still worth showing verbatim - it is what the event
+            // actually carries, and hiding it would make a stale assignment invisible.
+            return match is null || string.IsNullOrWhiteSpace(match.Title) ? Event.Resource! : match.Title;
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // Move focus into the dialog and trap Tab navigation once it has rendered; teardown in
@@ -28,9 +49,17 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
     }
 
+    private async Task OnDialogKeyDown(KeyboardEventArgs e)
+    {
+        // Escape is the standard way out of a modal. While the edit overlay is open it owns the key,
+        // and a delete in flight is left alone so the dialog can't close mid-commit.
+        if (e.Key is "Escape" or "Esc" && _showEdit is false && _isDeleting is false)
+            await OnClose.InvokeAsync();
+    }
+
     private void Edit()
     {
-        if (State.ReadOnly)
+        if (CanEdit is false)
             return;
 
         _showEdit = true;
@@ -51,7 +80,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
     private async Task Delete()
     {
-        if (State.ReadOnly)
+        if (CanEdit is false)
             return;
 
         // Guard against double invocation (rapid clicks / Enter while the async work is in flight):

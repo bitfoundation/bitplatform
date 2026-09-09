@@ -1,23 +1,31 @@
 @namespace Bit.BlazorUI
+@inject IJSRuntime JS
 
 @{
-    var cells = BitFullCalendarHelpers.GetCalendarCells(_displayMonth, State.Culture);
+    var cells = BitFullCalendarHelpers.GetCalendarCells(_displayMonth, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
+    // The cell list and the column count are what the roving tabindex walks.
+    _cells = cells;
+    var columns = State.VisibleWeekDayCount;
     var miniCal = State.Culture.Calendar;
     var miniDtf = State.Culture.DateTimeFormat;
     int miniYear = miniCal.GetYear(_displayMonth);
     int miniMonth = miniCal.GetMonth(_displayMonth);
     string miniTitle = $"{miniDtf.GetMonthName(miniMonth)} {miniYear}";
-    var miniHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
+    var miniHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
+    var rows = columns > 0 ? cells.Count / columns : 0;
+    _columnCount = columns;
 }
 
 <div class="bit-bfc-mini-calendar">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        @* The chevrons point at the previous/next month, which swaps sides in a right-to-left
+           layout - the same flip the header's date navigator applies. *@
         <button type="button" class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm bit-bfc-btn-nav" @onclick="PrevMonth" aria-label="@Texts.PreviousMonthAriaLabel">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="@(State.IsRtl ? "9 18 15 12 9 6" : "15 18 9 12 15 6")"/></svg>
         </button>
         <span style="font-size:13px;font-weight:600;">@miniTitle</span>
         <button type="button" class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm bit-bfc-btn-nav" @onclick="NextMonth" aria-label="@Texts.NextMonthAriaLabel">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="@(State.IsRtl ? "15 18 9 12 15 6" : "9 18 15 12 9 6")"/></svg>
         </button>
     </div>
     <table>
@@ -30,19 +38,28 @@
             </tr>
         </thead>
         <tbody>
-            @for (int row = 0; row < cells.Count / 7; row++)
+            @for (int row = 0; row < rows; row++)
             {
                 <tr>
-                    @for (int col = 0; col < 7; col++)
+                    @for (int col = 0; col < columns; col++)
                     {
-                        var cell = cells[row * 7 + col];
+                        var cell = cells[row * columns + col];
                         var isToday = cell.Date.Date == DateTime.Today;
                         var isSelected = cell.Date.Date == State.SelectedDate.Date;
+                        var isOutOfRange = State.IsDateInAllowedRange(cell.Date) is false;
                         var cls = !cell.CurrentMonth
                             ? "other-month"
                             : $"{(isToday ? "today" : "")} {(isSelected ? "selected" : "")}".Trim();
                         <td>
-                            <button type="button" class="bit-bfc-mini-calendar-day @cls" aria-label="@cell.Date.ToString("D", State.Culture)" @onclick="() => SelectDate(cell.Date)">
+                            @* Roving tabindex: the mini calendar is a single tab stop the arrow keys
+                               walk, rather than one stop per day. *@
+                            <button type="button" class="bit-bfc-mini-calendar-day @cls"
+                                    id="@DayButtonId(cell.Date)"
+                                    tabindex="@(RovingDate == cell.Date.Date ? "0" : "-1")"
+                                    aria-label="@cell.Date.ToString("D", State.Culture)"
+                                    disabled="@isOutOfRange"
+                                    @onkeydown="args => OnDayKeyDown(cell.Date, args)"
+                                    @onclick="() => SelectDate(cell.Date)">
                                 @cell.Day
                             </button>
                         </td>
@@ -52,4 +69,3 @@
         </tbody>
     </table>
 </div>
-

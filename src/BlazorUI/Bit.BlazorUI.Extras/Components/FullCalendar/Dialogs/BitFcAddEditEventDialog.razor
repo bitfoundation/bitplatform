@@ -1,7 +1,10 @@
 @namespace Bit.BlazorUI
 
 <div class="bit-bfc-overlay" @onclick="OnClose">
-    <div @ref="_dialogRef" class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" @onclick:stopPropagation="true">
+    @* Escape dismisses the dialog, the way every modal is expected to behave; the handler sits on
+       the dialog because focus is trapped inside it while it is open. *@
+    <div @ref="_dialogRef" class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1"
+         @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
             <div>
                 <h3 id="@_dialogTitleId">@(_isEditing ? Texts.EditEventDialogTitle : Texts.AddEventDialogTitle)</h3>
@@ -19,6 +22,13 @@
                 {
                     <div class="bit-bfc-field-error">@_errors["title"]</div>
                 }
+            </div>
+
+            <div class="bit-bfc-field">
+                <label class="bit-bfc-field-inline">
+                    <input type="checkbox" checked="@_isAllDay" @onchange="OnAllDayChanged" />
+                    <span>@Texts.AllDayLabel</span>
+                </label>
             </div>
 
             <div class="bit-bfc-field">
@@ -50,6 +60,22 @@
                     }
                 </select>
             </div>
+
+            @* The resource picker is only meaningful when the calendar was given resources to
+               assign to, so it stays out of the form entirely otherwise. *@
+            @if (State.Resources.Count > 0)
+            {
+                <div class="bit-bfc-field">
+                    <label for="@_resourceSelectId">@Texts.ResourceLabel</label>
+                    <select id="@_resourceSelectId" @bind="_resource" aria-label="@Texts.ResourceLabel">
+                        <option value="">@Texts.NoResourceOption</option>
+                        @foreach (var resource in State.Resources)
+                        {
+                            <option value="@resource.Id">@resource.Title</option>
+                        }
+                    </select>
+                </div>
+            }
 
             <div class="bit-bfc-field">
                 <label for="@_descriptionInputId">@Texts.DescriptionLabel</label>
@@ -91,6 +117,10 @@
             </div>
         </div>
         <div class="bit-bfc-dialog-footer">
+            @if (_errors.ContainsKey("overlap"))
+            {
+                <div class="bit-bfc-field-error" role="alert">@_errors["overlap"]</div>
+            }
             <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CancelButton</button>
             <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Submit" disabled="@_isSubmitting">
                 @(_isEditing ? Texts.SaveChangesButton : Texts.CreateEventButton)

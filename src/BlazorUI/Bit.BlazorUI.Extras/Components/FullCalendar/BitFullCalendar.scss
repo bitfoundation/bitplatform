@@ -25,6 +25,11 @@
     --bit-bfc-shadow: #{$box-shadow-sm};
     --bit-bfc-shadow-lg: #{$box-shadow-md};
     --bit-bfc-hour-height: 96px;
+    /* Number of hour rows the time grids render. The day/week views override it per grid so a
+       narrowed visible-hour window is exactly as tall as the hours it shows. */
+    --bit-bfc-visible-hours: 24;
+    /* Width of the leading week-number rail in the month grid and the week view's time gutter. */
+    --bit-bfc-weeknum-width: 34px;
     --bit-bfc-height: 600px;
     --bit-bfc-timeline-color: #{$clr-err};
     --bit-bfc-resize-ring: color-mix(in srgb, #{$clr-pri} 65%, transparent);
@@ -216,11 +221,60 @@
     overflow-y: auto;
 }
 
+/* The column template is written inline by the month view: the number of columns follows the
+   hidden-day set, and the leading week-number rail adds one more when it is enabled. */
 .bit-bfc-month-header {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     flex-shrink: 0;
+}
+
+/* ===== Week numbers ===== */
+.bit-bfc-weeknum-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: rem2(11px);
+    font-weight: $tg-fw-semibold;
+    color: var(--bit-bfc-text-muted);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    background: var(--bit-bfc-bg-secondary);
+    user-select: none;
+}
+
+/* In the week view the number sits inside the existing time gutter, which already draws the
+   separating borders, so the cell only has to fill it. */
+.bit-bfc-week-header-time .bit-bfc-weeknum-cell {
+    border: none;
+    background: none;
+    height: 100%;
+}
+
+.bit-bfc-weeknum-header {
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
+}
+
+/* A date outside the MinDate/MaxDate window is dimmed to say it cannot be scheduled on. The cell
+   still takes pointer events: the add and drop paths refuse it in code, while the events already
+   sitting on it stay readable and clickable. */
+.bit-bfc-out-of-range {
+    opacity: $opa-dis;
+    cursor: default;
+}
+
+/* An all-day badge reads as a solid band rather than a timed chip. */
+.bit-bfc-event-allday {
+    font-weight: $tg-fw-semibold;
+}
+
+/* Checkbox + label pair inside a dialog field (the all-day switch). */
+.bit-bfc-field-inline {
+    display: flex;
+    align-items: center;
+    gap: spacing(1);
+    cursor: pointer;
 }
 
 .bit-bfc-month-header-cell {
@@ -446,7 +500,7 @@
 .bit-bfc-timegrid {
     flex: 1;
     position: relative;
-    min-height: calc(24 * var(--bit-bfc-hour-height));
+    min-height: calc(var(--bit-bfc-visible-hours, 24) * var(--bit-bfc-hour-height));
 }
 
 .bit-bfc-timegrid-day {
@@ -458,7 +512,7 @@
     display: flex;
     flex: 1;
     position: relative;
-    min-height: calc(24 * var(--bit-bfc-hour-height));
+    min-height: calc(var(--bit-bfc-visible-hours, 24) * var(--bit-bfc-hour-height));
 }
 
 .bit-bfc-hour-row {
@@ -892,7 +946,7 @@
     flex: 1;
     position: relative;
     border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    min-height: calc(24 * var(--bit-bfc-hour-height));
+    min-height: calc(var(--bit-bfc-visible-hours, 24) * var(--bit-bfc-hour-height));
     overflow: hidden;
 }
 
@@ -1989,6 +2043,25 @@ button.bit-bfc-cell-add-hint {
 .bit-bfc-month-cell:focus-within .bit-bfc-cell-add-hint,
 button.bit-bfc-cell-add-hint:focus-visible {
     opacity: 1;
+}
+
+/* The slots covered by an in-progress range selection (press and drag across the time grid). */
+.bit-bfc-slot-selected {
+    background: color-mix(in srgb, var(--bit-bfc-primary) 22%, transparent);
+    opacity: 1;
+}
+
+/* The time-grid and timeline slots are the keyboard's way into the grid (one roving tab stop per
+   grid, moved with the arrow keys), so the focused one has to be visible on its own. */
+.bit-bfc-hour-slot:focus-visible,
+.bit-bfc-hour-row-half:focus-visible,
+.bit-bfc-tl-cell-slot:focus-visible,
+.bit-bfc-tl-cell-half:focus-visible {
+    outline: $shp-border-width-thick $shp-border-style var(--bit-bfc-primary);
+    outline-offset: -2px;
+    background: var(--bit-bfc-resize-glow);
+    opacity: 1;
+    z-index: 4;
 }
 
 .bit-bfc-cell-add-hint-month {

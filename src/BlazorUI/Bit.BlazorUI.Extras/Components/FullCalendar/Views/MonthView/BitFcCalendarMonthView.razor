@@ -1,24 +1,53 @@
 @namespace Bit.BlazorUI
+@inject IJSRuntime JS
 
 @{
-    var cells = BitFullCalendarHelpers.GetCalendarCells(State.SelectedDate, State.Culture);
+    var cells = BitFullCalendarHelpers.GetCalendarCells(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
     var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
-    var eventPositions = BitFullCalendarHelpers.CalculateMonthEventPositions(MultiDayEvents, SingleDayEvents, State.SelectedDate, State.Culture);
-    var weekDayHeaders = BitFullCalendarHelpers.GetWeekDayHeaders(State.Culture);
+    var eventPositions = BitFullCalendarHelpers.CalculateMonthEventPositions(MultiDayEvents, SingleDayEvents, State.SelectedDate, State.Culture, State.MaxEventsPerDayCell);
+    var weekDayHeaders = BitFullCalendarHelpers.GetWeekDayHeaders(State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
+    var columnCount = State.VisibleWeekDayCount;
+    // The week-number rail is one extra leading column, so both the header and the grid have to
+    // declare the same template for the two to stay aligned.
+    var gridTemplate = State.ShowWeekNumbers
+        ? $"grid-template-columns:var(--bit-bfc-weeknum-width) repeat({columnCount}, minmax(0, 1fr));"
+        : $"grid-template-columns:repeat({columnCount}, minmax(0, 1fr));";
+    // The cell list is what the roving tabindex walks, so it is captured for the key handler.
+    _cells = cells;
+    _columnCount = columnCount;
 }
 
 <div class="bit-bfc-month">
-    <div class="bit-bfc-month-header">
+    <div class="bit-bfc-month-header" style="@gridTemplate">
+        @if (State.ShowWeekNumbers)
+        {
+            <div class="bit-bfc-month-header-cell bit-bfc-weeknum-header" aria-hidden="true"></div>
+        }
         @foreach (var day in weekDayHeaders)
         {
             <div class="bit-bfc-month-header-cell">@day</div>
         }
     </div>
 
-    <div class="bit-bfc-month-grid">
-        @foreach (var cell in cells)
+    <div class="bit-bfc-month-grid" style="@gridTemplate">
+        @for (var i = 0; i < cells.Count; i++)
         {
-            <BitFcDayCell @key="cell.Date" Cell="cell" Events="allEvents" EventPositions="eventPositions" EventTemplate="EventTemplate" />
+            var cell = cells[i];
+            @if (State.ShowWeekNumbers && i % columnCount == 0)
+            {
+                var weekNumber = BitFullCalendarHelpers.GetWeekNumber(cell.Date);
+                <div class="bit-bfc-weeknum-cell" aria-label="@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)">
+                    @string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)
+                </div>
+            }
+            <BitFcDayCell @key="cell.Date"
+                          Cell="cell"
+                          Events="allEvents"
+                          EventPositions="eventPositions"
+                          EventTemplate="EventTemplate"
+                          IsRovingCell="@(RovingDate == cell.Date.Date)"
+                          AddButtonId="@CellButtonId(cell.Date)"
+                          OnCellKeyDown="OnCellKeyDown" />
         }
     </div>
 </div>

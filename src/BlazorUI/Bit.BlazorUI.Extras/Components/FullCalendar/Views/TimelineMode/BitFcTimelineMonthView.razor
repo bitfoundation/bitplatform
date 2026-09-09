@@ -15,15 +15,11 @@
     const int minRowHeight = 60;
 
     var culture = State.Culture;
-    var cal = culture.Calendar;
-    // Capture the era from the selected date and pass it explicitly so multi-era calendars (e.g. the
-    // Japanese calendar) resolve the year/month/days against the date's own era instead of falling
-    // back to CurrentEra, which would mis-handle a SelectedDate from a previous era.
-    var era = cal.GetEra(State.SelectedDate);
-    var year = cal.GetYear(State.SelectedDate);
-    var month = cal.GetMonth(State.SelectedDate);
-    var monthStart = cal.ToDateTime(year, month, 1, 0, 0, 0, 0, era);
-    var daysInMonth = cal.GetDaysInMonth(year, month, era);
+    // Era-safe month anchors: the month is walked from the selected date itself rather than rebuilt
+    // from its year/month numbers, which resolve against the current era on multi-era calendars
+    // (e.g. the Japanese one) and would mis-handle a SelectedDate from a previous era.
+    var monthStart = BitFullCalendarHelpers.StartOfCulturalMonth(State.SelectedDate, culture);
+    var daysInMonth = (int)(BitFullCalendarHelpers.EndOfCulturalMonth(State.SelectedDate, culture).Date - monthStart.Date).TotalDays + 1;
     var monthDays = Enumerable.Range(0, daysInMonth).Select(i => monthStart.AddDays(i)).ToArray();
 
     var resources = State.Resources;
@@ -48,6 +44,9 @@
     var hasUnassignedEvents = perResource.TryGetValue(_unassignedKey, out var u) && u.Count > 0;
     var hasUnassigned = hasUnassignedEvents || resourceIds.Count == 0;
     var unassignedLaneCount = hasUnassignedEvents ? perResource[_unassignedKey].Count : 1;
+    // The rendered row and day order is what the roving tabindex walks.
+    _rowKeys = hasUnassigned ? [.. resourceIds, _unassignedKey] : [.. resourceIds];
+    _monthDays = monthDays;
 
     // If today falls inside the active month, scroll horizontally to today's day cell.
     var todayIdx = Array.FindIndex(monthDays, d => d.Date == DateTime.Today);
@@ -86,9 +85,10 @@
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
             <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
-                 style="left:@(leftPx)px;width:@(dayWidth)px;"
+                 id="@SlotElementId(rowKey, day)"
+                 style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
-                 tabindex="@_slotTabIndex"
+                 tabindex="@SlotTabIndex(rowKey, day)"
                  aria-label="@SlotAriaLabel(day, resource.Title)"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
                  @ondragover:preventDefault="true"
@@ -120,9 +120,10 @@
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
             <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
-                 style="left:@(leftPx)px;width:@(dayWidth)px;"
+                 id="@SlotElementId(rowKey, day)"
+                 style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
-                 tabindex="@_slotTabIndex"
+                 tabindex="@SlotTabIndex(rowKey, day)"
                  aria-label="@SlotAriaLabel(day, Texts.NoResourceLabel)"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
                  @ondragover:preventDefault="true"

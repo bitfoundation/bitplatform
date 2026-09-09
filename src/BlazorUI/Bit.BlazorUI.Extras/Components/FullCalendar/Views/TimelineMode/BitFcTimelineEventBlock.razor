@@ -33,15 +33,19 @@
             resizeClasses += $" bit-bfc-resize-dir-{_resizeDirection}";
     }
 
-    var blockStyle = $"{colorStyleVar}{widthOverride}transform:translateX({translateXPx.ToString("F2", inv)}px);";
-    var canResize = PixelsPerMinute > 0 && !State.ReadOnly;
+    // Blocks are anchored with inset-inline-start, so "later in time" runs toward the inline end -
+    // which is leftwards in a right-to-left layout. The live preview therefore has to translate the
+    // opposite way there, or it would slide away from the edge the pointer is dragging.
+    var directionSign = State.IsRtl ? -1 : 1;
+    var blockStyle = $"{colorStyleVar}{widthOverride}transform:translateX({(translateXPx * directionSign).ToString("F2", inv)}px);";
+    var canResize = PixelsPerMinute > 0 && CanEdit;
 }
 
-<div class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses"
+<div class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses @Event.CssClass"
      style="@blockStyle"
      role="button"
      tabindex="0"
-     draggable="@(State.ReadOnly ? "false" : "true")"
+     draggable="@(CanEdit ? "true" : "false")"
      title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture)"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
@@ -73,7 +77,16 @@
             <span class="bit-bfc-timeline-event-title">@Event.Title</span>
         </div>
         <div class="bit-bfc-timeline-event-time">
-            @BitFullCalendarHelpers.FormatTime(displayStart, State.Use24HourFormat, State.Culture) - @BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)
+            @if (Event.IsAllDay)
+            {
+                @Texts.AllDayLabel
+            }
+            else
+            {
+                @BitFullCalendarHelpers.FormatTime(displayStart, State.Use24HourFormat, State.Culture)
+                <span> - </span>
+                @BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)
+            }
         </div>
     }
 

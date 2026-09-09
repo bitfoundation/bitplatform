@@ -15,6 +15,13 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     [Parameter] public DateTime? StartDate { get; set; }
     [Parameter] public int? StartHour { get; set; }
     [Parameter] public int? StartMinute { get; set; }
+
+    /// <summary>
+    /// Length of the draft event in minutes. Supplied when the user selected a range on the time
+    /// grid; without it a new event lasts one slot.
+    /// </summary>
+    [Parameter] public int? DurationMinutes { get; set; }
+
     [Parameter] public string? Resource { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSaved { get; set; }
@@ -24,6 +31,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private readonly string _dialogTitleId = $"bfc-dlg-title-{Guid.NewGuid():N}";
     private readonly string _titleInputId = $"bfc-title-{Guid.NewGuid():N}";
     private readonly string _colorSelectId = $"bfc-color-{Guid.NewGuid():N}";
+    private readonly string _resourceSelectId = $"bfc-resource-{Guid.NewGuid():N}";
     private readonly string _descriptionInputId = $"bfc-desc-{Guid.NewGuid():N}";
 
     private ElementReference _dialogRef;
@@ -35,6 +43,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private DateTime _startDate;
     private DateTime _endDate;
     private string _color = BitFullCalendarColorScheme.FallbackColorId;
+    private string _resource = string.Empty;
+    private bool _isAllDay;
     private List<BitFullCalendarAttendee> _attendees = [];
     private string _newFirstName = "";
     private string _newLastName = "";
@@ -47,6 +57,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private DateTime _lastSelectedDate;
     private int? _lastStartHour;
     private int? _lastStartMinute;
+    private int? _lastDurationMinutes;
     private string? _lastResource;
 
     protected override void OnInitialized() => State.OnStateChanged += HandleStateChanged;
@@ -81,6 +92,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             || selectedDateChanged
             || _lastStartHour != StartHour
             || _lastStartMinute != StartMinute
+            || _lastDurationMinutes != DurationMinutes
             || _lastResource != Resource;
 
         if (!parametersChanged)
@@ -92,6 +104,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         _lastSelectedDate = State.SelectedDate;
         _lastStartHour = StartHour;
         _lastStartMinute = StartMinute;
+        _lastDurationMinutes = DurationMinutes;
         _lastResource = Resource;
 
         // Clear transient editing state so a reused dialog instance doesn't carry over stale
@@ -113,6 +126,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _startDate = ExistingEvent.StartDate;
             _endDate = ExistingEvent.EndDate;
             _color = string.IsNullOrWhiteSpace(ExistingEvent.Color) ? defaultColor : ExistingEvent.Color;
+            _resource = ExistingEvent.Resource ?? string.Empty;
+            _isAllDay = ExistingEvent.IsAllDay;
             _attendees = [.. ExistingEvent.Attendees];
         }
         else
@@ -120,10 +135,41 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _title = "";
             _description = "";
             _color = defaultColor;
+            _resource = Resource ?? string.Empty;
+            _isAllDay = false;
             _attendees = [];
             var baseDate = StartDate ?? State.SelectedDate;
-            _startDate = baseDate.Date.AddHours(StartHour ?? DateTime.Now.Hour).AddMinutes(StartMinute ?? 0);
-            _endDate = _startDate.AddMinutes(30);
+            // With no slot to seed from, the draft opens at the calendar's start-of-day hour - the
+            // same hour the external OnAddClick draft carries - rather than at the wall-clock hour,
+            // which has nothing to do with the day being scheduled.
+            _startDate = baseDate.Date.AddHours(StartHour ?? State.StartOfDayHour).AddMinutes(StartMinute ?? 0);
+            // A range the user selected on the grid decides the length; without one a new event
+            // lasts a single slot, so a 15-minute grid creates 15-minute events.
+            _endDate = _startDate.AddMinutes(Math.Max(1, DurationMinutes ?? State.SlotDurationMinutes));
+        }
+    }
+
+    /// <summary>
+    /// Turning "all day" on snaps the range onto whole-day boundaries so the saved event covers the
+    /// dates it says it does; turning it off restores a working time range inside the same day.
+    /// </summary>
+    private void OnAllDayChanged(ChangeEventArgs e)
+    {
+        _isAllDay = e.Value is bool value && value;
+
+        if (_isAllDay)
+        {
+            var start = _startDate.Date;
+            // The end is exclusive midnight of the last covered day, matching how the rest of the
+            // calendar reads a 00:00 end (GetInclusiveEndDate).
+            var end = (_endDate > _startDate ? _endDate : _startDate).Date.AddDays(1);
+            _startDate = start;
+            _endDate = end;
+        }
+        else if (_endDate <= _startDate.Date.AddMinutes(Math.Max(1, State.SlotDurationMinutes)))
+        {
+            _startDate = _startDate.Date.AddHours(State.StartOfDayHour);
+            _endDate = _startDate.AddMinutes(Math.Max(1, State.SlotDurationMinutes));
         }
     }
 
@@ -160,6 +206,14 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     private void RemoveAttendee(BitFullCalendarAttendee attendee) => _attendees.Remove(attendee);
 
+    private async Task OnDialogKeyDown(KeyboardEventArgs e)
+    {
+        // Escape is the standard way out of a modal. A save in flight is left alone so the dialog
+        // can't be dismissed out from under the change it is committing.
+        if (e.Key is "Escape" or "Esc" && _isSubmitting is false)
+            await OnClose.InvokeAsync();
+    }
+
     private Task OnStartDateChanged(DateTime value)
     {
         _startDate = value;
@@ -186,10 +240,24 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         _errors.Clear();
         if (string.IsNullOrWhiteSpace(_title))
             _errors["title"] = Texts.ValidationTitleRequired;
-        if (string.IsNullOrWhiteSpace(_description))
+        // A description is optional unless the consumer asked for it (Settings.RequireEventDescription).
+        if (State.RequireEventDescription && string.IsNullOrWhiteSpace(_description))
             _errors["description"] = Texts.ValidationDescriptionRequired;
         if (_endDate <= _startDate)
             _errors["endDate"] = Texts.ValidationEndAfterStart;
+        // An event outside the window the calendar may navigate to could never be reached again, so
+        // the save is refused for the same reason a drop onto such a date is.
+        else if (State.IsDateInAllowedRange(_startDate) is false
+                 || State.IsDateInAllowedRange(BitFullCalendarHelpers.GetInclusiveEndDate(
+                        new BitFullCalendarEvent { StartDate = _startDate, EndDate = _endDate })) is false)
+            _errors["endDate"] = Texts.OutOfRangeMessage;
+
+        var resourceId = string.IsNullOrWhiteSpace(_resource) ? null : _resource;
+        var editingId = _isEditing ? ExistingEvent!.Id : string.Empty;
+        // A calendar that disallows double booking refuses the save the same way it refuses a drop
+        // or a resize, and says so next to the action instead of silently creating the conflict.
+        if (_errors.Count == 0 && State.IsRangeAvailable(editingId, _startDate, _endDate, resourceId) is false)
+            _errors["overlap"] = Texts.EventOverlapMessage;
 
         if (_errors.Count > 0) return;
 
@@ -208,9 +276,14 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
                 StartDate = _startDate,
                 EndDate = _endDate,
                 Color = _color,
-                Resource = _isEditing ? ExistingEvent!.Resource : Resource,
+                Resource = resourceId,
                 Data = _isEditing ? ExistingEvent!.Data : null,
-                Attendees = [.. _attendees]
+                Attendees = [.. _attendees],
+                IsAllDay = _isAllDay,
+                IsReadOnly = _isEditing && ExistingEvent!.IsReadOnly,
+                CssClass = _isEditing ? ExistingEvent!.CssClass : null,
+                // The repeat rule is not editable in this dialog, so an edited series keeps its own.
+                Recurrence = _isEditing ? ExistingEvent!.Recurrence : null
             };
 
             if (_isEditing)

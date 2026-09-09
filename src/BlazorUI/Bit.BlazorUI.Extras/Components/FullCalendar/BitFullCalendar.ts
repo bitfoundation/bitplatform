@@ -334,6 +334,35 @@ namespace BitBlazorUI {
         }
 
         /**
+         * Moves DOM focus onto the element with the supplied id, scrolling it into view inside its
+         * own scroller. The date grids use a roving tabindex: only one cell is in the tab order at a
+         * time and the arrow keys move both the tabbable cell and the focus, which is what this call
+         * carries out after the re-render. Returns false when the element is no longer there.
+         */
+        public static focusElement(elementId: string): boolean {
+            const el = document.getElementById(elementId);
+            if (!el) return false;
+
+            // preventScroll keeps the browser from yanking the page; the explicit scrollIntoView
+            // below only nudges the nearest scrollable ancestor, which is the grid itself.
+            try {
+                el.focus({ preventScroll: true });
+            } catch {
+                el.focus();
+            }
+
+            if (typeof el.scrollIntoView === "function") {
+                try {
+                    el.scrollIntoView({ block: "nearest", inline: "nearest" });
+                } catch {
+                    /* older browsers ignore the options object; the focus above is enough */
+                }
+            }
+
+            return true;
+        }
+
+        /**
          * Focus management for the calendar's modal dialogs. Stores the element that was focused
          * before the dialog opened, moves focus into the dialog, and keeps Tab/Shift+Tab navigation
          * contained within it. Pair every setupDialog call with teardownDialog so focus is restored

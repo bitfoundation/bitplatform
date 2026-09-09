@@ -11,7 +11,21 @@ public class BitFullCalendarTexts
     public string ModeEvent { get; set; } = "Events";
     public string ModeTimeline { get; set; } = "Timeline";
 
-    public string BitFcTodayButton { get; set; } = "Today";
+    /// <summary>Label of the "today" navigation button.</summary>
+    public string TodayButton { get; set; } = "Today";
+
+    /// <summary>
+    /// Obsolete alias of <see cref="TodayButton"/>. The old name leaked the internal
+    /// <c>BitFcTodayButton</c> component name into the public text bag; it forwards to
+    /// <see cref="TodayButton"/> so existing assignments keep working.
+    /// </summary>
+    [Obsolete($"Use {nameof(TodayButton)} instead. This alias forwards to it and will be removed in a future release.")]
+    public string BitFcTodayButton
+    {
+        get => TodayButton;
+        set => TodayButton = value;
+    }
+
     public string AddEventButton { get; set; } = "Add Event";
     public string AddEventHoverHint { get; set; } = "Add event";
     public string PreviousButtonTitle { get; set; } = "Previous";
@@ -40,6 +54,10 @@ public class BitFullCalendarTexts
     public string AgendaGroupByColor { get; set; } = "Color";
     public string StackedEventsLabel { get; set; } = "Stack overlapping events";
     public string ShowDayViewCalendarLabel { get; set; } = "Show calendar in day view";
+    public string ShowWeekNumbersLabel { get; set; } = "Show week numbers";
+    public string ShowCurrentTimeIndicatorLabel { get; set; } = "Show current time";
+    public string SlotDurationLabel { get; set; } = "Slot duration";
+    public string MinuteSuffix { get; set; } = "min";
 
     public string WeekMobileWarning { get; set; } = "Weekly view is not recommended on smaller devices. Please switch to a desktop device or use the daily view instead.";
     public string HappeningNowTitle { get; set; } = "Happening now";
@@ -86,6 +104,23 @@ public class BitFullCalendarTexts
     public string StartDateLabel { get; set; } = "Start Date";
     public string EndDateLabel { get; set; } = "End Date";
     public string AtWord { get; set; } = "at";
+
+    /// <summary>Label of the all-day switch in the add/edit dialog, and of the all-day row.</summary>
+    public string AllDayLabel { get; set; } = "All day";
+
+    /// <summary>
+    /// Format template of the week-number cell ({0} = the ISO-8601 week number).
+    /// </summary>
+    public string WeekNumberFormat { get; set; } = "W{0}";
+
+    /// <summary>Accessible name of a week-number cell ({0} = the ISO-8601 week number).</summary>
+    public string WeekNumberAriaLabelFormat { get; set; } = "Week {0}";
+
+    /// <summary>Notice shown when a move, resize, or save is refused because it would overlap another event.</summary>
+    public string EventOverlapMessage { get; set; } = "This time range is already taken on that resource.";
+
+    /// <summary>Notice shown when a move or resize is refused because it falls outside the allowed date range.</summary>
+    public string OutOfRangeMessage { get; set; } = "That date is outside the allowed range.";
 
     public string ValidationTitleRequired { get; set; } = "Title is required";
     public string ValidationDescriptionRequired { get; set; } = "Description is required";

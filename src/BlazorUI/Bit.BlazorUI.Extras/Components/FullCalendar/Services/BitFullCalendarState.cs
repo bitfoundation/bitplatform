@@ -23,6 +23,9 @@ public class BitFullCalendarState
     ];
 
     private List<BitFullCalendarEvent> _allEvents = [];
+    // The events as the grids see them: every recurring master replaced by the occurrences that fall
+    // inside the visible range, before the colour/attendee filters narrow them further.
+    private List<BitFullCalendarEvent> _expandedEvents = [];
     private List<BitFullCalendarEvent> _filteredEvents = [];
     private List<BitFullCalendarResource> _resources = [];
     private List<BitFullCalendarView> _views = [.. _allViews];
@@ -64,6 +67,60 @@ public class BitFullCalendarState
     /// <summary>Incremented when <see cref="GoToToday"/> is invoked in agenda view so the list can scroll to today.</summary>
     public ulong AgendaScrollToTodayNonce { get; private set; }
 
+    /// <summary>First hour rendered by the day/week time grids (inclusive).</summary>
+    public int VisibleStartHour { get; private set; }
+
+    /// <summary>Last hour rendered by the day/week time grids (exclusive).</summary>
+    public int VisibleEndHour { get; private set; } = 24;
+
+    /// <summary>Number of hour rows the day/week time grids render.</summary>
+    public int VisibleHourCount => VisibleEndHour - VisibleStartHour;
+
+    /// <summary>The hours the day/week time grids render, ascending.</summary>
+    public IEnumerable<int> VisibleHours => Enumerable.Range(VisibleStartHour, VisibleHourCount);
+
+    /// <summary>Length in minutes of one slot inside an hour; also the drag/resize snap granularity.</summary>
+    public int SlotDurationMinutes { get; private set; } = 30;
+
+    /// <summary>The minute offsets of the slots inside one hour, ascending.</summary>
+    public int[] SlotMinutes { get; private set; } = BitFullCalendarHelpers.GetSlotMinutes(30);
+
+    /// <summary>Weekdays removed from the week, month, year, and timeline week grids.</summary>
+    public IReadOnlyList<DayOfWeek> HiddenDays { get; private set; } = [];
+
+    /// <summary>Number of weekday columns the date grids render.</summary>
+    public int VisibleWeekDayCount => 7 - HiddenDays.Count;
+
+    /// <summary>Explicit first-day-of-week override; <c>null</c> means "follow the culture".</summary>
+    public DayOfWeek? FirstDayOfWeekOverride { get; private set; }
+
+    /// <summary>The day the week starts on: the override when set, otherwise the culture's.</summary>
+    public DayOfWeek FirstDayOfWeek => BitFullCalendarHelpers.ResolveFirstDayOfWeek(Culture, FirstDayOfWeekOverride);
+
+    /// <summary>Whether ISO week numbers are rendered in the month grid and the week view gutter.</summary>
+    public bool ShowWeekNumbers { get; private set; }
+
+    /// <summary>Whether the "current time" indicator line is rendered on the day/week time grids.</summary>
+    public bool ShowCurrentTimeIndicator { get; private set; } = true;
+
+    /// <summary>Event badges a month cell renders before the rest collapse behind "+N more".</summary>
+    public int MaxEventsPerDayCell { get; private set; } = 3;
+
+    /// <summary>Whether the built-in add/edit dialog requires a description.</summary>
+    public bool RequireEventDescription { get; private set; }
+
+    /// <summary>Whether two events on the same resource may occupy the same time range.</summary>
+    public bool AllowEventOverlap { get; private set; } = true;
+
+    /// <summary>Whether dragging across the day/week time grid selects a range to create an event in.</summary>
+    public bool AllowRangeSelection { get; private set; } = true;
+
+    /// <summary>Earliest date the calendar can navigate to, or <c>null</c> for no lower bound.</summary>
+    public DateTime? MinDate { get; private set; }
+
+    /// <summary>Latest date the calendar can navigate to, or <c>null</c> for no upper bound.</summary>
+    public DateTime? MaxDate { get; private set; }
+
     public CultureInfo Culture { get; private set; } = CultureInfo.CurrentUICulture;
     public bool IsRtl => Culture.TextInfo.IsRightToLeft;
 
@@ -72,8 +129,21 @@ public class BitFullCalendarState
     public BitFullCalendarEvent? DraggedEvent { get; private set; }
     public bool IsDragging => DraggedEvent != null;
 
+    /// <summary>The events the views render: expanded for recurrence, then filtered.</summary>
     public IReadOnlyList<BitFullCalendarEvent> Events => _filteredEvents;
+
+    /// <summary>
+    /// The events as supplied, with every recurring series still represented by its master. This is
+    /// the store the add/edit/delete and drop paths mutate.
+    /// </summary>
     public IReadOnlyList<BitFullCalendarEvent> AllEvents => _allEvents;
+
+    /// <summary>
+    /// The events occupying the visible range - recurring masters expanded into occurrences - before
+    /// the colour and attendee filters are applied. This is what the booking rules measure against,
+    /// so a filtered-out event still blocks its slot.
+    /// </summary>
+    public IReadOnlyList<BitFullCalendarEvent> ExpandedEvents => _expandedEvents;
     public IReadOnlyList<BitFullCalendarResource> Resources => _resources;
 
     public event Action? OnStateChanged;
@@ -97,9 +167,79 @@ public class BitFullCalendarState
 
     public void SetSelectedDate(DateTime date)
     {
-        SelectedDate = date;
+        SelectedDate = ClampToAllowedRange(date);
         UpdateUI();
         NotifyDateRangeChanged();
+    }
+
+    /// <summary>
+    /// Pins a date inside the <see cref="MinDate"/>/<see cref="MaxDate"/> window. The time of day is
+    /// preserved so a bound Date carrying a time is not silently truncated.
+    /// </summary>
+    public DateTime ClampToAllowedRange(DateTime date)
+    {
+        if (MinDate is { } min && date.Date < min.Date)
+            return min.Date + date.TimeOfDay;
+        if (MaxDate is { } max && date.Date > max.Date)
+            return max.Date + date.TimeOfDay;
+        return date;
+    }
+
+    /// <summary>True when the supplied date sits inside the allowed navigation window.</summary>
+    public bool IsDateInAllowedRange(DateTime date)
+        => (MinDate is not { } min || date.Date >= min.Date)
+           && (MaxDate is not { } max || date.Date <= max.Date);
+
+    /// <summary>
+    /// Restricts the dates the calendar can navigate to. Either bound may be <c>null</c>. A window
+    /// whose bounds are inverted is ignored, and the active date is pulled into the new window.
+    /// </summary>
+    public void SetDateBounds(DateTime? minDate, DateTime? maxDate)
+    {
+        // An inverted window would make every date invalid, so it is refused outright rather than
+        // leaving the calendar unable to render anything.
+        if (minDate is { } lo && maxDate is { } hi && lo.Date > hi.Date)
+        {
+            minDate = null;
+            maxDate = null;
+        }
+
+        if (MinDate == minDate && MaxDate == maxDate)
+            return;
+
+        MinDate = minDate;
+        MaxDate = maxDate;
+
+        var clamped = ClampToAllowedRange(SelectedDate);
+        if (clamped != SelectedDate)
+        {
+            SelectedDate = clamped;
+            UpdateUI();
+            NotifyDateRangeChanged();
+            return;
+        }
+
+        NotifyStateChanged();
+    }
+
+    /// <summary>True when <see cref="NavigatePrevious"/> would land inside the allowed window.</summary>
+    public bool CanNavigatePrevious => CanNavigate(false);
+
+    /// <summary>True when <see cref="NavigateNext"/> would land inside the allowed window.</summary>
+    public bool CanNavigateNext => CanNavigate(true);
+
+    private bool CanNavigate(bool forward)
+    {
+        if (MinDate is null && MaxDate is null)
+            return true;
+
+        // The step is allowed while any part of the range it would land on is still inside the
+        // window - navigating a month whose first days are out of bounds is legitimate as long as
+        // the month itself is reachable.
+        var target = BitFullCalendarHelpers.NavigateDate(SelectedDate, View, forward, Culture, HiddenDays);
+        var (start, end) = BitFullCalendarHelpers.GetDateRange(View, target, Culture, FirstDayOfWeekOverride);
+        return (MinDate is not { } min || end.Date >= min.Date)
+               && (MaxDate is not { } max || start.Date <= max.Date);
     }
 
     public void SetView(BitFullCalendarView view)
@@ -267,11 +407,153 @@ public class BitFullCalendarState
 
     public void SetStartOfDayHour(int hour)
     {
-        var clamped = Math.Clamp(hour, 0, 16);
+        // The scroll anchor only means something inside the rendered window, so it is pinned to it
+        // rather than to a fixed 0-16 band that a narrowed window may not even contain.
+        var clamped = Math.Clamp(hour, VisibleStartHour, Math.Max(VisibleStartHour, VisibleEndHour - 1));
         if (StartOfDayHour == clamped)
             return;
         StartOfDayHour = clamped;
         NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// Sets the hour window the day/week time grids render. The window is normalized (see
+    /// <see cref="BitFullCalendarHelpers.NormalizeVisibleHours"/>) and the scroll anchor is pulled
+    /// back inside it.
+    /// </summary>
+    public void SetVisibleHours(int startHour, int endHour)
+    {
+        var (start, end) = BitFullCalendarHelpers.NormalizeVisibleHours(startHour, endHour);
+        if (VisibleStartHour == start && VisibleEndHour == end)
+            return;
+
+        VisibleStartHour = start;
+        VisibleEndHour = end;
+        StartOfDayHour = Math.Clamp(StartOfDayHour, start, Math.Max(start, end - 1));
+        NotifyStateChanged();
+    }
+
+    public void SetSlotDurationMinutes(int minutes)
+    {
+        var normalized = new BitFullCalendarSettings { SlotDurationMinutes = minutes }.SlotDurationMinutes;
+        if (SlotDurationMinutes == normalized)
+            return;
+
+        SlotDurationMinutes = normalized;
+        SlotMinutes = BitFullCalendarHelpers.GetSlotMinutes(normalized);
+        NotifyStateChanged();
+    }
+
+    public void SetHiddenDays(IReadOnlyList<DayOfWeek>? hiddenDays)
+    {
+        var next = BitFullCalendarHelpers.NormalizeHiddenDays(hiddenDays).OrderBy(d => (int)d).ToList();
+        if (HiddenDays.Count == next.Count && HiddenDays.All(next.Contains))
+            return;
+
+        HiddenDays = next;
+        UpdateUI();
+        NotifyDateRangeChanged();
+    }
+
+    public void SetFirstDayOfWeek(DayOfWeek? firstDayOfWeek)
+    {
+        var next = firstDayOfWeek is { } day && Enum.IsDefined(day) ? day : (DayOfWeek?)null;
+        if (FirstDayOfWeekOverride == next)
+            return;
+
+        FirstDayOfWeekOverride = next;
+        UpdateUI();
+        // The week view's visible range is anchored on the first day of the week, so changing it
+        // moves the range even though the selected date stays put.
+        NotifyDateRangeChanged();
+    }
+
+    public void SetShowWeekNumbers(bool value)
+    {
+        if (ShowWeekNumbers == value)
+            return;
+        ShowWeekNumbers = value;
+        NotifyStateChanged();
+    }
+
+    public void ToggleShowWeekNumbers()
+    {
+        ShowWeekNumbers = !ShowWeekNumbers;
+        NotifyStateChanged();
+    }
+
+    public void SetShowCurrentTimeIndicator(bool value)
+    {
+        if (ShowCurrentTimeIndicator == value)
+            return;
+        ShowCurrentTimeIndicator = value;
+        NotifyStateChanged();
+    }
+
+    public void ToggleShowCurrentTimeIndicator()
+    {
+        ShowCurrentTimeIndicator = !ShowCurrentTimeIndicator;
+        NotifyStateChanged();
+    }
+
+    public void SetMaxEventsPerDayCell(int value)
+    {
+        var clamped = Math.Clamp(value, 1, 10);
+        if (MaxEventsPerDayCell == clamped)
+            return;
+        MaxEventsPerDayCell = clamped;
+        NotifyStateChanged();
+    }
+
+    public void SetRequireEventDescription(bool value)
+    {
+        if (RequireEventDescription == value)
+            return;
+        RequireEventDescription = value;
+        NotifyStateChanged();
+    }
+
+    public void SetAllowEventOverlap(bool value)
+    {
+        if (AllowEventOverlap == value)
+            return;
+        AllowEventOverlap = value;
+        NotifyStateChanged();
+    }
+
+    public void SetAllowRangeSelection(bool value)
+    {
+        if (AllowRangeSelection == value)
+            return;
+        AllowRangeSelection = value;
+        NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// True when the supplied range may be committed for <paramref name="eventId"/>: either overlaps
+    /// are allowed, or no other event on the same resource occupies any part of that range.
+    /// </summary>
+    public bool IsRangeAvailable(string eventId, DateTime start, DateTime end, string? resourceId)
+    {
+        if (AllowEventOverlap)
+            return true;
+
+        var candidate = new BitFullCalendarEvent { StartDate = start, EndDate = end };
+        // Measured against what actually occupies the visible range, so a recurring occurrence blocks
+        // its slot just like a one-off event does.
+        foreach (var other in _expandedEvents)
+        {
+            // An occurrence belongs to its master, so a series never collides with itself.
+            if (string.Equals(other.SeriesId ?? other.Id, eventId, StringComparison.Ordinal))
+                continue;
+            // Only events sharing the resource lane can collide; two unassigned events do share one.
+            if (!string.Equals(other.Resource ?? "", resourceId ?? "", StringComparison.Ordinal))
+                continue;
+            if (BitFullCalendarHelpers.EventsOverlap(candidate, other))
+                return false;
+        }
+
+        return true;
     }
 
     public void SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy groupBy)
@@ -312,21 +594,27 @@ public class BitFullCalendarState
     }
     public void NavigatePrevious()
     {
-        SelectedDate = BitFullCalendarHelpers.NavigateDate(SelectedDate, View, false, Culture);
+        if (CanNavigatePrevious is false)
+            return;
+
+        SelectedDate = ClampToAllowedRange(BitFullCalendarHelpers.NavigateDate(SelectedDate, View, false, Culture, HiddenDays));
         UpdateUI();
         NotifyDateRangeChanged();
     }
 
     public void NavigateNext()
     {
-        SelectedDate = BitFullCalendarHelpers.NavigateDate(SelectedDate, View, true, Culture);
+        if (CanNavigateNext is false)
+            return;
+
+        SelectedDate = ClampToAllowedRange(BitFullCalendarHelpers.NavigateDate(SelectedDate, View, true, Culture, HiddenDays));
         UpdateUI();
         NotifyDateRangeChanged();
     }
 
     public void GoToToday()
     {
-        SelectedDate = DateTime.Today;
+        SelectedDate = ClampToAllowedRange(DateTime.Today);
         if (View == BitFullCalendarView.Agenda)
             AgendaScrollToTodayNonce++;
         UpdateUI();
@@ -488,7 +776,7 @@ public class BitFullCalendarState
     /// <summary>Distinct attendees on events visible in the current view/date range.</summary>
     public IReadOnlyList<(string Key, string DisplayName)> GetAttendeesInCurrentView(string unnamedAttendeeText = "(Unnamed)")
     {
-        var viewEvents = BitFullCalendarHelpers.GetEventsForView(_allEvents.ToList(), View, SelectedDate, Culture);
+        var viewEvents = BitFullCalendarHelpers.GetEventsForView(_expandedEvents, View, SelectedDate, Culture, FirstDayOfWeekOverride);
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var ev in viewEvents)
         {
@@ -516,15 +804,40 @@ public class BitFullCalendarState
     {
         _selectedColors.Clear();
         SelectedAttendeeKey = null;
-        _filteredEvents = [.. _allEvents];
+        _expandedEvents = ExpandForCurrentRange();
+        _filteredEvents = [.. _expandedEvents];
         NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// The window recurrences are expanded over: the visible range, widened by the days a grid shows
+    /// from the neighbouring periods (a month grid leads and trails with them) so an occurrence in
+    /// one of those cells is not missing.
+    /// </summary>
+    private (DateTime Start, DateTime End) GetExpansionRange()
+    {
+        var (start, end) = BitFullCalendarHelpers.GetDateRange(View, SelectedDate, Culture, FirstDayOfWeekOverride);
+        var padding = View is BitFullCalendarView.Year ? 0 : 7;
+        return (start.AddDays(-padding), end.AddDays(padding));
+    }
+
+    private List<BitFullCalendarEvent> ExpandForCurrentRange()
+    {
+        // Nothing to expand is the common case, so the walk is skipped entirely then.
+        if (_allEvents.All(e => e.Recurrence is null))
+            return _allEvents;
+
+        var (start, end) = GetExpansionRange();
+        return BitFullCalendarHelpers.ExpandRecurrences(_allEvents, start, end);
     }
 
     private void ApplyFilters()
     {
+        _expandedEvents = ExpandForCurrentRange();
+
         PruneInvalidAttendeeFilter();
 
-        var result = _allEvents.AsEnumerable();
+        var result = _expandedEvents.AsEnumerable();
 
         if (_selectedColors.Count > 0)
             result = result.Where(e => _selectedColors.Any(c => string.Equals(c, e.Color, StringComparison.OrdinalIgnoreCase)));
@@ -541,7 +854,7 @@ public class BitFullCalendarState
             return;
 
         var validKeys = BitFullCalendarHelpers
-            .GetEventsForView(_allEvents.ToList(), View, SelectedDate, Culture)
+            .GetEventsForView(_expandedEvents, View, SelectedDate, Culture, FirstDayOfWeekOverride)
             .SelectMany(e => e.Attendees)
             .Select(BitFullCalendarHelpers.AttendeeFilterKey)
             .Where(k => k.Length > 0)
@@ -554,9 +867,10 @@ public class BitFullCalendarState
     // Drag-and-drop helpers
     public void StartDrag(BitFullCalendarEvent ev)
     {
-        // Single choke point for every drag entry point: a read-only calendar never enters the
-        // dragging state, so the drop handlers downstream have nothing to commit.
-        if (ReadOnly)
+        // Single choke point for every drag entry point: a read-only calendar - or a single event
+        // locked with BitFullCalendarEvent.IsReadOnly - never enters the dragging state, so the drop
+        // handlers downstream have nothing to commit.
+        if (ReadOnly || ev is null || ev.IsReadOnly)
             return;
 
         DraggedEvent = ev;
@@ -572,7 +886,7 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    public void HandleDrop(DateTime targetDate, int? hour = null, int? minute = null)
+    public BitFullCalendarChangeRefusal HandleDrop(DateTime targetDate, int? hour = null, int? minute = null)
         => HandleDrop(targetDate, hour, minute, resourceId: null, applyResource: false);
 
     /// <summary>
@@ -582,9 +896,15 @@ public class BitFullCalendarState
     /// <c>null</c> together with <paramref name="applyResource"/> = <c>true</c> to clear the
     /// resource (drop on the unassigned row).
     /// </summary>
-    public void HandleDrop(DateTime targetDate, int? hour, int? minute, string? resourceId, bool applyResource)
+    public BitFullCalendarChangeRefusal HandleDrop(DateTime targetDate, int? hour, int? minute, string? resourceId, bool applyResource)
     {
-        if (DraggedEvent == null) return;
+        if (DraggedEvent == null) return BitFullCalendarChangeRefusal.None;
+
+        if (ReadOnly || DraggedEvent.IsReadOnly)
+        {
+            EndDrag();
+            return BitFullCalendarChangeRefusal.ReadOnly;
+        }
 
         var originalStart = DraggedEvent.StartDate;
         var originalResource = DraggedEvent.Resource;
@@ -603,7 +923,24 @@ public class BitFullCalendarState
         if (newStart == originalStart && !resourceChanged)
         {
             EndDrag();
-            return;
+            return BitFullCalendarChangeRefusal.None;
+        }
+
+        var newEnd = newStart + duration;
+
+        // The drop target has to stay inside the window the calendar is allowed to show; otherwise
+        // the event would land on a date the user can never navigate back to.
+        if (!IsDateInAllowedRange(newStart) || !IsDateInAllowedRange(BitFullCalendarHelpers.GetInclusiveEndDate(
+                new BitFullCalendarEvent { StartDate = newStart, EndDate = newEnd })))
+        {
+            EndDrag();
+            return BitFullCalendarChangeRefusal.OutOfRange;
+        }
+
+        if (!IsRangeAvailable(DraggedEvent.Id, newStart, newEnd, newResource))
+        {
+            EndDrag();
+            return BitFullCalendarChangeRefusal.Overlap;
         }
 
         var updated = new BitFullCalendarEvent
@@ -612,15 +949,20 @@ public class BitFullCalendarState
             Title = DraggedEvent.Title,
             Description = DraggedEvent.Description,
             StartDate = newStart,
-            EndDate = newStart + duration,
+            EndDate = newEnd,
             Color = DraggedEvent.Color,
             Resource = newResource,
             Data = DraggedEvent.Data,
-            Attendees = [.. DraggedEvent.Attendees]
+            Attendees = [.. DraggedEvent.Attendees],
+            IsAllDay = DraggedEvent.IsAllDay,
+            Recurrence = DraggedEvent.Recurrence,
+            IsReadOnly = DraggedEvent.IsReadOnly,
+            CssClass = DraggedEvent.CssClass
         };
 
         UpdateEvent(updated);
         EndDrag();
+        return BitFullCalendarChangeRefusal.None;
     }
 
     private void NormalizeEventIds() => NormalizeEventIds(_allEvents);
@@ -656,7 +998,7 @@ public class BitFullCalendarState
     private void NotifyDateRangeChanged()
     {
         if (OnDateRangeChanged is null) return;
-        var (start, end) = BitFullCalendarHelpers.GetDateRange(View, SelectedDate, Culture);
+        var (start, end) = BitFullCalendarHelpers.GetDateRange(View, SelectedDate, Culture, FirstDayOfWeekOverride);
         OnDateRangeChanged.Invoke(new BitFullCalendarDateChangeEventArgs
         {
             Start = start,
