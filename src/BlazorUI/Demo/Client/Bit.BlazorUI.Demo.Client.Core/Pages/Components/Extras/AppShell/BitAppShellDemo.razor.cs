@@ -604,7 +604,7 @@ public partial class BitAppShellDemo
         {
             Id = "scroll-offset",
             Title = "BitScrollOffset",
-            Description = "Where the main container of the app shell stands, as measured in the browser. Everything is in CSS pixels; the derived members below the first six cost nothing to read.",
+            Description = "Where the main container of the app shell stands, as measured in the browser. Everything is in CSS pixels; the members derived from the measured ones cost nothing to read.",
             Parameters =
             [
                 new()

@@ -66,7 +66,11 @@ namespace BitBlazorUI {
         public static afterRenderScroll(url: string) {
             AppShell._currentUrl = url;
             AppShell.storeScroll(url, AppShell._scrolls[url]);
-            AppShell.restore(AppShell._scrolls[url]);
+            // As in initScroll: a page with nothing stored, or stored at 0, is left where the browser has
+            // already put it - which is the fragment of the url it was navigated to, if it had one.
+            if (AppShell._scrolls[url]! > 0) {
+                AppShell.restore(AppShell._scrolls[url]);
+            }
             AppShell.addScroll();
         }
 
@@ -204,14 +208,29 @@ namespace BitBlazorUI {
         private static storeScroll(url: string, value: number | undefined) {
             if (!url) return;
 
+            const known = url in AppShell._scrolls;
+
             AppShell._scrolls[url] = value || 0;
-            AppShell.touch(url);
+
+            // A url already at the end of the order is where touch() would put it, and the cap was
+            // enforced when it got there - so the scrolling of one page, which stores a position per
+            // frame, does not re-key the map and walk its keys for every one of them.
+            if (known === false || AppShell._mru !== url) {
+                AppShell.touch(url);
+            }
+
             AppShell.schedule();
         }
+
+        // The url at the end of the insertion order, so a repeated store of the same page can tell that
+        // there is nothing to move.
+        private static _mru: string | undefined;
 
         // Moves a url to the end of the insertion order and drops whatever falls out of the cap, so the
         // map stays bounded by the pages most recently looked at rather than by every page ever visited.
         private static touch(url: string) {
+            AppShell._mru = url;
+
             const value = AppShell._scrolls[url];
             delete AppShell._scrolls[url];
             AppShell._scrolls[url] = value;
