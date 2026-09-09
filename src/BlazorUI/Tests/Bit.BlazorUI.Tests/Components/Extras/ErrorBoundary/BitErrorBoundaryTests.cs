@@ -545,7 +545,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryRecoverMethodShouldRaiseOnRecoverAsManual()
+    public async Task BitErrorBoundaryRecoverMethodShouldRaiseOnRecoverAsManual()
     {
         ThrowOnceComponent.Reset();
 
@@ -563,7 +563,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         component.Find(".bit-erb");
 
-        component.InvokeAsync(component.Instance.Recover);
+        await component.InvokeAsync(component.Instance.Recover);
 
         component.Find(".throw-once-safe");
         Assert.AreEqual(1, recovered);
@@ -571,7 +571,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryRecoverShouldDoNothingWithoutAnError()
+    public async Task BitErrorBoundaryRecoverShouldDoNothingWithoutAnError()
     {
         var recovered = 0;
         BitErrorBoundaryRecoverReason? lastReason = null;
@@ -581,7 +581,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.AddChildContent("<div class=\"safe\">Hello</div>");
         });
 
-        component.InvokeAsync(component.Instance.Recover);
+        await component.InvokeAsync(component.Instance.Recover);
 
         Assert.AreEqual(0, recovered);
         Assert.IsNull(lastReason);
@@ -1016,7 +1016,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryCaptureShouldRenderTheErrorUI()
+    public async Task BitErrorBoundaryCaptureShouldRenderTheErrorUI()
     {
         var caught = default(Exception);
         var component = RenderComponent<BitErrorBoundary>(parameters =>
@@ -1030,7 +1030,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var captured = new InvalidOperationException("captured out of band");
 
-        component.InvokeAsync(() => component.Instance.Capture(captured));
+        await component.InvokeAsync(() => component.Instance.Capture(captured));
 
         var errorRoot = component.Find(".bit-erb");
 
@@ -1055,7 +1055,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryCaptureShouldLogAndBeRecoverable()
+    public async Task BitErrorBoundaryCaptureShouldLogAndBeRecoverable()
     {
         var logger = new FakeErrorBoundaryLogger();
         Services.AddSingleton<IErrorBoundaryLogger>(logger);
@@ -1065,7 +1065,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.AddChildContent("<div class=\"safe\">Hello</div>");
         });
 
-        component.InvokeAsync(() => component.Instance.Capture(new InvalidOperationException("captured")));
+        await component.InvokeAsync(() => component.Instance.Capture(new InvalidOperationException("captured")));
 
         Assert.AreEqual(1, logger.Logged.Count);
 
@@ -1076,7 +1076,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryCaptureShouldKeepTheFirstExceptionWhileErrored()
+    public async Task BitErrorBoundaryCaptureShouldKeepTheFirstExceptionWhileErrored()
     {
         var component = RenderComponent<BitErrorBoundary>(parameters =>
         {
@@ -1084,7 +1084,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("the first one"));
         });
 
-        component.InvokeAsync(() => component.Instance.Capture(new InvalidOperationException("the second one")));
+        await component.InvokeAsync(() => component.Instance.Capture(new InvalidOperationException("the second one")));
 
         var errorRoot = component.Find(".bit-erb");
 
@@ -1093,7 +1093,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryShouldCascadeItselfToItsContent()
+    public async Task BitErrorBoundaryShouldCascadeItselfToItsContent()
     {
         var component = RenderComponent<BitErrorBoundary>(parameters =>
         {
@@ -1110,7 +1110,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         Assert.IsTrue(child.WasCascaded);
 
-        component.InvokeAsync(child.CaptureNow);
+        await component.InvokeAsync(child.CaptureNow);
 
         StringAssert.Contains(component.Find(".bit-erb").TextContent, "captured from the cascade");
     }
@@ -1299,7 +1299,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitErrorBoundaryRecoverShouldResetTheErrorCount()
+    public async Task BitErrorBoundaryRecoverShouldResetTheErrorCount()
     {
         ThrowSwitchComponent.Reset();
 
@@ -1320,7 +1320,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         component.Find(".bit-erb");
         Assert.AreEqual(1, errors);
 
-        component.InvokeAsync(component.Instance.Recover);
+        await component.InvokeAsync(component.Instance.Recover);
 
         component.Find(".bit-erb");
         Assert.AreEqual(2, errors);

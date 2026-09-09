@@ -86,6 +86,9 @@ namespace BitBlazorUI {
             textarea.style.pointerEvents = 'none';
             document.body.appendChild(textarea);
 
+            // Selecting the textarea takes the focus off whatever the user was on, so it is put back.
+            const previouslyFocused = document.activeElement as HTMLElement | null;
+
             try {
                 textarea.select();
                 if (!document.execCommand('copy')) {
@@ -93,6 +96,7 @@ namespace BitBlazorUI {
                 }
             } finally {
                 document.body.removeChild(textarea);
+                try { previouslyFocused?.focus?.(); } catch { }
             }
         }
 
