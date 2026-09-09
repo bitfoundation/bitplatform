@@ -41,6 +41,15 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
         </div>
     </DemoCard>
 
+    <DemoCard Title="Rate-limited resize observer" Api="ObserveResize(minInterval)"
+              Description="The same observer capped at one call every 300 ms. A drag or a reflow delivers an entry every frame, and each one is an interop round trip; minInterval gates them in JavaScript, before the round trip. It is leading-edge with a trailing send, so the size the element settles at still arrives - grow the target several times in a row and watch the console report far fewer lines, ending on the final width.">
+        <div class="controls">
+            <button @onclick="StartGatedResize">Observe (300 ms)</button>
+            <button @onclick="TriggerResize">Grow target</button>
+            <button class="danger" @onclick="StopResize">Stop</button>
+        </div>
+    </DemoCard>
+
     <DemoCard Title="Mutation observer" Api="ObserveMutations"
               Description="Logs attribute changes on the target element.">
         <div class="controls">
@@ -121,7 +130,11 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
         _intersectionSub = null;
     }
 
-    private async Task StartResize()
+    private Task StartResize() => StartResize(null);
+
+    private Task StartGatedResize() => StartResize(TimeSpan.FromMilliseconds(300));
+
+    private async Task StartResize(TimeSpan? minInterval)
     {
         await StopResize();
         _resizeSub = await _target.ObserveResize(js, entries =>
@@ -131,8 +144,11 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
                 var rect = entries[0].ContentRect;
                 _ = output.Log($"Resize → {rect.Width:F0}×{rect.Height:F0}");
             }
-        });
-        await output.Log("Resize observer started.");
+        }, minInterval: minInterval);
+
+        await output.Log(minInterval is null
+            ? "Resize observer started."
+            : $"Resize observer started, rate-limited to one call every {minInterval.Value.TotalMilliseconds:F0} ms.");
     }
 
     private async Task TriggerResize()

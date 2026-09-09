@@ -88,18 +88,26 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// <see cref="ButilEventListenerOptions"/> variant of <see cref="SubscribeEvent{T}(string, Action{T}, bool)"/>,
-    /// adding <c>passive</c> and <c>once</c> control on top of <c>capture</c>.
+    /// adding <c>passive</c>, <c>once</c> and
+    /// <see cref="ButilEventListenerOptions.MinInterval">rate limiting</see> on top of <c>capture</c>.
     /// </summary>
+    /// <remarks>
+    /// This is the overload to reach for on a high-frequency event: <c>mousemove</c>,
+    /// <c>pointermove</c>, <c>scroll</c>, <c>resize</c> and <c>wheel</c> all fire about once a
+    /// frame, and <see cref="ButilEventListenerOptions.MinInterval"/> caps how often that reaches
+    /// .NET without changing what the page does.
+    /// </remarks>
     public Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, ButilEventListenerOptions options)
-        => SubscribeEventCore(ElementName, domEvent, listener, options.Capture, options.Passive, options.Once);
+        => SubscribeEventCore(ElementName, domEvent, listener, options.Capture, options.Passive, options.Once,
+                              options.MinInterval?.TotalMilliseconds ?? 0);
 
     /// <summary>
     /// Subscribes to a DOM event on the given target ("window"/"document"). Tracks the element name
     /// per listener so disposal detaches from the correct target.
     /// </summary>
-    private async Task<ButilSubscription> SubscribeEventCore<T>(string elementName, string domEvent, Action<T> listener, bool useCapture, bool passive = false, bool once = false)
+    private async Task<ButilSubscription> SubscribeEventCore<T>(string elementName, string domEvent, Action<T> listener, bool useCapture, bool passive = false, bool once = false, double minInterval = 0)
     {
-        var id = await _events.AddEventListener(js, elementName, domEvent, listener, useCapture, passive: passive, once: once);
+        var id = await _events.AddEventListener(js, elementName, domEvent, listener, useCapture, passive: passive, once: once, minInterval: minInterval);
         var key = (id, elementName, domEvent, useCapture);
         _listenerIds.TryAdd(key, 0);
 

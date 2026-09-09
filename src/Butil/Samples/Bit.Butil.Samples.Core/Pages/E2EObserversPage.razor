@@ -94,6 +94,7 @@
     <button id="intersection-observe" @onclick="ObserveIntersection">observe intersection</button>
     <button id="resize-observe" @onclick="ObserveResize">observe resize</button>
     <button id="resize-trigger" @onclick="TriggerResize">resize target</button>
+    <button id="resize-observe-gated" @onclick="ObserveResizeGated">observe resize (rate limited)</button>
     <button id="mutation-observe" @onclick="ObserveMutation">observe mutation</button>
 </section>
 
@@ -381,6 +382,42 @@
         _resizeWidth += 40;
         await _target.SetAttribute("style", $"width:{_resizeWidth}px;height:40px;border:1px solid #888;");
         Set($"resize:triggered:{_resizeWidth}");
+    }
+
+    // The correctness half of the rate limit; Bit.Butil.Tests.Benchmarks measures how much traffic
+    // it removes, and this checks the thing that measurement cannot see - that the size the element
+    // *settles* at still arrives.
+    //
+    // Every one of the five resizes below lands inside a single 300 ms interval, so all of them are
+    // suppressed. A leading-edge-only gate would leave the handler holding the width the element had
+    // when the observer was attached, permanently. The trailing send is what makes the last one
+    // arrive, a little late, and that is what this waits for.
+    private const int GatedFinalWidth = 230;
+
+    // What a content-box ResizeObserver reports for that width: the target carries a 1px border on
+    // each side, and the content box is what is left inside them.
+    private const int GatedFinalContentWidth = GatedFinalWidth - 2;
+
+    private async Task ObserveResizeGated()
+    {
+        var last = 0d;
+        var settled = new TaskCompletionSource<bool>();
+
+        _resizeSub = await _target.ObserveResize(js, entries =>
+        {
+            if (entries.Length == 0) return;
+            last = entries[^1].InlineSize;
+            if (Math.Abs(last - GatedFinalContentWidth) < 1) settled.TrySetResult(true);
+        }, minInterval: TimeSpan.FromMilliseconds(300));
+
+        foreach (var width in new[] { 150, 170, 190, 210, GatedFinalWidth })
+        {
+            await _target.SetAttribute("style", $"width:{width}px;height:40px;border:1px solid #888;");
+            await Task.Delay(20);
+        }
+
+        var arrived = await WaitFor(settled, 5000);
+        Set($"resize:gated:{arrived}:{last:0}");
     }
 
     private async Task ObserveMutation()

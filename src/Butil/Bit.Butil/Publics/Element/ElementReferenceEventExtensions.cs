@@ -39,14 +39,21 @@ public static class ElementReferenceEventExtensions
         bool useCapture = false,
         bool preventDefault = false,
         bool stopPropagation = false)
-        => SubscribeEventCore(element, js, domEvent, listener, useCapture, false, false, preventDefault, stopPropagation);
+        => SubscribeEventCore(element, js, domEvent, listener, useCapture, false, false, preventDefault, stopPropagation, 0);
 
     /// <summary>
     /// <see cref="ButilEventListenerOptions"/> variant of
     /// <see cref="SubscribeEvent{T}(ElementReference, IJSRuntime, string, Action{T}, bool, bool, bool)"/>,
-    /// adding <c>passive</c> and <c>once</c> control on top of <c>capture</c>. The same disposal
-    /// requirement applies.
+    /// adding <c>passive</c>, <c>once</c> and
+    /// <see cref="ButilEventListenerOptions.MinInterval">rate limiting</see> on top of
+    /// <c>capture</c>. The same disposal requirement applies.
     /// </summary>
+    /// <remarks>
+    /// The overload to reach for on a high-frequency element event. A <c>pointermove</c> listener
+    /// on a canvas fires about once a frame, and without
+    /// <see cref="ButilEventListenerOptions.MinInterval"/> every one of those is an interop round
+    /// trip - which under Blazor Server is a SignalR message and a network hop per frame.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsAddEventListenerOptions))]
     public static Task<ButilSubscription> SubscribeEvent<T>(
         this ElementReference element,
@@ -56,7 +63,8 @@ public static class ElementReferenceEventExtensions
         ButilEventListenerOptions options,
         bool preventDefault = false,
         bool stopPropagation = false)
-        => SubscribeEventCore(element, js, domEvent, listener, options.Capture, options.Passive, options.Once, preventDefault, stopPropagation);
+        => SubscribeEventCore(element, js, domEvent, listener, options.Capture, options.Passive, options.Once,
+                              preventDefault, stopPropagation, options.MinInterval?.TotalMilliseconds ?? 0);
 
     private static async Task<ButilSubscription> SubscribeEventCore<T>(
         ElementReference element,
@@ -67,7 +75,8 @@ public static class ElementReferenceEventExtensions
         bool passive,
         bool once,
         bool preventDefault,
-        bool stopPropagation)
+        bool stopPropagation,
+        double minInterval)
     {
         var argType = typeof(T);
         var eventType = DomEventArgs.TypeOf(domEvent);
@@ -94,7 +103,8 @@ public static class ElementReferenceEventExtensions
             members,
             options,
             preventDefault,
-            stopPropagation);
+            stopPropagation,
+            minInterval);
 
         return new ButilSubscription(listenerId, async () =>
         {

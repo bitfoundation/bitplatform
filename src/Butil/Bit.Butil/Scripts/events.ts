@@ -66,7 +66,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return undefined;
     }
 
-    function addEventListener(elementName: string, eventName: string, methodName: string, dotNetRef: DotNet.DotNetObject, listenerId: string, argsMembers: string[], options: AddEventListenerOptions | boolean, preventDefault: boolean, stopPropagation: boolean) {
+    function addEventListener(elementName: string, eventName: string, methodName: string, dotNetRef: DotNet.DotNetObject, listenerId: string, argsMembers: string[], options: AddEventListenerOptions | boolean, preventDefault: boolean, stopPropagation: boolean, minInterval: number) {
         const target = resolveTarget(elementName);
         if (!target) return;
 
@@ -74,11 +74,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // that by dropping our own map entry so the listenerId doesn't linger after it fires.
         const once = typeof options === 'object' && options.once === true;
 
+        // The gate is built once per listener, around the dispatch rather than around the handler:
+        // preventDefault/stopPropagation have to run on every event no matter how few of them .NET
+        // is told about, and the payload is mapped before the gate so a trailing send never touches
+        // an event the browser has finished dispatching. A zero interval hands back the dispatch
+        // itself, so an ungated listener pays for nothing.
+        const send = (payload: any) => butil.utils.dispatch(dotNetRef, methodName, listenerId, payload);
+        const gated = butil.utils.throttle(minInterval, send, true);
+
         const handler: EventListener = e => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
             if (once) delete _handlers[listenerId];
-            butil.utils.dispatch(dotNetRef, methodName, listenerId, mapEvent(e, argsMembers));
+            gated(mapEvent(e, argsMembers));
         };
 
         _handlers[listenerId] = handler;

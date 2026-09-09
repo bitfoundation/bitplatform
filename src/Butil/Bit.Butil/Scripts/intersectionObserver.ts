@@ -21,6 +21,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             threshold: options?.thresholds && options.thresholds.length > 0 ? options.thresholds : 0
         };
 
+        // Rate-limited around the dispatch: a scroll through a long list crosses thresholds on
+        // nearly every frame, and each crossing is otherwise a round trip. Trailing, so the batch
+        // that settles the element is always delivered even when it lands inside a suppressed
+        // window - a viewport tracker that never hears "now visible" is worse than a slow one.
+        const send = (payload: any) => butil.utils.dispatch(dotNetRef, 'InvokeIntersection', listenerId, payload);
+        const gated = butil.utils.throttle(options?.minInterval ?? 0, send, true);
+
         const observer = new IntersectionObserver(entries => {
             const payload = entries.map(e => ({
                 isIntersecting: e.isIntersecting,
@@ -30,7 +37,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 intersectionRect: toRect(e.intersectionRect),
                 rootBounds: toRect(e.rootBounds)
             }));
-            butil.utils.dispatch(dotNetRef, 'InvokeIntersection', listenerId, payload);
+            gated(payload);
         }, init);
 
         observer.observe(element);

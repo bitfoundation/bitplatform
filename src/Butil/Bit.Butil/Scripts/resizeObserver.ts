@@ -16,8 +16,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return { inlineSize: first?.inlineSize ?? 0, blockSize: first?.blockSize ?? 0 };
     }
 
-    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, box: string) {
+    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, box: string, minInterval: number) {
         if (!element || !('ResizeObserver' in window)) return;
+
+        // The most flood-prone observer of the three: a window drag or a flex reflow delivers an
+        // entry every frame for as long as it lasts. Trailing is not optional here - the size the
+        // element *settles* at is the one the layout depends on, and a leading-only gate would
+        // leave .NET holding a mid-drag size until something else happened to resize it.
+        const send = (payload: any) => butil.utils.dispatch(dotNetRef, 'InvokeResize', listenerId, payload);
+        const gated = butil.utils.throttle(minInterval, send, true);
 
         const observer = new ResizeObserver(entries => {
             const payload = entries.map(e => {
@@ -32,7 +39,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     devicePixelBlockSize: device.blockSize,
                 };
             });
-            butil.utils.dispatch(dotNetRef, 'InvokeResize', listenerId, payload);
+            gated(payload);
         });
 
         try {

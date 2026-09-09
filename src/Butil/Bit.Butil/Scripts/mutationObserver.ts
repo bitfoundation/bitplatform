@@ -21,6 +21,16 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         };
         if (options?.attributeFilter?.length) init.attributeFilter = options.attributeFilter;
 
+        // Rate-limited around the dispatch. A subtree observer over a list Blazor is re-rendering
+        // sees a record batch per render, and forwarding each one turns one render into one round
+        // trip. Trailing, so the batch that describes the settled tree still arrives.
+        //
+        // Note what the gate drops: whole record batches, not individual records. A caller that has
+        // to see every mutation - a change log, an undo stack - leaves the interval at zero; one
+        // that reacts to the current state of the tree (which is nearly all of them) does not.
+        const send = (payload: any) => butil.utils.dispatch(dotNetRef, 'InvokeMutation', listenerId, payload);
+        const gated = butil.utils.throttle(options?.minInterval ?? 0, send, true);
+
         const observer = new MutationObserver(records => {
             const payload = records.map(r => ({
                 type: r.type,
@@ -32,7 +42,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 addedCount: r.addedNodes?.length ?? 0,
                 removedCount: r.removedNodes?.length ?? 0
             }));
-            butil.utils.dispatch(dotNetRef, 'InvokeMutation', listenerId, payload);
+            gated(payload);
         });
 
         try { observer.observe(element, init); }

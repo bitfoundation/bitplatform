@@ -23,20 +23,44 @@ namespace Bit.Butil;
 /// </remarks>
 internal static class ButilScriptLoader
 {
-    private static readonly ConditionalWeakTable<IJSRuntime, ConcurrentDictionary<string, Lazy<Task>>> LoadedModules = new();
+    private static readonly ConditionalWeakTable<IJSRuntime, RuntimeState> LoadedModules = new();
+
+    /// <summary>
+    /// What one runtime has already loaded.
+    /// </summary>
+    /// <remarks>
+    /// Two maps rather than one, because the steady state and the first call want different keys. The
+    /// import is per <em>module</em> - that is the file being fetched - but the question asked on every
+    /// single interop call is about an <em>identifier</em>, and deriving the module from it means a scan
+    /// and a substring. Under the WebAssembly interpreter that is microseconds, per call, forever; the
+    /// benchmark suite measures it as the whole difference between lazy scripts and the bundle.
+    /// <br/>
+    /// So the answer is cached against the identifier itself, which is always the same interned literal
+    /// (that is the rule interop identifiers already follow, for the trimmer's sake). An identifier in
+    /// the set needs nothing done before the call - either its module is loaded, or it is not Butil's
+    /// and never had one.
+    /// </remarks>
+    private sealed class RuntimeState
+    {
+        internal readonly ConcurrentDictionary<string, bool> ReadyIdentifiers = new(StringComparer.Ordinal);
+        internal readonly ConcurrentDictionary<string, Lazy<Task>> Modules = new(StringComparer.Ordinal);
+    }
 
     /// <summary>
     /// Completes once the module that serves <paramref name="identifier"/> is loaded into the runtime's page.
-    /// Synchronously completed (no allocation, no await) after the first successful load of that module.
+    /// Synchronously completed (no allocation, no await, no parsing) from the second call with that
+    /// identifier onwards.
     /// </summary>
     internal static ValueTask EnsureLoaded(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken)
     {
-        if (TryGetModule(identifier, out var module) is false) return default;
+        // A null identifier has no module by definition, and the call it belongs to will fail on its own
+        // terms a moment later; there is nothing for this to do either way.
+        if (identifier is null) return default;
 
-        var modules = LoadedModules.GetValue(jsRuntime, static _ => new ConcurrentDictionary<string, Lazy<Task>>(StringComparer.Ordinal));
-        if (modules.TryGetValue(module, out var loaded) && loaded.IsValueCreated && loaded.Value.IsCompletedSuccessfully) return default;
+        var state = LoadedModules.GetValue(jsRuntime, static _ => new RuntimeState());
+        if (state.ReadyIdentifiers.ContainsKey(identifier)) return default;
 
-        return new ValueTask(LoadAsync(jsRuntime, modules, module, cancellationToken));
+        return new ValueTask(LoadAsync(jsRuntime, state, identifier, cancellationToken));
     }
 
     /// <summary>
@@ -64,11 +88,20 @@ internal static class ButilScriptLoader
         return true;
     }
 
-    private static async Task LoadAsync(IJSRuntime jsRuntime, ConcurrentDictionary<string, Lazy<Task>> modules, string module, CancellationToken cancellationToken)
+    private static async Task LoadAsync(IJSRuntime jsRuntime, RuntimeState state, string identifier, CancellationToken cancellationToken)
     {
-        // The import itself is shared and never cancelled by one caller's token; each caller only stops
-        // waiting for it. That keeps a cancelled first call from failing every other call to the module.
-        await GetOrStartImport(jsRuntime, modules, module).WaitAsync(cancellationToken).ConfigureAwait(false);
+        if (TryGetModule(identifier, out var module))
+        {
+            // The import itself is shared and never cancelled by one caller's token; each caller only stops
+            // waiting for it. That keeps a cancelled first call from failing every other call to the module.
+            await GetOrStartImport(jsRuntime, state.Modules, module).WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        // Reached only on success - an import that threw or was cancelled leaves the identifier out of the
+        // set, so the next call retries it exactly as before. An identifier that is not Butil's is recorded
+        // too: "nothing to load" is the same answer as "already loaded", and caching it keeps a call that
+        // goes through this loader without belonging to it off the slow path for good.
+        state.ReadyIdentifiers[identifier] = true;
     }
 
     /// <summary>

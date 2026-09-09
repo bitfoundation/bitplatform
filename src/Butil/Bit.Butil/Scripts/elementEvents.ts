@@ -13,16 +13,20 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function subscribeEvent(element: HTMLElement, elementId: string, eventName: string, methodName: string,
         dotNetRef: any, listenerId: string, argsMembers: string[], options: AddEventListenerOptions | boolean,
-        preventDefault: boolean, stopPropagation: boolean) {
+        preventDefault: boolean, stopPropagation: boolean, minInterval: number) {
         if (!element) return;
         // When { once: true } is set the browser auto-detaches after the first call; mirror that by
         // dropping our tracking entry so the listenerId doesn't linger after it fires.
         const once = typeof options === 'object' && options.once === true;
+        // Rate-limited around the dispatch, not around the handler - see the same gate in events.ts
+        // for why preventDefault still runs on every event and why the payload is mapped first.
+        const send = (payload: any) => butil.utils.dispatch(dotNetRef, methodName, listenerId, payload);
+        const gated = butil.utils.throttle(minInterval, send, true);
         const handler = (e: any) => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
             if (once) delete _elementHandlers[listenerId];
-            butil.utils.dispatch(dotNetRef, methodName, listenerId, butil.events.mapEvent(e, argsMembers));
+            gated(butil.events.mapEvent(e, argsMembers));
         };
         _elementHandlers[listenerId] = { element, eventName, handler, options };
         element.addEventListener(eventName, handler, options);

@@ -331,6 +331,40 @@ await _subscription.DisposeAsync();
 If you forget, the owning service detaches everything it registered when its scope is torn down.
 That's a safety net, not a plan.
 
+### Rate-limit the high-frequency ones
+
+`mousemove`, `pointermove`, `scroll`, `resize`, `wheel` and `touchmove` fire about once a frame, and
+a `ResizeObserver` on a dragged element does the same. Every one of those is an interop round trip -
+a JSON serialization plus, on Blazor Server, a SignalR message and a network hop. Cap it:
+
+```csharp
+// window and document events
+await window.SubscribeEvent<ButilMouseEventArgs>(ButilEvents.MouseMove, OnMove,
+    new ButilEventListenerOptions { Passive = true, MinInterval = TimeSpan.FromMilliseconds(50) });
+
+// element events
+await _element.SubscribeEvent<ButilPointerEventArgs>(js, ButilEvents.PointerMove, OnMove,
+    new ButilEventListenerOptions { Passive = true, MinInterval = TimeSpan.FromMilliseconds(50) });
+
+// observers - milliseconds on the options objects, which are serialized to the browser as-is
+await _element.ObserveResize(js, OnResize, minInterval: TimeSpan.FromMilliseconds(50));
+await _element.ObserveIntersection(js, OnIntersect, new IntersectionObserverOptions { MinInterval = 200 });
+await _element.ObserveMutations(js, OnMutate, new MutationObserverOptions { Subtree = true, MinInterval = 250 });
+
+// visual viewport
+await visualViewport.SubscribeScroll(OnScroll, minInterval: TimeSpan.FromMilliseconds(100));
+```
+
+The gate runs in JavaScript, before the round trip, so a suppressed event costs nothing. It is
+leading-edge with a trailing send: the first event after an idle gap goes through immediately, and
+the newest event suppressed during an interval is delivered when that interval elapses - so the
+handler always ends up holding the size the element settled at, or where the pointer stopped, rather
+than a value one sample out of date. `preventDefault` and `stopPropagation` still run on every
+event; the gate changes how often .NET hears, not what the page does.
+
+The one case to leave ungated is a handler that must see *every* change - a mutation change log, an
+undo stack - because what a gate drops is whole batches, not individual records.
+
 ### Handles own hardware
 
 `MediaStreamHandle`, `MediaRecordingHandle`, `WakeLock`'s persistent handle and the File System

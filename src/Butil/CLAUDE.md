@@ -14,7 +14,7 @@ Strongly-typed C# wrappers over browser Web APIs for Blazor (WebAssembly, Server
 | `Bit.Butil.Build/` | MSBuild task run in a consumer's publish: script scanning, trimming, bundling |
 | `Bit.Butil.Demo/` | The documentation site (Client) and its host (Server), which also hosts the MCP server at `/mcp` |
 | `Samples/` | Minimal hosting samples: `Samples.Core` (shared pages), `Samples.Web` (standalone WebAssembly), `Samples.Maui` (Hybrid) |
-| `tests/` | `Tests.E2E` (Playwright), `Tests.Mcp` (MSTest against the live MCP server), `Tests.Manual` (trimming/bundling console harness), `Tests.PublishFixture` (the consumer app it publishes) |
+| `tests/` | `Tests.E2E` (Playwright), `Tests.Mcp` (MSTest against the live MCP server), `Tests.Manual` (trimming/bundling console harness), `Tests.Benchmarks` (weight and interop-cost budgets), `Tests.PublishFixture` (the consumer app it publishes) |
 
 ## Coding style
 
@@ -66,6 +66,13 @@ generic type accompanying an existing non-generic one of the same name - those t
    `tests/Bit.Butil.Tests.Manual` (`SplitModuleUse`) fails when either rule is broken.
 6. **Anything attaching a listener returns a `ButilSubscription`**; anything holding a browser resource open
    (streams, recorders, handles) is `IAsyncDisposable`. Document the gesture/HTTPS/permission preconditions.
+   A listener for an event that fires **about once a frame** - a pointer move, a scroll, a resize, an
+   observer callback - takes a minimum interval and gates the dispatch through `butil.utils.throttle`
+   (`events`, `elementEvents`, the three observers and `visualViewport` are the shape to copy). Gate the
+   *dispatch*, not the handler, so `preventDefault` still runs on every event, and map the payload before
+   the gate so the trailing send never reads an event the browser has finished dispatching. Every one of
+   those events is otherwise a JSON serialization plus, on Blazor Server, a SignalR message and a network
+   hop - `Tests.Benchmarks` measures the difference and fails if it stops holding.
 7. Add the service to the **`README.md` "What's in the box"** table.
 
 ## Showcases - the Demo and Samples projects
@@ -114,6 +121,7 @@ Cover a feature in whichever of these it belongs to - in more than one, where it
 | `tests/Bit.Butil.Tests.E2E` | Real browser behaviour, through the deterministic harness pages `Samples.Core/Pages/E2EPage.razor` and `E2EObserversPage.razor`. Give every control a stable `id`, write results to the single status element, and avoid APIs that prompt, so the suite stays headless and flake-free. | `dotnet test tests/Bit.Butil.Tests.E2E` (see its README for the browser env vars) |
 | `tests/Bit.Butil.Tests.Mcp` | The MCP server against a real child-process deployment driven by a real MCP client: tool surface, behaviour, failures, search, resources, prompts, completions, the HTTP mirror, and cross-catalog consistency. | `dotnet test tests/Bit.Butil.Tests.Mcp` |
 | `tests/Bit.Butil.Tests.Manual` | Trimming, the interop contract, and script scanning/bundling/trimming/publishing. A console app because the subject is a *publish* output; it exits non-zero on failure. | See its README - run untrimmed then trimmed from that folder, sharing `interop-manifest.txt` |
+| `tests/Bit.Butil.Tests.Benchmarks` | Performance, held to budgets: per-module download weight off the build artifacts, and interop cost plus rate limiting in a real browser through `Samples.Core/Pages/BenchmarkPage.razor`. A console app for the same reason as the Manual harness - the subject is an artifact and a deployed app - and it exits non-zero when a measurement is outside its budget. | `dotnet run` from that folder (`--weight` / `--runtime` for one half) |
 
 `interop-manifest.txt` (this folder, and the Manual harness's copy) is generated from an untrimmed run and is the
 contract for `[JSInvokable]` identifiers, JSON payload members and the `[ButilService]` roster. Regenerate it

@@ -104,6 +104,28 @@ await box.SetAttribute("style", "width: 20rem; height: 6rem; resize: both; overf
     <DemoConsole @ref="growOutput" Title="programmatic changes output" />
 </DemoSection>
 
+<DemoSection Title="Rate limiting"
+             Api="minInterval"
+             Description="A ResizeObserver delivers an entry every frame for as long as a drag or a reflow lasts, and every entry is an interop round trip - under Blazor Server, a SignalR message and a network hop per frame. minInterval caps how often the handler is called. The gate is leading-edge with a trailing send, so the size the element settles at always arrives; it is just delivered a little later. Start a gated observer below and drag the box: the console fills at a fraction of the rate, and the last line still reads the final size."
+             Code=@("""
+subscription = await box.ObserveResize(js, entries =>
+{
+    // called at most once every 100 ms, and always once more
+    // after the drag stops - with the settled size
+},
+minInterval: TimeSpan.FromMilliseconds(100));
+""")>
+    <div class="field">
+        <span class="field-label">Minimum interval (ms)</span>
+        <input type="number" min="0" step="10" @bind="minIntervalMs" style="max-width:8rem;" />
+    </div>
+    <div class="controls">
+        <button @onclick="ReObserveGated">Re-observe with a @minIntervalMs ms gate</button>
+        <button class="secondary" @onclick="ReObserveUngated">Re-observe ungated</button>
+    </div>
+    <DemoConsole @ref="gatedOutput" Title="rate limiting output" />
+</DemoSection>
+
 <DemoSection Title="Stopping"
              Api="ButilSubscription"
              Description="ObserveResize returns a ButilSubscription; disposing it unobserves the element and releases the interop reference. Dispose every observer you start - at the latest in your component's DisposeAsync, as this page does."
@@ -135,7 +157,7 @@ public async ValueTask DisposeAsync()
 </Callout>
 
 <ApiTable Title="API reference">
-    <ApiMember Name="ObserveResize" Signature="Task<ButilSubscription> ObserveResize(IJSRuntime js, Action<ResizeObserverEntry[]> handler, ResizeObserverBox box = ResizeObserverBox.ContentBox)" Description="Extension method on ElementReference. Starts observing size changes and returns a disposable subscription." />
+    <ApiMember Name="ObserveResize" Signature="Task<ButilSubscription> ObserveResize(IJSRuntime js, Action<ResizeObserverEntry[]> handler, ResizeObserverBox box = ResizeObserverBox.ContentBox, TimeSpan? minInterval = null)" Description="Extension method on ElementReference. Starts observing size changes and returns a disposable subscription. minInterval rate-limits the handler in JavaScript, before the round trip." />
     <ApiMember Name="ResizeObserverBox" Signature="enum ResizeObserverBox { ContentBox, BorderBox, DevicePixelContentBox }" Description="Selects which box dimensions trigger the observer." />
     <ApiMember Name="ResizeObserverEntry.ContentRect" Signature="Rect? ContentRect { get; set; }" Description="The content box geometry of the observed element." />
     <ApiMember Name="ResizeObserverEntry.InlineSize" Signature="double InlineSize { get; set; }" Description="Logical inline size of the observed box (width in horizontal writing modes)." />
@@ -151,6 +173,7 @@ public async ValueTask DisposeAsync()
     private DemoConsole boxModelsOutput = default!;
     private DemoConsole entriesOutput = default!;
     private DemoConsole growOutput = default!;
+    private DemoConsole gatedOutput = default!;
     private DemoConsole stoppingOutput = default!;
 
     private ElementReference boxRef;
@@ -159,6 +182,7 @@ public async ValueTask DisposeAsync()
     private ResizeObserverBox selectedBox = ResizeObserverBox.BorderBox;
     private ResizeObserverEntry? latestEntry;
     private double boxWidthRem = 16;
+    private int minIntervalMs = 100;
 
     private async Task StartObserving()
     {
@@ -171,7 +195,19 @@ public async ValueTask DisposeAsync()
         await StartWith(selectedBox, boxModelsOutput);
     }
 
-    private async Task StartWith(ResizeObserverBox box, DemoConsole output)
+    private async Task ReObserveGated()
+    {
+        await StopObserving(gatedOutput);
+        await StartWith(ResizeObserverBox.ContentBox, gatedOutput, TimeSpan.FromMilliseconds(minIntervalMs));
+    }
+
+    private async Task ReObserveUngated()
+    {
+        await StopObserving(gatedOutput);
+        await StartWith(ResizeObserverBox.ContentBox, gatedOutput);
+    }
+
+    private async Task StartWith(ResizeObserverBox box, DemoConsole output, TimeSpan? minInterval = null)
     {
         try
         {
@@ -189,9 +225,11 @@ public async ValueTask DisposeAsync()
                 _ = output.Log($"{box} → {latestEntry.InlineSize:F0} x {latestEntry.BlockSize:F0} " +
                     $"(device px: {latestEntry.DevicePixelInlineSize:F0} x {latestEntry.DevicePixelBlockSize:F0})");
                 _ = InvokeAsync(StateHasChanged);
-            }, box);
+            }, box, minInterval);
 
-            await output.Log($"Observing with {box} - drag the corner of the box");
+            await output.Log(minInterval is null
+                ? $"Observing with {box} - drag the corner of the box"
+                : $"Observing with {box}, rate-limited to one call every {minInterval.Value.TotalMilliseconds:F0} ms - drag the corner");
         }
         catch (Exception ex)
         {

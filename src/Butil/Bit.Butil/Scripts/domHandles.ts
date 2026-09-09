@@ -36,10 +36,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const node = _nodes[id];
             if (!node?.setAttribute) return null;
 
-            const existing = Array.from(node.attributes ?? [])
-                .map((attr: any) => attr.name as string)
-                .find(name => name.startsWith('_bl_'));
-            if (existing) return existing.slice('_bl_'.length);
+            // Walked rather than mapped: this runs on every handle handed to an ElementReference
+            // extension, and Array.from + map + find allocates two arrays and a closure per call
+            // to answer a question about one attribute name.
+            const attributes = node.attributes;
+            for (let i = 0; i < (attributes?.length ?? 0); i++) {
+                const name = attributes[i].name as string;
+                if (name.startsWith('_bl_')) return name.slice('_bl_'.length);
+            }
 
             const referenceId = butil.utils.randomUUID();
             node.setAttribute(`_bl_${referenceId}`, '');

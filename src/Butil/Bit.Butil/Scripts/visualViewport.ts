@@ -17,13 +17,19 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         addScrollEnd, removeScrollEnd
     };
 
-    function addResize(dotNetRef: DotNet.DotNetObject, listenerId: string) {
-        const handler: EventListener = () => {
-            butil.utils.dispatch(dotNetRef, 'InvokeVisualViewport', listenerId);
-        };
+    // resize and scroll both fire once a frame for as long as a pinch-zoom pan lasts, and the
+    // notification carries no payload - the .NET handler reads the viewport afterwards, so one
+    // event is a round trip to say "look again" plus a round trip per property looked at. Both
+    // take a minimum interval for that reason, gated trailing so the settled viewport is always
+    // the last thing .NET is told about. A zero interval leaves the dispatch untouched.
+    function addResize(dotNetRef: DotNet.DotNetObject, listenerId: string, minInterval: number) {
+        const notify = () => butil.utils.dispatch(dotNetRef, 'InvokeVisualViewport', listenerId);
+        const handler: EventListener = butil.utils.throttle(minInterval, notify, true);
 
         _handlers[listenerId] = handler;
-        window.visualViewport.addEventListener('resize', handler);
+        // Passive: none of these three listeners cancels anything, and visualViewport events are
+        // not passive by default the way a window scroll listener is.
+        window.visualViewport.addEventListener('resize', handler, { passive: true });
     }
     function removeResize(ids: string[]) {
         ids.forEach(id => {
@@ -33,13 +39,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         });
     }
 
-    function addScroll(dotNetRef: DotNet.DotNetObject, listenerId: string) {
-        const handler: EventListener = () => {
-            butil.utils.dispatch(dotNetRef, 'InvokeVisualViewport', listenerId);
-        };
+    function addScroll(dotNetRef: DotNet.DotNetObject, listenerId: string, minInterval: number) {
+        const notify = () => butil.utils.dispatch(dotNetRef, 'InvokeVisualViewport', listenerId);
+        const handler: EventListener = butil.utils.throttle(minInterval, notify, true);
 
         _handlers[listenerId] = handler;
-        window.visualViewport.addEventListener('scroll', handler);
+        window.visualViewport.addEventListener('scroll', handler, { passive: true });
     }
     function removeScroll(ids: string[]) {
         ids.forEach(id => {
@@ -57,7 +62,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         };
 
         _handlers[listenerId] = handler;
-        window.visualViewport.addEventListener('scrollend', handler);
+        // Not gated: scrollend fires once, when the pan settles - there is nothing to rate-limit.
+        window.visualViewport.addEventListener('scrollend', handler, { passive: true });
     }
     function removeScrollEnd(ids: string[]) {
         ids.forEach(id => {

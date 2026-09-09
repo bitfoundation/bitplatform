@@ -1,0 +1,240 @@
+@page "/benchmark"
+@implements IAsyncDisposable
+@inject Bit.Butil.Performance performance
+@inject Bit.Butil.TextEncoding textEncoding
+@inject Bit.Butil.Dom dom
+@inject IJSRuntime js
+
+@*
+    The deterministic benchmark harness Bit.Butil.Tests.Benchmarks drives.
+
+    Same contract as /e2e - every control has a stable id, results land in a single element - but the
+    output is machine-readable rather than prose, one line per measurement:
+
+        <name>|iterations=<n>|totalMs=<ms>|perOpUs=<us>[|<key>=<value>]...
+
+    The runner parses those lines and holds them against the budgets in its Budgets.cs. Everything is
+    measured from .NET, through the real service surface, because that is the path a consuming app
+    actually pays for: a benchmark of the JavaScript alone would leave out the serialization and the
+    marshaling, which under Blazor Server is most of the cost.
+
+    Nothing here prompts, opens a socket or touches the network, so the suite stays headless.
+*@
+
+<PageTitle>Butil - Benchmarks</PageTitle>
+
+<h1>Butil Benchmarks</h1>
+
+<div data-testid="status" id="status">@_status</div>
+<pre id="results">@_results</pre>
+
+<section>
+    <h3>Interop round trips</h3>
+    <button id="bench-invoke-value" @onclick="BenchInvokeValue">value call</button>
+    <button id="bench-invoke-void" @onclick="BenchInvokeVoid">void call</button>
+    <button id="bench-invoke-fast" @onclick="BenchInvokeFast">fast (in-process) call</button>
+    <button id="bench-element-read" @onclick="BenchElementRead">ElementReference read</button>
+    <button id="bench-dom-handle" @onclick="BenchDomHandle">Dom handle query + read</button>
+</section>
+
+<section>
+    <h3>Payloads</h3>
+    <button id="bench-payload" @onclick="BenchPayload">byte[] marshaling (1 KB / 64 KB / 1 MB)</button>
+</section>
+
+<section>
+    <h3>Rate limiting</h3>
+    <p>
+        The gate that keeps a high-frequency subscription off the interop channel. Each pair subscribes,
+        the runner fires a fixed burst of events, and the page reports how many reached .NET.
+    </p>
+    <button id="gate-move-ungated" @onclick="StartMoveGateUngated">mousemove, ungated</button>
+    <button id="gate-move-gated" @onclick="StartMoveGateGated">mousemove, 50 ms</button>
+    <button id="gate-resize-ungated" @onclick="StartResizeGateUngated">resize, ungated</button>
+    <button id="gate-resize-gated" @onclick="StartResizeGateGated">resize, 50 ms</button>
+    <button id="gate-report" @onclick="ReportGate">report</button>
+
+    <div id="gate-target" @ref="_target" title="butil-bench" style="width:100px;height:40px;background:#eee">target</div>
+</section>
+
+<section>
+    <h3>All</h3>
+    <button id="bench-all" @onclick="BenchAll">run every timing benchmark</button>
+</section>
+
+@code {
+    // Enough iterations that a single scheduler hiccup cannot dominate, few enough that the whole
+    // suite stays inside a Playwright default timeout even on a loaded CI box.
+    private const int CallIterations = 400;
+    private const int ElementIterations = 200;
+
+    private string _status = "ready";
+    private string _results = "";
+
+    private ElementReference _target;
+    private ButilSubscription? _moveGate;
+    private ButilSubscription? _resizeGate;
+    private int _gateDelivered;
+    private string _gateName = "";
+
+    private void Emit(string line)
+    {
+        _results += line + "\n";
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Times <paramref name="iterations"/> awaited round trips and emits the measurement.
+    /// </summary>
+    /// <remarks>
+    /// A warm-up pass runs first and is not counted: the first call into a module pays for its
+    /// import under lazy scripts, and the first call of any shape pays for the JIT of the generic
+    /// interop machinery. Neither is what a running app experiences, and both are large enough to
+    /// swamp the steady-state number this is trying to report. The lazy-load cost is measured on
+    /// its own by the runner, where it is the subject rather than noise.
+    /// </remarks>
+    private async Task Measure(string name, int iterations, Func<Task> operation, string extra = "")
+    {
+        await operation();
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        for (var i = 0; i < iterations; i++) await operation();
+        stopwatch.Stop();
+
+        var totalMs = stopwatch.Elapsed.TotalMilliseconds;
+        var perOpUs = totalMs * 1000 / iterations;
+        Emit($"{name}|iterations={iterations}|totalMs={totalMs:F3}|perOpUs={perOpUs:F2}{extra}");
+        _status = $"done:{name}";
+    }
+
+    private Task BenchInvokeValue()
+        => Measure("invoke-value", CallIterations, async () => await performance.Now());
+
+    private Task BenchInvokeVoid()
+        => Measure("invoke-void", CallIterations, async () => await performance.Mark("butil-bench"));
+
+    // The synchronous in-process path, which only exists under WebAssembly. Everywhere else
+    // FastInvoke throws rather than silently measuring the async path, so the runner only holds
+    // this one to a budget on the WebAssembly host.
+    private Task BenchInvokeFast() => Measure("invoke-fast", CallIterations, () =>
+    {
+        try
+        {
+            js.FastInvoke<double>("BitButil.performance.now");
+        }
+        catch (InvalidOperationException)
+        {
+            // Not an in-process runtime; reported as a no-op rather than a failure.
+        }
+        return Task.CompletedTask;
+    });
+
+    private Task BenchElementRead()
+        => Measure("element-read", ElementIterations, async () => await _target.GetTitle());
+
+    // Two round trips per iteration - the query that mints the handle and the read through it -
+    // because that is how the Dom service is actually used, and the handle registry it exercises
+    // is the part with a per-call cost worth watching.
+    private Task BenchDomHandle() => Measure("dom-handle", ElementIterations, async () =>
+    {
+        var node = await dom.Query("#gate-target");
+        if (node is not null) await node.GetText();
+    });
+
+    // TextEncoding.Encode is the payload benchmark because it is the one call in the library that
+    // carries a caller-sized payload in *both* directions with no setup and no device permission: a
+    // string of N ASCII characters goes out, N bytes come back. Crypto.GetRandomValues would only
+    // measure the return leg, and Web Crypto caps it at 65 536 bytes anyway.
+    private async Task BenchPayload()
+    {
+        foreach (var size in new[] { 1024, 64 * 1024, 1024 * 1024 })
+        {
+            // Fewer iterations as the payload grows: at a megabyte the thing being measured is
+            // throughput, and 400 of those would take longer than the whole rest of the suite.
+            var iterations = size >= 1024 * 1024 ? 10 : size >= 64 * 1024 ? 50 : 200;
+            var text = new string('x', size);
+            var bytes = 0;
+
+            await Measure($"payload-{size}", iterations,
+                async () => bytes = (await textEncoding.Encode(text)).Length,
+                $"|bytes={size}");
+
+            if (bytes != size) Emit($"payload-{size}-MISMATCH|got={bytes}");
+        }
+
+        _status = "done:payload";
+    }
+
+    // Caught rather than left to Blazor's error boundary: an unhandled exception here stops the page
+    // updating, and the runner - which is waiting on the status element - would see that as a
+    // 180-second timeout instead of the one-line reason it actually is.
+    private async Task BenchAll()
+    {
+        _results = "";
+        try
+        {
+            await BenchInvokeValue();
+            await BenchInvokeVoid();
+            await BenchInvokeFast();
+            await BenchElementRead();
+            await BenchDomHandle();
+            await BenchPayload();
+            _status = "done:all";
+        }
+        catch (Exception exception)
+        {
+            Emit($"error|message={exception.Message.Replace('|', ' ').Replace('\n', ' ')}");
+            _status = "error:all";
+        }
+    }
+
+    // --- rate limiting -------------------------------------------------------------------------
+
+    private Task StartMoveGateUngated() => StartMoveGate(null);
+    private Task StartMoveGateGated() => StartMoveGate(TimeSpan.FromMilliseconds(50));
+    private Task StartResizeGateUngated() => StartResizeGate(null);
+    private Task StartResizeGateGated() => StartResizeGate(TimeSpan.FromMilliseconds(50));
+
+    private async Task StartMoveGate(TimeSpan? minInterval)
+    {
+        await DisposeGates();
+        Volatile.Write(ref _gateDelivered, 0);
+        _gateName = minInterval is null ? "move-ungated" : "move-gated";
+
+        _moveGate = await _target.SubscribeEvent<ButilMouseEventArgs>(js, ButilEvents.MouseMove,
+            _ => Interlocked.Increment(ref _gateDelivered),
+            new ButilEventListenerOptions { Passive = true, MinInterval = minInterval });
+
+        _status = $"ready:{_gateName}";
+    }
+
+    private async Task StartResizeGate(TimeSpan? minInterval)
+    {
+        await DisposeGates();
+        Volatile.Write(ref _gateDelivered, 0);
+        _gateName = minInterval is null ? "resize-ungated" : "resize-gated";
+
+        _resizeGate = await _target.ObserveResize(js,
+            _ => Interlocked.Increment(ref _gateDelivered),
+            minInterval: minInterval);
+
+        _status = $"ready:{_gateName}";
+    }
+
+    // Read once, after the burst has been given time to drain. The count is the whole measurement:
+    // an ungated subscription reports one delivery per event, a gated one reports the handful the
+    // interval allows plus the trailing send that carries the settled state.
+    private void ReportGate()
+    {
+        Emit($"gate-{_gateName}|delivered={Volatile.Read(ref _gateDelivered)}");
+        _status = $"done:gate-{_gateName}";
+    }
+
+    private async Task DisposeGates()
+    {
+        if (_moveGate is not null) { await _moveGate.DisposeAsync(); _moveGate = null; }
+        if (_resizeGate is not null) { await _resizeGate.DisposeAsync(); _resizeGate = null; }
+    }
+
+    public async ValueTask DisposeAsync() => await DisposeGates();
+}
