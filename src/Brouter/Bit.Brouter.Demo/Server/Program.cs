@@ -2,6 +2,7 @@
 using Bit.Brouter.Demo.Server.Controllers;
 using Bit.Brouter.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.HttpOverrides;
 using ModelContextProtocol.Protocol;
 using System.Text.Json.Serialization;
 
@@ -60,6 +61,15 @@ builder.Services.AddMcpServer(options =>
 // an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.
 builder.Services.AddScoped<HtmlRenderer>();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.All;
+    options.ForwardedHostHeaderName = "X-Host";
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.ForwardLimit = 1;
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -71,6 +81,8 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
+
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 app.UseAntiforgery();
