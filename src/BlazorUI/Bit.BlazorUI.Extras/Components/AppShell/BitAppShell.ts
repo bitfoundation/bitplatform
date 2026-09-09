@@ -326,7 +326,7 @@ namespace BitBlazorUI {
         // instead - a page asking for `interactive-widget=resizes-content`, or a desktop browser - the two
         // viewports keep matching and this reports 0, which is the right answer: there is nothing left to
         // take off a height that has already been taken off.
-        private static _keyboards: { [key: string]: { element: HTMLElement, handler: () => void, frame: number, last: number, dotnetObj?: DotNetObject } } = {};
+        private static _keyboards: { [key: string]: { element: HTMLElement, handler: () => void, frame: number, last: number, style: HTMLStyleElement, dotnetObj?: DotNetObject } } = {};
 
         public static setupKeyboard(id: string, element: HTMLElement, dotnetObj?: DotNetObject) {
             if (!element) return;
@@ -336,7 +336,18 @@ namespace BitBlazorUI {
             const viewport = window.visualViewport;
             if (!viewport) return;
 
-            const state = { element, handler: () => { }, frame: 0, last: -1, dotnetObj };
+            // The number is published through a stylesheet of this shell's own rather than as an inline
+            // custom property, because the style attribute of the root is written by Blazor on every
+            // render that changes it and anything this side had put there would be wiped - after which
+            // the unchanged-inset check below would never write it again while the keyboard stayed open.
+            // The shell is addressed by an attribute the renderer never knew about, so nothing removes
+            // it either, and the class is repeated in the selector to outweigh the 0px the stylesheet
+            // declares whatever order the two are loaded in.
+            const style = document.createElement('style');
+            document.head.appendChild(style);
+            element.setAttribute('data-bit-ash-kbd', id);
+
+            const state = { element, handler: () => { }, frame: 0, last: -1, style, dotnetObj };
 
             const measure = () => {
                 state.frame = 0;
@@ -362,7 +373,7 @@ namespace BitBlazorUI {
                 if (inset === state.last) return;
 
                 state.last = inset;
-                state.element.style.setProperty('--bit-ash-keyboard-inset', `${inset}px`);
+                state.style.textContent = `.bit-ash[data-bit-ash-kbd="${id}"]{--bit-ash-keyboard-inset:${inset}px}`;
 
                 // A marker for the CSS that cannot be written against a length - the bottom bar a shell
                 // hides while the reader is typing, the map that drops its controls - so a page does not
@@ -408,7 +419,8 @@ namespace BitBlazorUI {
                 viewport.removeEventListener('scroll', state.handler);
             }
 
-            state.element.style.removeProperty('--bit-ash-keyboard-inset');
+            state.style.remove();
+            state.element.removeAttribute('data-bit-ash-kbd');
             state.element.removeAttribute('data-bit-ash-keyboard');
         }
     }

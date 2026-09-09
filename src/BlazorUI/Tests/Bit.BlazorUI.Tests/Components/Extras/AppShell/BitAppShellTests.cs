@@ -1187,14 +1187,16 @@ public class BitAppShellTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAppShellNoScrollShouldSetUpTheBrowserSide()
+    public void BitAppShellNoScrollShouldNotSetUpTheBrowserSideOnItsOwn()
     {
         var component = RenderComponent<BitAppShell>(parameters =>
         {
             parameters.Add(p => p.NoScroll, true);
         });
 
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.ScrollablePane.setup");
+        // The stylesheet is what stops the reader, so a shell that asked for nothing else does not pay
+        // for a scroll listener, a ResizeObserver and a measurement per frame to be told to sit still.
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.setup"));
 
         Assert.IsTrue(component.Find(".bit-ash-main").ClassList.Contains("bit-ash-nsc"));
     }
@@ -2016,6 +2018,45 @@ public class BitAppShellTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAppShellShouldPinAnAutoScrollingShellToTheEndOnItsFirstRender()
+    {
+        RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AutoScroll, true);
+        });
+
+        // The browser side has nothing to compare against on its very first measurement, so a shell that
+        // opens with content already in it would be left standing at the top without this one call.
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.ScrollablePane.autoScroll");
+
+        Assert.AreEqual(true, invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldPinAnAutoScrollingShellOnlyOnce()
+    {
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.AutoScroll, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.AutoScrollThreshold, 64));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.ScrollablePane.autoScroll"));
+    }
+
+    [TestMethod]
+    public void BitAppShellShouldNotPinAShellThatNeverAskedForAutoScroll()
+    {
+        RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PreserveScroll, true);
+        });
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.autoScroll"));
+    }
+
+    [TestMethod]
     public void BitAppShellShouldSetUpTheBrowserSideForPreserveScroll()
     {
         RenderComponent<BitAppShell>(parameters =>
@@ -2160,6 +2201,28 @@ public class BitAppShellTests : BunitTestContext
         var component = RenderComponent<BitAppShell>();
 
         await component.Instance.ScrollToElement("row", smooth: false, behavior: behavior);
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.ScrollablePane.scrollToElement");
+
+        Assert.AreEqual(expected, invocation.Arguments[3]);
+    }
+
+    [TestMethod,
+        DataRow(null, true),
+        DataRow(BitScrollBehavior.Smooth, true),
+        DataRow(BitScrollBehavior.Instant, false),
+        DataRow(BitScrollBehavior.Auto, false)
+    ]
+    public async Task BitAppShellShouldReadTheScrollBehaviorOfTheShellForAScrollToElementWithoutOne(BitScrollBehavior? behavior, bool expected)
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.ScrollablePane.scrollToElement");
+
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.ScrollBehavior, behavior);
+        });
+
+        await component.Instance.ScrollToElement("row");
 
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.ScrollablePane.scrollToElement");
 

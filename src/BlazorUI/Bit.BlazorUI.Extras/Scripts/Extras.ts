@@ -5,12 +5,34 @@ namespace BitBlazorUI {
             Object.keys(cssVariables).forEach(key => document.documentElement.style.setProperty(key, cssVariables[key]));
         }
 
+        // A behavior handed in from C# overrides the scroll-behavior of the element, so the stylesheet
+        // rule that takes the animation off under the reduced motion preference is not consulted at all
+        // for these moves - the preference has to be read here instead, the same way every animated
+        // component of the library reads it. Left undefined, the element (and therefore the stylesheet)
+        // still decides, which is why only an asked-for animation is downgraded.
+        private static behave(element: HTMLElement, behavior: ScrollBehavior | undefined): ScrollBehavior | undefined {
+            if (behavior !== 'smooth') return behavior ?? undefined;
+
+            return Extras.animates(element) ? 'smooth' : 'instant';
+        }
+
+        private static animates(element: HTMLElement): boolean {
+            try {
+                // The class opts a whole SUBTREE out of the preference, so an ancestor carrying it counts
+                // for the element inside it - which is what the ForceAnimation of a container around it
+                // is asking for.
+                if (element.closest('.bit-fam')) return true;
+
+                return matchMedia('(prefers-reduced-motion: reduce)').matches === false;
+            } catch {
+                return true;
+            }
+        }
+
         public static goToTop(element: HTMLElement, behavior: ScrollBehavior | undefined) {
             if (!element) return;
 
-            behavior ??= undefined;
-
-            element.scrollTo({ top: 0, behavior });
+            element.scrollTo({ top: 0, behavior: Extras.behave(element, behavior) });
         }
 
         // scrollHeight is the FULL height of the content, so handing it over as the target lets the
@@ -19,9 +41,7 @@ namespace BitBlazorUI {
         public static goToBottom(element: HTMLElement, behavior: ScrollBehavior | undefined) {
             if (!element) return;
 
-            behavior ??= undefined;
-
-            element.scrollTo({ top: element.scrollHeight, behavior });
+            element.scrollTo({ top: element.scrollHeight, behavior: Extras.behave(element, behavior) });
         }
 
         // A null axis is left where it stands rather than being sent to 0, which is what makes one call
@@ -29,21 +49,17 @@ namespace BitBlazorUI {
         public static scrollTo(element: HTMLElement, left: number | null, top: number | null, behavior: ScrollBehavior | undefined) {
             if (!element) return;
 
-            behavior ??= undefined;
-
             element.scrollTo({
                 left: left ?? element.scrollLeft,
                 top: top ?? element.scrollTop,
-                behavior
+                behavior: Extras.behave(element, behavior)
             });
         }
 
         public static scrollBy(element: HTMLElement, x: number, y: number, behavior?: ScrollBehavior | undefined) {
             if (!element) return;
 
-            behavior ??= undefined;
-
-            element.scrollBy({ left: x, top: y, behavior });
+            element.scrollBy({ left: x, top: y, behavior: Extras.behave(element, behavior) });
         }
 
         // Attaches (or updates) a deterministic keydown listener that calls preventDefault

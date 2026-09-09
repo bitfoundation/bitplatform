@@ -46,6 +46,7 @@ public partial class BitAppShell : BitComponentBase
     private bool _subscribed;
     private bool _scrollInit;
     private bool _paneSetup;
+    private bool _autoScrolled;
     private bool _keyboardSetup;
     private bool _locationChanged;
     private string? _lastLocation;
@@ -489,8 +490,9 @@ public partial class BitAppShell : BitComponentBase
     /// <param name="smooth">Whether the move is animated. Honors the reduced motion preference.</param>
     /// <param name="alignment">Where in the container the element comes to rest.</param>
     /// <param name="behavior">
-    /// How the move is made, which wins over <paramref name="smooth"/> where both are given. When it is
-    /// not given either, <paramref name="smooth"/> decides.
+    /// How the move is made, which wins over both <paramref name="smooth"/> and
+    /// <see cref="ScrollBehavior"/> where it is given. Left out, the move is animated only where the two
+    /// of them agree that it should be.
     /// </param>
     public async Task ScrollToElement(string elementId,
                                       double offset = 0,
@@ -500,15 +502,16 @@ public partial class BitAppShell : BitComponentBase
     {
         if (_containerRef.HasValue is false || elementId.HasNoValue()) return;
 
-        // The behavior is the same argument every other move of this component takes, and it wins over the
-        // older flag beside it where both are given. Left out, the flag decides, so a call written before
-        // there was a behavior to pass still means what it did.
+        // The behavior is the same argument every other move of this component takes, and it wins over
+        // both the flag beside it and the property of the shell where it is given. Left out, the two of
+        // them have to agree: the flag is what this call asks for and the property is what the shell
+        // moves like, so a shell told to move instantly is not animated by a flag that was never set.
         var animated = behavior switch
         {
             BitScrollBehavior.Smooth => true,
             BitScrollBehavior.Instant => false,
             BitScrollBehavior.Auto => ScrollBehavior is null or BitScrollBehavior.Smooth,
-            _ => smooth
+            _ => smooth && ScrollBehavior is null or BitScrollBehavior.Smooth
         };
 
         await InvokeJs(() => _js.BitScrollablePaneScrollToElement(_containerRef!.Value,
@@ -587,10 +590,8 @@ public partial class BitAppShell : BitComponentBase
         // on the root all four of them are sized from.
         ClassBuilder.Register(() => NoInsets ? "bit-ash-nin" : string.Empty);
 
-        // And each of the four can be taken back to zero on its own, for the application that insets that
-        // one edge itself: a header painting behind the status bar over a shell that still keeps the home
-        // indicator clear is an edge-to-edge layout of the top edge alone. The two side ones are the
-        // LOGICAL edges, so each of them stays with the reading direction the bars are laid out in.
+        // The shell is taken out of the flow of the host page and positioned against the viewport itself,
+        // so it has a height of its own without the page having given html and body one.
         ClassBuilder.Register(() => FullScreen ? "bit-ash-fsc" : string.Empty);
 
         // Written before the flags that take an inset away, and the stylesheet keeps them in that order,
@@ -598,6 +599,10 @@ public partial class BitAppShell : BitComponentBase
         // device can ask for.
         ClassBuilder.Register(() => StableInsets ? "bit-ash-sin" : string.Empty);
 
+        // And each of the four can be taken back to zero on its own, for the application that insets that
+        // one edge itself: a header painting behind the status bar over a shell that still keeps the home
+        // indicator clear is an edge-to-edge layout of the top edge alone. The two side ones are the
+        // LOGICAL edges, so each of them stays with the reading direction the bars are laid out in.
         ClassBuilder.Register(() => NoTopInset ? "bit-ash-nit" : string.Empty);
         ClassBuilder.Register(() => NoBottomInset ? "bit-ash-nib" : string.Empty);
         ClassBuilder.Register(() => NoStartInset ? "bit-ash-nis" : string.Empty);
@@ -784,6 +789,8 @@ public partial class BitAppShell : BitComponentBase
 
         if (options is null)
         {
+            _autoScrolled = false;
+
             if (_paneSetup is false) return;
 
             _paneSetup = false;
@@ -791,27 +798,47 @@ public partial class BitAppShell : BitComponentBase
             return;
         }
 
-        if (_paneSetup)
+        if (_paneSetup is false)
+        {
+            _paneSetup = true;
+            _paneOptions = options;
+            _dotnetObj ??= DotNetObjectReference.Create(this);
+
+            await InvokeJs(() => _js.BitScrollablePaneSetup(UniqueId, _containerRef!.Value, _dotnetObj, options));
+        }
+        else if (options != _paneOptions)
         {
             // Nothing is sent for a set of options the browser side already has, so a shell that
             // re-renders on every navigation does not re-configure its scroller on every navigation.
-            if (options == _paneOptions) return;
-
             _paneOptions = options;
             await InvokeJs(() => _js.BitScrollablePaneUpdate(UniqueId, options));
-            return;
         }
 
-        _paneSetup = true;
-        _paneOptions = options;
-        _dotnetObj ??= DotNetObjectReference.Create(this);
+        // The first pinning is the one this side has to ask for: it is unconditional - a shell that starts
+        // out with content already in it belongs at the end of it - and the browser side has nothing to
+        // compare against on its very first measurement, so it would leave a shell that has not scrolled
+        // yet standing at the top. Every pinning after that is its own answer to the content it watches,
+        // without a round trip per render.
+        if (AutoScroll)
+        {
+            if (_autoScrolled is false)
+            {
+                _autoScrolled = true;
 
-        await InvokeJs(() => _js.BitScrollablePaneSetup(UniqueId, _containerRef!.Value, _dotnetObj, options));
+                await InvokeJs(() => _js.BitScrollablePaneAutoScroll(UniqueId, true));
+            }
+        }
+        else
+        {
+            _autoScrolled = false;
+        }
     }
 
     // What the browser side is driven with, or null when nothing has been asked of it at all. NoScroll is
-    // in here because `overflow: hidden` only stops the reader's own gestures, and the engine has to know
-    // not to move a container whose page alone decides where it stands.
+    // passed along because the engine has to know not to move a container whose page alone decides where
+    // it stands, but it is not on its own a reason to start one: the reader's own scrolling is already
+    // stopped by `overflow: hidden` in the stylesheet, and the gestures that flag holds the engine back
+    // from - drag, wheel, momentum - are not ones the shell ever turns on.
     private BitScrollablePaneOptions? BuildPaneOptions()
     {
         var scroll = OnScroll.HasDelegate;
@@ -824,7 +851,7 @@ public partial class BitAppShell : BitComponentBase
 
         if (scroll is false && scrollStart is false && scrollEnd is false &&
             top is false && bottom is false && left is false && right is false &&
-            NoScroll is false && AutoScroll is false && PreserveScroll is false) return null;
+            AutoScroll is false && PreserveScroll is false) return null;
 
         return new()
         {
