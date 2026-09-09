@@ -29,6 +29,9 @@ public partial class _BitChartLineDemo
 
     private static BitChartData Spark(string color, bool line, params double?[] values) => new()
     {
+        // A category axis spans the labels, so a sparkline still needs one per value - blank, since the
+        // tile shows no axis - or every point lands on the same x.
+        Labels = [.. values.Select(_ => "")],
         Datasets =
         {
             new BitChartDataset
@@ -290,6 +293,9 @@ private readonly List<SparklineTile> _tiles =
 
 private static BitChartData Spark(string color, bool line, params double?[] values) => new()
 {
+    // A category axis spans the labels, so a sparkline still needs one per value - blank, since the
+    // tile shows no axis - or every point lands on the same x.
+    Labels = [.. values.Select(_ => """")],
     Datasets =
     {
         new BitChartDataset

@@ -367,13 +367,16 @@
             }
             else
             {
-                var columns = TableColumnLimit;
+                // Every row renders this many cells, so the header has to as well - a dataset can carry
+                // more values than there are category names, and a header short of them shifts the whole
+                // row against its labels for a screen reader.
+                var columns = Math.Min(TableColumnCount, TableColumnLimit);
                 <thead>
                     <tr>
                         <th scope="col">Series</th>
-                        @foreach (var label in data.Labels.Take(columns))
+                        @for (int ci = 0; ci < columns; ci++)
                         {
-                            <th scope="col">@label</th>
+                            <th scope="col">@(ci < data.Labels.Count ? data.Labels[ci] : "")</th>
                         }
                     </tr>
                 </thead>
@@ -384,14 +387,14 @@
                             <th scope="row">@(ds.Label ?? "Series")</th>
                             @if (ds.RangeData is { } ranges)
                             {
-                                @foreach (var r in ranges.Take(columns))
+                                @for (int ci = 0; ci < columns; ci++)
                                 {
-                                    <td>@(r is { } rr ? $"{Fmt(rr.Low)}–{Fmt(rr.High)}" : "")</td>
+                                    <td>@(ci < ranges.Count && ranges[ci] is { } rr ? $"{Fmt(rr.Low)}–{Fmt(rr.High)}" : "")</td>
                                 }
                             }
                             else
                             {
-                                @for (int ci = 0; ci < Math.Min(columns, ds.Data.Count); ci++)
+                                @for (int ci = 0; ci < columns; ci++)
                                 {
                                     <td>@CellText(ds, ci)</td>
                                 }

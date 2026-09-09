@@ -571,6 +571,34 @@ private static readonly (string Label, double Step, bool IsTotal)[] Steps =
     (""Closing"", 0, true)
 ];
 
+private readonly BitChartOptions _waterfall = new()
+{
+    Plugins = new BitChartPluginOptions
+    {
+        Legend = new BitChartLegendOptions { Display = false },
+        Tooltip = new BitChartTooltipOptions
+        {
+            Callbacks = new BitChartTooltipCallbacks
+            {
+                Label = item =>
+                {
+                    var (label, step, isTotal) = Steps[item.DataIndex];
+                    return isTotal ? $""{label}: {WaterfallTotalAt(item.DataIndex):N0}""
+                                   : $""{label}: {step:+#,##0;-#,##0;0}"";
+                }
+            }
+        }
+    }
+};
+
+// The running total once the given step has been applied.
+private static double WaterfallTotalAt(int index)
+{
+    double total = 0;
+    for (int i = 0; i <= index; i++) total += Steps[i].Step;
+    return total;
+}
+
 private BitChartData Waterfall()
 {
     // RangeData floats each bar between the running total before and after its step.

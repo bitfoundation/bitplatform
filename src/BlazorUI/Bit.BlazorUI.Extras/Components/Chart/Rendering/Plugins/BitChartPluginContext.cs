@@ -21,6 +21,21 @@ public sealed class BitChartPluginContext
     internal BitChartAxisScale? IndexScale { get; init; }
     internal Dictionary<string, BitChartAxisScale>? ValueScales { get; init; }
 
+    /// <summary>Datasets the legend has toggled off at runtime.</summary>
+    internal IReadOnlySet<int>? HiddenDatasets { get; init; }
+
+    /// <summary>
+    /// Whether the dataset at the given index is actually drawn. A dataset is hidden either by its own
+    /// <see cref="BitChartDataset.Hidden"/> flag or by having been toggled off through the legend, and
+    /// anything drawn from a dataset's values has to honour both or it outlives the series it describes.
+    /// </summary>
+    public bool IsDatasetVisible(int datasetIndex)
+    {
+        var datasets = Config.Data.Datasets;
+        if (datasetIndex < 0 || datasetIndex >= datasets.Count) return false;
+        return !datasets[datasetIndex].Hidden && HiddenDatasets?.Contains(datasetIndex) != true;
+    }
+
     /// <summary>True when the index axis is a category axis, so indexes - not raw values - place things along it.</summary>
     public bool IndexIsCategory { get; init; }
 

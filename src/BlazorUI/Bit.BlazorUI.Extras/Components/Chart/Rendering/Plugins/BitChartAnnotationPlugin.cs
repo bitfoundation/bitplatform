@@ -98,6 +98,12 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
                 double y1 = a.YMax is { } yM ? ctx.YForValue(yM, a.AxisId) : plot.Top;
                 double y2 = a.YMin is { } ym ? ctx.YForValue(ym, a.AxisId) : plot.Bottom;
 
+                // Same clamp as the box: bounds outside the visible axis range must not spill past the chart.
+                x1 = Math.Clamp(x1, plot.Left, plot.Right);
+                x2 = Math.Clamp(x2, plot.Left, plot.Right);
+                y1 = Math.Clamp(y1, plot.Top, plot.Bottom);
+                y2 = Math.Clamp(y2, plot.Top, plot.Bottom);
+
                 double cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
                 double rx = Math.Abs(x2 - x1) / 2, ry = Math.Abs(y2 - y1) / 2;
                 if (rx <= 0 || ry <= 0) break;

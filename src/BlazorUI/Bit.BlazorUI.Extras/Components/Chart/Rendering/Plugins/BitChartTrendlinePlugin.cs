@@ -34,7 +34,7 @@ public sealed class BitChartTrendlinePlugin : IBitChartPlugin
         var datasets = ctx.Config.Data.Datasets;
         if (trend.DatasetIndex < 0 || trend.DatasetIndex >= datasets.Count) return;
         var ds = datasets[trend.DatasetIndex];
-        if (ds.Hidden) return;
+        if (!ctx.IsDatasetVisible(trend.DatasetIndex)) return;
 
         // (x, y) in data coordinates: an index for a category axis, the point's own x otherwise.
         var samples = new List<(double X, double Y)>();

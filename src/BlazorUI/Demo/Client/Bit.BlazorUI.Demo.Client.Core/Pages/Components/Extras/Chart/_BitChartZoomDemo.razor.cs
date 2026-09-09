@@ -179,7 +179,12 @@ private BitChartData ManyBars()
 
     private void ReadWindow()
     {
-        if (_brush?.GetAxisRange("x") is not { } range) return;
+        // No range means nothing is zoomed - a reset leaves the readout claiming the old window otherwise.
+        if (_brush?.GetAxisRange("x") is not { } range)
+        {
+            _window = "the whole series";
+            return;
+        }
         _window = $"{DateTime.FromOADate(range.Min):MMM d, HH:mm} to {DateTime.FromOADate(range.Max):MMM d, HH:mm}";
     }
 
@@ -230,7 +235,12 @@ private void ShowWindow(double from, double to)
 // OnZoomChange fires after every wheel, drag and ZoomTo, so the readout always matches the view.
 private void ReadWindow()
 {
-    if (_brush?.GetAxisRange(""x"") is not { } range) return;
+    // No range means nothing is zoomed - a reset leaves the readout claiming the old window otherwise.
+    if (_brush?.GetAxisRange(""x"") is not { } range)
+    {
+        _window = ""the whole series"";
+        return;
+    }
     _window = $""{DateTime.FromOADate(range.Min):MMM d, HH:mm} to {DateTime.FromOADate(range.Max):MMM d, HH:mm}"";
 }";
 }

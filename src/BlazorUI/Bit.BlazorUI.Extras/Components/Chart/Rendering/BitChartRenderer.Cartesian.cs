@@ -118,8 +118,10 @@ public sealed partial class BitChartRenderer
         {
             leftReserve = ReserveAxisWidth(indexScale);
             rightReserve = 0;
-            bottomReserve = leftAxes.Concat(rightAxes).Sum(ReserveAxisHeight);
-            topReserve = 0;
+            // "left"/"right" name the near/far edge, which here is the bottom and the top, so each
+            // stack reserves height on its own side.
+            bottomReserve = leftAxes.Sum(ReserveAxisHeight);
+            topReserve = rightAxes.Sum(ReserveAxisHeight);
         }
 
         var plot = new BitChartArea(area.Left + leftReserve, area.Top + topReserve, area.Right - rightReserve, area.Bottom - bottomReserve);
@@ -182,6 +184,7 @@ public sealed partial class BitChartRenderer
             IsCartesian = true,
             IndexScale = indexScale,
             ValueScales = valueScales,
+            HiddenDatasets = _state.HiddenDatasets,
             IndexIsCategory = indexIsCategory,
             IndexCentered = HasBars()
         };

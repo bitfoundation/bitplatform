@@ -42,7 +42,7 @@ public sealed partial class BitChartRenderer
 
         var pctx = new BitChartPluginContext
         {
-            Scene = scene, Config = _config, IsCartesian = false,
+            Scene = scene, Config = _config, IsCartesian = false, HiddenDatasets = _state.HiddenDatasets,
             CenterX = cx, CenterY = cy, InnerRadius = 0, OuterRadius = maxR
         };
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(pctx);

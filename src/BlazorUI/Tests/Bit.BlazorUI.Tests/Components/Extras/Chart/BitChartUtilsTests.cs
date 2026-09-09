@@ -123,8 +123,9 @@ public class BitChartUtilsTests
     [TestMethod]
     public void TextMeasureShouldIgnoreCombiningMarks()
     {
-        // "e" plus a combining acute is one glyph wide, not two.
-        Assert.AreEqual(BitChartTextMeasure.Width("e", 12), BitChartTextMeasure.Width("é", 12), 0.001);
+        // "e" plus a combining acute is one glyph wide, not two. The mark is an explicit escape so no
+        // editor or normalization pass can fold the pair into precomposed "é" and hollow the test out.
+        Assert.AreEqual(BitChartTextMeasure.Width("e", 12), BitChartTextMeasure.Width("e\u0301", 12), 0.001);
     }
 
     [TestMethod]
