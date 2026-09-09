@@ -152,6 +152,10 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                                         && namedUnwrappedReturnType.IsGenericType
                                         && asyncEnumerableType is not null
                                         && SymbolEqualityComparer.Default.Equals(namedUnwrappedReturnType.OriginalDefinition, asyncEnumerableType);
+            // Only a method whose own return type is the stream can be an iterator. Task<IAsyncEnumerable<T>> unwraps
+            // to one but still has to hand its value back.
+            bool returnsAsyncStream = doesReturnIAsyncEnum
+                                      && SymbolEqualityComparer.Default.Equals(returnType, unwrappedReturnType);
             bool doesReturnString = doesReturnSomething
                                     && doesReturnIAsyncEnum is false
                                     && SymbolEqualityComparer.Default.Equals(unwrappedReturnType, stringSpecialType);
@@ -178,7 +182,8 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 ctName ?? "",
                 encodedParams,
                 bodyParam == default ? "" : bodyParam.Name,
-                bodyParam == default ? "" : bodyParam.Type.ToDisplayString(NullableFlowState.None)));
+                bodyParam == default ? "" : bodyParam.Type.ToDisplayString(NullableFlowState.None),
+                returnsAsyncStream ? "1" : "0"));
         }
 
         return new ControllerEntry(
@@ -266,8 +271,9 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 // fields[10] encodedParams
                 // fields[11] bodyParamName
                 // fields[12] bodyParamTypeNoNull
+                // fields[13] returnsAsyncStream
 
-                if (fields.Length < 13) continue;
+                if (fields.Length < 14) continue;
 
                 var methodName = fields[0];
                 var returnTypeDisplay = fields[1];
@@ -279,6 +285,7 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 var url = fields[7];
                 var hasCt = fields[8] == "1";
                 var ctName = fields[9];
+                var returnsAsyncStream = fields[13] == "1";
                 var bodyParamName = string.IsNullOrEmpty(fields[11]) ? null : fields[11];
                 var bodyParamTypeNoNull = string.IsNullOrEmpty(fields[12]) ? null : fields[12];
 
@@ -296,7 +303,7 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
 
                 // An async iterator takes its token through the enumerator, not the call.
                 string parameterList = string.Join(", ", parameters.Select(p =>
-                    $"{(doesReturnIAsyncEnum && p.Name == ctName ? "[EnumeratorCancellation] " : string.Empty)}{p.TypeDisplay} {p.Name}"));
+                    $"{(returnsAsyncStream && p.Name == ctName ? "[EnumeratorCancellation] " : string.Empty)}{p.TypeDisplay} {p.Name}"));
 
                 List<string> jsonReadParametersList = new();
                 if (doesReturnSomething && !doesReturnString)
@@ -317,15 +324,17 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 if (doesReturnSomething)
                     requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseType\", typeof({returnUnderlyingNoNull}));");
 
-                var readBody = doesReturnIAsyncEnum
+                var readBody = returnsAsyncStream
                     ? $@"await foreach (var __item in __response.Content.ReadFromJsonAsAsyncEnumerable({jsonReadParameters}))
                 {{
                     yield return __item;
                 }}"
-                    : $"return await __response.Content.{(doesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});";
+                    : doesReturnIAsyncEnum
+                        ? $"return WrapWithResponseDisposal(__response.Content.ReadFromJsonAsAsyncEnumerable({jsonReadParameters}), __response);"
+                        : $"return await __response.Content.{(doesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});";
 
-                // The prerender state stores one resolved value per url, which a stream is not.
-                var usesPrerenderState = doesReturnSomething && doesReturnIAsyncEnum is false;
+                // The prerender state stores one resolved value per url, which an iterator is not.
+                var usesPrerenderState = doesReturnSomething && returnsAsyncStream is false;
 
                 var encodeStringRouteParameters = string.Join(
                     Environment.NewLine,
@@ -348,7 +357,7 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 using var __request = new HttpRequestMessage(HttpMethod.{httpMethod}, __url);
                 {requestOptions}
                 {(bodyParamName is not null ? $@"__request.Content = JsonContent.Create({bodyParamName}, options.GetTypeInfo<{bodyParamTypeNoNull}>());" : string.Empty)}
-                using var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(hasCt ? $", {ctName}" : string.Empty)});
+                {(doesReturnIAsyncEnum && returnsAsyncStream is false ? "" : "using ")}var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(hasCt ? $", {ctName}" : string.Empty)});
                 {(doesReturnSomething ? ($"{readBody}" +
           $"{(usesPrerenderState ? "}))!;" : string.Empty)}") : string.Empty)}
         }}
@@ -409,6 +418,22 @@ internal class AppControllerBase
         return result;
     }}
 
+    /// <summary>Disposes <paramref name=""response""/> after the JSON stream is fully consumed, faulted, canceled, or the enumerator is disposed.</summary>
+    protected static async System.Collections.Generic.IAsyncEnumerable<T> WrapWithResponseDisposal<T>(
+        System.Collections.Generic.IAsyncEnumerable<T> source,
+        HttpResponseMessage response,
+        [EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default)
+    {{
+        try
+        {{
+            await foreach (var item in source.WithCancellation(cancellationToken))
+                yield return item;
+        }}
+        finally
+        {{
+            response.Dispose();
+        }}
+    }}
 }}
 
 {generatedClasses}
