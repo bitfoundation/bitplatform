@@ -79,7 +79,7 @@ registering everything.
 | `History` | Session history: back/forward, `pushState`/`replaceState`, `popstate` |
 | `Navigation` | The Navigation API: read the history entry list, traverse to a key, and know whether you can go back |
 | `Location` | Read and mutate the current URL, reload, navigate |
-| `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory, protocol handlers, installed related apps |
+| `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory, `isInputPending`, protocol handlers, installed related apps |
 | `UserAgent` | Parsed user-agent brands, platform and mobile-ness (UA Client Hints) |
 | `TextFragment` | Scroll-to-text URLs (`#:~:text=`): deep-link to a phrase rather than an anchor |
 | `Url` | `URL`, `URLSearchParams` and `URLPattern`: parse and edit URLs as the browser does, and match routes |
@@ -93,7 +93,7 @@ registering everything.
 | `WindowManagement` | Every attached screen, and placing windows or fullscreen content on a chosen one |
 | `ScreenOrientation` | Read, lock and observe the screen orientation |
 | `VisualViewport` | The visual viewport: scale, offsets, resize and scroll events |
-| `Performance` | High-resolution timing, marks, measures, `PerformanceObserver` |
+| `Performance` | High-resolution timing, marks, measures, `PerformanceObserver`, typed navigation / resource / long-task entries, Web Vitals |
 | `Reporting` | `ReportingObserver`: deprecation, intervention and crash reports |
 | `Console` | The full browser console API: log, table, group, time, count, profile |
 
@@ -150,8 +150,8 @@ registering everything.
 | `OriginPrivateFileSystem` | The origin private file system: private, permissionless storage, with byte-offset reads and writes through a worker |
 | `ObjectUrls` | Create and revoke `blob:` object URLs from C# data |
 | `Clipboard` | Read and write text and typed items on the system clipboard |
-| `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
-| `Fetch` | The fetch API with full request/response control and progress |
+| `Crypto` | SubtleCrypto: encryption, hashing, signatures, key generation, import/export (raw / PKCS#8 / SPKI / JWK), ECDH, HKDF, key wrapping, random values |
+| `Fetch` | The fetch API: a `Request` / `Response` / `Headers` object model, download progress, streamed uploads |
 | `Compression` | Gzip and deflate through the browser's native codec |
 | `TextEncoding` | `TextDecoder`/`TextEncoder`: the legacy code pages .NET on WebAssembly doesn't carry |
 | `StructuredClone` | Deep-copy a value, and test whether `postMessage`/IndexedDB/`pushState` will take it |
@@ -383,8 +383,8 @@ published trimmed - a Blazor WebAssembly publish is - the package's build logic 
 through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
 Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
-that injects `Clipboard`, `LocalStorage` and `Window` ships about 10 KB of JavaScript instead of the
-307 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+that injects `Clipboard`, `LocalStorage` and `Window` ships about 23 KB of JavaScript instead of the
+315 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
 a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
 trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping

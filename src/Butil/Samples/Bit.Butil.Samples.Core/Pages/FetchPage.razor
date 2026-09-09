@@ -40,6 +40,16 @@ var response = await fetch.Send(new FetchRequest { Url = "https://…" },
             <p style="margin-top:0.75rem"><span class="result-pill">@_progressText</span></p>
         }
     </DemoCard>
+
+    <DemoCard Title="Headers & the response object" Api="FetchHeaders / FetchResponse"
+              Description="Headers keep repeats and match case-insensitively; the response also reports whether it was redirected and what kind it is.">
+        <button @onclick="InspectHeaders" disabled="@_busy">Read the response object</button>
+    </DemoCard>
+
+    <DemoCard Title="Streamed upload" Api="SendStream / SupportsStreamingUpload"
+              Description="Hand the browser a .NET Stream as the request body and let it pull as the connection drains. Chromium-only, over HTTPS.">
+        <button @onclick="UploadStream" disabled="@_busy">Upload 256 KB as a stream</button>
+    </DemoCard>
 </div>
 
 <DemoConsole @ref="output" Title="fetch output" />
@@ -119,6 +129,76 @@ var response = await fetch.Send(new FetchRequest { Url = "https://…" },
     }
 
     private void AbortRequest() => _cts?.Cancel();
+
+    private async Task InspectHeaders()
+    {
+        _busy = true;
+        try
+        {
+            var response = await fetch.Send(new FetchRequest
+            {
+                Url = _url.Trim(),
+                Headers = new FetchHeaders().Append("Accept", "application/json"),
+                Cache = "no-store",
+            });
+
+            await LogResponse(response);
+            await output.Info($"Type \"{response.Type}\" · Redirected {response.Redirected} · {response.Headers.Count} header(s)");
+
+            foreach (var name in response.Headers.Names)
+            {
+                await output.Log($"  {name}: {string.Join(" | ", response.Headers.GetAll(name))}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task UploadStream()
+    {
+        _busy = true;
+        _progressText = null;
+        try
+        {
+            if (await fetch.SupportsStreamingUpload() is false)
+            {
+                await output.Warn("This browser has no streaming upload; the request below will come back as a failed response.");
+            }
+
+            await using var body = new System.IO.MemoryStream(new byte[256 * 1024]);
+
+            var response = await fetch.SendStream(
+                new FetchRequest
+                {
+                    Url = "https://jsonplaceholder.typicode.com/posts",
+                    Method = "POST",
+                    Headers = new() { ["Content-Type"] = "application/octet-stream" },
+                    Credentials = "omit",
+                },
+                body,
+                onProgress: p =>
+                {
+                    _progressText = $"Uploaded {p.Loaded} / {p.Total?.ToString() ?? "?"} bytes";
+                    InvokeAsync(StateHasChanged);
+                });
+
+            await LogResponse(response);
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
 
     private async Task LogResponse(FetchResponse response)
     {

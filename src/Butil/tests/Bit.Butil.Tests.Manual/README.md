@@ -125,7 +125,7 @@ and this repository never does, plus the artifacts the whole feature rests on:
   dependency closure assembles to, every chunk carries the guard that makes a second evaluation a no-op and
   appears in the bundle exactly once, and the manifest lists every module after the modules it depends on;
 - **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 18-module,
-  38,016-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
+  39,695-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
   evaluated under Node in a browser-like sandbox and has to register exactly the expected `BitButil`
   namespaces, none of them empty, and register nothing a second time (the sentinel each namespace is marked
   with has to survive re-evaluation - a guard that stopped holding would reset a module's listener
@@ -288,16 +288,16 @@ library, so re-run the harness to refresh them. The library they were taken from
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 1,379,840 bytes | 162,816 bytes |
-| types in assembly | 1,574 | 210 |
+| `Bit.Butil.dll` | 1,459,712 bytes | 170,496 bytes |
+| types in assembly | 1,606 | 217 |
 | `[ButilService]` discovered / registered | 137 / 137 | 12 / 12 |
 | interop contract | 95 types captured | 19 checked, 76 trimmed away, 0 problems |
 | JavaScript modules called | 137 of 140 | 13 of 140 (canvas, clipboard, cookie, digitalCredentials, dom, events, fetch, geolocation, storage, streams, webOtp, webRtc, window) |
-| `bit-butil.js` a publish would ship | 313,999 bytes, all 140 modules | 38,016 bytes, 18 modules (11,157 gzip / 9,905 brotli) - 12.1% |
-| lazy scripts would download | 548,479 bytes over 137 files | 59,757 bytes over 13 files |
+| `bit-butil.js` a publish would ship | 322,791 bytes, all 140 modules | 39,695 bytes, 18 modules (11,722 gzip / 10,404 brotli) - 12.3% |
+| lazy scripts would download | 558,950 bytes over 137 files | 63,115 bytes over 13 files |
 | script-bundling checks | 82 / 82 | 82 / 82 |
 | script-scanning checks | 41 / 41 | not run |
-| script-publishing checks | 33 / 33 (11 publishes, ~35s) | not run |
+| script-publishing checks | 33 / 33 (11 publishes, ~30s) | not run |
 | lazy-loader checks | 16 / 16 | 16 / 16 |
 | cancellation-contract checks | 24 / 24 | 24 / 24 |
 
@@ -313,7 +313,7 @@ The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
 `GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code.
 
 Injecting fewer services shrinks it further: with only `LocalStorage`, `Clipboard` and `Cookie` the
-assembly comes out at 37,888 bytes and 42 types.
+assembly comes out at 32,256 bytes and 34 types.
 
 ## What a failure means
 
