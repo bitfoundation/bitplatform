@@ -3,7 +3,8 @@
     border: 1px solid gray;
 }
 
-.loading {
+.loading,
+.empty {
     width: 100%;
     padding: 1rem;
     display: flex;
@@ -21,5 +22,28 @@
         display: flex;
         flex-wrap: wrap;
         position: relative;
+    }
+
+    .chat {
+        gap: 0.5rem;
+        padding: 0.5rem;
+        max-height: 300px;
+    }
+
+    .message {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: #80808040;
+    }
+
+    .custom-loading {
+        font-style: italic;
+        color: blueviolet;
+    }
+
+    .custom-end {
+        padding: 0.5rem;
+        text-align: center;
+        border-top: 1px solid gray;
     }
 }
