@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading.RateLimiting;
 using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Components;
+using Microsoft.AspNetCore.HttpOverrides;
 using Bit.Bswup.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -147,6 +148,21 @@ builder.Services.AddResponseCompression(opts =>
     .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
     .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
+// The site is reached through a proxy that forwards over plain http. Without this, UseHttpsRedirection
+// below answers every request with a redirect to the url it already asked for, and the absolute urls the
+// endpoints build come out as http.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.All;
+    options.ForwardedHostHeaderName = "X-Host";
+    // The proxy is not on loopback, so the default trust lists would ignore the headers outright. A
+    // ForwardLimit of 1 is what keeps a client's own entry unreachable, to the left of the one the
+    // front end appends.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.ForwardLimit = 1;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -161,6 +177,8 @@ else
     app.UseHsts();
     app.UseResponseCompression();
 }
+
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 

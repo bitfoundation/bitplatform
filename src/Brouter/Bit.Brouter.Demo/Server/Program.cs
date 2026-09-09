@@ -2,6 +2,7 @@
 using Bit.Brouter.Demo.Server.Controllers;
 using Bit.Brouter.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.HttpOverrides;
 using ModelContextProtocol.Protocol;
 using System.Text.Json.Serialization;
 
@@ -60,6 +61,21 @@ builder.Services.AddMcpServer(options =>
 // an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.
 builder.Services.AddScoped<HtmlRenderer>();
 
+// The site is reached through a proxy that forwards over plain http. Without this, UseHttpsRedirection
+// below answers every request with a redirect to the url it already asked for, and the absolute urls the
+// endpoints build come out as http.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.All;
+    options.ForwardedHostHeaderName = "X-Host";
+    // The proxy is not on loopback, so the default trust lists would ignore the headers outright. A
+    // ForwardLimit of 1 is what keeps a client's own entry unreachable, to the left of the one the
+    // front end appends.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.ForwardLimit = 1;
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -71,6 +87,8 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
+
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 app.UseAntiforgery();
