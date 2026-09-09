@@ -34,7 +34,15 @@ public static class BitFullCalendarHelpers
     /// so an event ending at midnight is never counted on the following day.
     /// </summary>
     public static DateTime GetInclusiveEndDate(BitFullCalendarEvent ev)
-        => (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+        => GetInclusiveEndDate(ev.StartDate, ev.EndDate);
+
+    /// <summary>
+    /// The same rule applied to a bare range, for a caller holding start/end values that are not an
+    /// event yet - the add/edit dialog's draft, for one - so it reads the last covered date exactly
+    /// the way the grid does.
+    /// </summary>
+    public static DateTime GetInclusiveEndDate(DateTime startDate, DateTime endDate)
+        => (endDate > startDate ? endDate.AddTicks(-1) : endDate).Date;
 
     /// <summary>
     /// True when an event overlaps the period <c>[periodStart, periodEndInclusive]</c>. The end is
@@ -416,6 +424,16 @@ public static class BitFullCalendarHelpers
     /// the grid renders in.
     /// </summary>
     public static int GetWeekNumber(DateTime date) => ISOWeek.GetWeekOfYear(date.Date);
+
+    /// <summary>
+    /// The week number a grid row is labelled with, for any day the row contains. ISO weeks run
+    /// Monday to Sunday, so in a Sunday-start culture a row's first day is the last day of the
+    /// PREVIOUS ISO week and reading the number off it labels every row a week low. The row is
+    /// labelled by its mid-week day instead - the day six of its seven days share a week with -
+    /// which is the row's own start in a Monday-start culture, leaving those unchanged.
+    /// </summary>
+    public static int GetWeekNumberForRow(DateTime dayInRow, CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null)
+        => GetWeekNumber(StartOfWeek(dayInRow, culture, firstDayOfWeek).AddDays(3));
 
     // -- Culture-aware: era-safe month/year anchors ------------------------------
 
@@ -1084,6 +1102,29 @@ public static class BitFullCalendarHelpers
         var gridStart = day.Date.AddHours(Math.Clamp(visibleStartHour, 0, 23));
         var eventStart = ev.StartDate < gridStart ? gridStart : ev.StartDate;
         return (eventStart - gridStart).TotalMinutes / 60.0;
+    }
+
+    /// <summary>
+    /// Where a block sits inside the time grid's visible hour window - hours from the first rendered
+    /// row - and how many hours tall it is once clipped to that window. Null when the event falls
+    /// entirely outside the window, so a grid rendering only the working hours draws nothing for a
+    /// 02:00 event instead of pinning it to the top row, and an event that merely reaches past the
+    /// last rendered hour stops there. Mirrors <see cref="GetTimelineBlockPosition"/>, which applies
+    /// the same rule along the timeline rows' horizontal axis.
+    /// </summary>
+    public static (double OffsetHours, double DurationHours)? GetEventBlockPlacement(
+        BitFullCalendarEvent ev, DateTime day, int visibleStartHour = 0, int visibleEndHour = 24)
+    {
+        var (startHour, endHour) = NormalizeVisibleHours(visibleStartHour, visibleEndHour);
+        var gridStart = day.Date.AddHours(startHour);
+        var gridEnd = day.Date.AddHours(endHour);
+
+        var clippedStart = ev.StartDate < gridStart ? gridStart : ev.StartDate;
+        var clippedEnd = ev.EndDate > gridEnd ? gridEnd : ev.EndDate;
+        if (clippedEnd <= clippedStart)
+            return null;
+
+        return ((clippedStart - gridStart).TotalMinutes / 60.0, (clippedEnd - clippedStart).TotalMinutes / 60.0);
     }
 
     public static (double TopPx, double WidthPercent, double LeftPercent) GetEventBlockStyle(

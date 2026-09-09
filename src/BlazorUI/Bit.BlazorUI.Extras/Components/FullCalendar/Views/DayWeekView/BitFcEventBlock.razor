@@ -7,8 +7,13 @@
     var displayEnd = _previewEnd ?? Event.EndDate;
     var durationMin = (displayEnd - displayStart).TotalMinutes;
     @* Sized and offset against --bit-bfc-hour-height - the same custom property the hour rows read -
-       so a consumer that re-scales the grid keeps the blocks aligned with the hours they sit on. *@
-    var height = BitFullCalendarHelpers.HoursToCssLength(durationMin / 60.0);
+       so a consumer that re-scales the grid keeps the blocks aligned with the hours they sit on.
+       The height the placement reports is the event's span clipped to the visible hour window, so a
+       block reaching past the last rendered hour stops there; a live resize preview is drawn at its
+       own length, since that is the span the pointer is currently dragging out. *@
+    var isPreviewing = _previewStart.HasValue || _previewEnd.HasValue;
+    var heightHours = isPreviewing || VisibleDurationHours is not { } visibleHours ? durationMin / 60.0 : visibleHours;
+    var height = BitFullCalendarHelpers.HoursToCssLength(heightHours);
     var isDotVariant = State.BadgeVariant == BitFullCalendarBadgeVariant.Dot;
     var colorClass = isDotVariant ? "dot-variant" : "bit-bfc-color";
     var colorStyleVar = ColorScheme.GetColorStyle(Event.Color);

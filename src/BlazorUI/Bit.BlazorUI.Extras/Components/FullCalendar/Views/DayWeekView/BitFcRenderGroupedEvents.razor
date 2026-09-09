@@ -7,13 +7,15 @@
 
 @foreach (var (group, groupIndex) in GroupedEvents.Select((g, i) => (g, i)))
 {
-    @foreach (var ev in group)
+    @* VisibleBlocks has already dropped the events the visible hour window does not cover and
+       clipped the ones reaching past its edges, so a grid showing only the working hours never
+       draws a block on rows it does not have. *@
+    @foreach (var (ev, offsetHours, durationHours) in VisibleBlocks(group))
     {
         @* Placed against the same custom property the hour rows are sized from, so re-scaling the
            grid with --bit-bfc-hour-height moves the blocks with the rows instead of leaving them
            anchored to the built-in 96px hour. *@
-        var topOffset = BitFullCalendarHelpers.HoursToCssLength(
-            BitFullCalendarHelpers.GetEventBlockOffsetHours(ev, Day, State.VisibleStartHour));
+        var topOffset = BitFullCalendarHelpers.HoursToCssLength(offsetHours);
 
         // Determine how many columns this event really needs. Counting every lane that touches ev
         // overcounts: lanes whose events are staggered (each overlaps ev but never coexist with one
@@ -83,7 +85,7 @@
 
         <div @key="ev" class="bit-bfc-event-stack-item @(isStack ? "bit-bfc-event-stack-item-side-by-side" : "")"
              style="position:absolute;top:@topOffset;width:@(width.ToString("F2", inv))%;left:@(left.ToString("F2", inv))%;z-index:@zIndex;pointer-events:none;">
-            <BitFcEventBlock Event="ev" OnSelected="OnEventSelected" EventTemplate="EventTemplate" />
+            <BitFcEventBlock Event="ev" VisibleDurationHours="durationHours" OnSelected="OnEventSelected" EventTemplate="EventTemplate" />
         </div>
     }
 }

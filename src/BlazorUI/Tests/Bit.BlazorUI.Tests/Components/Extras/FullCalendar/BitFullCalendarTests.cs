@@ -762,7 +762,7 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { ShowWeekNumbers = true },
             BitFullCalendarView.Week);
 
-        var expected = $"W{BitFullCalendarHelpers.GetWeekNumber(BitFullCalendarHelpers.StartOfWeek(DateTime.Today, component.Instance.State.Culture))}";
+        var expected = $"W{BitFullCalendarHelpers.GetWeekNumberForRow(DateTime.Today, component.Instance.State.Culture)}";
         Assert.AreEqual(expected, component.Find(".bit-bfc-week-header-time .bit-bfc-weeknum-cell").TextContent.Trim());
     }
 

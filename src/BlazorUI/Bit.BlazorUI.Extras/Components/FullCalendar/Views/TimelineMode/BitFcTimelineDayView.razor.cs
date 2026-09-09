@@ -44,8 +44,20 @@ public partial class BitFcTimelineDayView
     private string SlotElementId(string rowKey, int hour, int minute)
         => $"{_scrollContainerId}-slot-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{hour}-{minute}";
 
+    /// <summary>
+    /// True when a remembered slot still exists in the grid being rendered: its resource row, and
+    /// the hour and minute the visible hour window and the slot duration currently draw. Both are
+    /// settings the user can change while the view is open, which would otherwise leave the tab stop
+    /// on a slot the grid no longer has - and the grid with no tab stop at all.
+    /// </summary>
+    private bool IsSlotInGrid((string RowKey, int Hour, int Minute) slot)
+        => _rowKeys.Contains(slot.RowKey)
+           && slot.Hour >= State.VisibleStartHour
+           && slot.Hour < State.VisibleEndHour
+           && Array.IndexOf(State.SlotMinutes, slot.Minute) >= 0;
+
     private (string RowKey, int Hour, int Minute) RovingSlot =>
-        _focusedSlot is { } slot && _rowKeys.Contains(slot.RowKey)
+        _focusedSlot is { } slot && IsSlotInGrid(slot)
             ? slot
             : (_rowKeys.Count > 0 ? _rowKeys[0] : _unassignedKey, State.VisibleStartHour, State.SlotMinutes[0]);
 

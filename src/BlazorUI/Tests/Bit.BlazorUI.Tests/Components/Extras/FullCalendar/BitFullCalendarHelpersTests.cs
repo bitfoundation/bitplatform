@@ -154,6 +154,22 @@ public class BitFullCalendarHelpersTests
     }
 
     [TestMethod]
+    public void GetWeekNumberForRowShouldLabelARowByTheWeekMostOfItBelongsTo()
+    {
+        // The row of a Sunday-start culture that opens on 2024-01-07: one day of ISO week 1 and the
+        // six days of ISO week 2, so the row is week 2 - reading the number off its Sunday would
+        // report 1.
+        Assert.AreEqual(2, BitFullCalendarHelpers.GetWeekNumberForRow(new DateTime(2024, 1, 7), EnUs));
+        // Any day of the row answers with the row's number.
+        Assert.AreEqual(2, BitFullCalendarHelpers.GetWeekNumberForRow(new DateTime(2024, 1, 10), EnUs));
+        // A Monday-start culture is unchanged: the row is its own ISO week.
+        Assert.AreEqual(2, BitFullCalendarHelpers.GetWeekNumberForRow(new DateTime(2024, 1, 8), EnUs, DayOfWeek.Monday));
+        Assert.AreEqual(
+            BitFullCalendarHelpers.GetWeekNumber(new DateTime(2024, 1, 8)),
+            BitFullCalendarHelpers.GetWeekNumberForRow(new DateTime(2024, 1, 8), EnUs, DayOfWeek.Monday));
+    }
+
+    [TestMethod]
     public void StartAndEndOfCulturalMonthShouldBracketTheGregorianMonth()
     {
         var date = new DateTime(2024, 2, 17);
@@ -625,6 +641,22 @@ public class BitFullCalendarHelpersTests
     #region Overlap and month-cell placement
 
     [TestMethod]
+    public void GetInclusiveEndDateShouldReadARangeTheSameWayAsAnEvent()
+    {
+        var day = new DateTime(2024, 5, 15);
+        // 22:00 -> midnight covers one day: the exclusive end belongs to the day before it.
+        var start = day.AddHours(22);
+        var end = day.AddDays(1);
+
+        Assert.AreEqual(day, BitFullCalendarHelpers.GetInclusiveEndDate(start, end));
+        Assert.AreEqual(
+            BitFullCalendarHelpers.GetInclusiveEndDate(Event(start, end, "a")),
+            BitFullCalendarHelpers.GetInclusiveEndDate(start, end));
+        // A range ending past midnight does cover the next day.
+        Assert.AreEqual(day.AddDays(1), BitFullCalendarHelpers.GetInclusiveEndDate(start, day.AddDays(1).AddHours(1)));
+    }
+
+    [TestMethod]
     public void EventsOverlapShouldIgnoreTouchingRanges()
     {
         var day = new DateTime(2024, 5, 15);
@@ -772,6 +804,39 @@ public class BitFullCalendarHelpersTests
         var ev = new BitFullCalendarEvent { StartDate = day.AddHours(6), EndDate = day.AddHours(10) };
 
         Assert.AreEqual(0, BitFullCalendarHelpers.GetEventBlockOffsetHours(ev, day, visibleStartHour: 8), 0.0001);
+    }
+
+    [TestMethod]
+    public void GetEventBlockPlacementShouldClipToTheVisibleHourWindow()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { StartDate = day.AddHours(6), EndDate = day.AddHours(10) };
+
+        var placement = BitFullCalendarHelpers.GetEventBlockPlacement(ev, day, visibleStartHour: 8, visibleEndHour: 18);
+
+        Assert.IsNotNull(placement);
+        // Starts before the first rendered row, so it is drawn at the top and only the visible two
+        // hours of it are drawn.
+        Assert.AreEqual(0, placement.Value.OffsetHours, 0.0001);
+        Assert.AreEqual(2, placement.Value.DurationHours, 0.0001);
+
+        var overflowing = new BitFullCalendarEvent { StartDate = day.AddHours(17), EndDate = day.AddHours(20) };
+        var clippedEnd = BitFullCalendarHelpers.GetEventBlockPlacement(overflowing, day, visibleStartHour: 8, visibleEndHour: 18);
+
+        Assert.IsNotNull(clippedEnd);
+        Assert.AreEqual(9, clippedEnd.Value.OffsetHours, 0.0001);
+        Assert.AreEqual(1, clippedEnd.Value.DurationHours, 0.0001);
+    }
+
+    [TestMethod]
+    public void GetEventBlockPlacementShouldDropAnEventOutsideTheVisibleHourWindow()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var beforeGrid = new BitFullCalendarEvent { StartDate = day.AddHours(2), EndDate = day.AddHours(3) };
+        var afterGrid = new BitFullCalendarEvent { StartDate = day.AddHours(19), EndDate = day.AddHours(20) };
+
+        Assert.IsNull(BitFullCalendarHelpers.GetEventBlockPlacement(beforeGrid, day, visibleStartHour: 8, visibleEndHour: 18));
+        Assert.IsNull(BitFullCalendarHelpers.GetEventBlockPlacement(afterGrid, day, visibleStartHour: 8, visibleEndHour: 18));
     }
 
     [TestMethod]

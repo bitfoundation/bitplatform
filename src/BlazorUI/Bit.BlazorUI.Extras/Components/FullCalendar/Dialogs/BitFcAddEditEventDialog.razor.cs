@@ -169,9 +169,14 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _timedRangeBeforeAllDay = (_startDate, _endDate);
 
             var start = _startDate.Date;
-            // The end is exclusive midnight of the last covered day, matching how the rest of the
-            // calendar reads a 00:00 end (GetInclusiveEndDate).
-            var end = (_endDate > _startDate ? _endDate : _startDate).Date.AddDays(1);
+            // The last covered day is read the way the rest of the calendar reads it
+            // (GetInclusiveEndDate): a range ending at 00:00 ends the previous day, so a 22:00-00:00
+            // event becomes one all-day day rather than two. The end is then exclusive midnight of
+            // the day after it.
+            var lastDay = BitFullCalendarHelpers.GetInclusiveEndDate(_startDate, _endDate);
+            if (lastDay < start)
+                lastDay = start;
+            var end = lastDay.AddDays(1);
             _startDate = start;
             _endDate = end;
         }

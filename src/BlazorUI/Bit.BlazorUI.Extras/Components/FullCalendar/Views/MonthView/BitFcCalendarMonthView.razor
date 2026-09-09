@@ -35,7 +35,7 @@
             var cell = cells[i];
             @if (State.ShowWeekNumbers && i % columnCount == 0)
             {
-                var weekNumber = BitFullCalendarHelpers.GetWeekNumber(cell.Date);
+                var weekNumber = BitFullCalendarHelpers.GetWeekNumberForRow(cell.Date, State.Culture, State.FirstDayOfWeekOverride);
                 var weekDate = cell.Date;
                 @* With nav links on, the week number opens that week - the affordance every calendar
                    puts on the rail - and stays a plain label otherwise. *@

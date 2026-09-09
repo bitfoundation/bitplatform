@@ -10,7 +10,7 @@
     var visibleHours = State.VisibleHours.ToArray();
     var slotMinutes = State.SlotMinutes;
     var slotHeightPercent = 100.0 / slotMinutes.Length;
-    var weekNumber = BitFullCalendarHelpers.GetWeekNumber(weekStart);
+    var weekNumber = BitFullCalendarHelpers.GetWeekNumberForRow(weekStart, State.Culture, State.FirstDayOfWeekOverride);
     // The rendered columns are what the roving tabindex walks and what decides which column can own
     // the grid's single tab stop, so they are captured for the key handler.
     _weekDays = weekDays;
