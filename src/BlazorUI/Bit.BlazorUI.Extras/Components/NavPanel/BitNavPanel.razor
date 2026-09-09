@@ -2,16 +2,29 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (IsOpen)
+@if (IsOpen && NoOverlay is false)
 {
-    <div style="@Styles?.Overlay" class="bit-npn-ovl @Classes?.Overlay" @onclick="ClosePanel"></div>
+    @* The overlay is a duplicate of what the Escape key and the swipe gesture already do, so it is left out
+       of the accessibility tree instead of being announced as a control of its own. *@
+    <div style="@Styles?.Overlay"
+         class="bit-npn-ovl @Classes?.Overlay"
+         aria-hidden="true"
+         @onclick="HandleOverlayClick"></div>
 }
 
 @{
-    var isToggled = (NoToggle is false) && IsToggled;
+    // A rail that expands on hover renders everything the open panel does while the pointer is over it, so
+    // its own state is what the whole markup below reads instead of IsToggled.
+    var isToggled = (NoToggle is false) && IsToggled && (ExpandOnHover is false || _isHovered is false);
+    var items = Items ?? [];
+    var isEmpty = items.Count > 0 && _filteredNavItems.Count == 0;
+    var searchAnnouncement = GetSearchAnnouncement();
 }
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+@* The hover handlers are splatted rather than written out, so a panel that does not expand on hover has no
+   listener to re-render it every time the pointer crosses it. *@
+<div @ref="RootElement" @attributes="GetRootAttributes()"
+     @onkeydown="HandleOnKeyDown"
      id="@_Id"
      style="@GetPanelStyle(isToggled)"
      class="@((ClassBuilder.Value + $"{(isToggled ? $" bit-npn-tgl {Classes?.Toggled}" : "")}").Trim())"
@@ -35,8 +48,11 @@
                     {
                         if (IconNavUrl.HasValue())
                         {
-                            <a href="@IconNavUrl">
+                            @* The logo itself is decorative, so the link it sits in is the one carrying the
+                               name: a link whose only content is an image with an empty alt has none at all. *@
+                            <a href="@IconNavUrl" aria-label="@(AriaLabel ?? DefaultLogoAriaLabel)">
                                 <img src="@IconUrl"
+                                     alt=""
                                      class="bit-npn-img @Classes?.HeaderIcon"
                                      style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
                             </a>
@@ -44,6 +60,7 @@
                         else
                         {
                             <img src="@IconUrl"
+                                 alt="@(AriaLabel ?? string.Empty)"
                                  class="bit-npn-img @Classes?.HeaderIcon"
                                  style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
                         }
@@ -53,15 +70,25 @@
 
                     @if (NoToggle is false && HideToggle is false)
                     {
+                        @* The default glyph ships with the Extras package rather than with the icon font of the
+                           core library, so it is drawn from its own class instead of from an icon name. *@
+                        var customToggleIcon = BitIconInfo.From(ToggleIcon, ToggleIconName);
+                        var toggleLabel = ToggleAriaLabel ?? (isToggled ? DefaultExpandAriaLabel : DefaultCollapseAriaLabel);
+
                         <BitButton IconOnly
                                    Color="Color"
                                    Size="BitSize.Large"
+                                   Title="@toggleLabel"
+                                   IsEnabled="IsEnabled"
+                                   AriaLabel="@toggleLabel"
                                    OnClick="ToggleNavPanel"
                                    Variant="BitVariant.Text"
                                    Style="@Styles?.ToggleButton"
-                                   IconName="ColumnRightTwoThirds"
+                                   Icon="@customToggleIcon"
+                                   IconName="@(customToggleIcon is null ? "ColumnRightTwoThirds" : null)"
                                    Class="@($"bit-npn-tbn {Classes?.ToggleButton}".Trim())"
-                                   Classes="@(new() { Icon = "bit-icon-ex bit-icon-ex--ColumnRightTwoThirds" })" />
+                                   aria-expanded="@(isToggled ? "false" : "true")"
+                                   Classes="@(customToggleIcon is null ? new() { Icon = "bit-icon-ex bit-icon-ex--ColumnRightTwoThirds" } : null)" />
                     }
                 </div>
             }
@@ -71,12 +98,16 @@
                 <BitSearchBox @ref="_searchBoxRef"
                               Underlined
                               Color="Color"
-                              OnChange="SearchNavItems"
+                              Immediate
+                              IsEnabled="IsEnabled"
+                              Value="@_searchText"
                               Styles="SearchBoxStyles"
                               Classes="SearchBoxClasses"
                               Class="@Classes?.SearchBox"
-                              Immediate DebounceTime="500"
+                              OnChange="HandleSearchChange"
+                              DebounceTime="SearchDebounceTime"
                               Placeholder="@SearchBoxPlaceholder"
+                              AriaLabel="@(SearchBoxPlaceholder ?? DefaultSearchAriaLabel)"
                               Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
 
                 @if (isToggled)
@@ -85,62 +116,77 @@
                                Color="Color"
                                IconName="Search"
                                Size="BitSize.Large"
+                               IsEnabled="IsEnabled"
                                OnClick="ToggleForSearch"
                                Variant="BitVariant.Text"
                                Style="@Styles?.ToggleSearchButton"
-                               Class="@Classes?.ToggleSearchButton" />
+                               Class="@($"bit-npn-tsb {Classes?.ToggleSearchButton}".Trim())"
+                               Title="@(SearchBoxPlaceholder ?? DefaultSearchAriaLabel)"
+                               AriaLabel="@(SearchBoxPlaceholder ?? DefaultSearchAriaLabel)" />
                 }
             }
 
-            @if (Items.Any() && _filteredNavItems.Any() is false)
+            @* The only channel a screen reader has for the outcome of a search: how many items it matched, or
+               that it matched none. A filtered list of links reports nothing of its own. *@
+            @if (searchAnnouncement.HasValue())
             {
-                if (isToggled is false)
+                <div role="status" aria-live="polite" aria-atomic="true" class="bit-npn-lvr">@searchAnnouncement</div>
+            }
+
+            @* The empty message is rendered beside the nav rather than in place of it, so the nav keeps its
+               registrations (and the expansion state of the branches) while a search matches nothing. *@
+            @if (isEmpty && isToggled is false)
+            {
+                if (EmptyListTemplate is not null)
                 {
-                    if (EmptyListTemplate is not null)
-                    {
-                        @EmptyListTemplate
-                    }
-                    else
-                    {
-                        <BitText Style="@Styles?.EmptyListMessage" Class="@Classes?.EmptyListMessage">
-                            @(EmptyListMessage ?? "Nothing found!")
-                        </BitText>
-                    }
+                    @EmptyListTemplate
+                }
+                else
+                {
+                    <BitText Style="@Styles?.EmptyListMessage" Class="@Classes?.EmptyListMessage">
+                        @(EmptyListMessage ?? "Nothing found!")
+                    </BitText>
                 }
             }
-            else
-            {
-                <BitNav @ref=_bitNavRef
-                        Accent="Accent"
-                        AllExpanded="AllExpanded"
-                        ChevronDownIcon="@ChevronDownIcon"
-                        Classes="NavClasses"
-                        Color="Color"
-                        DefaultSelectedItem="_filteredNavItems.Any() ? _filteredNavItems[0] : null"
-                        FullWidth
-                        HeaderTemplate="HeaderTemplate"
-                        HeaderTemplateRenderMode="HeaderTemplateRenderMode"
-                        IconOnly="isToggled"
-                        IndentPadding="IndentPadding"
-                        IndentReversedPadding="IndentReversedPadding"
-                        IndentValue="IndentValue"
-                        Items="_filteredNavItems"
-                        ItemTemplate="ItemTemplate"
-                        ItemTemplateRenderMode="ItemTemplateRenderMode"
-                        Match="NavMatch"
-                        Mode="NavMode"
-                        NoCollapse="NoCollapse"
-                        OnItemClick="(TItem item) => HandleNavItemClick(item)"
-                        OnItemToggle="OnItemToggle"
-                        OnSelectItem="OnSelectItem"
-                        RenderType="RenderType"
-                        Reselectable="Reselectable"
-                        ReversedChevron="ReversedChevron"
-                        SingleExpand="SingleExpand"
-                        Styles="NavStyles"
-                        Class="@Classes?.Nav"
-                        Style="@Styles?.Nav" />
-            }
+
+            <BitNav @ref=_bitNavRef
+                    Accent="Accent"
+                    AllExpanded="AllExpanded"
+                    AriaLabel="@AriaLabel"
+                    ChevronDownIcon="ChevronDownIcon"
+                    ChevronDownIconName="@ChevronDownIconName"
+                    Classes="NavClasses"
+                    CollapseAriaLabel="@CollapseAriaLabel"
+                    Color="Color"
+                    ExpandAriaLabel="@ExpandAriaLabel"
+                    FullWidth
+                    HeaderTemplate="HeaderTemplate"
+                    HeaderTemplateRenderMode="HeaderTemplateRenderMode"
+                    IconOnly="isToggled"
+                    IndentPadding="IndentPadding"
+                    IndentReversedPadding="IndentReversedPadding"
+                    IndentValue="IndentValue"
+                    IsEnabled="IsEnabled"
+                    Items="_filteredNavItems"
+                    ItemTemplate="ItemTemplate"
+                    ItemTemplateRenderMode="ItemTemplateRenderMode"
+                    Match="NavMatch"
+                    Mode="NavMode"
+                    NameSelectors="NameSelectors"
+                    NoCollapse="NoCollapse"
+                    OnItemClick="(TItem item) => HandleNavItemClick(item)"
+                    OnItemToggle="OnItemToggle"
+                    OnSelectItem="OnSelectItem"
+                    RenderType="RenderType"
+                    Reselectable="Reselectable"
+                    ReversedChevron="ReversedChevron"
+                    SelectedItem="SelectedItem"
+                    SelectedItemChanged="@((TItem? item) => HandleSelectedItemChanged(item))"
+                    SingleExpand="SingleExpand"
+                    Size="Size"
+                    Styles="NavStyles"
+                    Class="@Classes?.Nav"
+                    Style="@Styles?.Nav" />
 
             <BitSpacer />
 

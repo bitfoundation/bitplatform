@@ -1,5 +1,12 @@
 ﻿@import "../../../../Styles/abstracts/_media-queries.scss";
 
+.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 .open-btn {
     display: none;
     justify-content: center;
