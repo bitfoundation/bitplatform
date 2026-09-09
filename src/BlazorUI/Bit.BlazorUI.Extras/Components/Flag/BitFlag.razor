@@ -12,6 +12,7 @@
     var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
     var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
     var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
+    var splattedHidden = HtmlAttributes.TryGetValue("aria-hidden", out var shd) ? shd?.ToString() : null;
     var splattedDisabled = HtmlAttributes.TryGetValue("aria-disabled", out var sdd) ? sdd?.ToString() : null;
 
     var title = Title ?? (AutoTitle ? _country?.Name : null) ?? splattedTitle;
@@ -25,24 +26,45 @@
         the country it shows, since "Canada, button" is worth more than "button" on its own. *@
     var name = Alt ?? AriaLabel ?? splattedLabel ?? (AutoAlt || interactive ? _country?.Name : null);
 
+    @*  A name written elsewhere on the page and pointed at with aria-labelledby names the flag as much
+        as one written here does, so a flag carrying one is not the decorative flag that is left out of
+        the accessibility tree. It names the element it is written on, which is the frame, so the frame
+        is what takes the img role for it while the picture inside keeps the empty alt of a decoration. *@
+    var labelledBy = HtmlAttributes.ContainsKey("aria-labelledby");
+    var named = name.HasValue() || labelledBy;
+
     @*  Which element carries the name depends on what is drawn. An image carries it in its own alt,
         which is the attribute a screen reader reads an image by, and an empty alt is what marks the
-        decorative one. An emoji flag is text rather than a picture - read out of the flow it would be
-        announced as the two letters its regional indicators are built from - so it is hidden and the
-        root takes the img role and the name instead. And a flag that answers a click is a button,
-        whose name is the whole control's rather than the picture's inside it. *@
-    var named = name.HasValue();
+        decorative one. Everything else is not a picture at all: the emoji flag is text - read out of
+        the flow it would be announced as the two letters its regional indicators are built from - and
+        the fallback is whatever the page put there. Neither can say it is decorative from the inside,
+        so it is the frame around them that is named, or hidden. And a flag that answers a click is a
+        button, whose name is the whole control's rather than the picture's inside it. *@
     var emojiMode = _emoji is not null;
+    var imageMode = emojiMode is false && _src is not null;
 
+    @*  The role and the name arrive together, the way they do on every other utility of this library:
+        an img with no accessible name and a button with nothing to read out are the same dead stop for
+        a screen reader, so neither role is written until there is a name to announce with it. *@
     var role = splattedRole ?? (interactive
-        ? "button"
-        : (emojiMode && named ? "img" : null));
+        ? (named ? "button" : null)
+        : (named && (imageMode is false || name.HasValue() is false) ? "img" : null));
 
     @*  A name written after the splat with a null value does not leave the splatted aria-label alone,
         it takes it off the element - so where the name belongs on the image rather than on the frame,
         whatever came in with the attributes is written back untouched. *@
-    var ariaLabel = interactive || emojiMode ? name : splattedLabel;
-    var alt = interactive || named is false ? string.Empty : name;
+    var ariaLabel = interactive || imageMode is false ? name : splattedLabel;
+    var alt = interactive || name.HasValue() is false ? string.Empty : name;
+
+    @*  An image says it is decorative with an empty alt. The emoji flag and the fallback are text
+        instead, and text is read out wherever it is: an unnamed one would be announced as the two
+        letters behind the emoji, or as the question mark standing in for a country that resolved to
+        nothing. So a flag drawing either of them and carrying no name is taken out of the
+        accessibility tree altogether - unless the page said otherwise in the attributes, which is left
+        exactly as it was given. *@
+    var hidden = imageMode is false && interactive is false && named is false
+              && HtmlAttributes.ContainsKey("aria-hidden") is false;
+    var ariaHidden = hidden ? "true" : splattedHidden;
 
     @*  A flag with a handler is a tab stop; a disabled one leaves the tab order but stays in the
         document, so whatever pointed at it still has something to point at. Everywhere else the tab
@@ -58,18 +80,33 @@
     var onKeyDown = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown) : default;
     var onKeyUp = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyUp) : default;
     var onBlur = interactive ? EventCallback.Factory.Create<FocusEventArgs>(this, HandleOnBlur) : default;
+
+    @*  The two the picture is given that are defaults rather than decisions of the flag's: a flag is
+        not dragged out of the page it is read in, and it is decoded off the main thread because a list
+        of two hundred of them is what this renders. Both are read back out of the image attributes so
+        that a page saying otherwise is not overwritten by the value written after the splat. *@
+    var splattedDraggable = ImageAttributes.TryGetValue("draggable", out var sdg) ? sdg?.ToString() : null;
+    var splattedDecoding = ImageAttributes.TryGetValue("decoding", out var sdc) ? sdc?.ToString() : null;
+
+    @*  The error is the flag's own business - it is what moves the picture on to the packaged flag and
+        then to the fallback - so that one is always listened for. The load is nobody's unless the page
+        asked for it, and a list of two hundred flags would otherwise cost a round trip per row of a
+        Blazor Server app the moment they finish arriving. *@
+    var onLoad = OnLoad.HasDelegate ? EventCallback.Factory.Create<ProgressEventArgs>(this, HandleOnLoad) : default;
 }
 
-@*  The frame. It carries the size, the shape and the border, and it clips - which is what lets the
-    rounded and the circular shapes crop the flag rather than only round the corners of the box around
-    it. It is also what a click lands on, so the flag stays one target whether it is drawn as an image,
-    as an emoji or as a fallback of the page's own. *@
+@*  The frame. It carries the size, the shape and the border, and its corners are what the picture,
+    the glyph and the fallback inside it take their own from - which is what lets the rounded and the
+    circular shapes crop the flag rather than only round the corners of the box around it. It is also
+    what a click lands on, so the flag stays one target whether it is drawn as an image, as an emoji or
+    as a fallback of the page's own. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="@role"
      title="@title"
      tabindex="@rootTabIndex"
      aria-label="@ariaLabel"
+     aria-hidden="@ariaHidden"
      aria-disabled="@ariaDisabled"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -86,13 +123,18 @@
     }
     else if (_src is not null)
     {
-        <img src="@_src"
+        @*  The attributes of the page's own are splatted in first, so everything written after them
+            wins: the flag would otherwise stop being able to say what it draws or how it is named.
+            The two it only defaults are read back out of them above. *@
+        <img @attributes="ImageAttributes"
+             src="@_src"
              alt="@alt"
-             draggable="false"
-             decoding="async"
+             draggable="@(splattedDraggable ?? "false")"
+             decoding="@(splattedDecoding ?? "async")"
              loading="@_loading"
              style="@Styles?.Image"
              class="bit-flg-img@(Classes?.Image.HasValue() is true ? $" {Classes!.Image}" : null)"
+             @onload="onLoad"
              @onerror="HandleOnError" />
     }
     else if (FallbackTemplate is not null)

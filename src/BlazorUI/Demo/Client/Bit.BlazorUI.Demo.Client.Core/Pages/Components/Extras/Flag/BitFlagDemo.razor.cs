@@ -13,6 +13,13 @@ public partial class BitFlagDemo
         },
         new()
         {
+            Name = "AspectRatio",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aspect ratio of the frame of the flag, as any CSS aspect-ratio value (e.g. \"4/3\" or \"1\"). The height stays and the width follows from the ratio - or the other way round where a Width is what was given - which is what gives a Src of a page's own the proportions the flag itself is drawn in.",
+        },
+        new()
+        {
             Name = "AutoAlt",
             Type = "bool",
             DefaultValue = "false",
@@ -76,7 +83,16 @@ public partial class BitFlagDemo
             Name = "FallbackTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "What to render in place of the flag when there is none to draw - a country that resolved to nothing, or an image that failed to load.",
+            Description = "What to render in place of the flag when there is none to draw - a country that resolved to nothing, or an image that failed to load after the packaged flag has stood in for it.",
+        },
+        new()
+        {
+            Name = "Fit",
+            Type = "BitImageFit?",
+            DefaultValue = "null",
+            Description = "How the flag image is scaled and cropped to fit the frame around it, which only matters where a Src of the page's own or an AspectRatio makes the two different shapes. Unset, the image covers the frame and the overflow is cropped.",
+            LinkType = LinkType.Link,
+            Href = "#image-fit-enum",
         },
         new()
         {
@@ -94,10 +110,17 @@ public partial class BitFlagDemo
         },
         new()
         {
+            Name = "ImageAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "new Dictionary<string, object>()",
+            Description = "Additional HTML attributes to render on the img element rather than on the frame - a crossorigin or a referrerpolicy for a Src pointing at a CDN. The src, the alt and the loading of the flag itself still win over them.",
+        },
+        new()
+        {
             Name = "Iso2",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The ISO 3166-1 alpha-2 code of the country, matched case insensitively. A code no country of BitCountries.All carries draws nothing rather than a broken image.",
+            Description = "The ISO 3166-1 alpha-2 code of the country, matched case insensitively. A code no country of BitCountries.All carries draws nothing rather than a broken image. The reserved \"UK\" is answered with the United Kingdom, whose own code is \"GB\".",
         },
         new()
         {
@@ -120,13 +143,25 @@ public partial class BitFlagDemo
             Name = "Name",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The full English name of the country, matched case insensitively against the whole name rather than part of it.",
+            Description = "The full English name of the country, matched case insensitively against the whole name rather than part of it. The alternative names and abbreviations a country is as widely known by are answered too - \"Czechia\", \"Türkiye\", \"Holland\", \"USA\" - and so are the accents and the punctuation another source spells it with.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "The callback for when the flag is clicked. Setting it turns the flag into a button that joins the tab order and answers Enter and Space as well as the pointer, named by its Alt or, without one, by the country it shows.",
+            Description = "The callback for when the flag is clicked. Setting it turns the flag into a button that joins the tab order, grows its target to the 24 pixels WCAG asks of one and answers Enter and Space as well as the pointer, named by its Alt or, without one, by the country it shows.",
+        },
+        new()
+        {
+            Name = "OnError",
+            Type = "EventCallback",
+            Description = "The callback for when the flag image fails to load. A Src of the page's own that failed raises it once for that image and once more if the packaged flag standing in for it fails as well.",
+        },
+        new()
+        {
+            Name = "OnLoad",
+            Type = "EventCallback",
+            Description = "The callback for when the flag image has loaded. It is the browser's own load event, so it never fires for the emoji flag, which is text.",
         },
         new()
         {
@@ -156,7 +191,7 @@ public partial class BitFlagDemo
             Name = "Src",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The url of the image to render instead of the packaged flag image, for a set of images of the page's own. Emoji wins over it, and a source that fails falls back to the FallbackTemplate.",
+            Description = "The url of the image to render instead of the packaged flag image, for a set of images of the page's own. Emoji wins over it, and a source that fails falls back to the packaged flag of the same country and then to the FallbackTemplate.",
         },
         new()
         {
@@ -183,8 +218,81 @@ public partial class BitFlagDemo
         },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the flag element. Only a flag the browser can focus takes it: one with an OnClick handler, or one given a TabIndex of its own.",
+        },
+        new()
+        {
+            Name = "FocusAsync(bool preventScroll)",
+            Type = "ValueTask",
+            Description = "Gives focus to the flag element, leaving the page scrolled where it is instead of bringing the flag into view.",
+        },
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "countries",
+            Title = "BitCountries",
+            Description = "The table of countries the flag images and the country lookups of the library are built on. Every country is a shared BitCountry instance named after itself, so it can be written straight into markup, and the lookups below resolve any of the ways one is written down back to it - out of a dictionary rather than by scanning the table.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "All",
+                    Type = "BitCountry[]",
+                    Description = "Every country the packaged flag images cover, in alphabetical order."
+                },
+                new()
+                {
+                    Name = "FindByIso2(string? iso2)",
+                    Type = "BitCountry?",
+                    Description = "The country carrying the ISO 3166-1 alpha-2 code, case insensitively and ignoring surrounding whitespace. \"UK\" is answered with the United Kingdom, whose own code is \"GB\"."
+                },
+                new()
+                {
+                    Name = "FindByIso3(string? iso3)",
+                    Type = "BitCountry?",
+                    Description = "The country carrying the ISO 3166-1 alpha-3 code, case insensitively."
+                },
+                new()
+                {
+                    Name = "FindByName(string? name)",
+                    Type = "BitCountry?",
+                    Description = "The country carrying the English name, matched against the whole name rather than part of it. The alternative names and abbreviations a country is as widely known by are answered too, and the accents, punctuation and spacing another source spells it with are ignored."
+                },
+                new()
+                {
+                    Name = "FindByCode(string? code)",
+                    Type = "BitCountry?",
+                    Description = "The first country carrying the dialing code, read the way a telephone number is written: \"+31\", \"00 31\" and \"31\" all reach the Netherlands."
+                },
+                new()
+                {
+                    Name = "Find(string? value)",
+                    Type = "BitCountry?",
+                    Description = "The country a single value stands for, read as an alpha-2 code, an alpha-3 code, a name and a dialing code in that order."
+                },
+                new()
+                {
+                    Name = "HasFlag(string? iso2)",
+                    Type = "bool",
+                    Description = "Whether a packaged flag image ships for the given alpha-2 code, answered without asking the network for it."
+                },
+                new()
+                {
+                    Name = "GetEmoji(string? iso2)",
+                    Type = "string?",
+                    Description = "The Unicode emoji flag of the given alpha-2 code, built from the pair of regional indicator symbols its letters stand for rather than looked up - so it answers for codes the packaged images do not cover, and for \"GB-ENG\", \"GB-SCT\" and \"GB-WLS\"."
+                },
+            ]
+        },
         new()
         {
             Id = "country",
@@ -294,6 +402,63 @@ public partial class BitFlagDemo
         },
         new()
         {
+            Id = "image-fit-enum",
+            Name = "BitImageFit",
+            Description = "Determines how the flag image is scaled and cropped to fit the frame around it. It only matters where the image and the frame turn out to be different shapes, which a Src of the page's own or an AspectRatio is what makes possible.",
+            Items =
+            [
+                new()
+                {
+                    Name = "None",
+                    Description = "Neither the image nor the frame are scaled. Whatever of the image does not fit is cropped away from the right and the bottom.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Center",
+                    Description = "The image is not scaled, and is centered within the frame with the overflow cropped.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "CenterContain",
+                    Description = "The image keeps its aspect ratio, is scaled down where needed so that all of it fits, and is centered in the frame.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "CenterCover",
+                    Description = "The image keeps its aspect ratio, is scaled up where needed so that it covers the frame, and is centered in it.",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Contain",
+                    Description = "The image keeps its aspect ratio and is fully contained within the frame. Nothing is cropped, and whatever of the frame it does not reach is left empty.",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "Cover",
+                    Description = "The image keeps its aspect ratio and fills the frame, with whatever falls outside it cropped away. This is what a flag with no Fit set does.",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "Fill",
+                    Description = "The image is stretched to fill the frame exactly, at the cost of distorting the flag where the two shapes disagree.",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "ScaleDown",
+                    Description = "The image is contained within the frame but never scaled up, so one smaller than the frame keeps its natural size.",
+                    Value = "7",
+                },
+            ]
+        },
+        new()
+        {
             Id = "image-loading-enum",
             Name = "BitImageLoading",
             Description = "Represents the img loading attribute values.",
@@ -322,6 +487,10 @@ public partial class BitFlagDemo
     // vector one stays sharp at any size at all.
     private const string japanSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%23fff'/%3E%3Ccircle cx='450' cy='300' r='180' fill='%23bc002d'/%3E%3C/svg%3E";
 
+    // A 3:2 vector source, which is the shape the flag itself is drawn in and the shape the vector sets
+    // of the world ship: the packaged images are square, so this is the case AspectRatio is for.
+    private const string netherlandsSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%231e4785'/%3E%3Crect width='900' height='400' fill='%23fff'/%3E%3Crect width='900' height='200' fill='%23ae1c28'/%3E%3C/svg%3E";
+
     private static readonly BitCountry[] clickableCountries =
     [
         BitCountries.France,
@@ -331,4 +500,7 @@ public partial class BitFlagDemo
     ];
 
     private BitCountry? selectedCountry;
+
+    private int loadedCount;
+    private int failedCount;
 }

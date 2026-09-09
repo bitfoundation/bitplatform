@@ -11,7 +11,10 @@
 /// <br />
 /// The Find methods resolve any of the four ways a country is written down - the ISO 3166-1 alpha-2
 /// and alpha-3 codes, the English name and the dialing code - back to its instance, out of a
-/// dictionary rather than by scanning the table.
+/// dictionary rather than by scanning the table. A name is read as a page actually writes one rather
+/// than as an exact key: the alternative names and the abbreviations a country is as widely known by
+/// are answered too ("Czechia", "Türkiye", "Holland", "UK", "USA"), and so are the accents, the
+/// punctuation and the spacing a second source spells it with ("Curaçao", "Guinea-Bissau").
 /// </remarks>
 public class BitCountries
 {
@@ -520,11 +523,37 @@ public class BitCountries
     private static readonly Dictionary<string, BitCountry> _iso2Map = CreateMap(static c => c.Iso2);
     private static readonly Dictionary<string, BitCountry> _iso3Map = CreateMap(static c => c.Iso3);
     private static readonly Dictionary<string, BitCountry> _nameMap = CreateMap(static c => c.Name);
-    private static readonly Dictionary<string, BitCountry> _codeMap = CreateMap(static c => c.Code);
+    // The dialing codes are keyed the way a lookup normalizes one rather than the way the table writes
+    // it, so the hyphen of a North American code is off both sides of the comparison: "1-242",
+    // "+1 (242)" and "1242" are the same code written three ways, and all three reach the Bahamas.
+    private static readonly Dictionary<string, BitCountry> _codeMap = CreateMap(static c => NormalizeCode(c.Code));
+
+    // The names a country is also written down by, which is not the same table a second time: the ISO
+    // name where this one carries the everyday name ("Czechia" for the Czech Republic), the everyday
+    // name where it carries the ISO one, and the abbreviations a page is as likely to be handed as a
+    // code ("UK", "USA", "UAE"). Nothing here can take a value away from the country that actually
+    // carries it: the aliases are asked only once every exact lookup has missed.
+    private static readonly Dictionary<string, BitCountry> _aliasMap = CreateAliasMap();
+
+    // Every name and every alias with its accents, spaces and punctuation taken off, so "Aland
+    // Islands", "Curaçao", "Guinea-Bissau" and "US Virgin Islands" reach the same countries "Åland
+    // Islands", "Curacao", "Guinea Bissau" and "U.S. Virgin Islands" do. A page is handed a country
+    // name in whichever spelling its own data uses, and none of those differences is a different
+    // country.
+    private static readonly Dictionary<string, BitCountry> _foldedMap = CreateFoldedMap();
 
     // The first regional indicator symbol, U+1F1E6 REGIONAL INDICATOR SYMBOL LETTER A. The pair a
     // country's alpha-2 code maps to is the emoji flag of that country.
     private const int RegionalIndicatorA = 0x1F1E6;
+
+    // A subdivision flag is written as a tag sequence instead: U+1F3F4 WAVING BLACK FLAG, the letters
+    // of the subdivision code as tag characters, and U+E007F CANCEL TAG to close it. Only the three
+    // below are recommended for interchange by Unicode - every other sequence draws a plain black flag
+    // rather than the flag it names - so only the three are built.
+    private const int BlackFlag = 0x1F3F4;
+    private const int TagBase = 0xE0000;
+    private const int CancelTag = 0xE007F;
+    private static readonly string[] _subdivisionFlags = ["GBENG", "GBSCT", "GBWLS"];
 
     private static Dictionary<string, BitCountry> CreateMap(Func<BitCountry, string> keySelector)
     {
@@ -541,9 +570,110 @@ public class BitCountries
         return map;
     }
 
+    private static Dictionary<string, BitCountry> CreateAliasMap()
+    {
+        return new Dictionary<string, BitCountry>(StringComparer.OrdinalIgnoreCase)
+        {
+            // "UK" is not the alpha-2 code of any country - the United Kingdom's is "GB" - but it is
+            // exceptionally reserved for it by ISO 3166-1 itself, and it is what a page is handed
+            // often enough that answering nothing at all would be the wrong answer.
+            ["UK"] = UnitedKingdom,
+            ["Great Britain"] = UnitedKingdom,
+            ["United Kingdom of Great Britain and Northern Ireland"] = UnitedKingdom,
+
+            ["USA"] = UnitedStates,
+            ["America"] = UnitedStates,
+            ["United States of America"] = UnitedStates,
+            ["US Virgin Islands"] = USVirginIslands,
+            ["United States Virgin Islands"] = USVirginIslands,
+
+            ["UAE"] = UnitedArabEmirates,
+            ["Holland"] = Netherlands,
+            ["Macao"] = Macau,
+            ["Burma"] = Myanmar,
+            ["Viet Nam"] = Vietnam,
+            ["Brunei Darussalam"] = Brunei,
+            ["Russian Federation"] = Russia,
+            ["Syrian Arab Republic"] = Syria,
+            ["Lao People's Democratic Republic"] = Laos,
+            ["Palestinian Territories"] = Palestine,
+            ["State of Palestine"] = Palestine,
+            ["Republic of Korea"] = SouthKorea,
+            ["Korea, South"] = SouthKorea,
+            ["Democratic People's Republic of Korea"] = NorthKorea,
+            ["Korea, North"] = NorthKorea,
+
+            // The countries that have been renamed since this table was written, and the ones an
+            // English page is as likely to name in the local spelling as in the English one.
+            ["Czechia"] = CzechRepublic,
+            ["Türkiye"] = Turkey,
+            ["Eswatini"] = Swaziland,
+            ["North Macedonia"] = Macedonia,
+            ["Cabo Verde"] = CapeVerde,
+            ["Côte d'Ivoire"] = IvoryCoast,
+            ["Timor-Leste"] = EastTimor,
+            ["Holy See"] = Vatican,
+            ["Vatican City"] = Vatican,
+
+            // The two Congos are told apart by their capitals as often as by their names, and the
+            // larger one is still written down by the name it carried until 1997.
+            ["DR Congo"] = DemocraticRepublicOfTheCongo,
+            ["DRC"] = DemocraticRepublicOfTheCongo,
+            ["Congo-Kinshasa"] = DemocraticRepublicOfTheCongo,
+            ["Zaire"] = DemocraticRepublicOfTheCongo,
+            ["Congo"] = RepublicOfTheCongo,
+            ["Congo-Brazzaville"] = RepublicOfTheCongo,
+        };
+    }
+
+    private static Dictionary<string, BitCountry> CreateFoldedMap()
+    {
+        var map = new Dictionary<string, BitCountry>(All.Length + _aliasMap.Count, StringComparer.Ordinal);
+
+        // The names go in before the aliases, so a folded alias can never take a folded name away from
+        // the country carrying it.
+        foreach (var country in All)
+        {
+            map.TryAdd(Fold(country.Name), country);
+        }
+
+        foreach (var alias in _aliasMap)
+        {
+            map.TryAdd(Fold(alias.Key), alias.Value);
+        }
+
+        return map;
+    }
+
+    // A name written down by two sources differs in its accents, its punctuation and its spacing far
+    // more often than in its letters, and none of those differences is a different country. Everything
+    // but the letters and the digits is dropped - the decomposition above splits an accented letter
+    // into a letter and a combining mark, and the mark is not a letter - which leaves one key both
+    // spellings reach.
+    private static string Fold(string value)
+    {
+        var decomposed = value.Normalize(System.Text.NormalizationForm.FormD);
+        var buffer = new char[decomposed.Length];
+        var length = 0;
+
+        foreach (var character in decomposed)
+        {
+            if (char.IsLetterOrDigit(character) is false) continue;
+
+            buffer[length++] = char.ToUpperInvariant(character);
+        }
+
+        return new string(buffer, 0, length);
+    }
+
     /// <summary>
     /// Finds the country carrying the given ISO 3166-1 alpha-2 code, case insensitively.
     /// </summary>
+    /// <remarks>
+    /// The exceptionally reserved code "UK" is answered with the United Kingdom, whose own code is
+    /// "GB": ISO 3166-1 reserves it for exactly that country, and a page hands it over often enough
+    /// that answering nothing would be the wrong answer.
+    /// </remarks>
     /// <param name="iso2">
     /// The two letter code to look up. Surrounding whitespace is ignored.
     /// </param>
@@ -554,7 +684,12 @@ public class BitCountries
     {
         if (string.IsNullOrWhiteSpace(iso2)) return null;
 
-        return _iso2Map.GetValueOrDefault(iso2!.Trim());
+        var trimmed = iso2!.Trim();
+
+        return _iso2Map.GetValueOrDefault(trimmed)
+            // Only a two letter value is read as a code here, so the alias table's longer entries -
+            // "USA", "UAE" - stay out of a lookup that promises an alpha-2 code.
+            ?? (trimmed.Length == 2 ? _aliasMap.GetValueOrDefault(trimmed) : null);
     }
 
     /// <summary>
@@ -576,6 +711,19 @@ public class BitCountries
     /// <summary>
     /// Finds the country carrying the given English name, case insensitively.
     /// </summary>
+    /// <remarks>
+    /// The name of the country wins over everything else, and only once it has missed are the two
+    /// other ways a page writes one down tried. The first is the alternative names and the
+    /// abbreviations a country is as widely known by as by the name of this table - "Czechia",
+    /// "Türkiye", "Holland", "UK", "USA", "UAE", "Burma" - which is what keeps a page whose own data
+    /// carries the ISO name from resolving to nothing. The second is the spelling: the accents, the
+    /// punctuation and the spacing are taken off both sides of the comparison, so "Aland Islands",
+    /// "Curaçao", "Guinea-Bissau" and "US Virgin Islands" reach the countries this table writes as
+    /// "Åland Islands", "Curacao", "Guinea Bissau" and "U.S. Virgin Islands".
+    /// <br />
+    /// It is still the whole name that is matched rather than part of it: "United" resolves to
+    /// nothing.
+    /// </remarks>
     /// <param name="name">
     /// The name to look up, which has to be the whole name rather than part of it. Surrounding
     /// whitespace is ignored.
@@ -587,7 +735,11 @@ public class BitCountries
     {
         if (string.IsNullOrWhiteSpace(name)) return null;
 
-        return _nameMap.GetValueOrDefault(name!.Trim());
+        var trimmed = name!.Trim();
+
+        return _nameMap.GetValueOrDefault(trimmed)
+            ?? _aliasMap.GetValueOrDefault(trimmed)
+            ?? _foldedMap.GetValueOrDefault(Fold(trimmed));
     }
 
     /// <summary>
@@ -595,8 +747,10 @@ public class BitCountries
     /// </summary>
     /// <remarks>
     /// The code is read the way a telephone number is written rather than as an exact key: a leading
-    /// plus sign, an international prefix written out as "00", spaces and brackets are all taken off
-    /// before the lookup, so "+31", "00 31" and "31" all reach the Netherlands.
+    /// plus sign, an international prefix written out as "00", spaces, brackets and hyphens are all
+    /// taken off before the lookup, so "+31", "00 31" and "31" all reach the Netherlands, and the
+    /// codes of the North American Numbering Plan resolve however they are punctuated - "1-242",
+    /// "+1 (242)" and "1242" are all the Bahamas.
     /// <br />
     /// Dialing codes are not unique - Canada and the United States both carry "1", Kazakhstan and
     /// Russia both carry "7" - and the country answered with is the first of them in <see cref="All"/>,
@@ -625,6 +779,10 @@ public class BitCountries
     /// code, in that order, and the first of them that resolves wins. The length rules most of them
     /// out at once - only a two letter value can be an alpha-2 code - so the order only decides
     /// between a name and a dialing code, which cannot collide.
+    /// <br />
+    /// The name step is <see cref="FindByName"/>'s, so the alternative names, the abbreviations and
+    /// the spellings it answers to are answered here as well: "UK", "USA", "Czechia" and "Curaçao"
+    /// all resolve.
     /// </remarks>
     /// <param name="value">
     /// The alpha-2 code, alpha-3 code, name or dialing code to look up.
@@ -638,11 +796,13 @@ public class BitCountries
 
         var trimmed = value!.Trim();
 
-        if (trimmed.Length == 2 && _iso2Map.TryGetValue(trimmed, out var byIso2)) return byIso2;
+        // A miss falls through to the step below rather than ending the lookup: a two letter value
+        // that is no alpha-2 code can still be a dialing code, and "31" is the Netherlands.
+        if (trimmed.Length == 2 && FindByIso2(trimmed) is { } byIso2) return byIso2;
 
-        if (trimmed.Length == 3 && _iso3Map.TryGetValue(trimmed, out var byIso3)) return byIso3;
+        if (trimmed.Length == 3 && FindByIso3(trimmed) is { } byIso3) return byIso3;
 
-        if (_nameMap.TryGetValue(trimmed, out var byName)) return byName;
+        if (FindByName(trimmed) is { } byName) return byName;
 
         return FindByCode(trimmed);
     }
@@ -651,6 +811,10 @@ public class BitCountries
     /// Determines whether the given ISO 3166-1 alpha-2 code is one of the countries of
     /// <see cref="All"/>, and so one the packaged flag images cover.
     /// </summary>
+    /// <remarks>
+    /// It answers for whatever <see cref="FindByIso2"/> resolves, so the exceptionally reserved "UK"
+    /// is answered for the flag the United Kingdom ships under "GB".
+    /// </remarks>
     /// <param name="iso2">
     /// The two letter code to check, case insensitively.
     /// </param>
@@ -671,12 +835,17 @@ public class BitCountries
     /// pair of ASCII letters, including the ones <see cref="All"/> does not carry. What such a pair
     /// looks like is the platform's to decide: an emoji font that has no flag for it draws the two
     /// letters side by side instead.
+    /// <br />
+    /// The three subdivisions Unicode recommends for interchange - "GB-ENG", "GB-SCT" and "GB-WLS" -
+    /// are answered as well, as the tag sequence their codes stand for. Every other subdivision draws
+    /// a plain black flag rather than the flag it names, so it is answered with nothing at all.
     /// </remarks>
     /// <param name="iso2">
-    /// The two letter code to build the emoji flag of. Surrounding whitespace is ignored.
+    /// The two letter code to build the emoji flag of, or one of the three subdivision codes above.
+    /// Surrounding whitespace is ignored.
     /// </param>
     /// <returns>
-    /// The emoji flag, or null where the code is not two ASCII letters.
+    /// The emoji flag, or null where the code is neither two ASCII letters nor one of those three.
     /// </returns>
     public static string? GetEmoji(string? iso2)
     {
@@ -684,7 +853,7 @@ public class BitCountries
 
         var code = iso2!.Trim();
 
-        if (code.Length != 2) return null;
+        if (code.Length != 2) return GetSubdivisionEmoji(code);
 
         var first = char.ToUpperInvariant(code[0]);
         var second = char.ToUpperInvariant(code[1]);
@@ -695,10 +864,33 @@ public class BitCountries
                              char.ConvertFromUtf32(RegionalIndicatorA + (second - 'A')));
     }
 
+    // A subdivision flag is a waving black flag followed by the letters of its ISO 3166-2 code written
+    // as tag characters, which the emoji font replaces with the flag as a whole. The hyphen is not
+    // part of the sequence, so "GB-ENG" and "gbeng" are the same flag.
+    private static string? GetSubdivisionEmoji(string code)
+    {
+        var folded = Fold(code);
+
+        if (Array.IndexOf(_subdivisionFlags, folded) < 0) return null;
+
+        var builder = new System.Text.StringBuilder(2 + (folded.Length * 2) + 2);
+
+        builder.Append(char.ConvertFromUtf32(BlackFlag));
+
+        foreach (var character in folded)
+        {
+            builder.Append(char.ConvertFromUtf32(TagBase + char.ToLowerInvariant(character)));
+        }
+
+        return builder.Append(char.ConvertFromUtf32(CancelTag)).ToString();
+    }
+
     // A dialing code is written in as many ways as a telephone number is, and all of them mean the
     // same country: the plus sign and the "00" that stands in for it are prefixes rather than part of
-    // the code, and the spaces and brackets are only there to be read. The hyphen is left alone - it
-    // is part of the codes of the North American Numbering Plan as this table writes them ("1-242").
+    // the code, and the spaces, brackets and hyphens are only there to be read. The codes of the North
+    // American Numbering Plan are the ones this matters for - the table writes them "1-242", a page is
+    // as likely to hand over "+1 (242)" - and the keys of the map are normalized the same way, so both
+    // spellings meet in the middle at "1242".
     private static string NormalizeCode(string code)
     {
         var buffer = new char[code.Length];
@@ -706,7 +898,7 @@ public class BitCountries
 
         foreach (var character in code)
         {
-            if (char.IsWhiteSpace(character) || character is '+' or '(' or ')') continue;
+            if (char.IsWhiteSpace(character) || character is '+' or '(' or ')' or '-') continue;
 
             buffer[length++] = character;
         }

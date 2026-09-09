@@ -15,7 +15,15 @@ public partial class BitFlagDemo
 
 <BitFlag Code=""+31"" />
 
-<BitFlag Name=""Netherlands"" />";
+<BitFlag Name=""Netherlands"" />
+
+<BitFlag Name=""Holland"" />
+
+<BitFlag Name=""Czechia"" />
+
+<BitFlag Name=""Curaçao"" />
+
+<BitFlag Iso2=""UK"" />";
 
     private readonly string example3RazorCode = @"
 <BitFlag Rounded Height=""2rem"" Country=""BitCountries.Japan"" />
@@ -35,7 +43,11 @@ public partial class BitFlagDemo
 
 <BitFlag Emoji Height=""2rem"" Country=""BitCountries.Japan"" />
 
-<BitFlag Emoji Height=""3rem"" Country=""BitCountries.Brazil"" />";
+<BitFlag Emoji Height=""3rem"" Country=""BitCountries.Brazil"" />
+
+<BitFlag Emoji Height=""3rem"" Iso2=""GB-SCT"" />
+
+<BitFlag Emoji Circular Bordered Height=""3rem"" Country=""BitCountries.Brazil"" />";
 
     private readonly string example5RazorCode = @"
 <BitFlag Country=""BitCountries.Canada"" />
@@ -44,7 +56,11 @@ public partial class BitFlagDemo
 
 <BitFlag Alt=""Ships to Canada"" Country=""BitCountries.Canada"" />
 
-<BitFlag AutoTitle Country=""BitCountries.Canada"" />";
+<BitFlag AutoTitle Country=""BitCountries.Canada"" />
+
+<BitFlag Bordered Height=""1.5rem"" Iso2=""XK"" Alt=""Kosovo"">
+    <FallbackTemplate>XK</FallbackTemplate>
+</BitFlag>";
 
     private readonly string example6RazorCode = @"
 <BitFlag Iso2=""zz"" />
@@ -54,6 +70,8 @@ public partial class BitFlagDemo
 </BitFlag>
 
 <BitFlag Height=""2rem"" Src=""@japanSvg"" AutoTitle Country=""BitCountries.Japan"" />
+
+<BitFlag Height=""2rem"" Bordered Src=""/not-a-real-flag.png"" Country=""BitCountries.Japan"" />
 
 <BitFlag Height=""1.5rem"" Bordered Src=""/not-a-real-flag.png"">
     <FallbackTemplate><BitIcon IconName=""@BitIconName.Error"" /></FallbackTemplate>
@@ -69,7 +87,7 @@ private const string japanSvg = ""data:image/svg+xml,%3Csvg xmlns='http://www.w3
 
 <BitFlag Height=""2rem"" Grayscale Country=""BitCountries.Brazil"" />
 
-<BitFlag Height=""2rem"" IsEnabled=""false"" Country=""BitCountries.Brazil"" />
+<BitFlag Height=""2rem"" IsEnabled=""false"" Title=""Not shipped to Brazil yet"" Country=""BitCountries.Brazil"" />
 
 <BitFlag Height=""2rem"" Grayscale IsEnabled=""false"" Country=""BitCountries.Brazil"" />";
 
@@ -106,6 +124,39 @@ private BitCountry? selectedCountry;";
 </div>";
 
     private readonly string example10RazorCode = @"
+<BitFlag Bordered Height=""2rem"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />
+
+<BitFlag Bordered Height=""2rem"" AspectRatio=""3/2"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />
+
+<BitFlag Bordered Height=""2rem"" AspectRatio=""4/3"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />
+
+<BitFlag Bordered Height=""2rem"" Fit=""BitImageFit.Contain"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />";
+
+    private readonly string example10CsharpCode = @"
+// A 3:2 vector source, which is the shape the flag itself is drawn in and the shape the vector sets
+// of the world ship: the packaged images are square, so this is the case AspectRatio is for.
+private const string netherlandsSvg = ""data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%231e4785'/%3E%3Crect width='900' height='400' fill='%23fff'/%3E%3Crect width='900' height='200' fill='%23ae1c28'/%3E%3C/svg%3E"";";
+
+    private readonly string example11RazorCode = @"
+<BitFlag Bordered Height=""2rem""
+         Loading=""BitImageLoading.Eager""
+         Country=""BitCountries.Portugal""
+         ImageAttributes=""@(new() { { ""referrerpolicy"", ""no-referrer"" } })"" />
+
+<BitFlag Bordered Height=""2rem""
+         Country=""BitCountries.Portugal""
+         OnLoad=""@(() => loadedCount++)"" />
+
+<BitFlag Bordered Height=""2rem""
+         Src=""/not-a-real-flag.png""
+         Country=""BitCountries.Portugal""
+         OnError=""@(() => failedCount++)"" />";
+
+    private readonly string example11CsharpCode = @"
+private int loadedCount;
+private int failedCount;";
+
+    private readonly string example12RazorCode = @"
 <BitFlag Size=""BitSize.Small"" Bordered Country=""BitCountries.Italy"" />
 
 <BitFlag Size=""BitSize.Medium"" Bordered Country=""BitCountries.Italy"" />
@@ -116,7 +167,7 @@ private BitCountry? selectedCountry;";
 
 <BitFlag Width=""4rem"" Height=""2rem"" Bordered Country=""BitCountries.Italy"" />";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         width: 3rem;
@@ -149,7 +200,7 @@ private BitCountry? selectedCountry;";
     <FallbackTemplate>?</FallbackTemplate>
 </BitFlag>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <div dir=""rtl"">
     <BitFlag Dir=""BitDir.Rtl"" Bordered Height=""2rem"" AutoTitle Country=""BitCountries.Iran"" />
 

@@ -85,11 +85,15 @@ public class BitCountriesTests
         Assert.AreSame(BitCountries.Netherlands, BitCountries.FindByCode(code));
     }
 
-    [TestMethod]
-    public void BitCountriesShouldKeepTheHyphenOfANorthAmericanCode()
+    [TestMethod,
+        DataRow("1-242"),
+        DataRow("+1-242"),
+        DataRow("+1 (242)"),
+        DataRow("1242"),
+        DataRow("001 242")]
+    public void BitCountriesShouldFindANorthAmericanCodeHoweverItIsPunctuated(string code)
     {
-        Assert.AreSame(BitCountries.Bahamas, BitCountries.FindByCode("1-242"));
-        Assert.AreSame(BitCountries.Bahamas, BitCountries.FindByCode("+1-242"));
+        Assert.AreSame(BitCountries.Bahamas, BitCountries.FindByCode(code));
     }
 
     [TestMethod]
@@ -145,6 +149,100 @@ public class BitCountriesTests
         Assert.IsNull(BitCountries.FindByCode(value));
     }
 
+    [TestMethod,
+        DataRow("UK"),
+        DataRow("uk"),
+        DataRow(" Uk ")]
+    public void BitCountriesShouldAnswerTheReservedUkCodeWithTheUnitedKingdom(string iso2)
+    {
+        // "UK" is no country's alpha-2 code, but ISO 3166-1 reserves it for exactly this country.
+        Assert.AreSame(BitCountries.UnitedKingdom, BitCountries.FindByIso2(iso2));
+        Assert.AreSame(BitCountries.UnitedKingdom, BitCountries.Find(iso2));
+    }
+
+    [TestMethod]
+    public void BitCountriesShouldNotReadALongerAliasAsAnAlpha2Code()
+    {
+        // The alias table carries "USA" and "UAE" as names, and a lookup promising an alpha-2 code
+        // does not answer with them.
+        Assert.IsNull(BitCountries.FindByIso2("USA"));
+        Assert.IsNull(BitCountries.FindByIso2("UAE"));
+    }
+
+    [TestMethod,
+        DataRow("Czechia", "Czech Republic"),
+        DataRow("Türkiye", "Turkey"),
+        DataRow("Holland", "Netherlands"),
+        DataRow("USA", "United States"),
+        DataRow("America", "United States"),
+        DataRow("UK", "United Kingdom"),
+        DataRow("UAE", "United Arab Emirates"),
+        DataRow("Burma", "Myanmar"),
+        DataRow("Eswatini", "Swaziland"),
+        DataRow("North Macedonia", "Macedonia"),
+        DataRow("Cabo Verde", "Cape Verde"),
+        DataRow("Timor-Leste", "East Timor"),
+        DataRow("Holy See", "Vatican"),
+        DataRow("Russian Federation", "Russia"),
+        DataRow("Korea, South", "South Korea"),
+        DataRow("DRC", "Democratic Republic of the Congo"),
+        DataRow("Zaire", "Democratic Republic of the Congo"),
+        DataRow("Congo", "Republic of the Congo"),
+        DataRow(" czechia ", "Czech Republic")]
+    public void BitCountriesShouldFindByAnAlternativeName(string alias, string expected)
+    {
+        Assert.AreEqual(expected, BitCountries.FindByName(alias)?.Name);
+        Assert.AreEqual(expected, BitCountries.Find(alias)?.Name);
+    }
+
+    [TestMethod,
+        // The accents, the punctuation and the spacing come off both sides of the comparison, so the
+        // spelling a second source uses reaches the same country.
+        DataRow("Aland Islands", "Åland Islands"),
+        DataRow("Curaçao", "Curacao"),
+        DataRow("Guinea-Bissau", "Guinea Bissau"),
+        DataRow("US Virgin Islands", "U.S. Virgin Islands"),
+        DataRow("Côte d'Ivoire", "Ivory Coast"),
+        DataRow("Cote dIvoire", "Ivory Coast"),
+        DataRow("SaintKittsAndNevis", "Saint Kitts and Nevis")]
+    public void BitCountriesShouldIgnoreTheSpellingOfAName(string written, string expected)
+    {
+        Assert.AreEqual(expected, BitCountries.FindByName(written)?.Name);
+    }
+
+    [TestMethod]
+    public void BitCountriesShouldNeverLetAnAliasTakeANameFromTheCountryCarryingIt()
+    {
+        foreach (var country in BitCountries.All)
+        {
+            Assert.AreSame(country, BitCountries.FindByName(country.Name), country.Name);
+            Assert.AreSame(country, BitCountries.FindByIso2(country.Iso2), country.Name);
+            Assert.AreSame(country, BitCountries.FindByIso3(country.Iso3), country.Name);
+        }
+    }
+
+    [TestMethod]
+    public void BitCountriesShouldCarryNoTwoNamesThatSpellTheSameWayOnceFolded()
+    {
+        // Two countries whose names differ only in their accents or their punctuation would make the
+        // spelling-insensitive lookup answer one of them for the other.
+        var folded = BitCountries.All
+                                 .Select(c => new string([.. c.Name.Normalize(System.Text.NormalizationForm.FormD)
+                                                                   .Where(char.IsLetterOrDigit)
+                                                                   .Select(char.ToUpperInvariant)]))
+                                 .ToArray();
+
+        Assert.AreEqual(folded.Length, folded.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [TestMethod]
+    public void BitCountriesShouldStillReadATwoDigitValueAsADialingCode()
+    {
+        // A two character value that is no alpha-2 code falls through to the dialing codes rather than
+        // ending the lookup there.
+        Assert.AreSame(BitCountries.Netherlands, BitCountries.Find("31"));
+    }
+
     [TestMethod]
     public void BitCountriesShouldKnowWhichFlagsItShips()
     {
@@ -152,6 +250,9 @@ public class BitCountriesTests
         Assert.IsTrue(BitCountries.HasFlag("NL"));
         Assert.IsFalse(BitCountries.HasFlag("XK"));
         Assert.IsFalse(BitCountries.HasFlag(null));
+
+        // The reserved code reaches the flag the United Kingdom ships under "GB".
+        Assert.IsTrue(BitCountries.HasFlag("UK"));
     }
 
     [TestMethod,
@@ -175,6 +276,29 @@ public class BitCountriesTests
     public void BitCountriesShouldBuildNoEmojiFlagOutOfSomethingThatIsNotTwoLetters(string iso2)
     {
         Assert.IsNull(BitCountries.GetEmoji(iso2));
+    }
+
+    [TestMethod,
+        DataRow("GB-ENG", "\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F"),
+        DataRow("gb-sct", "\U0001F3F4\U000E0067\U000E0062\U000E0073\U000E0063\U000E0074\U000E007F"),
+        DataRow(" GB-WLS ", "\U0001F3F4\U000E0067\U000E0062\U000E0077\U000E006C\U000E0073\U000E007F"),
+        // The hyphen is not part of the sequence, so the code reads the same without it.
+        DataRow("GBENG", "\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F")]
+    public void BitCountriesShouldBuildTheSubdivisionEmojiFlagsUnicodeRecommends(string code, string expected)
+    {
+        Assert.AreEqual(expected, BitCountries.GetEmoji(code));
+    }
+
+    [TestMethod,
+        // Every other subdivision draws a plain black flag rather than the flag it names, so none of
+        // them is built at all.
+        DataRow("US-CA"),
+        DataRow("GB-NIR"),
+        DataRow("ES-CT"),
+        DataRow("GB-")]
+    public void BitCountriesShouldBuildNoEmojiFlagForASubdivisionNoFontDraws(string code)
+    {
+        Assert.IsNull(BitCountries.GetEmoji(code));
     }
 
     [TestMethod]

@@ -1,9 +1,7 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 // The frame. It is the box the flag is drawn in, and everything the component offers is a property of
-// it rather than of the picture inside: the size, the shape, the border and the shadow. It clips,
-// which is what makes the rounded and the circular shapes crop the flag rather than only round the
-// corners of the box around it.
+// it rather than of the picture inside: the size, the shape, the border and the shadow.
 //
 // One custom property carries the size, so a single length sets the width, the height AND the font
 // size the emoji flag is drawn at - a glyph is sized by type rather than by a box. It defaults to the
@@ -14,7 +12,6 @@
 
     padding: 0;
     flex-shrink: 0;
-    overflow: hidden;
     position: relative;
     line-height: 1;
     box-sizing: border-box;
@@ -24,10 +21,14 @@
     height: var(--bit-flg-siz);
     font-size: var(--bit-flg-siz);
 
+    // A disabled flag keeps answering the pointer, and refuses the click in the handler instead.
+    // Turning the pointer off here would take the flag's own title tooltip with it - the one sentence
+    // saying which country this is and why it cannot be picked - which is the whole reason a disabled
+    // control is left on the page rather than removed from it. The keyboard is already covered: it
+    // leaves the tab order, and the handlers refuse it too.
     &.bit-dis {
         opacity: $opa-dis;
         user-select: none;
-        pointer-events: none;
     }
 
     // The ring is drawn on the frame, which is also the element that takes the focus: only a flag with
@@ -39,12 +40,17 @@
 
 // The picture. It fills the frame and is cropped to it rather than squashed into it, so a frame given
 // a shape other than the square the images are drawn in cuts the flag instead of distorting it.
+//
+// The shape is inherited rather than clipped by the frame: an overflow of its own would take the hit
+// box that grows a clickable flag to a real target with it, since a pseudo-element is clipped by its
+// host exactly as a child is.
 .bit-flg-img {
     width: 100%;
     height: 100%;
     display: block;
     object-fit: cover;
     user-select: none;
+    border-radius: inherit;
     -webkit-user-drag: none;
 }
 
@@ -61,21 +67,36 @@
     font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif;
 }
 
+// A frame that was given a shape, a border or a ratio is not let out around the glyph - a circle drawn
+// around a box wider than it is tall is not a circle - so it keeps the size it was asked for and the
+// glyph is centred and cropped inside it, exactly the way the picture is. That frame is the one
+// without bit-flg-emo, which the root only carries where nothing has asked for a shape.
+.bit-flg:not(.bit-flg-emo) > .bit-flg-emj {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    border-radius: inherit;
+    justify-content: center;
+}
+
 // What stands in for a flag that is not there. It fills the frame the same way the picture does, so a
 // fallback of the page's own - a letter pair, an icon, a placeholder block - lands in the same box at
 // the same size as the flag it replaces.
 .bit-flg-fbk {
     inset: 0;
     display: flex;
+    overflow: hidden;
     position: absolute;
     align-items: center;
+    border-radius: inherit;
     justify-content: center;
     font-size: calc(var(--bit-flg-siz) * 0.5);
 }
 
 .bit-flg-emo {
     width: auto;
-    overflow: visible;
 }
 
 .bit-flg-sm {
@@ -90,8 +111,51 @@
     --bit-flg-siz: #{$siz-icon-lg};
 }
 
+// A frame given a ratio takes its width from that ratio and its height, so the square width above has
+// to come off first. A Width of the page's own is written inline and still wins over it.
+.bit-flg-asp {
+    width: auto;
+}
+
+// What the picture does inside a frame that is not its own shape, which is only ever a question for a
+// Src of the page's own or a frame given a ratio: the packaged images are square and so is the frame.
+.bit-flg-non > .bit-flg-img {
+    object-fit: none;
+}
+
+.bit-flg-ctr > .bit-flg-img {
+    object-fit: none;
+    object-position: center;
+}
+
+.bit-flg-cnt > .bit-flg-img {
+    object-fit: contain;
+}
+
+.bit-flg-cct > .bit-flg-img {
+    object-fit: contain;
+    object-position: center;
+}
+
+.bit-flg-cvr > .bit-flg-img {
+    object-fit: cover;
+}
+
+.bit-flg-ccv > .bit-flg-img {
+    object-fit: cover;
+    object-position: center;
+}
+
+.bit-flg-fil > .bit-flg-img {
+    object-fit: fill;
+}
+
+.bit-flg-scd > .bit-flg-img {
+    object-fit: scale-down;
+}
+
 .bit-flg-rnd {
-    border-radius: $shp-radius-sm;
+    border-radius: $shp-radius-surface;
 }
 
 .bit-flg-cir {
@@ -107,8 +171,6 @@
     border-color: $clr-brd-sec;
 }
 
-// An element clips its descendants with overflow, never its own box-shadow, so the shadow of the frame
-// survives the very clipping that makes the shapes work.
 .bit-flg-shd {
     box-shadow: $box-shadow-card;
 }
@@ -117,6 +179,42 @@
     filter: grayscale(1);
 }
 
+// A flag given a click handler is announced and operated as a button, so it also has to look and feel
+// like one.
 .bit-flg-clk {
     cursor: pointer;
+    transition: opacity $mot-duration-short $mot-easing;
+
+    // A flag is drawn at the icon sizes of the theme, which puts every one of them under the 24x24 CSS
+    // pixels WCAG 2.2 asks of a target - and the flag is now a target. This grows the area that answers
+    // the pointer without growing the flag: a pseudo-element is part of its host for hit testing, so a
+    // press anywhere in this box is a press on the flag, while the layout keeps the size it was given.
+    &::after {
+        content: "";
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        width: max(100%, 1.5rem);
+        height: max(100%, 1.5rem);
+        transform: translate(-50%, -50%);
+        // The box overhangs the flag's own, and a positioned element paints - and so hit-tests - above
+        // the plain content beside it, which would let the overhang take the presses meant for a
+        // tightly spaced neighbour. A negative index puts it back under that content while leaving it
+        // part of its host for hit testing, so it only grows the target where nothing else is.
+        z-index: -1;
+    }
+
+    // A control the pointer can press says so before it is pressed. A flag has no color of its own to
+    // deepen - every one of them is a different set of colors, and Grayscale has already spoken for the
+    // filter - so it is the opacity that answers. Guarded by the hover media query so a touch device is
+    // not left with the hover state stuck on after a tap.
+    @media (hover: hover) {
+        &:not(.bit-dis):hover {
+            opacity: 0.8;
+        }
+    }
+
+    &:not(.bit-dis):active {
+        opacity: 0.6;
+    }
 }

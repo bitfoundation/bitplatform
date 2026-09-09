@@ -7,23 +7,32 @@
 /// The country is named in whichever of its five ways the page already has it in - a
 /// <see cref="Country"/> out of <see cref="BitCountries"/>, an <see cref="Iso2"/> or <see cref="Iso3"/>
 /// code, a dialing <see cref="Code"/> or an English <see cref="Name"/> - and the first of them that
-/// resolves picks the flag. A country the table does not carry draws nothing at all rather than a
-/// broken image, which is what <see cref="FallbackTemplate"/> is for.
+/// resolves picks the flag. The name is read as a page actually writes one: the alternative names, the
+/// abbreviations and the spellings of <see cref="BitCountries.FindByName"/> all resolve. A country the
+/// table does not carry draws nothing at all rather than a broken image, which is what
+/// <see cref="FallbackTemplate"/> is for.
 /// <br />
 /// What is drawn is a 16 pixel image out of the Extras package, unless <see cref="Emoji"/> asks for the
 /// Unicode emoji flag instead - which is text, so it costs no request and stays crisp at any size,
 /// where the image is only as sharp as its 16 pixels - or <see cref="Src"/> points the flag at a set of
-/// images of the page's own. The frame around it takes the <see cref="Size"/>, or a
-/// <see cref="Width"/> and <see cref="Height"/> of its own, and the shape: <see cref="Rounded"/>,
-/// <see cref="Circular"/>, <see cref="Bordered"/> - which is what keeps a mostly white flag off a white
-/// surface - <see cref="Shadow"/> and <see cref="Grayscale"/>.
+/// images of the page's own, which falls back to the packaged flag where it fails. The frame around it
+/// takes the <see cref="Size"/>, or a <see cref="Width"/>, <see cref="Height"/> and
+/// <see cref="AspectRatio"/> of its own, and the shape: <see cref="Rounded"/>, <see cref="Circular"/>,
+/// <see cref="Bordered"/> - which is what keeps a mostly white flag off a white surface -
+/// <see cref="Shadow"/> and <see cref="Grayscale"/>.
 /// <br />
 /// To assistive technologies a flag is decorative by default: it nearly always sits beside the name of
 /// the very country it stands for, and a second reading of that name is noise. A flag that carries
 /// meaning of its own is named with an <see cref="Alt"/>, or with the country's own name through
 /// <see cref="AutoAlt"/>, and <see cref="AutoTitle"/> does the same for the tooltip. An
 /// <see cref="OnClick"/> turns the whole frame into a button that answers the keyboard as well as the
-/// pointer, which is what a flag standing for a language or a locale in a picker needs.
+/// pointer, and grows its target to the 24 pixels WCAG asks of one without growing the flag - which is
+/// what a flag standing for a country in a picker needs.
+/// <br />
+/// A flag stands for a country and never for a language: "Spanish" is not the flag of Spain to the
+/// larger part of the world that speaks it, and English belongs to no one flag at all. A language
+/// switcher wants the name of the language written in that language; a country, a region and a
+/// currency are what this is for.
 /// </remarks>
 public partial class BitFlag : BitComponentBase
 {
@@ -52,11 +61,23 @@ public partial class BitFlag : BitComponentBase
     private string? _srcCandidate;
 
     /// <summary>
+    /// The packaged flag image of the country that resolved, which is what a <see cref="Src"/> of the
+    /// page's own falls back to when it fails to load.
+    /// </summary>
+    private string? _packagedSrc;
+
+    /// <summary>
     /// Whether the image currently pointed at has already failed to load. An image that failed is not
-    /// drawn again - the browser would ask for it once per render - and the fallback stands in its
-    /// place instead.
+    /// drawn again - the browser would ask for it once per render - and the packaged flag, or the
+    /// fallback, stands in its place instead.
     /// </summary>
     private bool _hasError;
+
+    /// <summary>
+    /// Whether the packaged flag stood in for a <see cref="Src"/> that failed and then failed itself.
+    /// There is nothing left to try after it, so the fallback takes over.
+    /// </summary>
+    private bool _hasFallbackError;
 
     /// <summary>
     /// Whether a Space is being held down on the flag itself. A Space activates a button on the way up
@@ -70,7 +91,29 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     private bool _preventKeysRegistered;
 
-    private string? _src => _hasError ? null : _srcCandidate;
+    /// <summary>
+    /// The image actually drawn. A <see cref="Src"/> of the page's own that failed to load is stood in
+    /// for by the packaged flag of the same country - a set of a page's own that turns out not to
+    /// cover a country is better answered with the flag that ships than with nothing at all - and only
+    /// once that has failed too, or where there was never a second image to try, is there none.
+    /// </summary>
+    private string? _src
+    {
+        get
+        {
+            if (_hasError is false) return _srcCandidate;
+
+            if (_hasFallbackError) return null;
+
+            return string.Equals(_packagedSrc, _srcCandidate, StringComparison.Ordinal) ? null : _packagedSrc;
+        }
+    }
+
+    /// <summary>
+    /// Whether anything has asked the frame to be a shape of its own rather than whatever fits what is
+    /// drawn in it - a corner, a circle, a border, a shadow or a ratio.
+    /// </summary>
+    private bool _shaped => Rounded || Circular || Bordered || Shadow || AspectRatio.HasValue();
 
     private string _loading => Loading switch
     {
@@ -103,7 +146,7 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is <see cref="Alt"/> written for you, for the flag that stands on its own - in a table
-    /// cell, or as the whole of a language switcher - rather than beside the name it would repeat. An
+    /// cell, or as the whole of a country picker - rather than beside the name it would repeat. An
     /// <see cref="Alt"/> of the page's own wins over it, and a flag whose country did not resolve has
     /// no name to take and stays decorative.
     /// </remarks>
@@ -121,6 +164,21 @@ public partial class BitFlag : BitComponentBase
     /// over it.
     /// </remarks>
     [Parameter] public bool AutoTitle { get; set; }
+
+    /// <summary>
+    /// The aspect ratio of the frame of the flag, as any CSS aspect-ratio value (e.g. "4/3" or "1").
+    /// </summary>
+    /// <remarks>
+    /// The packaged images are square and the frame is square with them, which is the shape a flag has
+    /// in a list beside anything else. A set of the page's own pointed at with <see cref="Src"/> is
+    /// usually drawn in the proportions of the flags themselves - 4:3 and 3:2 are what the vector sets
+    /// of the world ship - and this is what gives them a frame of that shape: the height is the one
+    /// that stays and the width follows from the ratio, or the other way round where a
+    /// <see cref="Width"/> is what was given. It pairs with <see cref="Fit"/>, which decides what the
+    /// image does inside a frame that is not its own shape.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? AspectRatio { get; set; }
 
     /// <summary>
     /// Draws a hairline border around the flag.
@@ -199,10 +257,25 @@ public partial class BitFlag : BitComponentBase
     /// <remarks>
     /// It stands in for a country that resolved to nothing - a code no country of
     /// <see cref="BitCountries.All"/> carries, or none given at all - and for an image that failed to
-    /// load, which is the <see cref="Src"/> of a page pointing at a set of its own. Without one, such a
-    /// flag draws nothing and leaves an empty frame of its own size.
+    /// load. A <see cref="Src"/> of the page's own that failed is stood in for by the packaged flag of
+    /// the same country first, so this is what is left once there is no flag to draw at all. Without
+    /// one, such a flag draws nothing and leaves an empty frame of its own size.
     /// </remarks>
     [Parameter] public RenderFragment? FallbackTemplate { get; set; }
+
+    /// <summary>
+    /// How the flag image is scaled and cropped to fit the frame around it.
+    /// </summary>
+    /// <remarks>
+    /// It only matters where the image and the frame turn out to be different shapes, which is what a
+    /// <see cref="Src"/> of the page's own or an <see cref="AspectRatio"/> makes possible: the packaged
+    /// images are square and so is the frame they are drawn in. Left unset, the image covers the frame
+    /// and whatever falls outside it is cropped, which is what keeps a circular or rounded flag full
+    /// of flag rather than of empty space; <see cref="BitImageFit.Contain"/> is the other answer, and
+    /// fits the whole flag inside the frame instead.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitImageFit? Fit { get; set; }
 
     /// <summary>
     /// Draws the flag in shades of grey.
@@ -229,12 +302,27 @@ public partial class BitFlag : BitComponentBase
     public string? Height { get; set; }
 
     /// <summary>
+    /// Additional HTML attributes to render on the img element of the flag.
+    /// </summary>
+    /// <remarks>
+    /// The attributes of the component itself land on the frame, which is what a flag is measured,
+    /// named and clicked by. This is for the few that belong on the picture instead - a
+    /// <c>crossorigin</c> or a <c>referrerpolicy</c> for a <see cref="Src"/> pointing at a CDN, a
+    /// <c>fetchpriority</c> for one that has to be fetched before the layout settles. They are written
+    /// before everything the flag decides, so the src, the alt and the loading of the flag itself
+    /// still win over them - but the two the flag only defaults, the <c>draggable</c> and the
+    /// <c>decoding</c>, are left exactly as they are given here.
+    /// </remarks>
+    [Parameter] public Dictionary<string, object> ImageAttributes { get; set; } = [];
+
+    /// <summary>
     /// The ISO 3166-1 alpha-2 code of the country.
     /// </summary>
     /// <remarks>
     /// It is matched case insensitively against <see cref="BitCountries.All"/>, and a code no country
     /// of the table carries draws nothing rather than asking the network for an image that is not
-    /// there.
+    /// there. The exceptionally reserved "UK" is answered with the United Kingdom, whose own code is
+    /// "GB".
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? Iso2 { get; set; }
@@ -262,7 +350,11 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is matched case insensitively against the whole name of each country of
-    /// <see cref="BitCountries.All"/>, rather than against part of it.
+    /// <see cref="BitCountries.All"/>, rather than against part of it. A name a page's own data
+    /// spells differently still resolves: the alternative names and the abbreviations a country is as
+    /// widely known by are answered too - "Czechia", "Türkiye", "Holland", "UK", "USA" - and so are
+    /// the accents, the punctuation and the spacing another source writes it with, so "Curaçao" and
+    /// "Guinea-Bissau" reach the countries this table writes as "Curacao" and "Guinea Bissau".
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? Name { get; set; }
@@ -275,10 +367,31 @@ public partial class BitFlag : BitComponentBase
     /// answers Enter and Space as well as the pointer. A button needs a name to be announced by, so
     /// give a clickable flag an <see cref="Alt"/> saying what the click does; without one it falls
     /// back to the name of the country it shows, since "Canada, button" is worth more than "button"
-    /// on its own.
+    /// on its own - and a button with neither is left without the role altogether, so that a screen
+    /// reader passes over it rather than stopping at a control with nothing to read out.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// The callback for when the flag image fails to load.
+    /// </summary>
+    /// <remarks>
+    /// It is the browser's own error event, so it only fires for a flag drawn as an image - the emoji
+    /// flag is text and cannot fail. Where a <see cref="Src"/> of the page's own failed and the
+    /// packaged flag of the same country stood in for it, this fires once for each of them: the first
+    /// says the page's own image is not there, the second that there is nothing left to draw.
+    /// </remarks>
+    [Parameter] public EventCallback OnError { get; set; }
+
+    /// <summary>
+    /// The callback for when the flag image has loaded.
+    /// </summary>
+    /// <remarks>
+    /// It is the browser's own load event, so it only fires for a flag drawn as an image, and it fires
+    /// again whenever the image the flag points at changes.
+    /// </remarks>
+    [Parameter] public EventCallback OnLoad { get; set; }
 
     /// <summary>
     /// Rounds the corners of the flag.
@@ -324,8 +437,12 @@ public partial class BitFlag : BitComponentBase
     /// This is what points the flag at a set of images of the page's own - a vector set that stays
     /// sharp at any size, a set drawn in another style, or one covering a country the packaged images
     /// do not. It is used exactly as given, so the country parameters are then only what names the
-    /// flag and fills in its tooltip; a source that fails to load falls back to
-    /// <see cref="FallbackTemplate"/>. <see cref="Emoji"/> wins over it.
+    /// flag and fills in its tooltip. A source that fails to load falls back to the packaged flag of
+    /// the country that resolved, and then to <see cref="FallbackTemplate"/>, so a set of a page's own
+    /// that turns out not to cover a country is answered with the flag that ships rather than with
+    /// nothing. Such a set is usually drawn in the proportions of the flags themselves rather than
+    /// square, which is what <see cref="AspectRatio"/> and <see cref="Fit"/> are for.
+    /// <see cref="Emoji"/> wins over it.
     /// </remarks>
     [Parameter] public string? Src { get; set; }
 
@@ -398,8 +515,28 @@ public partial class BitFlag : BitComponentBase
         });
 
         // The emoji is a glyph rather than a picture that fills the frame: it is as wide as the font
-        // draws it, so the frame lets it out instead of clipping it to a square.
-        ClassBuilder.Register(() => _emoji is not null ? "bit-flg-emo" : string.Empty);
+        // draws it, so the frame lets it out instead of clipping it to a square. Only a frame that was
+        // not asked for a shape of its own, though - a circle drawn around a box grown to fit a glyph
+        // is not a circle - so a shaped one keeps its size and crops the glyph the way it crops a
+        // picture.
+        ClassBuilder.Register(() => _emoji is not null && _shaped is false ? "bit-flg-emo" : string.Empty);
+
+        // A frame given a ratio takes its width from that ratio and its height, so the square width
+        // every other flag is given has to come off first.
+        ClassBuilder.Register(() => AspectRatio.HasValue() ? "bit-flg-asp" : string.Empty);
+
+        ClassBuilder.Register(() => Fit switch
+        {
+            BitImageFit.None => "bit-flg-non",
+            BitImageFit.Center => "bit-flg-ctr",
+            BitImageFit.CenterContain => "bit-flg-cct",
+            BitImageFit.CenterCover => "bit-flg-ccv",
+            BitImageFit.Contain => "bit-flg-cnt",
+            BitImageFit.Cover => "bit-flg-cvr",
+            BitImageFit.Fill => "bit-flg-fil",
+            BitImageFit.ScaleDown => "bit-flg-scd",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => Circular ? "bit-flg-cir" : (Rounded ? "bit-flg-rnd" : string.Empty));
 
@@ -424,6 +561,15 @@ public partial class BitFlag : BitComponentBase
         StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
 
         StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
+
+        StyleBuilder.Register(() => AspectRatio.HasValue() ? $"aspect-ratio:{AspectRatio}" : string.Empty);
+
+        // A ratio needs one of the two lengths left for it to work out. The width is the one the class
+        // above frees, which is the usual way round; where the width is the length that was given, it
+        // is the height that has to go.
+        StyleBuilder.Register(() => AspectRatio.HasValue() && Width.HasValue() && Height.HasValue() is false
+                                    ? "height:auto"
+                                    : string.Empty);
     }
 
     protected override void OnParametersSet()
@@ -434,14 +580,21 @@ public partial class BitFlag : BitComponentBase
         // cover still has an emoji flag - which is half of what makes this mode worth having.
         _emoji = Emoji ? BitCountries.GetEmoji(_country?.Iso2 ?? Iso2) : null;
 
-        var src = ResolveSrc();
+        var iso2 = _country?.Iso2;
+        var packaged = iso2.HasValue() ? GetFlagUrl(iso2!) : null;
+        var src = Src.HasValue() ? Src : packaged;
 
         // A new source is a new image, so whatever the previous one ended up as is no longer the
-        // answer: an error is forgotten and the image is drawn again.
-        if (string.Equals(src, _srcCandidate, StringComparison.Ordinal) is false)
+        // answer: an error is forgotten and both images are drawn again. The packaged one is watched
+        // as well as the one asked for, since a flag whose Src stayed put while its country moved on
+        // has a different second image to try.
+        if (string.Equals(src, _srcCandidate, StringComparison.Ordinal) is false ||
+            string.Equals(packaged, _packagedSrc, StringComparison.Ordinal) is false)
         {
             _srcCandidate = src;
+            _packagedSrc = packaged;
             _hasError = false;
+            _hasFallbackError = false;
         }
 
         // A flag that has stopped answering - disabled, or handed a handler no longer there - has
@@ -463,10 +616,12 @@ public partial class BitFlag : BitComponentBase
         // pressed it on rather than a place to scroll from. A Blazor keydown handler cannot decide that
         // per key - @onkeydown:preventDefault is evaluated at render time, so a flag set from the
         // handler lags a keystroke behind and would swallow the Tab that follows - so it is stopped on
-        // a listener of the browser's own, registered for a flag that has a click handler and emptied
-        // again for one that has lost it, since the listener stays on the element and reads the key
-        // list on every event.
-        var interactive = OnClick.HasDelegate;
+        // a listener of the browser's own, registered for a flag that answers a click and emptied again
+        // for one that has stopped answering, since the listener stays on the element and reads the key
+        // list on every event. A disabled flag is one of those: it activates on nothing, so a Space
+        // pressed on it - it can still be focused by name - scrolls the page the way it does anywhere
+        // else.
+        var interactive = IsEnabled && OnClick.HasDelegate;
 
         if (interactive == _preventKeysRegistered) return;
 
@@ -502,15 +657,6 @@ public partial class BitFlag : BitComponentBase
             ?? BitCountries.FindByIso3(Iso3)
             ?? BitCountries.FindByCode(Code)
             ?? BitCountries.FindByName(Name);
-    }
-
-    private string? ResolveSrc()
-    {
-        if (Src.HasValue()) return Src;
-
-        var iso2 = _country?.Iso2;
-
-        return iso2.HasValue() ? GetFlagUrl(iso2!) : null;
     }
 
     /// <summary>
@@ -571,8 +717,23 @@ public partial class BitFlag : BitComponentBase
     private void HandleOnBlur() => _spacePressed = false;
 
     // An image that failed is not asked for again: left pointed at, the browser would fetch it once
-    // per render. The fallback stands in its place instead.
-    private void HandleOnError() => _hasError = true;
+    // per render. The packaged flag of the same country stands in for it where there is one to try,
+    // and the fallback template where there is not.
+    private async Task HandleOnError()
+    {
+        if (_hasError)
+        {
+            _hasFallbackError = true;
+        }
+        else
+        {
+            _hasError = true;
+        }
+
+        await OnError.InvokeAsync();
+    }
+
+    private Task HandleOnLoad() => OnLoad.InvokeAsync();
 
     private static bool IsSpace(KeyboardEventArgs e) => e.Key is " " or "Spacebar" || e.Code is "Space";
 

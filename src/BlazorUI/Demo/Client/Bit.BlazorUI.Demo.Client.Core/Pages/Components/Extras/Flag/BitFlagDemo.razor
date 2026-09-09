@@ -2,12 +2,13 @@
 
 <PageOutlet Url="components/flag"
             Title="Flag"
-            Description="BitFlag renders the flag of a country, named by its ISO code, its dialing code or its name, and drawn as an image or as its Unicode emoji." />
+            Description="BitFlag renders the flag of a country, named by its ISO code, its dialing code or its name, and drawn as an image, as its Unicode emoji or from a set of the page's own." />
 
 <div class="flag-demo">
     <DemoPage Name="Flag"
-              Description="BitFlag renders the flag of a country, named by a BitCountry, an ISO 3166-1 alpha-2 or alpha-3 code, a dialing code or an English name. It draws the packaged image, the Unicode emoji flag or a set of images of the page's own, in a frame that carries the size and the shape - a rounded corner, a circle, a border for the flags that would otherwise disappear into a white surface. It is decorative to assistive technologies until it is named, and an OnClick turns it into a button that answers the keyboard as well as the pointer."
+              Description="BitFlag renders the flag of a country, named by a BitCountry, an ISO 3166-1 alpha-2 or alpha-3 code, a dialing code or an English name - alternative names, abbreviations and accents included. It draws the packaged image, the Unicode emoji flag or a set of images of the page's own, in a frame that carries the size, the aspect ratio and the shape - a rounded corner, a circle, a border for the flags that would otherwise disappear into a white surface. It is decorative to assistive technologies until it is named, and an OnClick turns it into a button that answers the keyboard as well as the pointer."
               Parameters="componentParameters"
+              PublicMembers="componentPublicMembers"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubExtrasUrl="Flag/BitFlag.razor"
@@ -23,6 +24,13 @@
                 </BitLink>
                 nuget package, as described in the Optional steps of the
                 <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+            <br />
+            <BitText>
+                A flag stands for a country and never for a language: Spanish is not the flag of Spain
+                to the larger part of the world that speaks it, and English belongs to no one flag at
+                all. A language switcher wants the name of the language written in that language - a
+                country, a region or a currency is what this component is for.
             </BitText>
         </NotesTemplate>
         <Examples>
@@ -51,6 +59,15 @@
                     dialing code is read the way a number is written - "+31", "0031" and "31" all reach
                     the Netherlands.
                     <br /><br />
+                    A page is handed a country name in whichever spelling its own data uses, and none of
+                    those spellings is a different country. So <b>Name</b> also answers to the
+                    alternative names and the abbreviations a country is as widely known by -
+                    "Czechia", "Türkiye", "Holland", "USA", "Burma", "DRC" - and to the accents, the
+                    punctuation and the spacing another source writes it with, so "Curaçao" and
+                    "Guinea-Bissau" reach the countries this table writes as "Curacao" and "Guinea
+                    Bissau". <b>Iso2</b> answers to "UK" as well, which ISO 3166-1 reserves for the
+                    United Kingdom even though its own code is "GB".
+                    <br /><br />
                     Dialing codes are not unique: Canada and the United States both carry "1", so a flag
                     named by one alone is the first country of the table carrying it. Where the
                     difference matters, name the country by its ISO code.
@@ -61,6 +78,10 @@
                     <div><BitFlag Iso3="NLD" /> <span>Iso3="NLD"</span></div>
                     <div><BitFlag Code="+31" /> <span>Code="+31"</span></div>
                     <div><BitFlag Name="Netherlands" /> <span>Name="Netherlands"</span></div>
+                    <div><BitFlag Name="Holland" /> <span>Name="Holland" - an everyday alternative</span></div>
+                    <div><BitFlag Name="Czechia" /> <span>Name="Czechia" - the name the country carries today</span></div>
+                    <div><BitFlag Name="Curaçao" /> <span>Name="Curaçao" - accents are ignored on both sides</span></div>
+                    <div><BitFlag Iso2="UK" /> <span>Iso2="UK" - the code ISO reserves for the United Kingdom</span></div>
                 </div>
             </DemoExample>
 
@@ -91,6 +112,14 @@
                     decide, though: the emoji fonts of Apple, Google and the Noto family draw the flags,
                     while Windows draws the two letters of the country code side by side instead - which
                     is why the image is what is drawn unless this asks otherwise.
+                    <br /><br />
+                    It is built out of the country code rather than looked up, so it also answers for a
+                    code the packaged images do not cover, and for the three subdivisions Unicode
+                    recommends for interchange: "GB-ENG", "GB-SCT" and "GB-WLS".
+                    <br /><br />
+                    A glyph is as wide as the font draws it rather than as wide as a picture, so the
+                    frame grows to fit it - unless something has asked the frame for a shape of its own,
+                    where it keeps its size and crops the glyph exactly the way it crops a picture.
                 </div>
                 <br />
                 <div class="flag-row">
@@ -98,6 +127,8 @@
                     <BitFlag Emoji Height="1.5rem" Country="BitCountries.Netherlands" />
                     <BitFlag Emoji Height="2rem" Country="BitCountries.Japan" />
                     <BitFlag Emoji Height="3rem" Country="BitCountries.Brazil" />
+                    <BitFlag Emoji Height="3rem" Iso2="GB-SCT" />
+                    <BitFlag Emoji Circular Bordered Height="3rem" Country="BitCountries.Brazil" />
                 </div>
             </DemoExample>
 
@@ -110,6 +141,13 @@
                     country's own name. <b>Title</b> is the tooltip, with <b>AutoTitle</b> filling it in
                     the same way - but a tooltip is a pointer affordance rather than an accessible name,
                     so a flag that has to be named to everyone wants both.
+                    <br /><br />
+                    Where the name lands depends on what is drawn. An image carries it in its own alt,
+                    and an empty alt is what marks the decorative one. The emoji flag and whatever a
+                    <b>FallbackTemplate</b> puts in its place are text rather than pictures, and text is
+                    read out wherever it is - so a named one has the frame take the img role and the
+                    name instead, and an unnamed one is taken out of the accessibility tree altogether
+                    rather than being announced as two stray letters or a question mark.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -117,6 +155,12 @@
                     <div><BitFlag AutoAlt Country="BitCountries.Canada" /> <span>AutoAlt - named "Canada"</span></div>
                     <div><BitFlag Alt="Ships to Canada" Country="BitCountries.Canada" /> <span>Alt - named by the page</span></div>
                     <div><BitFlag AutoTitle Country="BitCountries.Canada" /> <span>AutoTitle - hover the flag</span></div>
+                    <div>
+                        <BitFlag Bordered Height="1.5rem" Iso2="XK" Alt="Kosovo">
+                            <FallbackTemplate>XK</FallbackTemplate>
+                        </BitFlag>
+                        <span>A named fallback is announced as a picture called "Kosovo"</span>
+                    </div>
                 </div>
             </DemoExample>
 
@@ -128,6 +172,11 @@
                     load, which is what <b>Src</b> makes possible: it points the flag at a set of images
                     of the page's own, a vector set that stays sharp at any size or one covering a
                     country the packaged images do not.
+                    <br /><br />
+                    A <b>Src</b> that fails is stood in for by the packaged flag of the same country
+                    first, so a set of a page's own that turns out not to cover a country is answered
+                    with the flag that ships rather than with nothing; the template is what is left once
+                    there is no flag at all.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -143,10 +192,14 @@
                         <span>Src points at an image of the page's own</span>
                     </div>
                     <div>
+                        <BitFlag Height="2rem" Bordered Src="/not-a-real-flag.png" Country="BitCountries.Japan" />
+                        <span>...one that fails falls back to the packaged flag</span>
+                    </div>
+                    <div>
                         <BitFlag Height="1.5rem" Bordered Src="/not-a-real-flag.png">
                             <FallbackTemplate><BitIcon IconName="@BitIconName.Error" /></FallbackTemplate>
                         </BitFlag>
-                        <span>...and one that fails falls back too</span>
+                        <span>...and one with no country to fall back to falls to the template</span>
                     </div>
                 </div>
             </DemoExample>
@@ -156,14 +209,15 @@
                     <b>Grayscale</b> drains the color out of the flag while leaving it recognisable,
                     which is how a flag says that the country is not the one in play - an unavailable
                     locale, a region not shipped to. <b>IsEnabled</b> dims it with the disabled opacity
-                    of the theme instead, and stops it answering the pointer at all. The two are
-                    independent and read well together.
+                    of the theme instead, refuses the click and leaves the tab order - while still
+                    answering the pointer, so the tooltip saying why the country cannot be picked is
+                    still there to be read. The two are independent and read well together.
                 </div>
                 <br />
                 <div class="flag-list">
                     <div><BitFlag Height="2rem" Country="BitCountries.Brazil" /> <span>Normal</span></div>
                     <div><BitFlag Height="2rem" Grayscale Country="BitCountries.Brazil" /> <span>Grayscale</span></div>
-                    <div><BitFlag Height="2rem" IsEnabled="false" Country="BitCountries.Brazil" /> <span>IsEnabled="false"</span></div>
+                    <div><BitFlag Height="2rem" IsEnabled="false" Title="Not shipped to Brazil yet" Country="BitCountries.Brazil" /> <span>IsEnabled="false" - hover it for the reason why</span></div>
                     <div><BitFlag Height="2rem" Grayscale IsEnabled="false" Country="BitCountries.Brazil" /> <span>Both</span></div>
                 </div>
             </DemoExample>
@@ -172,11 +226,16 @@
                 <div class="example-desc">
                     <b>OnClick</b> turns the whole frame into a button: it takes the button role, joins
                     the tab order, draws the focus ring of the theme and answers Enter and Space as well
-                    as the pointer - the Space is even kept from scrolling the page under it. A button
-                    needs a name to be announced by, so give a clickable flag an <b>Alt</b> saying what
-                    the click does; without one it falls back to the name of the country it shows, since
-                    "Italy, button" is worth more than "button" on its own. A disabled flag leaves the
-                    tab order and stops answering.
+                    as the pointer - the Space is even kept from scrolling the page under it. A flag is
+                    drawn at the icon sizes of the theme, well under the 24 pixels WCAG 2.2 asks of a
+                    target, so a clickable one grows the area that answers the pointer to that size
+                    without growing the flag.
+                    <br /><br />
+                    A button needs a name to be announced by, so give a clickable flag an <b>Alt</b>
+                    saying what the click does; without one it falls back to the name of the country it
+                    shows, since "Italy, button" is worth more than "button" on its own, and a button
+                    with neither is left without the role rather than becoming a control with nothing to
+                    read out. A disabled flag leaves the tab order and stops answering.
                 </div>
                 <br />
                 <div class="flag-row">
@@ -209,7 +268,81 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Size" RazorCode="@example10RazorCode" Id="example10">
+            <DemoExample Title="Aspect ratio & fit" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+                <div class="example-desc">
+                    The packaged images are square and so is the frame they are drawn in, which is the
+                    shape a flag has beside anything else in a list. A set of the page's own pointed at
+                    with <b>Src</b> is usually drawn in the proportions of the flags themselves - 4:3 and
+                    3:2 are what the vector sets of the world ship - and <b>AspectRatio</b> is what gives
+                    the frame that shape: the height is the one that stays and the width follows from
+                    the ratio, or the other way round where a <b>Width</b> is what was given.
+                    <br /><br />
+                    <b>Fit</b> decides what the picture does inside a frame that is not its own shape. It
+                    covers the frame and is cropped by default, which is what keeps a circular or rounded
+                    flag full of flag rather than of empty space; <b>Contain</b> fits the whole flag
+                    inside the frame instead and leaves the rest of it empty.
+                </div>
+                <br />
+                <div class="flag-list">
+                    <div>
+                        <BitFlag Bordered Height="2rem" Src="@netherlandsSvg" Country="BitCountries.Netherlands" />
+                        <span>A 3:2 image in the square frame, cropped to it</span>
+                    </div>
+                    <div>
+                        <BitFlag Bordered Height="2rem" AspectRatio="3/2" Src="@netherlandsSvg" Country="BitCountries.Netherlands" />
+                        <span>AspectRatio="3/2" - the frame takes the shape of the flag</span>
+                    </div>
+                    <div>
+                        <BitFlag Bordered Height="2rem" AspectRatio="4/3" Src="@netherlandsSvg" Country="BitCountries.Netherlands" />
+                        <span>AspectRatio="4/3"</span>
+                    </div>
+                    <div>
+                        <BitFlag Bordered Height="2rem" Fit="BitImageFit.Contain" Src="@netherlandsSvg" Country="BitCountries.Netherlands" />
+                        <span>Fit="BitImageFit.Contain" - the whole flag inside the square frame</span>
+                    </div>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Loading & events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+                <div class="example-desc">
+                    <b>Loading</b> says when the browser fetches the image. It holds off until the flag
+                    is about to be scrolled to, which is what a list of two hundred of them wants;
+                    <b>Eager</b> starts the fetch at once, which is only worth setting for a flag whose
+                    image has to be on the wire before the layout settles.
+                    <br /><br />
+                    <b>OnLoad</b> and <b>OnError</b> are the browser's own events on the picture, so
+                    neither fires for the emoji flag, which is text and cannot fail. A <b>Src</b> that
+                    fails raises <b>OnError</b> once for the page's own image and once more if the
+                    packaged flag standing in for it fails as well. <b>ImageAttributes</b> puts
+                    attributes on the picture rather than on the frame, which is where a
+                    <code>crossorigin</code> or a <code>referrerpolicy</code> for a CDN belongs.
+                </div>
+                <br />
+                <div class="flag-list">
+                    <div>
+                        <BitFlag Bordered Height="2rem"
+                                 Loading="BitImageLoading.Eager"
+                                 Country="BitCountries.Portugal"
+                                 ImageAttributes="@(new() { { "referrerpolicy", "no-referrer" } })" />
+                        <span>Loading="BitImageLoading.Eager" with a referrerpolicy on the picture</span>
+                    </div>
+                    <div>
+                        <BitFlag Bordered Height="2rem"
+                                 Country="BitCountries.Portugal"
+                                 OnLoad="@(() => loadedCount++)" />
+                        <span>OnLoad - fired @loadedCount time(s)</span>
+                    </div>
+                    <div>
+                        <BitFlag Bordered Height="2rem"
+                                 Src="/not-a-real-flag.png"
+                                 Country="BitCountries.Portugal"
+                                 OnError="@(() => failedCount++)" />
+                        <span>OnError - fired @failedCount time(s), and the packaged flag stood in</span>
+                    </div>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
                 <div class="example-desc">
                     <b>Size</b> steps the flag through the icon sizes of the theme, and Medium is the 16
                     pixels the packaged images are drawn at - the size a flag with nothing set is.
@@ -228,7 +361,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+            <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
                 <div class="example-desc">
                     <b>Style</b> and <b>Class</b> reach the root element - the frame the flag is drawn in
                     - and <b>Styles</b> and <b>Classes</b> reach each part of the component by name: the
@@ -253,7 +386,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+            <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
                 <div class="example-desc">
                     <b>Dir</b> renders the flag in a right-to-left direction, which is also cascaded, so
                     a flag inside an RTL container inherits it. The flag itself is a picture and is never
