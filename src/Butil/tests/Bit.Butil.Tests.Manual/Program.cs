@@ -37,8 +37,8 @@ internal static class Program
     /// </remarks>
     private static readonly string[] MustSurvive =
     [
-        "Canvas", "Clipboard", "Cookie", "DigitalCredentials", "Dom", "Fetch", "Geolocation", "LocalStorage",
-        "Streams", "WebOtp", "WebRtc", "Window"
+        "Canvas", "Clipboard", "Cookie", "Crypto", "Css", "DigitalCredentials", "Dom", "Fetch", "Geolocation",
+        "IndexedDb", "LocalStorage", "Performance", "Streams", "UserAgent", "WebAudio", "WebOtp", "WebRtc", "Window"
     ];
 
     /// <summary>
@@ -219,11 +219,13 @@ internal static class Program
         // a synchronous scope dispose throws on those.
         await using var scope = provider.CreateAsyncScope();
         var component = new ConsumerComponent();
+        var splitModuleUse = new SplitModuleUse();
 
         try
         {
             component.Inject(scope.ServiceProvider);
-            Console.WriteLine($"  injected: {string.Join(", ", ConsumerComponent.InjectedTypes.Select(type => type.Name))}");
+            splitModuleUse.Inject(scope.ServiceProvider);
+            Console.WriteLine($"  injected: {string.Join(", ", ConsumerComponent.InjectedTypes.Concat(SplitModuleUse.InjectedTypes).Select(type => type.Name))}");
         }
         catch (Exception exception)
         {
@@ -234,7 +236,8 @@ internal static class Program
         // Throwing is not a failure: the stub answers every call with default, so a service handed a null
         // where it expects a DTO is entitled to blow up. Activation is what matters, and that is checked above.
         var (succeeded, threw) = await component.Use();
-        Console.WriteLine($"  interop calls: {succeeded} completed, {threw} threw against the stub runtime");
+        var (splitSucceeded, splitThrew) = await splitModuleUse.Use();
+        Console.WriteLine($"  interop calls: {succeeded + splitSucceeded} completed, {threw + splitThrew} threw against the stub runtime");
         Console.WriteLine();
 
         Console.WriteLine(failures.Count == 0

@@ -78,6 +78,40 @@ for (const name of sources) {
     dependencies.set(name, [...referenced].sort());
 }
 
+// --- Module size budget --------------------------------------------------------------------------
+
+// A module is the unit a trimmed app downloads: the publish-time bundler keeps a module whole or
+// keeps none of it, so every feature parked in one is paid for by every app that calls any other
+// feature in it. That makes size here a user-facing number, not a style preference - hence a budget
+// the build enforces rather than a convention someone has to remember.
+//
+// Over WARN, split the module along its feature seams (see the crypto*, webAudio* and element*
+// families for the shape: one module per coherent group, shared state in a small module of its own
+// that the others depend on). Over FAIL, the build stops.
+const SIZE_WARN_LINES = 250;
+const SIZE_FAIL_LINES = 400;
+
+// The one module allowed past FAIL, and why: it is a single vendored parsing algorithm - one
+// function and its private helpers - with no seam to split along. It is already the far side of a
+// split (userAgent holds the Client Hints members, which is what most callers want) and exists
+// precisely so that its weight is only downloaded by an app that asks for UserAgent.Extract().
+const SIZE_EXEMPT = new Set(['userAgentParser']);
+
+const oversized = [];
+for (const name of sources) {
+    const lines = readFileSync(join(scriptsDir, `${name}.ts`), 'utf8').split(/\r?\n/).length;
+    if (SIZE_EXEMPT.has(name)) continue;
+    if (lines > SIZE_FAIL_LINES) oversized.push(`${name}.ts (${lines} lines)`);
+    else if (lines > SIZE_WARN_LINES) {
+        console.warn(`bit-butil build: ${name}.ts is ${lines} lines (budget ${SIZE_WARN_LINES}); consider splitting it - ` +
+            'every app calling any part of this module downloads all of it.');
+    }
+}
+if (oversized.length > 0) {
+    fail(`these modules are over the ${SIZE_FAIL_LINES}-line budget and have to be split: ${oversized.join(', ')}. ` +
+        'A module is downloaded whole or not at all, so an app calling one of its functions pays for every other one.');
+}
+
 // Dependency-first order for a set of modules, deterministic (alphabetical among peers).
 function ordered(roots) {
     const result = [];

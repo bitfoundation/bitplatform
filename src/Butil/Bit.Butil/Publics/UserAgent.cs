@@ -16,7 +16,7 @@ public class UserAgent(IJSRuntime js)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UserAgentProperties))]
     public async ValueTask<UserAgentProperties> Extract(string? userAgentString = null)
     {
-        return await js.Invoke<UserAgentProperties>("BitButil.userAgent.extract", userAgentString);
+        return await js.Invoke<UserAgentProperties>("BitButil.userAgentParser.extract", userAgentString);
     }
 
     /// <summary>True when the runtime exposes <c>navigator.userAgentData</c> (UA Client Hints).</summary>

@@ -377,14 +377,31 @@ published app (see `AddBitButilServices` above); the JavaScript side can be tree
 ways of tree-shaking it, both set in the app's csproj, and both working from the same per-module build of
 the scripts (one `Scripts/*.ts` file is one module, `BitButil.clipboard` for `Clipboard` and so on).
 
+A module is kept or dropped whole, so how finely the JavaScript is divided is what decides how little an
+app can get away with. That is why a bigger API is split across several modules rather than served from
+one: `Crypto` is six (randomness and hashing, signing, key material, derivation, ciphers, and the key
+import both of the last two share), `WebAudio` six, the `ElementReference` extensions five - one per
+extension class - and `Window` four. A service calling more than one module is nothing a consumer has to
+know about: the class-to-module map behind `BitButilScriptModule` and the scan resolves a class to every
+module it needs. What it means in practice is that reading `element.ClientWidth()` no longer downloads the
+aria surface, `Crypto.RandomUuid()` no longer downloads key wrapping, and a page that reads
+`Window.GetInnerWidth()` downloads neither the selection API nor the popup registry.
+
+That granularity is per *member*, not per service, because the trimmer works from method bodies: a service
+is only as trimmable as the methods an app actually calls. The one thing that would undo it is handing
+JavaScript a callback object, since `DotNetObjectReference` preserves every public method of what it is
+given - so the services that take callbacks hand over a small internal relay instead of themselves. Nothing
+to do on your side; it is why subscribing to a media query costs the media-query module and reading a
+window property does not.
+
 **Publish-time bundle trimming - the default, nothing to add.** Keep the script tag. When the app is
 published trimmed - a Blazor WebAssembly publish is - the package's build logic reads the trimmed
 `Bit.Butil.dll`, finds which `BitButil.<module>.*` identifiers survived (every interop call goes
 through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
 Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
-that injects `Clipboard`, `LocalStorage` and `Window` ships about 23 KB of JavaScript instead of the
-315 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+that injects `Clipboard`, `LocalStorage` and `Window` ships about 10 KB of JavaScript instead of the
+324 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
 a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
 trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping

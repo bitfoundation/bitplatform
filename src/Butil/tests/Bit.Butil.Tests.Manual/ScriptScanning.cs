@@ -169,8 +169,25 @@ internal static class ScriptScanning
             (["Clipboard"], ["clipboard"], "a Bit.Butil class name resolves to the module behind it"),
             (["Bit.Butil.Clipboard"], ["clipboard"], "a class can be named in full"),
             (["LocalStorage"], ["storage"], "a class whose module is named nothing like it still resolves - the map, not the spelling, decides"),
-            (["Window"], ["events", "window"], "a class needing more than one module contributes all of them"),
+            (["Window"], ["events", "window", "windowMediaQuery", "windowRefs", "windowSelection"], "a class needing more than one module contributes all of them"),
             (["CLIPBOARD"], ["clipboard"], "a module named in the wrong case is understood rather than rejected"),
+
+            // A split family, from both ends. Naming the class has to reach every module the class can
+            // call - keeping a module by name is the escape hatch for an API reached from a consumer's own
+            // JavaScript, and half a family would be worse than nothing there. Naming one module of the
+            // family has to keep that one alone, which is the finer control the split exists to offer.
+            (["Crypto"], ["crypto", "cryptoCipher", "cryptoDerive", "cryptoKeys", "cryptoSign"],
+                "naming a class whose JavaScript is split across a family keeps the whole family"),
+            (["cryptoKeys"], ["cryptoKeys"], "naming one module of a family keeps that module alone"),
+            (["Performance"], ["performance", "performanceVitals"], "the same for a two-module family"),
+            (["performanceVitals"], ["performanceVitals"], "and for one module of it"),
+            (["UserAgent"], ["userAgent", "userAgentParser"],
+                "the class reaches the parser even though most of its members do not"),
+            (["userAgent"], ["userAgent"], "while the module name alone leaves the parser out"),
+            (["IndexedDb"], ["indexedDb", "indexedDbCursor", "indexedDbIndex", "indexedDbInfo", "indexedDbStore", "indexedDbTransaction"],
+                "a class handing out a handle contributes the handle's modules too"),
+            (["Css", "cssTypedOm"], ["css", "cssHighlight", "cssStyleSheet", "cssTypedOm", "cssWorklet"],
+                "a family named twice - once whole, once by one of its modules - is still one set"),
             (["clipboard", "Clipboard"], ["clipboard"], "the same module reached two ways is one module"),
             ([" clipboard ", ""], ["clipboard"], "surrounding space is trimmed and an empty entry is ignored"),
         ];

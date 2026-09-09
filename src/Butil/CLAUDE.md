@@ -43,9 +43,27 @@ generic type accompanying an existing non-generic one of the same name - those t
 4. **JavaScript** in a `Scripts/<module>.ts` that attaches to `window.BitButil`, following the existing shape.
    Expose an `isSupported()` where the API is not universally implemented. Modules must be safe to evaluate more
    than once; cross-module references (`butil.utils.*`) are discovered by `build.mjs` as dependencies.
+   **One module is one small set of features**, because a module is the unit a trimmed app downloads: it is kept
+   whole or not at all, so anything parked in one is paid for by every app calling anything else in it.
+   `build.mjs` enforces a budget (warns over 250 lines, fails over 400) - split along the feature seams instead
+   of growing a module, the way `crypto*`, `webAudio*`, `element*`, `indexedDb*`, `css*` and `window*` are split.
+   A C# service may call several modules; that is normal and needs no registration. Shared state goes in a small
+   module of its own that the others depend on (`abortSignals`, `domHandles`, `cryptoKeyMaterial`), and where the
+   dependency would have to point back the other way, the owner exposes a hook the dependent registers with
+   (`webAudio.onDispose`, `webAudioNodes.onRelease`, `performance.onStopRetained`) - `build.mjs` rejects a cycle.
 5. **Types crossing the interop boundary** need `[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(T))]`
    at the call site so trimming keeps what `System.Text.Json` reflects over. `[JSInvokable]` callbacks use the
-   explicit-identifier form (`[JSInvokable(InvokeMethodName)]`).
+   explicit-identifier form (`[JSInvokable(InvokeMethodName)]`) and live on a **small internal relay class**, not
+   on the service or handle itself (`DomEventsInterop`, `PerformanceObserverInterop`, `WindowMediaQueryInterop`,
+   `IndexedDbCallbacksInterop`). `DotNetObjectReference.Create(x)` annotates `x` with `PublicMethods`, so handing
+   JavaScript a service preserves every method it has - and with them every interop identifier in the class, which
+   is what decides the JS a trimmed app downloads. That single line silently undoes a module split: it is how
+   `Window` used to ship four modules to a page that read `InnerWidth`. Create the relay lazily
+   (`DotNetObjectReferenceHelper.GetOrCreate`) so an app that never subscribes never has the code that hands it over.
+   For the same reason, a teardown call in `DisposeAsync` naming a module the feature's own methods name - a
+   `disposeAll` - belongs in a delegate armed by the call that created something (`Css.CreateStyleSheet`,
+   `Window.Open`, `Window.SubscribeMatchMedia`), or every consumer of the service downloads that module.
+   `tests/Bit.Butil.Tests.Manual` (`SplitModuleUse`) fails when either rule is broken.
 6. **Anything attaching a listener returns a `ButilSubscription`**; anything holding a browser resource open
    (streams, recorders, handles) is `IAsyncDisposable`. Document the gesture/HTTPS/permission preconditions.
 7. Add the service to the **`README.md` "What's in the box"** table.

@@ -84,7 +84,7 @@ public static class ElementReferenceEventExtensions
             ? new JsAddEventListenerOptions { Capture = useCapture, Passive = passive, Once = once }
             : useCapture;
 
-        await js.InvokeVoid("BitButil.element.subscribeEvent",
+        await js.InvokeVoid("BitButil.elementEvents.subscribeEvent",
             element,
             elementId,
             domEvent,
@@ -101,7 +101,7 @@ public static class ElementReferenceEventExtensions
             host.Unregister(listenerId);
             try
             {
-                await js.InvokeVoid("BitButil.element.unsubscribeEvent", elementId, domEvent, listenerId, options);
+                await js.InvokeVoid("BitButil.elementEvents.unsubscribeEvent", elementId, domEvent, listenerId, options);
             }
             finally
             {

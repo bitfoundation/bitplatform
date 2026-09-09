@@ -260,7 +260,6 @@ await performance.ClearResourceTimings();
     <ApiMember Name="GetMemory" Signature="ValueTask<PerformanceMemory?> GetMemory()" Description="Chrome-only JS heap snapshot; all fields are null on browsers without performance.memory." />
     <ApiMember Name="SubscribeObserver" Signature="Task<ButilSubscription> SubscribeObserver(string[] entryTypes, Action<JsonElement[]> handler, bool buffered = true)" Description="Subscribes a PerformanceObserver for the given entry types and returns a disposable subscription handle." />
     <ApiMember Name="SubscribeObserver<T>" Signature="Task<ButilSubscription> SubscribeObserver<T>(string[] entryTypes, Action<T[]> handler, bool buffered = true)" Description="The same subscription with each batch deserialized into T - the way to read long tasks, layout shifts and LCP candidates." />
-    <ApiMember Name="InvokePerformanceObserver" Signature="void InvokePerformanceObserver(Guid id, JsonElement[] entries)" Description="JS interop bridge invoked on each observer report; not intended for application code." />
     <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Disconnects all observers and releases the interop reference." />
 </ApiTable>
 

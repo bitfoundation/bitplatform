@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
@@ -15,9 +16,7 @@ namespace Bit.Butil;
 [ButilService(typeof(Performance))]
 public class Performance(IJSRuntime js) : IAsyncDisposable
 {
-    internal const string InvokeMethodName = nameof(InvokePerformanceObserver);
-
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<JsonElement[]>> _handlers = new();
+    internal const string InvokeMethodName = PerformanceObserverInterop.InvokeMethodName;
 
     // Whether anything on this instance could have started one of the module's own observers - the
     // observer-fed reads and the Web Vitals accumulator. Disposal only has to reach into JS when one
@@ -25,10 +24,30 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     // performance.js at teardown just to tell it there is nothing to stop.
     private volatile bool _startedModuleObservers;
 
-    // Per-instance callback reference (see Keyboard): observers are isolated per circuit / WASM app
-    // and released on disposal - no static state, no cross-circuit leak.
-    private DotNetObjectReference<Performance>? _dotNetRef;
-    private DotNetObjectReference<Performance> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
+    // The subscriptions, and the callback JavaScript dispatches, live on a relay object rather than on
+    // this service. DotNetObjectReference.Create preserves every public method of whatever it is handed,
+    // so handing it this class would preserve every interop identifier in the class with them - and an
+    // app that only calls Now() would ship the Web Vitals module it never asked for. Observers are still
+    // per-instance, so they stay isolated per circuit / WASM app and are released on disposal.
+    private PerformanceObserverInterop? _observers;
+    private PerformanceObserverInterop Observers
+    {
+        get
+        {
+            var existing = Volatile.Read(ref _observers);
+            if (existing is not null) return existing;
+
+            // Published with a CompareExchange for the same reason DotNetObjectReferenceHelper uses one:
+            // a multithreaded WebAssembly runtime can run two subscribers at once, and two relays would
+            // mean JavaScript holding a reference to one that nothing disposes.
+            var created = new PerformanceObserverInterop();
+            var winner = Interlocked.CompareExchange(ref _observers, created, null);
+            if (winner is null) return created;
+
+            created.Dispose();
+            return winner;
+        }
+    }
 
     /// <summary>
     /// High-resolution timestamp (<c>DOMHighResTimeStamp</c>) since the time origin, in milliseconds.
@@ -246,7 +265,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     public ValueTask<WebVitals?> GetWebVitals()
     {
         _startedModuleObservers = true;
-        return js.Invoke<WebVitals?>("BitButil.performance.webVitals");
+        return js.Invoke<WebVitals?>("BitButil.performanceVitals.webVitals");
     }
 
     /// <summary>
@@ -262,16 +281,6 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
         => js.Invoke<PerformanceMemory?>("BitButil.performance.memory");
 
     /// <summary>
-    /// Invoked from JS on each observer report. Public + <see cref="JSInvokableAttribute"/> so it can
-    /// be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
-    /// </summary>
-    [JSInvokable(InvokeMethodName)]
-    public void InvokePerformanceObserver(Guid id, JsonElement[] entries)
-    {
-        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke(entries);
-    }
-
-    /// <summary>
     /// Subscribes to <see href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver">PerformanceObserver</see>
     /// for one or more entry types. Common values: <c>"resource"</c>, <c>"navigation"</c>,
     /// <c>"longtask"</c>, <c>"largest-contentful-paint"</c>, <c>"layout-shift"</c>,
@@ -281,7 +290,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <param name="handler">Called with each batch of entries the observer receives.</param>
     /// <param name="buffered">When true, the observer is also notified about entries that
     /// were already in the buffer when the observer registered.</param>
-    [DynamicDependency(nameof(InvokePerformanceObserver), typeof(Performance))]
+    [DynamicDependency(PerformanceObserverInterop.InvokeMethodName, typeof(PerformanceObserverInterop))]
     public async Task<ButilSubscription> SubscribeObserver(string[] entryTypes,
                                                           Action<JsonElement[]> handler,
                                                           bool buffered = true)
@@ -290,12 +299,13 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
             throw new ArgumentException("At least one entry type is required.", nameof(entryTypes));
 
         var id = Guid.NewGuid();
-        _handlers.TryAdd(id, handler);
-        await js.InvokeVoid("BitButil.performance.observe", DotNetRef, id, entryTypes, buffered);
+        var observers = Observers;
+        observers.Add(id, handler);
+        await js.InvokeVoid("BitButil.performance.observe", observers.DotNetRef, id, entryTypes, buffered);
 
         return new ButilSubscription(id, async () =>
         {
-            _handlers.TryRemove(id, out _);
+            observers.Remove(id);
             await js.InvokeVoid("BitButil.performance.disconnect", id);
         });
     }
@@ -372,8 +382,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     {
         try
         {
-            var ids = _handlers.Keys.ToArray();
-            _handlers.Clear();
+            var ids = _observers?.Drain() ?? [];
             foreach (var id in ids)
             {
                 await js.InvokeVoid("BitButil.performance.disconnect", id);
@@ -391,8 +400,8 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
-            _dotNetRef?.Dispose();
-            _dotNetRef = null;
+            _observers?.Dispose();
+            _observers = null;
         }
         GC.SuppressFinalize(this);
     }

@@ -325,7 +325,7 @@ ButilSubscription sub = await window.WatchMatchMedia(
     <ApiMember Name="Stop" Signature="Task Stop()" Description="Stops window loading." />
     <ApiMember Name="Scroll" Signature="Task Scroll(float? x, float? y)" Description="Scrolls the window to an absolute position. An overload accepts ScrollOptions for smooth/instant behavior." />
     <ApiMember Name="ScrollBy" Signature="Task ScrollBy(float? x, float? y)" Description="Scrolls the document by a relative amount. An overload accepts ScrollOptions." />
-    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Releases every listener, media-query watcher, popup ref and beforeunload handler this instance registered. InvokeMediaQueryChange is the public JSInvokable dispatch bridge and is not intended for app code." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Releases every listener, media-query watcher, popup ref and beforeunload handler this instance registered." />
     <ApiMember Name="GetDevicePixelRatio"
                Signature="Task<double> GetDevicePixelRatio()"
                Description="CSS pixels per device pixel - 2 on a typical retina display, fractional at OS zoom levels. Changes when the user zooms or moves the window to another monitor, so read it when needed rather than caching it." />

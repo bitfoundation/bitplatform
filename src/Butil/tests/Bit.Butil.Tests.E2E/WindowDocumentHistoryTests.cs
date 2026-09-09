@@ -1,4 +1,5 @@
 ﻿using Bit.Butil.Tests.E2E.Infrastructure;
+using Microsoft.Playwright;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Butil.Tests.E2E;
@@ -72,5 +73,27 @@ public class WindowDocumentHistoryTests : ButilPageTest
     public async Task Window_MatchMedia_Evaluates_A_Query()
     {
         await ClickAndExpectAsync("window-matchmedia", "window:media:True");
+    }
+
+    /// <summary>
+    /// The media-query change callback, which JavaScript dispatches through the interop reference the
+    /// Window service hands it. That reference is held by a small relay object rather than by the service
+    /// itself - what a trimmed app downloads depends on it - so this is where the arrangement is proven to
+    /// still deliver events in a real browser.
+    /// </summary>
+    [TestMethod]
+    public async Task Window_MatchMedia_Subscription_Reports_A_Change()
+    {
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Light });
+
+        // The click returns as soon as the handler yields; the first status is what says the subscription
+        // is live, and flipping the scheme before it would be a change nothing is listening for yet.
+        await ClickAndExpectAsync("window-matchmedia-watch", "window:media-watching");
+
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Dark });
+
+        await Assertions.Expect(Page.Locator("#status")).ToContainTextAsync("window:media-change:dark", new() { Timeout = 15_000 });
+
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Light });
     }
 }

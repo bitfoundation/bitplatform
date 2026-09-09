@@ -52,6 +52,26 @@ internal static class LazyScripts
             Expect(runtime, ["import " + ModulesPath + "clipboard.js", "BitButil.clipboard.isSupported", "BitButil.clipboard.isSupported", "import " + ModulesPath + "window.js", "BitButil.window.locationbar", "BitButil.clipboard.isSupported"],
                 "modules are tracked per runtime, not per service instance", failures, ref passed);
 
+            // A split module family, which is what choosing the module per identifier is for: two members of
+            // one service whose JavaScript lives in different modules import different files, and a member
+            // of a third family imports neither. This is the lazy-loading half of the split - the app
+            // downloads the module behind the member it called and nothing else of the API around it.
+            var split = new RecordingJSRuntime();
+            var splitCrypto = Resolve<Crypto>(split);
+            var splitWindow = Resolve<Window>(split);
+
+            await splitCrypto.RandomUuid();
+            Expect(split, ["import " + ModulesPath + "crypto.js", "BitButil.crypto.randomUUID"],
+                "a call into Crypto.RandomUuid imports crypto.js - not the signing, key or cipher modules", failures, ref passed);
+
+            await splitWindow.GetSelectionText();
+            Expect(split, ["import " + ModulesPath + "crypto.js", "BitButil.crypto.randomUUID", "import " + ModulesPath + "windowSelection.js", "BitButil.windowSelection.getSelectionText"],
+                "a Window member served by windowSelection imports that module rather than window.js", failures, ref passed);
+
+            await splitWindow.GetInnerWidth();
+            Expect(split, ["import " + ModulesPath + "crypto.js", "BitButil.crypto.randomUUID", "import " + ModulesPath + "windowSelection.js", "BitButil.windowSelection.getSelectionText", "import " + ModulesPath + "window.js", "BitButil.window.innerWidth"],
+                "and a second member of the same service imports its own module, once", failures, ref passed);
+
             // A failed import is not remembered as loaded: the next call retries it.
             var failing = new RecordingJSRuntime { FailNextImport = true };
             var (flaky, _) = Resolve(failing);
@@ -158,6 +178,18 @@ internal static class LazyScripts
         }
 
         return (passed, failures.Count - before);
+    }
+
+    /// <summary>One service of any kind off a runtime, for the checks that are not about Clipboard and Window.</summary>
+    private static TService Resolve<TService>(IJSRuntime runtime) where TService : class
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(runtime);
+        services.AddBitButilServices();
+        var provider = services.BuildServiceProvider();
+        var scope = provider.CreateScope();
+
+        return (TService)scope.ServiceProvider.GetRequiredService(typeof(TService));
     }
 
     private static (Clipboard Clipboard, Window Window) Resolve(IJSRuntime runtime, Action<BitButilOptions>? configure = null)

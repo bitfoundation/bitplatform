@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.JSInterop;
@@ -30,6 +31,30 @@ internal static class DotNetObjectReferenceHelper
         if (winner is null) return created;
 
         // Lost the race: drop our redundant reference so it doesn't leak, and use the winner's.
+        created.Dispose();
+        return winner;
+    }
+
+    /// <summary>
+    /// The same publish-exactly-one dance for the small relay objects that <em>hold</em> those references
+    /// (<see cref="PerformanceObserverInterop"/>, <see cref="WindowMediaQueryInterop"/>).
+    /// </summary>
+    /// <remarks>
+    /// A relay is created on first use rather than with its service, because that is what keeps the
+    /// service's own callback surface - and the interop identifiers travelling with it - out of an app
+    /// that never subscribes. Two relays racing into existence would mean JavaScript holding a reference
+    /// to one that nothing ever disposes, so the loser's is dropped here.
+    /// </remarks>
+    internal static TRelay GetOrCreate<TRelay>(ref TRelay? field, Func<TRelay> factory)
+        where TRelay : class, IDisposable
+    {
+        var existing = Volatile.Read(ref field);
+        if (existing is not null) return existing;
+
+        var created = factory();
+        var winner = Interlocked.CompareExchange(ref field, created, null);
+        if (winner is null) return created;
+
         created.Dispose();
         return winner;
     }

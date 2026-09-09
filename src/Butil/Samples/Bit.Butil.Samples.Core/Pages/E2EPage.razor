@@ -120,6 +120,7 @@
     <button id="window-base64" @onclick="WindowBase64">btoa/atob roundtrip</button>
     <button id="window-metrics" @onclick="WindowMetrics">inner size + secure ctx</button>
     <button id="window-matchmedia" @onclick="WindowMatchMedia">matchMedia</button>
+    <button id="window-matchmedia-watch" @onclick="WindowMatchMediaWatch">matchMedia change</button>
 </section>
 
 <section>
@@ -628,6 +629,23 @@
     {
         var mql = await window.MatchMedia("(min-width: 1px)");
         Set($"window:media:{mql.Matches}");
+    }
+
+    // The change callback, which JavaScript dispatches through the interop reference Window hands it.
+    // prefers-color-scheme rather than a width query because the test flips it with EmulateMedia, which
+    // needs no window resizing and behaves the same headless. The status is set twice on purpose: the
+    // first value is the signal that the subscription is live and the scheme can be flipped.
+    private async Task WindowMatchMediaWatch()
+    {
+        var changed = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using var subscription = await window.WatchMatchMedia("(prefers-color-scheme: dark)",
+            state => changed.TrySetResult(state.Matches ? "dark" : "light"));
+
+        Set("window:media-watching");
+
+        var scheme = await AwaitCallback(changed);
+        Set($"window:media-change:{scheme ?? "none"}");
     }
     private async Task HistoryPush()
     {
