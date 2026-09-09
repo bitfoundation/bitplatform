@@ -83,18 +83,28 @@ var granted = await bluetooth.GetDevices();
                  Api="Connect / Disconnect / IsConnected / GetServices / GetCharacteristics"
                  Description="Connect opens the GATT server. GetServices lists the primary services the grant covers, and GetCharacteristics lists one service's characteristics with the operations each of them supports."
                  Code=@("""
-await _device.Connect();
+@code {
+    // The handle from RequestDevice above. A grant is per device, so this is the only way back to
+    // one the user has already chosen.
+    private BluetoothDevice? _device;
 
-foreach (var service in await _device.GetServices())
-{
-    foreach (var c in await _device.GetCharacteristics(service.Uuid))
+    private async Task Browse()
     {
-        // c.Uuid, c.Read, c.Write, c.Notify, ...
+        await _device!.Connect();
+
+        foreach (var service in await _device.GetServices())
+        {
+            foreach (var c in await _device.GetCharacteristics(service.Uuid))
+            {
+                // c.Uuid, c.Read, c.Write, c.Notify, ...
+            }
+        }
+
+        await _device.Disconnect();
     }
 }
-
-await _device.Disconnect();
-""")>
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="() => RequestDevice(gattOutput)">RequestDevice</button>
             <span>@SelectedDeviceLabel</span>
@@ -119,11 +129,19 @@ await _device.Disconnect();
                  Api="Read / Write"
                  Description="Read returns the characteristic's current bytes; Write sends bytes to it, either acknowledged or fire-and-forget. The battery level characteristic below is a single byte holding a percentage."
                  Code=@("""
-var value = await _device.Read("battery_service", "battery_level");
-var percent = value?[0];
+@code {
+    private BluetoothDevice? _device;   // from RequestDevice, and connected
 
-await _device.Write("0xFFE0", "0xFFE1", [0x01, 0x02], withResponse: true);
-""")>
+    private async Task ReadWrite()
+    {
+        var value = await _device!.Read("battery_service", "battery_level");
+        var percent = value?[0];
+
+        await _device.Write("0xFFE0", "0xFFE1", [0x01, 0x02], withResponse: true);
+    }
+}
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <span class="field-label">Service</span>
@@ -153,13 +171,31 @@ await _device.Write("0xFFE0", "0xFFE1", [0x01, 0x02], withResponse: true);
                  Api="SubscribeValueChanged / SubscribeDisconnected"
                  Description="SubscribeValueChanged asks the device to push a characteristic's value as it changes - a heart-rate strap, a thermometer. SubscribeDisconnected fires when the link drops, which for a battery-powered peripheral happens on its own schedule."
                  Code=@("""
-await using var values = await _device.SubscribeValueChanged(
-    "heart_rate", "heart_rate_measurement",
-    bytes => Console.WriteLine(bytes.Length));
+@implements IAsyncDisposable
 
-await using var dropped = await _device.SubscribeDisconnected(
-    () => Console.WriteLine("device went away"));
-""")>
+@code {
+    private BluetoothDevice? _device;   // from RequestDevice, and connected
+    private ButilSubscription? _values;
+    private ButilSubscription? _dropped;
+
+    private async Task Listen()
+    {
+        _values = await _device!.SubscribeValueChanged(
+            "heart_rate", "heart_rate_measurement",
+            bytes => Console.WriteLine(bytes.Length));
+
+        _dropped = await _device.SubscribeDisconnected(
+            () => Console.WriteLine("device went away"));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_values is not null) await _values.DisposeAsync();
+        if (_dropped is not null) await _dropped.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="() => RequestDevice(notifyOutput)">RequestDevice</button>
             <span>@SelectedDeviceLabel</span>
@@ -176,8 +212,18 @@ await using var dropped = await _device.SubscribeDisconnected(
                  Api="Forget"
                  Description="Forget drops this origin's permission for the device, so it stops appearing in GetDevices until the user picks it again. Not every Chromium version implements it - false means it was unavailable."
                  Code=@("""
-var revoked = await _device.Forget();
-""")>
+@code {
+    private BluetoothDevice? _device;   // from RequestDevice
+
+    // Drops the grant, so GetDevices stops returning it and the picker has to be shown again.
+    private async Task Revoke()
+    {
+        var revoked = await _device!.Forget();
+        _device = null;
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button class="danger" @onclick="ForgetDevice">Forget</button>
         </div>

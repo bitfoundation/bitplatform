@@ -109,18 +109,30 @@ await recorder.RevokeObjectUrl(_playbackUrl);
                  Api="Start(onData, timesliceMs) / RequestData"
                  Description="Pass a timeslice and an onData callback and the browser hands you each encoded slice as it is produced, so a long recording can be uploaded while it runs instead of being held whole in memory. RequestData flushes what has been captured so far without ending the take."
                  Code=@("""
-_recording = await recorder.Start(
-    _stream!,
-    onData: chunk => InvokeAsync(() =>
-    {
-        _bytesSoFar += chunk.Length;   // upload it, append it to a file, ...
-        StateHasChanged();
-    }),
-    timesliceMs: 1000);   // one slice per second
+@inject Bit.Butil.MediaRecorder recorder
 
-// flush early, without stopping:
-await _recording!.RequestData();
-""")>
+@code {
+    private long _bytesSoFar;
+    private MediaStreamHandle? _stream;        // from mediaDevices.GetUserMedia
+    private MediaRecordingHandle? _recording;
+
+    private async Task Start()
+    {
+        _recording = await recorder.Start(
+            _stream!,
+            onData: chunk => InvokeAsync(() =>
+            {
+                _bytesSoFar += chunk.Length;   // upload it, append it to a file, ...
+                StateHasChanged();
+            }),
+            timesliceMs: 1000);   // one slice per second
+    }
+
+    // flush early, without stopping:
+    private async Task Flush() => await _recording!.RequestData();
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="StartChunked">Start chunked recording</button>
             <button class="secondary" @onclick="FlushChunk">RequestData</button>

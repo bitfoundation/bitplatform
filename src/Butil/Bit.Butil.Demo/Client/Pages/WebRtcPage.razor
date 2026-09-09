@@ -74,15 +74,26 @@ await a.SetRemoteDescription(answer);
                  Api="CreateDataChannel / SendText / SendBytes / Listen"
                  Description="The reason to use a data channel rather than a WebSocket is what it can give up: an unordered, non-retransmitting channel delivers what is current rather than what is complete, which no TCP-based transport can offer at all. Nothing can be sent until the channel opens, so subscribe before the handshake - a channel that opens before anything is listening still opens, and that callback has already been missed."
                  Code=@("""
-var channel = await a!.CreateDataChannel("chat", ordered: false, maxRetransmits: 0);
-channel!.Listen(
-    onMessage: m => InvokeAsync(StateHasChanged),
-    onOpen: () => { /* now it can send */ },
-    onClose: () => { });
+@code {
+    // The peer connection from the section above. A data channel has to be created before the offer
+    // is made: it is part of what the offer describes.
+    private PeerConnectionHandle? a;
+    private RtcDataChannelHandle? channel;
 
-await channel.SendText("hello, other browser");
-await channel.SendBytes([1, 2, 3, 4]);
-""")>
+    private async Task Chat()
+    {
+        channel = await a!.CreateDataChannel("chat", ordered: false, maxRetransmits: 0);
+        channel!.Listen(
+            onMessage: m => InvokeAsync(StateHasChanged),
+            onOpen: () => { /* now it can send */ },
+            onClose: () => { });
+
+        await channel.SendText("hello, other browser");
+        await channel.SendBytes([1, 2, 3, 4]);
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="ConnectForChannel">Connect the two peers</button>
             <input @bind="_message" placeholder="message" aria-label="message" />
@@ -107,26 +118,46 @@ await channel.SendBytes([1, 2, 3, 4]);
                  Api="CreatePeerConnection / CreateOffer / CreateAnswer / AddIceCandidate + BroadcastChannel"
                  Description="The sections above are a loopback: both peers live in this tab, so nothing is ever signalled. Here the two peers are in two different browser windows and the offer, the answer and every ICE candidate travel between them over BroadcastChannel - which reaches every same-origin window in this browser and is the smallest thing that can stand in for a signalling server. Open this page in a second window, press Host in one and Join in the other, and the chat below is a real peer connection. Two notes that bite every first WebRTC implementation are handled here: the joiner announces itself so the host makes its offer to somebody who is listening (an offer posted before the second window exists is simply lost), and candidates that arrive before the remote description is set are queued rather than added, because addIceCandidate rejects them until there is a description to attach them to."
                  Code=@("""
-// Signalling: anything that reaches the other side will do. Here, other windows of this browser.
-_signalling = await broadcastChannel.Subscribe("butil-webrtc-demo", OnSignal);
+@inject Bit.Butil.WebRtc webRtc
+@inject Bit.Butil.BroadcastChannel broadcastChannel
 
-_peer = await webRtc.CreatePeerConnection(
-    iceServers: [new RtcIceServer { Urls = ["stun:stun.l.google.com:19302"] }],
-    onIceCandidate: json => InvokeAsync(() => broadcastChannel.Post("butil-webrtc-demo",
-                                                new { type = "candidate", candidate = json }).AsTask()),
-    onRemoteChannel: channel => { _channel = channel; channel.Listen(onMessage: Show); });
+@code {
+    private ButilSubscription? _signalling;
+    private PeerConnectionHandle? _peer;
+    private RtcDataChannelHandle? _channel;
 
-// Host, once the other window says it is there:
-var offer = await _peer.CreateOffer();
-await _peer.SetLocalDescription(offer!);
-await broadcastChannel.Post("butil-webrtc-demo", new { type = "offer", sdp = offer!.Sdp });
+    private async Task Connect()
+    {
+        // Signalling: anything that reaches the other side will do - WebRTC does not specify it.
+        // Here, other windows of this browser.
+        _signalling = await broadcastChannel.Subscribe("butil-webrtc-demo", OnSignal);
 
-// Joiner, on that offer:
-await _peer.SetRemoteDescription(new RtcSessionDescription("offer", sdp, null));
-var answer = await _peer.CreateAnswer();
-await _peer.SetLocalDescription(answer!);
-await broadcastChannel.Post("butil-webrtc-demo", new { type = "answer", sdp = answer!.Sdp });
-""")>
+        _peer = await webRtc.CreatePeerConnection(
+            iceServers: [new RtcIceServer { Urls = ["stun:stun.l.google.com:19302"] }],
+            onIceCandidate: json => InvokeAsync(() => broadcastChannel.Post("butil-webrtc-demo",
+                                                        new { type = "candidate", candidate = json }).AsTask()),
+            onRemoteChannel: channel => { _channel = channel; channel.Listen(onMessage: Show); });
+    }
+
+    // Host, once the other window says it is there:
+    private async Task Offer()
+    {
+        var offer = await _peer!.CreateOffer();
+        await _peer.SetLocalDescription(offer!);
+        await broadcastChannel.Post("butil-webrtc-demo", new { type = "offer", sdp = offer!.Sdp });
+    }
+
+    // Joiner, on that offer:
+    private async Task Answer(string sdp)
+    {
+        await _peer!.SetRemoteDescription(new RtcSessionDescription("offer", sdp, null));
+        var answer = await _peer.CreateAnswer();
+        await _peer.SetLocalDescription(answer!);
+        await broadcastChannel.Post("butil-webrtc-demo", new { type = "answer", sdp = answer!.Sdp });
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="Host">Host in this window</button>
             <button @onclick="Join">Join from this window</button>
@@ -154,11 +185,21 @@ await broadcastChannel.Post("butil-webrtc-demo", new { type = "answer", sdp = an
                  Api="GetStats"
                  Description="Everything the browser knows: bitrates, packet loss, round-trip time, the codec in use, which candidate pair won. The members differ per stat type, so each entry carries its type and a dictionary rather than pretending to a record shape. The two worth looking at first are the nominated candidate-pair - the path in use, and its round-trip time - and the inbound-rtp entries, which say what is actually arriving."
                  Code=@("""
-var stats = await a!.GetStats();
+@code {
+    private PeerConnectionHandle? a;   // a connected peer connection
 
-var path = stats.FirstOrDefault(s => s.Type == "candidate-pair" && s.Values.GetValueOrDefault("nominated") == "true");
-var rtt = path?.Values.GetValueOrDefault("currentRoundTripTime");
-""")>
+    private async Task Inspect()
+    {
+        var stats = await a!.GetStats();
+
+        // The nominated candidate pair is the route actually carrying traffic, out of everything ICE
+        // tried.
+        var path = stats.FirstOrDefault(s => s.Type == "candidate-pair" && s.Values.GetValueOrDefault("nominated") == "true");
+        var rtt = path?.Values.GetValueOrDefault("currentRoundTripTime");
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="ConnectForStats">Connect the two peers</button>
             <button @onclick="ReadStats">GetStats</button>
@@ -174,12 +215,29 @@ var rtt = path?.Values.GetValueOrDefault("currentRoundTripTime");
                  Api="AddTracksFrom / AttachRemoteMedia"
                  Description="MediaDevices acquires the stream, AddTracksFrom puts it on the connection, and the other side shows it. Add the tracks before the offer: the offer describes what will be sent, so adding a camera afterwards means negotiating again - which is why this button reconnects. Needs a secure context and the camera permission, so it prompts."
                  Code=@("""
-var stream = await mediaDevices.GetUserMedia(audio: false, video: true);
-await a!.AddTracksFrom(stream!);      // before the offer
+@inject Bit.Butil.MediaDevices mediaDevices
 
-// on the other side:
-await b!.AttachRemoteMedia(_remoteVideo);
-""")>
+<video @ref="_remoteVideo" autoplay playsinline></video>
+
+@code {
+    private ElementReference _remoteVideo;
+    private PeerConnectionHandle? a;   // the sending side
+    private PeerConnectionHandle? b;   // the receiving side
+
+    private async Task SendCamera()
+    {
+        var stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+
+        // Before the offer: the tracks are part of what the offer describes, so adding them after it
+        // needs a second round of negotiation.
+        await a!.AddTracksFrom(stream!);
+
+        // on the other side:
+        await b!.AttachRemoteMedia(_remoteVideo);
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="ConnectWithCamera">Connect with the camera</button>
             <button class="danger" @onclick="Disconnect">Stop</button>

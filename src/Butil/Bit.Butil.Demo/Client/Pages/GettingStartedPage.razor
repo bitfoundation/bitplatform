@@ -15,15 +15,29 @@
 
 <DemoSection Title="2. Add the script"
              Description="Add the Butil bridge script to your host page, before the Blazor script - the app boots as soon as that second script runs, so window.BitButil has to exist by then. Which host page it is depends on how you host: index.html for standalone WebAssembly and for Hybrid, Components/App.razor for a Blazor Web App, _Host.cshtml for a classic Blazor Server app. Lazy scripts, below, replace this step entirely."
-             Code=@("""
+             Files=@([
+new("wwwroot/index.html", "html", """
+<!-- Standalone WebAssembly, and Blazor Hybrid (MAUI, WPF, WinForms). The app boots as soon as the
+     Blazor script runs, so window.BitButil has to exist by then - order matters. -->
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.webassembly.js"></script>
+"""),
+new("Components/App.razor", "razor", """
+@* A Blazor Web App. Same rule, same order - only the host page and the Blazor script differ. *@
 <script src="_content/Bit.Butil/bit-butil.js"></script>
 <script src="_framework/blazor.web.js"></script>
-""")
-             Language="html" />
+"""),
+new("Pages/_Host.cshtml", "html", """
+<!-- A classic Blazor Server app. -->
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.server.js"></script>
+"""),
+]) />
 
 <DemoSection Title="3. Register the services"
              Description="AddBitButilServices registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. If your app prerenders, register them in the host's container as well: every component is instantiated once on the server for the prerender pass and again in the browser, so anything a page injects has to resolve in both places. Registration is trimming-aware - it discovers the services by reflection, so a published, trimmed app only registers the Butil classes your code actually injects and the rest are removed from your bundle."
-             Code=@("""
+             Files=@([
+new("Client/Program.cs", """
 using Bit.Butil;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -31,7 +45,47 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddBitButilServices();
 
 await builder.Build().RunAsync();
-""") />
+"""),
+new("Server/Program.cs", """
+using Bit.Butil;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRazorComponents()
+                .AddInteractiveWebAssemblyComponents();
+
+// The same call on the host as well, when the app prerenders. Every component is instantiated once
+// on the server for the prerender pass and again in the browser, so anything a page injects has to
+// resolve in both containers - a page that only registers it on the client throws on the first
+// render rather than on the first call.
+builder.Services.AddBitButilServices();
+
+var app = builder.Build();
+app.MapRazorComponents<App>()
+   .AddInteractiveWebAssemblyRenderMode();
+
+app.Run();
+"""),
+new("MauiProgram.cs", """
+using Bit.Butil;
+
+public static class MauiProgram
+{
+    public static MauiApp CreateMauiApp()
+    {
+        var builder = MauiApp.CreateBuilder();
+        builder.UseMauiApp<App>();
+
+        builder.Services.AddMauiBlazorWebView();
+
+        // Blazor Hybrid: the same registration, and the same script tag in wwwroot/index.html.
+        builder.Services.AddBitButilServices();
+
+        return builder.Build();
+    }
+}
+"""),
+]) />
 
 <DemoSection Title="Use any API"
              Description="Inject the class you need and call it - no IJSRuntime, no JSON juggling, no hand-written interop. Full IntelliSense included. The one habit worth forming from the start: touch the browser from OnAfterRenderAsync or an event handler, never from OnInitialized, so the code also works under prerendering."
@@ -114,16 +168,23 @@ var secure = await window.IsSecureContext();
 <DemoSection Title="Optional: the same switches from C#"
              Api="AddBitButilServices"
              Description="The registration call takes an options callback carrying the library's runtime toggles: LazyScripts, ScriptModulesPath for when the package's static web assets are served from somewhere else such as a CDN, and FastInvoke. It is the escape hatch for hosts where the csproj is not yours to edit, and it decides only how the scripts load, not what a publish contains. A default publish keeps the bundle and drops the per-module files, so this switch on its own leaves the imports with nothing to fetch - keep the modules with BitButilIncludeScriptModules. Publish-time tree-shaking has no C# counterpart at all, since it happens inside dotnet publish."
-             Code=@("""
+             Files=@([
+new("Program.cs", """
 builder.Services.AddBitButilServices(options =>
 {
     options.LazyScripts = true;                  // or false to insist on the bundle
     options.ScriptModulesPath = "/cdn/butil/";   // optional, when served elsewhere
 });
-
-// ...and the csproj still has to publish the module files:
-// <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
-""") />
+"""),
+new("App.csproj", """
+<!-- The C# switch decides only how the scripts load, not what a publish contains. A default publish
+     keeps the bundle and drops the per-module files, so LazyScripts on its own leaves the imports
+     with nothing to fetch. -->
+<PropertyGroup>
+  <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+</PropertyGroup>
+"""),
+]) />
 
 <DemoSection Title="Optional: fast invoke"
              Api="BitButil.UseFastInvoke"

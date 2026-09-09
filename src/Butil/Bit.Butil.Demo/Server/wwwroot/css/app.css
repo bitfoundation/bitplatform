@@ -554,6 +554,7 @@ svg {
 .feature-card:focus-visible,
 .hero-actions a:focus-visible,
 .copy-btn:focus-visible,
+.code-tab:focus-visible,
 .anchor:focus-visible {
     outline: var(--strokeWidthThick) solid var(--colorStrokeFocus2);
     outline-offset: var(--strokeWidthThin);
@@ -1633,6 +1634,60 @@ svg {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--colorNeutralForeground3);
+}
+
+/* A sample that spans several files puts a tab per file where the language name
+   would be. The names are paths, so the strip scrolls rather than wrapping: a bar
+   that grows to three rows on a narrow screen pushes the code itself off it. */
+.code-tabs {
+    display: flex;
+    min-width: 0;
+    gap: var(--spacingXS);
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* The strip's own left padding, in place of the bar's - which the code below
+       is aligned to, and an active tab's background should start at. */
+    margin-inline-start: calc(-1 * var(--codePad) + var(--spacingXS));
+}
+
+.code-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.code-tab {
+    flex: none;
+    min-height: 1.75rem;
+    padding: 0 var(--spacingS);
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--fontFamilyMonospace);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    border: none;
+    color: var(--colorNeutralForeground3);
+    background-color: transparent;
+    border-radius: var(--borderRadiusMedium);
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.code-tab:hover {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.code-tab.active {
+    color: var(--colorNeutralForeground1);
+    font-weight: var(--fontWeightSemibold);
+    background-color: var(--colorCodeBackground);
+}
+
+/* The pane sets display on <pre> itself, which outruns the user agent's rule for
+   [hidden] - so the files behind the active tab would all render on top of each
+   other. They stay in the markup rather than being rendered on demand because
+   that markup is what the MCP server reads every file of the sample out of. */
+.code-holder pre[hidden] {
+    display: none;
 }
 
 .copy-btn {
@@ -3702,8 +3757,22 @@ label.check {
     .doc-pager,
     .footer,
     .copy-btn,
+    .code-tabs,
     #blazor-error-ui {
         display: none !important;
+    }
+
+    /* Paper has no tab to click, so a multi-file sample prints as all of its files,
+       each under the name its tab gave it. */
+    .code-holder pre[hidden] {
+        display: block !important;
+    }
+
+    .code-holder pre[data-file]::before {
+        content: attr(data-file);
+        display: block;
+        margin-bottom: var(--spacingS);
+        font-weight: var(--fontWeightSemibold);
     }
 
     .app-root,

@@ -50,11 +50,25 @@
              Api="ResizeObserverBox"
              Description="The box parameter selects which box dimensions trigger the observer: ContentBox (the default) excludes padding and borders, BorderBox includes them, and DevicePixelContentBox measures in physical device pixels - the choice that matters when sizing a canvas backing store. Pick one below and re-observe."
              Code=@("""
-await box.ObserveResize(js, entries =>
-{
-    // fires when the border box changes size
-}, ResizeObserverBox.BorderBox);
-""")>
+@inject IJSRuntime js
+
+<div @ref="box" style="resize:both; overflow:auto">...</div>
+
+@code {
+    private ElementReference box;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await box.ObserveResize(js, entries =>
+        {
+            // fires when the border box changes size
+        }, ResizeObserverBox.BorderBox);
+    }
+}
+""")
+             Language="razor">
     <div class="field">
         <span class="field-label">Observed box</span>
         <select @bind="selectedBox" style="max-width:16rem;">
@@ -79,17 +93,31 @@ await box.ObserveResize(js, entries =>
              Api="ResizeObserverEntry"
              Description="Each entry flattens the browser's ResizeObserverEntry into the fields layout work actually needs: the content rect, the logical inline and block sizes of the observed box, and the device-pixel sizes for pixel-perfect rendering."
              Code=@("""
-await box.ObserveResize(js, entries =>
-{
-    var entry = entries[^1];
+@inject IJSRuntime js
 
-    Rect? rect = entry.ContentRect;      // content box geometry
-    var inline = entry.InlineSize;       // width in horizontal writing mode
-    var block = entry.BlockSize;         // height in horizontal writing mode
-    var dpInline = entry.DevicePixelInlineSize;
-    var dpBlock = entry.DevicePixelBlockSize;
-});
-""")>
+<div @ref="box" style="resize:both; overflow:auto">...</div>
+
+@code {
+    private ElementReference box;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await box.ObserveResize(js, entries =>
+        {
+            var entry = entries[^1];
+
+            Rect? rect = entry.ContentRect;      // content box geometry
+            var inline = entry.InlineSize;       // width in horizontal writing mode
+            var block = entry.BlockSize;         // height in horizontal writing mode
+            var dpInline = entry.DevicePixelInlineSize;
+            var dpBlock = entry.DevicePixelBlockSize;
+        });
+    }
+}
+""")
+             Language="razor">
     <div @ref="entriesBoxRef"
          class="demo-box" style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;">
         Drag my bottom-right corner to resize me.
@@ -106,9 +134,19 @@ await box.ObserveResize(js, entries =>
              Api="ObserveResize + SetAttribute"
              Description="The observer does not care who changed the size: user drags, CSS state changes, Blazor re-renders and style writes all produce entries. Here the button widens the box through the Element extension SetAttribute while the observer reports each step."
              Code=@("""
-// any style write triggers the observer just like a user drag:
-await box.SetAttribute("style", "width: 20rem; height: 6rem; resize: both; overflow: auto;");
-""")>
+<div @ref="box">...</div>
+<button @onclick="Resize">Resize it from code</button>
+
+@code {
+    private ElementReference box;
+
+    // Any style write triggers the observer just like a user drag - the observer watches the box,
+    // not the input that changed it.
+    private async Task Resize() =>
+        await box.SetAttribute("style", "width: 20rem; height: 6rem; resize: both; overflow: auto;");
+}
+""")
+             Language="razor">
     <div @ref="growBoxRef"
          class="demo-box" style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;">
         This box is widened from C#, not by dragging.
@@ -125,13 +163,34 @@ await box.SetAttribute("style", "width: 20rem; height: 6rem; resize: both; overf
              Api="minInterval"
              Description="A ResizeObserver delivers an entry every frame for as long as a drag or a reflow lasts, and every entry is an interop round trip - under Blazor Server, a SignalR message and a network hop per frame. minInterval caps how often the handler is called. The gate is leading-edge with a trailing send, so the size the element settles at always arrives; it is just delivered a little later. Start a gated observer below and drag the box: the console fills at a fraction of the rate, and the last line still reads the final size."
              Code=@("""
-subscription = await box.ObserveResize(js, entries =>
-{
-    // called at most once every 100 ms, and always once more
-    // after the drag stops - with the settled size
-},
-minInterval: TimeSpan.FromMilliseconds(100));
-""")>
+@implements IAsyncDisposable
+@inject IJSRuntime js
+
+<div @ref="box" style="resize:both; overflow:auto">...</div>
+
+@code {
+    private ElementReference box;
+    private ButilSubscription? subscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        subscription = await box.ObserveResize(js, entries =>
+        {
+            // called at most once every 100 ms, and always once more
+            // after the drag stops - with the settled size
+        },
+        minInterval: TimeSpan.FromMilliseconds(100));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (subscription is not null) await subscription.DisposeAsync();
+    }
+}
+""")
+             Language="razor">
     <div class="field">
         <span class="field-label">Minimum interval (ms)</span>
         <input type="number" min="0" step="10" @bind="minIntervalMs" style="max-width:8rem;" />

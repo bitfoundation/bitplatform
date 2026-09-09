@@ -44,15 +44,40 @@ var supported = await closeWatcher.IsSupported();
                  Api="Create"
                  Description="Open the panel below, then press Escape - or use the Android back gesture on a phone. The handler runs, the panel closes, and the gesture is consumed so nothing else reacts to it."
                  Code=@("""
-_watcher = await closeWatcher.Create(onClose: () =>
-{
-    _open = false;
-    InvokeAsync(StateHasChanged);
-});
+@implements IAsyncDisposable
+@inject Bit.Butil.CloseWatcher closeWatcher
 
-// closing by any other route:
-await _watcher!.DisposeAsync();
-""")>
+@if (_open)
+{
+    <div>...</div>
+}
+
+@code {
+    private bool _open;
+    private CloseWatcherHandle? _watcher;
+
+    // Created when the panel opens, so Escape, the Android back gesture and the browser's own close
+    // affordance all reach the same handler.
+    private async Task Open()
+    {
+        _open = true;
+
+        _watcher = await closeWatcher.Create(onClose: () =>
+        {
+            _open = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    // Closing by any other route - a button of your own - has to retire the watcher too, or the
+    // next Escape closes a panel that is already gone.
+    public async ValueTask DisposeAsync()
+    {
+        if (_watcher is not null) await _watcher.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="OpenPanel" disabled="@_open">Open panel</button>
             <button class="secondary" @onclick="ClosePanel" disabled="@(_open is false)">Close from code</button>
@@ -71,13 +96,29 @@ await _watcher!.DisposeAsync();
                  Api="Create(onClose, onCancel)"
                  Description="Passing an onCancel handler intercepts the close request first, so you can ask 'discard your changes?' and call Close() yourself if the answer is yes. The browser only offers the cancel step while there is a user activation to spend, so a close can still arrive without one - never rely on it firing."
                  Code=@("""
-_watcher = await closeWatcher.Create(
-    onClose: () => { _open = false; InvokeAsync(StateHasChanged); },
-    onCancel: () => { _confirming = true; InvokeAsync(StateHasChanged); });
+@inject Bit.Butil.CloseWatcher closeWatcher
 
-// the user confirmed:
-await _watcher!.Close();
-""")>
+@code {
+    private bool _open;
+    private bool _confirming;
+    private CloseWatcherHandle? _watcher;
+
+    private async Task Open()
+    {
+        _open = true;
+
+        // onCancel runs first and can stop the close; onClose is what actually closes. A cancel
+        // needs a prior user activation, so the very first close gesture cannot be intercepted.
+        _watcher = await closeWatcher.Create(
+            onClose: () => { _open = false; InvokeAsync(StateHasChanged); },
+            onCancel: () => { _confirming = true; InvokeAsync(StateHasChanged); });
+    }
+
+    // the user confirmed:
+    private async Task Confirm() => await _watcher!.Close();
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="OpenGuarded" disabled="@_guardedOpen">Open guarded panel</button>
             <button @onclick="ConfirmClose" disabled="@(_confirming is false)">Yes, discard</button>

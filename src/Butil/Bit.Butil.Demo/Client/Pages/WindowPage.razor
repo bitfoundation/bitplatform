@@ -257,21 +257,37 @@ foreach (var range in ranges)
                  Api="IsSecureContext / GetOrigin / GetName / SetName / GetLocationBar / MatchMedia / WatchMatchMedia"
                  Description="Inspect the browsing context: secure-context state, origin, the window name and the location bar visibility. MatchMedia evaluates a CSS media query once, while WatchMatchMedia keeps a handler subscribed to its change event via a disposable subscription."
                  Code=@("""
-bool secure = await window.IsSecureContext();
-string origin = await window.GetOrigin();
-BarProp locationBar = await window.GetLocationBar();
+@implements IAsyncDisposable
+@inject Bit.Butil.Window window
 
-await window.SetName("butil-demo");
-string name = await window.GetName();
+@code {
+    private ButilSubscription? sub;
 
-MediaQueryList result = await window.MatchMedia("(max-width: 600px)");
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
 
-ButilSubscription sub = await window.WatchMatchMedia(
-    "(prefers-color-scheme: dark)",
-    mql => Console.WriteLine($"dark mode: {mql.Matches}"));
+        bool secure = await window.IsSecureContext();
+        string origin = await window.GetOrigin();
+        BarProp locationBar = await window.GetLocationBar();
 
-// later: await sub.DisposeAsync();
-""")>
+        await window.SetName("butil-demo");
+        string name = await window.GetName();
+
+        MediaQueryList result = await window.MatchMedia("(max-width: 600px)");
+
+        sub = await window.WatchMatchMedia(
+            "(prefers-color-scheme: dark)",
+            mql => Console.WriteLine($"dark mode: {mql.Matches}"));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (sub is not null) await sub.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="CheckSecureContext">IsSecureContext</button>
             <button @onclick="ReadOrigin">GetOrigin</button>

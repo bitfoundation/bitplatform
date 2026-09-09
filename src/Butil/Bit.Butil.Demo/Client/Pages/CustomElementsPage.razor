@@ -41,16 +41,46 @@ var defined = await customElements.IsDefined("butil-panel");
 
     <DemoSection Title="Define the element and set its state"
                  Api="Define / AddState / DeleteState / HasState"
-                 Description="Define the tag, render it, then toggle states on it. The CSS below is already on this page, so a state you add turns the panel's border - with no class involved and nothing a page stylesheet could set by accident."
-                 Code=@("""
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-    if (firstRender) await customElements.Define("butil-panel");
+                 Description="Define the tag, render it, then toggle states on it. The CSS is the other half of the sample: a state you add turns the panel's border, with no class involved and nothing a page stylesheet could set by accident."
+                 Files=@([
+new("Panel.razor", """
+@inject Bit.Butil.CustomElements customElements
+
+<butil-panel @ref="_panel">Its border colour comes from :state(...).</butil-panel>
+
+<button @onclick='() => AddState("loading")'>Loading</button>
+<button @onclick='() => DeleteState("loading")'>Done</button>
+
+@code {
+    private ElementReference _panel;
+
+    // Internals can only be attached from a custom element's constructor, so the tag has to be
+    // defined before it is upgraded. An element already in the DOM is upgraded when the definition
+    // arrives, but any state set before that upgrade is lost.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await customElements.Define("butil-panel");
+    }
+
+    private async Task AddState(string state) => await customElements.AddState(_panel, state);
+
+    private async Task DeleteState(string state) => await customElements.DeleteState(_panel, state);
+}
+"""),
+new("wwwroot/css/app.css", """
+butil-panel {
+    display: block;
+    padding: 1rem;
+    border: 2px solid var(--border, #ccc);
+    border-radius: 6px;
 }
 
-await customElements.AddState(_panel, "loading");
-await customElements.DeleteState(_panel, "loading");
-""")>
+/* The point of a state over a class: :state() belongs to the element and cannot be set from
+   outside it, so no page stylesheet can put the panel into a state it is not in. */
+butil-panel:state(loading) { border-color: #c98a00; }
+butil-panel:state(ready) { border-color: #2e9e4f; }
+"""),
+])>
         <style>
             butil-panel {
                 display: block;

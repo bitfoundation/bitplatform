@@ -67,17 +67,27 @@ var granted = await serial.GetPorts();
                  Api="Open / Close / IsOpen / GetInfo"
                  Description="The line settings have to match what the device expects - a mismatched baud rate still produces bytes, just not the right ones. Opening an already-open port with different settings cycles it, which ends any read subscription."
                  Code=@("""
-await _port.Open(new SerialOptions
-{
-    BaudRate = 115200,
-    DataBits = 8,
-    StopBits = 1,
-    Parity = SerialParity.None,
-    FlowControl = SerialFlowControl.None
-});
+@code {
+    // The port from RequestPort above - a grant is per port, and this is the way back to one the
+    // user has already chosen.
+    private SerialPort? _port;
 
-await _port.Close();
-""")>
+    private async Task OpenAndClose()
+    {
+        await _port!.Open(new SerialOptions
+        {
+            BaudRate = 115200,
+            DataBits = 8,
+            StopBits = 1,
+            Parity = SerialParity.None,
+            FlowControl = SerialFlowControl.None
+        });
+
+        await _port.Close();
+    }
+}
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <span class="field-label">Baud rate</span>
@@ -126,13 +136,31 @@ await _port.Close();
                  Api="SubscribeData / Write / WriteText"
                  Description="SubscribeData starts the read loop and hands each chunk to the callback; disposing the subscription stops it and releases the stream lock, which is what a later Close needs."
                  Code=@("""
-await using var reading = await _port.SubscribeData(
-    onData: bytes => Console.WriteLine(Encoding.UTF8.GetString(bytes)),
-    onError: message => Console.WriteLine(message));
+@implements IAsyncDisposable
 
-await _port.WriteText("AT\r\n");
-await _port.Write([0x01, 0x02]);
-""")>
+@code {
+    private SerialPort? _port;              // from RequestPort, and opened
+    private ButilSubscription? _reading;
+
+    private async Task Talk()
+    {
+        _reading = await _port!.SubscribeData(
+            onData: bytes => Console.WriteLine(Encoding.UTF8.GetString(bytes)),
+            onError: message => Console.WriteLine(message));
+
+        await _port.WriteText("AT\r\n");
+        await _port.Write([0x01, 0x02]);
+    }
+
+    // The subscription holds the port's readable stream locked; nothing else can read it until
+    // this goes away.
+    public async ValueTask DisposeAsync()
+    {
+        if (_reading is not null) await _reading.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="() => RequestPort(dataOutput)">RequestPort</button>
             <span>@SelectedPortLabel</span>
@@ -160,11 +188,19 @@ await _port.Write([0x01, 0x02]);
                  Api="GetSignals / SetSignals"
                  Description="GetSignals reads the input lines the device drives; SetSignals drives the output lines. A null argument leaves that line as it is - which matters, because toggling DTR resets many microcontroller boards."
                  Code=@("""
-var signals = await _port.GetSignals();
-// signals.ClearToSend, DataSetReady, DataCarrierDetect, RingIndicator
+@code {
+    private SerialPort? _port;   // from RequestPort, and opened
 
-await _port.SetSignals(dataTerminalReady: true);
-""")>
+    private async Task Signals()
+    {
+        var signals = await _port!.GetSignals();
+        // signals.ClearToSend, DataSetReady, DataCarrierDetect, RingIndicator
+
+        await _port.SetSignals(dataTerminalReady: true);
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="ReadSignals">GetSignals</button>
             <button @onclick="() => SetSignal(true)">SetSignals DTR on</button>
@@ -192,8 +228,18 @@ await using var watch = await serial.SubscribeConnection(
                  Api="Forget"
                  Description="Drops this origin's permission for the port, so it stops appearing in GetPorts until the user picks it again."
                  Code=@("""
-var revoked = await _port.Forget();
-""")>
+@code {
+    private SerialPort? _port;   // from RequestPort
+
+    // Drops the grant, so GetPorts stops returning it and the picker has to be shown again.
+    private async Task Revoke()
+    {
+        var revoked = await _port!.Forget();
+        _port = null;
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button class="danger" @onclick="ForgetPort">Forget</button>
         </div>

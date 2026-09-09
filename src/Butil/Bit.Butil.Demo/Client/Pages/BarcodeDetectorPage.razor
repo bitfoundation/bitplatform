@@ -47,30 +47,49 @@ if (await barcodeDetector.IsSupported())
                  Api="StartScan"
                  Description="The usual shape: open a stream with MediaDevices, attach it to a video element, and point StartScan at that element. Scanning is a poll - there is no 'barcode appeared' event - and detection is much slower than a frame, so sampling a few times a second is both enough and cheaper than trying every frame. A tick that arrives while the previous detection is still running is skipped, so a slow device degrades to a lower rate rather than building a backlog."
                  Code=@("""
-private ButilSubscription? _scan;
-private ElementReference _video;
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaDevices mediaDevices
+@inject Bit.Butil.BarcodeDetector barcodeDetector
 
-_stream = await mediaDevices.GetUserMedia(
-    audio: false,
-    video: true,
-    videoConstraints: new { facingMode = "environment" });   // rear camera on a phone
+<video @ref="_video" autoplay playsinline muted></video>
+<p>@_lastValue</p>
 
-await _stream!.AttachTo(_video);
+@code {
+    private string? _lastValue;
+    private ElementReference _video;
+    private MediaStreamHandle? _stream;
+    private ButilSubscription? _scan;
 
-_scan = await barcodeDetector.StartScan(
-    _video,
-    onDetected: codes => InvokeAsync(() =>
+    private async Task Start()
     {
-        // fires repeatedly while a code stays in view - debounce on the value
-        _lastValue = codes[0].RawValue;
-        StateHasChanged();
-    }),
-    formats: ["qr_code"],
-    intervalMs: 250);
+        _stream = await mediaDevices.GetUserMedia(
+            audio: false,
+            video: true,
+            videoConstraints: new { facingMode = "environment" });   // rear camera on a phone
 
-// later:
-await _scan!.DisposeAsync();
-""")>
+        await _stream!.AttachTo(_video);
+
+        _scan = await barcodeDetector.StartScan(
+            _video,
+            onDetected: codes => InvokeAsync(() =>
+            {
+                // fires repeatedly while a code stays in view - debounce on the value
+                _lastValue = codes[0].RawValue;
+                StateHasChanged();
+            }),
+            formats: ["qr_code"],
+            intervalMs: 250);
+    }
+
+    // The camera light stays on until the stream is disposed, whatever the page does.
+    public async ValueTask DisposeAsync()
+    {
+        if (_scan is not null) await _scan.DisposeAsync();
+        if (_stream is not null) await _stream.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <label><input type="checkbox" @bind="_qrOnly" /> QR codes only (faster)</label>
             <label><input type="checkbox" @bind="_rearCamera" /> Prefer the rear camera</label>
@@ -105,18 +124,33 @@ await _scan!.DisposeAsync();
                  Api="Detect / DetectImage"
                  Description="Detect reads one frame of a video, image or canvas element. DetectImage takes an encoded image's bytes - a PNG or JPEG, not raw pixels - which is what you want for a file the user picked or an image you fetched. The decoded bitmap is released as soon as the scan finishes; it holds uncompressed pixels, which would be a real leak in a loop."
                  Code=@("""
-// one frame of whatever the video is showing right now:
-var codes = await barcodeDetector.Detect(_video, formats: ["qr_code"]);
+@inject Bit.Butil.FileReader fileReader
+@inject Bit.Butil.BarcodeDetector barcodeDetector
 
-// or an image the user picked:
-var bytes = await fileReader.ReadAsByteArray(inputElement, index: 0);
-var found = await barcodeDetector.DetectImage(bytes, "image/png");
+<video @ref="_video" autoplay playsinline muted></video>
+<input @ref="inputElement" type="file" accept="image/*" />
 
-foreach (var code in found)
-{
-    // code.RawValue, code.Format, and code.X/Y/Width/Height in source pixels
+@code {
+    private ElementReference _video;
+    private ElementReference inputElement;
+
+    private async Task ScanOnce()
+    {
+        // one frame of whatever the video is showing right now:
+        var codes = await barcodeDetector.Detect(_video, formats: ["qr_code"]);
+
+        // or an image the user picked:
+        var bytes = await fileReader.ReadAsByteArray(inputElement, index: 0);
+        var found = await barcodeDetector.DetectImage(bytes, "image/png");
+
+        foreach (var code in found)
+        {
+            // code.RawValue, code.Format, and code.X/Y/Width/Height in source pixels
+        }
+    }
 }
-""")>
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="StartSinglePreview">Start this section's camera</button>
             <button @onclick="DetectOnce">Detect one frame</button>

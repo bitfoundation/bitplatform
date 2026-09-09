@@ -76,15 +76,25 @@ var granted = await hid.GetDevices();
                  Api="Open / Close / IsOpened / GetInfo"
                  Description="A device has to be opened before any report crosses. GetInfo re-reads its collections - the report ids it will accept, which is what a protocol implementation needs first."
                  Code=@("""
-await _device.Open();
+@code {
+    // The handle from RequestDevice above - a grant is per device, and this is the way back to one
+    // the user has already chosen.
+    private HidDevice? _device;
 
-var info = await _device.GetInfo();
-foreach (var collection in info!.Collections)
-{
-    // collection.UsagePage, collection.Usage
-    // collection.InputReports / OutputReports / FeatureReports
+    private async Task Inspect()
+    {
+        await _device!.Open();
+
+        var info = await _device.GetInfo();
+        foreach (var collection in info!.Collections)
+        {
+            // collection.UsagePage, collection.Usage
+            // collection.InputReports / OutputReports / FeatureReports
+        }
+    }
 }
-""")>
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="() => RequestDevice(openOutput)">RequestDevice</button>
             <span>@SelectedDeviceLabel</span>
@@ -102,11 +112,25 @@ foreach (var collection in info!.Collections)
                  Api="SubscribeInputReports"
                  Description="The device's unprompted events: buttons, axes, whatever its report descriptor declares. Open the device first - a closed device sends nothing."
                  Code=@("""
-await using var reports = await _device.SubscribeInputReports(report =>
-{
-    // report.ReportId, report.Data
-});
-""")>
+@implements IAsyncDisposable
+
+@code {
+    private HidDevice? _device;   // from RequestDevice, and opened
+    private ButilSubscription? _reports;
+
+    private async Task Listen() =>
+        _reports = await _device!.SubscribeInputReports(report =>
+        {
+            // report.ReportId, report.Data
+        });
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_reports is not null) await _reports.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="() => RequestDevice(inputOutput)">RequestDevice</button>
             <span>@SelectedDeviceLabel</span>
@@ -122,11 +146,19 @@ await using var reports = await _device.SubscribeInputReports(report =>
                  Api="SendReport / SendFeatureReport / ReceiveFeatureReport"
                  Description="Output reports drive the device - an LED, a rumble motor, a display. Feature reports are read and written on demand and carry configuration rather than events."
                  Code=@("""
-await _device.SendReport(reportId: 0x01, [0x00, 0xff]);
+@code {
+    private HidDevice? _device;   // from RequestDevice, and opened
 
-await _device.SendFeatureReport(reportId: 0x02, [0x01]);
-var feature = await _device.ReceiveFeatureReport(reportId: 0x02);
-""")>
+    private async Task Send()
+    {
+        await _device!.SendReport(reportId: 0x01, [0x00, 0xff]);
+
+        await _device.SendFeatureReport(reportId: 0x02, [0x01]);
+        var feature = await _device.ReceiveFeatureReport(reportId: 0x02);
+    }
+}
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <span class="field-label">Report id</span>
@@ -168,8 +200,18 @@ await using var watch = await hid.SubscribeConnection(
                  Api="Forget"
                  Description="Drops this origin's permission for the device, so it stops appearing in GetDevices until the user picks it again."
                  Code=@("""
-var revoked = await _device.Forget();
-""")>
+@code {
+    private HidDevice? _device;   // from RequestDevice
+
+    // Drops the grant, so GetDevices stops returning it and the picker has to be shown again.
+    private async Task Revoke()
+    {
+        var revoked = await _device!.Forget();
+        _device = null;
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button class="danger" @onclick="ForgetDevice">Forget</button>
         </div>

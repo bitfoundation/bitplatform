@@ -153,14 +153,30 @@ private async Task OnClick(MouseEventArgs e)
                  Api="OnChange"
                  Description="selectionchange fires on every caret move, so it is frequent: read the selection inside the handler rather than doing work per event, and debounce anything expensive. The subscription below is live while this page is open - select something and watch it count."
                  Code=@("""
-_subscription = await selection.OnChange(async () =>
-{
-    var text = await selection.GetText();
-    // ... update a floating toolbar ...
-});
+@implements IAsyncDisposable
+@inject Bit.Butil.Selection selection
 
-await _subscription.DisposeAsync();   // stops listening
-""")>
+@code {
+    private ButilSubscription? _subscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _subscription = await selection.OnChange(async () =>
+        {
+            var text = await selection.GetText();
+            // ... update a floating toolbar ...
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();   // stops listening
+    }
+}
+""")
+                 Language="razor">
         <p>
             Start watching, then select part of <b>this paragraph</b> and drag the caret through it -
             the count below climbs with every move.

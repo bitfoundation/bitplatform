@@ -88,14 +88,29 @@ var element = await dom.Query($"#{safe}");
                  Api="CreateStyleSheet / InsertRule / DeleteRule / GetRules / Replace"
                  Description="Rules here reach the whole page through selectors, which is the thing setting a style on one element cannot do - a theme, a print stylesheet, a ::highlight() rule. A rule the parser cannot read is refused rather than ignored, which is more useful than a stylesheet quietly missing a line."
                  Code=@("""
-_sheet = await css.CreateStyleSheet();
-await _sheet!.InsertRule(".css-sample { outline: 2px solid rebeccapurple }");
+@implements IAsyncDisposable
+@inject Bit.Butil.Css css
 
-// or hand over the whole thing, which is simpler than tracking indices
-await _sheet.Replace(BuildTheme(accent));
+@code {
+    private StyleSheetHandle? _sheet;
 
-await _sheet.DisposeAsync();   // removes it from the document
-""")>
+    private async Task Apply(string accent)
+    {
+        _sheet ??= await css.CreateStyleSheet();
+        await _sheet!.InsertRule(".css-sample { outline: 2px solid rebeccapurple }");
+
+        // or hand over the whole thing, which is simpler than tracking indices
+        await _sheet.Replace(BuildTheme(accent));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Removes it from the document; a sheet nobody disposes outlives the component that made it.
+        if (_sheet is not null) await _sheet.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="AddRule">Add a rule</button>
             <button class="secondary" @onclick="AddBadRule">Add a rule that is not CSS</button>
@@ -140,11 +155,26 @@ var registered = await css.RegisterProperty(new CssPropertyDefinition
                  Api="HighlightText / ClearHighlight"
                  Description="Wrapping matches in <mark> mutates the DOM - which breaks a Blazor diff, invalidates anything measured around it, and has to be undone before the next search. A custom highlight is painted over the text and changes nothing underneath it. Nothing is visible until a ::highlight(name) rule exists, which is what the stylesheet above is for."
                  Code=@("""
-await _sheet!.InsertRule("::highlight(search) { background: gold; color: black }");
+@inject Bit.Butil.Css css
 
-var count = await css.HighlightText("search", _prose, term);
-await css.ClearHighlight("search");
-""")>
+<p @ref="_prose">The text to search through.</p>
+
+@code {
+    private ElementReference _prose;
+    private StyleSheetHandle? _sheet;   // from "A stylesheet of your own"
+
+    private async Task Highlight(string term)
+    {
+        // Nothing is painted without a ::highlight() rule naming the same registry entry - the
+        // ranges exist either way, and are simply invisible.
+        await _sheet!.InsertRule("::highlight(search) { background: gold; color: black }");
+
+        var count = await css.HighlightText("search", _prose, term);
+        await css.ClearHighlight("search");
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <input @bind="_search" placeholder="search" aria-label="search term" />
             <button @onclick="Highlight">Highlight</button>
@@ -162,9 +192,19 @@ await css.ClearHighlight("search");
                  Api="ElementReference.GetComputedValue / GetComputedProperties"
                  Description="The Typed OM half. Computed, so this reflects the cascade and layout - a percentage width comes back resolved to pixels, as a Value and a Unit, rather than as the string '320px'. Non-numeric values (a keyword, a colour) come back with IsNumeric false and only Text filled in. Chromium only: where IsStyleMapSupported is false these return null."
                  Code=@("""
-var width = await _box.GetComputedValue("width");
-// width.Value == 320, width.Unit == "px"
-""")>
+<div @ref="_box" style="width:320px">...</div>
+
+@code {
+    private ElementReference _box;
+
+    private async Task Measure()
+    {
+        var width = await _box.GetComputedValue("width");
+        // width.Value == 320, width.Unit == "px"
+    }
+}
+""")
+                 Language="razor">
         <div @ref="_box" style="padding:1rem;border:1px solid var(--border,#ccc);border-radius:6px;width:60%">
             A box to measure.
         </div>
@@ -179,12 +219,22 @@ var width = await _box.GetComputedValue("width");
                  Api="ElementReference.SetStyleValue / SetStyleText / GetStyleValue / DeleteStyleValue / ClearStyleValues"
                  Description="SetStyleValue takes a number and a unit factory name (px, percent, deg, rem, fr, s…); SetStyleText takes text, for values that aren't a number and a unit. No chance of building a malformed declaration - an invalid value is rejected rather than silently ignored. Blazor owns the DOM it rendered and a diff can undo these on the next render - the same caveat as any inline-style write."
                  Code=@("""
-await _box.SetStyleValue("width", 60, "percent");
-await _box.SetStyleText("border-color", "rebeccapurple");
+<div @ref="_box">...</div>
 
-var set = await _box.GetStyleValue("width");
-await _box.DeleteStyleValue("width");
-""")>
+@code {
+    private ElementReference _box;
+
+    private async Task Write()
+    {
+        await _box.SetStyleValue("width", 60, "percent");
+        await _box.SetStyleText("border-color", "rebeccapurple");
+
+        var set = await _box.GetStyleValue("width");
+        await _box.DeleteStyleValue("width");
+    }
+}
+""")
+                 Language="razor">
         <div @ref="_inlineBox" style="padding:1rem;border:1px solid var(--border,#ccc);border-radius:6px;width:60%">
             A box to style.
         </div>
@@ -200,13 +250,58 @@ await _box.DeleteStyleValue("width");
     <DemoSection Title="Houdini worklets"
                  Api="SupportsPaintWorklet / SupportsLayoutWorklet / AddPaintWorklet / AddLayoutWorklet"
                  Description="A paint worklet draws a custom paint() image the way a canvas does, but as a live CSS value. It runs in its own global scope with no DOM - it receives the size and the custom properties it declared an interest in, and draws. The module is fetched as a real file, so it cannot be bundled into the app's own JS. The layout worklet is behind a flag even in Chromium."
-                 Code=@("""
-if (await css.SupportsPaintWorklet())
-{
-    await css.AddPaintWorklet("/worklets/checkerboard.js");
-    // background-image: paint(checkerboard);
+                 Files=@([
+new("Checkerboard.razor", """
+@inject Bit.Butil.Css css
+
+<div id="checkered">...</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        if (await css.SupportsPaintWorklet())
+        {
+            // Fetched as a real file - a paint worklet runs in its own global scope, so it cannot
+            // be bundled into the app's own JavaScript.
+            await css.AddPaintWorklet("/worklets/checkerboard.js");
+        }
+    }
 }
-""")>
+"""),
+new("wwwroot/worklets/checkerboard.js", """
+// No DOM in here, and no access to the page: the worklet is handed a size and the custom properties
+// it declared an interest in, and draws.
+class Checkerboard {
+    // Only the properties named here are passed in, and a change to one of them repaints.
+    static get inputProperties() { return ['--checker-size', '--checker-color']; }
+
+    paint(ctx, size, properties) {
+        const step = parseInt(properties.get('--checker-size').toString(), 10) || 16;
+        ctx.fillStyle = properties.get('--checker-color').toString().trim() || '#0f6cbd';
+
+        for (let y = 0; y < size.height; y += step) {
+            for (let x = 0; x < size.width; x += step) {
+                if ((x / step + y / step) % 2 === 0) ctx.fillRect(x, y, step, step);
+            }
+        }
+    }
+}
+
+// The name paint() addresses in CSS.
+registerPaint('checkerboard', Checkerboard);
+"""),
+new("wwwroot/css/app.css", """
+/* The worklet is a live CSS value, not a one-off render: the element repaints when it resizes or
+   when one of the declared custom properties changes. */
+#checkered {
+    --checker-size: 16;
+    --checker-color: #0f6cbd;
+    background-image: paint(checkerboard);
+}
+"""),
+])>
         <div class="controls">
             <button @onclick="CheckWorklets">SupportsPaintWorklet / SupportsLayoutWorklet</button>
         </div>

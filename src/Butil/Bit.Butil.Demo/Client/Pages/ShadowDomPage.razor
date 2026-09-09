@@ -69,12 +69,24 @@ await root.SetHtml("<div class='card'>inside a shadow root</div>");
                  Api="Dom.Create / ShadowRootHandle.Append"
                  Description="SetHtml is an injection point exactly as it is on an ordinary element - being inside a shadow root isolates styles, not script. Build the contents from elements for anything you did not write yourself."
                  Code=@("""
-var badge = await dom.Create("span");
-await badge!.SetAttribute("class", "card");
-await badge.SetText(userSuppliedText);   // safe with any input
+@inject Bit.Butil.Dom dom
 
-await root!.Append(badge);
-""")>
+@code {
+    private DomHandle? root;   // the shadow root from shadowDom.Attach
+
+    // Building nodes rather than writing a markup string: SetText cannot introduce an element, so
+    // there is no string for anything to be injected into.
+    private async Task Build(string userSuppliedText)
+    {
+        var badge = await dom.Create("span");
+        await badge!.SetAttribute("class", "card");
+        await badge.SetText(userSuppliedText);   // safe with any input
+
+        await root!.Append(badge);
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <input @bind="_text" aria-label="text to add" />
             <button @onclick="AppendBuilt">Append it safely</button>

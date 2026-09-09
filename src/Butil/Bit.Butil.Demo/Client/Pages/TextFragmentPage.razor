@@ -78,12 +78,25 @@ new TextFragmentDirective { Start = "Only Start", End = "visible text." }
                  Api="FromSelection"
                  Description="Select some text on this page and press the button - this is the same feature as the browser's own 'Copy link to highlight'. A short selection becomes an exact match; a long one becomes a start/end range, so the URL stays a reasonable length without matching any less precisely."
                  Code=@("""
-var directive = await textFragment.FromSelection();
-if (directive is null) return; // nothing selected
+@inject Bit.Butil.Clipboard clipboard
+@inject Bit.Butil.Location location
+@inject Bit.Butil.TextFragment textFragment
 
-var url = await textFragment.BuildUrl(currentUrl, directive);
-await clipboard.WriteText(url);
-""")>
+<button @onclick="CopyLink">Copy a link to the selection</button>
+
+@code {
+    private async Task CopyLink()
+    {
+        var directive = await textFragment.FromSelection();
+        if (directive is null) return; // nothing selected
+
+        var currentUrl = await location.GetHref();
+        var url = await textFragment.BuildUrl(currentUrl, directive);
+        await clipboard.WriteText(url);
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="FromSelection">FromSelection</button>
         </div>

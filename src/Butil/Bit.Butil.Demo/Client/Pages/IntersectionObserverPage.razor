@@ -54,15 +54,29 @@
              Api="IntersectionObserverOptions.Thresholds"
              Description="By default the observer only fires at the 0 boundary - fully hidden versus at-all visible. Pass an array of thresholds between 0 and 1 to get a callback each time the visible fraction crosses one of them, which is how progress-style reveal effects are built."
              Code=@("""
-await target.ObserveIntersection(js, entries =>
-{
-    var ratio = entries[^1].IntersectionRatio;
-    // fires at 0%, 25%, 50%, 75% and 100% visibility
-}, new IntersectionObserverOptions
-{
-    Thresholds = [0, 0.25, 0.5, 0.75, 1],
-});
-""")>
+@inject IJSRuntime js
+
+<div @ref="target">...</div>
+
+@code {
+    private ElementReference target;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await target.ObserveIntersection(js, entries =>
+        {
+            var ratio = entries[^1].IntersectionRatio;
+            // fires at 0%, 25%, 50%, 75% and 100% visibility
+        }, new IntersectionObserverOptions
+        {
+            Thresholds = [0, 0.25, 0.5, 0.75, 1],
+        });
+    }
+}
+""")
+             Language="razor">
     <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
         <div style="height:10rem;">Scroll down inside this box...</div>
         <div @ref="thresholdTargetRef" class="demo-marker">observed target</div>
@@ -79,14 +93,28 @@ await target.ObserveIntersection(js, entries =>
              Api="IntersectionObserverOptions.RootMargin"
              Description="RootMargin grows or shrinks the intersection root with CSS-style margins before visibility is computed. Negative margins make the observer report the element later (it must be well inside the viewport); positive margins fire earlier - the classic trick for pre-loading images a screen ahead."
              Code=@("""
-await target.ObserveIntersection(js, entries =>
-{
-    // reported once the target is 80px inside the viewport
-}, new IntersectionObserverOptions
-{
-    RootMargin = "-80px 0px -80px 0px",
-});
-""")>
+@inject IJSRuntime js
+
+<div @ref="target">...</div>
+
+@code {
+    private ElementReference target;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await target.ObserveIntersection(js, entries =>
+        {
+            // reported once the target is 80px inside the viewport
+        }, new IntersectionObserverOptions
+        {
+            RootMargin = "-80px 0px -80px 0px",
+        });
+    }
+}
+""")
+             Language="razor">
     <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
         <div style="height:10rem;">Scroll down inside this box...</div>
         <div @ref="marginTargetRef" class="demo-marker">observed target</div>
@@ -103,16 +131,30 @@ await target.ObserveIntersection(js, entries =>
              Api="IntersectionObserverOptions.MinInterval"
              Description="A scroll through a long list crosses thresholds on nearly every frame, and each crossing is an interop round trip. MinInterval - in milliseconds, because this options object is serialized to the browser as-is - caps how often the handler is called. The gate is leading-edge with a trailing send, so the batch that leaves the element in its settled state is always delivered: a lazy-loading tracker never misses the 'now visible' it is waiting for, it only hears it a little later. Observe below and scroll the target in and out."
              Code=@("""
-await target.ObserveIntersection(js, entries =>
-{
-    // called at most once every 200 ms, and always once more
-    // after the scroll settles
-}, new IntersectionObserverOptions
-{
-    Thresholds = [0, 0.25, 0.5, 0.75, 1],
-    MinInterval = 200,
-});
-""")>
+@inject IJSRuntime js
+
+<div @ref="target">...</div>
+
+@code {
+    private ElementReference target;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await target.ObserveIntersection(js, entries =>
+        {
+            // called at most once every 200 ms, and always once more
+            // after the scroll settles
+        }, new IntersectionObserverOptions
+        {
+            Thresholds = [0, 0.25, 0.5, 0.75, 1],
+            MinInterval = 200,
+        });
+    }
+}
+""")
+             Language="razor">
     <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
         <div style="height:10rem;">Scroll down inside this box...</div>
         <div @ref="gatedTargetRef" class="demo-marker">observed target</div>
@@ -129,18 +171,32 @@ await target.ObserveIntersection(js, entries =>
              Api="IntersectionObserverEntry"
              Description="Each callback receives the latest batch of entries. Beyond IsIntersecting and IntersectionRatio, every entry carries the target's bounding rect, the intersection rect, the root bounds and a high-resolution timestamp."
              Code=@("""
-await target.ObserveIntersection(js, entries =>
-{
-    var entry = entries[^1];
+@inject IJSRuntime js
 
-    var visible = entry.IsIntersecting;      // bool
-    var ratio = entry.IntersectionRatio;     // 0..1
-    var when = entry.Time;                   // ms, DOMHighResTimeStamp
-    Rect? bounds = entry.BoundingClientRect; // target geometry
-    Rect? overlap = entry.IntersectionRect;  // visible part
-    Rect? root = entry.RootBounds;           // root geometry
-});
-""")>
+<div @ref="target">...</div>
+
+@code {
+    private ElementReference target;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await target.ObserveIntersection(js, entries =>
+        {
+            var entry = entries[^1];
+
+            var visible = entry.IsIntersecting;      // bool
+            var ratio = entry.IntersectionRatio;     // 0..1
+            var when = entry.Time;                   // ms, DOMHighResTimeStamp
+            Rect? bounds = entry.BoundingClientRect; // target geometry
+            Rect? overlap = entry.IntersectionRect;  // visible part
+            Rect? root = entry.RootBounds;           // root geometry
+        });
+    }
+}
+""")
+             Language="razor">
     <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
         <div style="height:10rem;">Scroll down inside this box...</div>
         <div @ref="entriesTargetRef" class="demo-marker">observed target</div>

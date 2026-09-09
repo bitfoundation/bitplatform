@@ -46,13 +46,38 @@ bool? enforced = await trustedTypes.IsEnforced();   // null = a 'default' policy
     <DemoSection Title="Create a policy"
                  Api="CreatePolicy / HasPolicy / GetPolicyNames"
                  Description="A policy name has to be listed in the CSP's trusted-types directive, and can only be created once per document - so a false here is a configuration fact rather than an error. The name 'default' is special: the browser falls back to it for any string assigned to a sink without a policy, which is how existing code keeps working under enforcement."
-                 Code=@("""
-var created = await trustedTypes.CreatePolicy("app-html", new TrustedTypePolicyOptions
+                 Files=@([
+new("TrustedTypes.razor", """
+@inject Bit.Butil.TrustedTypes trustedTypes
+
+@code {
+    // False when the name is not listed in the CSP's trusted-types directive, or when this document
+    // has already created it - a policy can only be created once. Both are configuration facts
+    // rather than errors, so this is worth doing once and remembering.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        var created = await trustedTypes.CreatePolicy("app-html", new TrustedTypePolicyOptions
+        {
+            SanitizeHtml = true,
+            AllowedScriptUrlPrefixes = ["https://cdn.example.com/", "/_content/"],
+        });
+    }
+}
+"""),
+new("Program.cs", """
+// The name the page creates has to be listed here, or CreatePolicy fails - the directive is the
+// allowlist, and the browser is the thing enforcing it. Nothing in the page can turn this on.
+app.Use(async (context, next) =>
 {
-    SanitizeHtml = true,
-    AllowedScriptUrlPrefixes = ["https://cdn.example.com/", "/_content/"],
+    context.Response.Headers["Content-Security-Policy"] =
+        "require-trusted-types-for 'script'; trusted-types app-html";
+
+    await next();
 });
-""")>
+"""),
+])>
         <div class="controls">
             <button @onclick="CreatePolicy">CreatePolicy("app-html")</button>
             <button class="secondary" @onclick="ListPolicies">GetPolicyNames</button>
@@ -92,13 +117,47 @@ await trustedTypes.SetScriptSrc(scriptElement, "app-html", "https://cdn.example.
     <DemoSection Title="Find what still writes strings"
                  Api="OnViolation"
                  Description="Where a rollout starts. Serve the report-only header, subscribe here, and every violation names a sink still being written to as a plain string, with the file and line that did it. Nothing will be reported on this page unless you are serving that header."
-                 Code=@("""
-_subscription = await trustedTypes.OnViolation(violation =>
+                 Files=@([
+new("TrustedTypes.razor", """
+@implements IAsyncDisposable
+@inject Bit.Butil.TrustedTypes trustedTypes
+@inject ILogger<TrustedTypes> logger
+
+@code {
+    private ButilSubscription? _subscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _subscription = await trustedTypes.OnViolation(violation =>
+        {
+            logger.LogWarning("{Directive} at {File}:{Line} - {Sample}",
+                violation.Directive, violation.SourceFile, violation.LineNumber, violation.Sample);
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
+}
+"""),
+new("Program.cs", """
+// Report-Only is where a rollout starts: nothing breaks, and every violation names a sink still
+// being written to as a plain string. Without this header the subscription above reports nothing,
+// because the browser has not been asked to look.
+app.Use(async (context, next) =>
 {
-    logger.LogWarning("{Directive} at {File}:{Line} - {Sample}",
-        violation.Directive, violation.SourceFile, violation.LineNumber, violation.Sample);
+    context.Response.Headers["Content-Security-Policy-Report-Only"] =
+        "require-trusted-types-for 'script'; trusted-types app-html";
+
+    await next();
 });
-""")>
+
+// Swap the header name for Content-Security-Policy once the list of violations is empty.
+"""),
+])>
         <div class="controls">
             <button @onclick="ToggleWatch">@(_subscription is null ? "Start listening" : "Stop listening")</button>
         </div>

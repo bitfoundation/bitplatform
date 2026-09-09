@@ -82,11 +82,25 @@ _handle = await editContext.Attach(
                  Api="UpdateText / UpdateSelection"
                  Description="A programmatic edit - a paste, an undo, a completion accepted - has to be reported back, or the IME keeps composing against a buffer that no longer matches what the user sees. This is the classic edit-context bug."
                  Code=@("""
-// insert at the caret from your own code
-_text = _text.Insert(_caret, inserted);
-await _handle!.UpdateText(_caret, _caret, inserted);
-await _handle.UpdateSelection(_caret + inserted.Length, _caret + inserted.Length);
-""")>
+@code {
+    // The editor's own model, and the handle from Attach above. The two have to be kept in step:
+    // the input method builds its candidates from what it was last told, not from the DOM.
+    private string _text = "";
+    private int _caret;
+    private TextEditContextHandle? _handle;
+
+    private async Task Insert(string inserted)
+    {
+        // insert at the caret from your own code
+        _text = _text.Insert(_caret, inserted);
+        await _handle!.UpdateText(_caret, _caret, inserted);
+        await _handle.UpdateSelection(_caret + inserted.Length, _caret + inserted.Length);
+
+        _caret += inserted.Length;
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="AttachUpdate" disabled="@(_updateHandle is not null)">Attach</button>
             <button @onclick="InsertFromCode" disabled="@(_updateHandle is null)">Insert "[from C#]"</button>
@@ -110,9 +124,22 @@ await _handle.UpdateSelection(_caret + inserted.Length, _caret + inserted.Length
                  Api="UpdateControlBounds / UpdateSelectionBounds"
                  Description="The platform needs to know where the editing surface is on screen to place the IME's candidate list next to the text being typed. Without it the list can land nowhere near the caret. Report the bounds after every layout change - a resize, a scroll."
                  Code=@("""
-var rect = await _surface.GetBoundingClientRect();
-await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
-""")>
+<div @ref="_surface" contenteditable="true">...</div>
+
+@code {
+    private ElementReference _surface;
+    private TextEditContextHandle? _handle;   // from Attach
+
+    // Where the IME draws its candidate window. Without this it guesses, and on a custom editor it
+    // guesses wrong - usually the top-left corner of the page.
+    private async Task PlaceCandidates()
+    {
+        var rect = await _surface.GetBoundingClientRect();
+        await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="AttachBounds" disabled="@(_boundsHandle is not null)">Attach</button>
             <button @onclick="ReportBounds" disabled="@(_boundsHandle is null)">UpdateControlBounds</button>

@@ -49,18 +49,29 @@ if (await storageAccess.HasAccess() is false)
                  Api="Request"
                  Description="Must be called from a user-gesture handler, and browsers generally only grant it for a site the user has already interacted with at the top level. False covers every refusal - user declined, no gesture, embedder's permissions policy forbids it - because the spec deliberately doesn't say which. A grant lasts for the rest of this document's lifetime, not permanently, so ask again after a reload."
                  Code=@("""
-// inside a click handler:
-var granted = await storageAccess.Request();
-if (granted)
-{
-    // unpartitioned cookies and storage are now readable
-    var token = await cookie.GetValue("auth");
+@inject Bit.Butil.Cookie cookie
+@inject Bit.Butil.StorageAccess storageAccess
+
+@* Must be a real user gesture: without one the request is refused, and the refusal is remembered. *@
+<button @onclick="Ask">Continue</button>
+
+@code {
+    private async Task Ask()
+    {
+        var granted = await storageAccess.Request();
+        if (granted)
+        {
+            // unpartitioned cookies and storage are now readable
+            var token = await cookie.GetValue("auth");
+        }
+        else
+        {
+            // fall back: an in-frame sign-in, or a popup to the top-level origin
+        }
+    }
 }
-else
-{
-    // fall back: an in-frame sign-in, or a popup to the top-level origin
-}
-""")>
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="Ask">Request</button>
         </div>
@@ -71,17 +82,39 @@ else
                  Api="-"
                  Description="Once access is granted, nothing else changes: Cookie, LocalStorage, SessionStorage and IndexedDb all start seeing the unpartitioned jar. The Storage Access API is a gate in front of the storage APIs, not a replacement for them."
                  Code=@("""
-// the usual pattern for an embedded app:
-if (await storageAccess.IsSupported() && await storageAccess.HasAccess() is false)
+@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.StorageAccess storageAccess
+
+@if (_needsGesture)
 {
-    // render a "Continue" button rather than calling Request on load -
-    // without a gesture it is refused, and the refusal is remembered
-    return;
+    <button @onclick="Ask">Continue</button>
 }
 
-// from here on, the ordinary storage wrappers see the real jar:
-var session = await localStorage.GetItem("session");
-""") />
+@code {
+    private bool _needsGesture;
+
+    // The usual pattern for an embedded app.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        if (await storageAccess.IsSupported() && await storageAccess.HasAccess() is false)
+        {
+            // Render a "Continue" button rather than calling Request on load - without a gesture it
+            // is refused, and the refusal is remembered.
+            _needsGesture = true;
+            StateHasChanged();
+            return;
+        }
+
+        // from here on, the ordinary storage wrappers see the real jar:
+        var session = await localStorage.GetItem("session");
+    }
+
+    private async Task Ask() => _needsGesture = await storageAccess.Request() is false;
+}
+""")
+                 Language="razor" />
 </div>
 
 <Callout Type="warning" Title="Don't ask on load">

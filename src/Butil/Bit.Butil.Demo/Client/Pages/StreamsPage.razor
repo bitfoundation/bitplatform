@@ -36,18 +36,55 @@ var transforms = await streams.IsTransformSupported();
     <DemoSection Title="Read a response as it arrives"
                  Api="FromResponse / Read"
                  Description="The difference between 'download it, then look at it' and 'look at it as it downloads': a gigabyte through Fetch.Send is a gigabyte of managed memory, while a gigabyte through here is one chunk at a time. TotalBytes is the Content-Length header, which describes the transfer rather than the stream - a compressed response reports the encoded size while the chunks you read are the decoded ones, and a chunked response sends no header at all. It is a hint for a progress bar, never the number of bytes you will read. The final read carries no data, so the loop ends on Done rather than on an empty array."
-                 Code=@("""
-var response = await streams.FromResponse(new FetchRequest { Url = "/api/stream" });
-if (response.Stream is null) { /* response.Error says why */ }
+                 Files=@([
+new("Streams.razor", """
+@implements IAsyncDisposable
+@inject Bit.Butil.Streams streams
 
-var received = 0L;
-while (true)
-{
-    var chunk = await response.Stream!.Read();
-    if (chunk.Done) break;
-    received += chunk.Data!.Length;   // ... and do something with it now
+@code {
+    private async Task Read()
+    {
+        var response = await streams.FromResponse(new FetchRequest { Url = "/api/stream" });
+        if (response.Stream is null) { /* response.Error says why */ return; }
+
+        // The stream holds a live connection open, so it is disposed however the loop ends.
+        await using var stream = response.Stream;
+
+        var received = 0L;
+        while (true)
+        {
+            var chunk = await stream.Read();
+            if (chunk.Done) break;
+            received += chunk.Data!.Length;   // ... and do something with it now
+        }
+    }
 }
-""")>
+"""),
+new("Program.cs", """
+// Something worth streaming: a body that arrives in visible instalments rather than all at once,
+// with a Content-Length so a progress bar has a denominator. The pause between chunks is what makes
+// "read it as it arrives" observably different from "wait, then read it".
+app.MapGet("/api/stream", async (HttpContext context, CancellationToken cancellationToken) =>
+{
+    const int chunks = 20;
+    const int chunkSize = 4096;
+
+    context.Response.Headers.ContentType = "application/octet-stream";
+    context.Response.ContentLength = chunks * chunkSize;
+
+    var payload = new byte[chunkSize];
+    Array.Fill(payload, (byte)'x');
+
+    for (var i = 0; i < chunks; i++)
+    {
+        await context.Response.Body.WriteAsync(payload, cancellationToken);
+        // Without the flush the server buffers the whole body and the client sees one chunk.
+        await context.Response.Body.FlushAsync(cancellationToken);
+        await Task.Delay(100, cancellationToken);
+    }
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="ReadStream">Read /api/stream</button>
             <button class="danger" @onclick="CancelRead">Cancel</button>

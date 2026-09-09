@@ -67,17 +67,27 @@
              Api="Scroll / ScrollBy / ScrollIntoView"
              Description="Scroll inside an element to absolute coordinates, scroll by a relative amount, or bring the element itself into the viewport. All three accept an options object with smooth, instant or auto behavior; ScrollIntoView additionally takes block and inline logical positions."
              Code=@("""
-await box.Scroll(new ScrollOptions { Top = 120, Behavior = ScrollBehavior.Smooth });
+<div @ref="box" style="overflow:auto; max-height:12rem">...</div>
 
-await box.ScrollBy(0, 48);
+@code {
+    private ElementReference box;
 
-await box.ScrollIntoView(new ScrollIntoViewOptions
-{
-    Behavior = ScrollBehavior.Smooth,
-    Block = ScrollLogicalPosition.Center,
-    Inline = ScrollLogicalPosition.Nearest,
-});
-""")>
+    private async Task Scroll()
+    {
+        await box.Scroll(new ScrollOptions { Top = 120, Behavior = ScrollBehavior.Smooth });
+
+        await box.ScrollBy(0, 48);
+
+        await box.ScrollIntoView(new ScrollIntoViewOptions
+        {
+            Behavior = ScrollBehavior.Smooth,
+            Block = ScrollLogicalPosition.Center,
+            Inline = ScrollLogicalPosition.Nearest,
+        });
+    }
+}
+""")
+             Language="razor">
     <div @ref="scrollBoxRef"
          class="demo-box dashed" style="height:8rem;overflow:auto;">
         <div style="height:40rem;">
@@ -97,14 +107,24 @@ await box.ScrollIntoView(new ScrollIntoViewOptions
              Api="GetBoundingClientRect / Client* / Offset* / Scroll* / GetTagName"
              Description="Read the element's box-model geometry: the viewport-relative bounding rect, client sizes (padding box), offset sizes (border box and position within the offset parent), scroll sizes and offsets, and the tag name."
              Code=@("""
-var rect = await box.GetBoundingClientRect(); // Rect { X, Y, Width, Height }
+<div @ref="box">...</div>
 
-var clientWidth = await box.GetClientWidth();
-var offsetHeight = await box.GetOffsetHeight();
-var scrollHeight = await box.GetScrollHeight();
-var scrollTop = await box.GetScrollTop();
-var tagName = await box.GetTagName();
-""")>
+@code {
+    private ElementReference box;
+
+    private async Task Measure()
+    {
+        var rect = await box.GetBoundingClientRect(); // Rect { X, Y, Width, Height }
+
+        var clientWidth = await box.GetClientWidth();
+        var offsetHeight = await box.GetOffsetHeight();
+        var scrollHeight = await box.GetScrollHeight();
+        var scrollTop = await box.GetScrollTop();
+        var tagName = await box.GetTagName();
+    }
+}
+""")
+             Language="razor">
     <div @ref="metricsBoxRef" class="demo-box" style="height:6rem;overflow:auto">
         <p style="margin:0">The box being measured. It scrolls, so the scroll metrics have something to report.</p>
         <p style="margin:0">Its padding box, border box and scroll box are all different sizes.</p>
@@ -125,14 +145,28 @@ var tagName = await box.GetTagName();
              Api="Blur / SetPointerCapture / HasPointerCapture / ReleasePointerCapture / RequestPointerLock"
              Description="Blur removes keyboard focus from an element (for setting focus, Blazor's built-in ElementReference.FocusAsync already covers it). Pointer capture routes all subsequent pointer events to one element - the building block for custom drag interactions. RequestPointerLock hides the cursor and streams raw movement deltas, as games do."
              Code=@("""
-await input.Blur();
+<input @ref="input" />
+<div @ref="box" @onpointerdown="Capture">...</div>
 
-await box.SetPointerCapture(pointerId);
-var captured = await box.HasPointerCapture(pointerId);
-await box.ReleasePointerCapture(pointerId);
+@code {
+    private ElementReference box;
+    private ElementReference input;
 
-await box.RequestPointerLock();
-""")>
+    private async Task Capture(PointerEventArgs args)
+    {
+        await input.Blur();
+
+        // The id comes from the pointer event that started the gesture - capture is per pointer.
+        await box.SetPointerCapture(args.PointerId);
+        var captured = await box.HasPointerCapture(args.PointerId);
+        await box.ReleasePointerCapture(args.PointerId);
+
+        // Needs a user gesture, and the browser shows its own notice on the way in.
+        await box.RequestPointerLock();
+    }
+}
+""")
+             Language="razor">
     <div class="field">
         <span class="field-label">Focus this input, then press the Blur button</span>
         <input @ref="blurInputRef" placeholder="focus me..." style="max-width:20rem;" />
@@ -157,11 +191,21 @@ await box.RequestPointerLock();
              Api="RequestFullScreen"
              Description="Ask the browser to present the element fullscreen. The options object controls whether the browser keeps its navigation UI visible; press Escape to leave fullscreen again. Browsers only honor the request from a user gesture such as a click."
              Code=@("""
-await box.RequestFullScreen(new FullScreenOptions
-{
-    NavigationUI = FullScreenNavigationUI.Show,
-});
-""")>
+<div @ref="box">...</div>
+<button @onclick="GoFullScreen">Full screen</button>
+
+@code {
+    private ElementReference box;
+
+    // Must run inside a user gesture: a request that did not come from one is refused.
+    private async Task GoFullScreen() =>
+        await box.RequestFullScreen(new FullScreenOptions
+        {
+            NavigationUI = FullScreenNavigationUI.Show,
+        });
+}
+""")
+             Language="razor">
     <div @ref="fullscreenRef"
          class="demo-box">
         This panel goes fullscreen.
@@ -176,16 +220,26 @@ await box.RequestFullScreen(new FullScreenOptions
              Api="Id / ClassName / InnerHtml / OuterHtml / InnerText / AccessKey / TabIndex"
              Description="Get and set the element's id, class list, rendered text, raw markup, access key and tab order position. The InnerHtml and OuterHtml setters write markup verbatim - never feed them untrusted input."
              Code=@("""
-await box.SetId("hero");
-await box.SetClassName("card highlighted");
-await box.SetInnerText("Hello from C#");
-await box.SetTabIndex(2);
-await box.SetAccessKey("k");
+<div @ref="box">...</div>
 
-var html = await box.GetInnerHtml();
-await box.SetInnerHtml("<strong>Trusted markup only!</strong>");
-var outer = await box.GetOuterHtml();
-""")>
+@code {
+    private ElementReference box;
+
+    private async Task Rewrite()
+    {
+        await box.SetId("hero");
+        await box.SetClassName("card highlighted");
+        await box.SetInnerText("Hello from C#");
+        await box.SetTabIndex(2);
+        await box.SetAccessKey("k");
+
+        var html = await box.GetInnerHtml();
+        await box.SetInnerHtml("<strong>Trusted markup only!</strong>");
+        var outer = await box.GetOuterHtml();
+    }
+}
+""")
+             Language="razor">
     <div class="field-row">
         <div class="field">
             <span class="field-label">Id</span>
@@ -222,15 +276,25 @@ var outer = await box.GetOuterHtml();
              Api="ContentEditable / IsContentEditable / Dir / EnterKeyHint / InputMode / Hidden / Inert"
              Description="Toggle in-place editing, text direction, virtual-keyboard hints, visibility and inertness on the target element. After setting ContentEditable to True, click into this section's box and type."
              Code=@("""
-await box.SetContentEditable(ContentEditable.True);
-var editable = await box.IsContentEditable();
+<div @ref="box">...</div>
 
-await box.SetDir(ElementDir.Rtl);
-await box.SetEnterKeyHint(EnterKeyHint.Send);
-await box.SetInputMode(InputMode.Numeric);
-await box.SetHidden(Hidden.UntilFound);
-await box.SetInert(true);
-""")>
+@code {
+    private ElementReference box;
+
+    private async Task SetModes()
+    {
+        await box.SetContentEditable(ContentEditable.True);
+        var editable = await box.IsContentEditable();
+
+        await box.SetDir(ElementDir.Rtl);
+        await box.SetEnterKeyHint(EnterKeyHint.Send);
+        await box.SetInputMode(InputMode.Numeric);
+        await box.SetHidden(Hidden.UntilFound);
+        await box.SetInert(true);
+    }
+}
+""")
+             Language="razor">
     <div class="field-row">
         <div class="field">
             <span class="field-label">ContentEditable</span>
@@ -333,10 +397,22 @@ await clickSub.DisposeAsync();
              Api="Matches / Remove"
              Description="Matches tests the element against any CSS selector. Remove detaches the element from the DOM - reload the page to bring the demo target back."
              Code=@("""
-var isMatch = await box.Matches("[data-demo]");
+<div @ref="box" data-demo="butil">...</div>
 
-await box.Remove(); // detaches the element from the DOM
-""")>
+@code {
+    private ElementReference box;
+
+    private async Task Check()
+    {
+        var isMatch = await box.Matches("[data-demo]");
+
+        // Detaches the element from the DOM. Blazor still believes it rendered it, so anything
+        // touching the reference afterwards is talking about a node nothing can see.
+        await box.Remove();
+    }
+}
+""")
+             Language="razor">
     <div @ref="selectorBoxRef" data-demo="butil" class="demo-box">
         Matches is tested against this element, and Remove detaches this one - reload to bring it back.
     </div>
@@ -355,19 +431,35 @@ await box.Remove(); // detaches the element from the DOM
              Api="Click / Focus / CheckVisibility / Closest"
              Description="Click sends a synthetic click - the element's own handlers run and default behavior happens, though it does not count as a user gesture. Focus is the overload Blazor's FocusAsync does not give you: preventScroll, for moving focus without yanking the page. CheckVisibility answers what an IntersectionObserver cannot - whether the element is transparent, collapsed, or inside a skipped content-visibility subtree. Closest reports whether the element sits inside anything matching a selector."
              Code=@("""
-await button.Click();
+<form>
+    <button @ref="button" type="button">Target</button>
+    <input @ref="input" />
+    <div @ref="box">...</div>
+</form>
 
-await input.Focus(new FocusOptions { PreventScroll = true });
+@code {
+    private ElementReference box;
+    private ElementReference input;
+    private ElementReference button;
 
-var visible = await box.CheckVisibility(new CheckVisibilityOptions
-{
-    OpacityProperty = true,
-    VisibilityProperty = true,
-    ContentVisibilityAuto = true,
-});
+    private async Task Activate()
+    {
+        await button.Click();
 
-var insideForm = await box.Closest("form");
-""")>
+        await input.Focus(new FocusOptions { PreventScroll = true });
+
+        var visible = await box.CheckVisibility(new CheckVisibilityOptions
+        {
+            OpacityProperty = true,
+            VisibilityProperty = true,
+            ContentVisibilityAuto = true,
+        });
+
+        var insideForm = await box.Closest("form");
+    }
+}
+""")
+             Language="razor">
     <div class="demo-box dashed">
         <button @ref="clickTargetRef" @onclick="() => syntheticClicks++">
             Synthetic click target (clicked @syntheticClicks time@(syntheticClicks == 1 ? "" : "s"))
@@ -397,19 +489,29 @@ var insideForm = await box.Closest("form");
              Api="AddClass / RemoveClass / ToggleClass / ReplaceClass / ContainsClass / GetClassList / GetData / SetData / RemoveData / GetDataNames / GetStyleText / SetStyleText / GetStyleProperty / SetStyleProperty / RemoveStyleProperty"
              Description="classList, dataset and style as individual operations rather than as one string you have to parse and rebuild. SetStyleProperty takes CSS property names, custom properties included, so a theme variable can be written from C#. Blazor owns the DOM it rendered and a re-render can undo all of this - use it on elements Blazor renders once, or on ones outside the component."
              Code=@("""
-await box.AddClass("card", "highlighted");
-var toggled = await box.ToggleClass("selected");
-var swapped = await box.ReplaceClass("highlighted", "muted");
-var classes = await box.GetClassList();
+<div @ref="box">...</div>
 
-await box.SetData("userId", "42");        // writes data-user-id
-var id = await box.GetData("userId");
-var keys = await box.GetDataNames();
+@code {
+    private ElementReference box;
 
-await box.SetStyleProperty("--accent", "#7c3aed");
-await box.SetStyleProperty("outline", "2px solid var(--accent)", important: true);
-var css = await box.GetStyleText();
-""")>
+    private async Task Style()
+    {
+        await box.AddClass("card", "highlighted");
+        var toggled = await box.ToggleClass("selected");
+        var swapped = await box.ReplaceClass("highlighted", "muted");
+        var classes = await box.GetClassList();
+
+        await box.SetData("userId", "42");        // writes data-user-id
+        var id = await box.GetData("userId");
+        var keys = await box.GetDataNames();
+
+        await box.SetStyleProperty("--accent", "#7c3aed");
+        await box.SetStyleProperty("outline", "2px solid var(--accent)", important: true);
+        var css = await box.GetStyleText();
+    }
+}
+""")
+             Language="razor">
     <div @ref="styleBoxRef" class="demo-box">
         Class, data and style target.
     </div>
@@ -452,16 +554,26 @@ var css = await box.GetStyleText();
              Api="Append / Prepend / Before / After / ReplaceChildren / ReplaceWith / InsertAdjacentText / InsertAdjacentHtml / GetHtml / SetHtml / SetHtmlUnsafe"
              Description="The DOM insertion methods take elements as well as strings, but only strings can cross the interop boundary - an ElementReference is minted by Blazor's renderer and cannot be handed back from JavaScript. So each string becomes a text node, and InsertAdjacentHtml is how markup gets in. SetHtml runs the browser's sanitizer over what you give it, which is the one to reach for when the markup came from a user; it throws rather than silently falling back where the browser has no sanitizer."
              Code=@("""
-await box.Append("appended text");
-await box.Prepend("prepended text");
-await box.ReplaceChildren("everything else is gone");
+<div @ref="box">...</div>
 
-await box.InsertAdjacentText(InsertPosition.BeforeEnd, "<not markup>");
-await box.InsertAdjacentHtml(InsertPosition.AfterBegin, "<em>trusted markup</em>");
+@code {
+    private ElementReference box;
 
-await box.SetHtml(untrustedMarkup);   // sanitized; throws where unsupported
-var html = await box.GetHtml(new GetHtmlOptions { SerializableShadowRoots = true });
-""")>
+    private async Task Insert(string untrustedMarkup)
+    {
+        await box.Append("appended text");
+        await box.Prepend("prepended text");
+        await box.ReplaceChildren("everything else is gone");
+
+        await box.InsertAdjacentText(InsertPosition.BeforeEnd, "<not markup>");
+        await box.InsertAdjacentHtml(InsertPosition.AfterBegin, "<em>trusted markup</em>");
+
+        await box.SetHtml(untrustedMarkup);   // sanitized; throws where unsupported
+        var html = await box.GetHtml(new GetHtmlOptions { SerializableShadowRoots = true });
+    }
+}
+""")
+             Language="razor">
     <div @ref="contentBoxRef" class="demo-box dashed">
         <span>Original content.</span>
     </div>
@@ -485,16 +597,26 @@ var html = await box.GetHtml(new GetHtmlOptions { SerializableShadowRoots = true
              Api="GetAriaLabel / SetAriaLabel / SetAriaExpanded / SetAriaHidden / GetRole / SetRole / AriaNotify"
              Description="Every aria-* attribute and role, reflected as a property. Prefer writing these as attributes in your markup - it costs no interop and a re-render cannot undo it; reach for these when the value depends on something outside the render tree, or when reading what a component library put on an element. Every value is a string, numeric and boolean ones included, because that is how ARIA itself is defined. AriaNotify announces a message without changing the page; it is Chromium-only and a no-op elsewhere, so keep the visible UI telling the same story."
              Code=@("""
-await box.SetRole("button");
-await box.SetAriaLabel("Close the dialog");
-await box.SetAriaExpanded("true");
-await box.SetAriaHidden("false");
+<div @ref="box">...</div>
 
-var label = await box.GetAriaLabel();
+@code {
+    private ElementReference box;
 
-await box.AriaNotify("Upload finished",
-    new AriaNotifyOptions { Priority = AriaNotifyPriority.High });
-""")>
+    private async Task Describe()
+    {
+        await box.SetRole("button");
+        await box.SetAriaLabel("Close the dialog");
+        await box.SetAriaExpanded("true");
+        await box.SetAriaHidden("false");
+
+        var label = await box.GetAriaLabel();
+
+        await box.AriaNotify("Upload finished",
+            new AriaNotifyOptions { Priority = AriaNotifyPriority.High });
+    }
+}
+""")
+             Language="razor">
     <div @ref="ariaBoxRef" class="demo-box">
         ARIA target.
     </div>
@@ -521,12 +643,23 @@ await box.AriaNotify("Upload finished",
              Api="GetPopover / SetPopover / ShowPopover / HidePopover / TogglePopover"
              Description="Turn any element into a popover and drive it from C#. An Auto popover is light-dismissed - Escape or a click outside closes it, and opening one closes the others; a Manual one closes only when the code says so. Show and Hide are no-ops where the browser has no popover support, so a page can call them without feature-detecting first."
              Code=@("""
-await panel.SetPopover(ElementPopover.Auto);
+<div @ref="panel">...</div>
 
-await panel.ShowPopover();
-var showing = await panel.TogglePopover();
-await panel.HidePopover();
-""")>
+@code {
+    private ElementReference panel;
+
+    private async Task Popover()
+    {
+        // The attribute is what makes it a popover; without it the three calls below throw.
+        await panel.SetPopover(ElementPopover.Auto);
+
+        await panel.ShowPopover();
+        var showing = await panel.TogglePopover();
+        await panel.HidePopover();
+    }
+}
+""")
+             Language="razor">
     <div @ref="popoverRef" class="demo-box" style="position:fixed;inset:auto;margin:auto;">
         I am a popover. Press Escape or click outside to dismiss me.
     </div>
@@ -543,19 +676,35 @@ await panel.HidePopover();
              Api="GetAttributeNS / SetAttributeNS / HasAttributeNS / RemoveAttributeNS / QuerySelectorMatches / QuerySelectorAllCount / GetClientRects / ScrollTo / SetScrollTop / SetScrollLeft"
              Description="The namespaced attribute methods are what SVG's xlink:href and XML's xml:lang need, and what GetAttribute cannot reach. The query helpers answer the existence and count questions - the elements themselves cannot cross the boundary, so capture the ones you need with @@ref. GetClientRects returns one rect per line box, which is more than one for an inline element that wraps. SetScrollTop and SetScrollLeft jump without animating, where ScrollTo can ease."
              Code=@("""
-const string Xlink = "http://www.w3.org/1999/xlink";
+<svg><use @ref="icon" /></svg>
+<table @ref="table"><tr><td>...</td></tr></table>
+<em @ref="inlineText">a long run of text that wraps over several lines</em>
+<div @ref="box" style="overflow:auto; max-height:12rem">...</div>
 
-await icon.SetAttributeNS(Xlink, "xlink:href", "#star");
-var href = await icon.GetAttributeNS(Xlink, "href");
+@code {
+    private const string Xlink = "http://www.w3.org/1999/xlink";
 
-var hasRows = await table.QuerySelectorMatches("tr");
-var rowCount = await table.QuerySelectorAllCount("tr");
+    private ElementReference box;
+    private ElementReference icon;
+    private ElementReference table;
+    private ElementReference inlineText;
 
-var rects = await inlineText.GetClientRects();  // one per line box
+    private async Task Read()
+    {
+        await icon.SetAttributeNS(Xlink, "xlink:href", "#star");
+        var href = await icon.GetAttributeNS(Xlink, "href");
 
-await box.SetScrollTop(0);
-await box.ScrollTo(new ScrollOptions { Top = 240, Behavior = ScrollBehavior.Smooth });
-""")>
+        var hasRows = await table.QuerySelectorMatches("tr");
+        var rowCount = await table.QuerySelectorAllCount("tr");
+
+        var rects = await inlineText.GetClientRects();  // one per line box
+
+        await box.SetScrollTop(0);
+        await box.ScrollTo(new ScrollOptions { Top = 240, Behavior = ScrollBehavior.Smooth });
+    }
+}
+""")
+             Language="razor">
     <div @ref="queryBoxRef" class="demo-box dashed" style="height:8rem;overflow:auto;">
         <p><span @ref="wrappingTextRef">This inline span is long enough to wrap over several line boxes, which is what makes GetClientRects report more than one rectangle for it - one per line the text occupies.</span></p>
         <ul>
@@ -591,22 +740,32 @@ await box.ScrollTo(new ScrollOptions { Top = 240, Behavior = ScrollBehavior.Smoo
              Api="Title / Lang / Draggable / Spellcheck / Translate / Autofocus / Autocapitalize / Autocorrect / WritingSuggestions / VirtualKeyboardPolicy / Slot / Part / ElementTiming / LocalName / NamespaceUri / Prefix / ChildElementCount / CurrentCssZoom / AccessKeyLabel / OffsetParentTagName / AssignedSlotName / HasShadowRoot / OuterText"
              Description="The rest of what an element carries: its tooltip and language, the hints it gives a virtual keyboard and a spell checker, its shadow-DOM wiring, and the facts about where it sits in the tree. Most of these are attributes you can simply render from Blazor at no interop cost - these are for elements that are not yours to re-render, and for reading what something else put there."
              Code=@("""
-await box.SetTitle("Shown on hover");
-await box.SetLang("fa-IR");
-await box.SetDraggable(true);
-await box.SetSpellcheck(false);
-await box.SetTranslate(false);
-await box.SetAutocapitalize(Autocapitalize.Words);
-await box.SetWritingSuggestions(false);
-await box.SetSlot("content");                      // which shadow slot it asks to land in
-await box.SetPart("surface highlight");            // what ::part() outside the shadow tree can style
-await box.SetElementTiming("hero-image");          // the name Element Timing reports it under
+<div @ref="box">...</div>
 
-var localName = await box.GetLocalName();          // "div", where GetTagName gives "DIV"
-var children = await box.GetChildElementCount();
-var zoom = await box.GetCurrentCssZoom();
-var offsetParent = await box.GetOffsetParentTagName();
-""")>
+@code {
+    private ElementReference box;
+
+    private async Task Annotate()
+    {
+        await box.SetTitle("Shown on hover");
+        await box.SetLang("fa-IR");
+        await box.SetDraggable(true);
+        await box.SetSpellcheck(false);
+        await box.SetTranslate(false);
+        await box.SetAutocapitalize(Autocapitalize.Words);
+        await box.SetWritingSuggestions(false);
+        await box.SetSlot("content");                      // which shadow slot it asks to land in
+        await box.SetPart("surface highlight");            // what ::part() outside the shadow tree can style
+        await box.SetElementTiming("hero-image");          // the name Element Timing reports it under
+
+        var localName = await box.GetLocalName();          // "div", where GetTagName gives "DIV"
+        var children = await box.GetChildElementCount();
+        var zoom = await box.GetCurrentCssZoom();
+        var offsetParent = await box.GetOffsetParentTagName();
+    }
+}
+""")
+             Language="razor">
     <div class="field-row">
         <div class="field">
             <span class="field-label">Title</span>
@@ -693,12 +852,30 @@ await _video.Pause();
              Api="MoveBefore / IsMoveBeforeSupported"
              Description="Reparenting with insertBefore disconnects the node first, and everything living inside it goes with it: an iframe reloads, a playing video stops, a running animation restarts, focus is lost. moveBefore does the same move without the disconnection - which is what makes moving a node a reasonable thing to do at all. Pass null as the reference to append at the end."
              Code=@("""
-// move `card` into `column`, before `marker`
-var moved = await column.MoveBefore(card, marker);
+<div @ref="column">
+    <div @ref="marker">a sibling to insert before</div>
+</div>
 
-// or append it at the end
-await column.MoveBefore(card);
-""")>
+<div @ref="card">
+    <video controls></video>
+</div>
+
+@code {
+    private ElementReference card;
+    private ElementReference column;
+    private ElementReference marker;
+
+    private async Task Move()
+    {
+        // move `card` into `column`, before `marker`
+        var moved = await column.MoveBefore(card, marker);
+
+        // or append it at the end
+        await column.MoveBefore(card);
+    }
+}
+""")
+             Language="razor">
     <div class="controls">
         <button @onclick="CheckMoveBefore">IsMoveBeforeSupported</button>
         <button @onclick="MoveTheFrame">Move the iframe to the other column</button>

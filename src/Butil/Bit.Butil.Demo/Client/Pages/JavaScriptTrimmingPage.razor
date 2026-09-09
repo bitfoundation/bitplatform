@@ -113,13 +113,24 @@ for (var at = script.IndexOf(anchor); at >= 0; at = script.IndexOf(anchor, at + 
     <DemoSection Title="Signal 3 - the modules you name yourself"
                  Api="BitButilScriptModule"
                  Description="An item rather than a property, and always ADDED to what the other two concluded - never used instead of them. It takes JavaScript module names, Bit.Butil class names, or full type names interchangeably, and it is the way to keep a module reached from somewhere nothing static can follow: an API resolved by reflection, or one your own JavaScript calls through window.BitButil directly. It is also a signal in its own right rather than only a supplement to one: with no ILLink and the scan turned off, a csproj that names modules trims to exactly those and nothing else. A name that is neither a module nor a Bit.Butil class fails the build rather than being quietly ignored, because MSBuild accepts a misspelled item without a word and a silently dropped name is a module missing from a published bundle."
-                 Code=@("""
+                 Files=@([
+new("MyApp.csproj", """
 <ItemGroup>
   <!-- class names, module names and full type names all resolve -->
   <BitButilScriptModule Include="Clipboard;geolocation;Bit.Butil.WebAuthn" />
 </ItemGroup>
-""")
-                 Language="xml" />
+"""),
+new("wwwroot/js/app.js", """
+// The case this item exists for: nothing static leads from the app's C# to this call, so neither
+// ILLink nor the scan can see that the geolocation module is still needed. Without naming it in the
+// csproj above, a published app would 404 on the line below - or, in a lazy-scripts app, import a
+// module file the publish dropped.
+window.showMyLocation = async () => {
+    const result = await BitButil.geolocation.getCurrentPosition({});
+    if (result.position) console.log(result.position.coords.latitude, result.position.coords.longitude);
+};
+"""),
+]) />
 
     <DemoSection Title="Both shapes of the JavaScript are narrowed"
                  Api="BitButilIncludeScriptModules"
@@ -136,25 +147,38 @@ for (var at = script.IndexOf(anchor); at >= 0; at = script.IndexOf(anchor, at + 
     <DemoSection Title="Which shape of app writes what"
                  Api="csproj by hosting model"
                  Description="Four shapes, and none of them writes more than a single line. A standalone WebAssembly app or PWA publishes trimmed and writes nothing at all. A Blazor Server app, or a Web App's server project, turns the switch on and gets the scan with it. A server host that references a WebAssembly client is the case worth thinking about: the scan covers the host and the client alike, because the client's assembly is one of the host's references, whereas ILLink's answer for such a host is about the host's own code only - which is why trimming there wants the scan rather than PublishTrimmed, and why the switch goes in the host project that serves bit-butil.js. A Blazor Hybrid head is the one shape where none of it applies: it packages its wwwroot at build time rather than through a publish of a web app's static web assets, so it ships the full bundle and reaches for lazy scripts instead."
-                 Code=@("""
-<!-- MyApp.Client.csproj - standalone Blazor WebAssembly: nothing at all -->
-
-<!-- MyApp.csproj - Blazor Server -->
+                 Files=@([
+new("MyApp.Client.csproj", """
+<!-- Standalone Blazor WebAssembly or PWA: nothing at all. A Release publish is trimmed, so the
+     switch is already on and ILLink's own answer is the signal. -->
+<PropertyGroup>
+  <TargetFramework>net10.0</TargetFramework>
+</PropertyGroup>
+"""),
+new("MyApp.csproj", """
+<!-- Blazor Server. There is no trimmed assembly to read, so the switch turns on the scan instead. -->
 <PropertyGroup>
   <BitButilTrimScripts>true</BitButilTrimScripts>
 </PropertyGroup>
-
-<!-- MyApp.Server.csproj - the HOST of a Blazor Web App, which is what serves the script -->
+"""),
+new("MyApp.Server.csproj", """
+<!-- The HOST of a Blazor Web App - the project that serves bit-butil.js, which is what makes it the
+     one that has to write this. The scan covers the host and the client alike, because the client's
+     assembly is one of the host's references; ILLink's answer here would be about the host's own
+     code only, which is why this shape wants the scan rather than PublishTrimmed. -->
 <PropertyGroup>
   <BitButilTrimScripts>true</BitButilTrimScripts>
 </PropertyGroup>
-
-<!-- MyApp.Maui.csproj - Blazor Hybrid: the trimming does not apply, lazy scripts do -->
+"""),
+new("MyApp.Maui.csproj", """
+<!-- Blazor Hybrid: the trimming does not apply at all. A hybrid head packages its wwwroot at build
+     time rather than through a publish of a web app's static web assets, so it ships the full bundle
+     and reaches for lazy scripts instead. -->
 <PropertyGroup>
   <BitButilLazyScripts>true</BitButilLazyScripts>
 </PropertyGroup>
-""")
-                 Language="xml" />
+"""),
+]) />
 </div>
 
 <Callout Type="warning" Title="These go in the project you publish, not in Directory.Build.props">

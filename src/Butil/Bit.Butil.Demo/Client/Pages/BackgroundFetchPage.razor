@@ -29,13 +29,56 @@
     <DemoSection Title="Prerequisite: register the demo worker"
                  Api="ServiceWorker.Register"
                  Description="The same minimal /sw.js the rest of this category uses. Its backgroundfetchsuccess handler logs what arrived to the DevTools console."
-                 Code=@("""
+                 Files=@([
+new("BackgroundFetch.razor", """
 @inject Bit.Butil.ServiceWorker serviceWorker
 
-await serviceWorker.Register("/sw.js");
-await serviceWorker.Ready();
-""")
-                 Language="razor">
+<button @onclick="RegisterWorker">Register /sw.js</button>
+
+@code {
+    private async Task RegisterWorker()
+    {
+        await serviceWorker.Register("/sw.js");
+
+        // Background fetch hangs off the *active* registration, so a Fetch issued before the worker
+        // has activated finds nothing to hang off.
+        await serviceWorker.Ready();
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// A background fetch outlives the page that started it, so its results are delivered here rather
+// than to a tab. By the time a page could ask, the browser has usually released the records - so
+// this handler is the only place they can be kept.
+self.addEventListener('backgroundfetchsuccess', event => {
+    event.waitUntil((async () => {
+        const cache = await caches.open('downloads-v1');
+        const records = await event.registration.matchAll();
+
+        await Promise.all(records.map(async record => {
+            const response = await record.responseReady;
+            await cache.put(record.request, response);
+        }));
+
+        // Turns the browser's download UI into a link back into the app.
+        await event.updateUI({ title: 'Downloaded' });
+    })());
+});
+
+self.addEventListener('backgroundfetchfail', event => {
+    console.log('[sw] background fetch failed:', event.registration.failureReason);
+});
+
+self.addEventListener('backgroundfetchabort', event => {
+    console.log('[sw] background fetch aborted:', event.registration.id);
+});
+
+// Fired when the user taps the entry in the browser's download UI.
+self.addEventListener('backgroundfetchclick', event => {
+    event.waitUntil(self.clients.openWindow('/downloads'));
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="RegisterWorker">Register /sw.js</button>
             <button class="secondary" @onclick="CheckSupport">IsSupported</button>
