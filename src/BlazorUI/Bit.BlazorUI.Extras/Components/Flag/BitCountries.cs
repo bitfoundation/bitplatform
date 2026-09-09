@@ -161,7 +161,7 @@ public class BitCountries
     public static readonly BitCountry Niger = new("Niger", "227", "NE", "NER");
     public static readonly BitCountry Nigeria = new("Nigeria", "234", "NG", "NGA");
     public static readonly BitCountry Niue = new("Niue", "683", "NU", "NIU");
-    public static readonly BitCountry NorfolkIsland = new("Norfolk Island", "672", "NF", "NFK");
+    public static readonly BitCountry NorfolkIsland = new("Norfolk Island", "672", "NF", "NFK", 1);
     public static readonly BitCountry NorthKorea = new("North Korea", "850", "KP", "PRK");
     public static readonly BitCountry NorthernMarianaIslands = new("Northern Mariana Islands", "1-670", "MP", "MNP");
     public static readonly BitCountry Norway = new("Norway", "47", "NO", "NOR");
@@ -181,9 +181,9 @@ public class BitCountries
     public static readonly BitCountry PuertoRico = new("Puerto Rico", "1-787", "PR", "PRI");
     public static readonly BitCountry Qatar = new("Qatar", "974", "QA", "QAT");
     public static readonly BitCountry RepublicOfTheCongo = new("Republic of the Congo", "242", "CG", "COG");
-    public static readonly BitCountry Reunion = new("Reunion", "262", "RE", "REU");
+    public static readonly BitCountry Reunion = new("Reunion", "262", "RE", "REU", 1);
     public static readonly BitCountry Romania = new("Romania", "40", "RO", "ROU");
-    public static readonly BitCountry Russia = new("Russia", "7", "RU", "RUS");
+    public static readonly BitCountry Russia = new("Russia", "7", "RU", "RUS", 1);
     public static readonly BitCountry Rwanda = new("Rwanda", "250", "RW", "RWA");
     //public static readonly BitCountry SaintBarthelemy = new("Saint Barthelemy", "590", "BL", "BLM");
     public static readonly BitCountry SaintHelena = new("Saint Helena", "290", "SH", "SHN");
@@ -237,7 +237,7 @@ public class BitCountries
     public static readonly BitCountry Ukraine = new("Ukraine", "380", "UA", "UKR");
     public static readonly BitCountry UnitedArabEmirates = new("United Arab Emirates", "971", "AE", "ARE");
     public static readonly BitCountry UnitedKingdom = new("United Kingdom", "44", "GB", "GBR");
-    public static readonly BitCountry UnitedStates = new("United States", "1", "US", "USA");
+    public static readonly BitCountry UnitedStates = new("United States", "1", "US", "USA", 1);
     public static readonly BitCountry Uruguay = new("Uruguay", "598", "UY", "URY");
     public static readonly BitCountry Uzbekistan = new("Uzbekistan", "998", "UZ", "UZB");
     public static readonly BitCountry Vanuatu = new("Vanuatu", "678", "VU", "VUT");

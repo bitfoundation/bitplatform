@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/phoneinput"
             Title="PhoneInput"
-            Description="BitPhoneInput is an input component for entering phone numbers with a searchable country selector that shows the flag and the dialing code of each country." />
+            Description="BitPhoneInput is a phone number field with a searchable country selector: it keeps the full number in E.164 form, resolves the country from a typed dialing code, and exposes the number and the country as separate two-way bound parts." />
 
 <DemoPage Name="PhoneInput"
-          Description="BitPhoneInput is an input component for entering phone numbers with a searchable country selector that shows the flag and the dialing code of each country."
+          Description="BitPhoneInput pairs a searchable country selector - flag, name and dialing code - with a tel input. The two-way bound Value always holds the full number in E.164 form (+[code][number]), while the local digits and the selected country stay available separately through Number and Country. Typing a number with an international prefix ('+' or '00') picks the matching country on its own, the digits can be laid out over a per-country pattern as they are typed, and the country list can be filtered, reordered, trimmed down or replaced with a fixed country."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -26,51 +26,193 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <div>The basic usage of the BitPhoneInput with a default country.</div>
+            <div>
+                The field is made of two halves that share one frame: the country selector on the leading side and the
+                number input on the trailing one. <b>DefaultCountry</b> picks the country the field starts on without
+                taking control of the selection, so the user is free to change it afterwards, and <b>Placeholder</b> is
+                the hint of the number input. Whatever is typed is combined with the dialing code of the selected
+                country into the E.164 <b>Value</b> ("+14155550123"), which is the single string a form usually stores.
+                <br /><br />
+                Typing a number that already carries an international prefix - either <code>+</code> or its
+                <code>00</code> equivalent - selects the matching country by itself and keeps only the local digits in
+                the input, so a pasted number lands correctly whatever the field was showing. Separators are welcome
+                while typing: spaces, hyphens, dots and parentheses are dropped from the value, never from the field.
+            </div>
             <br />
             <BitPhoneInput DefaultCountry="BitCountries.UnitedStates" Placeholder="Enter your number" />
         </DemoExample>
 
         <DemoExample Title="AutoFocus" RazorCode="@example2RazorCode" Id="example2">
-            <div>Automatically focus the number input on first render using the AutoFocus parameter.</div>
+            <div>
+                <b>AutoFocus</b> puts the caret in the number input on the first render, which is what a page whose only
+                purpose is that one field (a sign-in step, a one-field dialog) should do. The country selector is left
+                alone: it is a choice the user rarely has to make, so the focus goes where the typing happens.
+            </div>
             <br />
             <BitPhoneInput AutoFocus DefaultCountry="BitCountries.UnitedStates" Placeholder="Enter your number" />
         </DemoExample>
 
         <DemoExample Title="Label" RazorCode="@example3RazorCode" Id="example3">
-            <div>Show a label above the field using the Label parameter.</div>
+            <div>
+                <b>Label</b> renders a label above the field and wires it to the number input, so clicking it moves the
+                focus there and screen readers announce it with the field. <b>LabelTemplate</b> replaces the text with
+                markup of your own while keeping the same wiring. Adding <b>Required</b> marks the label with an
+                asterisk and sets <code>aria-required</code> on the input.
+            </div>
             <br />
-            <BitPhoneInput Label="Phone number"
-                           DefaultCountry="BitCountries.UnitedKingdom"
-                           Placeholder="Enter your number" />
+            <div class="example-box">
+                <BitPhoneInput Label="Phone number"
+                               DefaultCountry="BitCountries.UnitedKingdom"
+                               Placeholder="Enter your number" />
+                <br />
+                <BitPhoneInput Label="Mobile number" Required
+                               DefaultCountry="BitCountries.UnitedKingdom"
+                               Placeholder="Enter your number" />
+            </div>
         </DemoExample>
 
-        <DemoExample Title="NoSearchBox" RazorCode="@example4RazorCode" Id="example4">
-            <div>Hide the search box of the country dropdown using the NoSearchBox parameter.</div>
-            <br />
-            <BitPhoneInput NoSearchBox DefaultCountry="BitCountries.France" Placeholder="Enter your number" />
-        </DemoExample>
-
-        <DemoExample Title="Custom countries" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-            <div>Limit the available countries by providing a custom list to the Countries parameter.</div>
+        <DemoExample Title="Custom countries" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Countries</b> replaces the built-in list of every country (<code>BitCountries.All</code>) with one of
+                your own, which is how a form that only ships to a handful of markets is kept short. The list is also
+                what the dialing-code lookup searches, so a number pasted with a code outside it is left whole instead
+                of being attached to the wrong country. Each entry is a <b>BitCountry</b>, so its <code>Name</code> can
+                be translated and its <code>Code</code>, <code>Iso2</code> and <code>Iso3</code> reused as they are.
+            </div>
             <br />
             <BitPhoneInput Countries="customCountries"
                            DefaultCountry="BitCountries.Canada"
                            Placeholder="Enter your number" />
         </DemoExample>
 
-        <DemoExample Title="FullWidth" RazorCode="@example6RazorCode" Id="example6">
-            <div>Make the phone input fill 100% of its container width using the FullWidth parameter.</div>
+        <DemoExample Title="Preferred countries" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>PreferredCountries</b> pins a few countries to the top of the list without removing the rest, which
+                puts the ones most of your users pick within reach while an alphabetical list of 240 stays available
+                underneath. They also break the tie when a typed dialing code belongs to several countries: +1 is both
+                Canada and the United States, +7 both Kazakhstan and Russia. Without a preference the tie is settled by
+                <code>BitCountry.Priority</code>, which the built-in list already sets on the country that owns each
+                shared code, and the country currently selected always wins over both - changing the country is the
+                user's decision, not the parser's.
+            </div>
+            <br />
+            <BitPhoneInput PreferredCountries="preferredCountries"
+                           DefaultCountry="BitCountries.Germany"
+                           Placeholder="Enter your number" />
+        </DemoExample>
+
+        <DemoExample Title="Search box" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                The country list opens with a search box focused and ready, and the term is matched against the name of
+                the country, its two- and three-letter ISO codes and its dialing code all at once. The closest match
+                comes first: an exact ISO code, then a name that starts with the term, then a dialing code that does.
+                Accents are folded away, so "reunion" finds Réunion, a dialing code is found however it is written
+                ("+44", "0044" and "44" are the same code), and a term of several words matches the initials of the name
+                ("united sta"). <b>SearchBoxPlaceholder</b> and <b>SearchBoxAriaLabel</b> label the box,
+                <b>NoResultsMessage</b> is what an empty result says, and <b>NoSearchBox</b> takes the box away - the
+                list then answers to type-ahead instead, jumping to the country whose name the typed letters start.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitPhoneInput DefaultCountry="BitCountries.France"
+                               Placeholder="Enter your number"
+                               SearchBoxPlaceholder="Country or code"
+                               NoResultsMessage="No matching country" />
+                <br />
+                <BitPhoneInput NoSearchBox DefaultCountry="BitCountries.France" Placeholder="Enter your number" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Dropdown display" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                What the selector shows is up to you: <b>NoFlags</b> drops the flag images (from the button and from the
+                list), <b>NoDialCode</b> hides the "+code" text next to the flag, and <b>DropdownPlaceholder</b> is what
+                stands in the button while no country is selected yet. <b>NoDropdown</b> goes further and removes the
+                selector as an interactive element altogether: the country still shows, but it can only be set through
+                <b>Country</b> or <b>DefaultCountry</b> - the shape to use when the market is fixed and the choice would
+                only be a way to get it wrong.
+            </div>
+            <br />
+            <div class="example-box">
+                <div>NoFlags:</div>
+                <BitPhoneInput NoFlags DefaultCountry="BitCountries.Japan" Placeholder="Enter your number" />
+                <br />
+                <div>NoDialCode:</div>
+                <BitPhoneInput NoDialCode DefaultCountry="BitCountries.Japan" Placeholder="Enter your number" />
+                <br />
+                <div>DropdownPlaceholder (no country selected yet):</div>
+                <BitPhoneInput DropdownPlaceholder="Country" Placeholder="Enter your number" />
+                <br />
+                <div>NoDropdown:</div>
+                <BitPhoneInput NoDropdown DefaultCountry="BitCountries.Japan" Placeholder="Enter your number" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Clear button" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>ShowClearButton</b> adds a button at the end of the field while it holds a number. It empties the
+                number, hands the focus back to the input and raises <b>OnClear</b>; the selected country is deliberately
+                left alone, since clearing a number is not a reason to make the user find their country again. The icon
+                comes from <b>ClearButtonIconName</b> (or <b>ClearButtonIcon</b> for an external icon set), and
+                <b>ClearButtonTemplate</b> replaces the button's content entirely.
+            </div>
+            <br />
+            <BitPhoneInput ShowClearButton
+                           DefaultCountry="BitCountries.Italy"
+                           Placeholder="Enter your number"
+                           OnClear="() => clearedAt = DateTime.Now.ToLongTimeString()" />
+            <br />
+            <div>Last cleared at: @clearedAt</div>
+        </DemoExample>
+
+        <DemoExample Title="Strict & MaxLength" RazorCode="@example9RazorCode" Id="example9">
+            <div>
+                A phone number is digits, and everything else typed into the field is only ever a separator. The
+                composed <b>Value</b> reflects that already - separators never reach it - but <b>Strict</b> makes it
+                visible too, discarding on the spot every character that cannot be part of a number and keeping only the
+                digits and an optional leading plus. <b>MaxLength</b> caps how many characters the input accepts, which
+                is the simplest guard against a mistyped number that is far too long.
+            </div>
+            <br />
+            <div class="example-box">
+                <div>Strict (try letters or symbols):</div>
+                <BitPhoneInput Strict DefaultCountry="BitCountries.Netherlands" Placeholder="Digits only" />
+                <br />
+                <div>MaxLength="10":</div>
+                <BitPhoneInput MaxLength="10" DefaultCountry="BitCountries.Netherlands" Placeholder="At most 10 characters" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="FullWidth" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                The field is only as wide as it needs to be by default, which suits a row of controls. <b>FullWidth</b>
+                stretches it to 100% of its container instead, so it lines up with the rest of the fields of a form.
+            </div>
             <br />
             <BitPhoneInput FullWidth DefaultCountry="BitCountries.Italy" Placeholder="Enter your number" />
         </DemoExample>
 
-        <DemoExample Title="Immediate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="NoBorder & Underlined" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                <b>NoBorder</b> takes the frame away and leaves the field to sit on whatever surface it is placed on -
+                inside a toolbar or a table cell, where a second border would only add noise. <b>Underlined</b> keeps a
+                single bottom rule instead of the full frame, and thickens it on focus rather than drawing a ring.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitPhoneInput NoBorder DefaultCountry="BitCountries.Sweden" Placeholder="No border" />
+                <br />
+                <BitPhoneInput Underlined DefaultCountry="BitCountries.Sweden" Placeholder="Underlined" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Immediate" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 By default the value updates on the change event (when the input loses focus). Enable the
                 <b>Immediate</b> parameter to update the value on every keystroke (the 'oninput' event). To
                 rate-limit how often the value updates while typing, combine it with <b>DebounceTime</b> (waits
-                until typing pauses) or <b>ThrottleTime</b> (updates at most once per interval).
+                until typing pauses) or <b>ThrottleTime</b> (updates at most once per interval) - useful when every
+                change triggers a lookup or a validation round-trip.
             </div>
             <br />
             <div>Immediate:</div>
@@ -97,21 +239,24 @@
             <div>Value: [@throttledNumber]</div>
         </DemoExample>
 
-        <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Binding" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
-                Two-way bind the full phone number (Value), the local number (Number), and the selected country.
-                The BitTextField below is bound to the same Value, so editing either field updates the other.
-                Both inputs are Immediate with a 500ms debounce.
+                The same field is bindable three ways at once, and the three stay in step whichever one changes:
+                <b>Value</b> is the full E.164 number, <b>Number</b> the local digits the user types, and <b>Country</b>
+                the selection. Assigning a full number from the outside splits it back into its parts (the country is
+                resolved from the dialing code), and changing the country recomposes the value under the same local
+                number. The BitTextField below is bound to the same Value, so editing either field updates the other;
+                both are Immediate with a 500ms debounce.
             </div>
             <br />
             <div style="width:300px">
                 <BitPhoneInput @bind-Value="bindingValue"
-                            @bind-Number="bindingNumber"
-                            @bind-Country="bindingCountry"
-                            Immediate
-                            DebounceTime="500"
-                            DefaultCountry="BitCountries.Germany"
-                            Placeholder="Enter your number" />
+                               @bind-Number="bindingNumber"
+                               @bind-Country="bindingCountry"
+                               Immediate
+                               DebounceTime="500"
+                               DefaultCountry="BitCountries.Germany"
+                               Placeholder="Enter your number" />
                 <br />
                 <BitTextField @bind-Value="bindingValue" Immediate DebounceTime="500" Placeholder="Full phone number" />
                 <br />
@@ -121,39 +266,255 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Disabled & ReadOnly" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-            <div>Disabled:</div>
+        <DemoExample Title="Format as you type" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>Mask</b> lays the digits out over a pattern as they are typed: every <code>#</code> is a
+                digit slot and every other character is a separator inserted for the user, so
+                <code>(###) ###-####</code> turns 4155550123 into (415) 555-0123. Nothing is lost to it -
+                digits beyond the last slot are appended as they are, and the separators are display only:
+                the <b>Value</b> stays the plain E.164 number whatever the field shows.
+                <br /><br />
+                National conventions differ from one country to the next, so <b>MaskSelector</b> gives each
+                one a pattern of its own; it takes precedence over <b>Mask</b> whenever it returns something,
+                and returning null leaves that country unformatted. Picking a new country lays the digits
+                already typed out over its pattern instead of keeping the separators of the country left
+                behind.
+            </div>
             <br />
-            <BitPhoneInput IsEnabled="false" DefaultCountry="BitCountries.Spain" Value="+341234567" />
-            <br /><br />
-            <div>ReadOnly:</div>
-            <br />
-            <BitPhoneInput ReadOnly DefaultCountry="BitCountries.Spain" Value="+341234567" />
+            <div class="example-box">
+                <div>Mask:</div>
+                <BitPhoneInput Mask="(###) ###-####"
+                               Immediate
+                               DefaultCountry="BitCountries.UnitedStates"
+                               Placeholder="Enter your number"
+                               @bind-Value="maskedValue" />
+                <div>Value: [@maskedValue]</div>
+                <br />
+                <div>MaskSelector (switch between the United States, France and Germany):</div>
+                <BitPhoneInput MaskSelector="GetMask"
+                               Immediate
+                               DefaultCountry="BitCountries.UnitedStates"
+                               Placeholder="Enter your number"
+                               @bind-Value="maskSelectorValue" />
+                <div>Value: [@maskSelectorValue]</div>
+            </div>
         </DemoExample>
 
-        <DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-            <div>Use the OnCountryChange callback to react to the selected country changes.</div>
+        <DemoExample Title="Validation" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                Inside an <b>EditForm</b> the field joins the cascading <code>EditContext</code> automatically and the
+                data annotations on the model drive it: a failing field gets the <code>bit-inv</code> class and the
+                <code>aria-invalid="true"</code> attribute. What is validated is the full E.164 <b>Value</b>, which is
+                why a regular expression on the model can check the dialing code and the length together. <b>Invalid</b>
+                forces the same state from the outside - for a rejection that comes from a server or from a rule no
+                annotation can express - and <b>NoValidate</b> opts the field out of the EditContext altogether.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitPhoneInput Invalid Label="Invalid" DefaultCountry="BitCountries.Spain" Value="+34123" />
+                <br />
+                <EditForm Model="validationModel" OnValidSubmit="() => validationSubmitted = true" novalidate>
+                    <DataAnnotationsValidator />
+                    <BitPhoneInput Label="Phone number"
+                                   Required
+                                   Immediate
+                                   DefaultCountry="BitCountries.Spain"
+                                   Placeholder="Enter your number"
+                                   @bind-Value="validationModel.Phone" />
+                    <ValidationMessage For="() => validationModel.Phone" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+                @if (validationSubmitted)
+                {
+                    <br />
+                    <div>Submitted: @validationModel.Phone</div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled & ReadOnly" RazorCode="@example16RazorCode" Id="example16">
+            <div>
+                <b>IsEnabled="false"</b> dims the whole field and takes it out of the tab order - both halves of it, the
+                selector as much as the input. <b>ReadOnly</b> keeps the field focusable and its text selectable, so the
+                number can still be read and copied, while the typing and the country selection are refused.
+            </div>
+            <br />
+            <div class="example-box">
+                <div>Disabled:</div>
+                <BitPhoneInput IsEnabled="false" DefaultCountry="BitCountries.Spain" Value="+341234567" />
+                <br />
+                <div>ReadOnly:</div>
+                <BitPhoneInput ReadOnly DefaultCountry="BitCountries.Spain" Value="+341234567" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Responsive" RazorCode="@example17RazorCode" Id="example17">
+            <div>
+                <b>Responsive</b> turns the country list into a full-height side panel on small screens, the way a
+                native picker takes over the screen instead of squeezing 240 rows into a callout that barely fits. The
+                panel carries the <b>Label</b> of the field and a close button, whose icon and label are set through
+                <b>ResponsiveCloseIconName</b> and <b>ResponsiveCloseButtonAriaLabel</b>. Narrow the window to see it.
+            </div>
+            <br />
+            <BitPhoneInput Responsive
+                           Label="Phone number"
+                           DefaultCountry="BitCountries.Brazil"
+                           Placeholder="Enter your number" />
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example18RazorCode" Id="example18">
+            <div>
+                Every visible part of the selector can be replaced. <b>DropdownTemplate</b> receives the selected
+                country and renders the content of the button - the place to show a name instead of a code, or nothing
+                at all. <b>ItemTemplate</b> renders each row of the list, <b>NoResultsTemplate</b> stands in for the
+                empty result, and <b>LabelTemplate</b> replaces the label while keeping it tied to the input.
+            </div>
+            <br />
+            <BitPhoneInput Label="Phone number"
+                           DefaultCountry="BitCountries.Portugal"
+                           Placeholder="Enter your number">
+                <DropdownTemplate Context="country">
+                    <span>@(country?.Iso2 ?? "??")</span>
+                </DropdownTemplate>
+                <ItemTemplate Context="country">
+                    <span style="flex:1 1 0;overflow:hidden;text-overflow:ellipsis">@country.Name</span>
+                    <b>@country.Iso3</b>
+                </ItemTemplate>
+                <NoResultsTemplate>
+                    <span>🔍 nothing here</span>
+                </NoResultsTemplate>
+            </BitPhoneInput>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+            <div>
+                <b>OnCountryChange</b> fires whenever the selection changes, whether it was picked from the list or
+                resolved from a typed dialing code. <b>OnOpen</b> and <b>OnClose</b> follow the callout, <b>OnSearch</b>
+                reports every search term as it is typed, and <b>OnChange</b> carries the full E.164 value. The number
+                input also raises the usual field events - <b>OnFocus</b>, <b>OnBlur</b>, <b>OnFocusIn</b>,
+                <b>OnFocusOut</b>, <b>OnClick</b>, <b>OnKeyDown</b> and <b>OnEnter</b>.
+            </div>
             <br />
             <BitPhoneInput DefaultCountry="BitCountries.UnitedStates"
+                           Placeholder="Enter your number"
                            OnCountryChange="c => changedCountry = c"
-                           Placeholder="Enter your number" />
+                           OnChange="v => changedValue = v"
+                           OnSearch="s => searchedText = s"
+                           OnOpen='() => calloutState = "opened"'
+                           OnClose='() => calloutState = "closed"'
+                           OnEnter="() => enterPressed++" />
             <br />
             <div>Selected country: @changedCountry?.Name</div>
+            <div>Value: @changedValue</div>
+            <div>Search text: @searchedText</div>
+            <div>Callout: @calloutState</div>
+            <div>Enter pressed: @enterPressed</div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-            <div>Customize the appearance of the BitPhoneInput using Style, Class, Styles, and Classes.</div>
+        <DemoExample Title="Programmatic control" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+            <div>
+                <b>IsOpen</b> is two-way bound, so the callout can be opened and closed from anywhere else on the page
+                and its state read back when the user does it. The component also exposes <b>OpenAsync</b>,
+                <b>CloseAsync</b>, <b>SelectCountryAsync</b>, <b>ClearAsync</b> and <b>FocusAsync</b> for the same work
+                through a reference, plus <b>FullNumber</b> as a shorthand for the composed value.
+            </div>
             <br />
-            <BitPhoneInput DefaultCountry="BitCountries.Netherlands"
-                           Placeholder="Enter your number"
-                           Style="width: 300px;"
-                           Class="custom-class"
-                           Styles="@(new() { FieldGroup = "border-color: blueviolet;" })"
-                           Classes="@(new() { Input = "custom-input" })" />
+            <BitPhoneInput @ref="controlledInput"
+                           @bind-IsOpen="isCalloutOpen"
+                           DefaultCountry="BitCountries.Australia"
+                           Placeholder="Enter your number" />
+            <br />
+            <BitStack Horizontal Wrap>
+                <BitButton OnClick="() => isCalloutOpen = !isCalloutOpen">Toggle the list</BitButton>
+                <BitButton OnClick="() => controlledInput.SelectCountryAsync(BitCountries.Japan)">Select Japan</BitButton>
+                <BitButton OnClick="() => controlledInput.ClearAsync()">Clear</BitButton>
+                <BitButton OnClick="async () => await controlledInput.FocusAsync()">Focus</BitButton>
+            </BitStack>
+            <br />
+            <div>IsOpen: @isCalloutOpen</div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
-            <div>Use BitPhoneInput in right-to-left (RTL).</div>
+        <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21">
+            <div>
+                <b>Color</b> repaints the frame and the focus ring of the field in one of the general colors of the
+                library, which is how a field is tied to the meaning of the section it belongs to.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitPhoneInput Color="BitColor.Primary" DefaultCountry="BitCountries.UnitedStates" Placeholder="Primary" />
+                <br />
+                <BitPhoneInput Color="BitColor.Secondary" DefaultCountry="BitCountries.UnitedStates" Placeholder="Secondary" />
+                <br />
+                <BitPhoneInput Color="BitColor.Tertiary" DefaultCountry="BitCountries.UnitedStates" Placeholder="Tertiary" />
+                <br />
+                <BitPhoneInput Color="BitColor.Info" DefaultCountry="BitCountries.UnitedStates" Placeholder="Info" />
+                <br />
+                <BitPhoneInput Color="BitColor.Success" DefaultCountry="BitCountries.UnitedStates" Placeholder="Success" />
+                <br />
+                <BitPhoneInput Color="BitColor.Warning" DefaultCountry="BitCountries.UnitedStates" Placeholder="Warning" />
+                <br />
+                <BitPhoneInput Color="BitColor.SevereWarning" DefaultCountry="BitCountries.UnitedStates" Placeholder="SevereWarning" />
+                <br />
+                <BitPhoneInput Color="BitColor.Error" DefaultCountry="BitCountries.UnitedStates" Placeholder="Error" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
+            <div>
+                Besides the built-in Fluent icon set exposed through <b>ClearButtonIconName</b> and
+                <b>ResponsiveCloseIconName</b>, the <b>ClearButtonIcon</b> and <b>ResponsiveCloseIcon</b> parameters
+                render icons from any CSS-class based library such as FontAwesome or Bootstrap Icons. Pass the raw
+                classes directly, or use the <b>BitIconInfo</b> helpers (<code>Css</code>, <code>Fa</code> and
+                <code>Bi</code>) for a shorter syntax. When both parameters are set, the icon one wins. Remember to
+                reference the icon library's stylesheet in your app.
+            </div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <BitPhoneInput ShowClearButton
+                           ClearButtonIcon="@BitIconInfo.Css("fa-solid fa-xmark")"
+                           DefaultCountry="BitCountries.Mexico"
+                           Placeholder="Enter your number" />
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23">
+            <div>
+                <b>Size</b> scales the field as a whole - its height, its padding, its text, its flags and the rows of
+                the country list - so a phone input sits at the same height as the other controls of a compact toolbar
+                or of a roomy form.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitPhoneInput Size="BitSize.Small" DefaultCountry="BitCountries.UnitedStates" Placeholder="Small" />
+                <br />
+                <BitPhoneInput Size="BitSize.Medium" DefaultCountry="BitCountries.UnitedStates" Placeholder="Medium" />
+                <br />
+                <BitPhoneInput Size="BitSize.Large" DefaultCountry="BitCountries.UnitedStates" Placeholder="Large" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CodeFiles="@example24CodeFiles" Id="example24">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach
+                every part of the component by name - the field group, the dropdown, the input, the callout, each item
+                and the rest - which is how a field is themed without a single <code>::deep</code> selector.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitPhoneInput DefaultCountry="BitCountries.Netherlands"
+                               Placeholder="Enter your number"
+                               Style="width: 300px;"
+                               Class="custom-class"
+                               Styles="@(new() { FieldGroup = "border-color: blueviolet;", ItemCode = "color: blueviolet;" })"
+                               Classes="@(new() { Input = "custom-input" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25">
+            <div>
+                <b>Dir="BitDir.Rtl"</b> mirrors the field: the country selector moves to the right of the number input,
+                the callout is aligned to the right edge and the responsive panel slides in from the left.
+            </div>
             <br />
             <div dir="rtl">
                 <BitPhoneInput Dir="BitDir.Rtl" DefaultCountry="BitCountries.Iran" Placeholder="شماره خود را وارد کنید" />

@@ -32,6 +32,11 @@ namespace BitBlazorUI {
 
             if (!el.bitPreventKeysHandler) {
                 el.bitPreventKeysHandler = (e: KeyboardEvent) => {
+                    // A key pressed with a modifier is a different gesture (Ctrl+Home jumps to the
+                    // start of a text, Alt+ArrowDown is a browser shortcut), so only the bare key
+                    // the component actually handles is suppressed.
+                    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+
                     const ks: string[] = el.bitPreventKeys ?? [];
                     if (ks.indexOf(e.key) !== -1) {
                         e.preventDefault();

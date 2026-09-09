@@ -1,11 +1,22 @@
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+@mixin phi-size-medium {
+    --bit-phi-fs: #{$tg-fs-sm};
+    --bit-phi-h: #{$siz-ctrl-md};
+    --bit-phi-pad-x: #{$siz-ctrl-pad-x-md};
+    --bit-phi-icon: #{$siz-icon-md};
+    --bit-phi-itm-h: #{$siz-item-md};
+}
 
 .bit-phi {
+    @include phi-size-medium;
+
     margin: 0;
     padding: 0;
     width: fit-content;
     box-sizing: border-box;
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
 }
 
@@ -22,7 +33,8 @@
     font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-phi-fs);
+    letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(0.625) 0;
 }
 
@@ -31,10 +43,27 @@
     align-items: stretch;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    min-height: $siz-ctrl-md;
+    min-height: var(--bit-phi-h);
     border-radius: $shp-radius-control;
     background-color: $clr-bg-pri;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-phi.bit-dis {
+    .bit-phi-lbl {
+        color: $clr-fg-dis;
+    }
+
+    .bit-phi-fgp {
+        cursor: default;
+        color: $clr-fg-dis;
+        background: $clr-bg-dis;
+        border-color: $clr-brd-dis;
+    }
+
+    .bit-phi-drp {
+        border-inline-end-color: $clr-brd-dis;
+    }
 }
 
 .bit-phi-fcs .bit-phi-fgp {
@@ -56,10 +85,11 @@
     color: $clr-fg-pri;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    padding: 0 spacing(1);
+    padding: 0 var(--bit-phi-pad-x);
     background-color: transparent;
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
+    letter-spacing: $tg-ctrl-letter-spacing;
     border-block: none;
     border-inline-start: none;
     border-start-start-radius: $shp-radius-control;
@@ -72,27 +102,37 @@
 
     &:disabled {
         cursor: default;
+        color: $clr-fg-dis;
+        background-color: transparent;
+    }
+}
+
+.bit-phi-nod .bit-phi-drp {
+    cursor: default;
+
+    &:hover {
+        background-color: transparent;
     }
 }
 
 .bit-phi-tcn {
     gap: spacing(0.5);
     display: flex;
-    color: $clr-fg-pri;
+    color: inherit;
     align-items: center;
     white-space: nowrap;
     flex-flow: row nowrap;
 }
 
 .bit-phi-flg {
-    width: spacing(2);
-    height: spacing(2);
+    width: var(--bit-phi-icon);
+    height: var(--bit-phi-icon);
     object-fit: cover;
     flex-shrink: 0;
 }
 
 .bit-phi-cod {
-    color: $clr-fg-pri;
+    color: inherit;
 }
 
 .bit-phi-pls {
@@ -117,14 +157,42 @@
     color: $clr-fg-pri;
     box-sizing: border-box;
     background-color: transparent;
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
-    padding: 0 spacing(1);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: 0 var(--bit-phi-pad-x);
     border-start-end-radius: $shp-radius-control;
     border-end-end-radius: $shp-radius-control;
 
     &::placeholder {
         color: $clr-fg-ter;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+}
+
+.bit-phi-cbt {
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    appearance: none;
+    align-items: center;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: transparent;
+    width: var(--bit-phi-h);
+    font-size: var(--bit-phi-icon);
+    border-start-end-radius: $shp-radius-control;
+    border-end-end-radius: $shp-radius-control;
+
+    &:hover {
+        background-color: $clr-bg-pri-hover;
     }
 
     &:disabled {
@@ -146,12 +214,12 @@
 
 .bit-phi-cal {
     display: none;
+    font-size: var(--bit-phi-fs);
     font-weight: $tg-fw-regular;
     overflow: hidden;
     position: fixed;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: $tg-fs-sm;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     box-shadow: $box-shadow-popup;
@@ -176,7 +244,7 @@
     color: $clr-fg-pri;
     box-sizing: border-box;
     background-color: $clr-bg-pri;
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
     padding: spacing(1) spacing(1.5);
 }
@@ -184,13 +252,12 @@
 .bit-phi-scn {
     overflow: hidden auto;
     box-sizing: border-box;
-    max-height: spacing(40);
+    max-height: $siz-popup-max-height;
 }
 
 .bit-phi-lst {
     margin: 0;
     padding: spacing(0.5) 0;
-    list-style: none;
     box-sizing: border-box;
 }
 
@@ -208,7 +275,8 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     background-color: transparent;
-    font-size: $tg-fs-sm;
+    min-height: var(--bit-phi-itm-h);
+    font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
     padding: spacing(0.75) spacing(1.5);
 
@@ -240,13 +308,204 @@
 .bit-phi-nor {
     color: $clr-fg-ter;
     box-sizing: border-box;
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-phi-fs);
     padding: spacing(0.75) spacing(1.5);
 }
 
+.bit-phi-rlc {
+    display: none;
+}
+
+.bit-phi-rlb {
+    display: block;
+    font-weight: $tg-fw-semibold;
+    color: $clr-fg-pri;
+    box-sizing: border-box;
+    font-size: $tg-fs-sm;
+    letter-spacing: $tg-ctrl-letter-spacing;
+}
+
+.bit-phi-cls {
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    appearance: none;
+    align-items: center;
+    color: $clr-fg-pri;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: transparent;
+    width: spacing(4);
+    height: spacing(4);
+    font-size: $siz-icon-md;
+    margin-inline-start: auto;
+    border-radius: $shp-radius-button;
+
+    &:hover {
+        background-color: $clr-bg-pri-hover;
+    }
+}
+
+.bit-phi-res {
+    @include lt-sm {
+        top: 0;
+        right: 0;
+        opacity: 0;
+        height: 100%;
+        display: block;
+        overflow: hidden;
+        max-height: unset;
+        width: spacing(34);
+        animation-name: unset;
+        border-radius: unset;
+        transform: translateX(100%);
+        box-shadow: $box-shadow-sheet;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
+
+        .bit-phi-rlc {
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            padding: spacing(1.5) spacing(1.5);
+        }
+
+        .bit-phi-scn {
+            max-height: unset;
+            height: calc(100% - #{spacing(11)});
+        }
+    }
+}
+
+.bit-phi-res.bit-phi-rtl {
+    @include lt-sm {
+        left: 0;
+        right: unset;
+        transform: translateX(-100%);
+    }
+}
+
+
+.bit-phi-nbd {
+    .bit-phi-fgp {
+        border-color: transparent;
+    }
+
+    .bit-phi-drp {
+        border-inline-end-color: transparent;
+    }
+
+    &.bit-phi.bit-dis {
+    .bit-phi-lbl {
+        color: $clr-fg-dis;
+    }
+
+    .bit-phi-fgp {
+        cursor: default;
+        color: $clr-fg-dis;
+        background: $clr-bg-dis;
+        border-color: $clr-brd-dis;
+    }
+
+    .bit-phi-drp {
+        border-inline-end-color: $clr-brd-dis;
+    }
+}
+
+.bit-phi-fcs .bit-phi-fgp {
+        border-color: transparent;
+    }
+}
+
+.bit-phi-und {
+    .bit-phi-fgp {
+        border-radius: 0;
+        border-block-start: none;
+        border-inline: none;
+    }
+
+    .bit-phi-drp,
+    .bit-phi-inp,
+    .bit-phi-cbt {
+        border-radius: 0;
+    }
+
+    &.bit-phi.bit-dis {
+    .bit-phi-lbl {
+        color: $clr-fg-dis;
+    }
+
+    .bit-phi-fgp {
+        cursor: default;
+        color: $clr-fg-dis;
+        background: $clr-bg-dis;
+        border-color: $clr-brd-dis;
+    }
+
+    .bit-phi-drp {
+        border-inline-end-color: $clr-brd-dis;
+    }
+}
+
+.bit-phi-fcs .bit-phi-fgp {
+        box-shadow: none;
+        border-block-end-width: $shp-border-width-thick;
+    }
+}
+
+.bit-phi-req {
+    // Every label of the field is marked, not only the one built from the Label parameter: a field
+    // rendered through a LabelTemplate is just as required as any other one.
+    & > label::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
+
+.bit-phi-sm {
+    --bit-phi-fs: #{$tg-fs-xs};
+    --bit-phi-h: #{$siz-ctrl-sm};
+    --bit-phi-pad-x: #{$siz-ctrl-pad-x-sm};
+    --bit-phi-icon: #{$siz-icon-sm};
+    --bit-phi-itm-h: #{$siz-item-sm};
+}
+
+.bit-phi-md {
+    @include phi-size-medium;
+}
+
+.bit-phi-lg {
+    --bit-phi-fs: #{$tg-fs-md};
+    --bit-phi-h: #{$siz-ctrl-lg};
+    --bit-phi-pad-x: #{$siz-ctrl-pad-x-lg};
+    --bit-phi-icon: #{$siz-icon-lg};
+    --bit-phi-itm-h: #{$siz-item-lg};
+}
+
+
 .bit-phi {
     &.bit-phi-err.bit-phi-fcs .bit-phi-fgp,
-    &.bit-inv.bit-phi-fcs .bit-phi-fgp {
+    &.bit-inv.bit-phi.bit-dis {
+    .bit-phi-lbl {
+        color: $clr-fg-dis;
+    }
+
+    .bit-phi-fgp {
+        cursor: default;
+        color: $clr-fg-dis;
+        background: $clr-bg-dis;
+        border-color: $clr-brd-dis;
+    }
+
+    .bit-phi-drp {
+        border-inline-end-color: $clr-brd-dis;
+    }
+}
+
+.bit-phi-fcs .bit-phi-fgp {
         @include focus-ring($clr-err);
 
         border-color: $clr-err;
@@ -263,7 +522,24 @@
         border-color: $color;
     }
 
-    &.bit-phi-fcs .bit-phi-fgp {
+    &.bit-phi.bit-dis {
+    .bit-phi-lbl {
+        color: $clr-fg-dis;
+    }
+
+    .bit-phi-fgp {
+        cursor: default;
+        color: $clr-fg-dis;
+        background: $clr-bg-dis;
+        border-color: $clr-brd-dis;
+    }
+
+    .bit-phi-drp {
+        border-inline-end-color: $clr-brd-dis;
+    }
+}
+
+.bit-phi-fcs .bit-phi-fgp {
         @include focus-ring($color);
 
         border-color: $color;

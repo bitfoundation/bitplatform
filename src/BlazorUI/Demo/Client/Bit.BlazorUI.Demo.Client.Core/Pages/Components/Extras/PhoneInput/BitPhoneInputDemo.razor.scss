@@ -1,0 +1,16 @@
+.example-box {
+    gap: 0.5rem;
+    display: flex;
+    width: fit-content;
+    flex-direction: column;
+}
+
+::deep .custom-class {
+    border-radius: 1rem;
+    background: linear-gradient(90deg, rgba(138, 43, 226, 0.08), transparent);
+}
+
+::deep .custom-input {
+    color: blueviolet;
+    font-weight: bold;
+}
