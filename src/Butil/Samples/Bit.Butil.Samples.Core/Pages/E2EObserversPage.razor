@@ -495,10 +495,16 @@
 
         var told = await WaitFor(versionChanged, 5000);
 
-        // Short, and expected to time out: the upgrade should already be through by the time the
-        // versionchange has been reported, so a blocked callback would mean the connection did not yield.
-        var wasBlocked = await WaitFor(blocked, 500);
+        // Waited on rather than slept through: IndexedDB fires blocked *before* it proceeds with an
+        // upgrade, so an upgrade that has gone through while the first connection is still un-disposed
+        // is proof both that the versionchange handler closed that connection and that no blocked
+        // callback is still on its way. Letting a short timer expire and calling a callback that has
+        // not arrived yet "not blocked" would only ever be a race against how fast the browser is.
+        var yielded = (await Task.WhenAny(upgrade, Task.Delay(5000))) == upgrade;
+        var wasBlocked = yielded is false || blocked.Task.IsCompleted;
 
+        // A no-op when the upgrade is already through, and what unblocks it when it is not - so the
+        // failing run reports which of the three values went wrong instead of hanging on the await below.
         await first.DisposeAsync();
 
         var second = await upgrade;

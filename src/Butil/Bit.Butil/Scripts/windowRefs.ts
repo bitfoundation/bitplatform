@@ -5,7 +5,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // windowMessaging needs nothing from the window module except the ability to resolve one of
     // these ids - and a lazy-loaded module file inlines its dependencies, so reaching into the
     // window module for it would put all of that in windowMessaging's download.
-    const _refs = {};
+    const _refs: { [id: string]: any } = {};
 
     butil.windowRefs = {
         open,
@@ -15,7 +15,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // For other modules (windowMessaging): the live window a popup id opened, or undefined once
         // it has been closed. A closed popup's ref is still an object, so the check is explicit.
         refOf(id: string) {
-            const ref = (_refs as any)[id];
+            const ref = _refs[id];
             return ref && !ref.closed ? ref : undefined;
         }
     };

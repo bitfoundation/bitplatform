@@ -34,7 +34,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 }
             }
 
-            highlights.set(name, new HighlightCtor(...ranges));
+            // Added one at a time rather than spread into the constructor: a search hitting a few
+            // thousand matches in a long document is ordinary, and that many spread arguments is
+            // what blows the engine's argument limit. Highlight is a Set, so add() is the same thing.
+            const highlight = new HighlightCtor();
+            ranges.forEach(range => highlight.add(range));
+            highlights.set(name, highlight);
             return ranges.length;
         },
 

@@ -308,10 +308,10 @@ internal static class ScriptBundling
                 continue;
             }
 
-            var missing = required.Where(name => included.Contains(name, StringComparer.Ordinal)).Count() != required.Length;
-            checks.That(missing is false,
+            var absent = required.Where(name => included.Contains(name, StringComparer.Ordinal) is false).ToArray();
+            checks.That(absent.Length == 0,
                 $"resolving '{module}' brings [{string.Join(", ", required)}] with it",
-                $"resolved to [{string.Join(", ", included)}]");
+                $"it left out [{string.Join(", ", absent)}] - resolved to [{string.Join(", ", included)}]");
 
             var dragged = forbidden.Where(name => included.Contains(name, StringComparer.Ordinal)).ToArray();
             checks.That(dragged.Length == 0,

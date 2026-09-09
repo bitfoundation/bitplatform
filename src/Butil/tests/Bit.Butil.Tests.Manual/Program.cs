@@ -28,11 +28,12 @@ internal static class Program
     /// <see cref="ButilServiceAttribute"/> class.
     /// </summary>
     /// <remarks>
-    /// Two sources, and both are references a trimmer has to honour: <see cref="ConsumerComponent"/> injects
-    /// nine of them the way a razor <c>@inject</c> would, and <see cref="CancellationContract"/> constructs
+    /// Three sources, and all of them are references a trimmer has to honour: <see cref="ConsumerComponent"/>
+    /// injects nine of them the way a razor <c>@inject</c> would, <see cref="SplitModuleUse"/> injects six more
+    /// to call one module of each split family, and <see cref="CancellationContract"/> constructs
     /// <c>DigitalCredentials</c>, <c>Fetch</c> and <c>WebOtp</c> directly to check the handles they put on the
     /// wire. So the trimmed run measures a slightly larger consumer than the injected nine alone - the
-    /// alternative, checking that contract from a project that does not reference the library, is not a thing
+    /// alternative, checking those contracts from a project that does not reference the library, is not a thing
     /// that exists.
     /// </remarks>
     private static readonly string[] MustSurvive =
@@ -133,7 +134,7 @@ internal static class Program
         {
             foreach (var name in MustSurvive.Where(name => discoveredNames.Contains(name) is false))
             {
-                failures.Add($"{name} is used by ConsumerComponent but did not survive trimming.");
+                failures.Add($"{name} is referenced by this project but did not survive trimming.");
             }
 
             // Every survivor, not a hand-picked sample of the ones expected to go: a sampled list only ever
