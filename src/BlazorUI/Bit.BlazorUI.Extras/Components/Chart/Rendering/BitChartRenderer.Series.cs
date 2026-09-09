@@ -648,7 +648,7 @@ public sealed partial class BitChartRenderer
 
             foreach (var (ds, i) in group)
             {
-                var topPts = new List<(double x, double y, int di, double v)>();
+                var topPts = new List<(double x, double y, int di, double v, double top)>();
                 var basePts = new List<(double x, double y)>();
                 for (int di = 0; di < ds.Data.Count; di++)
                 {
@@ -663,7 +663,7 @@ public sealed partial class BitChartRenderer
                     double topVal = baseVal + v;
                     cumulative[di] = topVal;
                     double x = indexIsCategory ? indexScale.PixelForIndex(di, centered) : indexScale.PixelFor(di);
-                    topPts.Add((x, vScale.PixelFor(topVal), di, raw));
+                    topPts.Add((x, vScale.PixelFor(topVal), di, raw, topVal));
                     basePts.Add((x, vScale.PixelFor(baseVal)));
                 }
                 if (topPts.Count == 0) continue;
@@ -695,7 +695,12 @@ public sealed partial class BitChartRenderer
 
                 if (ds.PointStyle != BitChartPointStyle.None)
                     foreach (var p in topPts)
-                        AddPoint(scene, ds, i, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border, valueScale: vScale);
+                        // The marker sits at the cumulative top, so the whisker is centered there too
+                        // rather than at the raw value it is drawn from. A percentage stack rescales
+                        // every value, which would leave the interval - still in the original units -
+                        // pointing at the wrong place, so it is left out there.
+                        AddPoint(scene, ds, i, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border,
+                            valueScale: stacked100 ? null : vScale, errorValue: p.top);
             }
         }
     }
@@ -717,7 +722,7 @@ public sealed partial class BitChartRenderer
 
     private void AddPoint(BitChartScene scene, BitChartDataset ds, int dsIndex, int di,
         double x, double y, double value, double radius, string border, double? xValue = null,
-        BitChartAxisScale? valueScale = null)
+        BitChartAxisScale? valueScale = null, double? errorValue = null)
     {
         var ctx = Ctx(ds, dsIndex, di, value);
         double r = ds.PointRadiusFn?.Invoke(ctx) ?? radius;
@@ -748,7 +753,7 @@ public sealed partial class BitChartRenderer
         // A whisker needs the value axis to convert its interval, so it is only drawn where the caller
         // could hand one over - which is every cartesian call site, but not the radar's.
         if (valueScale is not null)
-            AddErrorBar(scene, ds, di, value, IsVertical ? x : y, valueScale);
+            AddErrorBar(scene, ds, di, errorValue ?? value, IsVertical ? x : y, valueScale);
 
         scene.Elements.Add(new BitChartDataElement
         {

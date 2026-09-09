@@ -24,6 +24,11 @@ public sealed class BitChartAxisScale
     /// <summary>Culture used to format tick labels. Defaults to the invariant culture.</summary>
     public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
 
+    /// <summary>The pixel range currently mapped onto, as last passed to <see cref="SetPixelRange"/>.</summary>
+    public double PixelStart => _pixelStart;
+    /// <inheritdoc cref="PixelStart"/>
+    public double PixelEnd => _pixelEnd;
+
     private double _pixelStart;
     private double _pixelEnd;
     private readonly List<string>? _categories;

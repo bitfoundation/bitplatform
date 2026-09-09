@@ -21,14 +21,17 @@ public sealed partial class BitChartRenderer
         // which is exactly the point: they live inside the plot.
         var centerAxes = new List<BitChartAxisScale>();
         var valueScales = new Dictionary<string, BitChartAxisScale>();
+        // The raw extent behind each axis, kept so the full range can be recomputed once the axes are
+        // laid out - a zoomed axis is pinned to its zoom range and cannot report it itself.
+        var dataExtents = new Dictionary<string, (double Min, double Max)>();
 
         foreach (var (id, so) in _scales)
         {
             if (xIds.Contains(id) || so.Type == BitChartScaleType.RadialLinear) continue;
             var (mn, mx) = ComputeValueExtent(id);
+            dataExtents[id] = (mn, mx);
             var scale = new BitChartAxisScale(so, horizontal: !IsVertical) { Culture = Culture };
             scale.SetDataRange(mn, mx);
-            scene.DataRanges[id] = (scale.Min, scale.Max);
             if (so.Type != BitChartScaleType.Category && _state.AxisRanges.TryGetValue(id, out var ov))
             {
                 scale.Forced = ov;
@@ -63,8 +66,8 @@ public sealed partial class BitChartRenderer
             if (id == "x" && indexIsCategory)
             {
                 xs = new BitChartAxisScale(so, horizontal: IsVertical, categories: _data.Labels) { Culture = Culture };
+                dataExtents[id] = (0, Math.Max(0, _data.Labels.Count - 1));
                 xs.SetDataRange(0, Math.Max(0, _data.Labels.Count - 1));
-                scene.DataRanges[id] = (xs.Min, xs.Max);
                 if (_state.AxisRanges.TryGetValue("x", out var cov))
                 {
                     xs.Forced = cov;
@@ -74,9 +77,9 @@ public sealed partial class BitChartRenderer
             else
             {
                 var (mn, mx) = id == "x" ? ComputeIndexExtent() : ComputeXExtent(id);
+                dataExtents[id] = (mn, mx);
                 xs = new BitChartAxisScale(so, horizontal: IsVertical) { Culture = Culture };
                 xs.SetDataRange(mn, mx);
-                scene.DataRanges[id] = (xs.Min, xs.Max);
                 if (_state.AxisRanges.TryGetValue(id, out var ov))
                 {
                     xs.Forced = ov;
@@ -138,6 +141,13 @@ public sealed partial class BitChartRenderer
             foreach (var s in valueScales.Values) s.SetPixelRange(plot.Left, plot.Right);
         }
 
+        // ---- Full (un-zoomed) ranges, for the zoom clamp ----
+        // Recorded only now: building the ticks nice-rounds a linear axis outwards, so anything read
+        // off a scale before it is laid out is narrower than what the axis displays - and clamping a
+        // gesture to that would snap the first zoom-out inside the visible range with no way back.
+        foreach (var (id, s) in xScales) RecordDataRange(id, s);
+        foreach (var (id, s) in valueScales) RecordDataRange(id, s);
+
         // ---- Grid + axes ----
         DrawGrid(scene, plot, indexScale, leftAxes, rightAxes, centerAxes);
 
@@ -189,6 +199,20 @@ public sealed partial class BitChartRenderer
             IndexCentered = HasBars()
         };
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(ctx);
+
+        // A zoomed axis is pinned to its zoom range, so its full range is read off a scratch scale
+        // laid out exactly as it is but without the zoom. A category axis is never rounded, so its
+        // extent is already the answer.
+        void RecordDataRange(string id, BitChartAxisScale s)
+        {
+            if (s.Forced is null) { scene.DataRanges[id] = (s.Min, s.Max); return; }
+            var ext = dataExtents[id];
+            if (s.Type == BitChartScaleType.Category) { scene.DataRanges[id] = ext; return; }
+            var probe = new BitChartAxisScale(s.Options, s.Horizontal) { Culture = Culture };
+            probe.SetDataRange(ext.Min, ext.Max);
+            probe.SetPixelRange(s.PixelStart, s.PixelEnd);
+            scene.DataRanges[id] = (probe.Min, probe.Max);
+        }
 
         BitChartAxisScale XScaleFor(BitChartDataset ds)
             => xScales.TryGetValue(string.IsNullOrEmpty(ds.XAxisID) ? "x" : ds.XAxisID, out var s) ? s : indexScale;

@@ -735,6 +735,14 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         {
             for (int i = items.Count - 1; i >= 0; i--)
                 if (!filter(items[i])) { items.RemoveAt(i); ordered.RemoveAt(i); }
+
+            // A filtered-out item is not part of the hover any more: the active set is what the
+            // Average positioner reads and what paints the active class, so it is trimmed too.
+            if (ordered.Count != _active.Count)
+            {
+                _active.Clear();
+                foreach (var el in ordered) _active.Add(el);
+            }
         }
         if (tip.ItemSort is { } sort)
         {

@@ -116,15 +116,17 @@ public sealed partial class BitChartRenderer
                     HoverShape = hoverPath,
                     DatasetIndex = dsIndex,
                     DataIndex = i,
-                    CenterX = cx + Math.Cos(mid) * (inner + outer) / 2,
-                    CenterY = cy + Math.Sin(mid) * (inner + outer) / 2,
+                    // Offset like the arc itself, so an exploded slice keeps its hover shape and
+                    // its tooltip over the slice rather than over where it would sit unexploded.
+                    CenterX = cx + ox + Math.Cos(mid) * (inner + outer) / 2,
+                    CenterY = cy + oy + Math.Sin(mid) * (inner + outer) / 2,
                     Value = v,
                     SeriesLabel = label,
                     Tooltip = new BitChartTooltipInfo
                     {
                         Title = i < _data.Labels.Count ? _data.Labels[i] : null,
-                        AnchorX = cx + Math.Cos(mid) * outer,
-                        AnchorY = cy + Math.Sin(mid) * outer,
+                        AnchorX = cx + ox + Math.Cos(mid) * outer,
+                        AnchorY = cy + oy + Math.Sin(mid) * outer,
                         Items = { new BitChartTooltipItem { Color = bg, Text = text } }
                     }
                 });
