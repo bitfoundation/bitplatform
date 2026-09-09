@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -1767,6 +1768,50 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public void AnAbandonedShiftMouseDownDoesNotArmALaterSelection()
+    {
+        IReadOnlyList<TestRow> selected = [];
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.CellNavigation, true);
+            parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
+        });
+
+        component.FindAll(".bit-dtg-cell-select input")[0].Change(true);
+
+        // A Shift+mousedown released away from the checkbox never produces a change event, so the
+        // modifier it captured must not survive to arm the next selection - here a keyboard one, which
+        // isn't preceded by a mousedown of its own that would otherwise overwrite it.
+        component.FindAll(".bit-dtg-cell-select input")[4].MouseDown(new MouseEventArgs { ShiftKey = true });
+
+        FirstCellOfRow(component, 2).KeyDown(new KeyboardEventArgs { Key = " " });
+
+        CollectionAssert.AreEqual(new[] { 1, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+    }
+
+    private static IElement FirstCellOfRow(IRenderedComponent<BitDataGrid<TestRow>> component, int rowIndex)
+        => component.FindAll(".bit-dtg-body > .bit-dtg-row")[rowIndex]
+            .QuerySelector(".bit-dtg-cell:not(.bit-dtg-cell-select)")!;
+
+    [TestMethod]
+    public void ShiftSpaceExtendsTheSelectionFromTheKeyboard()
+    {
+        IReadOnlyList<TestRow> selected = [];
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.CellNavigation, true);
+            parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
+        });
+
+        FirstCellOfRow(component, 0).KeyDown(new KeyboardEventArgs { Key = " " });
+        FirstCellOfRow(component, 2).KeyDown(new KeyboardEventArgs { Key = " ", ShiftKey = true });
+
+        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+    }
+
+    [TestMethod]
     public void CtrlAAndSpaceDriveSelectionFromTheKeyboard()
     {
         IReadOnlyList<TestRow> selected = [];
@@ -2657,6 +2702,36 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task AForceOpenedBranchReportsAndHonoursTheStateItRenders()
+    {
+        var component = RenderTree(parameters => parameters.Add(p => p.ShowSearchBox, true));
+        await component.InvokeAsync(() => component.Instance.SearchAsync("cherry"));
+
+        var branch = () => component.FindAll(".bit-dtg-body > .bit-dtg-row")[0];
+        Assert.AreEqual("true", branch().GetAttribute("aria-expanded"),
+            "a branch the search opened must not report itself collapsed");
+        Assert.AreEqual("▾", branch().QuerySelector(".bit-dtg-tree-toggle")!.TextContent.Trim());
+
+        // The toggle collapses it for real instead of only flipping the chevron.
+        branch().QuerySelector(".bit-dtg-tree-toggle")!.Click();
+        CollectionAssert.AreEqual(new[] { "Fruit" }, TreeRowTexts(component).ToArray());
+        Assert.AreEqual("false", branch().GetAttribute("aria-expanded"));
+
+        branch().QuerySelector(".bit-dtg-tree-toggle")!.Click();
+        CollectionAssert.AreEqual(new[] { "Fruit", "Cherry" }, TreeRowTexts(component).ToArray());
+
+        // A collapse made against one term is not carried into the next, which may keep the branch for
+        // a different match entirely.
+        branch().QuerySelector(".bit-dtg-tree-toggle")!.Click();
+        await component.InvokeAsync(() => component.Instance.SearchAsync("banana"));
+        CollectionAssert.AreEqual(new[] { "Fruit", "Banana" }, TreeRowTexts(component).ToArray());
+
+        // And it never reaches the real expand state: clearing the search comes back to the roots.
+        await component.InvokeAsync(() => component.Instance.SearchAsync(null));
+        CollectionAssert.AreEqual(new[] { "Fruit", "Vegetables" }, TreeRowTexts(component).ToArray());
+    }
+
+    [TestMethod]
     public async Task TreeFilterRowIsAvailableAndExportsFollowTheSameCriteria()
     {
         var component = RenderTree(parameters => parameters.Add(p => p.Filterable, true));
@@ -2780,6 +2855,25 @@ public class BitDataGridTests : BunitTestContext
         // A programmatic search supersedes what was typed and the box follows it.
         await component.InvokeAsync(() => component.Instance.SearchAsync("Date"));
         Assert.AreEqual("Date", component.Find(".bit-dtg-search-input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public async Task ClearingTheSearchCancelsTheKeystrokeStillWaitingOutItsDebounce()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchDebounce, 30);
+        });
+
+        component.Find(".bit-dtg-search-input").Input("che");
+        await component.InvokeAsync(() => component.Instance.SearchAsync(null));
+
+        // Long enough for the pending debounce to have elapsed had it not been superseded: the term
+        // the user half-typed must not re-apply itself after they cleared the box.
+        await Task.Delay(150);
+        Assert.IsNull(component.Instance.ActiveSearch);
+        Assert.IsTrue(string.IsNullOrEmpty(component.Find(".bit-dtg-search-input").GetAttribute("value")));
     }
 
     // ---------------------------------------------------------- Sort cycling

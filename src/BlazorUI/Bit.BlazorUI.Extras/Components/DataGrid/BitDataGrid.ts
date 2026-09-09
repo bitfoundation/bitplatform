@@ -221,6 +221,11 @@ namespace BitBlazorUI {
                 const cell = node as HTMLElement;
                 // A spanning cell's content belongs to several columns, so it would over-size this one.
                 if (cell.style.gridColumn) return;
+                // The filter row's editors stretch to the column (.bit-dtg-filter-wrap is width:100%),
+                // so measuring that cell would report the column's current width back as its content:
+                // a fitted column could then never shrink, and a narrow one would snap to the width of
+                // the operator dropdown. Auto-fit is about the header and the data, so skip it.
+                if (cell.closest('.bit-dtg-filter-row')) return;
                 const styles = getComputedStyle(cell);
                 const padding = parseFloat(styles.paddingLeft || '0') + parseFloat(styles.paddingRight || '0');
                 // The header holds the sort/group/resize affordances next to its label, so measure its
@@ -411,6 +416,24 @@ namespace BitBlazorUI {
     function isSelfManagedCellKeyControl(el: HTMLElement): boolean {
         return el.tagName === 'INPUT' || isSelfManagedEditKeyControl(el);
     }
+    // Ctrl/⌘+C (copy the selection) and Ctrl/⌘+A (select every row of the view) are handled by the
+    // focused cell's .NET handler, so their browser defaults have to go the same way the arrow keys'
+    // do: left alone, Ctrl+A would also run the document's own select-all -- painting a text selection
+    // over the grid -- and the Ctrl+C that follows would race the native copy of that selection against
+    // the grid's own clipboard write. Both shortcuts are conditional on the grid's parameters, which
+    // the root element publishes (see BitDataGrid.razor); a grid that owns neither leaves them to the
+    // browser. Alt+ combinations are not the shortcut and stay untouched.
+    function isGridOwnedShortcut(cell: HTMLElement, e: KeyboardEvent): boolean {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return false;
+        const key = e.key.toLowerCase();
+        if (key !== 'a' && key !== 'c') return false;
+        const root = cell.closest('.bit-dtg') as HTMLElement | null;
+        if (!root) return false;
+        return key === 'c'
+            ? root.hasAttribute('data-bit-dtg-copy')
+            : root.hasAttribute('data-bit-dtg-select-all');
+    }
+
     let cellKeyGuardInstalled = false;
     function installCellKeyGuard() {
         if (cellKeyGuardInstalled || typeof document === 'undefined') return;
@@ -437,6 +460,7 @@ namespace BitBlazorUI {
             // Suppress the grid-owned keys here so arrow/page/home/end never scroll the viewport.
             if (target.classList?.contains('bit-dtg-cell') && target.hasAttribute('tabindex')) {
                 if (cellNavKeys.has(e.key)) e.preventDefault();
+                else if (isGridOwnedShortcut(target, e)) e.preventDefault();
                 return;
             }
 

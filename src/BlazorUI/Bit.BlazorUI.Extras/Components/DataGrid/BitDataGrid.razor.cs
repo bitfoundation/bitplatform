@@ -437,7 +437,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // default(TItem) is not null and a "is not null" check would treat the never-set field as a real anchor.
     private TItem? _selectionAnchor;
     private bool _hasSelectionAnchor;
-    private bool _rangeSelectPending;
+    // The key of the row whose checkbox took a Shift+mousedown, or null. Keyed on the row rather than
+    // held as a bare flag because a mousedown is not guaranteed to produce a change event (the pointer
+    // can be released elsewhere): scoping the modifier to the row that captured it keeps an abandoned
+    // gesture from arming an unrelated later selection.
+    private object? _rangeSelectPendingKey;
 
     // tree mode
     private readonly HashSet<object> _expandedTree = new();
@@ -966,6 +970,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             {
                 _treeInitialized = false;
                 _expandedTree.Clear();
+                _treeFilterCollapsed.Clear();
                 // A new hierarchy invalidates lazily-fetched children of the previous one.
                 _loadedChildren.Clear();
                 _loadingNodes.Clear();
@@ -1192,11 +1197,15 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
 
         // While a search or a column filter is active the hierarchy is pruned to the branches that
-        // contain a match, and those branches render expanded whatever the user's own expand state
+        // contain a match, and those branches start expanded whatever the user's own expand state
         // says - a match hidden behind a collapsed ancestor would look like no match at all. The
         // expand state itself is never written to, so it comes back untouched once the criteria are
-        // cleared. See TreeFilteringActive for why only the synchronous children selector qualifies.
+        // cleared; a branch the user collapses while the criteria are applied is recorded separately
+        // (see IsTreeRowExpanded), which is also what the chevron and aria-expanded read, so a row
+        // never reports one state while rendering the other.
+        // See TreeFilteringActive for why only the synchronous children selector qualifies.
         var filtering = TreeFilteringActive;
+        SyncTreeFilterCollapse(filtering);
         _treeMatchCache = filtering ? new Dictionary<object, bool>() : null;
 
         var flat = new List<TItem>();
@@ -1234,7 +1243,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                     : children is { Count: > 0 };
                 _treeMeta[GetKey(item)] = (level, hasChildren);
                 flat.Add(item);
-                if (children is { Count: > 0 } && (filtering || IsTreeExpanded(item)))
+                if (children is { Count: > 0 } && IsTreeRowExpanded(item))
                     Walk(children, level + 1, subtreeKept);
             }
         }
@@ -1318,12 +1327,55 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal bool TreeHasChildren(TItem item) => _treeMeta.TryGetValue(GetKey(item), out var m) && m.HasChildren;
     internal bool IsTreeExpanded(TItem item) => _expandedTree.Contains(GetKey(item));
 
+    /// <summary>
+    /// Whether the row renders its children expanded. While the tree is pruned by a search or a filter
+    /// every surviving branch starts expanded, so the answer comes from the per-criteria collapse set
+    /// rather than the user's own expand state, which is left untouched for when the criteria clear.
+    /// The flattening walk, the chevron and <c>aria-expanded</c> all read this one answer, so a row
+    /// never reports a state it is not rendering.
+    /// </summary>
+    internal bool IsTreeRowExpanded(TItem item)
+        => TreeFilteringActive
+            ? _treeFilterCollapsed.Contains(GetKey(item)) is false
+            : IsTreeExpanded(item);
+
+    // Branches the user collapsed by hand while the current criteria were applied. Kept apart from
+    // _expandedTree so a collapse made against a pruned tree never rewrites the real expand state, and
+    // dropped whenever the criteria change - a branch collapsed against one term must come back
+    // expanded for the next one, which may keep it for an entirely different match.
+    private readonly HashSet<object> _treeFilterCollapsed = new();
+    private string? _treeFilterSignature;
+
+    private void SyncTreeFilterCollapse(bool filtering)
+    {
+        // Joined with control characters no column id, operator name or typed value carries, so two
+        // different sets of criteria can never come out with the same signature.
+        var signature = filtering
+            ? string.Join("\u0001", _filters.Select(f => $"{f.ColumnId}\u0002{f.Operator}\u0002{f.Value}").Prepend(_search ?? ""))
+            : null;
+        if (signature == _treeFilterSignature) return;
+        _treeFilterSignature = signature;
+        _treeFilterCollapsed.Clear();
+    }
+
     /// <summary>True while a lazy node's children are being fetched (renders a loading toggle).</summary>
     internal bool IsTreeNodeLoading(TItem item) => _loadingNodes.Contains(GetKey(item));
 
     internal async Task ToggleTreeNodeAsync(TItem item)
     {
         var key = GetKey(item);
+
+        // While the tree is pruned every kept branch is expanded by the pruning itself, so the toggle
+        // records the exception in the per-criteria collapse set instead of the real expand state.
+        // Nothing is ever fetched here: pruning only runs on the synchronous ChildrenSelector, whose
+        // children are all in hand already.
+        if (TreeFilteringActive)
+        {
+            if (_treeFilterCollapsed.Remove(key) is false) _treeFilterCollapsed.Add(key);
+            await RefreshAsync();
+            return;
+        }
+
         if (_expandedTree.Add(key))
         {
             // Expanding a lazy node for the first time: fetch and cache its children. A re-entrant
@@ -1367,6 +1419,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     public async Task ExpandAllAsync()
     {
         if (!IsTreeMode) return;
+        // A pruned tree renders from the collapse set, so dropping it is what "expand all" means there.
+        _treeFilterCollapsed.Clear();
         _expandedTree.Clear();
         if (ChildrenProvider is not null)
         {
@@ -1384,6 +1438,15 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         if (!IsTreeMode) return;
         _expandedTree.Clear();
+        // A pruned tree renders from the collapse set, so every branch currently on screen has to be
+        // named in it for the collapse to be visible; the roots survive, as they do unfiltered.
+        if (TreeFilteringActive)
+        {
+            foreach (var (key, meta) in _treeMeta)
+            {
+                if (meta.HasChildren) _treeFilterCollapsed.Add(key);
+            }
+        }
         await RefreshAsync();
     }
 
@@ -1931,6 +1994,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     public async Task SearchAsync(string? text)
     {
         var normalized = string.IsNullOrWhiteSpace(text) ? null : text;
+
+        // This call is now the search, so a keystroke still waiting out its debounce is superseded -
+        // otherwise the clear button (or a programmatic search) would be undone a fraction of a second
+        // later by the term the user had half-typed. A debounced search that has already run its delay
+        // has dropped its own source by the time it lands here, so it never cancels itself.
+        _searchDebounceCts?.Cancel();
+        _searchDebounceCts = null;
+
         // The box always shows the term that is actually applied - including when a programmatic
         // search (or the clear button) supersedes what the user had typed into it.
         _searchBoxText = normalized;
@@ -2125,18 +2196,28 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal bool CanSelectRow(TItem item) => IsRowSelectionDisabled is null || !IsRowSelectionDisabled(item);
 
     /// <summary>
-    /// Records whether the pending selection change was initiated with <kbd>Shift</kbd> held. Captured
-    /// on the checkbox's <c>mousedown</c>, which is dispatched before the <c>change</c> that carries the
-    /// new value but exposes no modifier keys of its own.
+    /// Records that <paramref name="item"/>'s checkbox took a <kbd>Shift</kbd>ed mousedown. Captured on
+    /// <c>mousedown</c>, which is dispatched before the <c>change</c> that carries the new value but
+    /// exposes no modifier keys of its own; the change event that follows on that same row is the only
+    /// one it applies to.
     /// </summary>
-    internal void SetRangeSelectPending(bool shiftKey) => _rangeSelectPending = shiftKey;
+    internal void SetRangeSelectPending(TItem item, bool shiftKey)
+        => _rangeSelectPendingKey = shiftKey ? GetKey(item) : null;
 
-    internal async Task ToggleRowSelectionAsync(TItem item, bool? value = null)
+    /// <param name="item">The row whose selection is being toggled.</param>
+    /// <param name="value">The selected state to apply, or <c>null</c> to flip the row's current one.</param>
+    /// <param name="range">Whether this toggle extends the selection from the anchor. Passed by the
+    /// callers that know the modifier first-hand (the keyboard's Shift+Space); left <c>null</c> by the
+    /// checkbox, whose <c>change</c> event carries no modifiers, so the mousedown captured for that row
+    /// answers instead.</param>
+    internal async Task ToggleRowSelectionAsync(TItem item, bool? value = null, bool? range = null)
     {
-        // Consume the Shift flag regardless of the outcome, so a modifier from an earlier click can
-        // never leak into a later, unmodified one.
-        var range = _rangeSelectPending;
-        _rangeSelectPending = false;
+        // Consume the captured modifier regardless of the outcome, so a mousedown released without a
+        // change event can never arm a later, unmodified selection. It counts only for the row it was
+        // captured on, and never for a caller that stated the modifier itself.
+        var pendingKey = _rangeSelectPendingKey;
+        _rangeSelectPendingKey = null;
+        range ??= pendingKey is not null && Equals(pendingKey, GetKey(item));
 
         if (SelectionMode == BitDataGridSelectionMode.None) return;
         if (!CanSelectRow(item)) return;
@@ -2148,7 +2229,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _selectionAnchor = selected ? item : default;
             _hasSelectionAnchor = selected;
         }
-        else if (range && _hasSelectionAnchor)
+        else if (range is true && _hasSelectionAnchor)
         {
             // Shift+click extends from the last plainly-clicked row to this one, applying the clicked
             // checkbox's new value to the whole run - the range-selection gesture every desktop grid
@@ -2988,10 +3069,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             }
         }
 
-        // Space toggles the focused row's selection, the keyboard equivalent of its checkbox.
+        // Space toggles the focused row's selection, the keyboard equivalent of its checkbox - with
+        // Shift, the equivalent of Shift+clicking it: the range extends from the anchor. The modifier
+        // is read off this event rather than from a captured mousedown, so a pointer gesture the user
+        // began elsewhere has no say in what the keyboard does.
         if (e.Key == " " && SelectionEnabled)
         {
-            await ToggleRowSelectionAsync(item);
+            await ToggleRowSelectionAsync(item, range: e.ShiftKey);
             return;
         }
 

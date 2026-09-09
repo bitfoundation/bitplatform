@@ -56,7 +56,7 @@
                keys, and mousedown is dispatched before it. *@
             <input type="checkbox" checked="@Selected" disabled="@(!Grid.CanSelectRow(Item))"
                    aria-label="@SelectRowLabel"
-                   @onmousedown="e => Grid.SetRangeSelectPending(e.ShiftKey)"
+                   @onmousedown="e => Grid.SetRangeSelectPending(Item, e.ShiftKey)"
                    @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
         </div>
     }
@@ -139,7 +139,7 @@
     // the row), otherwise its detail content's. A row that expands neither way reports nothing rather
     // than advertising a collapsed state that cannot be opened.
     private string? RowExpandedState
-        => Grid.IsTreeMode && Grid.TreeHasChildren(Item) ? (Grid.IsTreeExpanded(Item) ? "true" : "false")
+        => Grid.IsTreeMode && Grid.TreeHasChildren(Item) ? (Grid.IsTreeRowExpanded(Item) ? "true" : "false")
          : RowExpandable ? (Grid.IsDetailExpanded(Item) ? "true" : "false")
          : null;
 
@@ -165,9 +165,9 @@
                         @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
                         @onkeydown:stopPropagation="true"
                         disabled="@Grid.IsTreeNodeLoading(Item)"
-                        aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@Grid.IsTreeExpanded(Item)"
+                        aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@Grid.IsTreeRowExpanded(Item)"
                         aria-busy="@(Grid.IsTreeNodeLoading(Item) ? "true" : null)">
-                    @(Grid.IsTreeNodeLoading(Item) ? "…" : Grid.IsTreeExpanded(Item) ? "▾" : "▸")
+                    @(Grid.IsTreeNodeLoading(Item) ? "…" : Grid.IsTreeRowExpanded(Item) ? "▾" : "▸")
                 </button>
             }
             else

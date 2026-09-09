@@ -7,7 +7,12 @@
     @Columns
 </CascadingValue>
 
-<div class="@RootClasses()" style="@Style" @ref="_rootRef" dir="@(Direction switch { BitDir.Rtl => "rtl", BitDir.Auto => "auto", _ => "ltr" })">
+@* The two grid-owned Ctrl/⌘ shortcuts are conditional, so the capture-phase key guard that cancels
+   their browser defaults (see BitDataGrid.ts) reads whether they are live off the root rather than
+   guessing: a grid without them must leave Ctrl+A and Ctrl+C to the browser. *@
+<div class="@RootClasses()" style="@Style" @ref="_rootRef" dir="@(Direction switch { BitDir.Rtl => "rtl", BitDir.Auto => "auto", _ => "ltr" })"
+     data-bit-dtg-copy="@(ClipboardCopy ? "true" : null)"
+     data-bit-dtg-select-all="@(SelectionMode == BitDataGridSelectionMode.Multiple ? "true" : null)">
 
     @* Announces sort/filter/page changes to screen readers; these are otherwise silent view mutations. *@
     <div class="bit-dtg-visually-hidden" role="status" aria-live="polite">@_srAnnouncement</div>
