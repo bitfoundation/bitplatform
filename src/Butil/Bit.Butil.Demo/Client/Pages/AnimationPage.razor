@@ -270,8 +270,12 @@ if (running.Any(a => a.PlayState == "running")) await WaitForIt();
 var cancelled = await _box.CancelAnimations(js, subtree: true);
 """)>
         <div class="controls">
+            <button @onclick="StartListDemo">Start a long animation</button>
             <button @onclick="ListAnimations">GetAnimations</button>
             <button class="danger" @onclick="CancelAllAnimations">CancelAnimations</button>
+        </div>
+        <div class="anim-stage">
+            <div class="anim-target" @ref="_listRef">Running</div>
         </div>
         <DemoConsole @ref="listOutput" Title="getAnimations output" />
     </DemoSection>
@@ -337,8 +341,10 @@ var cancelled = await _box.CancelAnimations(js, subtree: true);
 
     private ElementReference _timelineRef;
     private ElementReference _commitRef;
+    private ElementReference _listRef;
     private AnimationHandle? _timelineHandle;
     private AnimationHandle? _persistHandle;
+    private AnimationHandle? _listHandle;
 
     private ElementReference _boxRef;
     private ElementReference _pulseRef;
@@ -694,11 +700,32 @@ var cancelled = await _box.CancelAnimations(js, subtree: true);
         }
     }
 
+    private async Task StartListDemo()
+    {
+        try
+        {
+            if (_listHandle is not null) await _listHandle.DisposeAsync();
+
+            _listHandle = await _listRef.Animate(js,
+                [
+                    new() { ["transform"] = "rotate(0deg)" },
+                    new() { ["transform"] = "rotate(360deg)" },
+                ],
+                new AnimationOptions { Duration = 4000, Iterations = double.PositiveInfinity });
+
+            await listOutput.Success("Animate →", "a looping animation is now running on this section's own element.");
+        }
+        catch (Exception ex)
+        {
+            await listOutput.Error("Animate failed →", ex.Message);
+        }
+    }
+
     private async Task ListAnimations()
     {
         try
         {
-            var running = await _commitRef.GetAnimations(js, subtree: true);
+            var running = await _listRef.GetAnimations(js, subtree: true);
             if (running.Length == 0) await listOutput.Info("GetAnimations →", "nothing is animating on that element.");
             else await listOutput.Success("GetAnimations →", running);
         }
@@ -712,7 +739,7 @@ var cancelled = await _box.CancelAnimations(js, subtree: true);
     {
         try
         {
-            await listOutput.Success("CancelAnimations →", $"{await _commitRef.CancelAnimations(js, subtree: true)} cancelled.");
+            await listOutput.Success("CancelAnimations →", $"{await _listRef.CancelAnimations(js, subtree: true)} cancelled.");
         }
         catch (Exception ex)
         {
@@ -727,6 +754,11 @@ var cancelled = await _box.CancelAnimations(js, subtree: true);
         if (_persistHandle is not null)
         {
             await _persistHandle.DisposeAsync();
+        }
+
+        if (_listHandle is not null)
+        {
+            await _listHandle.DisposeAsync();
         }
 
         if (_slideHandle is not null)

@@ -84,9 +84,14 @@ await channel.SendText("hello, other browser");
 await channel.SendBytes([1, 2, 3, 4]);
 """)>
         <div class="controls">
+            <button @onclick="ConnectForChannel">Connect the two peers</button>
             <input @bind="_message" placeholder="message" aria-label="message" />
             <button @onclick="SendText">Send from A</button>
             <button class="secondary" @onclick="SendBytes">Send 4 bytes</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Peers</span>
+            <span>A @_stateA · B @_stateB</span>
         </div>
         @if (_received.Count > 0)
         {
@@ -155,7 +160,12 @@ var path = stats.FirstOrDefault(s => s.Type == "candidate-pair" && s.Values.GetV
 var rtt = path?.Values.GetValueOrDefault("currentRoundTripTime");
 """)>
         <div class="controls">
+            <button @onclick="ConnectForStats">Connect the two peers</button>
             <button @onclick="ReadStats">GetStats</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Peers</span>
+            <span>A @_stateA · B @_stateB</span>
         </div>
         <DemoConsole @ref="statsOutput" Title="stats output" />
     </DemoSection>
@@ -173,6 +183,10 @@ await b!.AttachRemoteMedia(_remoteVideo);
         <div class="controls">
             <button @onclick="ConnectWithCamera">Connect with the camera</button>
             <button class="danger" @onclick="Disconnect">Stop</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Peers</span>
+            <span>A @_stateA · B @_stateB</span>
         </div>
         <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem">
             <div>
@@ -291,11 +305,18 @@ await b!.AttachRemoteMedia(_remoteVideo);
         }
     }
 
-    private Task Connect() => Connect(withCamera: false);
+    // The loopback pair is one connection shared by the sections that need one, but the handshake
+    // reports to whichever section asked for it - a result printed in a console the reader has
+    // scrolled past is a result nobody sees.
+    private Task Connect() => Connect(connectOutput, withCamera: false);
 
-    private Task ConnectWithCamera() => Connect(withCamera: true);
+    private Task ConnectForChannel() => Connect(channelOutput, withCamera: false);
 
-    private async Task Connect(bool withCamera)
+    private Task ConnectForStats() => Connect(statsOutput, withCamera: false);
+
+    private Task ConnectWithCamera() => Connect(mediaOutput, withCamera: true);
+
+    private async Task Connect(DemoConsole output, bool withCamera)
     {
         await Disconnect();
 
@@ -329,18 +350,18 @@ await b!.AttachRemoteMedia(_remoteVideo);
                             await channelOutput.Success("B received →", _received[^1]);
                             StateHasChanged();
                         }),
-                        onOpen: () => InvokeAsync(() => channelOutput.Log("B's end of the channel is open.")));
+                        onOpen: () => InvokeAsync(() => output.Log("B's end of the channel is open.")));
                 });
 
             if (_a is null || _b is null)
             {
-                await connectOutput.Warn("CreatePeerConnection returned null - this runtime has no RTCPeerConnection.");
+                await output.Warn("CreatePeerConnection returned null - this runtime has no RTCPeerConnection.");
                 return;
             }
 
             // Everything the offer must describe has to exist before the offer is made.
             _channelA = await _a.CreateDataChannel("chat");
-            _channelA?.Listen(onOpen: () => InvokeAsync(() => channelOutput.Success("A's end of the channel is open - it can send now.")));
+            _channelA?.Listen(onOpen: () => InvokeAsync(() => output.Success("A's end of the channel is open - it can send now.")));
 
             if (withCamera)
             {
@@ -360,7 +381,7 @@ await b!.AttachRemoteMedia(_remoteVideo);
             var offer = await _a.CreateOffer();
             if (offer?.Sdp is null)
             {
-                await connectOutput.Error("CreateOffer failed →", offer?.Error);
+                await output.Error("CreateOffer failed →", offer?.Error);
                 return;
             }
 
@@ -370,18 +391,18 @@ await b!.AttachRemoteMedia(_remoteVideo);
             var answer = await _b.CreateAnswer();
             if (answer?.Sdp is null)
             {
-                await connectOutput.Error("CreateAnswer failed →", answer?.Error);
+                await output.Error("CreateAnswer failed →", answer?.Error);
                 return;
             }
 
             await _b.SetLocalDescription(answer);
             await _a.SetRemoteDescription(answer);
 
-            await connectOutput.Success("Handshake done →", "offer, answer, and candidates flowing both ways.");
+            await output.Success("Handshake done →", "offer, answer, and candidates flowing both ways.");
         }
         catch (Exception ex)
         {
-            await connectOutput.Error("Connect failed →", ex.Message);
+            await output.Error("Connect failed →", ex.Message);
         }
     }
 
@@ -410,7 +431,7 @@ await b!.AttachRemoteMedia(_remoteVideo);
     {
         if (_channelA is null)
         {
-            await channelOutput.Warn("Connect first.");
+            await channelOutput.Warn("Connect the peers first, with the button in this section.");
             return;
         }
 
@@ -429,7 +450,7 @@ await b!.AttachRemoteMedia(_remoteVideo);
     {
         if (_channelA is null)
         {
-            await channelOutput.Warn("Connect first.");
+            await channelOutput.Warn("Connect the peers first, with the button in this section.");
             return;
         }
 
@@ -632,7 +653,7 @@ await b!.AttachRemoteMedia(_remoteVideo);
     {
         if (_a is null)
         {
-            await statsOutput.Warn("Connect first.");
+            await statsOutput.Warn("Connect the peers first, with the button in this section.");
             return;
         }
 

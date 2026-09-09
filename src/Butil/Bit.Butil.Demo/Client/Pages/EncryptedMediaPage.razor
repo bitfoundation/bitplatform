@@ -61,6 +61,7 @@ var session = await keys!.CreateSession(
 
 await session!.GenerateRequest("keyids", initData);
 """)>
+        <video @ref="keysVideoElement" controls playsinline muted style="width:100%;max-width:420px;background:#000;border-radius:8px"></video>
         <div class="controls">
             <button @onclick="CreateClearKey" disabled="@(keys is not null)">CreateMediaKeys (clearkey)</button>
             <button class="secondary" @onclick="OpenSession" disabled="@(keys is null || session is not null)">CreateSession</button>
@@ -163,6 +164,10 @@ await restored.Remove();   // releases the licence and deletes the stored copy
 
     private ElementReference videoElement;
 
+    // The keys are attached to this section's own element: AttachTo is the step being demonstrated
+    // here, and its target has to be on screen while the reader is working through it.
+    private ElementReference keysVideoElement;
+
     private MediaKeysHandle? keys;
     private MediaKeySessionHandle? session;
     private ButilSubscription? encryptedSubscription;
@@ -237,7 +242,7 @@ await restored.Remove();   // releases the licence and deletes the stored copy
             }
 
             await sessionOutput.Success($"CreateMediaKeys → {keys.Access.KeySystem}, keys {keys.Id}");
-            await sessionOutput.Log("AttachTo(videoElement) →", await keys.AttachTo(videoElement));
+            await sessionOutput.Log("AttachTo(videoElement) →", await keys.AttachTo(keysVideoElement));
         }
         catch (Exception ex)
         {

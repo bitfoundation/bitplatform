@@ -185,6 +185,9 @@ await _box.SetStyleText("border-color", "rebeccapurple");
 var set = await _box.GetStyleValue("width");
 await _box.DeleteStyleValue("width");
 """)>
+        <div @ref="_inlineBox" style="padding:1rem;border:1px solid var(--border,#ccc);border-radius:6px;width:60%">
+            A box to style.
+        </div>
         <div class="controls">
             <button @onclick="SetWidth">SetStyleValue(width, 40%)</button>
             <button @onclick="SetBorder">SetStyleText(border-color)</button>
@@ -320,6 +323,7 @@ if (await css.SupportsPaintWorklet())
     private ElementReference _prose;
     private ElementReference _accentBox;
     private ElementReference _box;
+    private ElementReference _inlineBox;
 
     private StyleSheetHandle? _sheet;
     private bool _accentToggled;
@@ -597,7 +601,7 @@ if (await css.SupportsPaintWorklet())
     {
         try
         {
-            var set = await _box.SetStyleValue("width", 40, "percent");
+            var set = await _inlineBox.SetStyleValue("width", 40, "percent");
             if (set) await inlineOutput.Success("SetStyleValue →", "width: 40%");
             else await inlineOutput.Warn("SetStyleValue →", "false - no CSS Typed OM here.");
         }
@@ -611,7 +615,7 @@ if (await css.SupportsPaintWorklet())
     {
         try
         {
-            var set = await _box.SetStyleText("border-color", "rebeccapurple");
+            var set = await _inlineBox.SetStyleText("border-color", "rebeccapurple");
             if (set) await inlineOutput.Success("SetStyleText →", "border-color is now an inline style.");
             else await inlineOutput.Warn("SetStyleText →", "false - the property name or the value was rejected.");
         }
@@ -625,8 +629,8 @@ if (await css.SupportsPaintWorklet())
     {
         try
         {
-            await inlineOutput.Success("GetStyleValue(\"width\") →", await _box.GetStyleValue("width"));
-            await inlineOutput.Success("GetStyleProperties →", await _box.GetStyleProperties());
+            await inlineOutput.Success("GetStyleValue(\"width\") →", await _inlineBox.GetStyleValue("width"));
+            await inlineOutput.Success("GetStyleProperties →", await _inlineBox.GetStyleProperties());
         }
         catch (Exception ex)
         {
@@ -638,7 +642,7 @@ if (await css.SupportsPaintWorklet())
     {
         try
         {
-            await inlineOutput.Success("ClearStyleValues →", await _box.ClearStyleValues());
+            await inlineOutput.Success("ClearStyleValues →", await _inlineBox.ClearStyleValues());
         }
         catch (Exception ex)
         {

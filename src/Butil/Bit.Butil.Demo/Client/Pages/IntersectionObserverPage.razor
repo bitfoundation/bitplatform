@@ -63,6 +63,11 @@ await target.ObserveIntersection(js, entries =>
     Thresholds = [0, 0.25, 0.5, 0.75, 1],
 });
 """)>
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="thresholdTargetRef" class="demo-marker">observed target</div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
     <div class="controls">
         <button @onclick="StartThresholds" disabled="@(thresholdSub is not null)">Observe with 5 thresholds</button>
         <button class="danger" @onclick="() => StopThresholds(thresholdsOutput)" disabled="@(thresholdSub is null)">Stop</button>
@@ -82,6 +87,11 @@ await target.ObserveIntersection(js, entries =>
     RootMargin = "-80px 0px -80px 0px",
 });
 """)>
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="marginTargetRef" class="demo-marker">observed target</div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
     <div class="controls">
         <button @onclick="StartRootMargin" disabled="@(marginSub is not null)">Observe with -80px margins</button>
         <button class="danger" @onclick="() => StopRootMargin(rootMarginOutput)" disabled="@(marginSub is null)">Stop</button>
@@ -103,6 +113,11 @@ await target.ObserveIntersection(js, entries =>
     MinInterval = 200,
 });
 """)>
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="gatedTargetRef" class="demo-marker">observed target</div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
     <div class="controls">
         <button @onclick="StartGated" disabled="@(gatedSub is not null)">Observe with a 200 ms gate</button>
         <button class="danger" @onclick="() => StopGated(gatedOutput)" disabled="@(gatedSub is null)">Stop</button>
@@ -126,7 +141,14 @@ await target.ObserveIntersection(js, entries =>
     Rect? root = entry.RootBounds;           // root geometry
 });
 """)>
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="entriesTargetRef" class="demo-marker">observed target</div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
     <div class="controls">
+        <button @onclick="StartEntries" disabled="@(entriesSub is not null)">Start observing</button>
+        <button class="danger" @onclick="StopEntries" disabled="@(entriesSub is null)">Stop</button>
         <button class="secondary" @onclick="LogLatestEntry" disabled="@(latestEntry is null)">Log latest entry as JSON</button>
     </div>
     <DemoConsole @ref="entriesOutput" Title="entries output" />
@@ -185,12 +207,19 @@ public async ValueTask DisposeAsync()
     private DemoConsole entriesOutput = default!;
     private DemoConsole stoppingOutput = default!;
 
+    // One observed target per section: the whole demonstration is what the callback says as the
+    // target scrolls, which is unreadable if the target is in a section the reader has left behind.
     private ElementReference targetRef;
+    private ElementReference thresholdTargetRef;
+    private ElementReference marginTargetRef;
+    private ElementReference gatedTargetRef;
+    private ElementReference entriesTargetRef;
 
     private ButilSubscription? basicSub;
     private ButilSubscription? thresholdSub;
     private ButilSubscription? marginSub;
     private ButilSubscription? gatedSub;
+    private ButilSubscription? entriesSub;
 
     private IntersectionObserverEntry? latestEntry;
 
@@ -235,7 +264,7 @@ public async ValueTask DisposeAsync()
     {
         try
         {
-            gatedSub = await targetRef.ObserveIntersection(js, entries =>
+            gatedSub = await gatedTargetRef.ObserveIntersection(js, entries =>
             {
                 if (entries.Length == 0) return;
 
@@ -276,7 +305,7 @@ public async ValueTask DisposeAsync()
     {
         try
         {
-            thresholdSub = await targetRef.ObserveIntersection(js, entries =>
+            thresholdSub = await thresholdTargetRef.ObserveIntersection(js, entries =>
             {
                 if (entries.Length == 0) return;
 
@@ -316,7 +345,7 @@ public async ValueTask DisposeAsync()
     {
         try
         {
-            marginSub = await targetRef.ObserveIntersection(js, entries =>
+            marginSub = await marginTargetRef.ObserveIntersection(js, entries =>
             {
                 if (entries.Length == 0) return;
 
@@ -352,6 +381,35 @@ public async ValueTask DisposeAsync()
         }
     }
 
+    private async Task StartEntries()
+    {
+        try
+        {
+            entriesSub = await entriesTargetRef.ObserveIntersection(js, entries =>
+            {
+                if (entries.Length == 0) return;
+
+                latestEntry = entries[^1];
+                _ = InvokeAsync(StateHasChanged);
+            });
+
+            await entriesOutput.Log("Observing - scroll the box, then read the latest entry back.");
+        }
+        catch (Exception ex)
+        {
+            await entriesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopEntries()
+    {
+        if (entriesSub is null) return;
+
+        await entriesSub.DisposeAsync();
+        entriesSub = null;
+        await entriesOutput.Log("Stopped.");
+    }
+
     private async Task LogLatestEntry()
     {
         try
@@ -371,6 +429,14 @@ public async ValueTask DisposeAsync()
         await StopObserving(stoppingOutput);
         await StopThresholds(stoppingOutput);
         await StopRootMargin(stoppingOutput);
+        await StopGated(stoppingOutput);
+
+        if (entriesSub is not null)
+        {
+            await entriesSub.DisposeAsync();
+            entriesSub = null;
+            await stoppingOutput.Log("Entries observer disposed.");
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -379,5 +445,6 @@ public async ValueTask DisposeAsync()
         if (thresholdSub is not null) await thresholdSub.DisposeAsync();
         if (marginSub is not null) await marginSub.DisposeAsync();
         if (gatedSub is not null) await gatedSub.DisposeAsync();
+        if (entriesSub is not null) await entriesSub.DisposeAsync();
     }
 }

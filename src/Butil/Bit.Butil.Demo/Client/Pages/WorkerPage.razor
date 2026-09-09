@@ -251,7 +251,9 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
         }
     }
 
-    private async Task StartWorker()
+    private Task StartWorker() => StartWorker(workerOutput);
+
+    private async Task StartWorker(DemoConsole output)
     {
         await TerminateWorker();
 
@@ -279,16 +281,16 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
             if (_worker is null)
             {
                 _workerState = "Could not start.";
-                await workerOutput.Warn("Create returned null - Worker is unavailable, or the script URL was refused.");
+                await output.Warn("Create returned null - Worker is unavailable, or the script URL was refused.");
                 return;
             }
 
             _workerState = "Running.";
-            await workerOutput.Success("Create → /workers/demo-worker.js");
+            await output.Success("Create → /workers/demo-worker.js");
         }
         catch (Exception ex)
         {
-            await workerOutput.Error("Create failed →", ex.Message);
+            await output.Error("Create failed →", ex.Message);
         }
     }
 
@@ -512,11 +514,14 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
         _sharedState = "Disconnected - the worker lives on for any other tab.";
     }
 
+    // Starting the worker is one line of setup, not the demonstration - so a section that needs one
+    // starts it and reports that in its own console, rather than sending the reader back up the page.
     private async Task<bool> RequireWorker(DemoConsole console)
     {
         if (_worker is not null) return true;
-        await console.Warn("Create the worker first.");
-        return false;
+
+        await StartWorker(console);
+        return _worker is not null;
     }
 
     private async Task TerminateWorker()

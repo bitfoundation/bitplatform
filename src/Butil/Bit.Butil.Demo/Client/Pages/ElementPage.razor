@@ -38,9 +38,8 @@
 }
 """)
              Language="razor">
-    <div @ref="targetRef" @onpointerdown="CapturePointerId" data-demo="butil"
-         class="demo-box">
-        I am the target element - click me to record a pointer id.
+    <div @ref="targetRef" data-demo="butil" class="demo-box">
+        I am this section's target element.
     </div>
     <div class="field-row">
         <div class="field">
@@ -106,6 +105,12 @@ var scrollHeight = await box.GetScrollHeight();
 var scrollTop = await box.GetScrollTop();
 var tagName = await box.GetTagName();
 """)>
+    <div @ref="metricsBoxRef" class="demo-box" style="height:6rem;overflow:auto">
+        <p style="margin:0">The box being measured. It scrolls, so the scroll metrics have something to report.</p>
+        <p style="margin:0">Its padding box, border box and scroll box are all different sizes.</p>
+        <p style="margin:0">Scroll it and read the offsets back.</p>
+        <p style="margin:0">One more line, to make sure it overflows.</p>
+    </div>
     <div class="controls">
         <button @onclick="GetBoundingClientRect">GetBoundingClientRect</button>
         <button class="secondary" @onclick="GetClientMetrics">Client W/H/T/L</button>
@@ -132,8 +137,11 @@ await box.RequestPointerLock();
         <span class="field-label">Focus this input, then press the Blur button</span>
         <input @ref="blurInputRef" placeholder="focus me..." style="max-width:20rem;" />
     </div>
+    <div @ref="pointerBoxRef" @onpointerdown="CapturePointerId" class="demo-box">
+        Click me to record a pointer id, then capture and release it.
+    </div>
     <p class="section-desc">
-        Pointer id: <span class="kbd">@(pointerId == 0 ? "click the target element above first" : pointerId.ToString())</span>
+        Pointer id: <span class="kbd">@(pointerId == 0 ? "click this section's box first" : pointerId.ToString())</span>
     </p>
     <div class="controls">
         <button @onclick="BlurInput">Blur</button>
@@ -192,6 +200,9 @@ var outer = await box.GetOuterHtml();
             <input @bind-value="innerText" />
         </div>
     </div>
+    <div @ref="contentIdentityRef" class="demo-box">
+        This element's id, class, text and markup are what the buttons below read and write.
+    </div>
     <div class="controls">
         <button @onclick="SetId">SetId</button>
         <button @onclick="SetClassName">SetClassName</button>
@@ -209,7 +220,7 @@ var outer = await box.GetOuterHtml();
 
 <DemoSection Title="Editing and interaction modes"
              Api="ContentEditable / IsContentEditable / Dir / EnterKeyHint / InputMode / Hidden / Inert"
-             Description="Toggle in-place editing, text direction, virtual-keyboard hints, visibility and inertness on the target element. After setting ContentEditable to True, click into the target element above and type."
+             Description="Toggle in-place editing, text direction, virtual-keyboard hints, visibility and inertness on the target element. After setting ContentEditable to True, click into this section's box and type."
              Code=@("""
 await box.SetContentEditable(ContentEditable.True);
 var editable = await box.IsContentEditable();
@@ -267,6 +278,9 @@ await box.SetInert(true);
             </select>
         </div>
     </div>
+    <div @ref="editingBoxRef" class="demo-box">
+        Set ContentEditable to True, then click in here and type.
+    </div>
     <div class="controls">
         <button @onclick="SetContentEditable">SetContentEditable</button>
         <button @onclick="SetDir">SetDir</button>
@@ -323,13 +337,16 @@ var isMatch = await box.Matches("[data-demo]");
 
 await box.Remove(); // detaches the element from the DOM
 """)>
+    <div @ref="selectorBoxRef" data-demo="butil" class="demo-box">
+        Matches is tested against this element, and Remove detaches this one - reload to bring it back.
+    </div>
     <div class="field">
         <span class="field-label">CSS selector</span>
         <input @bind-value="selector" style="max-width:20rem;" />
     </div>
     <div class="controls">
         <button @onclick="Matches">Matches</button>
-        <button class="danger" @onclick="RemoveElement">Remove target element</button>
+        <button class="danger" @onclick="RemoveElement">Remove this section's element</button>
     </div>
     <DemoConsole @ref="selectorOutput" Title="selector output" />
 </DemoSection>
@@ -359,6 +376,9 @@ var insideForm = await box.Closest("form");
     <div class="field">
         <span class="field-label">Focus target</span>
         <input @ref="focusInputRef" placeholder="Focus(preventScroll) lands here..." style="max-width:20rem;" />
+    </div>
+    <div @ref="visibilityBoxRef" class="demo-box">
+        CheckVisibility and Closest are asked about this element.
     </div>
     <div class="field">
         <span class="field-label">Closest selector</span>
@@ -605,6 +625,9 @@ var offsetParent = await box.GetOffsetParentTagName();
                 }
             </select>
         </div>
+    </div>
+    <div @ref="identityBoxRef" class="demo-box">
+        Hover for the title, and read the hints and tree facts of this element back.
     </div>
     <div class="controls">
         <button @onclick="SetIdentityHints">Set title / lang / autocapitalize</button>
@@ -891,7 +914,16 @@ await column.MoveBefore(card);
     private ElementReference mediaElement;
     private MediaElementState? mediaState;
 
+    // Every section owns the element it operates on. A page this long is read one section at a
+    // time, and a call whose effect lands on a box eleven sections up is a result nobody sees.
     private ElementReference targetRef;
+    private ElementReference metricsBoxRef;
+    private ElementReference pointerBoxRef;
+    private ElementReference contentIdentityRef;
+    private ElementReference editingBoxRef;
+    private ElementReference selectorBoxRef;
+    private ElementReference visibilityBoxRef;
+    private ElementReference identityBoxRef;
     private ElementReference scrollBoxRef;
     private ElementReference fullscreenRef;
     private ElementReference eventsBoxRef;
@@ -982,25 +1014,25 @@ await column.MoveBefore(card);
     // ─── Layout metrics ───────────────────────────────────────────────────
 
     private Task GetBoundingClientRect() => Run(metricsOutput, async () =>
-        await metricsOutput.Success("GetBoundingClientRect →", await targetRef.GetBoundingClientRect()));
+        await metricsOutput.Success("GetBoundingClientRect →", await metricsBoxRef.GetBoundingClientRect()));
 
     private Task GetClientMetrics() => Run(metricsOutput, async () =>
         await metricsOutput.Success("Client →",
-            $"width={await targetRef.GetClientWidth()}, height={await targetRef.GetClientHeight()}, " +
-            $"top={await targetRef.GetClientTop()}, left={await targetRef.GetClientLeft()}"));
+            $"width={await metricsBoxRef.GetClientWidth()}, height={await metricsBoxRef.GetClientHeight()}, " +
+            $"top={await metricsBoxRef.GetClientTop()}, left={await metricsBoxRef.GetClientLeft()}"));
 
     private Task GetOffsetMetrics() => Run(metricsOutput, async () =>
         await metricsOutput.Success("Offset →",
-            $"width={await targetRef.GetOffsetWidth()}, height={await targetRef.GetOffsetHeight()}, " +
-            $"top={await targetRef.GetOffsetTop()}, left={await targetRef.GetOffsetLeft()}"));
+            $"width={await metricsBoxRef.GetOffsetWidth()}, height={await metricsBoxRef.GetOffsetHeight()}, " +
+            $"top={await metricsBoxRef.GetOffsetTop()}, left={await metricsBoxRef.GetOffsetLeft()}"));
 
     private Task GetScrollMetrics() => Run(metricsOutput, async () =>
         await metricsOutput.Success("Scroll →",
-            $"width={await scrollBoxRef.GetScrollWidth()}, height={await scrollBoxRef.GetScrollHeight()}, " +
-            $"top={await scrollBoxRef.GetScrollTop()}, left={await scrollBoxRef.GetScrollLeft()}"));
+            $"width={await metricsBoxRef.GetScrollWidth()}, height={await metricsBoxRef.GetScrollHeight()}, " +
+            $"top={await metricsBoxRef.GetScrollTop()}, left={await metricsBoxRef.GetScrollLeft()}"));
 
     private Task GetTagName() => Run(metricsOutput, async () =>
-        await metricsOutput.Success("GetTagName →", await targetRef.GetTagName()));
+        await metricsOutput.Success("GetTagName →", await metricsBoxRef.GetTagName()));
 
     // ─── Focus & pointer ──────────────────────────────────────────────────
 
@@ -1012,22 +1044,22 @@ await column.MoveBefore(card);
 
     private Task SetPointerCapture() => Run(pointerOutput, async () =>
     {
-        await targetRef.SetPointerCapture(pointerId);
+        await pointerBoxRef.SetPointerCapture(pointerId);
         await pointerOutput.Log($"Pointer {pointerId} captured");
     });
 
     private Task HasPointerCapture() => Run(pointerOutput, async () =>
-        await pointerOutput.Success($"HasPointerCapture({pointerId}) →", await targetRef.HasPointerCapture(pointerId)));
+        await pointerOutput.Success($"HasPointerCapture({pointerId}) →", await pointerBoxRef.HasPointerCapture(pointerId)));
 
     private Task ReleasePointerCapture() => Run(pointerOutput, async () =>
     {
-        await targetRef.ReleasePointerCapture(pointerId);
+        await pointerBoxRef.ReleasePointerCapture(pointerId);
         await pointerOutput.Log($"Pointer {pointerId} capture released");
     });
 
     private Task RequestPointerLock() => Run(pointerOutput, async () =>
     {
-        await targetRef.RequestPointerLock();
+        await pointerBoxRef.RequestPointerLock();
         await pointerOutput.Log("Pointer locked - press Escape to release");
     });
 
@@ -1043,83 +1075,83 @@ await column.MoveBefore(card);
 
     private Task SetId() => Run(contentOutput, async () =>
     {
-        await targetRef.SetId(idValue);
+        await contentIdentityRef.SetId(idValue);
         await contentOutput.Log($"Id set to \"{idValue}\"");
     });
 
-    private Task GetId() => Run(contentOutput, async () => await contentOutput.Success("GetId →", await targetRef.GetId()));
+    private Task GetId() => Run(contentOutput, async () => await contentOutput.Success("GetId →", await contentIdentityRef.GetId()));
 
     private Task SetClassName() => Run(contentOutput, async () =>
     {
-        await targetRef.SetClassName(className);
+        await contentIdentityRef.SetClassName(className);
         await contentOutput.Log($"ClassName set to \"{className}\"");
     });
 
-    private Task GetClassName() => Run(contentOutput, async () => await contentOutput.Success("GetClassName →", await targetRef.GetClassName()));
+    private Task GetClassName() => Run(contentOutput, async () => await contentOutput.Success("GetClassName →", await contentIdentityRef.GetClassName()));
 
     private Task SetInnerText() => Run(contentOutput, async () =>
     {
-        await targetRef.SetInnerText(innerText);
+        await contentIdentityRef.SetInnerText(innerText);
         await contentOutput.Log("InnerText set");
     });
 
-    private Task GetInnerText() => Run(contentOutput, async () => await contentOutput.Success("GetInnerText →", await targetRef.GetInnerText()));
+    private Task GetInnerText() => Run(contentOutput, async () => await contentOutput.Success("GetInnerText →", await contentIdentityRef.GetInnerText()));
 
-    private Task GetInnerHtml() => Run(contentOutput, async () => await contentOutput.Success("GetInnerHtml →", await targetRef.GetInnerHtml()));
+    private Task GetInnerHtml() => Run(contentOutput, async () => await contentOutput.Success("GetInnerHtml →", await contentIdentityRef.GetInnerHtml()));
 
-    private Task GetOuterHtml() => Run(contentOutput, async () => await contentOutput.Success("GetOuterHtml →", await targetRef.GetOuterHtml()));
+    private Task GetOuterHtml() => Run(contentOutput, async () => await contentOutput.Success("GetOuterHtml →", await contentIdentityRef.GetOuterHtml()));
 
-    private Task GetAccessKey() => Run(contentOutput, async () => await contentOutput.Success("GetAccessKey →", await targetRef.GetAccessKey()));
+    private Task GetAccessKey() => Run(contentOutput, async () => await contentOutput.Success("GetAccessKey →", await contentIdentityRef.GetAccessKey()));
 
-    private Task GetTabIndex() => Run(contentOutput, async () => await contentOutput.Success("GetTabIndex →", await targetRef.GetTabIndex()));
+    private Task GetTabIndex() => Run(contentOutput, async () => await contentOutput.Success("GetTabIndex →", await contentIdentityRef.GetTabIndex()));
 
     // ─── Editing & modes ──────────────────────────────────────────────────
 
     private Task SetContentEditable() => Run(editingOutput, async () =>
     {
-        await targetRef.SetContentEditable(contentEditable);
+        await editingBoxRef.SetContentEditable(contentEditable);
         await editingOutput.Log($"ContentEditable set to {contentEditable} - click the target and type");
     });
 
     private Task IsContentEditable() => Run(editingOutput, async () =>
-        await editingOutput.Success("IsContentEditable →", await targetRef.IsContentEditable()));
+        await editingOutput.Success("IsContentEditable →", await editingBoxRef.IsContentEditable()));
 
     private Task SetDir() => Run(editingOutput, async () =>
     {
-        await targetRef.SetDir(dir);
+        await editingBoxRef.SetDir(dir);
         await editingOutput.Log($"Dir set to {dir}");
     });
 
     private Task SetEnterKeyHint() => Run(editingOutput, async () =>
     {
-        await targetRef.SetEnterKeyHint(enterKeyHint);
+        await editingBoxRef.SetEnterKeyHint(enterKeyHint);
         await editingOutput.Log($"EnterKeyHint set to {enterKeyHint}");
     });
 
     private Task SetInputMode() => Run(editingOutput, async () =>
     {
-        await targetRef.SetInputMode(inputMode);
+        await editingBoxRef.SetInputMode(inputMode);
         await editingOutput.Log($"InputMode set to {inputMode}");
     });
 
     private Task SetHidden() => Run(editingOutput, async () =>
     {
-        await targetRef.SetHidden(hidden);
+        await editingBoxRef.SetHidden(hidden);
         await editingOutput.Log($"Hidden set to {hidden}");
     });
 
     private Task ToggleInert() => Run(editingOutput, async () =>
     {
         isInert = !isInert;
-        await targetRef.SetInert(isInert);
+        await editingBoxRef.SetInert(isInert);
         await editingOutput.Log($"Inert set to {isInert}");
     });
 
     private Task GetEditingState() => Run(editingOutput, async () =>
         await editingOutput.Success("State →",
-            $"contentEditable={await targetRef.GetContentEditable()}, dir={await targetRef.GetDir()}, " +
-            $"enterKeyHint={await targetRef.GetEnterKeyHint()}, inputMode={await targetRef.GetInputMode()}, " +
-            $"hidden={await targetRef.GetHidden()}, inert={await targetRef.GetInert()}"));
+            $"contentEditable={await editingBoxRef.GetContentEditable()}, dir={await editingBoxRef.GetDir()}, " +
+            $"enterKeyHint={await editingBoxRef.GetEnterKeyHint()}, inputMode={await editingBoxRef.GetInputMode()}, " +
+            $"hidden={await editingBoxRef.GetHidden()}, inert={await editingBoxRef.GetInert()}"));
 
     // ─── DOM events ───────────────────────────────────────────────────────
 
@@ -1172,11 +1204,11 @@ await column.MoveBefore(card);
     // ─── Matches & Remove ─────────────────────────────────────────────────
 
     private Task Matches() => Run(selectorOutput, async () =>
-        await selectorOutput.Success($"Matches(\"{selector}\") →", await targetRef.Matches(selector)));
+        await selectorOutput.Success($"Matches(\"{selector}\") →", await selectorBoxRef.Matches(selector)));
 
     private Task RemoveElement() => Run(selectorOutput, async () =>
     {
-        await targetRef.Remove();
+        await selectorBoxRef.Remove();
         await selectorOutput.Warn("Target element removed from the DOM - reload the page to restore it");
     });
 
@@ -1309,7 +1341,7 @@ await column.MoveBefore(card);
 
     private Task CheckVisibility() => Run(activationOutput, async () =>
     {
-        var visible = await targetRef.CheckVisibility(new CheckVisibilityOptions
+        var visible = await visibilityBoxRef.CheckVisibility(new CheckVisibilityOptions
         {
             OpacityProperty = true,
             VisibilityProperty = true,
@@ -1319,7 +1351,7 @@ await column.MoveBefore(card);
     });
 
     private Task Closest() => Run(activationOutput, async () =>
-        await activationOutput.Success($"Closest(\"{closestSelector}\") →", await targetRef.Closest(closestSelector)));
+        await activationOutput.Success($"Closest(\"{closestSelector}\") →", await visibilityBoxRef.Closest(closestSelector)));
 
     // ─── Classes, data attributes and inline style ────────────────────────
 
@@ -1522,61 +1554,61 @@ await column.MoveBefore(card);
 
     private Task SetIdentityHints() => Run(identityOutput, async () =>
     {
-        await targetRef.SetTitle(titleValue);
-        await targetRef.SetLang(langValue);
-        await targetRef.SetAutocapitalize(autocapitalize);
+        await identityBoxRef.SetTitle(titleValue);
+        await identityBoxRef.SetLang(langValue);
+        await identityBoxRef.SetAutocapitalize(autocapitalize);
         await identityOutput.Success("SetTitle / SetLang / SetAutocapitalize →", titleValue, langValue, autocapitalize);
     });
 
     private Task ToggleDraggable() => Run(identityOutput, async () =>
     {
         isDraggable = !isDraggable;
-        await targetRef.SetDraggable(isDraggable);
-        await identityOutput.Success("SetDraggable →", await targetRef.GetDraggable());
+        await identityBoxRef.SetDraggable(isDraggable);
+        await identityOutput.Success("SetDraggable →", await identityBoxRef.GetDraggable());
     });
 
     private Task ReadIdentityHints() => Run(identityOutput, async () =>
         await identityOutput.Success("Title / Lang / Spellcheck / Translate / WritingSuggestions / VirtualKeyboardPolicy →",
-            await targetRef.GetTitle(),
-            await targetRef.GetLang(),
-            await targetRef.GetSpellcheck(),
-            await targetRef.GetTranslate(),
-            await targetRef.GetWritingSuggestions(),
-            await targetRef.GetVirtualKeyboardPolicy()));
+            await identityBoxRef.GetTitle(),
+            await identityBoxRef.GetLang(),
+            await identityBoxRef.GetSpellcheck(),
+            await identityBoxRef.GetTranslate(),
+            await identityBoxRef.GetWritingSuggestions(),
+            await identityBoxRef.GetVirtualKeyboardPolicy()));
 
     private Task ReadTreeFacts() => Run(identityOutput, async () =>
         await identityOutput.Success("LocalName / NamespaceUri / Prefix / ChildElementCount / CurrentCssZoom / OffsetParentTagName / HasShadowRoot →",
-            await targetRef.GetLocalName(),
-            await targetRef.GetNamespaceUri(),
-            await targetRef.GetPrefix(),
-            await targetRef.GetChildElementCount(),
-            await targetRef.GetCurrentCssZoom(),
-            await targetRef.GetOffsetParentTagName(),
-            await targetRef.HasShadowRoot()));
+            await identityBoxRef.GetLocalName(),
+            await identityBoxRef.GetNamespaceUri(),
+            await identityBoxRef.GetPrefix(),
+            await identityBoxRef.GetChildElementCount(),
+            await identityBoxRef.GetCurrentCssZoom(),
+            await identityBoxRef.GetOffsetParentTagName(),
+            await identityBoxRef.HasShadowRoot()));
 
     private Task SetShadowAndTimingHints() => Run(identityOutput, async () =>
     {
         // Slot and part only mean something inside a shadow tree, and elementtiming only to a
         // PerformanceObserver - writing them on a plain demo box is still the round trip that shows
         // what each wrapper does with its value.
-        await targetRef.SetSlot("content");
-        await targetRef.SetPart("surface highlight");
-        await targetRef.SetElementTiming("butil-demo-box");
+        await identityBoxRef.SetSlot("content");
+        await identityBoxRef.SetPart("surface highlight");
+        await identityBoxRef.SetElementTiming("butil-demo-box");
         await identityOutput.Success("SetSlot / SetPart / SetElementTiming →", "content", "surface highlight", "butil-demo-box");
     });
 
     private Task ReadShadowAndTimingHints() => Run(identityOutput, async () =>
         await identityOutput.Success("Slot / Part / ElementTiming / AssignedSlotName / AccessKeyLabel / Autofocus / Autocorrect / OuterText →",
-            await targetRef.GetSlot(),
-            string.Join(' ', await targetRef.GetPart()),
-            await targetRef.GetElementTiming(),
+            await identityBoxRef.GetSlot(),
+            string.Join(' ', await identityBoxRef.GetPart()),
+            await identityBoxRef.GetElementTiming(),
             // Null outside a shadow tree, which is what this box is - the wrapper reports that
             // rather than inventing a slot name.
-            await targetRef.GetAssignedSlotName() ?? "(unassigned)",
-            await targetRef.GetAccessKeyLabel(),
-            await targetRef.GetAutofocus(),
-            await targetRef.GetAutocorrect(),
-            await targetRef.GetOuterText()));
+            await identityBoxRef.GetAssignedSlotName() ?? "(unassigned)",
+            await identityBoxRef.GetAccessKeyLabel(),
+            await identityBoxRef.GetAutofocus(),
+            await identityBoxRef.GetAutocorrect(),
+            await identityBoxRef.GetOuterText()));
 
     private async Task CheckMoveBefore()
     {

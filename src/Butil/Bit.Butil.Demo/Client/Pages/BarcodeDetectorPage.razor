@@ -118,12 +118,16 @@ foreach (var code in found)
 }
 """)>
         <div class="controls">
+            <button @onclick="StartSinglePreview">Start this section's camera</button>
             <button @onclick="DetectOnce">Detect one frame</button>
+            <button class="danger" @onclick="StopSinglePreview">Stop</button>
             <label>
                 or pick an image
                 <InputFile OnChange="DetectFromFile" accept="image/*" />
             </label>
         </div>
+        <video @ref="_singleVideo" autoplay playsinline muted
+               class="demo-video" style="min-height:160px"></video>
         <DemoConsole @ref="singleOutput" Title="single-shot output" />
     </DemoSection>
 </div>
@@ -167,6 +171,11 @@ foreach (var code in found)
     private ElementReference _video;
     private MediaStreamHandle? _stream;
     private ButilSubscription? _scan;
+
+    // The single-shot section runs its own camera and its own video element, so a reader can work
+    // that section without scrolling back to the continuous-scan one to see what is being detected.
+    private ElementReference _singleVideo;
+    private MediaStreamHandle? _singleStream;
     private string[] _formats = [];
     private string _status = "Not scanning.";
     private bool _qrOnly = true;
@@ -266,14 +275,47 @@ foreach (var code in found)
         await scanOutput.Log("Scanning stopped. The camera is still open - Stop again to release it.");
     }
 
+    private async Task StartSinglePreview()
+    {
+        try
+        {
+            _singleStream ??= await mediaDevices.GetUserMedia(
+                audio: false,
+                video: true,
+                videoConstraints: _rearCamera ? new { facingMode = "environment" } : null);
+
+            if (_singleStream is null)
+            {
+                await singleOutput.Warn("GetUserMedia returned null - permission denied or no camera.");
+                return;
+            }
+
+            await _singleStream.AttachTo(_singleVideo);
+            await singleOutput.Success("Camera → live. Hold a code up, then press Detect one frame.");
+        }
+        catch (Exception ex)
+        {
+            await singleOutput.Error("GetUserMedia failed →", ex.Message);
+        }
+    }
+
+    private async Task StopSinglePreview()
+    {
+        if (_singleStream is null) return;
+
+        await _singleStream.DisposeAsync();
+        _singleStream = null;
+        await singleOutput.Info("Camera → released.");
+    }
+
     private async Task DetectOnce()
     {
         try
         {
-            var codes = await barcodeDetector.Detect(_video, SelectedFormats);
+            var codes = await barcodeDetector.Detect(_singleVideo, SelectedFormats);
             if (codes.Length == 0)
             {
-                await singleOutput.Warn("Detect → nothing in this frame. Start the camera first, and note that a video with no frame yet also answers empty.");
+                await singleOutput.Warn("Detect → nothing in this frame. Start this section's camera first, and note that a video with no frame yet also answers empty.");
                 return;
             }
 
@@ -331,6 +373,12 @@ foreach (var code in found)
             {
                 await _stream.DisposeAsync();
                 _stream = null;
+            }
+
+            if (_singleStream is not null)
+            {
+                await _singleStream.DisposeAsync();
+                _singleStream = null;
             }
         }
         catch (Exception)

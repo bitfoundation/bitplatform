@@ -58,7 +58,7 @@ var granted = await hid.GetDevices();
             </div>
         </div>
         <div class="controls">
-            <button @onclick="RequestDevice">RequestDevice</button>
+            <button @onclick="() => RequestDevice(deviceOutput)">RequestDevice</button>
             <button class="secondary" @onclick="GetDevices">GetDevices</button>
             <button class="danger" @onclick="ReleaseDevice">Dispose handle</button>
         </div>
@@ -86,6 +86,10 @@ foreach (var collection in info!.Collections)
 }
 """)>
         <div class="controls">
+            <button @onclick="() => RequestDevice(openOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
+        </div>
+        <div class="controls">
             <button @onclick="Open">Open</button>
             <button class="secondary" @onclick="Close">Close</button>
             <button @onclick="CheckOpened">IsOpened</button>
@@ -103,6 +107,10 @@ await using var reports = await _device.SubscribeInputReports(report =>
     // report.ReportId, report.Data
 });
 """)>
+        <div class="controls">
+            <button @onclick="() => RequestDevice(inputOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
+        </div>
         <div class="controls">
             <button @onclick="StartInputReports">SubscribeInputReports</button>
             <button class="danger" @onclick="StopInputReports">Stop</button>
@@ -128,6 +136,10 @@ var feature = await _device.ReceiveFeatureReport(reportId: 0x02);
                 <span class="field-label">Payload (hex, space separated)</span>
                 <input type="text" @bind="_payloadHex" placeholder="00 ff" />
             </div>
+        </div>
+        <div class="controls">
+            <button @onclick="() => RequestDevice(reportOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
         </div>
         <div class="controls">
             <button @onclick="SendReport">SendReport</button>
@@ -258,13 +270,19 @@ var revoked = await _device.Forget();
         }
     }
 
-    private async Task RequestDevice()
+    private string SelectedDeviceLabel => _device is null
+        ? "no device picked yet"
+        : $"{_device.ProductName ?? "(unnamed)"} {_device.Info.VendorId:x4}:{_device.Info.ProductId:x4}";
+
+    // Picking is the setup step every section below needs, so each can do it and read the answer in
+    // its own console rather than sending the reader back to the chooser section.
+    private async Task RequestDevice(DemoConsole output)
     {
         try
         {
             if (!await hid.IsSupported())
             {
-                await deviceOutput.Warn("WebHID is not supported in this browser.");
+                await output.Warn("WebHID is not supported in this browser.");
                 return;
             }
 
@@ -280,7 +298,7 @@ var revoked = await _device.Forget();
             if (requested is null)
             {
                 // A dismissed chooser is not a reason to throw away the device already in hand.
-                await deviceOutput.Warn("The chooser was dismissed.");
+                await output.Warn("The chooser was dismissed.");
                 return;
             }
 
@@ -295,12 +313,11 @@ var revoked = await _device.Forget();
             }
 
             _device = requested;
-            await deviceOutput.Success("RequestDevice →",
-                $"{devices.Length} device(s); using {_device.ProductName ?? "(unnamed)"}");
+            await output.Success("RequestDevice →", $"{devices.Length} device(s); using {SelectedDeviceLabel}");
         }
         catch (Exception ex)
         {
-            await deviceOutput.Error("RequestDevice failed →", ex.Message);
+            await output.Error("RequestDevice failed →", ex.Message);
         }
     }
 
@@ -500,7 +517,7 @@ var revoked = await _device.Forget();
     private async Task<bool> RequireDevice(DemoConsole output)
     {
         if (_device is not null) return true;
-        await output.Warn("Pick a device first with RequestDevice.");
+        await output.Warn("Pick a device first - the RequestDevice button in this section will do it.");
         return false;
     }
 

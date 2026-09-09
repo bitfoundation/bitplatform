@@ -74,7 +74,7 @@ await session!.AttachCanvas(canvasElement);   // an immersive session with no la
         </div>
         <canvas @ref="canvasElement" width="320" height="200" style="width:100%;max-width:320px;background:#111;border-radius:8px"></canvas>
         <div class="controls">
-            <button @onclick="StartSession" disabled="@(session is not null)">RequestSession</button>
+            <button @onclick="() => StartSession(sessionOutput)" disabled="@(session is not null)">RequestSession</button>
             <button class="secondary" @onclick="Attach" disabled="@(session is null)">AttachCanvas</button>
             <button class="danger" @onclick="EndSession" disabled="@(session is null)">End session</button>
         </div>
@@ -94,6 +94,7 @@ if (pose is not null)
 }
 """)>
         <div class="controls">
+            <button @onclick="() => StartSession(poseOutput)" disabled="@(session is not null)">RequestSession</button>
             <button @onclick="ReadPose" disabled="@(session is null)">GetViewerPose</button>
         </div>
         @if (lastPose is not null)
@@ -120,6 +121,7 @@ foreach (var source in await session.GetInputSources())
 }
 """)>
         <div class="controls">
+            <button @onclick="() => StartSession(inputOutput)" disabled="@(session is not null)">RequestSession</button>
             <button @onclick="ReadInputs" disabled="@(session is null)">GetInputSources</button>
         </div>
         <DemoConsole @ref="inputOutput" Title="input output" />
@@ -195,7 +197,9 @@ foreach (var source in await session.GetInputSources())
         }
     }
 
-    private async Task StartSession()
+    // A session is one per page, but the sections that read from it can start it and hear about it
+    // where they are rather than sending the reader back to the section that owns the button.
+    private async Task StartSession(DemoConsole output)
     {
         try
         {
@@ -214,7 +218,7 @@ foreach (var source in await session.GetInputSources())
                     session = null;
                     lastPose = null;
                     if (ended is not null) await ended.DisposeAsync();
-                    await sessionOutput.Log("the session ended (the user took the headset off, or the runtime closed it)");
+                    await output.Log("the session ended (the user took the headset off, or the runtime closed it)");
                     await InvokeAsync(StateHasChanged);
                 },
                 onInput: async e =>
@@ -230,15 +234,15 @@ foreach (var source in await session.GetInputSources())
 
             if (session is null)
             {
-                await sessionOutput.Warn("RequestSession → null (no device, no gesture, or no usable reference space)");
+                await output.Warn("RequestSession → null (no device, no gesture, or no usable reference space)");
                 return;
             }
 
-            await sessionOutput.Success($"RequestSession → session {session.Id} in {session.ReferenceSpaceType} space");
+            await output.Success($"RequestSession → session {session.Id} in {session.ReferenceSpaceType} space");
         }
         catch (Exception ex)
         {
-            await sessionOutput.Error("RequestSession failed →", ex.Message);
+            await output.Error("RequestSession failed →", ex.Message);
         }
     }
 

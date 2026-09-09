@@ -517,11 +517,14 @@ await indexedDb.DeleteDatabase("butil-docs-notes"); // drop the whole database
         public string Category { get; set; } = "general";
     }
 
+    // Opening the connection is setup every section below needs, not a step worth sending the reader
+    // back up the page for - so it happens here and reports into the console that asked for it.
     private async Task<bool> EnsureOpen(DemoConsole output)
     {
         if (db is not null) return true;
-        await output.Warn("No open database - use \"Open database\" first.");
-        return false;
+
+        await OpenDb(output);
+        return db is not null;
     }
 
     private async Task CheckSupport()
@@ -536,7 +539,9 @@ await indexedDb.DeleteDatabase("butil-docs-notes"); // drop the whole database
         }
     }
 
-    private async Task OpenDb()
+    private Task OpenDb() => OpenDb(openOutput);
+
+    private async Task OpenDb(DemoConsole output)
     {
         try
         {
@@ -556,13 +561,13 @@ await indexedDb.DeleteDatabase("butil-docs-notes"); // drop the whole database
             onVersionChange: () => InvokeAsync(() => openOutput.Warn("onVersionChange - another tab is upgrading; this handle was closed.")),
             onClose: () => InvokeAsync(() => openOutput.Warn("onClose - the connection died unexpectedly.")));
 
-            await openOutput.Log($"Open(\"{DbName}\", 2) → connection open, stores [{string.Join(", ", db.StoreNames)}].");
-            await openOutput.Success($"Version {db.Version}, WasUpgraded = {db.WasUpgraded}"
+            await output.Log($"Open(\"{DbName}\", 2) → connection open, stores [{string.Join(", ", db.StoreNames)}].");
+            await output.Success($"Version {db.Version}, WasUpgraded = {db.WasUpgraded}"
                 + (db.WasUpgraded ? $" (v{db.OldVersion} → v{db.NewVersion})" : ""));
         }
         catch (Exception ex)
         {
-            await openOutput.Error(ex.Message);
+            await output.Error(ex.Message);
         }
     }
 

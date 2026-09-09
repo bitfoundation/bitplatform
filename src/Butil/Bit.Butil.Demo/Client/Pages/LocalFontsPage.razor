@@ -81,8 +81,21 @@ var bytes = await localFonts.GetData("Arial-BoldMT");
 // bytes is the SFNT blob, ready to embed
 """)>
         <div class="controls">
+            <button @onclick="LoadFacesForData">Load the installed faces</button>
             <button @onclick="GetData">GetData for the selected face</button>
         </div>
+        @if (_dataFonts.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">Face</span>
+                <select @bind="_dataSelected">
+                    @foreach (var font in _dataFonts.Take(500))
+                    {
+                        <option value="@font.PostscriptName">@font.FullName</option>
+                    }
+                </select>
+            </div>
+        }
         <DemoConsole @ref="dataOutput" Title="font data output" />
     </DemoSection>
 </div>
@@ -108,6 +121,8 @@ var bytes = await localFonts.GetData("Arial-BoldMT");
     private DemoConsole dataOutput = default!;
 
     private LocalFont[] _fonts = [];
+    private LocalFont[] _dataFonts = [];
+    private string _dataSelected = "";
     private string _names = "";
     private string? _selected;
 
@@ -158,19 +173,37 @@ var bytes = await localFonts.GetData("Arial-BoldMT");
         }
     }
 
+    // This section fills its own picker: GetData takes a face, and picking one in a section the
+    // reader has scrolled past is not a demonstration of anything.
+    private async Task LoadFacesForData()
+    {
+        try
+        {
+            _dataFonts = await localFonts.Query();
+            _dataSelected = _dataFonts.FirstOrDefault()?.PostscriptName ?? "";
+
+            if (_dataFonts.Length == 0) await dataOutput.Warn("Query → no faces (unsupported, or the prompt was dismissed).");
+            else await dataOutput.Success("Query →", $"{_dataFonts.Length:N0} face(s) - pick one and read its bytes.");
+        }
+        catch (Exception ex)
+        {
+            await dataOutput.Error("Query failed →", ex.Message);
+        }
+    }
+
     private async Task GetData()
     {
-        if (string.IsNullOrEmpty(_selected))
+        if (string.IsNullOrEmpty(_dataSelected))
         {
-            await dataOutput.Warn("Query the installed fonts first, then pick a face.");
+            await dataOutput.Warn("Load the installed faces first, then pick one.");
             return;
         }
 
         try
         {
-            var bytes = await localFonts.GetData(_selected);
+            var bytes = await localFonts.GetData(_dataSelected);
             await dataOutput.Success("GetData →",
-                bytes is null ? "(not available)" : $"{bytes.Length:N0} bytes for {_selected}");
+                bytes is null ? "(not available)" : $"{bytes.Length:N0} bytes for {_dataSelected}");
         }
         catch (Exception ex)
         {

@@ -61,12 +61,20 @@ while (true)
 
     <DemoSection Title="Cancelling actually cancels"
                  Api="Cancel"
-                 Description="Cancelling a stream tells the source to give up - for a fetch body that aborts the download rather than letting it finish into nothing. Start the read above and press Cancel; the server stops sending, and the read loop ends where it was."
+                 Description="Cancelling a stream tells the source to give up - for a fetch body that aborts the download rather than letting it finish into nothing. Start this section's read and press Cancel; the server stops sending, and the read loop ends where it was."
                  Code=@("""
 await response.Stream!.Cancel("the user navigated away");
 
 // the next Read answers Done, and the request is gone from the network panel
 """)>
+        <div class="controls">
+            <button @onclick="ReadForCancel">Read /api/stream</button>
+            <button class="danger" @onclick="CancelReadForCancel">Cancel</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Progress</span>
+            <span>@_cancelProgress</span>
+        </div>
         <DemoConsole @ref="cancelOutput" Title="cancel output" />
     </DemoSection>
 
@@ -201,6 +209,11 @@ await sink!.Close();
 
     private ReadableStreamHandle? _reading;
     private string _progress = "Idle.";
+
+    // The cancellation section reads its own stream: cancelling is only a demonstration next to the
+    // progress it interrupts.
+    private ReadableStreamHandle? _cancelReading;
+    private string _cancelProgress = "Idle.";
     private string _pipelineResult = "Idle.";
 
     private const string StreamUrl = "/api/stream?chunks=20&chunkSize=4096&delayMs=100";
@@ -289,6 +302,70 @@ await sink!.Close();
         _reading = null;
         await stream.Cancel("cancelled from the page");
         _progress = "Cancelled.";
+        await readOutput.Warn("Cancelled - the download stops rather than finishing into nothing.");
+    }
+
+    private async Task ReadForCancel()
+    {
+        await CancelReadForCancel();
+
+        ReadableStreamHandle? reading = null;
+
+        try
+        {
+            var response = await streams.FromResponse(new FetchRequest { Url = StreamUrl });
+
+            if (response.Stream is null)
+            {
+                _cancelProgress = "Could not start.";
+                await cancelOutput.Warn("No stream →", response.Error);
+                return;
+            }
+
+            reading = response.Stream;
+            _cancelReading = reading;
+
+            await cancelOutput.Success($"Status {response.Status} →", "reading - press Cancel part way through.");
+
+            var received = 0L;
+            var chunks = 0;
+
+            while (true)
+            {
+                var chunk = await reading.Read();
+                if (chunk.Error is not null)
+                {
+                    await cancelOutput.Error("Read failed →", chunk.Error);
+                    break;
+                }
+                if (chunk.Done) break;
+
+                chunks++;
+                received += chunk.Data!.Length;
+                _cancelProgress = $"{received} bytes in {chunks} chunk(s)";
+                StateHasChanged();
+            }
+
+            await cancelOutput.Success("Loop ended →", $"{received} bytes in {chunks} chunk(s)");
+        }
+        catch (Exception ex)
+        {
+            await cancelOutput.Error("Read failed →", ex.Message);
+        }
+        finally
+        {
+            if (ReferenceEquals(_cancelReading, reading)) _cancelReading = null;
+        }
+    }
+
+    private async Task CancelReadForCancel()
+    {
+        if (_cancelReading is null) return;
+
+        var stream = _cancelReading;
+        _cancelReading = null;
+        await stream.Cancel("cancelled from the page");
+        _cancelProgress = "Cancelled.";
         await cancelOutput.Warn("Cancelled - the download stops rather than finishing into nothing.");
     }
 
@@ -439,6 +516,7 @@ await sink!.Close();
         try
         {
             if (_reading is not null) await _reading.DisposeAsync();
+            if (_cancelReading is not null) await _cancelReading.DisposeAsync();
         }
         catch (Exception)
         {

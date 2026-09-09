@@ -86,6 +86,11 @@ await customElements.SetAria(_panel, "role", "region");
 await customElements.SetAria(_panel, "ariaLabel", "Results");
 await customElements.SetAria(_panel, "ariaBusy", "true");
 """)>
+        <butil-panel @ref="_ariaPanel">
+            A second <code>&lt;butil-panel&gt;</code>, this one for the ARIA calls. Inspect it in the
+            accessibility tree to see the defaults arrive.
+        </butil-panel>
+
         <div class="controls">
             <button @onclick="SetAria">SetAria(role, ariaLabel)</button>
             <button @onclick="CheckInternals">HasInternals</button>
@@ -133,6 +138,7 @@ await customElements.SetAria(_panel, "ariaBusy", "true");
     private DemoConsole ariaOutput = default!;
 
     private ElementReference _panel;
+    private ElementReference _ariaPanel;
 
     private async Task CheckSupported()
     {
@@ -229,8 +235,12 @@ await customElements.SetAria(_panel, "ariaBusy", "true");
     {
         try
         {
-            var role = await customElements.SetAria(_panel, "role", "region");
-            var label = await customElements.SetAria(_panel, "ariaLabel", "Butil demo panel");
+            // Define is a no-op once the tag is registered, so this section works whether or not the
+            // previous one has been touched.
+            await customElements.Define("butil-panel");
+
+            var role = await customElements.SetAria(_ariaPanel, "role", "region");
+            var label = await customElements.SetAria(_ariaPanel, "ariaLabel", "Butil demo panel");
 
             if (role && label) await ariaOutput.Success("SetAria →", "role=region, ariaLabel=\"Butil demo panel\" - as defaults.");
             else await ariaOutput.Warn("SetAria →", "false - the element has no internals. Call Define first.");
@@ -245,7 +255,8 @@ await customElements.SetAria(_panel, "ariaBusy", "true");
     {
         try
         {
-            await ariaOutput.Success("HasInternals →", await customElements.HasInternals(_panel));
+            await customElements.Define("butil-panel");
+            await ariaOutput.Success("HasInternals →", await customElements.HasInternals(_ariaPanel));
         }
         catch (Exception ex)
         {

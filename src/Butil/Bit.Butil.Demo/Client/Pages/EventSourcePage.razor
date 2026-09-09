@@ -92,9 +92,18 @@ var state = await _stream!.GetState();
         <div class="field">
             <span class="field-label">Try it</span>
             <span>
-                Open the stream, then stop the demo server for a few seconds and start it again -
-                the tick numbers continue rather than resetting.
+                Open this section's own stream, then stop the demo server for a few seconds and start
+                it again - the tick numbers continue rather than resetting.
             </span>
+        </div>
+        <div class="controls">
+            <button @onclick="OpenReconnectStream">Open</button>
+            <button class="secondary" @onclick="ReadReconnectState">GetState</button>
+            <button class="danger" @onclick="CloseReconnectStream">Close</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Latest tick</span>
+            <span>@(_reconnectTick ?? "(nothing yet)")</span>
         </div>
         <DemoConsole @ref="reconnectOutput" Title="reconnect output" />
     </DemoSection>
@@ -133,6 +142,12 @@ var state = await _stream!.GetState();
     private DemoConsole reconnectOutput = default!;
 
     private EventSourceHandle? _stream;
+
+    // The reconnection section runs a stream of its own: watching a drop and a resume is the whole
+    // demonstration, and it has to be readable without scrolling back to the section above.
+    private EventSourceHandle? _reconnectStream;
+    private string? _reconnectTick;
+
     private readonly List<ServerSentEvent> _events = [];
     private string _connectionState = "Not connected.";
     private int _received;
@@ -183,7 +198,7 @@ var state = await _stream!.GetState();
                     }
                     else
                     {
-                        await reconnectOutput.Warn("Connection dropped - the browser is retrying, and will send the last id it saw.");
+                        await streamOutput.Warn("Connection dropped - the browser is retrying, and will send the last id it saw.");
                     }
                     StateHasChanged();
                 }));
@@ -223,6 +238,68 @@ var state = await _stream!.GetState();
         }
     }
 
+    private async Task OpenReconnectStream()
+    {
+        await CloseReconnectStream();
+
+        try
+        {
+            _reconnectStream = await eventSource.Open("/sse/ticks",
+                onMessage: e => InvokeAsync(() =>
+                {
+                    _reconnectTick = $"#{e.LastEventId} - {e.Data}";
+                    StateHasChanged();
+                }),
+                eventNames: ["heartbeat"],
+                onOpen: () => InvokeAsync(async () =>
+                    await reconnectOutput.Success("Connected - the id counting continues from where it stopped.")),
+                onError: fatal => InvokeAsync(async () =>
+                {
+                    if (fatal) await reconnectOutput.Error("Stream closed for good - no retry.");
+                    else await reconnectOutput.Warn("Connection dropped - the browser is retrying, and will send the last id it saw.");
+                }));
+
+            if (_reconnectStream is null)
+            {
+                await reconnectOutput.Warn("Open returned null - EventSource is unavailable here.");
+                return;
+            }
+
+            await reconnectOutput.Success("Open → connecting to /sse/ticks.");
+        }
+        catch (Exception ex)
+        {
+            await reconnectOutput.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadReconnectState()
+    {
+        if (_reconnectStream is null)
+        {
+            await reconnectOutput.Warn("Open this section's stream first.");
+            return;
+        }
+
+        try
+        {
+            await reconnectOutput.Success("GetState →", await _reconnectStream.GetState());
+        }
+        catch (Exception ex)
+        {
+            await reconnectOutput.Error("GetState failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseReconnectStream()
+    {
+        if (_reconnectStream is null) return;
+
+        await _reconnectStream.DisposeAsync();
+        _reconnectStream = null;
+        await reconnectOutput.Log("Closed.");
+    }
+
     private async Task CloseStream()
     {
         if (_stream is null) return;
@@ -241,6 +318,12 @@ var state = await _stream!.GetState();
             {
                 await _stream.DisposeAsync();
                 _stream = null;
+            }
+
+            if (_reconnectStream is not null)
+            {
+                await _reconnectStream.DisposeAsync();
+                _reconnectStream = null;
             }
         }
         catch (Exception)

@@ -164,6 +164,11 @@ await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!
     private MessageChannelHandle? _channel;
     private readonly List<ButilSubscription> _subscriptions = [];
     private MessageChannelHandle? _queued;
+
+    // The binary and port-transfer sections each open a channel of their own, so neither depends on
+    // the reader having created one in a section that has scrolled off the screen.
+    private MessageChannelHandle? _binary;
+    private MessageChannelHandle? _transfer;
     private MessageChannelHandle? _introduction;
     private string _state = "None created.";
     private string _text = "hello";
@@ -196,11 +201,6 @@ await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!
 
             await Listen(_channel.Port1, "Port1", channelOutput);
             await Listen(_channel.Port2, "Port2", channelOutput);
-
-            // Once, here, rather than on each send: OnMessage adds a listener every time it is
-            // called, so subscribing inside the send handler would print one extra copy of every
-            // later message per click.
-            await Listen(_channel.Port2, "Port2", binaryOutput);
 
             await _channel.Port1.Start();
             await _channel.Port2.Start();
@@ -277,15 +277,25 @@ await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!
 
     private async Task SendBytes()
     {
-        if (_channel is null)
-        {
-            await binaryOutput.Warn("Create a channel first.");
-            return;
-        }
-
         try
         {
-            await _channel.Port1.PostBytes([1, 2, 3, 4]);
+            if (_binary is null)
+            {
+                _binary = await messageChannel.Create();
+                if (_binary is null)
+                {
+                    await binaryOutput.Warn("Create returned null - the runtime has no MessageChannel.");
+                    return;
+                }
+
+                // Once, here, rather than on each send: OnMessage adds a listener every time it is
+                // called, so subscribing inside the send handler would print one extra copy of every
+                // later message per click.
+                await Listen(_binary.Port2, "Port2", binaryOutput);
+                await _binary.Port2.Start();
+            }
+
+            await _binary.Port1.PostBytes([1, 2, 3, 4]);
         }
         catch (Exception ex)
         {
@@ -295,14 +305,21 @@ await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!
 
     private async Task SendAPort()
     {
-        if (_channel is null)
-        {
-            await transferOutput.Warn("Create a channel first.");
-            return;
-        }
-
         try
         {
+            if (_transfer is null)
+            {
+                _transfer = await messageChannel.Create();
+                if (_transfer is null)
+                {
+                    await transferOutput.Warn("Create returned null - the runtime has no MessageChannel.");
+                    return;
+                }
+
+                await Listen(_transfer.Port2, "Receiving port", transferOutput);
+                await _transfer.Port2.Start();
+            }
+
             if (_introduction is not null)
             {
                 await _introduction.DisposeAsync();
@@ -320,12 +337,12 @@ await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!
             await Listen(_introduction.Port1, "Introduced port", transferOutput);
             await _introduction.Port1.Start();
 
-            var sent = await _channel.Port1.PostWithPorts(new { op = "here is a line" }, [_introduction.Port2]);
+            var sent = await _transfer.Port1.PostWithPorts(new { op = "here is a line" }, [_introduction.Port2]);
 
             if (sent)
             {
                 await transferOutput.Success("Port2 of a fresh channel travelled over the existing one - it no longer works here.");
-                await transferOutput.Log("Port2 of the main channel received it as a message with a port attached.");
+                await transferOutput.Log("The receiving port of this section's channel got it as a message with a port attached.");
             }
             else
             {
@@ -338,23 +355,32 @@ await channel!.Port1.PostWithPorts(new { op = "here is a line" }, [introduction!
         }
     }
 
+    // Only this section's channel: the other sections own theirs, and a Dispose here that closed
+    // them too would silently break a demo the reader is in the middle of.
     private async Task DisposeChannel()
+    {
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+
+        _state = "Disposed.";
+    }
+
+    private async Task DisposeEverything()
     {
         foreach (var subscription in _subscriptions) await subscription.DisposeAsync();
         _subscriptions.Clear();
 
         if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
         if (_queued is not null) { await _queued.DisposeAsync(); _queued = null; }
+        if (_binary is not null) { await _binary.DisposeAsync(); _binary = null; }
+        if (_transfer is not null) { await _transfer.DisposeAsync(); _transfer = null; }
         if (_introduction is not null) { await _introduction.DisposeAsync(); _introduction = null; }
-
-        _state = "Disposed.";
     }
 
     public async ValueTask DisposeAsync()
     {
         try
         {
-            await DisposeChannel();
+            await DisposeEverything();
         }
         catch (Exception)
         {

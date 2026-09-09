@@ -110,6 +110,10 @@ await _port.Close();
             </div>
         </div>
         <div class="controls">
+            <button @onclick="() => RequestPort(openOutput)">RequestPort</button>
+            <span>@SelectedPortLabel</span>
+        </div>
+        <div class="controls">
             <button @onclick="Open">Open</button>
             <button class="secondary" @onclick="Close">Close</button>
             <button @onclick="CheckOpen">IsOpen</button>
@@ -129,6 +133,10 @@ await using var reading = await _port.SubscribeData(
 await _port.WriteText("AT\r\n");
 await _port.Write([0x01, 0x02]);
 """)>
+        <div class="controls">
+            <button @onclick="() => RequestPort(dataOutput)">RequestPort</button>
+            <span>@SelectedPortLabel</span>
+        </div>
         <div class="controls">
             <button @onclick="StartReading">SubscribeData</button>
             <button class="danger" @onclick="StopReading">Stop reading</button>
@@ -297,13 +305,19 @@ var revoked = await _port.Forget();
         }
     }
 
-    private async Task RequestPort()
+    private string SelectedPortLabel => _port is null ? "no port picked yet" : Describe(_port.Info);
+
+    // Picking is the setup step the sections below need, so each can do it and read the answer in
+    // its own console rather than sending the reader back to the chooser section.
+    private Task RequestPort() => RequestPort(portOutput);
+
+    private async Task RequestPort(DemoConsole output)
     {
         try
         {
             if (!await serial.IsSupported())
             {
-                await portOutput.Warn("Web Serial is not supported in this browser.");
+                await output.Warn("Web Serial is not supported in this browser.");
                 return;
             }
 
@@ -312,7 +326,7 @@ var revoked = await _port.Forget();
             if (requested is null)
             {
                 // A dismissed chooser is not a reason to throw away the port already in hand.
-                await portOutput.Warn("The chooser was dismissed.");
+                await output.Warn("The chooser was dismissed.");
                 return;
             }
 
@@ -327,11 +341,11 @@ var revoked = await _port.Forget();
             }
 
             _port = requested;
-            await portOutput.Success("RequestPort →", Describe(_port.Info));
+            await output.Success("RequestPort →", Describe(_port.Info));
         }
         catch (Exception ex)
         {
-            await portOutput.Error("RequestPort failed →", ex.Message);
+            await output.Error("RequestPort failed →", ex.Message);
         }
     }
 
@@ -526,7 +540,7 @@ var revoked = await _port.Forget();
     private async Task<bool> RequirePort(DemoConsole output)
     {
         if (_port is not null) return true;
-        await output.Warn("Pick a port first with RequestPort.");
+        await output.Warn("Pick a port first - the RequestPort button in this section will do it.");
         return false;
     }
 

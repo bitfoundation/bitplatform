@@ -32,6 +32,8 @@ await windowMessaging.Frame(_frame).PostMessage(new { hello = "frame" }, origin)
 
     <DemoCard Title="Hand it a port" Api="PostWithPorts"
               Description="Post once with a port attached and everything after that goes over the port instead - no origin argument on every message, and nobody else listening in. The port is transferred, so the handle passed here stops working.">
+        <iframe @ref="_portFrame" src="/frames/sample-frame.html" title="port handshake frame"
+                style="width:100%;height:8rem;border:1px solid #cbd5e1;border-radius:.5rem;margin-bottom:.75rem"></iframe>
         <button @onclick="HandOverAPort">Transfer a port to the frame</button>
     </DemoCard>
 </div>
@@ -42,6 +44,9 @@ await windowMessaging.Frame(_frame).PostMessage(new { hello = "frame" }, origin)
     private DemoConsole output = default!;
 
     private ElementReference _frame;
+
+    // The handshake card gets a frame of its own: what the frame answers is the demonstration.
+    private ElementReference _portFrame;
     private ButilSubscription? _subscription;
     private MessageChannelHandle? _channel;
     private string _text = "hello, frame";
@@ -80,7 +85,7 @@ await windowMessaging.Frame(_frame).PostMessage(new { hello = "frame" }, origin)
 
         // The sample frame does not answer on ports, so this shows the transfer itself: Port2 is the
         // frame's now, and posting to it here is reported rather than thrown.
-        var sent = await windowMessaging.Frame(_frame).PostWithPorts(new { op = "line" }, Origin, [_channel.Port2]);
+        var sent = await windowMessaging.Frame(_portFrame).PostWithPorts(new { op = "line" }, Origin, [_channel.Port2]);
         var stillUsable = await _channel.Port2.PostMessage(new { late = true });
 
         await output.Success("PostWithPorts →", $"sent {sent}, still usable here: {stillUsable}");

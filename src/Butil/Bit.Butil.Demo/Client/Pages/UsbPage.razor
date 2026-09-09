@@ -58,7 +58,7 @@ var granted = await usb.GetDevices();
             </div>
         </div>
         <div class="controls">
-            <button @onclick="RequestDevice">RequestDevice</button>
+            <button @onclick="() => RequestDevice(deviceOutput)">RequestDevice</button>
             <button class="secondary" @onclick="GetDevices">GetDevices</button>
             <button class="danger" @onclick="ReleaseDevice">Dispose handle</button>
         </div>
@@ -98,6 +98,10 @@ await _device.Close();
                 <span class="field-label">Alternate setting</span>
                 <input type="number" min="0" @bind="_alternateSetting" />
             </div>
+        </div>
+        <div class="controls">
+            <button @onclick="() => RequestDevice(setupOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
         </div>
         <div class="controls">
             <button @onclick="Open">Open</button>
@@ -149,6 +153,10 @@ await _device.ControlTransferOut(new UsbControlTransferParameters
         <div class="field">
             <span class="field-label">Bytes to send (hex, space separated)</span>
             <input type="text" @bind="_writeHex" placeholder="01 02 ff" />
+        </div>
+        <div class="controls">
+            <button @onclick="() => RequestDevice(transferOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
         </div>
         <div class="controls">
             <button @onclick="TransferIn">TransferIn</button>
@@ -299,13 +307,19 @@ var revoked = await _device.Forget();
         }
     }
 
-    private async Task RequestDevice()
+    private string SelectedDeviceLabel => _device is null
+        ? "no device picked yet"
+        : $"{_device.Info.ProductName ?? "(unnamed)"} {_device.Info.VendorId:x4}:{_device.Info.ProductId:x4}";
+
+    // Picking is the setup step every section below needs, so each can do it and read the answer
+    // in its own console rather than sending the reader back to the chooser section.
+    private async Task RequestDevice(DemoConsole output)
     {
         try
         {
             if (!await usb.IsSupported())
             {
-                await deviceOutput.Warn("WebUSB is not supported in this browser.");
+                await output.Warn("WebUSB is not supported in this browser.");
                 return;
             }
 
@@ -322,7 +336,7 @@ var revoked = await _device.Forget();
             if (requested is null)
             {
                 // A dismissed chooser is not a reason to throw away the device already in hand.
-                await deviceOutput.Warn("The chooser was dismissed.");
+                await output.Warn("The chooser was dismissed.");
                 return;
             }
 
@@ -336,12 +350,11 @@ var revoked = await _device.Forget();
             }
 
             _device = requested;
-            await deviceOutput.Success("RequestDevice →",
-                $"{_device.Info.ProductName ?? "(unnamed)"} {_device.Info.VendorId:x4}:{_device.Info.ProductId:x4}");
+            await output.Success("RequestDevice →", SelectedDeviceLabel);
         }
         catch (Exception ex)
         {
-            await deviceOutput.Error("RequestDevice failed →", ex.Message);
+            await output.Error("RequestDevice failed →", ex.Message);
         }
     }
 
@@ -605,7 +618,7 @@ var revoked = await _device.Forget();
     private async Task<bool> RequireDevice(DemoConsole output)
     {
         if (_device is not null) return true;
-        await output.Warn("Pick a device first with RequestDevice.");
+        await output.Warn("Pick a device first - the RequestDevice button in this section will do it.");
         return false;
     }
 

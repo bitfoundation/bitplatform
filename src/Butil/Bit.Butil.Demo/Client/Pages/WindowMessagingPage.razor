@@ -77,6 +77,8 @@ await channel.Port1.PostMessage(new { over = "the port" });
             <button @onclick="HandOverAPort">Hand the frame a port</button>
             <button class="secondary" @onclick="SendOverPort">Send over the port</button>
         </div>
+        <iframe @ref="_portFrame" src="/frames/echo.html" title="Butil port handshake frame"
+                style="width:100%;height:9rem;border:1px solid var(--border, #d4d4d8);border-radius:.5rem;margin-top:.75rem"></iframe>
         <DemoConsole @ref="portOutput" Title="port output" />
     </DemoSection>
 
@@ -157,6 +159,10 @@ await windowMessaging.Opener().PostMessage(new { back = true }, origin);
     private DemoConsole upwardsOutput = default!;
 
     private ElementReference _frame;
+
+    // The port handshake gets a frame of its own: what the frame echoes back is the demonstration,
+    // and it has to be on screen beside the buttons that caused it.
+    private ElementReference _portFrame;
     private ButilSubscription? _subscription;
     private MessageChannelHandle? _channel;
     private ButilSubscription? _portSubscription;
@@ -259,7 +265,7 @@ await windowMessaging.Opener().PostMessage(new { back = true }, origin);
             }));
             await _channel.Port1.Start();
 
-            var sent = await windowMessaging.Frame(_frame)
+            var sent = await windowMessaging.Frame(_portFrame)
                 .PostWithPorts(new { op = "here is a line" }, Origin, [_channel.Port2]);
 
             _portHandedOver = sent;

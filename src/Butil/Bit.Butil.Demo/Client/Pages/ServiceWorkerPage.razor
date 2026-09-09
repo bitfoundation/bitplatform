@@ -59,6 +59,7 @@ if (info.IsRegistered)
 }
 """)>
         <div class="controls">
+            <button @onclick="() => RegisterWorker(inspectOutput)">Register /sw.js</button>
             <button @onclick="InspectRegistration">Get registration</button>
             <button class="secondary" @onclick="UpdateWorker">Check for updates</button>
         </div>
@@ -89,6 +90,7 @@ await controllerSub.DisposeAsync();
             <input @bind="swMessage" />
         </div>
         <div class="controls">
+            <button @onclick="() => RegisterWorker(messagingOutput)">Register /sw.js</button>
             <button @onclick="Subscribe">Subscribe to events</button>
             <button class="secondary" @onclick="PostToWorker">Post message</button>
             <button class="secondary" @onclick="Unsubscribe">Unsubscribe</button>
@@ -115,6 +117,7 @@ await serviceWorker.DisableNavigationPreload();
             <input @bind="preloadHeader" />
         </div>
         <div class="controls">
+            <button @onclick="() => RegisterWorker(preloadOutput)">Register /sw.js</button>
             <button @onclick="EnablePreload">Enable</button>
             <button class="secondary" @onclick="SetPreloadHeader">Set header</button>
             <button class="secondary" @onclick="ReadPreloadState">Get state</button>
@@ -141,6 +144,7 @@ self.addEventListener('message', event => {
 });
 """)>
         <div class="controls">
+            <button @onclick="() => RegisterWorker(lifecycleOutput)">Register /sw.js</button>
             <button @onclick="SkipWaiting">SkipWaiting</button>
             <button class="secondary" @onclick="ClaimClients">Claim</button>
         </div>
@@ -183,6 +187,7 @@ self.addEventListener('message', event => {
             </div>
         </div>
         <div class="controls">
+            <button @onclick="() => RegisterWorker(clientsOutput)">Register /sw.js</button>
             <button @onclick="ListClients">MatchAllClients</button>
         </div>
         <DemoConsole @ref="clientsOutput" Title="clients output" />
@@ -404,17 +409,21 @@ var removed = await serviceWorker.Unregister();
         }
     }
 
-    private async Task RegisterWorker()
+    private Task RegisterWorker() => RegisterWorker(registerOutput);
+
+    // Registering is one line of setup that half this page needs, so every section that needs it can
+    // do it and read the answer where it is standing.
+    private async Task RegisterWorker(DemoConsole output)
     {
         try
         {
             var info = await serviceWorker.Register("/sw.js");
-            await registerOutput.Success($"Registered. Scope: {info.Scope}");
-            await registerOutput.Log($"Active: {info.ActiveState ?? "-"} | Installing: {info.InstallingState ?? "-"} | Waiting: {info.WaitingState ?? "-"} | UpdateViaCache: {info.UpdateViaCache ?? "-"}");
+            await output.Success($"Registered. Scope: {info.Scope}");
+            await output.Log($"Active: {info.ActiveState ?? "-"} | Installing: {info.InstallingState ?? "-"} | Waiting: {info.WaitingState ?? "-"} | UpdateViaCache: {info.UpdateViaCache ?? "-"}");
         }
         catch (Exception ex)
         {
-            await registerOutput.Error(ex.Message);
+            await output.Error(ex.Message);
         }
     }
 
@@ -425,7 +434,7 @@ var removed = await serviceWorker.Unregister();
             var info = await serviceWorker.GetRegistration();
             if (info.IsRegistered is false)
             {
-                await inspectOutput.Warn("No registration found for this page. Press Register first.");
+                await inspectOutput.Warn("No registration found for this page. Register it with the button in this section.");
                 return;
             }
 
@@ -482,7 +491,7 @@ var removed = await serviceWorker.Unregister();
             }
             else
             {
-                await messagingOutput.Warn("No controlling worker yet - register /sw.js first; it claims the page on activation.");
+                await messagingOutput.Warn("No controlling worker yet - register /sw.js with the button in this section; it claims the page on activation.");
             }
         }
         catch (Exception ex)

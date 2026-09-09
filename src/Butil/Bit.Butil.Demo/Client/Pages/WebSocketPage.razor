@@ -59,7 +59,6 @@ await _socket!.SendText("hello");
             <button @onclick="OpenSocket">Open</button>
             <input @bind="_outgoing" placeholder="message" aria-label="message to send" />
             <button @onclick="SendText">SendText</button>
-            <button class="secondary" @onclick="SendBytes">SendBytes</button>
             <button class="danger" @onclick="CloseSocket">Close</button>
         </div>
         <div class="field">
@@ -89,7 +88,12 @@ await _socket!.SendBytes([1, 2, 3, 4]);
 // arrives as: m.IsBinary == true, m.Data == [2, 3, 4, 5]
 """)>
         <div class="controls">
+            <button @onclick="OpenForBinary">Open</button>
             <button @onclick="SendBytes">Send 4 bytes</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
         </div>
         <DemoConsole @ref="binaryOutput" Title="binary output" />
     </DemoSection>
@@ -104,7 +108,12 @@ var url = await _socket.GetUrl();
 var state = await _socket.GetState();            // Connecting / Open / Closing / Closed
 """)>
         <div class="controls">
+            <button @onclick="OpenForNegotiation">Open</button>
             <button @onclick="ReadNegotiation">Read</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
         </div>
         <DemoConsole @ref="negotiationOutput" Title="negotiation output" />
     </DemoSection>
@@ -119,8 +128,13 @@ var queued = await _socket.GetBufferedAmount();
 if (queued > 1_000_000) { /* stop producing until it drains */ }
 """)>
         <div class="controls">
+            <button @onclick="OpenForPressure">Open</button>
             <button @onclick="Burst">Burst (2 MB back)</button>
             <button class="secondary" @onclick="ReadBuffered">GetBufferedAmount</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
         </div>
         <DemoConsole @ref="pressureOutput" Title="back-pressure output" />
     </DemoSection>
@@ -139,8 +153,13 @@ await _socket.SendText("close");
 onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
 """)>
         <div class="controls">
+            <button @onclick="OpenForClose">Open</button>
             <button class="danger" @onclick="CloseWithCode">Close(4000)</button>
             <button class="secondary" @onclick="AskServerToClose">Ask the server to close</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
         </div>
         <DemoConsole @ref="closeOutput" Title="close output" />
     </DemoSection>
@@ -229,7 +248,19 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
         }
     }
 
-    private async Task OpenSocket()
+    // One socket, but the section that opened it is the one that hears about it: connection,
+    // close code and error all report to the console the reader is looking at.
+    private Task OpenSocket() => OpenSocket(socketOutput);
+
+    private Task OpenForBinary() => OpenSocket(binaryOutput);
+
+    private Task OpenForNegotiation() => OpenSocket(negotiationOutput);
+
+    private Task OpenForPressure() => OpenSocket(pressureOutput);
+
+    private Task OpenForClose() => OpenSocket(closeOutput);
+
+    private async Task OpenSocket(DemoConsole output)
     {
         await CloseSocket();
 
@@ -256,7 +287,7 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
                 onOpen: (protocol, extensions) => InvokeAsync(async () =>
                 {
                     _connectionState = "Open.";
-                    await socketOutput.Success("Connected. Protocol →", string.IsNullOrEmpty(protocol) ? "(none negotiated)" : protocol);
+                    await output.Success("Connected. Protocol →", string.IsNullOrEmpty(protocol) ? "(none negotiated)" : protocol);
                     StateHasChanged();
                 }),
                 onClose: close => InvokeAsync(async () =>
@@ -266,30 +297,30 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
 
                     _connectionState = $"Closed ({close.Code}).";
                     _socket = null;
-                    await closeOutput.Warn($"Closed → code {close.Code}, clean {close.WasClean}, reason",
+                    await output.Warn($"Closed → code {close.Code}, clean {close.WasClean}, reason",
                         string.IsNullOrEmpty(close.Reason) ? "(none)" : close.Reason);
                     StateHasChanged();
                 }),
                 onError: () => InvokeAsync(async () =>
                 {
                     // The error event carries nothing by design - the close that follows has the detail.
-                    await socketOutput.Error("Socket error. The close callback that follows carries the code.");
+                    await output.Error("Socket error. The close callback that follows carries the code.");
                 }));
 
             if (opening is null)
             {
                 _connectionState = "Could not open.";
-                await socketOutput.Warn("Open returned null - WebSocket is unavailable, the URL is malformed, or mixed content blocked it.");
+                await output.Warn("Open returned null - WebSocket is unavailable, the URL is malformed, or mixed content blocked it.");
                 return;
             }
 
             _socket = opening;
             _connectionState = "Connecting...";
-            await socketOutput.Success("Open → connecting to", EchoUrl);
+            await output.Success("Open → connecting to", EchoUrl);
         }
         catch (Exception ex)
         {
-            await socketOutput.Error("Open failed →", ex.Message);
+            await output.Error("Open failed →", ex.Message);
         }
     }
 
@@ -405,7 +436,7 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
     private async Task<bool> RequireSocket(DemoConsole console)
     {
         if (_socket is not null) return true;
-        await console.Warn("Open a socket first.");
+        await console.Warn("Open a socket first - the Open button in this section will do it.");
         return false;
     }
 

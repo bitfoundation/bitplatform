@@ -71,7 +71,7 @@ var registration = await backgroundFetch.Fetch(
             <textarea rows="3" @bind="urls"></textarea>
         </div>
         <div class="controls">
-            <button @onclick="StartFetch">Fetch</button>
+            <button @onclick="() => StartFetch(fetchOutput)">Fetch</button>
         </div>
         <DemoConsole @ref="fetchOutput" Title="fetch output" />
     </DemoSection>
@@ -130,6 +130,7 @@ string[] recordUrls = await backgroundFetch.GetRecordUrls("manual-2024");
 string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0], timeoutMs: 5000);
 """)>
         <div class="controls">
+            <button @onclick="() => StartFetch(recordOutput)">Fetch</button>
             <button class="secondary" @onclick="ListRecords">GetRecordUrls</button>
             <button class="secondary" @onclick="ReadRecord">ReadRecordText</button>
         </div>
@@ -207,23 +208,25 @@ string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0]
         }
     }
 
-    private async Task StartFetch()
+    // Records only exist while a fetch is live, so the reading section starts one itself rather than
+    // depending on the reader having pressed Fetch two sections above.
+    private async Task StartFetch(DemoConsole output)
     {
         try
         {
             var registration = await backgroundFetch.Fetch(fetchId, Urls, fetchTitle);
             if (registration is null)
             {
-                await fetchOutput.Warn($"Fetch(\"{fetchId}\") → null - unsupported, or a fetch with that id is already running.");
+                await output.Warn($"Fetch(\"{fetchId}\") → null - unsupported, or a fetch with that id is already running.");
                 return;
             }
 
-            await fetchOutput.Success($"Fetch(\"{registration.Id}\") → started, {Urls.Length} request(s), " +
+            await output.Success($"Fetch(\"{registration.Id}\") → started, {Urls.Length} request(s), " +
                 $"downloaded {registration.Downloaded} of {registration.DownloadTotal} bytes.");
         }
         catch (Exception ex)
         {
-            await fetchOutput.Error(ex.Message);
+            await output.Error(ex.Message);
         }
     }
 
@@ -334,7 +337,7 @@ string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0]
             var records = await backgroundFetch.GetRecordUrls(fetchId);
             if (records.Length == 0)
             {
-                await recordOutput.Warn("No records to read - start a fetch first.");
+                await recordOutput.Warn("No records to read - start a fetch with the button in this section.");
                 return;
             }
 

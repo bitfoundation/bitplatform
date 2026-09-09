@@ -79,6 +79,10 @@ await root!.Append(badge);
             <input @bind="_text" aria-label="text to add" />
             <button @onclick="AppendBuilt">Append it safely</button>
         </div>
+        <div class="shadow-demo" style="margin-top:.75rem">
+            <div class="field-label">Shadow host</div>
+            <div @ref="_buildHost" style="min-height:2.5rem"></div>
+        </div>
         <DemoConsole @ref="buildOutput" Title="build output" />
     </DemoSection>
 
@@ -95,6 +99,16 @@ var all = await root.QueryAll("[part]");
         <div class="controls">
             <button @onclick="QueryOutside">Query from outside</button>
             <button class="secondary" @onclick="QueryInside">Query through the root</button>
+        </div>
+        <div class="shadow-demo query-demo" style="margin-top:.75rem;display:flex;gap:1rem;flex-wrap:wrap">
+            <div>
+                <div class="field-label">In the document</div>
+                <div class="card">a card the document can see</div>
+            </div>
+            <div>
+                <div class="field-label">Behind a shadow root</div>
+                <div @ref="_queryHost" style="min-height:2.5rem"></div>
+            </div>
         </div>
         <DemoConsole @ref="queryOutput" Title="query output" />
     </DemoSection>
@@ -139,8 +153,14 @@ var all = await root.QueryAll("[part]");
     private DemoConsole buildOutput = default!;
     private DemoConsole queryOutput = default!;
 
+    // A shadow root cannot be attached twice and cannot be detached, so each section attaches its
+    // own to its own host - and the content it builds or queries is beside the buttons that made it.
     private ElementReference _host;
     private ShadowRootHandle? _root;
+    private ElementReference _buildHost;
+    private ShadowRootHandle? _buildRoot;
+    private ElementReference _queryHost;
+    private ShadowRootHandle? _queryRoot;
     private string _text = "text from a user";
 
     private async Task CheckSupported()
@@ -201,17 +221,24 @@ var all = await root.QueryAll("[part]");
 
     private async Task AppendBuilt()
     {
-        if (await RequireRoot(buildOutput) is false) return;
-
         try
         {
+            _buildRoot ??= await shadowDom.AttachShadow(_buildHost);
+            if (_buildRoot is null)
+            {
+                await buildOutput.Warn("AttachShadow returned null - this runtime has no shadow DOM.");
+                return;
+            }
+
+            await _buildRoot.AddStyle(".card { color: seagreen; border: 1px solid seagreen; padding: .5rem; border-radius: .35rem; margin-bottom: .35rem; }");
+
             await using var badge = await dom.Create("div");
             if (badge is null) return;
 
             await badge.SetAttribute("class", "card");
             // SetText rather than SetHtml: safe whatever the input turns out to be.
             await badge.SetText(_text);
-            await _root!.Append(badge);
+            await _buildRoot.Append(badge);
 
             await buildOutput.Success("Appended →", "built from elements, so nothing in the text was parsed as markup.");
         }
@@ -226,12 +253,14 @@ var all = await root.QueryAll("[part]");
         try
         {
             // The document cannot see inside a shadow root at all.
-            await using var found = await dom.Query(".shadow-demo .card");
+            await EnsureQueryRoot();
+
+            await using var found = await dom.Query(".query-demo .card");
             var text = found is null ? "(nothing)" : await found.GetText();
 
             // Every handle QueryAll hands back holds its element in the JS registry until it is
             // disposed, so they are released whatever the reporting does.
-            var all = await dom.QueryAll(".shadow-demo .card");
+            var all = await dom.QueryAll(".query-demo .card");
             try
             {
                 await queryOutput.Success("From the document →",
@@ -248,13 +277,31 @@ var all = await root.QueryAll("[part]");
         }
     }
 
+    // The queried component is this section's own: a root attached elsewhere on the page is one the
+    // reader cannot see the contents of while reading the result.
+    private async Task EnsureQueryRoot()
+    {
+        if (_queryRoot is not null) return;
+
+        _queryRoot = await shadowDom.AttachShadow(_queryHost);
+        if (_queryRoot is null) return;
+
+        await _queryRoot.AddStyle(".card { color: seagreen; border: 1px solid seagreen; padding: .5rem; border-radius: .35rem; }");
+        await _queryRoot.SetHtml("<div class=\"card\">a card only the root can reach</div>");
+    }
+
     private async Task QueryInside()
     {
-        if (await RequireRoot(queryOutput) is false) return;
-
         try
         {
-            var inside = await _root!.QueryAll(".card");
+            await EnsureQueryRoot();
+            if (_queryRoot is null)
+            {
+                await queryOutput.Warn("AttachShadow returned null - this runtime has no shadow DOM.");
+                return;
+            }
+
+            var inside = await _queryRoot.QueryAll(".card");
             try
             {
                 await queryOutput.Success("Through the root →",
