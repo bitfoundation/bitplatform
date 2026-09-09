@@ -31,11 +31,23 @@ public static class BitMarkdownPipelineBuilderExtensions
     public static BitMarkdownPipelineBuilder UseAutoIdentifiers(this BitMarkdownPipelineBuilder b)
         => b.Use(new BitMarkdownAutoIdentifierExtension());
 
-    /// <summary>Adds the full GitHub Flavored Markdown bundle.</summary>
+    /// <summary>Adds GitHub-style footnotes (<c>[^1]</c> plus a <c>[^1]: ...</c> definition).</summary>
+    public static BitMarkdownPipelineBuilder UseFootnotes(this BitMarkdownPipelineBuilder b)
+        => b.Use(new BitMarkdownFootnoteExtension());
+
+    /// <summary>Adds GitHub alerts (<c>&gt; [!NOTE]</c>, <c>&gt; [!TIP]</c>, ...).</summary>
+    public static BitMarkdownPipelineBuilder UseAlerts(this BitMarkdownPipelineBuilder b)
+        => b.Use(new BitMarkdownAlertExtension());
+
+    /// <summary>Renders every single newline as a line break, like a chat or comment box.</summary>
+    public static BitMarkdownPipelineBuilder UseSoftLineAsHardLine(this BitMarkdownPipelineBuilder b)
+        => b.Use(new BitMarkdownSoftLineAsHardLineExtension());
+
+    /// <summary>Adds the full GitHub Flavored Markdown bundle: tables, strikethrough, task lists, autolinks, footnotes and alerts.</summary>
     public static BitMarkdownPipelineBuilder UseGitHubFlavored(this BitMarkdownPipelineBuilder b)
         => b.Use(new BitMarkdownGitHubFlavoredExtension());
 
-    /// <summary>Adds GFM plus emoji and auto-identifiers.</summary>
+    /// <summary>Adds the GitHub flavors plus emoji and auto-identifiers.</summary>
     public static BitMarkdownPipelineBuilder UseAdvanced(this BitMarkdownPipelineBuilder b)
         => b.UseGitHubFlavored().UseEmojis().UseAutoIdentifiers();
 }

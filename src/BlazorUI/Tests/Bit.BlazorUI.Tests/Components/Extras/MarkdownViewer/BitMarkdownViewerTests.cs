@@ -481,4 +481,821 @@ public class BitMarkdownViewerTests : BunitTestContext
         Assert.Contains("<h1>h</h1>", markup);
         Assert.DoesNotContain("hello", markup);
     }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotSplitSurrogatePairsWhenTruncating()
+    {
+        // "# " + a rocket, whose emoji occupies two chars. Cutting at 3 would leave a lone
+        // high surrogate, which renders as a replacement character.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "# \U0001F680 boom");
+            parameters.Add(p => p.MaxLength, 3);
+        });
+
+        Assert.DoesNotContain("�", component.Markup);
+    }
+
+    // -- Link reference definitions and reference links ----------------------
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldResolveFullReferenceLinks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "See [the docs][docs].\n\n[docs]: https://bitplatform.dev \"bit\"");
+        });
+
+        var link = component.Find(".bit-mdv a");
+
+        Assert.AreEqual("https://bitplatform.dev", link.GetAttribute("href"));
+        Assert.AreEqual("bit", link.GetAttribute("title"));
+        Assert.AreEqual("the docs", link.TextContent);
+        // The definition itself is not part of the rendered document.
+        Assert.DoesNotContain("[docs]:", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldResolveCollapsedAndShortcutReferences()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[bit][] and [bit].\n\n[bit]: https://bitplatform.dev");
+        });
+
+        var links = component.FindAll(".bit-mdv a");
+
+        Assert.AreEqual(2, links.Count);
+        Assert.AreEqual("https://bitplatform.dev", links[0].GetAttribute("href"));
+        Assert.AreEqual("https://bitplatform.dev", links[1].GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldResolveReferencesDefinedBeforeUse()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[bit]: https://bitplatform.dev\n\nGo to [bit].");
+        });
+
+        Assert.AreEqual("https://bitplatform.dev", component.Find(".bit-mdv a").GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldMatchReferenceLabelsCaseAndWhitespaceInsensitively()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[Hello   World]\n\n[hello world]: /x");
+        });
+
+        Assert.AreEqual("/x", component.Find(".bit-mdv a").GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldResolveReferenceImages()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![a cat][cat]\n\n[cat]: /cat.png");
+        });
+
+        var img = component.Find(".bit-mdv img");
+
+        Assert.AreEqual("/cat.png", img.GetAttribute("src"));
+        Assert.AreEqual("a cat", img.GetAttribute("alt"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldSanitizeReferenceDefinitionUrls()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[click][evil]\n\n[evil]: javascript:alert(1)");
+        });
+
+        var link = component.Find(".bit-mdv a");
+
+        Assert.IsFalse(link.HasAttribute("href"));
+        Assert.DoesNotContain("javascript:", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldLeaveUnresolvedReferencesAsText()
+    {
+        // The document defines "b", so the pre-scan is active, yet "[a]" has no definition
+        // and must read exactly as it was written.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[a] then [b]\n\n[b]: /b");
+        });
+
+        var markup = component.Markup;
+
+        Assert.Contains("[a] then", markup);
+        Assert.AreEqual(1, component.FindAll(".bit-mdv a").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotTreatBracketedTextAsReferenceWithoutDefinitions()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "see [1] and [note] here");
+        });
+
+        var markup = component.Markup;
+
+        Assert.Contains("[1] and [note] here", markup);
+        Assert.AreEqual(0, component.FindAll(".bit-mdv a").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepTaskListsWorkingAlongsideReferenceDefinitions()
+    {
+        // The definition switches the reference machinery on; the "[ ]" and "[x]" markers
+        // must still reach the task-list processor as one text run.
+        var markdown = "- [x] done\n- [ ] todo\n\n[ref]: /r";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        Assert.AreEqual(2, component.FindAll(".bit-mdv input[type=checkbox]").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotReadIndentedDefinitionsAsDefinitions()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "    [a]: /a");
+        });
+
+        // Four spaces make it an indented code block, not a definition.
+        Assert.Contains("<pre>", component.Markup);
+        Assert.Contains("[a]: /a", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldReadTitleOnTheLineAfterTheDestination()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[a]\n\n[a]: /url\n   \"the title\"");
+        });
+
+        var link = component.Find(".bit-mdv a");
+
+        Assert.AreEqual("/url", link.GetAttribute("href"));
+        Assert.AreEqual("the title", link.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldUseTheFirstOfSeveralDefinitionsOfALabel()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[a]\n\n[a]: /first\n\n[a]: /second");
+        });
+
+        Assert.AreEqual("/first", component.Find(".bit-mdv a").GetAttribute("href"));
+    }
+
+    // -- Entity and numeric character references -----------------------------
+
+    [TestMethod]
+    [DataRow("&copy;", "©")]
+    [DataRow("&#169;", "©")]
+    [DataRow("&#xA9;", "©")]
+    [DataRow("&hellip;", "…")]
+    [DataRow("&mdash;", "—")]
+    public void BitMarkdownViewerShouldDecodeCharacterReferences(string markdown, string expected)
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+        });
+
+        Assert.AreEqual(expected, component.Find(".bit-mdv p").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldEscapeTextDecodedFromCharacterReferences()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "&lt;script&gt;alert(1)&lt;/script&gt;");
+        });
+
+        // The decoded characters are text, so they are escaped again on the way to the DOM
+        // and can never become live markup.
+        Assert.DoesNotContain("<script>", component.Markup);
+        Assert.AreEqual("<script>alert(1)</script>", component.Find(".bit-mdv p").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldLeaveUnknownAndMalformedReferencesAlone()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "&nosuchentity; &#; AT&T");
+        });
+
+        Assert.AreEqual("&nosuchentity; &#; AT&T", component.Find(".bit-mdv p").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotDecodeCharacterReferencesInsideCode()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "`&copy;`\n\n```\n&copy;\n```");
+        });
+
+        Assert.AreEqual("&copy;", component.Find(".bit-mdv code").TextContent);
+        Assert.AreEqual("&copy;", component.Find(".bit-mdv pre code").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldReplaceOutOfRangeNumericReferences()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "&#0; &#xD800;");
+        });
+
+        Assert.AreEqual("� �", component.Find(".bit-mdv p").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldSanitizeUrlsAfterDecodingCharacterReferences()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[x](&#x6A;avascript:alert(1))");
+        });
+
+        Assert.IsFalse(component.Find(".bit-mdv a").HasAttribute("href"));
+    }
+
+    // -- Footnotes -----------------------------------------------------------
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderFootnotes()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "Text with a note[^1].\n\n[^1]: The note itself.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        var markup = component.Markup;
+
+        Assert.Contains("class=\"footnote-ref\"", markup);
+        Assert.Contains("href=\"#fn-1\"", markup);
+        Assert.Contains("id=\"fnref-1\"", markup);
+        Assert.Contains("id=\"fn-1\"", markup);
+        Assert.Contains("The note itself.", markup);
+        Assert.Contains("class=\"footnote-backref\"", markup);
+        // The definition is lifted out of the flow into the footnotes section.
+        Assert.DoesNotContain("[^1]:", markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNumberFootnotesByOrderOfReference()
+    {
+        var markdown = "First[^b] then second[^a].\n\n[^a]: A.\n[^b]: B.";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        var items = component.FindAll(".bit-mdv .footnotes li");
+
+        Assert.AreEqual(2, items.Count);
+        Assert.Contains("B.", items[0].TextContent);
+        Assert.Contains("A.", items[1].TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldGiveEachFootnoteCitationItsOwnBackLink()
+    {
+        var markdown = "One[^n] and two[^n].\n\n[^n]: The note.";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        var markup = component.Markup;
+
+        Assert.Contains("id=\"fnref-1\"", markup);
+        Assert.Contains("id=\"fnref-1-2\"", markup);
+        Assert.AreEqual(2, component.FindAll(".bit-mdv .footnote-backref").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldDropFootnoteDefinitionsNobodyCites()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "Just text.\n\n[^unused]: Nothing points here.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        var markup = component.Markup;
+
+        Assert.DoesNotContain("class=\"footnotes\"", markup);
+        Assert.DoesNotContain("Nothing points here.", markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotRenderFootnotesWithoutTheExtension()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "Text[^1].\n\n[^1]: The note.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Basic);
+        });
+
+        Assert.DoesNotContain("class=\"footnote-ref\"", component.Markup);
+        Assert.DoesNotContain("class=\"footnotes\"", component.Markup);
+    }
+
+    // -- Alerts --------------------------------------------------------------
+
+    [TestMethod]
+    [DataRow("NOTE", "note", "Note")]
+    [DataRow("TIP", "tip", "Tip")]
+    [DataRow("IMPORTANT", "important", "Important")]
+    [DataRow("WARNING", "warning", "Warning")]
+    [DataRow("CAUTION", "caution", "Caution")]
+    public void BitMarkdownViewerShouldRenderGitHubAlerts(string marker, string cssKind, string title)
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, $"> [!{marker}]\n> Something worth knowing.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        var alert = component.Find($".bit-mdv .markdown-alert-{cssKind}");
+
+        Assert.AreEqual(title, component.Find(".bit-mdv .markdown-alert-title").TextContent);
+        Assert.Contains("Something worth knowing.", alert.TextContent);
+        Assert.AreEqual(0, component.FindAll(".bit-mdv blockquote").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldLeaveOrdinaryBlockquotesAlone()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "> just a quote");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-mdv blockquote").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-mdv .markdown-alert").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotTreatAMarkerFollowedByTextAsAnAlert()
+    {
+        // GitHub requires the marker to be alone on the first line.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "> [!NOTE] inline text");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mdv .markdown-alert").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-mdv blockquote").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotRenderAlertsWithoutTheExtension()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "> [!NOTE]\n> Something.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Basic);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mdv .markdown-alert").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-mdv blockquote").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerGitHubPipelineShouldCarryFootnotesAndAlerts()
+    {
+        // A footnote definition is also a valid link reference definition, so a pipeline
+        // with the rest of the GitHub flavors must carry footnotes too - otherwise the note
+        // silently becomes a link destination.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "Text[^1].\n\n[^1]: The note.\n\n> [!TIP]\n> Do this.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        Assert.Contains("class=\"footnote-ref\"", component.Markup);
+        Assert.AreEqual(1, component.FindAll(".bit-mdv .markdown-alert-tip").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepUnresolvedFootnoteReferencesAsWritten()
+    {
+        // "[^b]" has no definition; "[^a]" does, which is what turns the pre-scan on.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "One[^a] two[^B].\n\n[^a]: A note.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        Assert.Contains("two[^B].", component.Markup);
+        Assert.AreEqual(1, component.FindAll(".bit-mdv .footnote-ref").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotNestLinksInsideReferenceLinks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[[inner]][outer]\n\n[inner]: /i\n[outer]: /o");
+        });
+
+        var links = component.FindAll(".bit-mdv a");
+
+        Assert.AreEqual(1, links.Count);
+        Assert.AreEqual("/o", links[0].GetAttribute("href"));
+        // The inner link is unwrapped; its content survives as the outer link's text.
+        Assert.AreEqual("inner", links[0].TextContent);
+    }
+
+    // -- Soft line breaks ----------------------------------------------------
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderSoftBreaksAsHardBreaksWhenEnabled()
+    {
+        var pipeline = new BitMarkdownPipelineBuilder().UseSoftLineAsHardLine().Build();
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "line one\nline two");
+            parameters.Add(p => p.Pipeline, pipeline);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-mdv br").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepSoftBreaksSoftByDefault()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "line one\nline two");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mdv br").Count);
+    }
+
+    // -- Rendering details ---------------------------------------------------
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldAlignTableColumnsWithClassesNotInlineStyles()
+    {
+        var markdown = "| l | c | r |\n|:--|:-:|--:|\n| 1 | 2 | 3 |";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        var headers = component.FindAll(".bit-mdv th");
+
+        Assert.AreEqual("bit-mdv-align-left", headers[0].GetAttribute("class"));
+        Assert.AreEqual("bit-mdv-align-center", headers[1].GetAttribute("class"));
+        Assert.AreEqual("bit-mdv-align-right", headers[2].GetAttribute("class"));
+        // Inline styles are unusable under a strict Content-Security-Policy.
+        Assert.DoesNotContain("text-align:", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldLazyLoadImages()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![a](/a.png)");
+        });
+
+        var img = component.Find(".bit-mdv img");
+
+        Assert.AreEqual("lazy", img.GetAttribute("loading"));
+        Assert.AreEqual("async", img.GetAttribute("decoding"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldAllowEmbeddedRasterImages()
+    {
+        const string data = "data:image/png;base64,iVBORw0KGgo=";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, $"![dot]({data})");
+        });
+
+        Assert.AreEqual(data, component.Find(".bit-mdv img").GetAttribute("src"));
+    }
+
+    [TestMethod]
+    [DataRow("data:image/svg+xml,%3Csvg%3E")]
+    [DataRow("data:text/html,%3Cscript%3E")]
+    [DataRow("data:image/pngx,AAAA")]
+    public void BitMarkdownViewerShouldBlockScriptableDataImages(string url)
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, $"![x]({url})");
+        });
+
+        Assert.IsFalse(component.Find(".bit-mdv img").HasAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldBlockDataUrlsInLinks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[x](data:image/png;base64,iVBORw0KGgo=)");
+        });
+
+        Assert.IsFalse(component.Find(".bit-mdv a").HasAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderAriaLabelAndTabIndex()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "# x");
+            parameters.Add(p => p.AriaLabel, "Release notes");
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        var root = component.Find(".bit-mdv");
+
+        Assert.AreEqual("Release notes", root.GetAttribute("aria-label"));
+        Assert.AreEqual("0", root.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldExposeTheParsedDocument()
+    {
+        BitMarkdownDocumentNode? parsed = null;
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "# One\n\n## Two");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+            parameters.Add(p => p.OnParsed, (BitMarkdownDocumentNode d) => parsed = d);
+        });
+
+        Assert.IsNotNull(parsed);
+        Assert.AreSame(parsed, component.Instance.Document);
+
+        var headings = BitMarkdownAstHelper.Descendants(parsed).OfType<BitMarkdownHeadingNode>().ToList();
+
+        Assert.AreEqual(2, headings.Count);
+        Assert.AreEqual("one", headings[0].Id);
+        Assert.AreEqual("two", headings[1].Id);
+    }
+
+    // -- CommonMark core corners --------------------------------------------
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderSetextHeadings()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "Title\n=====\n\nSubtitle\n--------");
+        });
+
+        var markup = component.Markup;
+
+        Assert.Contains("<h1>Title</h1>", markup);
+        Assert.Contains("<h2>Subtitle</h2>", markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderHardBreaks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "one  \ntwo\\\nthree");
+        });
+
+        Assert.AreEqual(2, component.FindAll(".bit-mdv br").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderLooseListsWithParagraphs()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "- one\n\n- two");
+        });
+
+        Assert.AreEqual(2, component.FindAll(".bit-mdv li > p").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderTightListsWithoutParagraphs()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "- one\n- two");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mdv li > p").Count);
+        Assert.AreEqual(2, component.FindAll(".bit-mdv li").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldStartANewListWhenTheMarkerChanges()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "- one\n* two");
+        });
+
+        Assert.AreEqual(2, component.FindAll(".bit-mdv ul").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepEscapedPunctuationLiteral()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, @"\*not emphasis\* and \[not a link\]");
+        });
+
+        var markup = component.Markup;
+
+        Assert.DoesNotContain("<em>", markup);
+        Assert.Contains("*not emphasis* and [not a link]", component.Find(".bit-mdv p").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepPipesEscapedInsideTableCells()
+    {
+        var markdown = "| a | b |\n|---|---|\n| x \\| y | z |";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        var cells = component.FindAll(".bit-mdv tbody td");
+
+        Assert.AreEqual(2, cells.Count);
+        Assert.AreEqual("x | y", cells[0].TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldTrimTrailingPunctuationFromAutolinks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "Go to https://bitplatform.dev, now.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        Assert.AreEqual("https://bitplatform.dev", component.Find(".bit-mdv a").GetAttribute("href"));
+    }
+
+    [TestMethod]
+    [DataRow("https://en.wikipedia.org/wiki/Foo_bar_baz")]
+    [DataRow("https://example.com/a_(b)")]
+    [DataRow("https://example.com/a~b")]
+    [DataRow("https://example.com/_a_b")]
+    public void BitMarkdownViewerShouldAutolinkUrlsContainingDelimiterCharacters(string url)
+    {
+        // The scanner emits a token per delimiter run, so an unpaired '_' / '*' / '~' inside
+        // a bare URL would otherwise reach the autolink processor as several text nodes and
+        // only the first fragment would be linked.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, $"Go to {url} now.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        Assert.AreEqual(url, component.Find(".bit-mdv a").GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldEncodeSpacesInUrls()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[a](</my url>) and ![b](</my image.png>)");
+        });
+
+        Assert.AreEqual("/my%20url", component.Find(".bit-mdv a").GetAttribute("href"));
+        Assert.AreEqual("/my%20image.png", component.Find(".bit-mdv img").GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotDoubleEncodeUrls()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[a](/already%20encoded)");
+        });
+
+        Assert.AreEqual("/already%20encoded", component.Find(".bit-mdv a").GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotAutolinkInsideCode()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "`https://bitplatform.dev`");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mdv a").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldMarkExternalLinksAsSafeToOpen()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[out](https://example.com)");
+        });
+
+        var link = component.Find(".bit-mdv a");
+
+        Assert.AreEqual("_blank", link.GetAttribute("target"));
+        Assert.AreEqual("noopener noreferrer", link.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotNestLinksInsideLinks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[a [b](https://b.com) c](https://a.com)");
+        });
+
+        var links = component.FindAll(".bit-mdv a");
+
+        Assert.AreEqual(1, links.Count);
+        Assert.AreEqual("https://a.com", links[0].GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderCodeBlockLanguageClass()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "```csharp\nvar x = 1;\n```");
+        });
+
+        Assert.AreEqual("language-csharp", component.Find(".bit-mdv pre code").GetAttribute("class"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderNestedBlockquotes()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "> outer\n>\n> > inner");
+        });
+
+        Assert.AreEqual(2, component.FindAll(".bit-mdv blockquote").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderAngleBracketAutolinks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "<https://bitplatform.dev> and <a@b.com>");
+        });
+
+        var links = component.FindAll(".bit-mdv a");
+
+        Assert.AreEqual(2, links.Count);
+        Assert.AreEqual("https://bitplatform.dev", links[0].GetAttribute("href"));
+        Assert.AreEqual("mailto:a@b.com", links[1].GetAttribute("href"));
+    }
 }

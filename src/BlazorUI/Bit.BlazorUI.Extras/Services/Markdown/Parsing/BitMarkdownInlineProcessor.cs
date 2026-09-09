@@ -14,22 +14,32 @@ public sealed class BitMarkdownInlineProcessor
     private readonly List<Tok> _tokens = new();
 
     internal BitMarkdownInlineProcessor(BitMarkdownPipeline pipeline)
-        : this(pipeline, BitMarkdownParseOptions.Default, 0)
+        : this(pipeline, BitMarkdownParseContext.Empty, 0)
     {
     }
 
-    internal BitMarkdownInlineProcessor(BitMarkdownPipeline pipeline, BitMarkdownParseOptions options, int depth)
+    internal BitMarkdownInlineProcessor(BitMarkdownPipeline pipeline, BitMarkdownParseContext context, int depth)
     {
         Pipeline = pipeline;
-        Options = options;
+        Context = context;
         Depth = depth;
     }
 
     /// <summary>The owning pipeline.</summary>
     public BitMarkdownPipeline Pipeline { get; }
 
+    /// <summary>The state shared by every parser taking part in this parse.</summary>
+    internal BitMarkdownParseContext Context { get; }
+
     /// <summary>The safety limits in effect for this parse.</summary>
-    internal BitMarkdownParseOptions Options { get; }
+    internal BitMarkdownParseOptions Options => Context.Options;
+
+    /// <summary>
+    /// True when the document declares a <c>[label]:</c> definition line for the supplied
+    /// (already normalized) label. Inline parsers consult this before turning bracketed
+    /// text into a reference, since definitions may appear after their references.
+    /// </summary>
+    public bool HasReferenceLabel(string normalizedLabel) => Context.ReferenceLabels.Contains(normalizedLabel);
 
     /// <summary>The current nesting depth of this processor within the document.</summary>
     internal int Depth { get; }
@@ -53,7 +63,7 @@ public sealed class BitMarkdownInlineProcessor
     }
 
     /// <summary>Parses inline content in an isolated child processor (e.g. for a link label).</summary>
-    public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
+    public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Context, Depth + 1);
 
     // -- API used by inline parsers ----------------------------------------
 

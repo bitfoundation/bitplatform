@@ -28,6 +28,7 @@ public sealed class BitMarkdownPipelineBuilder
     public BitMarkdownPipelineBuilder()
     {
         // Core block parsers.
+        BlockParsers.Add(new BitMarkdownLinkReferenceDefinitionParser());
         BlockParsers.Add(new BitMarkdownFencedCodeBlockParser());
         BlockParsers.Add(new BitMarkdownAtxHeadingParser());
         BlockParsers.Add(new BitMarkdownThematicBreakParser());
@@ -41,10 +42,16 @@ public sealed class BitMarkdownPipelineBuilder
         InlineParsers.Add(new BitMarkdownCodeSpanInlineParser());
         InlineParsers.Add(new BitMarkdownAutolinkInlineParser());
         InlineParsers.Add(new BitMarkdownLinkInlineParser());
+        InlineParsers.Add(new BitMarkdownEntityInlineParser());
         InlineParsers.Add(new BitMarkdownLineBreakInlineParser());
 
         // Core emphasis.
         DelimiterProcessors.Add(new BitMarkdownEmphasisDelimiterProcessor());
+
+        // Core AST processors. Reference links are completed, and the text runs the scanner
+        // split apart are put back together, before any flavor runs.
+        AstProcessors.Add(new BitMarkdownLinkReferenceAstProcessor());
+        AstProcessors.Add(new BitMarkdownTextMergeAstProcessor());
 
         // Core renderer (registered first so plugin renderers can override it).
         Renderers.Add(new BitMarkdownCoreRenderer());

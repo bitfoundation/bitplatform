@@ -61,9 +61,102 @@
         box-sizing: border-box;
     }
 
+    // Two renderings of the same source, side by side, so the difference between them is
+    // the only thing that changes.
+    .mdv-columns {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .mdv-column {
+        flex: 1 1 50%;
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid $bit-color-border-secondary;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .mdv-column-title {
+        margin-bottom: 8px;
+        font-size: 0.85em;
+        font-weight: 600;
+        opacity: 0.75;
+    }
+
+    // The table-of-contents rail beside the document it was read out of.
+    .mdv-toc-layout {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .mdv-toc {
+        flex: 0 0 200px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding-inline-end: 16px;
+        border-inline-end: 1px solid $bit-color-border-secondary;
+    }
+
+    .mdv-toc-title {
+        margin-bottom: 4px;
+        font-size: 0.85em;
+        font-weight: 600;
+        opacity: 0.75;
+    }
+
+    .mdv-toc-item {
+        color: inherit;
+        font-size: 0.9em;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .mdv-toc-level-2 {
+        padding-inline-start: 12px;
+    }
+
+    .mdv-toc-level-3 {
+        padding-inline-start: 24px;
+        opacity: 0.8;
+    }
+
+    // The Style & Class example's own stylesheet.
+    .custom-mdv {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background: $bit-color-background-secondary;
+
+        h3 {
+            margin-top: 0;
+            color: $bit-color-primary;
+        }
+
+        code {
+            color: $bit-color-primary-dark;
+            background: $bit-color-background-primary-light;
+        }
+    }
+
     @media (max-width: 800px) {
-        .mdv-split {
+        .mdv-split,
+        .mdv-columns,
+        .mdv-toc-layout {
             flex-direction: column;
+        }
+
+        .mdv-toc {
+            flex: 0 0 auto;
+            padding-inline-end: 0;
+            border-inline-end: 0;
         }
     }
 }

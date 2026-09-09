@@ -8,22 +8,32 @@ namespace Bit.BlazorUI;
 public sealed class BitMarkdownBlockProcessor
 {
     internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines)
-        : this(pipeline, lines, BitMarkdownParseOptions.Default, 0)
+        : this(pipeline, lines, BitMarkdownParseContext.Empty, 0)
     {
     }
 
-    internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownParseOptions options, int depth)
+    internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownParseContext context, int depth)
     {
         Pipeline = pipeline;
         Lines = lines;
-        Options = options;
+        Context = context;
         Depth = depth;
     }
 
     public BitMarkdownPipeline Pipeline { get; }
 
+    /// <summary>The state shared by every parser taking part in this parse.</summary>
+    internal BitMarkdownParseContext Context { get; }
+
     /// <summary>The safety limits in effect for this parse.</summary>
-    internal BitMarkdownParseOptions Options { get; }
+    internal BitMarkdownParseOptions Options => Context.Options;
+
+    /// <summary>
+    /// True when the document declares a <c>[label]:</c> definition line for the supplied
+    /// (already normalized) label. Block and inline parsers consult this before treating
+    /// bracketed text as a reference, since definitions may appear after their references.
+    /// </summary>
+    public bool HasReferenceLabel(string normalizedLabel) => Context.ReferenceLabels.Contains(normalizedLabel);
 
     /// <summary>The current nesting depth of this processor within the document.</summary>
     internal int Depth { get; }
@@ -56,10 +66,10 @@ public sealed class BitMarkdownBlockProcessor
     }
 
     /// <summary>Recursively parses a nested set of lines (list items, block quotes).</summary>
-    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines) => Pipeline.ParseBlocks(lines, Options, Depth + 1);
+    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines) => Pipeline.ParseBlocks(lines, Context, Depth + 1);
 
     /// <summary>Parses inline content using the pipeline's inline parsers.</summary>
-    public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
+    public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Context, Depth + 1);
 
     /// <summary>True if any block parser (other than the paragraph fallback) starts at the line.</summary>
     public bool StartsBlock(int lineIndex)

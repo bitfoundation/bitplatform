@@ -166,4 +166,109 @@
         max-width: 100%;
         box-sizing: content-box;
     }
+
+    // Pipe-table column alignment. Applied as a class rather than an inline style so the
+    // rendered document still aligns under a strict Content-Security-Policy.
+    .bit-mdv-align-left {
+        text-align: start;
+    }
+
+    .bit-mdv-align-center {
+        text-align: center;
+    }
+
+    .bit-mdv-align-right {
+        text-align: end;
+    }
+
+    // GitHub alerts. Each kind is a tinted rule down the inline start edge plus a coloured
+    // title, so the kind survives both a monochrome print and a screen reader.
+    .markdown-alert {
+        margin-bottom: 1em;
+        padding: 0.5em 1em;
+        border-inline-start: $shp-border-width-thick $shp-border-style $clr-brd-pri;
+
+        > *:first-child {
+            margin-top: 0;
+        }
+
+        > *:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .markdown-alert-title {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+        margin-bottom: 0.25em;
+        font-weight: $tg-fw-semibold;
+        line-height: 1;
+    }
+
+    .markdown-alert-note {
+        border-inline-start-color: $clr-inf;
+
+        > .markdown-alert-title {
+            color: $clr-inf;
+        }
+    }
+
+    .markdown-alert-tip {
+        border-inline-start-color: $clr-suc;
+
+        > .markdown-alert-title {
+            color: $clr-suc;
+        }
+    }
+
+    .markdown-alert-important {
+        border-inline-start-color: $clr-pri;
+
+        > .markdown-alert-title {
+            color: $clr-pri;
+        }
+    }
+
+    .markdown-alert-warning {
+        border-inline-start-color: $clr-wrn;
+
+        > .markdown-alert-title {
+            color: $clr-wrn;
+        }
+    }
+
+    .markdown-alert-caution {
+        border-inline-start-color: $clr-err;
+
+        > .markdown-alert-title {
+            color: $clr-err;
+        }
+    }
+
+    // Footnotes: the section is set apart and typographically quieter than the body it
+    // annotates, and each marker stays small enough not to disturb the line it sits on.
+    .footnote-ref {
+        font-size: $tg-fs-2xs;
+        line-height: 0;
+    }
+
+    .footnotes {
+        font-size: $tg-fs-xs;
+        color: $clr-fg-sec;
+
+        > hr {
+            height: $shp-border-width;
+            margin: 2em 0 1em 0;
+            background-color: $clr-brd-sec;
+        }
+
+        > ol {
+            margin-bottom: 0;
+        }
+    }
+
+    .footnote-backref {
+        text-decoration: none;
+    }
 }

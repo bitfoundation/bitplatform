@@ -8,9 +8,11 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// <para>
-/// By default the component understands only the basic CommonMark core. Richer flavors
-/// (GitHub tables, strikethrough, task lists, autolinks, emoji, ...) are opt-in: supply
-/// a <see cref="Pipeline"/> built with the desired extensions (for example
+/// By default the component understands the CommonMark core: headings, emphasis, links and
+/// images (including reference links and link reference definitions), lists, block quotes,
+/// code, and HTML character references. Richer flavors (GitHub tables, strikethrough, task
+/// lists, autolinks, footnotes, alerts, emoji, ...) are opt-in: supply a
+/// <see cref="Pipeline"/> built with the desired extensions (for example
 /// <see cref="BitMarkdownPipelines.GitHub"/>).
 /// </para>
 /// <para>
@@ -29,6 +31,7 @@ public partial class BitMarkdownViewer : BitComponentBase
     private int _parsedMaxDepth;
     private int _parsedMaxLength;
     private bool _parsedStripBidi;
+    private bool _notifyParsed;
 
 
 
@@ -86,6 +89,22 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// </summary>
     [Parameter] public bool StripBidiControlCharacters { get; set; }
 
+    /// <summary>
+    /// Called after the Markdown source has been parsed, with the document that is about to
+    /// be rendered. The tree is the same one the renderer walks, so a handler can read it -
+    /// to build a table of contents from the headings, for example - or rewrite it before it
+    /// reaches the DOM.
+    /// </summary>
+    [Parameter] public EventCallback<BitMarkdownDocumentNode> OnParsed { get; set; }
+
+
+
+    /// <summary>
+    /// The most recently parsed document. Useful for reading structure out of the source
+    /// (headings, links, images) without parsing it a second time.
+    /// </summary>
+    public BitMarkdownDocumentNode Document => _document;
+
 
 
     protected override string RootElementClass => "bit-mdv";
@@ -113,9 +132,26 @@ public partial class BitMarkdownViewer : BitComponentBase
             _parsedMaxDepth = maxDepth;
             _parsedMaxLength = MaxLength;
             _parsedStripBidi = StripBidiControlCharacters;
+            _notifyParsed = true;
         }
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        // Raised from the async half of the lifecycle so an exception thrown by the handler
+        // surfaces through the renderer instead of being lost on an unobserved task.
+        if (_notifyParsed)
+        {
+            _notifyParsed = false;
+            if (OnParsed.HasDelegate)
+            {
+                await OnParsed.InvokeAsync(_document);
+            }
+        }
     }
 
     /// <summary>
@@ -131,7 +167,14 @@ public partial class BitMarkdownViewer : BitComponentBase
             source = BitMarkdownTextSanitizer.StripBidiControlCharacters(source);
 
         if (MaxLength > 0 && source is not null && source.Length > MaxLength)
-            source = source[..MaxLength];
+        {
+            // Never cut between the two halves of a surrogate pair: the lone half would
+            // render as a replacement character instead of the emoji (or other astral
+            // character) the author wrote.
+            int end = MaxLength;
+            if (char.IsHighSurrogate(source[end - 1])) end--;
+            source = source[..end];
+        }
 
         var options = new BitMarkdownParseOptions { MaxDepth = maxDepth };
 
@@ -164,6 +207,14 @@ public partial class BitMarkdownViewer : BitComponentBase
         if (Dir is not null)
         {
             builder.AddAttribute(5, "dir", Dir.Value.ToString().ToLower());
+        }
+        if (AriaLabel is not null)
+        {
+            builder.AddAttribute(7, "aria-label", AriaLabel);
+        }
+        if (TabIndex is not null)
+        {
+            builder.AddAttribute(8, "tabindex", TabIndex);
         }
         builder.AddElementReferenceCapture(6, v => RootElement = v);
 

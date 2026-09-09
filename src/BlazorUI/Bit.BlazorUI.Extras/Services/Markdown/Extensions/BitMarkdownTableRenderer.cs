@@ -44,17 +44,20 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
         b.CloseElement();
     }
 
+    // Column alignment is applied with a class rather than an inline style attribute, so the
+    // rendered document still aligns under a strict Content-Security-Policy that does not
+    // allow 'unsafe-inline' for styles.
     private static void AddAlignment(RenderTreeBuilder b, BitMarkdownTableNode table, int col)
     {
         if (col >= table.Alignments.Count) return;
         string? align = table.Alignments[col] switch
         {
-            BitMarkdownColumnAlignment.Left => "left",
-            BitMarkdownColumnAlignment.Center => "center",
-            BitMarkdownColumnAlignment.Right => "right",
+            BitMarkdownColumnAlignment.Left => "bit-mdv-align-left",
+            BitMarkdownColumnAlignment.Center => "bit-mdv-align-center",
+            BitMarkdownColumnAlignment.Right => "bit-mdv-align-right",
             _ => null
         };
         if (align is not null)
-            b.AddAttribute(8, "style", $"text-align:{align}");
+            b.AddAttribute(8, "class", align);
     }
 }
