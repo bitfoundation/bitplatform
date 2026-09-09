@@ -84,7 +84,7 @@
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
-            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day)"
                  id="@SlotElementId(rowKey, day)"
                  style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
@@ -109,6 +109,7 @@
         {
             @RenderLanes(lanes, monthStart, daysInMonth)
         }
+        @NowIndicator(todayIdx)
     </RowContent>
 
     <UnassignedRowContent>
@@ -119,7 +120,7 @@
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
-            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day)"
                  id="@SlotElementId(rowKey, day)"
                  style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
@@ -135,6 +136,7 @@
         {
             @RenderLanes(perResource[_unassignedKey], monthStart, daysInMonth)
         }
+        @NowIndicator(todayIdx)
     </UnassignedRowContent>
 </BitFcTimelineLayout>
 
@@ -146,5 +148,21 @@
 @if (_selectedEvent != null)
 {
     <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+
+@code {
+    // The "current time" rule of a month row: one column is a whole day here, so the marker sits at
+    // the fraction of today's column the clock has reached. Nothing renders when today is not in the
+    // rendered month (todayIdx is then -1, which the component reads as "not today").
+    private RenderFragment<int> NowIndicator => todayIndex => @<text>
+        @if (State.ShowCurrentTimeIndicator && todayIndex >= 0)
+        {
+            <BitFcTimelineNowIndicator Day="DateTime.Today"
+                                       ColumnOffsetPx="@(todayIndex * BitFullCalendarHelpers.TimelineDayWidthPx)"
+                                       PixelsPerMinute="@(BitFullCalendarHelpers.TimelineDayWidthPx / 1440.0)"
+                                       VisibleStartHour="0"
+                                       VisibleEndHour="24" />
+        }
+    </text>;
 }
 

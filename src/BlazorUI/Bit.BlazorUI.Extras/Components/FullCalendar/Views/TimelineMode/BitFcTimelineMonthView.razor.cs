@@ -86,6 +86,15 @@ public partial class BitFcTimelineMonthView
         _pendingCellFocus = true;
     }
 
+    /// <summary>
+    /// Shades a day column that is not a business day, so the schedulable part of the month reads at
+    /// a glance. Off unless the consumer asked for it.
+    /// </summary>
+    private string? OffDayClass(DateTime day)
+        => State.HighlightBusinessHours && State.IsBusinessDay(day.DayOfWeek) is false
+            ? "bit-bfc-slot-off"
+            : null;
+
     private void SetRovingCell(string rowKey, DateTime day)
     {
         _focusedCell = (rowKey, day);

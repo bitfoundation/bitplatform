@@ -15,6 +15,16 @@ public partial class BitFcEventListDialog : IAsyncDisposable
     [Parameter] public List<BitFullCalendarEvent> Events { get; set; } = [];
     [Parameter] public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// The events in reading order: the all-day ones of the date first, then the timed ones in clock
+    /// order, then by title so two events at the same minute keep a stable place.
+    /// </summary>
+    private List<BitFullCalendarEvent> SortedEvents => Events
+        .OrderByDescending(e => e.IsAllDayOrMultiDay)
+        .ThenBy(e => e.StartDate)
+        .ThenBy(e => e.Title, StringComparer.Create(State.Culture, ignoreCase: true))
+        .ToList();
+
     private bool _showDetails;
     private BitFullCalendarEvent? _selectedEvent;
     private ElementReference _dialogRef;

@@ -7,15 +7,37 @@
     // A date the calendar is not allowed to navigate to is shown for context but never accepts a
     // click, a drop, or the add affordance.
     var isOutOfRange = State.IsDateInAllowedRange(Cell.Date) is false;
+    // A day the grid only borrows from a neighbouring month can be left blank altogether, which is
+    // what showNonCurrentDates turns off elsewhere. The cell still holds its column open.
+    var isBlank = Cell.CurrentMonth is false && State.ShowNonCurrentDates is false;
+    var isOffDay = State.HighlightBusinessHours && State.IsBusinessDay(Cell.Date.DayOfWeek) is false;
 }
 
-<div class="bit-bfc-month-cell @(!Cell.CurrentMonth ? "other-month" : "") @(isOutOfRange ? "bit-bfc-out-of-range" : "") bit-bfc-droppable"
+@if (isBlank)
+{
+    <div class="bit-bfc-month-cell other-month bit-bfc-month-cell-blank @(IsLastColumn ? "bit-bfc-month-cell-last-col" : "")" aria-hidden="true"></div>
+}
+else
+{
+<div class="bit-bfc-month-cell @(!Cell.CurrentMonth ? "other-month" : "") @(isOutOfRange ? "bit-bfc-out-of-range" : "") @(isOffDay ? "bit-bfc-day-off" : "") @(IsLastColumn ? "bit-bfc-month-cell-last-col" : "") bit-bfc-droppable"
      @ondragover="OnDragOver"
      @ondragover:preventDefault="true"
      @ondrop="OnDrop"
      @onclick="() => OnCellClick()">
 
-    <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")">@Cell.Day</div>
+    @* With nav links on, the day number opens that single day - the affordance every calendar puts
+       there - and stays a plain label otherwise. *@
+    @if (State.NavLinks && isOutOfRange is false)
+    {
+        <button type="button" class="bit-bfc-month-cell-day bit-bfc-navlink @(isToday ? "today" : "")"
+                aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, Cell.Date.ToString("D", State.Culture))"
+                @onclick="GoToDayView"
+                @onclick:stopPropagation="true">@Cell.Day</button>
+    }
+    else
+    {
+        <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")">@Cell.Day</div>
+    }
     @if (!State.ReadOnly && !isOutOfRange)
     {
         @* Roving tabindex: only one cell of the month grid is in the tab order at a time, and the
@@ -58,11 +80,14 @@
        trailing cell from a neighbouring month hides them just the same. *@
     @if (moreCount > 0)
     {
-        <button type="button" class="bit-bfc-month-more" @onclick="() => _showEventList = true" @onclick:stopPropagation="true">
+        <button type="button" class="bit-bfc-month-more"
+                aria-label="@($"{string.Format(State.Culture, Texts.MoreEventsFormat, moreCount)}, {Cell.Date.ToString("D", State.Culture)}")"
+                @onclick="() => _showEventList = true" @onclick:stopPropagation="true">
             @string.Format(State.Culture, Texts.MoreEventsFormat, moreCount)
         </button>
     }
 </div>
+}
 
 @if (_showEventList)
 {

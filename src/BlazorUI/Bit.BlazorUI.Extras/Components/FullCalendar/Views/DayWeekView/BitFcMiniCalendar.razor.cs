@@ -29,16 +29,23 @@ public partial class BitFcMiniCalendar
     {
         get
         {
-            if (_focusedDate is { } focused && _cells.Any(c => c.Date.Date == focused.Date))
+            if (_focusedDate is { } focused && _cells.Any(c => c.Date.Date == focused.Date && IsSelectable(c)))
                 return focused.Date;
 
-            if (_cells.Any(c => c.Date.Date == State.SelectedDate.Date))
+            if (_cells.Any(c => c.Date.Date == State.SelectedDate.Date && State.IsDateInAllowedRange(State.SelectedDate)))
                 return State.SelectedDate.Date;
 
-            var firstOfMonth = _cells.FirstOrDefault(c => c.CurrentMonth);
-            return (firstOfMonth ?? _cells.FirstOrDefault())?.Date.Date ?? DateTime.Today;
+            var firstSelectable = _cells.FirstOrDefault(c => c.CurrentMonth && IsSelectable(c))
+                                  ?? _cells.FirstOrDefault(IsSelectable);
+            return (firstSelectable ?? _cells.FirstOrDefault())?.Date.Date ?? DateTime.Today;
         }
     }
+
+    /// <summary>
+    /// True when a day is actually pickable. A day the date bounds put out of reach renders a
+    /// disabled button, which cannot take focus - so it must never own the grid's single tab stop.
+    /// </summary>
+    private bool IsSelectable(BitFullCalendarCell cell) => State.IsDateInAllowedRange(cell.Date);
 
     private void OnDayKeyDown(DateTime date, KeyboardEventArgs args)
     {
@@ -66,6 +73,19 @@ public partial class BitFcMiniCalendar
         };
 
         if (target < 0 || target >= _cells.Count)
+            return;
+
+        // A disabled day cannot take focus, so the walk steps over it in the direction it was
+        // already going rather than stranding the focus on a button that refuses it.
+        var step = target - index;
+        if (step != 0)
+        {
+            var direction = Math.Sign(step);
+            while (target >= 0 && target < _cells.Count && IsSelectable(_cells[target]) is false)
+                target += direction;
+        }
+
+        if (target < 0 || target >= _cells.Count || IsSelectable(_cells[target]) is false)
             return;
 
         _focusedDate = _cells[target].Date.Date;

@@ -12,10 +12,16 @@ public partial class BitFcCalendarYearView
 
     private void GoToMonth(DateTime month)
     {
-        if (State.IsDateInAllowedRange(month) is false)
+        // A month the date bounds only clip - Min/MaxDate landing mid-month - is still navigable: the
+        // target moves to the nearest day inside the window rather than leaving the month title inert.
+        // A month they put entirely out of reach clamps into a neighbouring one, and that is where the
+        // navigation stops.
+        var target = State.ClampToAllowedRange(month);
+        var calendar = State.Culture.Calendar;
+        if (calendar.GetYear(target) != calendar.GetYear(month) || calendar.GetMonth(target) != calendar.GetMonth(month))
             return;
 
-        State.SetSelectedDate(month);
+        State.SetSelectedDate(target);
 
         // Drilling into a month is an indirect route to the month view; when the consumer excluded
         // it, navigating the date is all this does rather than landing on some other view.

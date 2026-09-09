@@ -13,6 +13,18 @@ public partial class BitFcAgendaEvents
     private ulong _lastAgendaScrollNonce;
     private readonly string _scrollContainerId = "bit-bfc-agenda-scroll-" + Guid.NewGuid().ToString("N");
 
+    /// <summary>
+    /// The reading order inside an agenda group: an all-day event heads the day it covers, then the
+    /// timed ones in clock order, then by title so two events at the same minute keep a stable place.
+    /// Without this the list would follow whatever order the events were supplied in.
+    /// </summary>
+    private List<BitFullCalendarEvent> SortAgendaItems(IEnumerable<BitFullCalendarEvent> events)
+        => events
+            .OrderByDescending(e => e.IsAllDayOrMultiDay)
+            .ThenBy(e => e.StartDate)
+            .ThenBy(e => e.Title, StringComparer.Create(State.Culture, ignoreCase: true))
+            .ToList();
+
     protected override void OnInitialized() => State.OnStateChanged += Refresh;
     private void Refresh() => InvokeAsync(StateHasChanged);
     public void Dispose() => State.OnStateChanged -= Refresh;

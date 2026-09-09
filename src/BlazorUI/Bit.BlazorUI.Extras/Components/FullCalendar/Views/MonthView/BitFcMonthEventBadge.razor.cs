@@ -48,15 +48,11 @@ public partial class BitFcMonthEventBadge
         var start = Event.StartDate + step;
         var end = Event.EndDate + step;
 
-        if (State.IsDateInAllowedRange(start) is false || State.IsDateInAllowedRange(end.AddTicks(-1)) is false)
+        // The same gate a drop passes through: allowed date window, business hours, booking rule.
+        var refusal = State.ValidateRange(Event.Id, start, end, Event.Resource);
+        if (refusal is not BitFullCalendarChangeRefusal.None)
         {
-            Notifier.ReportRefusal(BitFullCalendarChangeRefusal.OutOfRange);
-            return;
-        }
-
-        if (State.IsRangeAvailable(Event.Id, start, end, Event.Resource) is false)
-        {
-            Notifier.ReportRefusal(BitFullCalendarChangeRefusal.Overlap);
+            Notifier.ReportRefusal(refusal);
             return;
         }
 

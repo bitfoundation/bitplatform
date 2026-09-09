@@ -230,6 +230,31 @@
     flex-shrink: 0;
 }
 
+/* ===== Nav links =====
+   A day number, weekday header, or week number that navigates when clicked. It renders the same
+   text the plain label does, so the affordance is carried by the hover treatment rather than by
+   size - and the reset sits ahead of every host class, so a cell that paints its own background or
+   type keeps it. */
+.bit-bfc-navlink {
+    appearance: none;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    padding: 0;
+    cursor: pointer;
+    text-align: inherit;
+}
+
+.bit-bfc-navlink:hover:not(:disabled) {
+    text-decoration: underline;
+}
+
+.bit-bfc-navlink:disabled {
+    cursor: default;
+    opacity: $opa-dis;
+}
+
 /* ===== Week numbers ===== */
 .bit-bfc-weeknum-cell {
     display: flex;
@@ -269,6 +294,46 @@
     font-weight: $tg-fw-semibold;
 }
 
+/* ===== Business hours =====
+   Everything outside them is shaded so the schedulable part of the week reads at a glance. The tint
+   is derived from the theme's secondary surface, so it darkens with the rest of the calendar in a
+   dark scheme instead of being a fixed grey. */
+.bit-bfc {
+    --bit-bfc-off-hours: color-mix(in srgb, #{$clr-fg-sec} 7%, transparent);
+}
+
+.bit-bfc-slot-off,
+.bit-bfc-day-off {
+    background-color: var(--bit-bfc-off-hours);
+}
+
+/* Today's column in the week grid, tinted so the eye finds it without reading the header. Sits
+   under the off-hours shading, which is the more specific statement about a given slot. */
+.bit-bfc {
+    --bit-bfc-today-tint: color-mix(in srgb, #{$clr-pri} 6%, transparent);
+}
+
+.bit-bfc-today-col {
+    background-color: var(--bit-bfc-today-tint);
+}
+
+/* A blanked day borrowed from a neighbouring month keeps its column open but draws nothing, which
+   is what turning ShowNonCurrentDates off asks for. The selectors carry the cell class as well so
+   they outrank .bit-bfc-month-cell's own cursor and hover treatment. */
+.bit-bfc-month-cell.bit-bfc-month-cell-blank,
+.bit-bfc-month-cell.bit-bfc-month-cell-blank:hover {
+    cursor: default;
+    background: var(--bit-bfc-bg-secondary);
+}
+
+.bit-bfc-week-header-day-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing(0.25);
+    width: 100%;
+}
+
 /* Checkbox + label pair inside a dialog field (the all-day switch). */
 .bit-bfc-field-inline {
     display: flex;
@@ -295,7 +360,8 @@
 }
 
 .bit-bfc-month-cell {
-    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    /* Logical, so the column separator lands on the trailing edge in both writing directions. */
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     padding: spacing(0.5);
     min-height: rem2(100px);
@@ -311,8 +377,11 @@
     background: var(--bit-bfc-bg-hover);
 }
 
-.bit-bfc-month-cell:nth-child(7n) {
-    border-right: none;
+/* The grid is not always seven cells wide - a work week narrows it, and the week-number rail adds a
+   leading child to every row - so the last column is marked by the view rather than counted in CSS.
+   An nth-child rule would land on the wrong cell in both of those configurations. */
+.bit-bfc-month-cell.bit-bfc-month-cell-last-col {
+    border-inline-end: none;
 }
 
 .bit-bfc-month-cell.other-month {
@@ -561,6 +630,9 @@
     overflow: hidden;
     border: $shp-border-width $shp-border-style transparent;
     user-select: none;
+    /* A very short event still has to be readable: a five-minute block is eight pixels tall on the
+       default hour height, which is not enough to show its own title. */
+    min-height: rem2(16px);
     transition: box-shadow $mot-duration-short, filter $mot-duration-short;
 }
 
@@ -2182,15 +2254,8 @@ button.bit-bfc-cell-add-hint:focus-visible {
     border-left: $shp-border-width $shp-border-style transparent;
 }
 
-/* Visual last-column borders in RTL are on the first DOM child */
-[dir="rtl"] .bit-bfc-month-cell:nth-child(7n) {
-    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
-}
-
-[dir="rtl"] .bit-bfc-month-cell:nth-child(7n + 1) {
-    border-right: none;
-}
-
+/* The month cells draw their separator with border-inline-end and mark their own last column, so
+   there is nothing left to flip here. */
 [dir="rtl"] .bit-bfc-week-header-day:last-child {
     border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
@@ -2542,6 +2607,30 @@ button.bit-bfc-cell-add-hint:focus-visible {
 .bit-bfc-tl-event-anchor {
     position: absolute;
     z-index: 3;
+}
+
+/* The "current time" rule of a timeline row. The time axis runs horizontally here, so the marker is
+   a vertical line anchored on the same inline axis the row's cells and blocks are placed on. It sits
+   above the cells but below the event blocks, so it never swallows a click meant for an event. */
+.bit-bfc-tl-now {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: $shp-border-width-thick;
+    background: var(--bit-bfc-timeline-color);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.bit-bfc-tl-now-dot {
+    position: absolute;
+    top: 0;
+    inset-inline-start: 50%;
+    transform: translate(-50%, -50%);
+    width: rem2(7px);
+    height: rem2(7px);
+    border-radius: $shp-radius-full;
+    background: var(--bit-bfc-timeline-color);
 }
 
 .bit-bfc-timeline-event {

@@ -1634,23 +1634,27 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldRenderARecurringSeriesAcrossTheMonth()
     {
-        var today = DateTime.Today;
+        // One fixed mid-month date drives both the calendar and the series: on the real today the
+        // month grid can run out of cells after the start date, leaving fewer occurrences than this
+        // asserts.
+        var start = new DateTime(2024, 6, 10);
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
+            parameters.Add(p => p.DefaultDate, start);
             parameters.Add(p => p.Events,
             [
                 new BitFullCalendarEvent
                 {
                     Id = "series",
                     Title = "Standup",
-                    StartDate = today.AddHours(9),
-                    EndDate = today.AddHours(10),
+                    StartDate = start.AddHours(9),
+                    EndDate = start.AddHours(10),
                     Recurrence = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Daily }
                 }
             ]);
         });
 
-        // One badge per day of the visible month grid from today onwards.
+        // One badge per day of the visible month grid from the start date onwards.
         Assert.IsTrue(component.FindAll(".bit-bfc-event-badge").Count > 5);
         Assert.IsTrue(component.Instance.State.Events.All(e => e.IsOccurrence));
     }
@@ -1658,17 +1662,19 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldRenderARecurringOccurrenceReadOnly()
     {
-        var today = DateTime.Today;
+        // A fixed mid-month date, so the single occurrence always has a cell in the rendered grid.
+        var start = new DateTime(2024, 6, 10);
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
+            parameters.Add(p => p.DefaultDate, start);
             parameters.Add(p => p.Events,
             [
                 new BitFullCalendarEvent
                 {
                     Id = "series",
                     Title = "Standup",
-                    StartDate = today.AddHours(9),
-                    EndDate = today.AddHours(10),
+                    StartDate = start.AddHours(9),
+                    EndDate = start.AddHours(10),
                     Recurrence = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 1 }
                 }
             ]);
@@ -1687,18 +1693,21 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldHandOnTheSeriesIdentityOnClick()
     {
-        var today = DateTime.Today;
+        // A fixed mid-month date, so the three occurrences always land in the rendered grid and the
+        // second badge is the day after the start.
+        var start = new DateTime(2024, 6, 10);
         var clicked = new List<BitFullCalendarEvent>();
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
+            parameters.Add(p => p.DefaultDate, start);
             parameters.Add(p => p.Events,
             [
                 new BitFullCalendarEvent
                 {
                     Id = "series",
                     Title = "Standup",
-                    StartDate = today.AddHours(9),
-                    EndDate = today.AddHours(10),
+                    StartDate = start.AddHours(9),
+                    EndDate = start.AddHours(10),
                     Recurrence = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 3 }
                 }
             ]);
@@ -1709,7 +1718,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(1, clicked.Count);
         Assert.AreEqual("series", clicked[0].SeriesId);
-        Assert.AreEqual(today.AddDays(1), clicked[0].OccurrenceDate);
+        Assert.AreEqual(start.AddDays(1), clicked[0].OccurrenceDate);
     }
 
     #endregion
@@ -1739,6 +1748,546 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(0, changes.Count);
         Assert.IsTrue(component.FindAll(".bit-bfc-field-error").Count > 0);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarAddDialogShouldRefuseASaveOutsideTheBusinessHours()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            // The draft opens at the start-of-day hour, which sits before the business day.
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings
+            {
+                StartOfDayHour = 6,
+                BusinessStartHour = 9,
+                BusinessEndHour = 17,
+                RestrictToBusinessHours = true
+            });
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+        });
+
+        component.Find(AddButtonSelector).Click();
+        component.Find("input[id^='bfc-title-']").Change("Too early");
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
+
+        Assert.AreEqual(0, changes.Count);
+        Assert.IsTrue(component.FindAll(".bit-bfc-field-error").Count > 0);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarAddDialogShouldCarryTheEndWhenTheStartMoves()
+    {
+        var component = RenderCalendar();
+
+        component.Find(AddButtonSelector).Click();
+
+        // Both pickers report the range through their trigger button, so the rendered text is what
+        // the form is holding. Moving the start has to take the end with it, not shorten the event.
+        var triggersBefore = component.FindAll(".bit-bfc-dtp-trigger");
+        Assert.AreEqual(2, triggersBefore.Count);
+
+        // Open the start picker and pick the first day of the rendered grid.
+        triggersBefore[0].Click();
+        component.FindAll(".bit-bfc-dtp-panel .bit-bfc-dtp-day")[0].Click();
+
+        var triggers = component.FindAll(".bit-bfc-dtp-trigger");
+        Assert.AreNotEqual(
+            triggersBefore[1].TextContent.Trim(),
+            triggers[1].TextContent.Trim(),
+            "the end followed the start instead of staying put");
+    }
+
+    #endregion
+
+    #region Toolbar
+
+    [TestMethod]
+    public void BitFullCalendarShouldRenderTheToolbarByDefault()
+    {
+        var component = RenderCalendar();
+
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-header").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarHideHeaderShouldRemoveTheWholeToolbar()
+    {
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.HideHeader, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-header").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-view-tabs").Count);
+        Assert.AreEqual(0, component.FindAll(AddButtonSelector).Count);
+        // The grid itself is untouched.
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-month").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarViewTabsShouldBeASingleTabStop()
+    {
+        var component = RenderCalendar();
+
+        var tabs = component.FindAll(".bit-bfc-view-tab");
+        Assert.AreEqual(5, tabs.Count);
+        Assert.AreEqual(1, tabs.Count(t => t.GetAttribute("tabindex") == "0"));
+        Assert.AreEqual("true", tabs.Single(t => t.GetAttribute("tabindex") == "0").GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarViewTabsArrowKeysShouldMoveTheSelection()
+    {
+        var component = RenderCalendar(defaultView: BitFullCalendarView.Day);
+
+        // Day is first in the strip, so the right arrow lands on Week.
+        component.FindAll(".bit-bfc-view-tab")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+
+        component.FindAll(".bit-bfc-view-tab")[1].KeyDown(new KeyboardEventArgs { Key = "End" });
+
+        Assert.AreEqual(BitFullCalendarView.Agenda, component.Instance.State.View);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarViewTabsArrowKeysShouldStopAtTheStripEdge()
+    {
+        var component = RenderCalendar(defaultView: BitFullCalendarView.Day);
+
+        component.FindAll(".bit-bfc-view-tab")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.AreEqual(BitFullCalendarView.Day, component.Instance.State.View);
+    }
+
+    #endregion
+
+    #region Business hours
+
+    [TestMethod]
+    public void BitFullCalendarShouldNotShadeAnyHourByDefault()
+    {
+        var component = RenderCalendar(defaultView: BitFullCalendarView.Day);
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-slot-off").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldShadeTheHoursOutsideTheBusinessWindow()
+    {
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            // A Monday, so the day itself is a business day and only the hours decide.
+            parameters.Add(p => p.DefaultDate, new DateTime(2025, 5, 12));
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings
+            {
+                HighlightBusinessHours = true,
+                BusinessStartHour = 9,
+                BusinessEndHour = 17,
+                VisibleStartHour = 8,
+                VisibleEndHour = 18,
+                SlotDurationMinutes = 60
+            });
+        });
+
+        var slots = component.FindAll(".bit-bfc-hour-slot");
+        Assert.AreEqual(10, slots.Count);
+        // 08:00 and 17:00 fall outside the 09:00-17:00 window; the eight hours between them do not.
+        Assert.AreEqual(2, slots.Count(s => s.ClassList.Contains("bit-bfc-slot-off")));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldShadeAWholeNonBusinessDay()
+    {
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            // A Saturday: no hour of it is a business hour.
+            parameters.Add(p => p.DefaultDate, new DateTime(2025, 5, 17));
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings
+            {
+                HighlightBusinessHours = true,
+                VisibleStartHour = 8,
+                VisibleEndHour = 18,
+                SlotDurationMinutes = 60
+            });
+        });
+
+        var slots = component.FindAll(".bit-bfc-hour-slot");
+        Assert.AreEqual(10, slots.Count);
+        Assert.AreEqual(10, slots.Count(s => s.ClassList.Contains("bit-bfc-slot-off")));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldShadeTheNonBusinessMonthCells()
+    {
+        var component = RenderWithSettings(new BitFullCalendarSettings { HighlightBusinessHours = true });
+
+        // Every rendered week contributes its Saturday and Sunday.
+        var cells = component.FindAll(".bit-bfc-month-cell");
+        Assert.IsTrue(cells.Count(c => c.ClassList.Contains("bit-bfc-day-off")) >= 8);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldExposeTheBusinessHoursToggleInTheSettingsPanel()
+    {
+        var component = RenderCalendar();
+
+        var toggles = OpenSettingsMenu(component);
+        var businessToggle = toggles.Single(t => t.TextContent.Contains("business hours", StringComparison.OrdinalIgnoreCase));
+
+        Assert.AreEqual("false", businessToggle.GetAttribute("aria-pressed"));
+
+        businessToggle.Click();
+
+        Assert.IsTrue(component.Instance.State.HighlightBusinessHours);
+    }
+
+    #endregion
+
+    #region Month grid shape
+
+    [TestMethod]
+    public void BitFullCalendarShouldRenderSixWeekRowsWhenAskedTo()
+    {
+        // February 2026 starts on a Sunday and is 28 days long, so it otherwise fits in four rows.
+        var february = new DateTime(2026, 2, 10);
+
+        var natural = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, []);
+            parameters.Add(p => p.DefaultDate, february);
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings { FirstDayOfWeek = DayOfWeek.Sunday });
+        });
+
+        var padded = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, []);
+            parameters.Add(p => p.DefaultDate, february);
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings { FirstDayOfWeek = DayOfWeek.Sunday, FixedWeekCount = true });
+        });
+
+        Assert.AreEqual(28, natural.FindAll(".bit-bfc-month-cell").Count);
+        Assert.AreEqual(42, padded.FindAll(".bit-bfc-month-cell").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldBlankTheNeighbouringMonthDaysWhenAskedTo()
+    {
+        var may = new DateTime(2025, 5, 12);
+
+        var shown = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, []);
+            parameters.Add(p => p.DefaultDate, may);
+        });
+
+        var blanked = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, []);
+            parameters.Add(p => p.DefaultDate, may);
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings { ShowNonCurrentDates = false });
+        });
+
+        Assert.AreEqual(0, shown.FindAll(".bit-bfc-month-cell-blank").Count);
+        // The blanked cells hold their columns open, so the grid keeps its shape.
+        Assert.AreEqual(
+            shown.FindAll(".bit-bfc-month-cell").Count,
+            blanked.FindAll(".bit-bfc-month-cell").Count);
+        Assert.IsTrue(blanked.FindAll(".bit-bfc-month-cell-blank").Count > 0);
+        // A blanked cell offers neither the add affordance nor a day number.
+        Assert.AreEqual(
+            blanked.FindAll(".bit-bfc-month-cell").Count - blanked.FindAll(".bit-bfc-month-cell-blank").Count,
+            blanked.FindAll(".bit-bfc-month-cell-day").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldMarkTheTrailingColumnOfEveryMonthRow()
+    {
+        // The separator between columns is dropped on the trailing one, and the grid is not always
+        // seven wide - a work week narrows it - so the marker has to follow the real column count.
+        var full = RenderCalendar();
+        var workWeek = RenderWithSettings(
+            new BitFullCalendarSettings { HiddenDays = [DayOfWeek.Saturday, DayOfWeek.Sunday] });
+
+        Assert.AreEqual(
+            full.FindAll(".bit-bfc-month-cell").Count / 7,
+            full.FindAll(".bit-bfc-month-cell-last-col").Count);
+
+        Assert.AreEqual(
+            workWeek.FindAll(".bit-bfc-month-cell").Count / 5,
+            workWeek.FindAll(".bit-bfc-month-cell-last-col").Count);
+    }
+
+    #endregion
+
+    #region Navigation links
+
+    [TestMethod]
+    public void BitFullCalendarShouldNotRenderNavLinksByDefault()
+    {
+        var component = RenderCalendar();
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-navlink").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarNavLinkShouldOpenTheClickedDay()
+    {
+        var component = RenderWithSettings(new BitFullCalendarSettings { NavLinks = true });
+
+        var dayLinks = component.FindAll(".bit-bfc-month-cell-day.bit-bfc-navlink");
+        Assert.IsTrue(dayLinks.Count > 0);
+
+        dayLinks[10].Click();
+
+        Assert.AreEqual(BitFullCalendarView.Day, component.Instance.State.View);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarNavLinkShouldOnlyMoveTheDateWhenTheDayViewIsExcluded()
+    {
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings { NavLinks = true });
+            parameters.Add(p => p.Views, new[] { BitFullCalendarView.Month, BitFullCalendarView.Agenda });
+        });
+
+        var dayLinks = component.FindAll(".bit-bfc-month-cell-day.bit-bfc-navlink");
+        var clicked = int.Parse(dayLinks[10].TextContent.Trim());
+        dayLinks[10].Click();
+
+        // The view stays put because Day was excluded, but the date still followed the link.
+        Assert.AreEqual(BitFullCalendarView.Month, component.Instance.State.View);
+        Assert.AreEqual(clicked, component.Instance.State.SelectedDate.Day);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarNavLinkShouldOpenTheClickedWeek()
+    {
+        var component = RenderWithSettings(new BitFullCalendarSettings { NavLinks = true, ShowWeekNumbers = true });
+
+        var weekLinks = component.FindAll(".bit-bfc-weeknum-cell.bit-bfc-navlink");
+        Assert.IsTrue(weekLinks.Count > 0);
+
+        weekLinks[1].Click();
+
+        Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarNavLinkShouldOpenADayFromTheWeekViewHeader()
+    {
+        var component = RenderWithSettings(
+            new BitFullCalendarSettings { NavLinks = true },
+            BitFullCalendarView.Week);
+
+        var headers = component.FindAll(".bit-bfc-week-header-day-link");
+        Assert.AreEqual(7, headers.Count);
+
+        headers[3].Click();
+
+        Assert.AreEqual(BitFullCalendarView.Day, component.Instance.State.View);
+    }
+
+    #endregion
+
+    #region Event surface
+
+    [TestMethod]
+    public void BitFullCalendarShouldGiveAMonthBadgeATooltip()
+    {
+        var component = RenderCalendar();
+
+        var badge = component.Find(".bit-bfc-event-badge");
+        var tooltip = badge.GetAttribute("title");
+
+        Assert.IsFalse(string.IsNullOrWhiteSpace(tooltip));
+        StringAssert.Contains(tooltip!, "Standup");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldNotPutAClockRangeOnAnAllDayTooltip()
+    {
+        var today = DateTime.Today;
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent { Id = "1", Title = "Holiday", StartDate = today, EndDate = today.AddDays(1), IsAllDay = true }
+            ]);
+        });
+
+        var tooltip = component.Find(".bit-bfc-event-badge").GetAttribute("title")!;
+
+        StringAssert.Contains(tooltip, "All day");
+        Assert.IsFalse(tooltip.Contains("00:00 - 00:00"));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarAgendaShouldListADayInClockOrder()
+    {
+        var today = DateTime.Today;
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            // Supplied out of order, and with an all-day event that heads the date it covers.
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent { Id = "1", Title = "Afternoon", StartDate = today.AddHours(15), EndDate = today.AddHours(16) },
+                new BitFullCalendarEvent { Id = "2", Title = "Morning", StartDate = today.AddHours(9), EndDate = today.AddHours(10) },
+                new BitFullCalendarEvent { Id = "3", Title = "Holiday", StartDate = today, EndDate = today.AddDays(1), IsAllDay = true }
+            ]);
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Agenda);
+        });
+
+        var titles = component.FindAll(".bit-bfc-agenda-item .bit-bfc-agenda-title")
+            .Select(t => t.TextContent.Trim())
+            .ToList();
+
+        CollectionAssert.AreEqual(new[] { "Holiday", "Morning", "Afternoon" }, titles);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldPlaceAnEventBlockAgainstTheHourHeightVariable()
+    {
+        var today = DateTime.Today;
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent { Id = "1", Title = "Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(10) }
+            ]);
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+        });
+
+        // Both the offset and the height read the custom property the hour rows are sized from, so a
+        // consumer who re-scales the grid keeps the block aligned with the hour it sits on.
+        var anchor = component.Find(".bit-bfc-event-stack-item").GetAttribute("style")!;
+        var block = component.Find(".bit-bfc-event-block").GetAttribute("style")!;
+
+        StringAssert.Contains(anchor, BitFullCalendarHelpers.HourHeightVariableName);
+        StringAssert.Contains(block, BitFullCalendarHelpers.HourHeightVariableName);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldReportTheVisibleRangeOnlyWhenItMoves()
+    {
+        var ranges = new List<BitFullCalendarDateChangeEventArgs>();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.OnDateChange, EventCallback.Factory.Create<BitFullCalendarDateChangeEventArgs>(this, ranges.Add));
+        });
+
+        // The initial range is reported once, so a consumer can fetch the events it needs.
+        Assert.AreEqual(1, ranges.Count);
+
+        // "Today" while today is already on screen lands on the range that was just reported.
+        component.Instance.GoToToday();
+        Assert.AreEqual(1, ranges.Count);
+
+        component.Instance.NavigateNext();
+        Assert.AreEqual(2, ranges.Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldTintTodaysWeekColumn()
+    {
+        var thisWeek = RenderCalendar(defaultView: BitFullCalendarView.Week);
+        Assert.AreEqual(1, thisWeek.FindAll(".bit-bfc-week-day-col.bit-bfc-today-col").Count);
+
+        var anotherWeek = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Week);
+            parameters.Add(p => p.DefaultDate, DateTime.Today.AddDays(30));
+        });
+
+        Assert.AreEqual(0, anotherWeek.FindAll(".bit-bfc-today-col").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDetailsDialogShouldDescribeTheRepeatRuleOfAnOccurrence()
+    {
+        var today = DateTime.Today;
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent
+                {
+                    Id = "series",
+                    Title = "Standup",
+                    StartDate = today.AddHours(9),
+                    EndDate = today.AddHours(10),
+                    Recurrence = new BitFullCalendarRecurrence
+                    {
+                        Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+                        Interval = 2,
+                        Count = 6
+                    }
+                }
+            ]);
+        });
+
+        // An occurrence carries no rule of its own, so the dialog has to look it up through the
+        // series it was expanded from - otherwise nothing would say it is part of one.
+        component.Find(".bit-bfc-event-badge").Click();
+
+        var labels = component.FindAll(".bit-bfc-event-detail-label").Select(l => l.TextContent.Trim()).ToList();
+        CollectionAssert.Contains(labels, "Repeats");
+
+        var summary = component.FindAll(".bit-bfc-event-detail-value")
+            .Select(v => v.TextContent.Trim())
+            .Single(v => v.StartsWith("Weekly", StringComparison.Ordinal));
+
+        StringAssert.Contains(summary, "every 2");
+        StringAssert.Contains(summary, "6 times");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDetailsDialogShouldStaySilentAboutAOneOffEvent()
+    {
+        var component = RenderCalendar();
+
+        component.Find(".bit-bfc-event-badge").Click();
+
+        var labels = component.FindAll(".bit-bfc-event-detail-label").Select(l => l.TextContent.Trim()).ToList();
+        CollectionAssert.DoesNotContain(labels, "Repeats");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldMakeAnOutOfRangeWeekColumnInert()
+    {
+        var today = DateTime.Today;
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Week);
+            // Only today onwards is reachable, so the days before it are inert columns.
+            parameters.Add(p => p.MinDate, today);
+        });
+
+        var columns = component.FindAll(".bit-bfc-week-day-col");
+        var inert = columns.Where(c => c.ClassList.Contains("bit-bfc-out-of-range")).ToList();
+        Assert.IsTrue(inert.Count > 0, "the week has to contain at least one unreachable day for this test");
+
+        foreach (var column in inert)
+        {
+            foreach (var slot in column.QuerySelectorAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half"))
+            {
+                Assert.IsNull(slot.GetAttribute("role"), "an inert slot is not a button");
+                Assert.IsNull(slot.GetAttribute("tabindex"), "an inert slot is not in the tab order");
+                Assert.IsNull(slot.GetAttribute("aria-label"));
+            }
+        }
     }
 
     #endregion

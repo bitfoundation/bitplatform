@@ -24,5 +24,11 @@ public enum BitFullCalendarChangeRefusal
     /// The resulting range falls outside the <c>MinDate</c>/<c>MaxDate</c> window the calendar is
     /// allowed to show.
     /// </summary>
-    OutOfRange
+    OutOfRange,
+
+    /// <summary>
+    /// The resulting range falls outside the business hours while
+    /// <see cref="BitFullCalendarSettings.RestrictToBusinessHours"/> is <c>true</c>.
+    /// </summary>
+    OutsideBusinessHours
 }

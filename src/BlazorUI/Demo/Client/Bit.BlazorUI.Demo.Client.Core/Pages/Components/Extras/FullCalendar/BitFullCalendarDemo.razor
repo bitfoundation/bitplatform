@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/fullcalendar"
             Title="FullCalendar"
-            Description="BitFullCalendar is a full-featured scheduling calendar with day, week, month, year, agenda, and resource timeline views, recurring and all-day events, event editing, drag-and-drop, and resizing." />
+            Description="BitFullCalendar is a full-featured scheduling calendar with day, week, month, year, agenda, and resource timeline views, recurring and all-day events, business hours, event editing, drag-and-drop, and resizing." />
 
 <DemoPage Name="FullCalendar"
-          Description="BitFullCalendar is a full-featured scheduling calendar: day, week, month, year, agenda, and resource timeline views; recurring and all-day events; built-in create, edit and delete; drag-and-drop, edge resizing, and range selection; a configurable time grid, work week and booking rules; filtering, templating, keyboard navigation, and culture-aware, right-to-left-ready date rendering."
+          Description="BitFullCalendar is a full-featured scheduling calendar: day, week, month, year, agenda, and resource timeline views; recurring and all-day events; built-in create, edit and delete; drag-and-drop, edge resizing, and range selection; a configurable time grid with business hours, a work week, and booking rules; filtering, templating, keyboard navigation, and culture-aware, right-to-left-ready date rendering."
           SecondaryNames="@(["Scheduler"])"
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
@@ -30,10 +30,10 @@
             The BitFullCalendar brings a complete scheduling experience to Blazor: six layouts
             (day, week, month, year, agenda, and a resource timeline), built-in event create/edit/delete,
             drag-and-drop, edge resizing, and press-and-drag range selection, a time grid you can narrow
-            to working hours and split into slots of any length, a work week that hides the days you do
-            not schedule, recurring and all-day events, booking rules, colour and attendee filters,
-            per-view templates, and culture-aware date rendering that follows the Bit theme in both light
-            and dark mode.
+            to the hours you schedule and split into slots of any length, business hours you can shade
+            or enforce, a work week that hides the days you do not schedule, recurring and all-day
+            events, booking rules, colour and attendee filters, per-view templates, and culture-aware
+            date rendering that follows the Bit theme in both light and dark mode.
             Every date grid is a single tab stop that the arrow keys walk, so a keyboard reaches any
             day or time slot without paging through hundreds of them.
             Explore a live calendar below - switch views, add events, and drag them around.
@@ -236,7 +236,9 @@
                 The <code>View</code>, <code>Mode</code>, and <code>Date</code> parameters are two-way bound,
                 so you can drive the calendar from outside and react to user-driven changes through
                 <code>OnViewChange</code>, <code>OnModeChange</code>, and <code>OnDateChange</code> - the last
-                of which also fires once on the first render, carrying the range you need to fetch events for.
+                of which also fires once on the first render, carrying the range you need to fetch events for,
+                and only again when that range really moves, so picking another day of the week already on
+                screen never asks you to re-fetch what you already have.
                 The <code>DefaultView</code>, <code>DefaultMode</code>, and <code>DefaultDate</code> parameters
                 set the initial values that are used when their two-way counterparts are not bound.
             </div>
@@ -322,15 +324,30 @@
             <BitFullCalendar Events="localizationEvents" CultureName="fa-IR" Texts="persianTexts" />
         </DemoExample>
 
-        <DemoExample Title="Hide filters & settings" RazorCode="@example15RazorCode" Id="example15">
+        <DemoExample Title="Toolbar" RazorCode="@example15RazorCode" Id="example15">
             <div>
-                Hide the built-in colour and attendee filters with <code>HideFilters</code> and the settings
-                gear with <code>HideSettings</code> to provide your own external controls or a minimal
-                header. Both are display-only: filtered events can still be passed in pre-filtered, and
-                every setting stays drivable through the <code>Settings</code> object.
+                Trim the built-in toolbar down to what you want to keep. <code>HideFilters</code> drops
+                the colour and attendee dropdowns, <code>HideSettings</code> drops the settings gear, and
+                <code>HideHeader</code> removes the whole bar - navigation, tabs, filters, the "Add Event"
+                button and all - so you can put your own chrome around the grid. None of them takes a
+                feature away: pass pre-filtered events, drive every preference through the
+                <code>Settings</code> object, and steer the calendar with the two-way bound
+                <code>View</code>, <code>Mode</code> and <code>Date</code> parameters or the navigation
+                methods shown in the sections below.
             </div>
             <br />
-            <BitFullCalendar Events="basicEvents" HideFilters HideSettings />
+            <BitToggle @bind-Value="hideHeader" Text="Hide the whole toolbar" />
+            <br />
+            @if (hideHeader)
+            {
+                <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.NavigatePrevious()">Previous</BitButton>
+                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.GoToToday()">Today</BitButton>
+                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.NavigateNext()">Next</BitButton>
+                </div>
+                <br />
+            }
+            <BitFullCalendar @ref="toolbarCalendar" Events="basicEvents" HideFilters HideSettings HideHeader="hideHeader" />
         </DemoExample>
 
         <DemoExample Title="Views" RazorCode="@example16RazorCode" Id="example16">
@@ -378,25 +395,87 @@
                 expanded, so an open-ended series costs nothing to keep, and each occurrence carries the
                 master's <code>SeriesId</code> and its own <code>OccurrenceDate</code>. Occurrences render
                 read-only: the series master is what you edit, through your own UI from
-                <code>OnEventClick</code>.
+                <code>OnEventClick</code> - open one and the details dialog names the rule it came from.
             </div>
             <br />
             <BitFullCalendar Events="recurringEvents" DefaultView="BitFullCalendarView.Month" />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
+        <DemoExample Title="Business hours" RazorCode="@example19RazorCode" Id="example19">
+            <div>
+                Mark the part of the week you actually schedule in.
+                <code>Settings.BusinessDays</code> (Monday to Friday by default),
+                <code>Settings.BusinessStartHour</code> and <code>Settings.BusinessEndHour</code> describe
+                the window; <code>Settings.HighlightBusinessHours</code> shades everything outside it on
+                the day, week and timeline grids and on the non-business month cells - the user can
+                toggle that from the settings gear too. <code>Settings.RestrictToBusinessHours</code>
+                goes further and turns the window into a rule: a drag, a resize, or a dialog save that
+                would land outside it is refused with a notice, and <code>OnRefused</code> reports
+                <code>OutsideBusinessHours</code>. Switch to the Week view to see it.
+            </div>
+            <br />
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+                <BitToggle @bind-Value="highlightBusiness" Text="Highlight business hours" />
+                <BitToggle @bind-Value="restrictBusiness" Text="Restrict events to business hours" />
+            </div>
+            <br />
+            <BitFullCalendar Events="businessEvents"
+                             Settings="businessSettings"
+                             OnRefused="HandleBusinessRefused"
+                             DefaultView="BitFullCalendarView.Week" />
+            <br />
+            <BitText>Last refusal: <b>@(lastBusinessRefusal ?? "-")</b></BitText>
+        </DemoExample>
+
+        <DemoExample Title="Month grid" RazorCode="@example20RazorCode" Id="example20">
+            <div>
+                Two knobs shape the month grid. <code>Settings.FixedWeekCount</code> always renders six
+                week rows, so the calendar keeps its height as the user walks from a five-row month to a
+                six-row one instead of jumping. <code>Settings.ShowNonCurrentDates</code> decides whether
+                the days the grid borrows from the neighbouring months are drawn at all - turn it off and
+                those cells stay blank and inert, keeping the eye inside the month.
+                <code>Settings.MaxEventsPerDayCell</code> sets how many badges a cell shows before the
+                rest collapse behind the "+N more" affordance.
+            </div>
+            <br />
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+                <BitToggle @bind-Value="fixedWeeks" Text="Fixed six weeks" />
+                <BitToggle @bind-Value="showOtherMonthDays" Text="Show neighbouring days" />
+            </div>
+            <br />
+            <BitFullCalendar Events="monthGridEvents" Settings="monthGridSettings" />
+        </DemoExample>
+
+        <DemoExample Title="Navigation links" RazorCode="@example21RazorCode" Id="example21">
+            <div>
+                <code>Settings.NavLinks</code> turns the dates the grids print into links: a month day
+                number and a week-view column header open that single day, and a week number on the
+                month rail opens that week. A link whose target view the <code>Views</code> parameter
+                excluded only moves the date, and one outside the <code>MinDate</code>/<code>MaxDate</code>
+                window is disabled. Turn it off (the default) and the same numbers stay plain labels.
+            </div>
+            <br />
+            <BitToggle @bind-Value="navLinks" Text="Navigation links" />
+            <br />
+            <BitFullCalendar Events="navLinkEvents" Settings="navLinkSettings" />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" Id="example22">
             <div>
                 The calendar's root element takes the usual <code>Style</code> and <code>Class</code>
                 parameters, plus <code>Id</code>, <code>Visibility</code>, and any extra HTML attribute you
                 splat onto it. Its own look is driven by <code>--bit-bfc-*</code> custom properties - set
                 them in a style or a class to re-skin the surface without overriding component selectors.
+                <code>--bit-bfc-height</code> sizes the calendar and <code>--bit-bfc-hour-height</code>
+                re-scales the day and week time grids: the event blocks and the current-time marker are
+                measured against that same property, so they stay on the hours they belong to.
             </div>
             <br />
             <BitFullCalendar Events="basicEvents"
                              Style="--bit-bfc-height:420px;--bit-bfc-hour-height:64px;border:2px dashed var(--bit-clr-pri);border-radius:8px" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
+        <DemoExample Title="RTL" RazorCode="@example23RazorCode" Id="example23">
             <div>
                 Use <code>Dir="BitDir.Rtl"</code> to render the calendar right-to-left. Everything follows:
                 the toolbar order, the navigation chevrons, the weekday columns, the month and year grids,

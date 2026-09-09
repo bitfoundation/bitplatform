@@ -86,6 +86,13 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
+            Name = "HideHeader",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "When true, the whole toolbar is removed - navigation, mode and view tabs, filters, the Add Event button, and the settings gear - so the calendar can be driven entirely from the consumer's own chrome through the bound View/Mode/Date parameters or the navigation methods.",
+        },
+        new()
+        {
             Name = "HideSettings",
             Type = "bool",
             DefaultValue = "false",
@@ -366,6 +373,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "ReadOnly", Description = "The calendar - or the single event - is read-only, so nothing was changed.", Value = "1" },
                 new() { Name = "Overlap", Description = "The resulting range would overlap another event on the same resource while Settings.AllowEventOverlap is false.", Value = "2" },
                 new() { Name = "OutOfRange", Description = "The resulting range falls outside the MinDate/MaxDate window the calendar is allowed to show.", Value = "3" },
+                new() { Name = "OutsideBusinessHours", Description = "The resulting range is not fully contained in the business hours while Settings.RestrictToBusinessHours is true.", Value = "4" },
             ]
         },
     ];
@@ -472,6 +480,14 @@ public partial class BitFullCalendarDemo
                 new() { Name = "VisibleEndHour", Type = "int", DefaultValue = "24", Description = "Exclusive last hour rendered by the day, week, and timeline day/week time grids (1–24). Equivalent to slotMaxTime. A value at or below VisibleStartHour is corrected to one hour past it." },
                 new() { Name = "SlotDurationMinutes", Type = "int", DefaultValue = "30", Description = "Length in minutes of one slot inside an hour, and the granularity drag-and-drop and resizing snap to. Only divisors of 60 are accepted (5, 6, 10, 12, 15, 20, 30, 60); other values round to the nearest accepted one." },
                 new() { Name = "HiddenDays", Type = "IReadOnlyList<DayOfWeek>?", DefaultValue = "null", Description = "Days of the week removed from every date grid (week, month, year, and the timeline week layout). Use it to render a work week. A list that would hide every day is ignored." },
+                new() { Name = "BusinessDays", Type = "IReadOnlyList<DayOfWeek>?", DefaultValue = "null", Description = "The weekdays business hours run on. null means Monday to Friday; an empty list means no day is a business day." },
+                new() { Name = "BusinessStartHour", Type = "int", DefaultValue = "9", Description = "First hour of the business day (0–23)." },
+                new() { Name = "BusinessEndHour", Type = "int", DefaultValue = "17", Description = "Exclusive last hour of the business day (1–24). A value at or below BusinessStartHour is corrected to one hour past it." },
+                new() { Name = "HighlightBusinessHours", Type = "bool", DefaultValue = "false", Description = "Shades everything outside the business hours - the off-hours slots of the day, week, and timeline grids and the non-business month cells. Also toggleable from the built-in settings panel." },
+                new() { Name = "RestrictToBusinessHours", Type = "bool", DefaultValue = "false", Description = "Refuses any drag, resize, or dialog save whose resulting range is not fully contained in the business hours, reported as BitFullCalendarChangeRefusal.OutsideBusinessHours.", LinkType = LinkType.Link, Href = "#change-refusal-enum" },
+                new() { Name = "FixedWeekCount", Type = "bool", DefaultValue = "false", Description = "Always renders six week rows in the month grid, so the calendar keeps the same height across months." },
+                new() { Name = "ShowNonCurrentDates", Type = "bool", DefaultValue = "true", Description = "Renders the leading and trailing days the month grid borrows from the neighbouring months. When false those cells stay blank and inert." },
+                new() { Name = "NavLinks", Type = "bool", DefaultValue = "false", Description = "Turns the month day numbers, the week-view column headers, and the month week numbers into links that navigate to the matching day or week view. A link whose target view is excluded by Views only selects the date." },
                 new() { Name = "FirstDayOfWeek", Type = "DayOfWeek?", DefaultValue = "null", Description = "Overrides the day the week starts on. When null the active culture's DateTimeFormat.FirstDayOfWeek is used." },
                 new() { Name = "ShowWeekNumbers", Type = "bool", DefaultValue = "false", Description = "Renders the ISO-8601 week number in the month grid and in the week view's time gutter." },
                 new() { Name = "ShowCurrentTimeIndicator", Type = "bool", DefaultValue = "true", Description = "Renders the current time indicator line on the day and week time grids." },
@@ -593,11 +609,24 @@ public partial class BitFullCalendarDemo
                 new() { Name = "WeekNumberAriaLabelFormat", Type = "string", DefaultValue = "\"Week {0}\"", Description = "Accessible name of a week-number cell; {0} is the ISO-8601 week number." },
                 new() { Name = "EventOverlapMessage", Type = "string", DefaultValue = "\"This time range is already taken on that resource.\"", Description = "Notice shown when a move, resize, or save is refused because it would overlap another event." },
                 new() { Name = "OutOfRangeMessage", Type = "string", DefaultValue = "\"That date is outside the allowed range.\"", Description = "Notice shown when a move or resize is refused because it falls outside the allowed date range." },
+                new() { Name = "OutsideBusinessHoursMessage", Type = "string", DefaultValue = "\"That time is outside business hours.\"", Description = "Notice shown when a move, resize, or save is refused because it falls outside the business hours." },
+                new() { Name = "HighlightBusinessHoursLabel", Type = "string", DefaultValue = "\"Highlight business hours\"", Description = "Label for the business-hours toggle in the settings panel." },
+                new() { Name = "NavLinkDayAriaLabelFormat", Type = "string", DefaultValue = "\"Go to {0}\"", Description = "Accessible name of a day number or column header that navigates to that day; {0} is the formatted date." },
+                new() { Name = "NavLinkWeekAriaLabelFormat", Type = "string", DefaultValue = "\"Go to week {0}\"", Description = "Accessible name of a week number that navigates to that week; {0} is the ISO-8601 week number." },
                 new() { Name = "ValidationTitleRequired", Type = "string", DefaultValue = "\"Title is required\"", Description = "Validation message when the title is empty." },
                 new() { Name = "ValidationDescriptionRequired", Type = "string", DefaultValue = "\"Description is required\"", Description = "Validation message when the description is empty." },
                 new() { Name = "ValidationEndAfterStart", Type = "string", DefaultValue = "\"End date must be after start date\"", Description = "Validation message when the end date is not after the start date." },
                 new() { Name = "ValidationAttendeeNameRequired", Type = "string", DefaultValue = "\"First name or last name is required\"", Description = "Validation message when an attendee has no name." },
                 new() { Name = "ResizePreviewAriaLabel", Type = "string", DefaultValue = "\"New time range\"", Description = "Aria label for the resize preview indicator." },
+                new() { Name = "RepeatsLabel", Type = "string", DefaultValue = "\"Repeats\"", Description = "Label of the repeat-rule row in the event details dialog." },
+                new() { Name = "RepeatsDaily", Type = "string", DefaultValue = "\"Daily\"", Description = "Name of a daily repeat rule." },
+                new() { Name = "RepeatsWeekly", Type = "string", DefaultValue = "\"Weekly\"", Description = "Name of a weekly repeat rule." },
+                new() { Name = "RepeatsMonthly", Type = "string", DefaultValue = "\"Monthly\"", Description = "Name of a monthly repeat rule." },
+                new() { Name = "RepeatsYearly", Type = "string", DefaultValue = "\"Yearly\"", Description = "Name of a yearly repeat rule." },
+                new() { Name = "RepeatsIntervalFormat", Type = "string", DefaultValue = "\"every {0}\"", Description = "Appended to the frequency when the rule repeats every N units; {0} is the interval." },
+                new() { Name = "RepeatsCountFormat", Type = "string", DefaultValue = "\"{0} times\"", Description = "Appended when the series is closed by a number of occurrences; {0} is the count." },
+                new() { Name = "RepeatsUntilFormat", Type = "string", DefaultValue = "\"until {0}\"", Description = "Appended when the series is closed by a date; {0} is the formatted date." },
+                new() { Name = "GetRecurrenceSummary(BitFullCalendarRecurrence, CultureInfo?)", Type = "string", DefaultValue = "", Description = "Method that returns the one-line repeat summary shown in the event details dialog." },
                 new() { Name = "ResourceLabel", Type = "string", DefaultValue = "\"Resource\"", Description = "Label for the resource field in the add/edit dialog." },
                 new() { Name = "ResourceColumnHeader", Type = "string", DefaultValue = "\"Resource\"", Description = "Header for the resource column in the timeline view." },
                 new() { Name = "NoResourceLabel", Type = "string", DefaultValue = "\"Unassigned\"", Description = "Label for events not assigned to a resource." },
@@ -626,7 +655,72 @@ public partial class BitFullCalendarDemo
     private readonly List<BitFullCalendarEvent> viewsEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> readOnlyEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> recurringEvents = CreateRecurringEvents();
+    private readonly List<BitFullCalendarEvent> businessEvents = CreateEvents();
+    private readonly List<BitFullCalendarEvent> monthGridEvents = CreateEvents();
+    private readonly List<BitFullCalendarEvent> navLinkEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> rtlEvents = CreateEvents();
+
+    private bool hideHeader;
+    private BitFullCalendar? toolbarCalendar;
+
+    private readonly BitFullCalendarSettings businessSettings = new()
+    {
+        HighlightBusinessHours = true,
+        BusinessDays = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
+        BusinessStartHour = 9,
+        BusinessEndHour = 17,
+        VisibleStartHour = 6,
+        VisibleEndHour = 21
+    };
+
+    // The settings object is mutated in place: the calendar diffs it against the values it last
+    // applied, so only what actually changed is pushed back into the live state.
+    private bool highlightBusiness
+    {
+        get => businessSettings.HighlightBusinessHours;
+        set => businessSettings.HighlightBusinessHours = value;
+    }
+
+    private bool restrictBusiness
+    {
+        get => businessSettings.RestrictToBusinessHours;
+        set => businessSettings.RestrictToBusinessHours = value;
+    }
+
+    private string? lastBusinessRefusal;
+
+    private void HandleBusinessRefused(BitFullCalendarChangeRefusal refusal) => lastBusinessRefusal = refusal.ToString();
+
+    private readonly BitFullCalendarSettings monthGridSettings = new()
+    {
+        FixedWeekCount = true,
+        ShowNonCurrentDates = false,
+        MaxEventsPerDayCell = 2
+    };
+
+    private bool fixedWeeks
+    {
+        get => monthGridSettings.FixedWeekCount;
+        set => monthGridSettings.FixedWeekCount = value;
+    }
+
+    private bool showOtherMonthDays
+    {
+        get => monthGridSettings.ShowNonCurrentDates;
+        set => monthGridSettings.ShowNonCurrentDates = value;
+    }
+
+    private readonly BitFullCalendarSettings navLinkSettings = new()
+    {
+        NavLinks = true,
+        ShowWeekNumbers = true
+    };
+
+    private bool navLinks
+    {
+        get => navLinkSettings.NavLinks;
+        set => navLinkSettings.NavLinks = value;
+    }
 
     private readonly BitFullCalendarSettings settings = new()
     {
@@ -793,6 +887,7 @@ public partial class BitFullCalendarDemo
         ShowDayViewCalendarLabel = "نمایش تقویم در نمای روزانه",
         ShowWeekNumbersLabel = "نمایش شماره هفته",
         ShowCurrentTimeIndicatorLabel = "نمایش زمان جاری",
+        HighlightBusinessHoursLabel = "برجسته‌سازی ساعات کاری",
 
         // Messages
         WeekMobileWarning = "نمای هفتگی برای دستگاه‌های کوچک توصیه نمی‌شود. لطفاً از رایانه استفاده کنید یا نمای روزانه را انتخاب کنید.",
@@ -800,6 +895,9 @@ public partial class BitFullCalendarDemo
         NoAppointmentsNow = "در حال حاضر قراری وجود ندارد",
         EventOverlapMessage = "این بازه زمانی روی آن منبع قبلاً رزرو شده است.",
         OutOfRangeMessage = "این تاریخ خارج از بازه مجاز است.",
+        OutsideBusinessHoursMessage = "این زمان خارج از ساعات کاری است.",
+        NavLinkDayAriaLabelFormat = "رفتن به {0}",
+        NavLinkWeekAriaLabelFormat = "رفتن به هفته {0}",
 
         // Search & agenda
         SearchEventsPlaceholder = "جستجوی رویدادها...",
@@ -1568,9 +1666,23 @@ public partial class BitFullCalendarDemo
 " + eventsCode + @"
 }";
 
-    private readonly string example15RazorCode = @"<BitFullCalendar Events=""events"" HideFilters HideSettings />
+    private readonly string example15RazorCode = @"<BitToggle @bind-Value=""hideHeader"" Text=""Hide the whole toolbar"" />
 
-@code {" + eventsCode + @"
+@if (hideHeader)
+{
+    <div style=""display:flex;flex-wrap:wrap;gap:8px;align-items:center"">
+        <BitButton Variant=""BitVariant.Outline"" OnClick=""() => calendar?.NavigatePrevious()"">Previous</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" OnClick=""() => calendar?.GoToToday()"">Today</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" OnClick=""() => calendar?.NavigateNext()"">Next</BitButton>
+    </div>
+}
+
+<BitFullCalendar @ref=""calendar"" Events=""events"" HideFilters HideSettings HideHeader=""hideHeader"" />
+
+@code {
+    private bool hideHeader;
+    private BitFullCalendar? calendar;
+" + eventsCode + @"
 }";
 
     private readonly string example16RazorCode = @"<BitChoiceGroup Horizontal
@@ -1667,13 +1779,100 @@ public partial class BitFullCalendarDemo
     }
 }";
 
-    private readonly string example19RazorCode = @"<BitFullCalendar Events=""events""
+    private readonly string example19RazorCode = @"<BitToggle @bind-Value=""highlightBusiness"" Text=""Highlight business hours"" />
+<BitToggle @bind-Value=""restrictBusiness"" Text=""Restrict events to business hours"" />
+
+<BitFullCalendar Events=""events""
+                 Settings=""settings""
+                 OnRefused=""HandleRefused""
+                 DefaultView=""BitFullCalendarView.Week"" />
+
+<BitText>Last refusal: <b>@(lastRefusal ?? ""-"")</b></BitText>
+
+@code {
+    private readonly BitFullCalendarSettings settings = new()
+    {
+        HighlightBusinessHours = true,
+        BusinessDays = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
+        BusinessStartHour = 9,
+        BusinessEndHour = 17,
+        VisibleStartHour = 6,
+        VisibleEndHour = 21
+    };
+
+    // The settings object is mutated in place: the calendar diffs it against the values it last
+    // applied, so only what actually changed is pushed back into the live state.
+    private bool highlightBusiness
+    {
+        get => settings.HighlightBusinessHours;
+        set => settings.HighlightBusinessHours = value;
+    }
+
+    private bool restrictBusiness
+    {
+        get => settings.RestrictToBusinessHours;
+        set => settings.RestrictToBusinessHours = value;
+    }
+
+    private string? lastRefusal;
+
+    private void HandleRefused(BitFullCalendarChangeRefusal refusal) => lastRefusal = refusal.ToString();
+" + eventsCode + @"
+}";
+
+    private readonly string example20RazorCode = @"<BitToggle @bind-Value=""fixedWeeks"" Text=""Fixed six weeks"" />
+<BitToggle @bind-Value=""showOtherMonthDays"" Text=""Show neighbouring days"" />
+
+<BitFullCalendar Events=""events"" Settings=""settings"" />
+
+@code {
+    private readonly BitFullCalendarSettings settings = new()
+    {
+        FixedWeekCount = true,
+        ShowNonCurrentDates = false,
+        MaxEventsPerDayCell = 2
+    };
+
+    private bool fixedWeeks
+    {
+        get => settings.FixedWeekCount;
+        set => settings.FixedWeekCount = value;
+    }
+
+    private bool showOtherMonthDays
+    {
+        get => settings.ShowNonCurrentDates;
+        set => settings.ShowNonCurrentDates = value;
+    }
+" + eventsCode + @"
+}";
+
+    private readonly string example21RazorCode = @"<BitToggle @bind-Value=""navLinks"" Text=""Navigation links"" />
+
+<BitFullCalendar Events=""events"" Settings=""settings"" />
+
+@code {
+    private readonly BitFullCalendarSettings settings = new()
+    {
+        NavLinks = true,
+        ShowWeekNumbers = true
+    };
+
+    private bool navLinks
+    {
+        get => settings.NavLinks;
+        set => settings.NavLinks = value;
+    }
+" + eventsCode + @"
+}";
+
+    private readonly string example22RazorCode = @"<BitFullCalendar Events=""events""
                  Style=""--bit-bfc-height:420px;--bit-bfc-hour-height:64px;border:2px dashed var(--bit-clr-pri);border-radius:8px"" />
 
 @code {" + eventsCode + @"
 }";
 
-    private readonly string example20RazorCode = @"<BitFullCalendar Dir=""BitDir.Rtl"" Events=""events"" />
+    private readonly string example23RazorCode = @"<BitFullCalendar Dir=""BitDir.Rtl"" Events=""events"" />
 
 @code {" + eventsCode + @"
 }";

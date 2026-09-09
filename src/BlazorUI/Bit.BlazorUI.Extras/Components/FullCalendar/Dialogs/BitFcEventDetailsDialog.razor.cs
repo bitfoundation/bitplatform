@@ -26,6 +26,27 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     /// </summary>
     private bool CanEdit => State.ReadOnly is false && Event.IsReadOnly is false;
 
+    /// <summary>
+    /// One-line description of the repeat rule behind this event, or <c>null</c> for a one-off.
+    /// <para>
+    /// A generated occurrence carries no rule of its own - it is a projection of its master - so the
+    /// rule is looked up through <see cref="BitFullCalendarEvent.SeriesId"/> when the clicked event
+    /// is one. Without it an occurrence would give no sign that it belongs to a series, nor why its
+    /// edit and delete actions are missing.
+    /// </para>
+    /// </summary>
+    private string? RecurrenceSummary
+    {
+        get
+        {
+            var rule = Event.Recurrence;
+            if (rule is null && Event.SeriesId is { Length: > 0 } seriesId)
+                rule = State.AllEvents.FirstOrDefault(e => string.Equals(e.Id, seriesId, StringComparison.Ordinal))?.Recurrence;
+
+            return rule is null ? null : Texts.GetRecurrenceSummary(rule, State.Culture);
+        }
+    }
+
     /// <summary>Display name of the assigned resource, or the "unassigned" label when there is none.</summary>
     private string ResourceTitle
     {

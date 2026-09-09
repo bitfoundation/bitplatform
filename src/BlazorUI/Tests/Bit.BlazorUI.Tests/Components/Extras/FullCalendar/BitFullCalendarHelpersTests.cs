@@ -732,4 +732,231 @@ public class BitFullCalendarHelpersTests
     }
 
     #endregion
+
+    #region Grid units
+
+    [TestMethod]
+    public void HoursToCssLengthShouldMeasureAgainstTheHourHeightCustomProperty()
+    {
+        // The stylesheet sizes every hour row from --bit-bfc-hour-height, so a placed block has to be
+        // expressed against the same property rather than against the compiled-in 96px.
+        var length = BitFullCalendarHelpers.HoursToCssLength(1.5);
+
+        StringAssert.Contains(length, BitFullCalendarHelpers.HourHeightVariableName);
+        StringAssert.Contains(length, "1.5000");
+        StringAssert.StartsWith(length, "calc(");
+    }
+
+    [TestMethod]
+    public void HoursToCssLengthShouldFallBackToTheBuiltInHourHeight()
+    {
+        StringAssert.Contains(
+            BitFullCalendarHelpers.HoursToCssLength(2),
+            BitFullCalendarHelpers.HourHeightPx + "px");
+    }
+
+    [TestMethod]
+    public void GetEventBlockOffsetHoursShouldMeasureFromTheGridsFirstHour()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { StartDate = day.AddHours(9), EndDate = day.AddHours(10) };
+
+        Assert.AreEqual(9, BitFullCalendarHelpers.GetEventBlockOffsetHours(ev, day), 0.0001);
+        Assert.AreEqual(1, BitFullCalendarHelpers.GetEventBlockOffsetHours(ev, day, visibleStartHour: 8), 0.0001);
+    }
+
+    [TestMethod]
+    public void GetEventBlockOffsetHoursShouldClipAnEventThatStartsBeforeTheGrid()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { StartDate = day.AddHours(6), EndDate = day.AddHours(10) };
+
+        Assert.AreEqual(0, BitFullCalendarHelpers.GetEventBlockOffsetHours(ev, day, visibleStartHour: 8), 0.0001);
+    }
+
+    [TestMethod]
+    public void GetEventBlockStyleShouldStayInStepWithTheHourOffset()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { StartDate = day.AddHours(9).AddMinutes(30), EndDate = day.AddHours(10) };
+
+        var hours = BitFullCalendarHelpers.GetEventBlockOffsetHours(ev, day, visibleStartHour: 8);
+        var style = BitFullCalendarHelpers.GetEventBlockStyle(ev, day, 0, 1, visibleStartHour: 8);
+
+        Assert.AreEqual(hours * BitFullCalendarHelpers.HourHeightPx, style.TopPx, 0.0001);
+    }
+
+    [TestMethod]
+    public void GetCurrentTimeLineOffsetHoursShouldStayInStepWithThePixelOffset()
+    {
+        var hours = BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(8);
+        var px = BitFullCalendarHelpers.GetCurrentTimeLineTopPx(8);
+
+        // Both read DateTime.Now, so the two calls can straddle a tick; a minute of slack keeps the
+        // assertion about the unit conversion rather than about the clock.
+        Assert.AreEqual(hours * BitFullCalendarHelpers.HourHeightPx, px, BitFullCalendarHelpers.HourHeightPx / 60.0);
+    }
+
+    #endregion
+
+    #region Event range text
+
+    [TestMethod]
+    public void BuildEventRangeTextShouldReportAClockRangeForATimedEvent()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { StartDate = day.AddHours(9), EndDate = day.AddHours(10).AddMinutes(30) };
+
+        Assert.AreEqual("09:00 - 10:30", BitFullCalendarHelpers.BuildEventRangeText(ev, use24Hour: true, Invariant));
+    }
+
+    [TestMethod]
+    public void BuildEventRangeTextShouldReportTheDatesForAnAllDayEvent()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { StartDate = day, EndDate = day.AddDays(3), IsAllDay = true };
+
+        var text = BitFullCalendarHelpers.BuildEventRangeText(ev, use24Hour: true, Invariant, "All day");
+
+        // No clock time: an all-day event covers whole dates, and the last one is the inclusive end.
+        StringAssert.Contains(text, "All day");
+        StringAssert.Contains(text, "14");
+        Assert.IsFalse(text.Contains("00:00"), "an all-day event has no clock time to report");
+    }
+
+    [TestMethod]
+    public void BuildEventRangeTextShouldReportASingleDateForAOneDayAllDayEvent()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { StartDate = day, EndDate = day.AddDays(1), IsAllDay = true };
+
+        var text = BitFullCalendarHelpers.BuildEventRangeText(ev, use24Hour: true, Invariant, "All day");
+
+        Assert.IsFalse(text.Contains(" - "), "a single covered date is not a range");
+    }
+
+    [TestMethod]
+    public void BuildEventRangeTextShouldCarryTheDatesForAnOvernightEvent()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { StartDate = day.AddHours(23), EndDate = day.AddDays(1).AddHours(1) };
+
+        var text = BitFullCalendarHelpers.BuildEventRangeText(ev, use24Hour: true, Invariant);
+
+        // "23:00 - 01:00" on its own would not say which day either end falls on.
+        StringAssert.Contains(text, "23:00");
+        StringAssert.Contains(text, "01:00");
+        StringAssert.Contains(text, "13");
+    }
+
+    [TestMethod]
+    public void BuildEventTooltipShouldUseTheAllDayLabelInsteadOfATimeRange()
+    {
+        var day = new DateTime(2025, 5, 12);
+        var ev = new BitFullCalendarEvent { Title = "Holiday", StartDate = day, EndDate = day.AddDays(1), IsAllDay = true };
+
+        var tooltip = BitFullCalendarHelpers.BuildEventTooltip(ev, use24Hour: true, Invariant, "All day");
+
+        StringAssert.StartsWith(tooltip, "Holiday");
+        StringAssert.Contains(tooltip, "All day");
+        Assert.IsFalse(tooltip.Contains("00:00 - 00:00"));
+    }
+
+    #endregion
+
+    #region Business hours
+
+    [TestMethod]
+    public void NormalizeBusinessDaysShouldDefaultToMondayThroughFriday()
+    {
+        var days = BitFullCalendarHelpers.NormalizeBusinessDays(null);
+
+        CollectionAssert.AreEquivalent(
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
+            days.ToArray());
+    }
+
+    [TestMethod]
+    public void NormalizeBusinessDaysShouldDropDuplicatesAndUndefinedValues()
+    {
+        var days = BitFullCalendarHelpers.NormalizeBusinessDays(
+            [DayOfWeek.Monday, DayOfWeek.Monday, (DayOfWeek)9]);
+
+        Assert.AreEqual(1, days.Count);
+        Assert.IsTrue(days.Contains(DayOfWeek.Monday));
+    }
+
+    [TestMethod]
+    public void NormalizeBusinessDaysShouldKeepAnEmptySetAsIs()
+    {
+        // Unlike the hidden days, a week with no business day is a legitimate configuration.
+        Assert.AreEqual(0, BitFullCalendarHelpers.NormalizeBusinessDays([]).Count);
+    }
+
+    [TestMethod]
+    public void NormalizeBusinessHoursShouldKeepAtLeastOneHour()
+    {
+        Assert.AreEqual((9, 10), BitFullCalendarHelpers.NormalizeBusinessHours(9, 9));
+        Assert.AreEqual((9, 17), BitFullCalendarHelpers.NormalizeBusinessHours(9, 17));
+    }
+
+    #endregion
+
+    #region Month grid shape
+
+    [TestMethod]
+    public void GetCalendarCellsShouldPadToSixWeeksWhenAskedTo()
+    {
+        // February 2026 starts on a Sunday and is 28 days long, so it otherwise fits in four rows.
+        var february = new DateTime(2026, 2, 10);
+
+        var natural = BitFullCalendarHelpers.GetCalendarCells(february, Invariant, DayOfWeek.Sunday);
+        var padded = BitFullCalendarHelpers.GetCalendarCells(february, Invariant, DayOfWeek.Sunday, fixedWeekCount: true);
+
+        Assert.AreEqual(28, natural.Count);
+        Assert.AreEqual(42, padded.Count);
+        // The padding only trails the month; the leading days are unchanged.
+        Assert.AreEqual(natural[0].Date, padded[0].Date);
+    }
+
+    [TestMethod]
+    public void GetCalendarCellsShouldLeaveASixRowMonthAlone()
+    {
+        // August 2026 starts on a Saturday, so it already spans six rows.
+        var august = new DateTime(2026, 8, 10);
+
+        Assert.AreEqual(
+            BitFullCalendarHelpers.GetCalendarCells(august, Invariant, DayOfWeek.Sunday).Count,
+            BitFullCalendarHelpers.GetCalendarCells(august, Invariant, DayOfWeek.Sunday, fixedWeekCount: true).Count);
+    }
+
+    [TestMethod]
+    public void CalculateMonthEventPositionsShouldLaneTheDaysBorrowedFromTheNeighbouringMonths()
+    {
+        // The grid renders those days too, so an event crossing the boundary has to hold a row there
+        // as well - otherwise every such cell picks its own free row and the run breaks in two.
+        var selected = new DateTime(2025, 5, 12);
+        var crossing = new BitFullCalendarEvent
+        {
+            Id = "crossing",
+            StartDate = new DateTime(2025, 5, 29),
+            EndDate = new DateTime(2025, 6, 3)
+        };
+        var trailing = new BitFullCalendarEvent
+        {
+            Id = "trailing",
+            StartDate = new DateTime(2025, 6, 1),
+            EndDate = new DateTime(2025, 6, 2)
+        };
+
+        var positions = BitFullCalendarHelpers.CalculateMonthEventPositions(
+            [crossing], [trailing], selected, Invariant);
+
+        Assert.IsTrue(positions.ContainsKey("crossing"));
+        // The trailing-week event is laned against the same map, so it cannot take the run's row.
+        Assert.IsTrue(positions.ContainsKey("trailing"));
+        Assert.AreNotEqual(positions["crossing"], positions["trailing"]);
+    }
+
+    #endregion
 }

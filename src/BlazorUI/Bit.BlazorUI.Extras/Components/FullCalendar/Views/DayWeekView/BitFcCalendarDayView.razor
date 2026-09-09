@@ -55,7 +55,7 @@
                                 var minute = slotMinutes[si];
                                 var topPercent = (slotIndex * slotHeightPercent).ToString("F4", inv);
                                 var heightPercent = slotHeightPercent.ToString("F4", inv);
-                                <div class="@(slotIndex == 0 ? "bit-bfc-hour-slot" : "bit-bfc-hour-row-half") bit-bfc-droppable @GetHourDropClass(hour, minute) @(IsSlotSelected(hour, minute) ? "bit-bfc-slot-selected" : null)"
+                                <div class="@(slotIndex == 0 ? "bit-bfc-hour-slot" : "bit-bfc-hour-row-half") bit-bfc-droppable @GetHourDropClass(hour, minute) @OffHoursClass(hour, minute) @(IsSlotSelected(hour, minute) ? "bit-bfc-slot-selected" : null)"
                                      id="@SlotElementId(hour, minute)"
                                      style="top:@(topPercent)%;height:@(heightPercent)%;bottom:auto;"
                                      role="@_slotRole"

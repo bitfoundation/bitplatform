@@ -90,6 +90,14 @@ public partial class BitFullCalendar
     [Parameter] public bool HideFilters { get; set; }
 
     /// <summary>
+    /// When <c>true</c>, the whole toolbar is removed - the today/prev/next navigation, the mode and
+    /// view tabs, the filters, the "Add Event" button, and the settings gear. Use it to drive the
+    /// calendar entirely from your own chrome through the two-way bound <see cref="View"/>,
+    /// <see cref="Mode"/>, and <see cref="Date"/> parameters or the navigation methods.
+    /// </summary>
+    [Parameter] public bool HideHeader { get; set; }
+
+    /// <summary>
     /// When <c>true</c>, the built-in settings gear button is hidden from the calendar header.
     /// Consumers can still drive settings programmatically through the <see cref="Settings"/> object.
     /// </summary>
@@ -425,6 +433,10 @@ public partial class BitFullCalendar
             _initialDateChangeRaised = true;
             var (start, end) = BitFullCalendarHelpers.GetDateRange(
                 State.View, State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
+            // This range never travelled through the state's own channel, so tell it the range has
+            // been reported - otherwise a first navigation that lands right back on it (pressing
+            // "Today" while today is already showing) would report the same range a second time.
+            State.MarkCurrentRangeReported();
             InvokeAsync(() => OnDateChange.InvokeAsync(new BitFullCalendarDateChangeEventArgs
             {
                 Start = start,
@@ -544,6 +556,20 @@ public partial class BitFullCalendar
             State.SetAllowEventOverlap(current.AllowEventOverlap);
         if (previous.AllowRangeSelection != current.AllowRangeSelection)
             State.SetAllowRangeSelection(current.AllowRangeSelection);
+        if (previous.BusinessDays != current.BusinessDays)
+            State.SetBusinessDays(Settings.BusinessDays);
+        if (previous.BusinessStartHour != current.BusinessStartHour || previous.BusinessEndHour != current.BusinessEndHour)
+            State.SetBusinessHours(current.BusinessStartHour, current.BusinessEndHour);
+        if (previous.HighlightBusinessHours != current.HighlightBusinessHours)
+            State.SetHighlightBusinessHours(current.HighlightBusinessHours);
+        if (previous.RestrictToBusinessHours != current.RestrictToBusinessHours)
+            State.SetRestrictToBusinessHours(current.RestrictToBusinessHours);
+        if (previous.FixedWeekCount != current.FixedWeekCount)
+            State.SetFixedWeekCount(current.FixedWeekCount);
+        if (previous.ShowNonCurrentDates != current.ShowNonCurrentDates)
+            State.SetShowNonCurrentDates(current.ShowNonCurrentDates);
+        if (previous.NavLinks != current.NavLinks)
+            State.SetNavLinks(current.NavLinks);
     }
 
     private void PushAllSettings()
@@ -565,6 +591,13 @@ public partial class BitFullCalendar
         State.SetRequireEventDescription(Settings.RequireEventDescription);
         State.SetAllowEventOverlap(Settings.AllowEventOverlap);
         State.SetAllowRangeSelection(Settings.AllowRangeSelection);
+        State.SetBusinessDays(Settings.BusinessDays);
+        State.SetBusinessHours(Settings.BusinessStartHour, Settings.BusinessEndHour);
+        State.SetHighlightBusinessHours(Settings.HighlightBusinessHours);
+        State.SetRestrictToBusinessHours(Settings.RestrictToBusinessHours);
+        State.SetFixedWeekCount(Settings.FixedWeekCount);
+        State.SetShowNonCurrentDates(Settings.ShowNonCurrentDates);
+        State.SetNavLinks(Settings.NavLinks);
     }
 
     /// <summary>
@@ -614,6 +647,20 @@ public partial class BitFullCalendar
             Settings.AllowEventOverlap = State.AllowEventOverlap;
         if (previous is null || previous.AllowRangeSelection != State.AllowRangeSelection)
             Settings.AllowRangeSelection = State.AllowRangeSelection;
+        if (previous is null || previous.BusinessStartHour != State.BusinessStartHour)
+            Settings.BusinessStartHour = State.BusinessStartHour;
+        if (previous is null || previous.BusinessEndHour != State.BusinessEndHour)
+            Settings.BusinessEndHour = State.BusinessEndHour;
+        if (previous is null || previous.HighlightBusinessHours != State.HighlightBusinessHours)
+            Settings.HighlightBusinessHours = State.HighlightBusinessHours;
+        if (previous is null || previous.RestrictToBusinessHours != State.RestrictToBusinessHours)
+            Settings.RestrictToBusinessHours = State.RestrictToBusinessHours;
+        if (previous is null || previous.FixedWeekCount != State.FixedWeekCount)
+            Settings.FixedWeekCount = State.FixedWeekCount;
+        if (previous is null || previous.ShowNonCurrentDates != State.ShowNonCurrentDates)
+            Settings.ShowNonCurrentDates = State.ShowNonCurrentDates;
+        if (previous is null || previous.NavLinks != State.NavLinks)
+            Settings.NavLinks = State.NavLinks;
 
         // The new baseline is what the STATE now holds, not what Settings holds: a pending consumer
         // edit has to stay "different" so the next ApplySettings still pushes it.
@@ -697,6 +744,7 @@ public partial class BitFullCalendar
         {
             BitFullCalendarChangeRefusal.Overlap => Texts.EventOverlapMessage,
             BitFullCalendarChangeRefusal.OutOfRange => Texts.OutOfRangeMessage,
+            BitFullCalendarChangeRefusal.OutsideBusinessHours => Texts.OutsideBusinessHoursMessage,
             _ => null
         };
 
@@ -778,7 +826,15 @@ public partial class BitFullCalendar
         int MaxEventsPerDayCell,
         bool RequireEventDescription,
         bool AllowEventOverlap,
-        bool AllowRangeSelection)
+        bool AllowRangeSelection,
+        string BusinessDays,
+        int BusinessStartHour,
+        int BusinessEndHour,
+        bool HighlightBusinessHours,
+        bool RestrictToBusinessHours,
+        bool FixedWeekCount,
+        bool ShowNonCurrentDates,
+        bool NavLinks)
     {
         /// <summary>
         /// The baseline after a user-driven change: the values the state now holds, keeping the two
@@ -802,7 +858,17 @@ public partial class BitFullCalendar
             state.MaxEventsPerDayCell,
             state.RequireEventDescription,
             state.AllowEventOverlap,
-            state.AllowRangeSelection);
+            state.AllowRangeSelection,
+            // The panel cannot change the business days either, so the consumer's value stays the
+            // baseline and an edit to it is still detected on the next pass.
+            previous?.BusinessDays ?? string.Join(',', state.BusinessDays.Select(d => (int)d).Order()),
+            state.BusinessStartHour,
+            state.BusinessEndHour,
+            state.HighlightBusinessHours,
+            state.RestrictToBusinessHours,
+            state.FixedWeekCount,
+            state.ShowNonCurrentDates,
+            state.NavLinks);
 
         public static SettingsSnapshot From(BitFullCalendarSettings settings) => new(
             settings.Use24HourFormat,
@@ -821,6 +887,14 @@ public partial class BitFullCalendar
             settings.MaxEventsPerDayCell,
             settings.RequireEventDescription,
             settings.AllowEventOverlap,
-            settings.AllowRangeSelection);
+            settings.AllowRangeSelection,
+            string.Join(',', BitFullCalendarHelpers.NormalizeBusinessDays(settings.BusinessDays).Select(d => (int)d).Order()),
+            settings.BusinessStartHour,
+            settings.BusinessEndHour,
+            settings.HighlightBusinessHours,
+            settings.RestrictToBusinessHours,
+            settings.FixedWeekCount,
+            settings.ShowNonCurrentDates,
+            settings.NavLinks);
     }
 }

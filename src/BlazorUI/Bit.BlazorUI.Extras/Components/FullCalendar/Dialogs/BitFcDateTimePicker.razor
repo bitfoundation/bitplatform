@@ -33,7 +33,10 @@
                 @foreach (var day in BuildCalendarDays())
                 {
                     var dayClass = GetDayCellClass(day);
-                    <button type="button" class="@dayClass" aria-label="@GetDayAriaLabel(day)" @onclick="() => SelectDate(day.Date)">
+                    @* A date the calendar itself may not navigate to cannot be picked either, so the
+                       cell is disabled here instead of only failing validation on save. *@
+                    var outOfRange = IsOutOfRange(day.Date);
+                    <button type="button" class="@dayClass" aria-label="@GetDayAriaLabel(day)" disabled="@outOfRange" @onclick="() => SelectDate(day.Date)">
                         @day.Label
                     </button>
                 }

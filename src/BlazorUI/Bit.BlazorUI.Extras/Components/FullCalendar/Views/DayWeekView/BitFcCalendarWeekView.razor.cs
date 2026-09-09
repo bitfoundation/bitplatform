@@ -36,18 +36,84 @@ public partial class BitFcCalendarWeekView
     private (int DayIndex, int Hour, int Minute)? _focusedSlot;
     private bool _pendingSlotFocus;
 
+    /// <summary>The columns the grid is currently rendering, captured by the markup.</summary>
+    private DateTime[] _weekDays = [];
+
     private string SlotElementId(int dayIndex, int hour, int minute)
         => $"{_timeGridScrollElementId}-slot-{dayIndex}-{hour}-{minute}";
 
+    /// <summary>True when the column at <paramref name="dayIndex"/> is inside the allowed date window.</summary>
+    private bool IsColumnInRange(int dayIndex)
+        => dayIndex >= 0
+           && dayIndex < _weekDays.Length
+           && State.IsDateInAllowedRange(_weekDays[dayIndex]);
+
+    /// <summary>
+    /// Index of the first column the grid may actually interact with, so the single tab stop never
+    /// lands on a column the date bounds have made inert.
+    /// </summary>
+    private int FirstInteractiveColumn
+    {
+        get
+        {
+            for (var i = 0; i < _weekDays.Length; i++)
+            {
+                if (State.IsDateInAllowedRange(_weekDays[i]))
+                    return i;
+            }
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// True when a remembered slot still exists in the grid being rendered. The visible hour window
+    /// and the slot duration are settings the user can change while the view is open, which would
+    /// otherwise leave the tab stop on an hour or a minute the grid no longer draws - and the grid
+    /// with no tab stop at all.
+    /// </summary>
+    private bool IsSlotInGrid((int DayIndex, int Hour, int Minute) slot)
+        => IsColumnInRange(slot.DayIndex)
+           && slot.Hour >= State.VisibleStartHour
+           && slot.Hour < State.VisibleEndHour
+           && Array.IndexOf(State.SlotMinutes, slot.Minute) >= 0;
+
     private (int DayIndex, int Hour, int Minute) RovingSlot =>
-        _focusedSlot is { } slot ? slot : (0, State.VisibleStartHour, State.SlotMinutes[0]);
+        _focusedSlot is { } slot && IsSlotInGrid(slot)
+            ? slot
+            : (FirstInteractiveColumn, State.VisibleStartHour, State.SlotMinutes[0]);
 
     private string? SlotTabIndex(int dayIndex, int hour, int minute)
     {
-        if (State.ReadOnly)
+        // A read-only grid exposes no add affordance at all, and a column the calendar may not
+        // navigate to accepts nothing, so neither carries a tab stop.
+        if (State.ReadOnly || IsColumnInRange(dayIndex) is false)
             return null;
 
         return RovingSlot == (dayIndex, hour, minute) ? "0" : "-1";
+    }
+
+    /// <summary>
+    /// Shades a slot that falls outside the business hours, so the schedulable part of the week reads
+    /// at a glance. Off unless the consumer asked for it.
+    /// </summary>
+    private string? OffHoursClass(DateTime day, int hour, int minute)
+        => State.HighlightBusinessHours
+           && State.IsBusinessTime(day.Date.AddHours(hour).AddMinutes(minute)) is false
+            ? "bit-bfc-slot-off"
+            : null;
+
+    /// <summary>
+    /// Opens a single day from its column header. The date moves in every case; the view only
+    /// follows when the consumer left the day view in the allowed set.
+    /// </summary>
+    private void GoToDayView(DateTime day)
+    {
+        if (State.IsDateInAllowedRange(day) is false)
+            return;
+
+        State.SetSelectedDate(day);
+        if (State.IsViewAvailable(BitFullCalendarView.Day))
+            State.SetView(BitFullCalendarView.Day);
     }
 
     /// <summary>
@@ -72,8 +138,14 @@ public partial class BitFcCalendarWeekView
         // other way round for the same key.
         var effectiveDayDelta = State.IsRtl ? -dayDelta : dayDelta;
 
+        var targetColumn = Math.Clamp(dayIndex + effectiveDayDelta, 0, columns - 1);
+        // A column the date bounds made inert has no tab stop to move onto, so the walk stops at the
+        // last column that has one instead of stranding the focus outside the tab order.
+        if (IsColumnInRange(targetColumn) is false)
+            targetColumn = IsColumnInRange(dayIndex) ? dayIndex : FirstInteractiveColumn;
+
         _focusedSlot = (
-            Math.Clamp(dayIndex + effectiveDayDelta, 0, columns - 1),
+            targetColumn,
             State.VisibleStartHour + (absolute / slots.Length),
             slots[absolute % slots.Length]);
         _pendingSlotFocus = true;

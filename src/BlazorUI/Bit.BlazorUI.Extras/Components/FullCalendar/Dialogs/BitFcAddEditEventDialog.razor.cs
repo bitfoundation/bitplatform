@@ -45,6 +45,10 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private string _color = BitFullCalendarColorScheme.FallbackColorId;
     private string _resource = string.Empty;
     private bool _isAllDay;
+
+    // The timed range the form held before "all day" snapped it onto whole-day boundaries, so
+    // clearing the checkbox puts the hours back instead of leaving a midnight-to-midnight range.
+    private (DateTime Start, DateTime End)? _timedRangeBeforeAllDay;
     private List<BitFullCalendarAttendee> _attendees = [];
     private string _newFirstName = "";
     private string _newLastName = "";
@@ -113,6 +117,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         _newFirstName = "";
         _newLastName = "";
         _newId = "";
+        _timedRangeBeforeAllDay = null;
 
         _isEditing = ExistingEvent != null;
         var defaultColor = ColorScheme.Options.Count > 0
@@ -151,7 +156,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     /// <summary>
     /// Turning "all day" on snaps the range onto whole-day boundaries so the saved event covers the
-    /// dates it says it does; turning it off restores a working time range inside the same day.
+    /// dates it says it does; turning it off puts the times it replaced back, or falls back to a
+    /// working time range when the dialog opened on an all-day event and there are none to put back.
     /// </summary>
     private void OnAllDayChanged(ChangeEventArgs e)
     {
@@ -159,6 +165,9 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
         if (_isAllDay)
         {
+            // Remembered so turning the checkbox back off restores the times it is about to discard.
+            _timedRangeBeforeAllDay = (_startDate, _endDate);
+
             var start = _startDate.Date;
             // The end is exclusive midnight of the last covered day, matching how the rest of the
             // calendar reads a 00:00 end (GetInclusiveEndDate).
@@ -166,7 +175,16 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _startDate = start;
             _endDate = end;
         }
-        else if (_endDate <= _startDate.Date.AddMinutes(Math.Max(1, State.SlotDurationMinutes)))
+        else if (_timedRangeBeforeAllDay is { } timed)
+        {
+            _startDate = timed.Start;
+            _endDate = timed.End;
+            _timedRangeBeforeAllDay = null;
+        }
+        // An all-day range with no remembered times - one the dialog opened on - carries no hours to
+        // restore. A single covered day becomes the shortest timed event the grid holds, starting at
+        // the calendar's start-of-day hour; a longer range keeps the days it already spans.
+        else if (_endDate <= _startDate.Date.AddDays(1))
         {
             _startDate = _startDate.Date.AddHours(State.StartOfDayHour);
             _endDate = _startDate.AddMinutes(Math.Max(1, State.SlotDurationMinutes));
@@ -216,7 +234,15 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     private Task OnStartDateChanged(DateTime value)
     {
+        // Moving the start carries the end with it, the way every calendar editor behaves: the user
+        // is rescheduling the event, not silently shortening it (or inverting the range and being
+        // told so only on save). The end picker still sets the length independently.
+        var duration = _endDate > _startDate
+            ? _endDate - _startDate
+            : TimeSpan.FromMinutes(Math.Max(1, State.SlotDurationMinutes));
+
         _startDate = value;
+        _endDate = value + duration;
         return Task.CompletedTask;
     }
 
@@ -245,19 +271,29 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _errors["description"] = Texts.ValidationDescriptionRequired;
         if (_endDate <= _startDate)
             _errors["endDate"] = Texts.ValidationEndAfterStart;
-        // An event outside the window the calendar may navigate to could never be reached again, so
-        // the save is refused for the same reason a drop onto such a date is.
-        else if (State.IsDateInAllowedRange(_startDate) is false
-                 || State.IsDateInAllowedRange(BitFullCalendarHelpers.GetInclusiveEndDate(
-                        new BitFullCalendarEvent { StartDate = _startDate, EndDate = _endDate })) is false)
-            _errors["endDate"] = Texts.OutOfRangeMessage;
 
         var resourceId = string.IsNullOrWhiteSpace(_resource) ? null : _resource;
         var editingId = _isEditing ? ExistingEvent!.Id : string.Empty;
-        // A calendar that disallows double booking refuses the save the same way it refuses a drop
-        // or a resize, and says so next to the action instead of silently creating the conflict.
-        if (_errors.Count == 0 && State.IsRangeAvailable(editingId, _startDate, _endDate, resourceId) is false)
-            _errors["overlap"] = Texts.EventOverlapMessage;
+        // The save passes through the same gate a drop and a resize do, and says why next to the
+        // action instead of silently creating what the calendar would refuse from a drag: an event
+        // outside the navigable window could never be reached again, one outside the business hours
+        // breaks the constraint the consumer asked for, and one on a taken slot is a double booking.
+        if (_errors.Count == 0)
+        {
+            var refusal = State.ValidateRange(editingId, _startDate, _endDate, resourceId);
+            switch (refusal)
+            {
+                case BitFullCalendarChangeRefusal.OutOfRange:
+                    _errors["endDate"] = Texts.OutOfRangeMessage;
+                    break;
+                case BitFullCalendarChangeRefusal.OutsideBusinessHours:
+                    _errors["overlap"] = Texts.OutsideBusinessHoursMessage;
+                    break;
+                case BitFullCalendarChangeRefusal.Overlap:
+                    _errors["overlap"] = Texts.EventOverlapMessage;
+                    break;
+            }
+        }
 
         if (_errors.Count > 0) return;
 

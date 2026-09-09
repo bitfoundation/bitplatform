@@ -63,6 +63,7 @@
         {
             @RenderLanes(lanes)
         }
+        @NowIndicator
     </RowContent>
 
     <UnassignedRowContent>
@@ -71,6 +72,7 @@
         {
             @RenderLanes(unassignedLanes)
         }
+        @NowIndicator
     </UnassignedRowContent>
 </BitFcTimelineLayout>
 
@@ -85,6 +87,21 @@
 }
 
 @code {
+    // The "current time" rule of every row, rendered only while the selected date is today and the
+    // clock falls inside the hours the row shows (the component decides both).
+    private RenderFragment NowIndicator => @<text>
+        @* Only today has a marker to place; skipping it otherwise keeps a row from running a timer
+           it would never use. *@
+        @if (State.ShowCurrentTimeIndicator && State.SelectedDate.Date == DateTime.Today)
+        {
+            <BitFcTimelineNowIndicator Day="State.SelectedDate"
+                                       ColumnOffsetPx="0"
+                                       PixelsPerMinute="@(BitFullCalendarHelpers.TimelineHourWidthPx / 60.0)"
+                                       VisibleStartHour="State.VisibleStartHour"
+                                       VisibleEndHour="State.VisibleEndHour" />
+        }
+    </text>;
+
     // The resource rows and the trailing "unassigned" row draw the same grid of drop targets, so the
     // cells are written once and rendered with the row's key and label.
     private RenderFragment<(string Key, string Label)> RowCells => row =>
@@ -108,7 +125,7 @@
                         var isPreview = State.IsDragging && _dragResourceId == row.Key && _dragHour == hour && _dragMinute == minute;
                         var startPercent = (slotIndex * slotWidthPercent).ToString("F4", inv);
                         var widthPercent = slotWidthPercent.ToString("F4", inv);
-                        <div class="@(slotIndex == 0 ? "bit-bfc-tl-cell-slot" : "bit-bfc-tl-cell-half") @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
+                        <div class="@(slotIndex == 0 ? "bit-bfc-tl-cell-slot" : "bit-bfc-tl-cell-half") @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffHoursClass(State.SelectedDate, hour, minute)"
                              id="@SlotElementId(row.Key, hour, minute)"
                              style="position:absolute;top:0;bottom:0;inset-inline-start:@(startPercent)%;inset-inline-end:auto;width:@(widthPercent)%;"
                              role="@_slotRole"

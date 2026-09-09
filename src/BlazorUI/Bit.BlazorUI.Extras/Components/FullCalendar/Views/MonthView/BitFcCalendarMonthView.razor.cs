@@ -25,15 +25,39 @@ public partial class BitFcCalendarMonthView
     {
         get
         {
-            if (_focusedDate is { } focused && _cells.Any(c => c.Date.Date == focused.Date))
+            if (_focusedDate is { } focused && _cells.Any(c => c.Date.Date == focused.Date && IsFocusable(c)))
                 return focused.Date;
 
-            var firstOfMonth = _cells.FirstOrDefault(c => c.CurrentMonth);
-            return (firstOfMonth ?? _cells.FirstOrDefault())?.Date.Date ?? DateTime.Today;
+            var firstFocusable = _cells.FirstOrDefault(c => c.CurrentMonth && IsFocusable(c))
+                                 ?? _cells.FirstOrDefault(IsFocusable);
+            return (firstFocusable ?? _cells.FirstOrDefault())?.Date.Date ?? DateTime.Today;
         }
     }
 
+    /// <summary>
+    /// True when a cell actually renders the add button the roving tabindex moves between: a blanked
+    /// day borrowed from a neighbouring month, or one the date bounds made inert, renders none.
+    /// </summary>
+    private bool IsFocusable(BitFullCalendarCell cell)
+        => (cell.CurrentMonth || State.ShowNonCurrentDates)
+           && State.ReadOnly is false
+           && State.IsDateInAllowedRange(cell.Date);
+
     private string CellButtonId(DateTime date) => $"{_gridId}-{date:yyyyMMdd}";
+
+    /// <summary>
+    /// Opens a week from its number on the rail. The date moves in every case; the view only follows
+    /// when the consumer left the week view in the allowed set.
+    /// </summary>
+    private void GoToWeek(DateTime date)
+    {
+        if (State.IsDateInAllowedRange(date) is false)
+            return;
+
+        State.SetSelectedDate(date);
+        if (State.IsViewAvailable(BitFullCalendarView.Week))
+            State.SetView(BitFullCalendarView.Week);
+    }
 
     private void OnCellKeyDown((DateTime Date, KeyboardEventArgs Args) payload)
     {
@@ -61,6 +85,19 @@ public partial class BitFcCalendarMonthView
         };
 
         if (target < 0 || target >= _cells.Count)
+            return;
+
+        // A cell that renders no add button owns no tab stop, so the walk steps over it in the
+        // direction it was already going instead of stranding the focus on an inert cell.
+        var step = target - index;
+        if (step != 0)
+        {
+            var direction = Math.Sign(step);
+            while (target >= 0 && target < _cells.Count && IsFocusable(_cells[target]) is false)
+                target += direction;
+        }
+
+        if (target < 0 || target >= _cells.Count || IsFocusable(_cells[target]) is false)
             return;
 
         _focusedDate = _cells[target].Date.Date;

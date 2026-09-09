@@ -710,4 +710,248 @@ public class BitFullCalendarStateTests
     }
 
     #endregion
+
+    #region Business hours
+
+    /// <summary>A state whose business week is Monday to Friday, 09:00 to 17:00, and enforced.</summary>
+    private static BitFullCalendarState BusinessState(bool restrict = true)
+    {
+        var state = CreateState();
+        state.SetBusinessDays([DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday]);
+        state.SetBusinessHours(9, 17);
+        state.SetRestrictToBusinessHours(restrict);
+        return state;
+    }
+
+    /// <summary>The Monday of the week containing a fixed date, so the tests never depend on "today".</summary>
+    private static DateTime Monday => new(2025, 5, 12);
+    private static DateTime Saturday => new(2025, 5, 17);
+
+    [TestMethod]
+    public void BusinessDaysShouldDefaultToTheWorkingWeek()
+    {
+        var state = CreateState();
+
+        Assert.IsTrue(state.IsBusinessDay(DayOfWeek.Monday));
+        Assert.IsFalse(state.IsBusinessDay(DayOfWeek.Sunday));
+        Assert.AreEqual(9, state.BusinessStartHour);
+        Assert.AreEqual(17, state.BusinessEndHour);
+        Assert.IsFalse(state.HighlightBusinessHours);
+        Assert.IsFalse(state.RestrictToBusinessHours);
+    }
+
+    [TestMethod]
+    public void SetBusinessHoursShouldCorrectAnInvertedWindow()
+    {
+        var state = CreateState();
+
+        state.SetBusinessHours(17, 9);
+
+        Assert.AreEqual(17, state.BusinessStartHour);
+        Assert.AreEqual(18, state.BusinessEndHour);
+    }
+
+    [TestMethod]
+    public void IsBusinessTimeShouldFollowTheDayAndTheHourWindow()
+    {
+        var state = BusinessState();
+
+        Assert.IsTrue(state.IsBusinessTime(Monday.AddHours(9)));
+        Assert.IsTrue(state.IsBusinessTime(Monday.AddHours(16).AddMinutes(59)));
+        // The end is exclusive, the way the rendered window is.
+        Assert.IsFalse(state.IsBusinessTime(Monday.AddHours(17)));
+        Assert.IsFalse(state.IsBusinessTime(Monday.AddHours(8).AddMinutes(59)));
+        Assert.IsFalse(state.IsBusinessTime(Saturday.AddHours(10)));
+    }
+
+    [TestMethod]
+    public void IsWithinBusinessHoursShouldRequireTheWholeRange()
+    {
+        var state = BusinessState();
+
+        Assert.IsTrue(state.IsWithinBusinessHours(Monday.AddHours(9), Monday.AddHours(17)));
+        Assert.IsFalse(state.IsWithinBusinessHours(Monday.AddHours(8), Monday.AddHours(10)));
+        Assert.IsFalse(state.IsWithinBusinessHours(Monday.AddHours(16), Monday.AddHours(18)));
+    }
+
+    [TestMethod]
+    public void IsWithinBusinessHoursShouldRefuseARangeCrossingANonBusinessDay()
+    {
+        var state = BusinessState();
+
+        // Friday 09:00 to Monday 17:00 covers the weekend.
+        var friday = Monday.AddDays(4);
+        Assert.IsFalse(state.IsWithinBusinessHours(friday.AddHours(9), Monday.AddDays(7).AddHours(17)));
+    }
+
+    [TestMethod]
+    public void IsWithinBusinessHoursShouldJudgeAWholeDayRangeByItsDaysAlone()
+    {
+        var state = BusinessState();
+
+        // An all-day event covers whole dates and carries no clock time, so only the days count -
+        // otherwise no all-day event could ever satisfy a 09:00-17:00 window.
+        Assert.IsTrue(state.IsWithinBusinessHours(Monday, Monday.AddDays(1)));
+        Assert.IsTrue(state.IsWithinBusinessHours(Monday, Monday.AddDays(3)));
+        // The weekend still breaks it.
+        Assert.IsFalse(state.IsWithinBusinessHours(Saturday, Saturday.AddDays(1)));
+    }
+
+    [TestMethod]
+    public void ValidateRangeShouldReportEachRefusalInTurn()
+    {
+        var state = BusinessState();
+        state.SetDateBounds(Monday.AddDays(-7), Monday.AddDays(7));
+
+        Assert.AreEqual(
+            BitFullCalendarChangeRefusal.None,
+            state.ValidateRange("x", Monday.AddHours(10), Monday.AddHours(11), null));
+
+        Assert.AreEqual(
+            BitFullCalendarChangeRefusal.OutsideBusinessHours,
+            state.ValidateRange("x", Monday.AddHours(7), Monday.AddHours(8), null));
+
+        Assert.AreEqual(
+            BitFullCalendarChangeRefusal.OutOfRange,
+            state.ValidateRange("x", Monday.AddDays(30).AddHours(10), Monday.AddDays(30).AddHours(11), null));
+    }
+
+    [TestMethod]
+    public void ValidateRangeShouldStayOutOfTheWayWhenNothingIsEnforced()
+    {
+        var state = CreateState();
+
+        // No bounds, overlaps allowed, business hours only shading: every range is committable.
+        Assert.AreEqual(
+            BitFullCalendarChangeRefusal.None,
+            state.ValidateRange("x", Saturday.AddHours(2), Saturday.AddHours(3), null));
+    }
+
+    [TestMethod]
+    public void ValidateRangeShouldStillReportAnOverlap()
+    {
+        var state = new BitFullCalendarState();
+        state.Initialize(
+        [
+            new BitFullCalendarEvent { Id = "1", StartDate = Monday.AddHours(10), EndDate = Monday.AddHours(11) }
+        ]);
+        state.SetSelectedDate(Monday);
+        state.SetAllowEventOverlap(false);
+
+        Assert.AreEqual(
+            BitFullCalendarChangeRefusal.Overlap,
+            state.ValidateRange("2", Monday.AddHours(10).AddMinutes(30), Monday.AddHours(11).AddMinutes(30), null));
+    }
+
+    [TestMethod]
+    public void HandleDropShouldRefuseATargetOutsideTheBusinessHours()
+    {
+        var ev = new BitFullCalendarEvent { Id = "1", StartDate = Monday.AddHours(10), EndDate = Monday.AddHours(11) };
+        var state = new BitFullCalendarState();
+        state.Initialize([ev]);
+        state.SetSelectedDate(Monday);
+        state.SetBusinessHours(9, 17);
+        state.SetRestrictToBusinessHours(true);
+
+        state.StartDrag(ev);
+        var refusal = state.HandleDrop(Monday, hour: 6);
+
+        Assert.AreEqual(BitFullCalendarChangeRefusal.OutsideBusinessHours, refusal);
+        Assert.AreEqual(Monday.AddHours(10), state.AllEvents[0].StartDate, "the event stays where it was");
+        Assert.IsFalse(state.IsDragging);
+    }
+
+    [TestMethod]
+    public void HandleDropShouldCommitAMoveInsideTheBusinessHours()
+    {
+        var ev = new BitFullCalendarEvent { Id = "1", StartDate = Monday.AddHours(10), EndDate = Monday.AddHours(11) };
+        var state = new BitFullCalendarState();
+        state.Initialize([ev]);
+        state.SetSelectedDate(Monday);
+        state.SetBusinessHours(9, 17);
+        state.SetRestrictToBusinessHours(true);
+
+        state.StartDrag(ev);
+
+        Assert.AreEqual(BitFullCalendarChangeRefusal.None, state.HandleDrop(Monday, hour: 14));
+        Assert.AreEqual(Monday.AddHours(14), state.AllEvents[0].StartDate);
+    }
+
+    #endregion
+
+    #region Month grid preferences
+
+    [TestMethod]
+    public void MonthGridPreferencesShouldRoundTrip()
+    {
+        var state = CreateState();
+
+        Assert.IsFalse(state.FixedWeekCount);
+        Assert.IsTrue(state.ShowNonCurrentDates);
+        Assert.IsFalse(state.NavLinks);
+
+        state.SetFixedWeekCount(true);
+        state.SetShowNonCurrentDates(false);
+        state.SetNavLinks(true);
+
+        Assert.IsTrue(state.FixedWeekCount);
+        Assert.IsFalse(state.ShowNonCurrentDates);
+        Assert.IsTrue(state.NavLinks);
+    }
+
+    [TestMethod]
+    public void MonthGridPreferencesShouldNotifyOnlyWhenTheyChange()
+    {
+        var state = CreateState();
+        var notifications = 0;
+        state.OnStateChanged += () => notifications++;
+
+        state.SetFixedWeekCount(false);
+        Assert.AreEqual(0, notifications);
+
+        state.SetFixedWeekCount(true);
+        Assert.AreEqual(1, notifications);
+    }
+
+    #endregion
+
+    #region Date range reporting
+
+    [TestMethod]
+    public void TheDateRangeShouldBeReportedOnlyWhenItActuallyMoves()
+    {
+        var state = CreateState();
+        state.SetSelectedDate(Monday);
+        state.SetView(BitFullCalendarView.Week);
+
+        var ranges = new List<BitFullCalendarDateChangeEventArgs>();
+        state.OnDateRangeChanged += ranges.Add;
+
+        // Another day of the SAME week: the selected date moves, the visible range does not, so
+        // consumers are not asked to re-fetch the events they already have.
+        state.SetSelectedDate(Monday.AddDays(2));
+        Assert.AreEqual(0, ranges.Count);
+
+        state.SetSelectedDate(Monday.AddDays(7));
+        Assert.AreEqual(1, ranges.Count);
+    }
+
+    [TestMethod]
+    public void TheDateRangeShouldBeReportedWhenTheViewChangesItsShape()
+    {
+        var state = CreateState();
+        state.SetSelectedDate(Monday);
+        state.SetView(BitFullCalendarView.Week);
+
+        var ranges = new List<BitFullCalendarDateChangeEventArgs>();
+        state.OnDateRangeChanged += ranges.Add;
+
+        // Same date, a different span around it.
+        state.SetView(BitFullCalendarView.Month);
+
+        Assert.AreEqual(1, ranges.Count);
+        Assert.AreEqual(BitFullCalendarView.Month, ranges[0].View);
+    }
+
+    #endregion
 }

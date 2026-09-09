@@ -11,6 +11,9 @@
     var slotMinutes = State.SlotMinutes;
     var slotHeightPercent = 100.0 / slotMinutes.Length;
     var weekNumber = BitFullCalendarHelpers.GetWeekNumber(weekStart);
+    // The rendered columns are what the roving tabindex walks and what decides which column can own
+    // the grid's single tab stop, so they are captured for the key handler.
+    _weekDays = weekDays;
 }
 
 <div class="bit-bfc-week-layout">
@@ -32,10 +35,26 @@
             </div>
             @foreach (var day in weekDays)
             {
-                var isToday = day.Date == DateTime.Today;
+                var d = day;
+                var isToday = d.Date == DateTime.Today;
                 <div class="bit-bfc-week-header-day">
-                    <span class="bit-bfc-week-header-day-name">@day.ToString("ddd", State.Culture)</span>
-                    <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(day, State.Culture)</span>
+                    @* With nav links on, the column header opens that single day - the affordance
+                       every calendar puts there - and stays plain text otherwise. *@
+                    @if (State.NavLinks)
+                    {
+                        <button type="button" class="bit-bfc-navlink bit-bfc-week-header-day-link"
+                                aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, d.ToString("D", State.Culture))"
+                                disabled="@(State.IsDateInAllowedRange(d) is false)"
+                                @onclick="() => GoToDayView(d)">
+                            <span class="bit-bfc-week-header-day-name">@d.ToString("ddd", State.Culture)</span>
+                            <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture)</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <span class="bit-bfc-week-header-day-name">@d.ToString("ddd", State.Culture)</span>
+                        <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture)</span>
+                    }
                 </div>
             }
         </div>
@@ -62,7 +81,8 @@
                     var grouped = BitFullCalendarHelpers.GroupEvents(dayEvents);
                     var isOutOfRange = State.IsDateInAllowedRange(d) is false;
 
-                    <div class="bit-bfc-week-day-col @(isOutOfRange ? "bit-bfc-out-of-range" : null)" style="--bit-bfc-visible-hours:@(visibleHours.Length);">
+                    @* Today's column is tinted so the eye finds it without reading the header. *@
+                    <div class="bit-bfc-week-day-col @(isOutOfRange ? "bit-bfc-out-of-range" : null) @(d.Date == DateTime.Today ? "bit-bfc-today-col" : null)" style="--bit-bfc-visible-hours:@(visibleHours.Length);">
                         @foreach (var h in visibleHours)
                         {
                             var hour = h;
@@ -77,12 +97,15 @@
                                     var minute = slotMinutes[si];
                                     var topPercent = (slotIndex * slotHeightPercent).ToString("F4", inv);
                                     var heightPercent = slotHeightPercent.ToString("F4", inv);
-                                    <div class="@(slotIndex == 0 ? "bit-bfc-hour-slot" : "bit-bfc-hour-row-half") bit-bfc-droppable @GetWeekDropClass(d, hour, minute) @(IsSlotSelected(dayIndex, hour, minute) ? "bit-bfc-slot-selected" : null)"
+                                    @* A column outside the allowed date window accepts nothing, so its
+                                       slots also leave the tab order and the accessibility tree
+                                       instead of announcing an add affordance that does nothing. *@
+                                    <div class="@(slotIndex == 0 ? "bit-bfc-hour-slot" : "bit-bfc-hour-row-half") bit-bfc-droppable @GetWeekDropClass(d, hour, minute) @OffHoursClass(d, hour, minute) @(IsSlotSelected(dayIndex, hour, minute) ? "bit-bfc-slot-selected" : null)"
                                          id="@SlotElementId(dayIndex, hour, minute)"
                                          style="top:@(topPercent)%;height:@(heightPercent)%;bottom:auto;"
-                                         role="@_slotRole"
+                                         role="@(isOutOfRange ? null : _slotRole)"
                                          tabindex="@SlotTabIndex(dayIndex, hour, minute)"
-                                         aria-label="@HourSlotAriaLabel(d, hour, minute)"
+                                         aria-label="@(isOutOfRange ? null : HourSlotAriaLabel(d, hour, minute))"
                                          @ondragenter="() => OnDragEnterSlot(d, hour, minute)"
                                          @ondragover:preventDefault="true"
                                          @ondrop="() => OnDrop(d, hour, minute)"

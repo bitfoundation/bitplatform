@@ -21,6 +21,13 @@ public partial class BitFcDayCell
     /// <summary>DOM id of the cell's add button, so the month view can move focus onto it.</summary>
     [Parameter] public string? AddButtonId { get; set; }
 
+    /// <summary>
+    /// True for the cell in the grid's trailing column, which drops its column separator. The view
+    /// marks it because the grid is not always seven wide: a work week narrows it and the
+    /// week-number rail adds a leading child to every row.
+    /// </summary>
+    [Parameter] public bool IsLastColumn { get; set; }
+
     /// <summary>Raised for every key pressed on the add button, together with this cell's date.</summary>
     [Parameter] public EventCallback<(DateTime Date, KeyboardEventArgs Args)> OnCellKeyDown { get; set; }
 
@@ -39,6 +46,20 @@ public partial class BitFcDayCell
         _selectedEvent = ev;
     }
     private void CloseEventDetails() => _selectedEvent = null;
+
+    /// <summary>
+    /// Opens this single day from its number. The date moves in every case; the view only follows
+    /// when the consumer left the day view in the allowed set.
+    /// </summary>
+    private void GoToDayView()
+    {
+        if (State.IsDateInAllowedRange(Cell.Date) is false)
+            return;
+
+        State.SetSelectedDate(Cell.Date);
+        if (State.IsViewAvailable(BitFullCalendarView.Day))
+            State.SetView(BitFullCalendarView.Day);
+    }
 
     private async Task OnCellClick()
     {

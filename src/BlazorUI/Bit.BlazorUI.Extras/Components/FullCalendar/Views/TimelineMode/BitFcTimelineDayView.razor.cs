@@ -83,6 +83,16 @@ public partial class BitFcTimelineDayView
         _pendingSlotFocus = true;
     }
 
+    /// <summary>
+    /// Shades a slot that falls outside the business hours, so the schedulable part of the row reads
+    /// at a glance. Off unless the consumer asked for it.
+    /// </summary>
+    private string? OffHoursClass(DateTime day, int hour, int minute)
+        => State.HighlightBusinessHours
+           && State.IsBusinessTime(day.Date.AddHours(hour).AddMinutes(minute)) is false
+            ? "bit-bfc-slot-off"
+            : null;
+
     private void SetRovingSlot(string rowKey, int hour, int minute)
     {
         _focusedSlot = (rowKey, hour, minute);

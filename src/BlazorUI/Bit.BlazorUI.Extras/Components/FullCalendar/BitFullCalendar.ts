@@ -3,7 +3,11 @@ namespace BitBlazorUI {
         public static scrollToHour(elementId: string, hour: number, pixelsPerHour: number | null): boolean {
             const el = document.getElementById(elementId);
             if (!el) return false;
-            const pxPerHour = pixelsPerHour ?? 96;
+            // The stylesheet sizes every hour row from --bit-bfc-hour-height, and a consumer may
+            // redeclare it to re-scale the grid, so the row height is read back from the element
+            // rather than assumed to be the value .NET compiled against.
+            const declared = parseFloat(getComputedStyle(el).getPropertyValue("--bit-bfc-hour-height"));
+            const pxPerHour = Number.isFinite(declared) && declared > 0 ? declared : (pixelsPerHour ?? 96);
             const top = hour * pxPerHour;
             if (typeof el.scrollTo === "function") {
                 el.scrollTo({ top: top, behavior: "auto" });

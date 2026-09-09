@@ -81,6 +81,67 @@ public class BitFullCalendarSettings
     public IReadOnlyList<DayOfWeek>? HiddenDays { get; set; }
 
     /// <summary>
+    /// The weekdays business hours run on. <c>null</c> (the default) means Monday to Friday, the
+    /// same default the other calendar libraries use. An empty list means no day is a business day.
+    /// </summary>
+    public IReadOnlyList<DayOfWeek>? BusinessDays { get; set; }
+
+    /// <summary>
+    /// First hour of the business day (0-23). Defaults to <c>9</c>. A value at or above
+    /// <see cref="BusinessEndHour"/> is corrected to one hour below it.
+    /// </summary>
+    public int BusinessStartHour
+    {
+        get => _businessStartHour;
+        set => _businessStartHour = Math.Clamp(value, 0, 23);
+    }
+    private int _businessStartHour = 9;
+
+    /// <summary>
+    /// Exclusive last hour of the business day (1-24). Defaults to <c>17</c>.
+    /// </summary>
+    public int BusinessEndHour
+    {
+        get => _businessEndHour;
+        set => _businessEndHour = Math.Clamp(value, 1, 24);
+    }
+    private int _businessEndHour = 17;
+
+    /// <summary>
+    /// Shades everything outside the business hours - the off-hours slots of the day, week, and
+    /// timeline grids and the non-business day columns and month cells - so the schedulable part of
+    /// the week reads at a glance. Equivalent to <c>businessHours</c> in other calendar libraries.
+    /// </summary>
+    public bool HighlightBusinessHours { get; set; }
+
+    /// <summary>
+    /// Refuses any drag, resize, or dialog save whose resulting range is not fully contained in the
+    /// business hours, the way <c>eventConstraint: "businessHours"</c> does elsewhere. The refusal is
+    /// reported as <see cref="BitFullCalendarChangeRefusal.OutsideBusinessHours"/>.
+    /// Independent of <see cref="HighlightBusinessHours"/>, which only shades them.
+    /// </summary>
+    public bool RestrictToBusinessHours { get; set; }
+
+    /// <summary>
+    /// Always renders six week rows in the month grid, so the calendar keeps the same height as the
+    /// user navigates from a 4- or 5-row month to a 6-row one. Defaults to <c>false</c>.
+    /// </summary>
+    public bool FixedWeekCount { get; set; }
+
+    /// <summary>
+    /// Renders the leading and trailing days the month grid borrows from the neighbouring months.
+    /// When <c>false</c> those cells stay blank and inert. Defaults to <c>true</c>.
+    /// </summary>
+    public bool ShowNonCurrentDates { get; set; } = true;
+
+    /// <summary>
+    /// Turns the day numbers, weekday headers, and week numbers into links that navigate to the
+    /// matching day or week view. Defaults to <c>false</c>, matching <c>navLinks</c> elsewhere.
+    /// A link whose target view is excluded by the calendar's <c>Views</c> only selects the date.
+    /// </summary>
+    public bool NavLinks { get; set; }
+
+    /// <summary>
     /// Overrides the day the week starts on. When <c>null</c> (the default) the active culture's
     /// <c>DateTimeFormat.FirstDayOfWeek</c> is used.
     /// </summary>

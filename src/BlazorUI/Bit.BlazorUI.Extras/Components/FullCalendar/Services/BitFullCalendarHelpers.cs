@@ -5,6 +5,22 @@ namespace Bit.BlazorUI;
 public static class BitFullCalendarHelpers
 {
     public const int HourHeightPx = 96;
+
+    /// <summary>
+    /// Name of the CSS custom property that carries the height of one hour row on the day and week
+    /// time grids. The stylesheet sizes every hour row from it, so a consumer may re-scale the grid
+    /// by redeclaring it - which is why the placed event blocks and the current-time indicator are
+    /// expressed against the same property (see <see cref="HoursToCssLength"/>) rather than against
+    /// the <see cref="HourHeightPx"/> constant.
+    /// </summary>
+    public const string HourHeightVariableName = "--bit-bfc-hour-height";
+
+    /// <summary>
+    /// A CSS length spanning <paramref name="hours"/> hour rows, derived from
+    /// <see cref="HourHeightVariableName"/> so it tracks whatever height the consumer gave an hour.
+    /// </summary>
+    public static string HoursToCssLength(double hours)
+        => $"calc(var({HourHeightVariableName}, {HourHeightPx}px) * {hours.ToString("F4", CultureInfo.InvariantCulture)})";
     /// <summary>Width of a single hour column on the timeline-mode day/week views.</summary>
     public const int TimelineHourWidthPx = 96;
     /// <summary>Width of a single day column on the timeline-mode month view.</summary>
@@ -350,6 +366,40 @@ public static class BitFullCalendarHelpers
 
     private static readonly IReadOnlySet<DayOfWeek> _noHiddenDays = new HashSet<DayOfWeek>();
 
+    /// <summary>The weekdays business hours run on when the consumer named none: Monday to Friday.</summary>
+    public static readonly IReadOnlyList<DayOfWeek> DefaultBusinessDays =
+    [
+        DayOfWeek.Monday,
+        DayOfWeek.Tuesday,
+        DayOfWeek.Wednesday,
+        DayOfWeek.Thursday,
+        DayOfWeek.Friday
+    ];
+
+    /// <summary>
+    /// Canonicalizes the business-day set: <c>null</c> falls back to <see cref="DefaultBusinessDays"/>,
+    /// duplicates and undefined values are dropped, and an empty list is kept as "no business day"
+    /// (unlike the hidden days, a week with no business day is a legitimate configuration).
+    /// </summary>
+    public static IReadOnlySet<DayOfWeek> NormalizeBusinessDays(IReadOnlyList<DayOfWeek>? businessDays)
+    {
+        var source = businessDays ?? DefaultBusinessDays;
+        var set = new HashSet<DayOfWeek>();
+        foreach (var day in source)
+        {
+            if (Enum.IsDefined(day))
+                set.Add(day);
+        }
+        return set;
+    }
+
+    /// <summary>
+    /// Canonicalizes the business-hour window the same way <see cref="NormalizeVisibleHours"/>
+    /// canonicalizes the rendered one, so a start at or past the end still leaves an hour of business.
+    /// </summary>
+    public static (int Start, int End) NormalizeBusinessHours(int startHour, int endHour)
+        => NormalizeVisibleHours(startHour, endHour);
+
     /// <summary>The day the week starts on: the explicit override when supplied, else the culture's.</summary>
     public static DayOfWeek ResolveFirstDayOfWeek(CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null)
         => firstDayOfWeek is { } day && Enum.IsDefined(day)
@@ -666,9 +716,10 @@ public static class BitFullCalendarHelpers
         DateTime selectedDate,
         CultureInfo? culture,
         DayOfWeek? firstDayOfWeek,
-        IReadOnlyList<DayOfWeek>? hiddenDays)
+        IReadOnlyList<DayOfWeek>? hiddenDays,
+        bool fixedWeekCount = false)
     {
-        var cells = GetCalendarCells(selectedDate, culture, firstDayOfWeek);
+        var cells = GetCalendarCells(selectedDate, culture, firstDayOfWeek, fixedWeekCount);
         var hidden = NormalizeHiddenDays(hiddenDays);
         if (hidden.Count == 0)
             return cells;
@@ -678,7 +729,11 @@ public static class BitFullCalendarHelpers
         return cells.Where(c => !hidden.Contains(c.Date.DayOfWeek)).ToList();
     }
 
-    public static List<BitFullCalendarCell> GetCalendarCells(DateTime selectedDate, CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null)
+    public static List<BitFullCalendarCell> GetCalendarCells(
+        DateTime selectedDate,
+        CultureInfo? culture = null,
+        DayOfWeek? firstDayOfWeek = null,
+        bool fixedWeekCount = false)
     {
         culture ??= CultureInfo.CurrentUICulture;
         var cal = culture.Calendar;
@@ -717,6 +772,11 @@ public static class BitFullCalendarHelpers
 
         int totalDays = leadingDays + daysInMonth;
         int trailing  = (7 - (totalDays % 7)) % 7;
+
+        // A fixed week count keeps the grid the same height across months, so the trailing run is
+        // padded out to the full six rows instead of stopping at the month's own last week.
+        if (fixedWeekCount)
+            trailing = Math.Max(trailing, 42 - totalDays);
 
         for (int i = 0; i < trailing; i++)
         {
@@ -760,13 +820,14 @@ public static class BitFullCalendarHelpers
     /// and (when present and not redundant with the title) the description. Used by event cards
     /// where layout space may hide most of the visual content.
     /// </summary>
-    public static string BuildEventTooltip(BitFullCalendarEvent ev, bool use24Hour, CultureInfo? culture = null)
+    public static string BuildEventTooltip(
+        BitFullCalendarEvent ev, bool use24Hour, CultureInfo? culture = null, string? allDayLabel = null)
     {
         if (ev is null)
             return string.Empty;
 
         var title = string.IsNullOrWhiteSpace(ev.Title) ? string.Empty : ev.Title.Trim();
-        var time = $"{FormatTime(ev.StartDate, use24Hour, culture)} - {FormatTime(ev.EndDate, use24Hour, culture)}";
+        var time = BuildEventRangeText(ev, use24Hour, culture, allDayLabel);
 
         var lines = new List<string>(3);
         if (!string.IsNullOrEmpty(title))
@@ -781,6 +842,35 @@ public static class BitFullCalendarHelpers
         }
 
         return string.Join('\n', lines);
+    }
+
+    /// <summary>
+    /// The span an event covers, written the way the event is actually scheduled: a clock range for
+    /// a timed event inside one day, the dates as well once it crosses one, and the covered dates
+    /// plus <paramref name="allDayLabel"/> for an all-day event, which has no clock time to show.
+    /// </summary>
+    public static string BuildEventRangeText(
+        BitFullCalendarEvent ev, bool use24Hour, CultureInfo? culture = null, string? allDayLabel = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+
+        if (ev.IsAllDay)
+        {
+            var lastDate = GetInclusiveEndDate(ev);
+            var dates = lastDate <= ev.StartDate.Date
+                ? FormatCultureDate(ev.StartDate, culture)
+                : $"{FormatCultureDate(ev.StartDate, culture)} - {FormatCultureDate(lastDate, culture)}";
+            return string.IsNullOrEmpty(allDayLabel) ? dates : $"{dates} · {allDayLabel}";
+        }
+
+        var start = FormatTime(ev.StartDate, use24Hour, culture);
+        var end = FormatTime(ev.EndDate, use24Hour, culture);
+        // A timed event that crosses midnight would otherwise read as "23:00 - 01:00" with no hint
+        // of which day either end falls on, so the dates join the clock times once it spans more.
+        if (ev.IsMultiDay)
+            return $"{FormatCultureDate(ev.StartDate, culture)} {start} - {FormatCultureDate(ev.EndDate, culture)} {end}";
+
+        return $"{start} - {end}";
     }
 
     public static string FormatHourLabel(int hour, bool use24Hour, CultureInfo? culture = null)
@@ -982,19 +1072,34 @@ public static class BitFullCalendarHelpers
         return groups;
     }
 
-    public static (double TopPx, double WidthPercent, double LeftPercent) GetEventBlockStyle(
-        BitFullCalendarEvent ev, DateTime day, int groupIndex, int groupSize, int visibleStartHour = 0)
+    /// <summary>
+    /// How many hour rows separate the top of the time grid from the start of <paramref name="ev"/>.
+    /// Expressed in hours rather than pixels so the caller can render it against
+    /// <see cref="HourHeightVariableName"/> and keep the block aligned with the rows it sits on.
+    /// </summary>
+    public static double GetEventBlockOffsetHours(BitFullCalendarEvent ev, DateTime day, int visibleStartHour = 0)
     {
         // The grid's first rendered row is visibleStartHour, so a block is positioned relative to
         // that hour rather than to midnight.
         var gridStart = day.Date.AddHours(Math.Clamp(visibleStartHour, 0, 23));
         var eventStart = ev.StartDate < gridStart ? gridStart : ev.StartDate;
-        double startMinutes = (eventStart - gridStart).TotalMinutes;
-        double topPx = startMinutes / 60.0 * HourHeightPx;
+        return (eventStart - gridStart).TotalMinutes / 60.0;
+    }
+
+    public static (double TopPx, double WidthPercent, double LeftPercent) GetEventBlockStyle(
+        BitFullCalendarEvent ev, DateTime day, int groupIndex, int groupSize, int visibleStartHour = 0)
+    {
+        double topPx = GetEventBlockOffsetHours(ev, day, visibleStartHour) * HourHeightPx;
         double width = 100.0 / groupSize;
         double left = groupIndex * width;
         return (topPx, width, left);
     }
+
+    /// <summary>
+    /// Days of the neighbouring months the month grid can render around the month itself: one week
+    /// of leading days, and up to two trailing weeks once a fixed six-row grid pads a short month.
+    /// </summary>
+    private const int MonthGridPaddingDays = 14;
 
     private static (int Year, int Month, int Day) MonthGridDayKey(DateTime d)
     {
@@ -1011,8 +1116,12 @@ public static class BitFullCalendarHelpers
     {
         culture ??= CultureInfo.CurrentUICulture;
         // Era-safe month anchors (see StartOfCulturalMonth).
-        DateTime monthStart = StartOfCulturalMonth(selectedDate, culture);
-        DateTime monthEnd   = EndOfCulturalMonth(selectedDate, culture);
+        // The grid also renders the days it borrows from the neighbouring months - up to a week of
+        // them ahead, and up to two weeks behind with a fixed six-row grid - so the occupancy map
+        // covers those too. Leaving them out gave a multi-day event no reserved row there, and every
+        // such cell then picked its own free row, breaking the continuous bar across the run.
+        DateTime monthStart = StartOfCulturalMonth(selectedDate, culture).AddDays(-MonthGridPaddingDays);
+        DateTime monthEnd   = EndOfCulturalMonth(selectedDate, culture).AddDays(MonthGridPaddingDays);
 
         var slots = Math.Clamp(maxEventsPerDayCell, 1, 10);
         var eventPositions = new Dictionary<string, int>();
@@ -1046,7 +1155,7 @@ public static class BitFullCalendarHelpers
                 if (eventDays.All(d =>
                 {
                     var key = MonthGridDayKey(d);
-                    return occupiedPositions.TryGetValue(key, out var slots) && !slots[i];
+                    return occupiedPositions.TryGetValue(key, out var daySlots) && !daySlots[i];
                 }))
                 {
                     position = i;
@@ -1247,9 +1356,17 @@ public static class BitFullCalendarHelpers
     /// grid's first rendered hour rather than from midnight.
     /// </summary>
     public static double GetCurrentTimeLineTopPx(int visibleStartHour = 0)
+        => GetCurrentTimeLineOffsetHours(visibleStartHour) * HourHeightPx;
+
+    /// <summary>
+    /// Offset of the "current time" indicator from the top of the time grid, counted in hour rows
+    /// from the grid's first rendered hour, so it can be rendered against
+    /// <see cref="HourHeightVariableName"/> like the event blocks are.
+    /// </summary>
+    public static double GetCurrentTimeLineOffsetHours(int visibleStartHour = 0)
     {
         double minutes = DateTime.Now.TimeOfDay.TotalMinutes - (Math.Clamp(visibleStartHour, 0, 23) * 60);
-        return minutes / 60.0 * HourHeightPx;
+        return minutes / 60.0;
     }
 
     /// <summary>

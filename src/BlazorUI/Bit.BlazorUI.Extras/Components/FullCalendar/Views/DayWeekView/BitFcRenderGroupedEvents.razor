@@ -9,7 +9,11 @@
 {
     @foreach (var ev in group)
     {
-        var style = BitFullCalendarHelpers.GetEventBlockStyle(ev, Day, groupIndex, GroupedEvents.Count, State.VisibleStartHour);
+        @* Placed against the same custom property the hour rows are sized from, so re-scaling the
+           grid with --bit-bfc-hour-height moves the blocks with the rows instead of leaving them
+           anchored to the built-in 96px hour. *@
+        var topOffset = BitFullCalendarHelpers.HoursToCssLength(
+            BitFullCalendarHelpers.GetEventBlockOffsetHours(ev, Day, State.VisibleStartHour));
 
         // Determine how many columns this event really needs. Counting every lane that touches ev
         // overcounts: lanes whose events are staggered (each overlaps ev but never coexist with one
@@ -78,7 +82,7 @@
         }
 
         <div @key="ev" class="bit-bfc-event-stack-item @(isStack ? "bit-bfc-event-stack-item-side-by-side" : "")"
-             style="position:absolute;top:@(style.TopPx.ToString("F2", inv))px;width:@(width.ToString("F2", inv))%;left:@(left.ToString("F2", inv))%;z-index:@zIndex;pointer-events:none;">
+             style="position:absolute;top:@topOffset;width:@(width.ToString("F2", inv))%;left:@(left.ToString("F2", inv))%;z-index:@zIndex;pointer-events:none;">
             <BitFcEventBlock Event="ev" OnSelected="OnEventSelected" EventTemplate="EventTemplate" />
         </div>
     }

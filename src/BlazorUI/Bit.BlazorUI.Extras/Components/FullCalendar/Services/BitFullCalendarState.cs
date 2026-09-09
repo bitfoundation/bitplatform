@@ -115,6 +115,31 @@ public class BitFullCalendarState
     /// <summary>Whether dragging across the day/week time grid selects a range to create an event in.</summary>
     public bool AllowRangeSelection { get; private set; } = true;
 
+    /// <summary>The weekdays business hours run on.</summary>
+    public IReadOnlySet<DayOfWeek> BusinessDays { get; private set; } =
+        BitFullCalendarHelpers.NormalizeBusinessDays(null);
+
+    /// <summary>First hour of the business day (inclusive).</summary>
+    public int BusinessStartHour { get; private set; } = 9;
+
+    /// <summary>Last hour of the business day (exclusive).</summary>
+    public int BusinessEndHour { get; private set; } = 17;
+
+    /// <summary>Whether the grids shade everything outside the business hours.</summary>
+    public bool HighlightBusinessHours { get; private set; }
+
+    /// <summary>Whether a drag, resize, or save outside the business hours is refused.</summary>
+    public bool RestrictToBusinessHours { get; private set; }
+
+    /// <summary>Whether the month grid always renders six week rows.</summary>
+    public bool FixedWeekCount { get; private set; }
+
+    /// <summary>Whether the month grid fills in the days it borrows from the neighbouring months.</summary>
+    public bool ShowNonCurrentDates { get; private set; } = true;
+
+    /// <summary>Whether day numbers, weekday headers, and week numbers navigate when clicked.</summary>
+    public bool NavLinks { get; private set; }
+
     /// <summary>Earliest date the calendar can navigate to, or <c>null</c> for no lower bound.</summary>
     public DateTime? MinDate { get; private set; }
 
@@ -529,6 +554,155 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
+    public void SetBusinessDays(IReadOnlyList<DayOfWeek>? businessDays)
+    {
+        var next = BitFullCalendarHelpers.NormalizeBusinessDays(businessDays);
+        if (BusinessDays.Count == next.Count && BusinessDays.All(next.Contains))
+            return;
+
+        BusinessDays = next;
+        NotifyStateChanged();
+    }
+
+    public void SetBusinessHours(int startHour, int endHour)
+    {
+        var (start, end) = BitFullCalendarHelpers.NormalizeBusinessHours(startHour, endHour);
+        if (BusinessStartHour == start && BusinessEndHour == end)
+            return;
+
+        BusinessStartHour = start;
+        BusinessEndHour = end;
+        NotifyStateChanged();
+    }
+
+    public void SetHighlightBusinessHours(bool value)
+    {
+        if (HighlightBusinessHours == value)
+            return;
+        HighlightBusinessHours = value;
+        NotifyStateChanged();
+    }
+
+    public void ToggleHighlightBusinessHours()
+    {
+        HighlightBusinessHours = !HighlightBusinessHours;
+        NotifyStateChanged();
+    }
+
+    public void SetRestrictToBusinessHours(bool value)
+    {
+        if (RestrictToBusinessHours == value)
+            return;
+        RestrictToBusinessHours = value;
+        NotifyStateChanged();
+    }
+
+    public void SetFixedWeekCount(bool value)
+    {
+        if (FixedWeekCount == value)
+            return;
+        FixedWeekCount = value;
+        NotifyStateChanged();
+    }
+
+    public void SetShowNonCurrentDates(bool value)
+    {
+        if (ShowNonCurrentDates == value)
+            return;
+        ShowNonCurrentDates = value;
+        NotifyStateChanged();
+    }
+
+    public void SetNavLinks(bool value)
+    {
+        if (NavLinks == value)
+            return;
+        NavLinks = value;
+        NotifyStateChanged();
+    }
+
+    /// <summary>True when the supplied weekday is one the business hours run on.</summary>
+    public bool IsBusinessDay(DayOfWeek day) => BusinessDays.Contains(day);
+
+    /// <summary>
+    /// True when the supplied instant falls inside the business hours: on a business day, at or
+    /// after <see cref="BusinessStartHour"/> and before <see cref="BusinessEndHour"/>.
+    /// </summary>
+    public bool IsBusinessTime(DateTime moment)
+        => IsBusinessDay(moment.DayOfWeek)
+           && moment.TimeOfDay >= TimeSpan.FromHours(BusinessStartHour)
+           && moment.TimeOfDay < TimeSpan.FromHours(BusinessEndHour);
+
+    /// <summary>
+    /// True when the whole <c>[start, end)</c> range sits inside the business hours of the days it
+    /// covers.
+    /// <para>
+    /// A range that covers whole days end to end - an all-day event, in other words - has no clock
+    /// time to judge, so only the days it falls on are checked. That matches how the other calendar
+    /// libraries apply a business-hours constraint to an all-day event.
+    /// </para>
+    /// </summary>
+    public bool IsWithinBusinessHours(DateTime start, DateTime end)
+    {
+        if (end <= start)
+            return IsBusinessTime(start);
+
+        if (start.TimeOfDay == TimeSpan.Zero && end.TimeOfDay == TimeSpan.Zero)
+        {
+            for (var wholeDay = start.Date; wholeDay < end.Date; wholeDay = wholeDay.AddDays(1))
+            {
+                if (!IsBusinessDay(wholeDay.DayOfWeek))
+                    return false;
+            }
+            return true;
+        }
+
+        var businessStart = TimeSpan.FromHours(BusinessStartHour);
+        var businessEnd = TimeSpan.FromHours(BusinessEndHour);
+
+        // The end is exclusive, so a range ending exactly at midnight ends on the previous day.
+        var lastDate = end.AddTicks(-1).Date;
+        for (var day = start.Date; day <= lastDate; day = day.AddDays(1))
+        {
+            if (!IsBusinessDay(day.DayOfWeek))
+                return false;
+
+            var dayStart = day > start.Date ? day : start;
+            var dayEnd = day < lastDate ? day.AddDays(1) : end;
+            if (dayStart.TimeOfDay < businessStart)
+                return false;
+            // A part that runs to midnight only fits when the business day itself does.
+            var endOfDay = dayEnd.Date > day ? TimeSpan.FromHours(24) : dayEnd.TimeOfDay;
+            if (endOfDay > businessEnd)
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The single gate every user-driven move, resize, and save passes through: the resulting range
+    /// has to stay inside the allowed date window, inside the business hours when they are enforced,
+    /// and free of a conflicting event when double booking is disallowed. Returns
+    /// <see cref="BitFullCalendarChangeRefusal.None"/> when the change may be committed.
+    /// </summary>
+    public BitFullCalendarChangeRefusal ValidateRange(string eventId, DateTime start, DateTime end, string? resourceId)
+    {
+        // The inclusive end is what the bounds are measured against, so a range ending at midnight
+        // is not judged against the day it never actually reaches.
+        var inclusiveEnd = end > start ? end.AddTicks(-1) : end;
+        if (IsDateInAllowedRange(start) is false || IsDateInAllowedRange(inclusiveEnd) is false)
+            return BitFullCalendarChangeRefusal.OutOfRange;
+
+        if (RestrictToBusinessHours && IsWithinBusinessHours(start, end) is false)
+            return BitFullCalendarChangeRefusal.OutsideBusinessHours;
+
+        if (IsRangeAvailable(eventId, start, end, resourceId) is false)
+            return BitFullCalendarChangeRefusal.Overlap;
+
+        return BitFullCalendarChangeRefusal.None;
+    }
+
     /// <summary>
     /// True when the supplied range may be committed for <paramref name="eventId"/>: either overlaps
     /// are allowed, or no other event on the same resource occupies any part of that range.
@@ -928,19 +1102,14 @@ public class BitFullCalendarState
 
         var newEnd = newStart + duration;
 
-        // The drop target has to stay inside the window the calendar is allowed to show; otherwise
-        // the event would land on a date the user can never navigate back to.
-        if (!IsDateInAllowedRange(newStart) || !IsDateInAllowedRange(BitFullCalendarHelpers.GetInclusiveEndDate(
-                new BitFullCalendarEvent { StartDate = newStart, EndDate = newEnd })))
+        // One gate for every rule a drop has to obey: the allowed date window (otherwise the event
+        // would land on a date the user can never navigate back to), the business hours when they
+        // are enforced, and the booking rule.
+        var refusal = ValidateRange(DraggedEvent.Id, newStart, newEnd, newResource);
+        if (refusal is not BitFullCalendarChangeRefusal.None)
         {
             EndDrag();
-            return BitFullCalendarChangeRefusal.OutOfRange;
-        }
-
-        if (!IsRangeAvailable(DraggedEvent.Id, newStart, newEnd, newResource))
-        {
-            EndDrag();
-            return BitFullCalendarChangeRefusal.Overlap;
+            return refusal;
         }
 
         var updated = new BitFullCalendarEvent
@@ -995,10 +1164,32 @@ public class BitFullCalendarState
 
     private void NotifyStateChanged() => OnStateChanged?.Invoke();
 
+    // The last range actually reported. Several interactions move the selected date without moving
+    // the range it sits in - clicking another day of the week that is already on screen, for one -
+    // and re-reporting the identical range would have consumers re-fetch the same events.
+    private (DateTime Start, DateTime End, BitFullCalendarView View)? _lastReportedRange;
+
+    /// <summary>
+    /// Records the range the calendar is showing as already reported, so the next navigation that
+    /// lands on the very same range stays silent. The component calls this after raising the initial
+    /// range itself on first render, which does not travel through <see cref="OnDateRangeChanged"/>.
+    /// </summary>
+    public void MarkCurrentRangeReported()
+    {
+        var (start, end) = BitFullCalendarHelpers.GetDateRange(View, SelectedDate, Culture, FirstDayOfWeekOverride);
+        _lastReportedRange = (start, end, View);
+    }
+
     private void NotifyDateRangeChanged()
     {
-        if (OnDateRangeChanged is null) return;
         var (start, end) = BitFullCalendarHelpers.GetDateRange(View, SelectedDate, Culture, FirstDayOfWeekOverride);
+        var range = (start, end, View);
+        if (_lastReportedRange == range)
+            return;
+
+        _lastReportedRange = range;
+
+        if (OnDateRangeChanged is null) return;
         OnDateRangeChanged.Invoke(new BitFullCalendarDateChangeEventArgs
         {
             Start = start,

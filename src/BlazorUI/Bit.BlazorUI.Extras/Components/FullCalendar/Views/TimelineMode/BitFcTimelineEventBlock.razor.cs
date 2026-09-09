@@ -97,38 +97,27 @@ public partial class BitFcTimelineEventBlock
         var start = Event.StartDate + startDelta;
         var end = Event.EndDate + endDelta;
 
-        if (end - start < TimeSpan.FromMinutes(EffectiveMinDurationMinutes))
+        // Only a resize can shrink the event, so only a resize is held to the minimum duration. A move
+        // carries the span it already has - an event shorter than the minimum (one created before the
+        // setting changed) would otherwise be unmovable by keyboard.
+        if (endDelta != startDelta && end - start < TimeSpan.FromMinutes(EffectiveMinDurationMinutes))
             return;
 
-        if (State.IsDateInAllowedRange(start) is false || State.IsDateInAllowedRange(end.AddTicks(-1)) is false)
+        // The same gate the pointer gestures pass through: allowed date window, business hours, and
+        // the booking rule, so a keyboard edit is never able to commit what a drag could not.
+        var refusal = State.ValidateRange(Event.Id, start, end, Event.Resource);
+        if (refusal is not BitFullCalendarChangeRefusal.None)
         {
-            Notifier.ReportRefusal(BitFullCalendarChangeRefusal.OutOfRange);
-            return;
-        }
-
-        if (State.IsRangeAvailable(Event.Id, start, end, Event.Resource) is false)
-        {
-            Notifier.ReportRefusal(BitFullCalendarChangeRefusal.Overlap);
+            Notifier.ReportRefusal(refusal);
             return;
         }
 
         var oldSnapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
-        var updated = new BitFullCalendarEvent
-        {
-            Id = Event.Id,
-            Title = Event.Title,
-            Description = Event.Description,
-            StartDate = start,
-            EndDate = end,
-            Color = Event.Color,
-            Resource = Event.Resource,
-            Data = Event.Data,
-            Attendees = [.. Event.Attendees],
-            IsAllDay = Event.IsAllDay,
-            Recurrence = Event.Recurrence,
-            IsReadOnly = Event.IsReadOnly,
-            CssClass = Event.CssClass
-        };
+        // Cloning carries every field the event has - the series identity included - so a keyboard
+        // edit never silently drops one the way a hand-written copy does.
+        var updated = BitFullCalendarChangeNotifier.CloneEvent(Event);
+        updated.StartDate = start;
+        updated.EndDate = end;
 
         State.UpdateEvent(updated);
 
@@ -324,11 +313,13 @@ public partial class BitFcTimelineEventBlock
                 {
                     var b = _resizeBaseEvent;
 
-                    // The resized span obeys the same booking rule a drop does, so a calendar that
-                    // disallows double booking refuses the resize rather than creating one.
-                    if (State.IsRangeAvailable(b.Id, s, e, b.Resource) is false)
+                    // The resized span obeys the same rules a drop does, so a calendar that disallows
+                    // double booking (or confines events to business hours) refuses the resize rather
+                    // than creating what it would not accept from a drag.
+                    var refusal = State.ValidateRange(b.Id, s, e, b.Resource);
+                    if (refusal is not BitFullCalendarChangeRefusal.None)
                     {
-                        Notifier.ReportRefusal(BitFullCalendarChangeRefusal.Overlap);
+                        Notifier.ReportRefusal(refusal);
                         return;
                     }
 

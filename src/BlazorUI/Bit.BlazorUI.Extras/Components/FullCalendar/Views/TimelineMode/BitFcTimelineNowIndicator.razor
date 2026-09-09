@@ -1,0 +1,16 @@
+@namespace Bit.BlazorUI
+@implements IDisposable
+
+@* The "current time" marker of the timeline rows. The time axis runs horizontally here, so the
+   marker is a vertical rule anchored with inset-inline-start - the same axis the row's cells and
+   event blocks are placed on, so it lands on the right column in both writing directions. *@
+
+@if (_offsetPx is { } offset)
+{
+    <div class="bit-bfc-tl-now"
+         style="inset-inline-start:@(offset.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))px;"
+         role="presentation"
+         title="@BitFullCalendarHelpers.FormatTime(DateTime.Now, State.Use24HourFormat, State.Culture)">
+        <span class="bit-bfc-tl-now-dot"></span>
+    </div>
+}

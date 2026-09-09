@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 
 @{
-    var cells = BitFullCalendarHelpers.GetCalendarCells(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
+    var cells = BitFullCalendarHelpers.GetCalendarCells(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays, State.FixedWeekCount);
     var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
     var eventPositions = BitFullCalendarHelpers.CalculateMonthEventPositions(MultiDayEvents, SingleDayEvents, State.SelectedDate, State.Culture, State.MaxEventsPerDayCell);
     var weekDayHeaders = BitFullCalendarHelpers.GetWeekDayHeaders(State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
@@ -36,12 +36,28 @@
             @if (State.ShowWeekNumbers && i % columnCount == 0)
             {
                 var weekNumber = BitFullCalendarHelpers.GetWeekNumber(cell.Date);
-                <div class="bit-bfc-weeknum-cell" aria-label="@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)">
-                    @string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)
-                </div>
+                var weekDate = cell.Date;
+                @* With nav links on, the week number opens that week - the affordance every calendar
+                   puts on the rail - and stays a plain label otherwise. *@
+                @if (State.NavLinks)
+                {
+                    <button type="button" class="bit-bfc-weeknum-cell bit-bfc-navlink"
+                            aria-label="@string.Format(State.Culture, Texts.NavLinkWeekAriaLabelFormat, weekNumber)"
+                            disabled="@(State.IsDateInAllowedRange(weekDate) is false)"
+                            @onclick="() => GoToWeek(weekDate)">
+                        @string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)
+                    </button>
+                }
+                else
+                {
+                    <div class="bit-bfc-weeknum-cell" aria-label="@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)">
+                        @string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)
+                    </div>
+                }
             }
             <BitFcDayCell @key="cell.Date"
                           Cell="cell"
+                          IsLastColumn="@(i % columnCount == columnCount - 1)"
                           Events="allEvents"
                           EventPositions="eventPositions"
                           EventTemplate="EventTemplate"

@@ -39,8 +39,31 @@ public partial class BitFcCalendarDayView : IDisposable
 
     private string SlotElementId(int hour, int minute) => $"{_scrollContainerId}-slot-{hour}-{minute}";
 
+    /// <summary>
+    /// Shades a slot that falls outside the business hours, so the schedulable part of the day reads
+    /// at a glance. Off unless the consumer asked for it.
+    /// </summary>
+    private string? OffHoursClass(int hour, int minute)
+        => State.HighlightBusinessHours
+           && State.IsBusinessTime(State.SelectedDate.Date.AddHours(hour).AddMinutes(minute)) is false
+            ? "bit-bfc-slot-off"
+            : null;
+
+    /// <summary>
+    /// True when a remembered slot still exists in the grid being rendered. The visible hour window
+    /// and the slot duration are settings the user can change while the view is open, which would
+    /// otherwise leave the tab stop on an hour or a minute the grid no longer draws - and the grid
+    /// with no tab stop at all.
+    /// </summary>
+    private bool IsSlotInGrid((int Hour, int Minute) slot)
+        => slot.Hour >= State.VisibleStartHour
+           && slot.Hour < State.VisibleEndHour
+           && Array.IndexOf(State.SlotMinutes, slot.Minute) >= 0;
+
     private (int Hour, int Minute) RovingSlot =>
-        _focusedSlot is { } slot ? slot : (State.VisibleStartHour, State.SlotMinutes[0]);
+        _focusedSlot is { } slot && IsSlotInGrid(slot)
+            ? slot
+            : (State.VisibleStartHour, State.SlotMinutes[0]);
 
     private string? SlotTabIndex(int hour, int minute)
     {

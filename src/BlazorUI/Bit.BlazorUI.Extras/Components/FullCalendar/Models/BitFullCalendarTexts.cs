@@ -122,12 +122,84 @@ public class BitFullCalendarTexts
     /// <summary>Notice shown when a move or resize is refused because it falls outside the allowed date range.</summary>
     public string OutOfRangeMessage { get; set; } = "That date is outside the allowed range.";
 
+    /// <summary>
+    /// Notice shown when a move, resize, or save is refused because it falls outside the business
+    /// hours while <see cref="BitFullCalendarSettings.RestrictToBusinessHours"/> is on.
+    /// </summary>
+    public string OutsideBusinessHoursMessage { get; set; } = "That time is outside business hours.";
+
+    /// <summary>Label of the business-hours toggle in the settings panel.</summary>
+    public string HighlightBusinessHoursLabel { get; set; } = "Highlight business hours";
+
+    /// <summary>Accessible name of a day number that navigates to that day ({0} = the formatted date).</summary>
+    public string NavLinkDayAriaLabelFormat { get; set; } = "Go to {0}";
+
+    /// <summary>Accessible name of a week number that navigates to that week ({0} = the week number).</summary>
+    public string NavLinkWeekAriaLabelFormat { get; set; } = "Go to week {0}";
+
     public string ValidationTitleRequired { get; set; } = "Title is required";
     public string ValidationDescriptionRequired { get; set; } = "Description is required";
     public string ValidationEndAfterStart { get; set; } = "End date must be after start date";
     public string ValidationAttendeeNameRequired { get; set; } = "First name or last name is required";
 
     public string ResizePreviewAriaLabel { get; set; } = "New time range";
+
+    /// <summary>Label of the repeat-rule row in the event details dialog.</summary>
+    public string RepeatsLabel { get; set; } = "Repeats";
+
+    /// <summary>Name of a daily repeat rule.</summary>
+    public string RepeatsDaily { get; set; } = "Daily";
+
+    /// <summary>Name of a weekly repeat rule.</summary>
+    public string RepeatsWeekly { get; set; } = "Weekly";
+
+    /// <summary>Name of a monthly repeat rule.</summary>
+    public string RepeatsMonthly { get; set; } = "Monthly";
+
+    /// <summary>Name of a yearly repeat rule.</summary>
+    public string RepeatsYearly { get; set; } = "Yearly";
+
+    /// <summary>Appended to the frequency when the rule repeats every N units ({0} = the interval).</summary>
+    public string RepeatsIntervalFormat { get; set; } = "every {0}";
+
+    /// <summary>Appended when the series is closed by a number of occurrences ({0} = the count).</summary>
+    public string RepeatsCountFormat { get; set; } = "{0} times";
+
+    /// <summary>Appended when the series is closed by a date ({0} = the formatted date).</summary>
+    public string RepeatsUntilFormat { get; set; } = "until {0}";
+
+    /// <summary>
+    /// A one-line summary of a repeat rule, as shown in the event details dialog: the frequency,
+    /// then the interval, the occurrence count, and the end date when the rule names them.
+    /// </summary>
+    public string GetRecurrenceSummary(BitFullCalendarRecurrence recurrence, System.Globalization.CultureInfo? culture = null)
+    {
+        ArgumentNullException.ThrowIfNull(recurrence);
+        culture ??= System.Globalization.CultureInfo.CurrentUICulture;
+
+        var parts = new List<string>(4)
+        {
+            recurrence.Frequency switch
+            {
+                BitFullCalendarRecurrenceFrequency.Daily => RepeatsDaily,
+                BitFullCalendarRecurrenceFrequency.Weekly => RepeatsWeekly,
+                BitFullCalendarRecurrenceFrequency.Monthly => RepeatsMonthly,
+                BitFullCalendarRecurrenceFrequency.Yearly => RepeatsYearly,
+                _ => recurrence.Frequency.ToString()
+            }
+        };
+
+        if (recurrence.Interval > 1)
+            parts.Add(string.Format(culture, RepeatsIntervalFormat, recurrence.Interval));
+
+        if (recurrence.Count is { } count && count > 0)
+            parts.Add(string.Format(culture, RepeatsCountFormat, count));
+
+        if (recurrence.Until is { } until)
+            parts.Add(string.Format(culture, RepeatsUntilFormat, until.ToString("d", culture)));
+
+        return string.Join(" · ", parts);
+    }
 
     public string ResourceLabel { get; set; } = "Resource";
     public string ResourceColumnHeader { get; set; } = "Resource";

@@ -112,4 +112,48 @@ public class BitFullCalendarSettingsTests
         Assert.AreEqual(2, settings.HiddenDays!.Count);
         Assert.AreEqual(DayOfWeek.Sunday, settings.FirstDayOfWeek);
     }
+
+    [TestMethod]
+    public void BusinessHourDefaultsShouldDescribeANineToFiveWeek()
+    {
+        var settings = new BitFullCalendarSettings();
+
+        Assert.IsNull(settings.BusinessDays, "null means the built-in Monday-to-Friday week");
+        Assert.AreEqual(9, settings.BusinessStartHour);
+        Assert.AreEqual(17, settings.BusinessEndHour);
+        Assert.IsFalse(settings.HighlightBusinessHours);
+        Assert.IsFalse(settings.RestrictToBusinessHours);
+    }
+
+    [TestMethod]
+    [DataRow(-5, 0)]
+    [DataRow(0, 0)]
+    [DataRow(9, 9)]
+    [DataRow(23, 23)]
+    [DataRow(30, 23)]
+    public void BusinessStartHourShouldClampTo0Through23(int assigned, int expected)
+    {
+        Assert.AreEqual(expected, new BitFullCalendarSettings { BusinessStartHour = assigned }.BusinessStartHour);
+    }
+
+    [TestMethod]
+    [DataRow(0, 1)]
+    [DataRow(1, 1)]
+    [DataRow(17, 17)]
+    [DataRow(24, 24)]
+    [DataRow(48, 24)]
+    public void BusinessEndHourShouldClampTo1Through24(int assigned, int expected)
+    {
+        Assert.AreEqual(expected, new BitFullCalendarSettings { BusinessEndHour = assigned }.BusinessEndHour);
+    }
+
+    [TestMethod]
+    public void MonthGridDefaultsShouldKeepTheGridAsItAlwaysWas()
+    {
+        var settings = new BitFullCalendarSettings();
+
+        Assert.IsFalse(settings.FixedWeekCount);
+        Assert.IsTrue(settings.ShowNonCurrentDates);
+        Assert.IsFalse(settings.NavLinks);
+    }
 }
