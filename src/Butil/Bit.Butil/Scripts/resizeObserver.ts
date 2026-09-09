@@ -1,7 +1,10 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    const _observers: { [id: string]: ResizeObserver } = {};
+    // The gate is kept next to the observer so unobserve can cancel a queued trailing send:
+    // disconnecting stops new entries, but a timer already armed would still dispatch into a
+    // DotNetObjectReference the .NET side disposes right after this call.
+    const _observers: { [id: string]: { observer: ResizeObserver, gated: any } } = {};
 
     butil.resizeObserver = {
         observe,
@@ -47,13 +50,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         } catch {
             observer.observe(element);
         }
-        _observers[listenerId] = observer;
+        _observers[listenerId] = { observer, gated };
     }
 
     function unobserve(listenerId: string) {
-        const observer = _observers[listenerId];
-        if (!observer) return;
+        const entry = _observers[listenerId];
+        if (!entry) return;
         delete _observers[listenerId];
-        observer.disconnect();
+        entry.gated.cancel?.();
+        entry.observer.disconnect();
     }
 }(BitButil));

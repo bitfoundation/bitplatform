@@ -1,7 +1,9 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    const _observers: { [id: string]: IntersectionObserver } = {};
+    // The gate is kept next to the observer so unobserve can cancel a queued trailing send -
+    // see resizeObserver.ts for why disconnecting alone is not enough.
+    const _observers: { [id: string]: { observer: IntersectionObserver, gated: any } } = {};
 
     butil.intersectionObserver = {
         observe,
@@ -41,13 +43,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         }, init);
 
         observer.observe(element);
-        _observers[listenerId] = observer;
+        _observers[listenerId] = { observer, gated };
     }
 
     function unobserve(listenerId: string) {
-        const observer = _observers[listenerId];
-        if (!observer) return;
+        const entry = _observers[listenerId];
+        if (!entry) return;
         delete _observers[listenerId];
-        observer.disconnect();
+        entry.gated.cancel?.();
+        entry.observer.disconnect();
     }
 }(BitButil));

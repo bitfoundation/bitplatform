@@ -2,7 +2,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     // Element-scoped event handlers, indexed by listenerId so element teardown can find them.
-    const _elementHandlers: { [listenerId: string]: { element: HTMLElement, eventName: string, handler: any, options: any } } = {};
+    // The gate travels with the entry so unsubscribeEvent can cancel a queued trailing send -
+    // see events.ts for why detaching the listener alone is not enough.
+    const _elementHandlers: { [listenerId: string]: { element: HTMLElement, eventName: string, handler: any, options: any, gated: any } } = {};
 
     // Its own module because this is the only part of the element surface that needs the event
     // mapper: keeping it here leaves the events module out of every other element call.
@@ -28,7 +30,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             if (once) delete _elementHandlers[listenerId];
             gated(butil.events.mapEvent(e, argsMembers));
         };
-        _elementHandlers[listenerId] = { element, eventName, handler, options };
+        _elementHandlers[listenerId] = { element, eventName, handler, options, gated };
         element.addEventListener(eventName, handler, options);
     }
 
@@ -36,6 +38,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const entry = _elementHandlers[listenerId];
         if (!entry) return;
         delete _elementHandlers[listenerId];
+        entry.gated.cancel?.();
         try {
             entry.element.removeEventListener(entry.eventName, entry.handler, entry.options);
         } catch { /* element may already be detached */ }

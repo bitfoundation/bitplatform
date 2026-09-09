@@ -1,7 +1,9 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    const _observers: { [id: string]: MutationObserver } = {};
+    // The gate is kept next to the observer so unobserve can cancel a queued trailing send -
+    // see resizeObserver.ts for why disconnecting alone is not enough.
+    const _observers: { [id: string]: { observer: MutationObserver, gated: any } } = {};
 
     butil.mutationObserver = {
         observe,
@@ -47,13 +49,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         try { observer.observe(element, init); }
         catch { /* invalid options combo - silently ignore so dotnet sees no records */ }
-        _observers[listenerId] = observer;
+        _observers[listenerId] = { observer, gated };
     }
 
     function unobserve(listenerId: string) {
-        const observer = _observers[listenerId];
-        if (!observer) return;
+        const entry = _observers[listenerId];
+        if (!entry) return;
         delete _observers[listenerId];
-        observer.disconnect();
+        entry.gated.cancel?.();
+        entry.observer.disconnect();
     }
 }(BitButil));

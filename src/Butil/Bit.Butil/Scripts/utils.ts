@@ -76,15 +76,23 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     //
     // Callers pass a payload already mapped out of the DOM event rather than the event itself, so a
     // trailing send cannot read an event object the browser has finished dispatching.
-    function throttle(minInterval: number, send: (e: any) => void, trailing?: boolean) {
+    //
+    // The gate carries a `cancel` for teardown: a trailing send is a timer that outlives the
+    // subscription that armed it, and firing it after an unsubscribe dispatches into a
+    // DotNetObjectReference the .NET side has already disposed. Callers that unsubscribe must call
+    // it - optionally, since an ungated subscription is handed the raw dispatch and has none.
+    function throttle(minInterval: number, send: (e: any) => void, trailing?: boolean): any {
         if (!(minInterval > 0)) return send;
 
-        let lastSentAt = 0;
+        // Never sent, rather than "sent at the time origin": a subscription created inside the
+        // first `minInterval` ms of the page would otherwise lose its leading-edge send, which is
+        // the one behaviour a caller setting an interval still expects to get immediately.
+        let lastSentAt = -Infinity;
         let timer: any = 0;
         let pending: any;
         let hasPending = false;
 
-        return (e: any) => {
+        const gate: any = (e: any) => {
             const now = performance.now();
             const remaining = minInterval - (now - lastSentAt);
 
@@ -117,6 +125,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 send(last);
             }, remaining);
         };
+
+        gate.cancel = () => {
+            if (timer) { clearTimeout(timer); timer = 0; }
+            hasPending = false;
+            pending = undefined;
+        };
+
+        return gate;
     }
 
     // The handle registry the device modules share. A browser hands back the same SerialPort,

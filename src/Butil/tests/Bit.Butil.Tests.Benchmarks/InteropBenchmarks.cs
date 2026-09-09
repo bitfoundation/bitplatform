@@ -114,7 +114,9 @@ internal static class InteropBenchmarks
         }
 
         Measure(report, results, "invoke-value", Budgets.MaxValueCallUs, "value call (result deserialized)");
-        BundleModeValueCallUs = results["invoke-value"].PerOpUs;
+        // Only when the page reported it: Measure has already failed the run otherwise, and indexing
+        // here would replace that failure with a KeyNotFoundException that takes the whole run down.
+        if (results.TryGetValue("invoke-value", out var bundleValue)) BundleModeValueCallUs = bundleValue.PerOpUs;
         Measure(report, results, "invoke-void", Budgets.MaxVoidCallUs, "void call");
         Measure(report, results, "element-read", Budgets.MaxElementReadUs, "ElementReference read");
 

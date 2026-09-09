@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.JSInterop;
 
@@ -37,8 +38,7 @@ internal sealed class PerformanceObserverInterop : IDisposable
     /// <summary>The ids of every live subscription, and forgets them - the disposal snapshot.</summary>
     internal Guid[] Drain()
     {
-        var ids = new Guid[_handlers.Count];
-        _handlers.Keys.CopyTo(ids, 0);
+        var ids = _handlers.Keys.ToArray();
         _handlers.Clear();
         return ids;
     }

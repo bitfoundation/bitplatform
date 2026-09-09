@@ -35,6 +35,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         ids.forEach(id => {
             const handler = _handlers[id];
             delete _handlers[id];
+            // The handler *is* the gate here, so cancelling it drops a trailing send that would
+            // otherwise fire into a DotNetObjectReference disposed right after this call.
+            (handler as any)?.cancel?.();
             window.visualViewport.removeEventListener('resize', handler);
         });
     }
@@ -50,6 +53,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         ids.forEach(id => {
             const handler = _handlers[id];
             delete _handlers[id];
+            (handler as any)?.cancel?.();
             window.visualViewport.removeEventListener('scroll', handler);
         });
     }

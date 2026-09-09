@@ -1,7 +1,10 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    const _handlers: { [id: string]: EventListener } = {};
+    // The gate is stored with the handler so removeEventListener can cancel a queued trailing
+    // send: detaching stops new events, but a timer already armed would still dispatch into a
+    // DotNetObjectReference the .NET side disposes right after this call.
+    const _handlers: { [id: string]: { handler: EventListener, gated: any } } = {};
 
     butil.events = {
         addEventListener,
@@ -89,7 +92,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             gated(mapEvent(e, argsMembers));
         };
 
-        _handlers[listenerId] = handler;
+        _handlers[listenerId] = { handler, gated };
 
         target.addEventListener(eventName, handler, options);
     }
@@ -98,13 +101,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         const target = resolveTarget(elementName);
 
         dotnetListenerIds.forEach(id => {
-            const handler = _handlers[id];
-            if (!handler) return;
+            const entry = _handlers[id];
+            if (!entry) return;
             // A handler is only ever stored after a successful add (which requires the target to be
             // available), and the only targets are window/document - both live for the page's
             // lifetime. So we always drop the map entry here to keep it from growing unbounded;
             // detach from the target when it's resolvable (it normally is).
-            if (target) target.removeEventListener(eventName, handler, options);
+            if (target) target.removeEventListener(eventName, entry.handler, options);
+            entry.gated.cancel?.();
             delete _handlers[id];
         });
     }
