@@ -668,7 +668,7 @@ private void HandleRecover(BitErrorBoundaryRecoverReason reason)
 
     private readonly string example9RazorCode = @"
 <BitErrorBoundary @ref=""captureBoundary"" ShowException>
-    <BitButton OnClick=""CaptureFromReference"">Capture through @ref</BitButton>
+    <BitButton OnClick=""CaptureFromReference"">Capture through @@ref</BitButton>
     <_BitErrorBoundaryCaptureDemo />
 </BitErrorBoundary>";
     private readonly string example9CsharpCode = @"

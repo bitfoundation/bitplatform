@@ -1350,6 +1350,66 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         StringAssert.Contains(errorRoots[0].TextContent, "Inner");
     }
 
+    [TestMethod]
+    public void BitErrorBoundaryShouldShowWhatTheRecoverHandlerThrew()
+    {
+        ThrowOnceComponent.Reset();
+
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ShowException, true);
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, async _ =>
+            {
+                await Task.Yield();
+
+                throw new InvalidOperationException("the recovery itself failed");
+            }));
+            parameters.AddChildContent(b =>
+            {
+                b.OpenComponent<ThrowOnceComponent>(0);
+                b.CloseComponent();
+            });
+        });
+
+        component.FindAll("button").First(btn => btn.TextContent.Contains("Recover", StringComparison.OrdinalIgnoreCase)).Click();
+
+        // The handler was the one place that was to put right whatever threw, so what it threw is the
+        // boundary's own error rather than an exception nothing is left to await.
+        component.WaitForAssertion(() =>
+            StringAssert.Contains(component.Find(".bit-erb-exp").TextContent, "the recovery itself failed"));
+    }
+
+    [TestMethod]
+    public async Task BitErrorBoundaryShouldNotSayCopiedForACopyItRecoveredOutOfAsync()
+    {
+        var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Extras.copyToClipboard", _ => true);
+
+        ThrowOnceComponent.Reset();
+
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ShowCopyButton, true);
+            parameters.AddChildContent(b =>
+            {
+                b.OpenComponent<ThrowOnceComponent>(0);
+                b.CloseComponent();
+            });
+        });
+
+        component.FindAll(".bit-erb-ftr button").First(btn => btn.TextContent.Contains("Copy details", StringComparison.Ordinal)).Click();
+
+        await component.InvokeAsync(component.Instance.Recover);
+
+        component.Find(".throw-once-safe");
+
+        // The clipboard write lands after the boundary has already cleared the error the copy belonged
+        // to, so it has nothing left to report on.
+        handler.SetVoidResult();
+
+        component.WaitForAssertion(() =>
+            Assert.IsFalse(component.Markup.Contains("Copied", StringComparison.Ordinal)));
+    }
+
     private static RenderFragment ThrowingContent(string message) => b =>
     {
         b.OpenComponent<ThrowingComponent>(0);

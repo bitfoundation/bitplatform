@@ -254,6 +254,10 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// the content throw is put right, so that recovering does not simply throw again. Which of the
     /// routes it was arrives as a <see cref="BitErrorBoundaryRecoverReason"/>, since a reader who asked
     /// to try again is waiting for something to happen while a boundary that cleared itself is not.
+    /// <br />
+    /// Nothing awaits it on the <see cref="RecoverKeys"/> and <see cref="RecoverOnNavigation"/> routes,
+    /// so what it throws is <see cref="Capture(Exception)"/>d rather than lost: a recovery that could not
+    /// put the state right leaves the boundary showing why.
     /// </remarks>
     [Parameter] public EventCallback<BitErrorBoundaryRecoverReason> OnRecover { get; set; }
 
@@ -404,9 +408,7 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// </remarks>
     public new void Recover()
     {
-        if (RecoverCore() is false) return;
-
-        _ = OnRecover.InvokeAsync(BitErrorBoundaryRecoverReason.Manual);
+        _ = HandleRecover(BitErrorBoundaryRecoverReason.Manual);
     }
 
     /// <summary>
@@ -665,8 +667,10 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
         // The error UI it was to be moved to is on its way out, so a focus that has not happened yet is
         // one that must not happen at all - it would land on an element that is no longer there. The
-        // copy message goes with it: it belongs to the error that is being cleared.
+        // copy message goes with it: it belongs to the error that is being cleared, and the token moves
+        // on so that a copy still in flight cannot put the message back up over whatever comes next.
         _copied = false;
+        _copyToken++;
         _autoFocusPending = false;
 
         // Renders on its own only when it had an exception to clear, which is why the captured-but-not-
@@ -690,6 +694,11 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
         if (exception is null) return;
 
+        // Each copy owns the message it puts up, so that the one before it timing out does not take down
+        // the one that has only just gone up. Taken before the clipboard is written to, so that a copy
+        // the boundary recovered out from under says nothing about the error the reader is now looking at.
+        var token = ++_copyToken;
+
         try
         {
             await _js.BitExtrasCopyToClipboard(exception.ToString());
@@ -701,13 +710,9 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
             return;
         }
 
-        if (_isDisposed) return;
+        if (_isDisposed || _copyToken != token) return;
 
         _copied = true;
-
-        // Each copy owns the message it put up, so that the one before it timing out does not take down
-        // the one that has only just gone up.
-        var token = ++_copyToken;
 
         StateHasChanged();
 
@@ -726,7 +731,17 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     {
         if (RecoverCore() is false) return;
 
-        await OnRecover.InvokeAsync(reason);
+        try
+        {
+            await OnRecover.InvokeAsync(reason);
+        }
+        catch (Exception ex)
+        {
+            // Nothing is awaiting this on the recover-key and navigation routes, and the handler is the
+            // one place that was to put right whatever threw, so an exception out of it is exactly the
+            // kind the boundary exists to show rather than the kind it can afford to drop.
+            Capture(ex);
+        }
     }
 
     private void RecoverOnKeysChanged()

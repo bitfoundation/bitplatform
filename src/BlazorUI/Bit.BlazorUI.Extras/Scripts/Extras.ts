@@ -81,7 +81,16 @@ namespace BitBlazorUI {
             textarea.value = text;
             textarea.setAttribute('readonly', '');
             textarea.setAttribute('aria-hidden', 'true');
+            // Pinned to the top-left of the viewport rather than left to flow: a textarea that is
+            // selected while it sits below the fold scrolls the page away from whatever the copy button
+            // belonged to. The size keeps it off the layout without making it unselectable.
             textarea.style.position = 'fixed';
+            textarea.style.top = '0';
+            textarea.style.left = '0';
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.padding = '0';
+            textarea.style.border = 'none';
             textarea.style.opacity = '0';
             textarea.style.pointerEvents = 'none';
             document.body.appendChild(textarea);
