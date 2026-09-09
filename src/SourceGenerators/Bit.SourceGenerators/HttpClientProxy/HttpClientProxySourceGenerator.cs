@@ -294,7 +294,9 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                     }
                 }
 
-                string parameterList = string.Join(", ", parameters.Select(p => $"{p.TypeDisplay} {p.Name}"));
+                // An async iterator takes its token through the enumerator, not the call.
+                string parameterList = string.Join(", ", parameters.Select(p =>
+                    $"{(doesReturnIAsyncEnum && p.Name == ctName ? "[EnumeratorCancellation] " : string.Empty)}{p.TypeDisplay} {p.Name}"));
 
                 List<string> jsonReadParametersList = new();
                 if (doesReturnSomething && !doesReturnString)
@@ -315,9 +317,15 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 if (doesReturnSomething)
                     requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseType\", typeof({returnUnderlyingNoNull}));");
 
-                var jsonStreamReturn = doesReturnIAsyncEnum
-                    ? $"return WrapWithResponseDisposal(__response.Content.ReadFromJsonAsAsyncEnumerable({jsonReadParameters}), __response);"
+                var readBody = doesReturnIAsyncEnum
+                    ? $@"await foreach (var __item in __response.Content.ReadFromJsonAsAsyncEnumerable({jsonReadParameters}))
+                {{
+                    yield return __item;
+                }}"
                     : $"return await __response.Content.{(doesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});";
+
+                // The prerender state stores one resolved value per url, which a stream is not.
+                var usesPrerenderState = doesReturnSomething && doesReturnIAsyncEnum is false;
 
                 var encodeStringRouteParameters = string.Join(
                     Environment.NewLine,
@@ -335,14 +343,14 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
             {{
                 __url += {(url.Contains('?') ? "'&'" : "'?'")} + dynamicQS;
             }}
-            {(doesReturnSomething ? $@"return (await prerenderStateService.GetValue(__url, async () =>
+            {(usesPrerenderState ? $@"return (await prerenderStateService.GetValue(__url, async () =>
             {{" : string.Empty)}
                 using var __request = new HttpRequestMessage(HttpMethod.{httpMethod}, __url);
                 {requestOptions}
                 {(bodyParamName is not null ? $@"__request.Content = JsonContent.Create({bodyParamName}, options.GetTypeInfo<{bodyParamTypeNoNull}>());" : string.Empty)}
-                {(doesReturnIAsyncEnum ? "" : "using ")}var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(hasCt ? $", {ctName}" : string.Empty)});
-                {(doesReturnSomething ? ($"{jsonStreamReturn}" +
-          $"}}))!;") : string.Empty)}
+                using var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(hasCt ? $", {ctName}" : string.Empty)});
+                {(doesReturnSomething ? ($"{readBody}" +
+          $"{(usesPrerenderState ? "}))!;" : string.Empty)}") : string.Empty)}
         }}
 ");
             }
@@ -401,22 +409,6 @@ internal class AppControllerBase
         return result;
     }}
 
-    /// <summary>Disposes <paramref name=""response""/> after the JSON stream is fully consumed, faulted, canceled, or the enumerator is disposed.</summary>
-    protected static async System.Collections.Generic.IAsyncEnumerable<T> WrapWithResponseDisposal<T>(
-        System.Collections.Generic.IAsyncEnumerable<T> source,
-        HttpResponseMessage response,
-        [EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default)
-    {{
-        try
-        {{
-            await foreach (var item in source.WithCancellation(cancellationToken))
-                yield return item;
-        }}
-        finally
-        {{
-            response.Dispose();
-        }}
-    }}
 }}
 
 {generatedClasses}
