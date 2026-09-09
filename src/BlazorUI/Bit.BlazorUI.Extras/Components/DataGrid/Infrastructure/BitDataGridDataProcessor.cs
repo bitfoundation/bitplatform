@@ -70,7 +70,9 @@ public static class BitDataGridDataProcessor
     /// <summary>
     /// Applies the grid-wide quick-search term: a row matches when <b>any</b> searchable column's
     /// formatted display text contains the term (case-insensitively), so the user searches exactly
-    /// what the grid renders. A blank term matches every row.
+    /// what the grid renders. A blank term matches every row; a term with no searchable column to
+    /// read matches none - the same contract <see cref="BitDataGridQueryableProcessor.ApplySearch"/>
+    /// applies over an <see cref="IQueryable{T}"/> source.
     /// </summary>
     public static IReadOnlyList<TItem> Search<TItem>(
         IEnumerable<TItem> source,

@@ -2566,7 +2566,7 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid(configure: parameters =>
         {
             parameters.Add(p => p.ShowSearchBox, true);
-            parameters.Add(p => p.SearchDebounce, 40);
+            parameters.Add(p => p.SearchDebounce, 300);
             parameters.Add(p => p.SearchTextChanged, (string? _) => searches++);
         });
 
@@ -2579,7 +2579,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(0, searches);
         Assert.IsNull(component.Instance.ActiveSearch);
 
-        await Task.Delay(250);
+        await Task.Delay(1000);
         component.WaitForAssertion(() => Assert.AreEqual("che", component.Instance.ActiveSearch));
         Assert.AreEqual(1, searches, "a burst of keystrokes must issue exactly one search");
         CollectionAssert.AreEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());

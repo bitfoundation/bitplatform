@@ -362,7 +362,7 @@ public partial class BitDataGridDemo : AppComponentBase
     {
         if (clipboardGrid is null) return;
         await clipboardGrid.ExportExcelAsync(selectedOnly: true);
-        clipboardStatus = $"{clipboardSelection.Count} rows exported to selection.xlsx.";
+        clipboardStatus = $"selection.xlsx prepared with {clipboardSelection.Count} rows.";
     }
 
     // example 37 - text wrapping
