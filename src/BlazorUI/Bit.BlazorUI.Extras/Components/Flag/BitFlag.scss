@@ -119,8 +119,12 @@
 
 // What the picture does inside a frame that is not its own shape, which is only ever a question for a
 // Src of the page's own or a frame given a ratio: the packaged images are square and so is the frame.
+// None keeps the picture at its natural size and crops away what does not fit from the right and the
+// bottom, which is the top left corner of the frame rather than the middle the CSS default would put
+// it in - the middle is Center, and the two would otherwise draw the same thing.
 .bit-flg-non > .bit-flg-img {
     object-fit: none;
+    object-position: left top;
 }
 
 .bit-flg-ctr > .bit-flg-img {
@@ -132,8 +136,10 @@
     object-fit: contain;
 }
 
+// CenterContain fits the picture inside the frame but only ever scales it down, so a Src smaller than
+// the frame keeps its natural size instead of being blown up - enlarging it is Contain.
 .bit-flg-cct > .bit-flg-img {
-    object-fit: contain;
+    object-fit: scale-down;
     object-position: center;
 }
 
