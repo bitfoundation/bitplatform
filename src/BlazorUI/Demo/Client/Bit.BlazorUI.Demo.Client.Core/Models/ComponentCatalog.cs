@@ -479,7 +479,7 @@ public static class ComponentCatalog
         ["Map"] = "An interactive map with pluggable providers, markers, vectors and GeoJSON.",
         ["MarkdownEditor"] = "A native markdown editor with a toolbar, shortcuts and smart lists.",
         ["MarkdownViewer"] = "Renders Markdown to HTML entirely in C#, so it survives prerendering.",
-        ["MessageBox"] = "A ready-made box for showing a message with a title and body.",
+        ["MessageBox"] = "A ready-made box for showing a message with a title, a body, a severity icon and the buttons it is answered with.",
         ["NavPanel"] = "A vertical navigation panel with search, grouping and a collapsed rail.",
         ["PdfViewer"] = "A pure-C# PDF viewer: no pdf.js, works in every render mode.",
         ["PhoneInput"] = "A phone number field with a searchable country selector and flags.",

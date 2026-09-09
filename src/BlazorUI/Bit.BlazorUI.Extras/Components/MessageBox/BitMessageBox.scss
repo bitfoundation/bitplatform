@@ -3,9 +3,16 @@
 @import "../../../Bit.BlazorUI/Styles/media-queries.scss";
 
 .bit-msb {
-    padding: spacing(2);
-    min-width: spacing(40);
+    // The three values the size classes scale, declared here so an unsized message box is the medium
+    // one and nothing has to repeat the defaults.
+    --bit-msb-pad: #{spacing(2)};
+    --bit-msb-minwidth: #{spacing(40)};
+    --bit-msb-fontsize: #{$tg-fs-md};
+    --bit-msb-ico-fontsize: #{$siz-icon-md};
+    padding: var(--bit-msb-pad);
+    min-width: var(--bit-msb-minwidth);
     max-height: $bit-env-height-available;
+    box-sizing: border-box;
 
     @include lt-md {
         min-width: unset;
@@ -21,7 +28,9 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    max-height: calc(#{$bit-env-height-available} - #{spacing(6)});
+    // The inset of the root is what the container has less of to work with, and the root pads both
+    // sides of it - so twice the padding, not three times.
+    max-height: calc(#{$bit-env-height-available} - (2 * var(--bit-msb-pad)));
 }
 
 .bit-msb-hdr {
@@ -34,16 +43,34 @@
     justify-content: flex-start;
 }
 
+.bit-msb-ict {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    // The glyph is set beside a heading, so it is dropped to the middle of that heading's line rather
+    // than left hanging off its cap height.
+    min-height: calc(var(--bit-msb-fontsize) * 1.5);
+}
+
+.bit-msb-ico {
+    line-height: 1;
+    font-size: var(--bit-msb-ico-fontsize);
+    color: var(--bit-msb-clr, currentcolor);
+}
+
 .bit-msb-bdy {
     width: 100%;
     flex-grow: 1;
-    display: flex;
+    display: block;
     overflow: auto;
     color: $clr-ter;
     line-height: 1.5;
-    white-space: pre;
+    // The line breaks written into the body are kept, but a line with none of them still wraps: "pre"
+    // alone leaves a long sentence running off the side of a box that cannot scroll sideways.
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
     font-weight: $tg-fw-regular;
-    font-size: $tg-fs-md;
+    font-size: var(--bit-msb-fontsize);
     letter-spacing: 0.01em;
 }
 
@@ -51,6 +78,7 @@
     width: 100%;
     display: flex;
     gap: spacing(2);
+    flex-wrap: wrap;
     box-sizing: border-box;
     // Follows the same theme decision as BitDialog's footer, so all dialog-like footers across the
     // library lay out their actions identically for the active design system - including the
@@ -58,4 +86,44 @@
     align-items: $layout-dialog-actions-align;
     flex-direction: $layout-dialog-actions-direction;
     justify-content: $layout-dialog-actions-justify;
+}
+
+// The size classes scale the inset, the body type and the leading glyph together, so a small message
+// box is not left carrying a medium-sized icon.
+.bit-msb-sm {
+    --bit-msb-pad: #{spacing(1.5)};
+    --bit-msb-minwidth: #{spacing(30)};
+    --bit-msb-fontsize: #{$tg-fs-sm};
+    --bit-msb-ico-fontsize: #{$siz-icon-sm};
+}
+
+.bit-msb-md {
+    --bit-msb-pad: #{spacing(2)};
+    --bit-msb-minwidth: #{spacing(40)};
+    --bit-msb-fontsize: #{$tg-fs-md};
+    --bit-msb-ico-fontsize: #{$siz-icon-md};
+}
+
+.bit-msb-lg {
+    --bit-msb-pad: #{spacing(2.5)};
+    --bit-msb-minwidth: #{spacing(50)};
+    --bit-msb-fontsize: #{$tg-fs-lg};
+    --bit-msb-ico-fontsize: #{$siz-icon-lg};
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Only the
+// leading glyph is painted: the color of a message box is the severity of its message, and repainting
+// the surface behind the text is a decision the theme makes for dialogs, not this component.
+@each $role, $tokens in $bit-color-roles {
+    .bit-msb-#{$role} {
+        --bit-msb-clr: #{role($tokens, main)};
+    }
+}
+
+// A disabled message box stays readable - it is a notice, not a control - and its own buttons are
+// disabled through the components themselves, so nothing here dims the text.
+@media (forced-colors: active) {
+    .bit-msb-ico {
+        color: CanvasText;
+    }
 }

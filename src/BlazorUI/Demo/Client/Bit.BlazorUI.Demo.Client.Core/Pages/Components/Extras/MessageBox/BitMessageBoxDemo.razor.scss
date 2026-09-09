@@ -1,3 +1,24 @@
+﻿// The wrappers are written in this page, so they carry the scope attribute themselves and are styled
+// without ::deep - which only reaches elements that have a scoped ancestor.
+.example-grid {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.example-buttons {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.example-emoji {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
 ::deep {
     .custom-msg {
         background: linear-gradient(180deg, #3e0f0f, transparent) #000;

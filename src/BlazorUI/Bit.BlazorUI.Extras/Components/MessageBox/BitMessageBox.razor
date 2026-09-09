@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement"
@@ -8,35 +8,103 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
     <div style="@Styles?.Container" class="bit-msb-con @Classes?.Container">
-        <div style="@Styles?.Header" class="bit-msb-hdr @Classes?.Header">
-            <BitText Typography="BitTypography.H5" 
-                     Color="BitColor.Tertiary"
-                     Style="@(Styles?.Title)"
-                     Class="@(Classes?.Title)">
-                @Title
-            </BitText>
+        @if (_HasHeader)
+        {
+            <div style="@Styles?.Header" class="bit-msb-hdr @Classes?.Header">
+                @if (HeaderTemplate is not null)
+                {
+                    @HeaderTemplate
+                }
+                else
+                {
+                    @if (_HasIcon)
+                    {
+                        @* A glyph that only repeats the color of the message says nothing a screen reader
+                           needs to hear, so it is hidden by default; naming it through IconAriaLabel is what
+                           turns it into an image with a name - which is what a message box whose severity is
+                           carried by the icon alone has to do. *@
+                        <div style="@Styles?.IconContainer"
+                             class="bit-msb-ict @Classes?.IconContainer"
+                             role="@(IconAriaLabel.HasValue() ? "img" : null)"
+                             aria-label="@IconAriaLabel"
+                             aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")">
+                            @if (IconTemplate is not null)
+                            {
+                                @IconTemplate
+                            }
+                            else
+                            {
+                                <i style="@Styles?.Icon" class="bit-msb-ico @_Icon?.GetCssClasses() @Classes?.Icon" />
+                            }
+                        </div>
+                    }
 
-            <BitSpacer Style="@(Styles?.Spacer)" Class="@(Classes?.Spacer)" />
+                    @if (Title.HasValue())
+                    {
+                        @* The id is what the modal around it points its aria-labelledby at, so the message box
+                           names the dialog it is the content of instead of leaving it nameless. *@
+                        <BitText Id="@_TitleId"
+                                 Typography="BitTypography.H5"
+                                 Color="BitColor.Tertiary"
+                                 Style="@(Styles?.Title)"
+                                 Class="@_TitleClass">
+                            @Title
+                        </BitText>
+                    }
 
-            <BitButton OnClick="CloseModal"
-                       IconName="ChromeClose" 
-                       Color="BitColor.Tertiary"
-                       Variant="BitVariant.Text"
-                       Styles="@Styles?.CloseButton"
-                       Classes="@Classes?.CloseButton" />
-        </div>
+                    <BitSpacer Style="@(Styles?.Spacer)" Class="@(Classes?.Spacer)" />
 
-        <div style="@Styles?.Body" class="bit-msb-bdy @Classes?.Body">
-            @Body
+                    @if (ShowCloseButton)
+                    {
+                        <BitButton OnClick="HandleOnCloseClick"
+                                   IsEnabled="IsEnabled"
+                                   Size="@Size"
+                                   Icon="@_CloseIcon"
+                                   Title="@_CloseButtonTitle"
+                                   AriaLabel="@_CloseButtonTitle"
+                                   Color="BitColor.Tertiary"
+                                   Variant="BitVariant.Text"
+                                   Styles="@Styles?.CloseButton"
+                                   Classes="@Classes?.CloseButton" />
+                    }
+                }
+            </div>
+        }
+
+        <div id="@_BodyId" style="@Styles?.Body" class="bit-msb-bdy @Classes?.Body">
+            @if (_HasBodyTemplate)
+            {
+                @(BodyTemplate ?? ChildContent)
+            }
+            else
+            {
+                @Body
+            }
         </div>
 
         <div style="@Styles?.Footer" class="bit-msb-ftr @Classes?.Footer">
-            <BitButton OnClick="OnOkClick" 
-                       Color="BitColor.Tertiary"
-                       Styles="@Styles?.OkButton"
-                       Classes="@Classes?.OkButton">
-                @(OkText ?? "Ok")
-            </BitButton>
+            @if (FooterTemplate is not null)
+            {
+                @FooterTemplate
+            }
+            else
+            {
+                @foreach (var action in _Actions)
+                {
+                    <BitButton @key="action"
+                               @ref="_buttonRefs[action]"
+                               OnClick="@(() => HandleAction(action))"
+                               IsEnabled="IsEnabled"
+                               Size="@Size"
+                               AutoLoading="@AutoLoading"
+                               Color="@GetActionColor(action)"
+                               Variant="@(action == _PrimaryAction ? BitVariant.Fill : BitVariant.Outline)"
+                               Styles="@GetActionStyles(action)"
+                               Classes="@GetActionClasses(action)">
+                        @GetActionText(action)
+                    </BitButton>
+                }
+            }
         </div>
     </div>
 </div>
