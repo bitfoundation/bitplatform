@@ -6,6 +6,24 @@ namespace BitBlazorUI {
         autoPair: boolean;
         autoSaveKey?: string | null;
         changeDebounceMs: number;
+        maxLength: number;
+        autoFocus: boolean;
+        reportSelection: boolean;
+        tabIndents: boolean;
+        maxImageSize: number;
+        imageAccept?: string | null;
+        uploadingText: string;
+    };
+
+    type MdeFindResult = {
+        count: number;
+        index: number;
+    };
+
+    type MdeSelection = {
+        start: number;
+        end: number;
+        text: string;
     };
 
     export class MarkdownEditor {
@@ -30,6 +48,12 @@ namespace BitBlazorUI {
             }
 
             MarkdownEditor._editors[id] = editor;
+
+            if (config?.autoFocus) editor.focus();
+        }
+
+        public static setConfig(id: string, config: MarkdownEditorConfig) {
+            MarkdownEditor._editors[id]?.setConfig(config);
         }
 
         public static getValue(id: string) {
@@ -51,8 +75,24 @@ namespace BitBlazorUI {
             MarkdownEditor._editors[id]?.insertText(text);
         }
 
-        public static replaceAll(id: string, search: string, replacement: string, all: boolean) {
-            return MarkdownEditor._editors[id]?.replaceAll(search, replacement, all) ?? 0;
+        public static replaceAll(id: string, search: string, replacement: string, all: boolean, matchCase: boolean) {
+            return MarkdownEditor._editors[id]?.replaceAll(search, replacement, all, matchCase) ?? 0;
+        }
+
+        public static replaceOne(id: string, search: string, replacement: string, matchCase: boolean): MdeFindResult {
+            return MarkdownEditor._editors[id]?.replaceOne(search, replacement, matchCase) ?? { count: 0, index: 0 };
+        }
+
+        public static find(id: string, search: string, matchCase: boolean, backwards: boolean): MdeFindResult {
+            return MarkdownEditor._editors[id]?.find(search, matchCase, backwards) ?? { count: 0, index: 0 };
+        }
+
+        public static getSelection(id: string): MdeSelection {
+            return MarkdownEditor._editors[id]?.getSelection() ?? { start: 0, end: 0, text: '' };
+        }
+
+        public static setSelection(id: string, start: number, end: number) {
+            MarkdownEditor._editors[id]?.setSelection(start, end);
         }
 
         public static undo(id: string) {
@@ -65,6 +105,10 @@ namespace BitBlazorUI {
 
         public static focus(id: string) {
             MarkdownEditor._editors[id]?.focus();
+        }
+
+        public static blur(id: string) {
+            MarkdownEditor._editors[id]?.blur();
         }
 
         public static clearDraft(id: string) {
@@ -116,6 +160,12 @@ namespace BitBlazorUI {
         private static readonly PAIRS: { [key: string]: string } = {
             '*': '*', '_': '_', '`': '`', '~': '~', '(': ')', '[': ']', '{': '}', '"': '"', '<': '>'
         };
+        // Ctrl/Cmd+Alt+<digit> heading shortcuts, keyed by physical code so they survive
+        // keyboard layouts where the combination does not produce the digit itself.
+        private static readonly HEADING_CODES: { [key: string]: string } = {
+            Digit1: 'Heading1', Digit2: 'Heading2', Digit3: 'Heading3',
+            Digit4: 'Heading4', Digit5: 'Heading5', Digit6: 'Heading6'
+        };
 
         // Maximum number of states kept per direction.
         private static readonly HISTORY_LIMIT = 200;
@@ -136,6 +186,12 @@ namespace BitBlazorUI {
         private _lastSelection: { start: number, end: number };
         private _syncingScroll = false;
         private _uploadSeq = 0;
+        // Set by Escape so the next Tab moves the focus out instead of indenting, which
+        // is the escape hatch that keeps the editor from becoming a keyboard trap.
+        private _tabEscape = false;
+        private _openDropdown: HTMLElement | null = null;
+        private _scrollSyncBound = false;
+        private _toolbarObserver: MutationObserver | null = null;
 
         private textArea: HTMLTextAreaElement;
         private root: HTMLElement | undefined | null;
@@ -149,7 +205,11 @@ namespace BitBlazorUI {
             this.textArea = textArea;
             this.root = root;
             this.dotnetObj = dotnetObj;
-            this.config = config ?? { imageUpload: false, syncScroll: true, autoPair: true, autoSaveKey: null, changeDebounceMs: 0 };
+            this.config = config ?? {
+                imageUpload: false, syncScroll: true, autoPair: true, autoSaveKey: null,
+                changeDebounceMs: 0, maxLength: 0, autoFocus: false, reportSelection: true, tabIndents: true,
+                maxImageSize: 0, imageAccept: null, uploadingText: 'uploading'
+            };
 
             this._baseline = this.snapshot();
             this._lastSelection = { start: textArea.selectionStart || 0, end: textArea.selectionEnd || 0 };
@@ -158,60 +218,58 @@ namespace BitBlazorUI {
             textArea.addEventListener('input', this.inputHandler);
             textArea.addEventListener('blur', this.blurHandler);
             textArea.addEventListener('paste', this.pasteHandler);
-            textArea.addEventListener('drop', this.dropHandler);
-            textArea.addEventListener('dragover', this.dragOverHandler);
             textArea.addEventListener('mouseup', this.saveSelectionHandler);
             textArea.addEventListener('keyup', this.saveSelectionHandler);
             // Capture the selection whenever it changes while the textarea is focused,
             // so commands always know the intended range.
             document.addEventListener('selectionchange', this.selectionChangeHandler);
-            // Stop toolbar buttons from stealing focus from the textarea. A native
-            // mousedown/touchstart preventDefault reliably keeps the caret in place.
+            // Stop toolbar buttons from stealing focus from the textarea. Only mousedown
+            // is cancelled: cancelling touchstart would also suppress the click the browser
+            // synthesizes from it, leaving the toolbar dead on touch devices.
             root?.addEventListener('mousedown', this.toolbarPointerDownHandler);
-            root?.addEventListener('touchstart', this.toolbarPointerDownHandler, { passive: false });
+            // Dropping an image anywhere on the editor (the preview pane included) uploads it,
+            // instead of only over the few pixels the textarea happens to occupy.
+            root?.addEventListener('drop', this.dropHandler);
+            root?.addEventListener('dragover', this.dragOverHandler);
+            root?.addEventListener('dragleave', this.dragLeaveHandler);
+            root?.addEventListener('dragend', this.dragLeaveHandler);
 
-            if (this.config.syncScroll && root) {
-                // The editor pane's textarea fills the pane (height:100%) and scrolls
-                // internally, so the pane wrapper (`.bit-mde-epn`) itself never overflows.
-                // Scroll events don't bubble, so listening on the wrapper never fires and
-                // writing its scrollTop moves nothing. The textarea is the real scroller on
-                // the editor side; the preview pane is the scroller on the preview side.
-                this.editorPane = textArea;
-                this.previewPane = root.querySelector('.bit-mde-ppn');
-                this.editorPane?.addEventListener('scroll', this.editorScrollHandler);
-                this.previewPane?.addEventListener('scroll', this.previewScrollHandler);
-            }
+            this.applyScrollSync();
 
             this.toolbar = root?.querySelector('.bit-mde-tlb') ?? null;
             if (this.toolbar) {
                 this.toolbar.addEventListener('keydown', this.toolbarKeydownHandler);
                 this.toolbar.addEventListener('focusin', this.toolbarFocusInHandler);
-                this.initToolbarRoving();
-                this.initToolbarDropdowns();
+                this.toolbar.addEventListener('click', this.toolbarClickHandler);
+                this.toolbar.addEventListener('pointerover', this.toolbarPointerOverHandler);
+                this.toolbar.addEventListener('pointerleave', this.toolbarPointerLeaveHandler);
+                document.addEventListener('pointerdown', this.documentPointerDownHandler, true);
+                this.refreshToolbarRoving();
+                this.observeToolbar();
             }
         }
 
-        // The toolbar dropdowns open on hover / focus-within purely via CSS. Mirror that
-        // visible state onto the trigger's aria-expanded so assistive tech knows when the
-        // menu is actually open (aria-haspopup alone only says a menu exists).
-        private initToolbarDropdowns() {
-            const dropdowns = this.toolbar?.querySelectorAll<HTMLElement>('.bit-mde-dd') ?? [];
-            dropdowns.forEach(dd => {
-                const trigger = dd.querySelector<HTMLButtonElement>(':scope > .bit-mde-btn');
-                if (!trigger) return;
-                const setExpanded = (open: boolean) => trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
-                dd.addEventListener('pointerenter', () => setExpanded(true));
-                dd.addEventListener('pointerleave', () => setExpanded(dd.contains(document.activeElement)));
-                dd.addEventListener('focusin', () => setExpanded(true));
-                dd.addEventListener('focusout', e => setExpanded(dd.contains(e.relatedTarget as Node) || dd.matches(':hover')));
-            });
+        // Blazor re-renders the toolbar whenever a button's disabled state flips (undo and
+        // redo do it constantly). Watching for that keeps the single tab stop on a button
+        // that can actually take focus, and re-applies it to freshly created buttons.
+        private observeToolbar() {
+            if (!this.toolbar || typeof MutationObserver === 'undefined') return;
+
+            this._toolbarObserver = new MutationObserver(() => this.refreshToolbarRoving());
+            this._toolbarObserver.observe(this.toolbar, { attributes: true, attributeFilter: ['disabled'], subtree: true, childList: true });
         }
 
-        // Implements the WAI-ARIA toolbar pattern: a single tab stop, arrow keys move
-        // focus between buttons. Managed here so Blazor's diffing is untouched.
-        private initToolbarRoving() {
+        // Implements the WAI-ARIA toolbar pattern: a single tab stop, arrow keys move focus
+        // between buttons. Managed here so Blazor's diffing is untouched. The tab stop must
+        // land on an enabled button - the first item of the default toolbar is Undo, which
+        // starts out disabled and would otherwise make the whole toolbar unreachable.
+        private refreshToolbarRoving() {
             const buttons = this.toolbarButtons();
-            buttons.forEach((b, i) => b.setAttribute('tabindex', i === 0 ? '0' : '-1'));
+            if (!buttons.length) return;
+
+            const enabled = buttons.filter(b => !b.disabled);
+            const active = enabled.find(b => b.getAttribute('tabindex') === '0') ?? enabled[0];
+            for (const b of buttons) b.setAttribute('tabindex', b === active ? '0' : '-1');
         }
 
         private toolbarButtons(): HTMLButtonElement[] {
@@ -220,19 +278,145 @@ namespace BitBlazorUI {
             return Array.from(this.toolbar.querySelectorAll<HTMLButtonElement>(':scope > .bit-mde-btn, :scope > .bit-mde-dd > .bit-mde-btn'));
         }
 
+        private menuItems(dd: HTMLElement): HTMLButtonElement[] {
+            return Array.from(dd.querySelectorAll<HTMLButtonElement>('.bit-mde-mi')).filter(b => !b.disabled);
+        }
+
+        // The menus are opened from script rather than from a :hover / :focus-within rule,
+        // so pointer, click and keyboard all go through one place and aria-expanded always
+        // describes what is actually on screen (a :hover rule also sticks on touch).
+        private setDropdownOpen(dd: HTMLElement, open: boolean) {
+            if (open && this._openDropdown && this._openDropdown !== dd) {
+                this.setDropdownOpen(this._openDropdown, false);
+            }
+
+            dd.classList.toggle('bit-mde-ddo', open);
+            dd.querySelector<HTMLButtonElement>(':scope > .bit-mde-btn')?.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+            if (open) {
+                this._openDropdown = dd;
+            } else if (this._openDropdown === dd) {
+                this._openDropdown = null;
+            }
+        }
+
+        private closeDropdown(focusTrigger: boolean) {
+            const dd = this._openDropdown;
+            if (!dd) return;
+
+            const trigger = dd.querySelector<HTMLButtonElement>(':scope > .bit-mde-btn');
+            this.setDropdownOpen(dd, false);
+            if (focusTrigger) trigger?.focus();
+        }
+
         private toolbarFocusInHandler = (e: FocusEvent) => {
             const btn = (e.target as HTMLElement)?.closest('.bit-mde-btn') as HTMLButtonElement | null;
-            if (!btn) return;
+            if (!btn || btn.classList.contains('bit-mde-mi')) return;
+
             for (const b of this.toolbarButtons()) b.setAttribute('tabindex', b === btn ? '0' : '-1');
+
+            // Focus reached a button outside the open menu: the menu has been left behind.
+            if (this._openDropdown && this._openDropdown.contains(btn) === false) {
+                this.setDropdownOpen(this._openDropdown, false);
+            }
+        };
+
+        private toolbarClickHandler = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (!target || !target.closest) return;
+
+            const item = target.closest('.bit-mde-mi');
+            if (item) {
+                // The item ran its command; the menu has served its purpose. An item reached by
+                // keyboard still holds the focus, which the menu is about to take off the screen,
+                // so the focus goes back to the trigger it came from.
+                this.closeDropdown(document.activeElement === item);
+                return;
+            }
+
+            const trigger = target.closest('.bit-mde-btn') as HTMLButtonElement | null;
+            const dd = this.dropdownOf(trigger);
+            if (dd && trigger!.disabled === false) {
+                this.setDropdownOpen(dd, dd.classList.contains('bit-mde-ddo') === false);
+            } else if (this._openDropdown) {
+                this.setDropdownOpen(this._openDropdown, false);
+            }
+        };
+
+        private dropdownOf(trigger: HTMLElement | null): HTMLElement | null {
+            const parent = trigger?.parentElement;
+            return parent?.classList.contains('bit-mde-dd') ? parent : null;
+        }
+
+        private toolbarPointerOverHandler = (e: PointerEvent) => {
+            if (e.pointerType !== 'mouse') return;
+
+            const target = e.target as HTMLElement;
+            const dd = target && target.closest ? target.closest('.bit-mde-dd') as HTMLElement | null : null;
+            const trigger = dd?.querySelector<HTMLButtonElement>(':scope > .bit-mde-btn');
+            if (dd && trigger?.disabled !== true) {
+                this.setDropdownOpen(dd, true);
+            } else if (this._openDropdown && this._openDropdown.contains(document.activeElement) === false) {
+                this.setDropdownOpen(this._openDropdown, false);
+            }
+        };
+
+        private toolbarPointerLeaveHandler = (e: PointerEvent) => {
+            if (e.pointerType !== 'mouse' || !this._openDropdown) return;
+            if (this._openDropdown.contains(document.activeElement)) return;
+
+            this.setDropdownOpen(this._openDropdown, false);
+        };
+
+        private documentPointerDownHandler = (e: Event) => {
+            if (!this._openDropdown) return;
+            if (this._openDropdown.contains(e.target as Node)) return;
+
+            this.setDropdownOpen(this._openDropdown, false);
         };
 
         private toolbarKeydownHandler = (e: KeyboardEvent) => {
-            if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+            const current = document.activeElement as HTMLElement;
+
+            if (e.key === 'Escape') {
+                if (!this._openDropdown) return;
+                e.preventDefault();
+                this.closeDropdown(true);
+                return;
+            }
+
+            if (this._openDropdown && current && current.classList.contains('bit-mde-mi')) {
+                const items = this.menuItems(this._openDropdown);
+                if (!items.length) return;
+
+                if (e.key === 'Tab') { this.closeDropdown(false); return; }
+                if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key) === false) return;
+
+                e.preventDefault();
+                const idx = items.indexOf(current as HTMLButtonElement);
+                let next = idx < 0 ? 0 : idx;
+                if (e.key === 'ArrowDown') next = (next + 1) % items.length;
+                else if (e.key === 'ArrowUp') next = (next - 1 + items.length) % items.length;
+                else if (e.key === 'Home') next = 0;
+                else next = items.length - 1;
+                items[next].focus();
+                return;
+            }
+
+            const dd = this.dropdownOf(current && current.closest ? current.closest('.bit-mde-btn') as HTMLElement | null : null);
+            if (dd && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                this.setDropdownOpen(dd, true);
+                const items = this.menuItems(dd);
+                if (items.length) items[0].focus();
+                return;
+            }
+
+            if (['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key) === false) return;
 
             const buttons = this.toolbarButtons().filter(b => !b.disabled);
             if (!buttons.length) return;
 
-            const current = document.activeElement as HTMLElement;
             let idx = buttons.findIndex(b => b === current || b.contains(current));
             if (idx < 0) idx = 0;
 
@@ -246,6 +430,23 @@ namespace BitBlazorUI {
             buttons[next].focus();
         };
 
+        // Parameters that reach the script through the init config can change while the
+        // component lives, so .NET pushes the whole config again whenever one of them does.
+        public setConfig(config: MarkdownEditorConfig) {
+            const wasSyncing = this.config.syncScroll;
+            this.config = config;
+
+            if (wasSyncing !== config.syncScroll) this.applyScrollSync();
+
+            // A limit lowered below the current length takes effect immediately.
+            const limited = this.limit(this.textArea.value);
+            if (limited !== this.textArea.value) {
+                this.textArea.value = limited;
+                this.flushChange();
+                this._baseline = this.snapshot();
+            }
+        }
+
         public getValue() {
             return this.textArea.value;
         }
@@ -253,6 +454,10 @@ namespace BitBlazorUI {
         // Pushes an externally-changed value into the (uncontrolled) textarea without
         // notifying .NET back, so we don't loop the change into Blazor again.
         public setValue(value: string) {
+            const limited = this.limit(value);
+            const truncated = limited !== value;
+            value = limited;
+
             if (this.textArea.value !== value) {
                 const sel = { s: this.textArea.selectionStart, e: this.textArea.selectionEnd };
                 this.textArea.value = value;
@@ -266,6 +471,10 @@ namespace BitBlazorUI {
             // are closed so the next keystroke starts a fresh undo step.
             this.endTypingGroup();
             this._baseline = this.snapshot();
+
+            // A value longer than MaxLength was cut down here, so .NET has to hear about it
+            // or it would go on holding text the editor does not contain.
+            if (truncated) this.flushChange();
         }
 
         public resetBaseline() {
@@ -274,6 +483,25 @@ namespace BitBlazorUI {
 
         public focus() {
             this.textArea.focus();
+        }
+
+        public blur() {
+            this.textArea.blur();
+        }
+
+        public getSelection(): MdeSelection {
+            const focused = document.activeElement === this.textArea;
+            const start = focused ? this.textArea.selectionStart : this._lastSelection.start;
+            const end = focused ? this.textArea.selectionEnd : this._lastSelection.end;
+            return { start, end, text: this.textArea.value.slice(Math.min(start, end), Math.max(start, end)) };
+        }
+
+        public setSelection(start: number, end: number) {
+            const max = this.textArea.value.length;
+            this.textArea.focus();
+            this.textArea.setSelectionRange(Math.min(Math.max(start, 0), max), Math.min(Math.max(end, 0), max));
+            this.saveSelection();
+            this.scheduleSelectionReport();
         }
 
         public notifyChangeNow() {
@@ -316,6 +544,8 @@ namespace BitBlazorUI {
                     this.applyResult(result);
                     return;
                 }
+            } catch {
+                // The circuit (or the component) is gone; there is nothing to write back.
             } finally {
                 this._commandInFlight = false;
             }
@@ -330,33 +560,89 @@ namespace BitBlazorUI {
         }
 
         // Replaces occurrences of a literal search string; returns the replacement count.
-        public replaceAll(search: string, replacement: string, all: boolean): number {
+        // With `all` off it replaces the first occurrence at or after the caret (wrapping
+        // to the top), so repeated calls walk the document instead of hammering the first
+        // match forever when the replacement itself contains the search term.
+        public replaceAll(search: string, replacement: string, all: boolean, matchCase: boolean): number {
             if (this.textArea.readOnly || !search) return 0;
+
+            const found = this.matches(search, matchCase);
+            if (!found.length) return 0;
+
             const value = this.textArea.value;
-            let count = 0;
-            let result: string;
-            if (all) {
-                result = value.split(search).join(replacement);
-                count = value.split(search).length - 1;
-            } else {
-                const idx = value.indexOf(search);
-                if (idx < 0) return 0;
-                result = value.slice(0, idx) + replacement + value.slice(idx + search.length);
-                count = 1;
+
+            if (!all) {
+                const caret = Math.min(this.textArea.selectionStart, this.textArea.selectionEnd);
+                const at = found.find(m => m >= caret) ?? found[0];
+                this.replaceRange(at, at + search.length, replacement, at + replacement.length, at + replacement.length);
+                return 1;
             }
-            if (count === 0) return 0;
+
+            let result = '';
+            let prev = 0;
+            for (const m of found) {
+                result += value.slice(prev, m) + replacement;
+                prev = m + search.length;
+            }
+            result += value.slice(prev);
 
             this.endTypingGroup();
             this.pushUndo(this.snapshot());
             this._redo = [];
-            this.textArea.value = result;
-            const caret = Math.min(this.textArea.selectionStart, result.length);
+            this.textArea.value = this.limit(result);
+            const caret = Math.min(this.textArea.selectionStart, this.textArea.value.length);
             this.textArea.setSelectionRange(caret, caret);
             this.saveSelection();
             this.flushChange();
             this._baseline = this.snapshot();
             this.notifyHistory();
-            return count;
+            return found.length;
+        }
+
+        // Replaces the match the selection is sitting on (if any) and moves to the next
+        // one, which is what a find & replace panel's "Replace" button is expected to do.
+        public replaceOne(search: string, replacement: string, matchCase: boolean): MdeFindResult {
+            if (this.textArea.readOnly || !search) return { count: 0, index: 0 };
+
+            const start = this.textArea.selectionStart;
+            const end = this.textArea.selectionEnd;
+            const selected = this.textArea.value.slice(start, end);
+            const isMatch = selected.length === search.length &&
+                (matchCase ? selected === search : selected.toLowerCase() === search.toLowerCase());
+
+            if (isMatch) {
+                this.replaceRange(start, end, replacement, start + replacement.length, start + replacement.length);
+            }
+
+            return this.find(search, matchCase, false);
+        }
+
+        // Selects the next (or previous) occurrence, wrapping around the document ends.
+        public find(search: string, matchCase: boolean, backwards: boolean): MdeFindResult {
+            if (!search) return { count: 0, index: 0 };
+
+            const found = this.matches(search, matchCase);
+            if (!found.length) return { count: 0, index: 0 };
+
+            const selStart = this.textArea.selectionStart;
+            const selEnd = this.textArea.selectionEnd;
+
+            let target: number;
+            if (backwards) {
+                const before = found.filter(m => m < selStart);
+                target = before.length ? before[before.length - 1] : found[found.length - 1];
+            } else {
+                // Step past the current match when one is selected, so "next" advances.
+                const from = selEnd > selStart ? selStart + 1 : selStart;
+                target = found.find(m => m >= from) ?? found[0];
+            }
+
+            this.textArea.focus();
+            this.textArea.setSelectionRange(target, target + search.length);
+            this.saveSelection();
+            this.scheduleSelectionReport();
+
+            return { count: found.length, index: found.indexOf(target) + 1 };
         }
 
         public undo() {
@@ -382,27 +668,37 @@ namespace BitBlazorUI {
         public dispose() {
             this.clearTimers();
 
+            this._toolbarObserver?.disconnect();
+            this._toolbarObserver = null;
+
             this.textArea.removeEventListener('keydown', this.keyDownHandler);
             this.textArea.removeEventListener('input', this.inputHandler);
             this.textArea.removeEventListener('blur', this.blurHandler);
             this.textArea.removeEventListener('paste', this.pasteHandler);
-            this.textArea.removeEventListener('drop', this.dropHandler);
-            this.textArea.removeEventListener('dragover', this.dragOverHandler);
             this.textArea.removeEventListener('mouseup', this.saveSelectionHandler);
             this.textArea.removeEventListener('keyup', this.saveSelectionHandler);
             document.removeEventListener('selectionchange', this.selectionChangeHandler);
+            document.removeEventListener('pointerdown', this.documentPointerDownHandler, true);
             this.root?.removeEventListener('mousedown', this.toolbarPointerDownHandler);
-            this.root?.removeEventListener('touchstart', this.toolbarPointerDownHandler);
-            this.editorPane?.removeEventListener('scroll', this.editorScrollHandler);
-            this.previewPane?.removeEventListener('scroll', this.previewScrollHandler);
+            this.root?.removeEventListener('drop', this.dropHandler);
+            this.root?.removeEventListener('dragover', this.dragOverHandler);
+            this.root?.removeEventListener('dragleave', this.dragLeaveHandler);
+            this.root?.removeEventListener('dragend', this.dragLeaveHandler);
+            this.detachScrollSync();
             this.toolbar?.removeEventListener('keydown', this.toolbarKeydownHandler);
             this.toolbar?.removeEventListener('focusin', this.toolbarFocusInHandler);
+            this.toolbar?.removeEventListener('click', this.toolbarClickHandler);
+            this.toolbar?.removeEventListener('pointerover', this.toolbarPointerOverHandler);
+            this.toolbar?.removeEventListener('pointerleave', this.toolbarPointerLeaveHandler);
 
+            this._undo = [];
+            this._redo = [];
             this.dotnetObj = undefined;
             this.root = undefined;
             this.editorPane = null;
             this.previewPane = null;
             this.toolbar = null;
+            this._openDropdown = null;
         }
 
         // ==========================================================
@@ -410,32 +706,66 @@ namespace BitBlazorUI {
         private keyDownHandler = (e: KeyboardEvent) => {
             if (e.isComposing) return;
 
-            const mod = e.ctrlKey || e.metaKey;
+            // Escape arms the Tab escape hatch below, then lets .NET close the find panel
+            // or leave full-screen.
+            if (e.key === 'Escape') {
+                this._tabEscape = true;
+                this.invoke('OnEscape');
+                return;
+            }
 
-            if (mod && !e.altKey) {
-                const key = e.key.toLowerCase();
+            if (e.key !== 'Tab') this._tabEscape = false;
+
+            const mod = e.ctrlKey || e.metaKey;
+            const key = e.key.toLowerCase();
+
+            // Alt + Up/Down moves the current line(s), the way code editors do.
+            if (e.altKey && !mod && !e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                e.preventDefault();
+                this.runCommand(e.key === 'ArrowUp' ? 'MoveLineUp' : 'MoveLineDown');
+                return;
+            }
+
+            if (mod && e.altKey) {
+                const heading = MarkdownEditorCore.HEADING_CODES[e.code];
+                if (heading) { e.preventDefault(); this.runCommand(heading); return; }
+                if (key === 'c') { e.preventDefault(); this.runCommand('CodeBlock'); return; }
+                return;
+            }
+
+            if (mod) {
                 // Undo / redo. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and Ctrl/Cmd+Y.
                 if (key === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); return; }
                 if ((key === 'z' && e.shiftKey) || (key === 'y' && !e.shiftKey)) { e.preventDefault(); this.redo(); return; }
-                if (e.shiftKey && key === 's') { e.preventDefault(); this.runCommand('Strikethrough'); return; }
-                if (e.shiftKey) return;
+
+                if (e.shiftKey) {
+                    if (key === 's') { e.preventDefault(); this.runCommand('Strikethrough'); return; }
+                    if (key === 'd') { e.preventDefault(); this.runCommand('DeleteLine'); return; }
+                    switch (e.code) {
+                        case 'Digit7': e.preventDefault(); this.runCommand('OrderedList'); return;
+                        case 'Digit8': e.preventDefault(); this.runCommand('UnorderedList'); return;
+                        case 'Digit9': e.preventDefault(); this.runCommand('TaskList'); return;
+                        case 'Period': e.preventDefault(); this.runCommand('Quote'); return;
+                    }
+                    return;
+                }
+
                 switch (key) {
                     case 'b': e.preventDefault(); this.runCommand('Bold'); return;
                     case 'i': e.preventDefault(); this.runCommand('Italic'); return;
+                    case 'e': e.preventDefault(); this.runCommand('InlineCode'); return;
+                    case 'd': e.preventDefault(); this.runCommand('DuplicateLine'); return;
                     case 'k': e.preventDefault(); this.runCommand('Link'); return;
-                    case 'f': e.preventDefault(); this.dotnetObj?.invokeMethodAsync('OnFindShortcut'); return;
+                    case 'f': e.preventDefault(); this.invoke('OnShortcut', 'find'); return;
                 }
                 return;
             }
 
-            // Escape leaves full-screen mode (the help panel is handled in .NET).
-            if (e.key === 'Escape') {
-                this.dotnetObj?.invokeMethodAsync('OnEscape');
-                return;
-            }
+            if (e.key === 'F9') { e.preventDefault(); this.invoke('OnShortcut', 'mode'); return; }
+            if (e.key === 'F11') { e.preventDefault(); this.invoke('OnShortcut', 'fullscreen'); return; }
 
             // Wrap the selection when a pairing character is typed over it.
-            if (this.config.autoPair && !mod && !this.textArea.readOnly &&
+            if (this.config.autoPair && !e.altKey && !this.textArea.readOnly &&
                 this.textArea.selectionStart !== this.textArea.selectionEnd &&
                 Object.prototype.hasOwnProperty.call(MarkdownEditorCore.PAIRS, e.key)) {
                 e.preventDefault();
@@ -443,10 +773,13 @@ namespace BitBlazorUI {
                 return;
             }
 
-            // Only hijack Tab while the editor is writable; in read-only mode the
-            // default behavior must remain so keyboard focus is not trapped.
+            // Only hijack Tab while the editor is writable and Tab indenting is on. Read-only
+            // mode, a disabled TabIndents and an Escape pressed right before it all let the
+            // browser move the focus on, so the editor can never trap the keyboard.
             if (e.key === 'Tab') {
-                if (this.textArea.readOnly) return;
+                const escaped = this._tabEscape;
+                this._tabEscape = false;
+                if (this.textArea.readOnly || !this.config.tabIndents || escaped) return;
                 e.preventDefault();
                 this.runCommand(e.shiftKey ? 'Outdent' : 'Indent');
                 return;
@@ -473,6 +806,7 @@ namespace BitBlazorUI {
 
         private blurHandler = () => {
             // Make sure the latest value reaches .NET when focus leaves the editor.
+            this._tabEscape = false;
             this.flushChange();
         };
 
@@ -520,7 +854,17 @@ namespace BitBlazorUI {
                 }
             }
 
-            // 3) A URL pasted over a selection -> turn the selection into a link.
+            // 3) Tab separated rows (spreadsheets that offer nothing but plain text).
+            if (text) {
+                const md = this.tsvToMarkdown(text);
+                if (md) {
+                    e.preventDefault();
+                    this.insertText(md);
+                    return;
+                }
+            }
+
+            // 4) A URL pasted over a selection -> turn the selection into a link.
             if (text && this.isUrl(text) && this.textArea.selectionStart !== this.textArea.selectionEnd) {
                 e.preventDefault();
                 const label = this.textArea.value.slice(this.textArea.selectionStart, this.textArea.selectionEnd);
@@ -535,10 +879,17 @@ namespace BitBlazorUI {
         private dragOverHandler = (e: DragEvent) => {
             if (this.config.imageUpload && e.dataTransfer && Array.from(e.dataTransfer.items || []).some(i => i.kind === 'file')) {
                 e.preventDefault();
+                this.root?.setAttribute('data-bit-mde-drag', '');
             }
         };
 
+        private dragLeaveHandler = () => {
+            this.root?.removeAttribute('data-bit-mde-drag');
+        };
+
         private dropHandler = (e: DragEvent) => {
+            this.root?.removeAttribute('data-bit-mde-drag');
+
             if (this.textArea.readOnly || !this.config.imageUpload || !e.dataTransfer) return;
             const files = this.imageFiles(e.dataTransfer.files, e.dataTransfer.items);
             if (!files.length) return;
@@ -553,6 +904,31 @@ namespace BitBlazorUI {
 
         // ==========================================================
 
+        private applyScrollSync() {
+            this.detachScrollSync();
+
+            if (!this.config.syncScroll || !this.root) return;
+
+            // The editor pane's textarea fills the pane (height:100%) and scrolls
+            // internally, so the pane wrapper (`.bit-mde-epn`) itself never overflows.
+            // Scroll events don't bubble, so listening on the wrapper never fires and
+            // writing its scrollTop moves nothing. The textarea is the real scroller on
+            // the editor side; the preview pane is the scroller on the preview side.
+            this.editorPane = this.textArea;
+            this.previewPane = this.root.querySelector('.bit-mde-ppn');
+            this.editorPane.addEventListener('scroll', this.editorScrollHandler);
+            this.previewPane?.addEventListener('scroll', this.previewScrollHandler);
+            this._scrollSyncBound = true;
+        }
+
+        private detachScrollSync() {
+            if (!this._scrollSyncBound) return;
+
+            this.editorPane?.removeEventListener('scroll', this.editorScrollHandler);
+            this.previewPane?.removeEventListener('scroll', this.previewScrollHandler);
+            this._scrollSyncBound = false;
+        }
+
         private wrapSelection(open: string, close: string) {
             const start = this.textArea.selectionStart;
             const end = this.textArea.selectionEnd;
@@ -565,13 +941,47 @@ namespace BitBlazorUI {
             this.endTypingGroup();
             this.pushUndo({ text: value, selStart: start, selEnd: end });
             this._redo = [];
-            this.textArea.value = value.slice(0, start) + replacement + value.slice(end);
+            this.textArea.value = this.limit(value.slice(0, start) + replacement + value.slice(end));
             this.textArea.focus();
-            this.textArea.setSelectionRange(selStart, selEnd);
+            const max = this.textArea.value.length;
+            this.textArea.setSelectionRange(Math.min(selStart, max), Math.min(selEnd, max));
             this.saveSelection();
             this.flushChange();
             this._baseline = this.snapshot();
             this.notifyHistory();
+        }
+
+        // Truncates to the configured MaxLength. The maxlength attribute already covers
+        // typing and pasting; this covers everything written programmatically.
+        private limit(text: string): string {
+            const max = this.config.maxLength;
+            return max > 0 && text.length > max ? text.slice(0, max) : text;
+        }
+
+        // Indices of every occurrence of `search`. Case-insensitive matching folds both
+        // sides, falling back to an exact match when folding would shift the indices.
+        private matches(search: string, matchCase: boolean): number[] {
+            const value = this.textArea.value;
+            if (!search) return [];
+
+            let haystack = value;
+            let needle = search;
+            if (!matchCase) {
+                const foldedText = value.toLowerCase();
+                const foldedSearch = search.toLowerCase();
+                if (foldedText.length === value.length && foldedSearch.length === search.length) {
+                    haystack = foldedText;
+                    needle = foldedSearch;
+                }
+            }
+
+            const result: number[] = [];
+            let i = haystack.indexOf(needle);
+            while (i >= 0) {
+                result.push(i);
+                i = haystack.indexOf(needle, i + needle.length);
+            }
+            return result;
         }
 
         private imageFiles(fileList: FileList | null, items: DataTransferItemList | null): File[] {
@@ -589,12 +999,38 @@ namespace BitBlazorUI {
                     }
                 }
             }
-            return files;
+            return files.filter(f => this.acceptImage(f));
+        }
+
+        // Refuses a file before its bytes are ever read, so an oversized image never becomes a
+        // base64 payload on its way to .NET. The rejection is reported so the app can say why.
+        private acceptImage(file: File): boolean {
+            const accept = this.config.imageAccept;
+            if (accept) {
+                const allowed = accept.split(',').map(a => a.trim().toLowerCase()).filter(a => a.length > 0);
+                const type = (file.type || '').toLowerCase();
+                const name = (file.name || '').toLowerCase();
+                const ok = allowed.some(a =>
+                    a === type ||
+                    (a.endsWith('/*') && type.startsWith(a.slice(0, -1))) ||
+                    (a.startsWith('.') && name.endsWith(a)));
+                if (!ok) {
+                    this.invoke('OnImageRejected', file.name || 'image', file.type, file.size, 'Type');
+                    return false;
+                }
+            }
+
+            if (this.config.maxImageSize > 0 && file.size > this.config.maxImageSize) {
+                this.invoke('OnImageRejected', file.name || 'image', file.type, file.size, 'Size');
+                return false;
+            }
+
+            return true;
         }
 
         private async uploadFiles(files: File[]) {
             for (const file of files) {
-                const token = `…uploading-${++this._uploadSeq}…`;
+                const token = `…${this.config.uploadingText}-${++this._uploadSeq}…`;
                 const name = file.name || 'image';
                 // Insert a placeholder immediately so the user sees progress.
                 this.insertText(`![${token}]()`);
@@ -617,8 +1053,8 @@ namespace BitBlazorUI {
             // Close any active typing session so undo captures the post-replacement
             // state instead of the stale placeholder baseline.
             this.endTypingGroup();
-            this.textArea.value = value.slice(0, idx) + replacement + value.slice(idx + token.length);
-            const caret = idx + replacement.length;
+            this.textArea.value = this.limit(value.slice(0, idx) + replacement + value.slice(idx + token.length));
+            const caret = Math.min(idx + replacement.length, this.textArea.value.length);
             if (document.activeElement === this.textArea) this.textArea.setSelectionRange(caret, caret);
             this.saveSelection();
             this.flushChange();
@@ -647,6 +1083,20 @@ namespace BitBlazorUI {
             return /^(https?:\/\/|mailto:)\S+$/i.test(t) && !/\s/.test(t);
         }
 
+        private gridToMarkdown(grid: string[][]): string | null {
+            const cols = Math.max(...grid.map(r => r.length));
+            if (cols === 0) return null;
+
+            const pad = (r: string[]) => { while (r.length < cols) r.push(''); return r; };
+            const header = pad(grid[0]);
+            const body = grid.slice(1).map(pad);
+
+            let md = '\n| ' + header.join(' | ') + ' |\n';
+            md += '| ' + header.map(() => '---').join(' | ') + ' |\n';
+            for (const r of body) md += '| ' + r.join(' | ') + ' |\n';
+            return md;
+        }
+
         private htmlTableToMarkdown(html: string): string | null {
             try {
                 const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -659,20 +1109,23 @@ namespace BitBlazorUI {
                 const grid = rows.map(r =>
                     Array.from(r.querySelectorAll('th,td')).map(c => (c.textContent || '').replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|')));
 
-                const cols = Math.max(...grid.map(r => r.length));
-                if (cols === 0) return null;
-
-                const pad = (r: string[]) => { while (r.length < cols) r.push(''); return r; };
-                const header = pad(grid[0]);
-                const body = grid.slice(1).map(pad);
-
-                let md = '\n| ' + header.join(' | ') + ' |\n';
-                md += '| ' + header.map(() => '---').join(' | ') + ' |\n';
-                for (const r of body) md += '| ' + r.join(' | ') + ' |\n';
-                return md;
+                return this.gridToMarkdown(grid);
             } catch {
                 return null;
             }
+        }
+
+        // Spreadsheet cells arrive as tab separated rows. Only convert when there is more
+        // than one row and every one of them is tabbed, so ordinary text is never mangled.
+        private tsvToMarkdown(text: string): string | null {
+            const lines = text.replace(/\r\n?/g, '\n').replace(/\n+$/, '').split('\n');
+            if (lines.length < 2) return null;
+            if (lines.every(l => l.indexOf('\t') >= 0) === false) return null;
+
+            const grid = lines.map(l => l.split('\t').map(c => c.trim().replace(/\|/g, '\\|')));
+            if (Math.max(...grid.map(r => r.length)) < 2) return null;
+
+            return this.gridToMarkdown(grid);
         }
 
         private syncScroll(from: HTMLElement | null, to: HTMLElement | null) {
@@ -744,15 +1197,34 @@ namespace BitBlazorUI {
             try { window.localStorage.setItem(this.config.autoSaveKey, this.textArea.value); } catch { }
         }
 
+        // Fire-and-forget interop: a call landing after the circuit (or the component) is
+        // gone rejects, and an unhandled rejection surfaces as a console error.
+        private invoke(method: string, ...args: unknown[]) {
+            this.dotnetObj?.invokeMethodAsync(method, ...args).catch(() => { });
+        }
+
         private notifyChange() {
-            this.dotnetObj?.invokeMethodAsync('OnChange', this.textArea.value);
+            this.invoke('OnChange', this.textArea.value);
         }
 
         private scheduleSelectionReport() {
+            if (!this.config.reportSelection) return;
+
             if (this._selectionTimer) clearTimeout(this._selectionTimer);
             this._selectionTimer = setTimeout(() => {
                 this._selectionTimer = null;
-                this.dotnetObj?.invokeMethodAsync('OnSelectionChanged', this.textArea.selectionStart, this.textArea.selectionEnd, this.textArea.value);
+
+                // Active formats are decided line by line, so only the lines the selection
+                // touches travel to .NET: sending a whole document on every caret move
+                // would be a lot of interop traffic for a document of any size.
+                const value = this.textArea.value;
+                const start = this.textArea.selectionStart;
+                const end = this.textArea.selectionEnd;
+                const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+                let lineEnd = value.indexOf('\n', end);
+                if (lineEnd < 0) lineEnd = value.length;
+
+                this.invoke('OnSelectionChanged', start - lineStart, end - lineStart, value.slice(lineStart, lineEnd));
             }, MarkdownEditorCore.SELECTION_DEBOUNCE_MS);
         }
 
@@ -763,7 +1235,7 @@ namespace BitBlazorUI {
 
             this._canUndo = canUndo;
             this._canRedo = canRedo;
-            this.dotnetObj?.invokeMethodAsync('OnHistoryChanged', canUndo, canRedo);
+            this.invoke('OnHistoryChanged', canUndo, canRedo);
         }
 
         private pushUndo(snap: MdeSnapshot) {
@@ -830,10 +1302,11 @@ namespace BitBlazorUI {
         }
 
         private applyResult(result: MdeEditResult) {
-            this.textArea.value = result.text;
+            this.textArea.value = this.limit(result.text);
             this.flushChange();
             this.textArea.focus();
-            this.textArea.setSelectionRange(result.selectionStart, result.selectionEnd);
+            const max = this.textArea.value.length;
+            this.textArea.setSelectionRange(Math.min(result.selectionStart, max), Math.min(result.selectionEnd, max));
             this.saveSelection();
             this.scheduleSelectionReport();
             this._baseline = this.snapshot();

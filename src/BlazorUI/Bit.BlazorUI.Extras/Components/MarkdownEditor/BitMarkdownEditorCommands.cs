@@ -20,8 +20,22 @@ public static partial class BitMarkdownEditorCommands
     /// <param name="end">Selection end index.</param>
     /// <param name="indentUnit">String inserted for one indent level (e.g. two spaces or a tab).</param>
     public static BitMarkdownEditorEditResult Apply(BitMarkdownEditorCommand command, string text, int start, int end, string indentUnit = "  ")
+        => Apply(command, text, start, end, new BitMarkdownEditorCommandOptions { IndentUnit = indentUnit });
+
+    /// <summary>
+    /// Applies <paramref name="command"/> to <paramref name="text"/> for the given selection.
+    /// </summary>
+    /// <param name="command">The command to run.</param>
+    /// <param name="text">Full editor text (LF line endings).</param>
+    /// <param name="start">Selection start index.</param>
+    /// <param name="end">Selection end index.</param>
+    /// <param name="options">Everything the commands need beside the text and the selection.</param>
+    public static BitMarkdownEditorEditResult Apply(BitMarkdownEditorCommand command, string text, int start, int end, BitMarkdownEditorCommandOptions options)
     {
         text ??= string.Empty;
+        options ??= BitMarkdownEditorCommandOptions.Default;
+        // An empty indent unit would make Indent a no-op that still reported a change.
+        var indentUnit = string.IsNullOrEmpty(options.IndentUnit) ? "  " : options.IndentUnit;
         start = Math.Clamp(start, 0, text.Length);
         end = Math.Clamp(end, 0, text.Length);
         if (end < start)
@@ -51,11 +65,15 @@ public static partial class BitMarkdownEditorCommands
             BitMarkdownEditorCommand.CodeBlock => CodeBlock(text, start, end),
             BitMarkdownEditorCommand.Link => LinkOrImage(text, start, end, isImage: false),
             BitMarkdownEditorCommand.Image => LinkOrImage(text, start, end, isImage: true),
-            BitMarkdownEditorCommand.Table => Table(text, start, end),
+            BitMarkdownEditorCommand.Table => Table(text, start, end, options.TableColumns, options.TableRows),
             BitMarkdownEditorCommand.HorizontalRule => HorizontalRule(text, start, end),
             BitMarkdownEditorCommand.Indent => Indent(text, start, end, indentUnit),
             BitMarkdownEditorCommand.Outdent => Outdent(text, start, end, indentUnit),
             BitMarkdownEditorCommand.NewLine => NewLine(text, start, end),
+            BitMarkdownEditorCommand.MoveLineUp => MoveLines(text, start, end, up: true),
+            BitMarkdownEditorCommand.MoveLineDown => MoveLines(text, start, end, up: false),
+            BitMarkdownEditorCommand.DuplicateLine => DuplicateLines(text, start, end),
+            BitMarkdownEditorCommand.DeleteLine => DeleteLines(text, start, end),
             _ => BitMarkdownEditorEditResult.NotHandled(text, start, end)
         };
     }
@@ -267,6 +285,9 @@ public static partial class BitMarkdownEditorCommands
     // Removes paired inline emphasis/code markers, keeping the inner text intact.
     private static string StripInlineMarkers(string line)
     {
+        // Links and images collapse to their label first, so the emphasis inside the label
+        // is stripped by the passes below instead of being left behind with the url.
+        line = LinkMarker().Replace(line, "$1");
         line = BoldMarker().Replace(line, "$1");
         line = StrikeMarker().Replace(line, "$1");
         line = ItalicMarker().Replace(line, "$1");
@@ -311,6 +332,16 @@ public static partial class BitMarkdownEditorCommands
             return new BitMarkdownEditorEditResult(true, text[..start] + insert + text[end..], selStart, selStart + label.Length);
         }
 
+        // A selected URL is the target, not the label: keep it and put the caret on the
+        // label placeholder instead, which is what the user still has to type.
+        if (UrlLike().IsMatch(selected))
+        {
+            string label = isImage ? "alt" : "text";
+            string fromUrl = $"{bang}[{label}]({selected})";
+            int labelStart = start + bang.Length + 1;
+            return new BitMarkdownEditorEditResult(true, text[..start] + fromUrl + text[end..], labelStart, labelStart + label.Length);
+        }
+
         // Use the selection as the label and drop the caret on the url placeholder.
         string built = $"{bang}[{selected}](url)";
         int urlStart = start + bang.Length + 1 + selected.Length + 2; // after "](".
@@ -319,16 +350,37 @@ public static partial class BitMarkdownEditorCommands
 
     // ---- table --------------------------------------------------------------
 
-    private static BitMarkdownEditorEditResult Table(string text, int start, int end)
+    private static BitMarkdownEditorEditResult Table(string text, int start, int end, int columns, int rows)
     {
+        columns = Math.Max(1, columns);
+        rows = Math.Max(0, rows);
+
         string prefix = LeadingBlankLinePrefix(text, start);
-        const string template =
-            "| Column 1 | Column 2 |\n" +
-            "| -------- | -------- |\n" +
-            "| Cell     | Cell     |\n";
-        string insert = prefix + template;
+
+        // Each column is as wide as its header, so the source stays aligned in the textarea.
+        string[] headers = [.. Enumerable.Range(1, columns).Select(i => $"Column {i}")];
+
+        var sb = new StringBuilder(prefix);
+        AppendRow(sb, headers, headers);
+        AppendRow(sb, [.. headers.Select(h => new string('-', h.Length))], headers);
+        for (int r = 0; r < rows; r++)
+        {
+            AppendRow(sb, [.. headers.Select(_ => "Cell")], headers);
+        }
+
+        string insert = sb.ToString();
         int sel = start + prefix.Length + 2; // start of "Column 1"
-        return new BitMarkdownEditorEditResult(true, text[..start] + insert + text[end..], sel, sel + "Column 1".Length);
+        return new BitMarkdownEditorEditResult(true, text[..start] + insert + text[end..], sel, sel + headers[0].Length);
+    }
+
+    private static void AppendRow(StringBuilder sb, string[] cells, string[] headers)
+    {
+        sb.Append('|');
+        for (int i = 0; i < cells.Length; i++)
+        {
+            sb.Append(' ').Append(cells[i].PadRight(headers[i].Length)).Append(" |");
+        }
+        sb.Append('\n');
     }
 
     // ---- horizontal rule ----------------------------------------------------
@@ -474,21 +526,103 @@ public static partial class BitMarkdownEditorCommands
     private static BitMarkdownEditorEditResult ClearLine(string text, int lineStart, int lineEnd) =>
         new(true, text[..lineStart] + text[lineEnd..], lineStart, lineStart);
 
+    // ---- whole-line operations (move / duplicate / delete) ------------------
+
+    /// <summary>
+    /// Swaps the block of lines touched by the selection with the line above or below it,
+    /// carrying the selection along so the caret keeps pointing at the same characters.
+    /// </summary>
+    private static BitMarkdownEditorEditResult MoveLines(string text, int start, int end, bool up)
+    {
+        (int blockStart, int blockEnd) = BlockBounds(text, start, end);
+        string block = text[blockStart..blockEnd];
+
+        if (up)
+        {
+            // Already the first line of the document: nothing above to swap with.
+            if (blockStart == 0) return BitMarkdownEditorEditResult.NotHandled(text, start, end);
+
+            int prevStart = LineStartIndex(text, blockStart - 1);
+            string previous = text[prevStart..(blockStart - 1)];
+            string moved = text[..prevStart] + block + "\n" + previous + text[blockEnd..];
+            int delta = prevStart - blockStart;
+            return new(true, moved, start + delta, end + delta);
+        }
+
+        // Already the last line of the document: nothing below to swap with.
+        if (blockEnd >= text.Length) return BitMarkdownEditorEditResult.NotHandled(text, start, end);
+
+        int nextStart = blockEnd + 1;
+        int nextEnd = LineEndIndex(text, nextStart);
+        string next = text[nextStart..nextEnd];
+        string result = text[..blockStart] + next + "\n" + block + text[nextEnd..];
+        int offset = next.Length + 1;
+        return new(true, result, start + offset, end + offset);
+    }
+
+    /// <summary>
+    /// Copies the block of lines touched by the selection right below itself and moves the
+    /// selection onto the copy, so repeated invocations keep duplicating the newest copy.
+    /// </summary>
+    private static BitMarkdownEditorEditResult DuplicateLines(string text, int start, int end)
+    {
+        (int blockStart, int blockEnd) = BlockBounds(text, start, end);
+        string block = text[blockStart..blockEnd];
+
+        string duplicated = text[..blockEnd] + "\n" + block + text[blockEnd..];
+        int offset = block.Length + 1;
+        return new(true, duplicated, start + offset, end + offset);
+    }
+
+    /// <summary>
+    /// Removes the block of lines touched by the selection together with one of the newlines
+    /// around it, so no blank line is left behind.
+    /// </summary>
+    private static BitMarkdownEditorEditResult DeleteLines(string text, int start, int end)
+    {
+        (int blockStart, int blockEnd) = BlockBounds(text, start, end);
+
+        int removeStart = blockStart;
+        int removeEnd = blockEnd;
+        if (removeEnd < text.Length)
+        {
+            // Eat the trailing newline so the following line moves up.
+            removeEnd++;
+        }
+        else if (removeStart > 0)
+        {
+            // Last line of the document: eat the preceding newline instead.
+            removeStart--;
+        }
+
+        string deleted = text[..removeStart] + text[removeEnd..];
+        int caret = Math.Min(removeStart, deleted.Length);
+        return new(true, deleted, caret, caret);
+    }
+
     // ---- shared helpers -----------------------------------------------------
 
     /// <summary>
-    /// Runs <paramref name="transform"/> over every full line touched by the selection.
+    /// The start and end index of the run of whole lines the selection touches. A selection
+    /// ending exactly on a line break does not pull the next (unselected) line into the block.
     /// </summary>
-    private static BitMarkdownEditorEditResult TransformBlock(string text, int start, int end, Action<List<string>> transform)
+    private static (int Start, int End) BlockBounds(string text, int start, int end)
     {
-        int blockStart = LineStartIndex(text, start);
         int effEnd = end;
         if (effEnd > start && effEnd > 0 && text[effEnd - 1] == '\n')
         {
             effEnd--;
         }
 
-        int blockEnd = LineEndIndex(text, effEnd);
+        return (LineStartIndex(text, start), LineEndIndex(text, effEnd));
+    }
+
+    /// <summary>
+    /// Runs <paramref name="transform"/> over every full line touched by the selection.
+    /// </summary>
+    private static BitMarkdownEditorEditResult TransformBlock(string text, int start, int end, Action<List<string>> transform)
+    {
+        (int blockStart, int blockEnd) = BlockBounds(text, start, end);
 
         string block = text[blockStart..blockEnd];
         List<string> lines = [.. block.Split('\n')];
@@ -609,6 +743,11 @@ public static partial class BitMarkdownEditorCommands
         if (IsWrapped(text, start, end, "**")) set.Add(BitMarkdownEditorCommand.Bold);
         if (IsWrapped(text, start, end, "~~")) set.Add(BitMarkdownEditorCommand.Strikethrough);
         if (IsWrapped(text, start, end, "`")) set.Add(BitMarkdownEditorCommand.InlineCode);
+        if (IsWrapped(text, start, end, "^")) set.Add(BitMarkdownEditorCommand.Superscript);
+        if (IsWrapped(text, start, end, "~") && IsWrapped(text, start, end, "~~") is false)
+        {
+            set.Add(BitMarkdownEditorCommand.Subscript);
+        }
         if (start != end && text[start..end] is { Length: >= 2 } sel &&
             sel.StartsWith('*') && sel.EndsWith('*') && IsItalicDelimiter(sel, 0) && IsItalicDelimiter(sel, sel.Length - 1))
         {
@@ -674,6 +813,14 @@ public static partial class BitMarkdownEditorCommands
 
     [GeneratedRegex(@"`(.+?)`")]
     private static partial Regex InlineCodeMarker();
+
+    // An inline link or image: group 1 is the label kept by Clear formatting.
+    [GeneratedRegex(@"!?\[([^\]]*)\]\([^)\s]*(?:\s+""[^""]*"")?\)")]
+    private static partial Regex LinkMarker();
+
+    // A selection that is nothing but an absolute url (or a mail/anchor/relative target).
+    [GeneratedRegex(@"^(?:https?://|mailto:|tel:|ftp://|/|\./|\.\./|#)\S+$", RegexOptions.IgnoreCase)]
+    private static partial Regex UrlLike();
 
     [GeneratedRegex(@"^> ")]
     private static partial Regex QuotePrefix();

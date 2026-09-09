@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/markdowneditor"
             Title="MarkdownEditor"
-            Description="BitMarkdownEditor is a native Blazor markdown editor with a customizable toolbar, keyboard shortcuts, smart list handling, undo/redo history and a live GitHub-flavored preview." />
+            Description="BitMarkdownEditor is a dependency-free Blazor markdown editor with a data-driven toolbar, keyboard shortcuts, smart list handling, undo/redo history, find & replace, image upload and a live GitHub-flavored preview." />
 
 <DemoPage Name="MarkdownEditor"
-          Description="BitMarkdownEditor is a native Blazor markdown editor with a customizable toolbar, keyboard shortcuts, smart list handling, undo/redo history and a live GitHub-flavored preview powered by the BitMarkdownViewer."
+          Description="BitMarkdownEditor is a dependency-free Blazor markdown editor. Its data-driven toolbar, keyboard shortcuts, smart list continuation, undo/redo history, find & replace panel, autosaved drafts and image upload sit on top of a plain textarea, and the live GitHub-flavored preview is rendered by the BitMarkdownViewer."
           SecondaryNames="@(["MdEditor"])"
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
@@ -29,12 +29,14 @@
     <IntroductionTemplate>
         <BitText>
             The BitMarkdownEditor is a full-featured, dependency-free markdown editor.
-            All markdown transformations run in C#, the preview is rendered natively by the BitMarkdownViewer,
-            and a small JS-interop script handles the textarea selection control, key interception
-            and the undo/redo history (with typing coalescing).
+            Every markdown transformation runs in C# (so it is unit-testable and shared by the toolbar,
+            the shortcuts and the public API), the preview is rendered natively by the BitMarkdownViewer,
+            and a small JS-interop script owns the textarea selection, the key interception and the
+            undo/redo history (with typing coalescing).
             <br />
-            Start typing below and see the result in real-time, or explore the toolbar, the keyboard shortcuts (check the ? button)
-            and the smart list continuation (start a line with <BitTag Text="- " Color="BitColor.SecondaryBackground" /> or
+            Start typing below and see the result in real-time, or explore the toolbar, the keyboard shortcuts (check the ? button),
+            the find &amp; replace panel (Ctrl+F) and the smart list continuation (start a line with
+            <BitTag Text="- " Color="BitColor.SecondaryBackground" /> or
             <BitTag Text="1. " Color="BitColor.SecondaryBackground" /> and hit Enter):
         </BitText>
         <br />
@@ -44,7 +46,8 @@
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>
                 The simplest usage of the BitMarkdownEditor without any specific configuration renders
-                the full toolbar, a split edit/preview view and the status bar.
+                the full toolbar, a split edit/preview view and the status bar. Everything else on this
+                page is a refinement of this default.
             </div>
             <br />
             <BitMarkdownEditor />
@@ -52,8 +55,9 @@
 
         <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                You can use the two-way bound parameter named Value (like any normal input component)
-                to have access to the editor content or to set its value from the outside.
+                The two-way bound Value parameter exposes the markdown source, like any other input component.
+                Writing to it from the outside pushes the new text into the editor without losing the caret,
+                so a value edited elsewhere and the editor stay in sync in both directions.
             </div>
             <br />
             <BitMarkdownEditor @bind-Value="bindingValue" Mode="BitMarkdownEditorMode.Edit" />
@@ -63,8 +67,9 @@
 
         <DemoExample Title="OnChange" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                By utilizing the OnChange event and the DefaultValue parameter you can have
-                another way to initialize and access the content of the editor.
+                DefaultValue seeds the editor once at initialization and then leaves it alone, and the
+                OnChange callback reports every subsequent edit. Together they are the uncontrolled
+                alternative to binding Value, useful when the content only has to travel one way.
             </div>
             <br />
             <BitMarkdownEditor DefaultValue="# This is the default value"
@@ -78,7 +83,8 @@
         <DemoExample Title="Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 The Mode parameter (two-way bindable) controls which panes are visible:
-                Edit only, Split (side-by-side) or Preview only. The eye button of the toolbar cycles through these modes too.
+                Edit only, Split (side-by-side) or Preview only. The eye button of the toolbar and the F9
+                key cycle through the three modes, and in Split mode the two panes scroll in sync.
             </div>
             <br />
             <BitChoiceGroup Horizontal @bind-Value="@mode" TItem="BitChoiceGroupOption<BitMarkdownEditorMode>" TValue="BitMarkdownEditorMode">
@@ -92,11 +98,15 @@
 
         <DemoExample Title="Toolbar" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
-                The toolbar is fully data-driven. Supply your own list of toolbar items to reorder, remove or add buttons,
-                including fully custom items with their own callback, or hide the toolbar altogether.
+                The toolbar is fully data-driven: supply your own list of items to reorder, remove or add buttons,
+                group them under a dropdown, or hide the toolbar altogether. A Custom item runs its own callback
+                and receives the editor instance, so it can read or rewrite the content; set AlwaysEnabled on it to
+                keep a non-editing action (export, copy, save) clickable while the editor is read-only.
+                It follows the WAI-ARIA toolbar pattern - one tab stop, arrow keys between buttons, and
+                Enter/Space/Arrow Down to open a dropdown.
             </div>
             <br />
-            <div>Custom toolbar (with a custom "clear" button at the end):</div>
+            <div>Custom toolbar (with a heading dropdown and a custom "clear" button at the end):</div>
             <br />
             <BitMarkdownEditor @bind-Value="customToolbarValue" Toolbar="customToolbar" />
             <br /><br />
@@ -107,8 +117,11 @@
 
         <DemoExample Title="Commands" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                Using the public API of the BitMarkdownEditor (Run, Undo, Redo, GetValue, Focus) you can drive
-                the editor from the outside, for example to build a completely custom toolbar.
+                The public API drives the editor from the outside, which is all a completely custom toolbar needs:
+                Run applies any BitMarkdownEditorCommand to the current selection, Insert drops raw markdown in
+                (replacing the selection) as one undo step, GetSelection / SetSelection read and move the caret,
+                Undo / Redo walk the history that CanUndo / CanRedo describe, and GetValue reads the live text
+                straight out of the textarea.
             </div>
             <br />
             <div class="commands-bar">
@@ -122,21 +135,28 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.TaskList)">Tasks</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Table)">Table</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.CodeBlock)">Code</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.DuplicateLine)">Duplicate line</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.MoveLineUp)">Move line up</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="InsertSignature">Insert</BitButton>
                 <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanUndo ?? false" OnClick="Undo">Undo</BitButton>
                 <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanRedo ?? false" OnClick="Redo">Redo</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="GetValue">GetValue</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="ShowSelection">GetSelection</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="SelectFirstLine">SetSelection</BitButton>
             </div>
             <br />
             <BitMarkdownEditor @ref="commandsRef" ShowToolbar="false" OnChange="_ => InvokeAsync(StateHasChanged)" />
             <br />
-            <div>GetValue result:</div>
+            <div>Result:</div>
             <pre class="code-box">@getValueResult</pre>
         </DemoExample>
 
         <DemoExample Title="Preview" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
-                The preview pane is rendered natively in C# by the BitMarkdownViewer using the GitHub flavored pipeline by default.
-                You can customize it with the PreviewPipeline parameter or replace it entirely using the PreviewTemplate.
+                The preview pane is rendered natively in C# by the BitMarkdownViewer, using the GitHub flavored
+                pipeline by default. PreviewPipeline swaps in another Markdig pipeline, PreviewTemplate replaces
+                the pane entirely with your own markup, and DebounceTime decides how long typing has to settle
+                before the preview re-renders.
             </div>
             <br />
             <div>Basic pipeline (no tables, task-lists, strikethrough, or autolinks):</div>
@@ -154,32 +174,129 @@
 
         <DemoExample Title="FullScreen & Height" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
-                The Height parameter accepts any CSS length and the FullScreen parameter (two-way bindable,
-                also available as a toolbar button) expands the editor to fill the entire screen.
+                Height accepts any CSS length, Resizable adds a drag handle to the bottom edge so the reader can
+                make room for themselves, and FullScreen (two-way bindable, also a toolbar button and the F11 key)
+                expands the editor over the whole viewport - holding the page still underneath it for as long as
+                it is open, so nothing has moved once it closes. Escape leaves full-screen again.
             </div>
             <br />
             <BitToggleButton @bind-IsChecked="fullScreen" OnText="Exit full-screen" OffText="Go full-screen" />
             <br /><br />
-            <BitMarkdownEditor @bind-FullScreen="fullScreen" Height="10rem" />
+            <BitMarkdownEditor @bind-FullScreen="fullScreen" Height="10rem" Resizable />
         </DemoExample>
 
         <DemoExample Title="Advanced" RazorCode="@example9RazorCode" Id="example9">
             <div>
-                Fine-tune the editing experience: a custom Placeholder, disabled SpellCheck, a custom preview render DebounceTime,
-                a custom IndentUnit (used by Tab / Shift+Tab and the Indent/Outdent commands) or the ReadOnly mode.
+                Fine-tune the editing experience: a custom Placeholder, disabled SpellCheck, a custom IndentUnit
+                (used by Tab / Shift+Tab and the Indent/Outdent commands), AutoPair to wrap the selection when a
+                pairing character is typed over it, SyncScroll for the split panes, ChangeDebounceTime to throttle
+                how often the typed value reaches .NET (worth raising on Blazor Server), and TabIndents to let Tab
+                move the focus on instead of indenting. Whatever TabIndents is set to, pressing Escape and then Tab
+                always moves the focus out, so the editor is never a keyboard trap.
             </div>
             <br />
             <BitMarkdownEditor Placeholder="Write your story here..."
                                SpellCheck="false"
-                               DebounceTime="500"
+                               AutoPair="false"
+                               SyncScroll="false"
+                               ChangeDebounceTime="300"
+                               TabIndents="false"
                                IndentUnit="@("    ")" />
+            <br /><br />
+            <div>A wider table template (TableColumns / TableRows drive the toolbar's table button):</div>
+            <br />
+            <BitMarkdownEditor TableColumns="4" TableRows="3" Mode="BitMarkdownEditorMode.Edit" />
             <br /><br />
             <div>ReadOnly:</div>
             <br />
             <BitMarkdownEditor ReadOnly DefaultValue="@readOnlyDefaultValue" />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+        <DemoExample Title="Find & replace" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                The magnifier button and Ctrl+F open the find &amp; replace panel: Enter walks to the next match,
+                Shift+Enter to the previous one, the Aa button toggles case sensitivity and the counter reports
+                which match of how many is selected. The same behaviour is available programmatically through
+                FindNext, FindPrevious and Replace, so a custom search box can drive it - Replace returns how many
+                occurrences it changed and, with all off, walks one match at a time from the caret.
+            </div>
+            <br />
+            <div class="commands-bar">
+                <BitTextField @bind-Value="findText" Placeholder="Find" Immediate />
+                <BitTextField @bind-Value="replaceText" Placeholder="Replace with" Immediate />
+                <BitButton Variant="BitVariant.Outline" OnClick="FindNext">Find next</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="FindPrevious">Find previous</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="ReplaceAll">Replace all</BitButton>
+            </div>
+            <br />
+            <div>@findStatus</div>
+            <br />
+            <BitMarkdownEditor @ref="findRef" DefaultValue="@findDefaultValue" Mode="BitMarkdownEditorMode.Edit" />
+        </DemoExample>
+
+        <DemoExample Title="Image upload" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                Setting OnImageUpload turns on clipboard-paste and drag-and-drop of images anywhere on the
+                editor: a placeholder is inserted at once, the handler receives the file name, the MIME type and
+                the raw bytes, and the URL it returns replaces the placeholder (returning null cancels the
+                insertion instead). The handler below just inlines the bytes as a data URL; a real one would post
+                them to your storage and hand back the resulting address. AcceptedImageTypes and MaxImageSize turn
+                a file away before a single byte is read - so an oversized image never becomes an interop payload -
+                and report it through OnImageRejected. Pasting an HTML table or tab-separated spreadsheet cells
+                converts them into a markdown table, and pasting a URL over a selection turns the selection into
+                a link.
+            </div>
+            <br />
+            <div>@imageStatus</div>
+            <br />
+            <BitMarkdownEditor OnImageUpload="UploadImage"
+                               OnImageRejected="ImageRejected"
+                               AcceptedImageTypes="image/png,image/jpeg,image/gif"
+                               MaxImageSize="1048576"
+                               DefaultValue="@imageDefaultValue" />
+        </DemoExample>
+
+        <DemoExample Title="Auto save" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                AutoSaveId names a localStorage key the editor writes the content to as the user types, and reads
+                back the next time it initializes when no Value or DefaultValue is supplied - so a reloaded page,
+                or a form abandoned by accident, does not lose the draft. Type something below, reload the page and
+                it comes back. Call ClearDraft once the content is stored for real, otherwise the stale draft would
+                keep resurrecting.
+            </div>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ClearDraft">Clear the draft</BitButton>
+            <br /><br />
+            <BitMarkdownEditor @ref="autoSaveRef" AutoSaveId="bit-mde-demo-draft" Placeholder="This draft survives a page reload..." />
+        </DemoExample>
+
+        <DemoExample Title="Status bar" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                The status bar reports the current mode, the word count and the character count (counted in
+                grapheme clusters, so an emoji counts as one). ShowReadingTime adds an estimate based on
+                WordsPerMinute, and MaxLength both caps the content and turns the counter into a
+                "used / allowed" readout that highlights once the limit is reached.
+            </div>
+            <br />
+            <BitMarkdownEditor ShowReadingTime
+                               WordsPerMinute="120"
+                               MaxLength="280"
+                               Mode="BitMarkdownEditorMode.Edit"
+                               DefaultValue="@statusDefaultValue" />
+        </DemoExample>
+
+        <DemoExample Title="Localization" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                Every string the editor renders itself - the toolbar tooltips and aria-labels, the status bar
+                formats, the find panel, the shortcut help and the empty-preview text - comes from the Texts
+                parameter. Override only the properties you care about; the rest keep their English defaults.
+                The counts are passed as format templates ({0}, {1}) so the translation controls the word order.
+            </div>
+            <br />
+            <BitMarkdownEditor Texts="frenchTexts" DefaultValue="@localizationDefaultValue" ShowReadingTime />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
             <div>
                 Use Style and Class parameters to customize the root element, or the Styles and Classes parameters
                 to customize every part of the editor.
@@ -195,7 +312,7 @@
                                Styles="@(new() { StatusBar = "color:tomato;font-weight:bold" })" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+        <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
             <div>Use BitMarkdownEditor in right-to-left (RTL).</div>
             <br />
             <BitMarkdownEditor Dir="BitDir.Rtl" DefaultValue="@rtlDefaultValue" />

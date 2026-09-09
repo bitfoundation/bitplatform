@@ -117,17 +117,41 @@ public enum BitMarkdownEditorCommand
     NewLine,
 
     /// <summary>
-    /// Toggles superscript on the current selection.
+    /// Toggles superscript (<c>^text^</c>) on the current selection. The syntax is an extension:
+    /// none of the <see cref="BitMarkdownPipelines"/> renders it, so the built-in preview shows
+    /// it verbatim unless the markdown is rendered elsewhere by a parser that supports it.
     /// </summary>
     Superscript,
 
     /// <summary>
-    /// Toggles subscript on the current selection.
+    /// Toggles subscript (<c>~text~</c>) on the current selection. The syntax is an extension:
+    /// none of the <see cref="BitMarkdownPipelines"/> renders it, so the built-in preview shows
+    /// it verbatim unless the markdown is rendered elsewhere by a parser that supports it.
     /// </summary>
     Subscript,
 
     /// <summary>
     /// Removes inline and block markdown formatting from the selected lines.
     /// </summary>
-    ClearFormatting
+    ClearFormatting,
+
+    /// <summary>
+    /// Swaps the selected lines with the line above them.
+    /// </summary>
+    MoveLineUp,
+
+    /// <summary>
+    /// Swaps the selected lines with the line below them.
+    /// </summary>
+    MoveLineDown,
+
+    /// <summary>
+    /// Duplicates the selected lines right below themselves.
+    /// </summary>
+    DuplicateLine,
+
+    /// <summary>
+    /// Deletes the selected lines entirely.
+    /// </summary>
+    DeleteLine
 }

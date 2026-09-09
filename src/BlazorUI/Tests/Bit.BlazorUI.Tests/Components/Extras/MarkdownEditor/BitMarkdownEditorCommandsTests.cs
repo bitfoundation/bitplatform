@@ -522,4 +522,227 @@ public class BitMarkdownEditorCommandsTests
 
         Assert.AreEqual(0, formats.Count);
     }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldWorkOnASingleLineSlice()
+    {
+        // The interop script sends only the lines the selection touches, with the offsets
+        // rebased on that slice, so the detection has to hold for a bare line too.
+        var formats = BitMarkdownEditorCommands.DetectActiveFormats("> **quoted**", 5, 5);
+
+        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Quote));
+        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Bold));
+    }
+
+    [TestMethod]
+    public void MoveLineUpShouldSwapWithThePreviousLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineUp, "a\nb\nc", 2, 2);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("b\na\nc", result.Text);
+        Assert.AreEqual(0, result.SelectionStart);
+        Assert.AreEqual(0, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void MoveLineUpShouldDoNothingOnTheFirstLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineUp, "a\nb", 0, 0);
+
+        Assert.IsFalse(result.Handled);
+        Assert.AreEqual("a\nb", result.Text);
+    }
+
+    [TestMethod]
+    public void MoveLineDownShouldSwapWithTheNextLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineDown, "a\nb\nc", 0, 0);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("b\na\nc", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void MoveLineDownShouldDoNothingOnTheLastLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineDown, "a\nb", 2, 2);
+
+        Assert.IsFalse(result.Handled);
+        Assert.AreEqual("a\nb", result.Text);
+    }
+
+    [TestMethod]
+    public void MoveLineShouldCarryAWholeSelectedBlock()
+    {
+        // "b\nc" selected, moved under "d".
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineDown, "a\nb\nc\nd", 2, 5);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\nd\nb\nc", result.Text);
+        Assert.AreEqual(4, result.SelectionStart);
+        Assert.AreEqual(7, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void DuplicateLineShouldCopyTheLineBelowItself()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DuplicateLine, "a\nb", 0, 0);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\na\nb", result.Text);
+        // The selection lands on the copy so a second run duplicates the newest one.
+        Assert.AreEqual(2, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void DuplicateLineShouldCopyEveryTouchedLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DuplicateLine, "a\nb\nc", 0, 3);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\nb\na\nb\nc", result.Text);
+    }
+
+    [TestMethod]
+    public void DeleteLineShouldRemoveTheLineAndItsNewline()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DeleteLine, "a\nb\nc", 2, 2);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\nc", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+        Assert.AreEqual(2, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void DeleteLineShouldEatThePrecedingNewlineOnTheLastLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DeleteLine, "a\nb", 2, 2);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a", result.Text);
+        Assert.AreEqual(1, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void DeleteLineShouldEmptyASingleLineDocument()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DeleteLine, "only", 2, 2);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("", result.Text);
+        Assert.AreEqual(0, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void LinkShouldUseASelectedUrlAsTheTarget()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Link, "https://bitplatform.dev", 0, 23);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("[text](https://bitplatform.dev)", result.Text);
+        // The caret lands on the label, which is the part still to be typed.
+        Assert.AreEqual(1, result.SelectionStart);
+        Assert.AreEqual(5, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void ImageShouldUseASelectedUrlAsTheSource()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Image, "https://a.dev/b.png", 0, 19);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("![alt](https://a.dev/b.png)", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+        Assert.AreEqual(5, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void LinkShouldStillUsePlainSelectionsAsTheLabel()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Link, "bit platform", 0, 12);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("[bit platform](url)", result.Text);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldUnwrapLinksAndImages()
+    {
+        const string text = "see [the **docs**](https://bit.dev) and ![logo](a.png)";
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, text, 0, text.Length);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("see the docs and logo", result.Text);
+    }
+
+    [TestMethod]
+    public void ApplyShouldNotHandleAnUndefinedCommand()
+    {
+        var result = BitMarkdownEditorCommands.Apply((BitMarkdownEditorCommand)999, "text", 0, 4);
+
+        Assert.IsFalse(result.Handled);
+        Assert.AreEqual("text", result.Text);
+    }
+
+    [TestMethod]
+    public void TableShouldFollowTheConfiguredSize()
+    {
+        var options = new BitMarkdownEditorCommandOptions { TableColumns = 3, TableRows = 2 };
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Table, "", 0, 0, options);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual(
+            "| Column 1 | Column 2 | Column 3 |\n" +
+            "| -------- | -------- | -------- |\n" +
+            "| Cell     | Cell     | Cell     |\n" +
+            "| Cell     | Cell     | Cell     |\n", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+        Assert.AreEqual(10, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void TableShouldClampAnImpossibleSize()
+    {
+        var options = new BitMarkdownEditorCommandOptions { TableColumns = 0, TableRows = -3 };
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Table, "", 0, 0, options);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("| Column 1 |\n| -------- |\n", result.Text);
+    }
+
+    [TestMethod]
+    public void ApplyShouldFallBackToTheDefaultIndentUnit()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "text", 0, 0, string.Empty);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("  text", result.Text);
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldTellSubscriptFromStrikethrough()
+    {
+        var strike = BitMarkdownEditorCommands.DetectActiveFormats("~~gone~~", 4, 4);
+        Assert.IsTrue(strike.Contains(BitMarkdownEditorCommand.Strikethrough));
+        Assert.IsFalse(strike.Contains(BitMarkdownEditorCommand.Subscript));
+
+        var sub = BitMarkdownEditorCommands.DetectActiveFormats("H~2~O", 3, 3);
+        Assert.IsTrue(sub.Contains(BitMarkdownEditorCommand.Subscript));
+        Assert.IsFalse(sub.Contains(BitMarkdownEditorCommand.Strikethrough));
+
+        var sup = BitMarkdownEditorCommands.DetectActiveFormats("x^2^", 3, 3);
+        Assert.IsTrue(sup.Contains(BitMarkdownEditorCommand.Superscript));
+    }
+
+    [TestMethod]
+    public void ApplyShouldTreatNullTextAsEmpty()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Bold, null!, 0, 0);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("**bold text**", result.Text);
+    }
 }
