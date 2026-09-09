@@ -285,9 +285,9 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 var url = fields[7];
                 var hasCt = fields[8] == "1";
                 var ctName = fields[9];
-                var returnsAsyncStream = fields[13] == "1";
                 var bodyParamName = string.IsNullOrEmpty(fields[11]) ? null : fields[11];
                 var bodyParamTypeNoNull = string.IsNullOrEmpty(fields[12]) ? null : fields[12];
+                var returnsAsyncStream = fields[13] == "1";
 
                 // Decode parameters
                 var parameters = new List<(string Name, string TypeDisplay, string TypeDisplayNoNull, bool IsString)>();
