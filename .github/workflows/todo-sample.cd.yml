@@ -102,7 +102,7 @@ jobs:
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Publish Server API
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}"
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
     # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
     - name: Strip server-owned files from bundle
@@ -177,7 +177,7 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish Server Web
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}"
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
     # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
     - name: Strip server-owned files from bundle
