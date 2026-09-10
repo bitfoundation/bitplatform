@@ -9,7 +9,7 @@ public partial class BitMessageBoxDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves the focus onto the default action button once the message box is rendered. The BitMessageBoxService defaults it to true for the message boxes it shows.",
+            Description = "Moves the focus onto the default action button once the message box is rendered, and marks it with the autofocus attribute the surrounding layer reads, so a message box kept mounted between showings lands the focus on it on every opening. The BitMessageBoxService defaults it to true for the message boxes it shows.",
         },
         new()
         {
@@ -451,7 +451,7 @@ public partial class BitMessageBoxDemo
                     Name = "Result",
                     Type = "BitMessageBoxResult",
                     DefaultValue = "BitMessageBoxResult.None",
-                    Description = "The answer that is about to be handed over: the result of the button that was pressed, or None for the close button.",
+                    Description = "The answer that is about to be handed over: the result of the button that was pressed, or None for the close button. Read-only - Cancel is the guard's say over it.",
                     LinkType = LinkType.Link,
                     Href = "#result-enum"
                 },

@@ -1054,4 +1054,66 @@ public class BitMessageBoxTests : BunitTestContext
             Assert.AreEqual(BitMessageBoxResult.Ok, results[0]);
         });
     }
+
+    [TestMethod]
+    [DataRow(BitMessageBoxButtons.Ok, null, 0)]
+    [DataRow(BitMessageBoxButtons.YesNoCancel, null, 0)]
+    [DataRow(BitMessageBoxButtons.YesNoCancel, BitMessageBoxResult.Cancel, 2)]
+    public void BitMessageBoxShouldMarkTheDefaultButtonWithAutoFocus(BitMessageBoxButtons buttons, BitMessageBoxResult? defaultButton, int index)
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.Buttons, buttons);
+            parameters.Add(p => p.DefaultButton, defaultButton);
+        });
+
+        // The mark is in the markup rather than only in the OnAfterRender call, so the layer around a
+        // message box that is kept mounted between showings finds it again on every opening.
+        var focused = component.FindAll(".bit-msb-ftr .bit-btn[autofocus]");
+
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(component.FindAll(".bit-msb-ftr .bit-btn")[index], focused[0]);
+        Assert.AreEqual(0, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldMarkNoButtonWithAutoFocusWhenItIsOff()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-btn[autofocus]").Count);
+    }
+
+    [TestMethod]
+    [DataRow(BitMessageBoxButtons.None, false)]
+    [DataRow(BitMessageBoxButtons.Ok, true)]
+    public void BitMessageBoxShouldMarkTheCloseButtonWithAutoFocusWhenThereIsNoActionButtonToLandOn(BitMessageBoxButtons buttons, bool hasFooterButton)
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.Buttons, buttons);
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        Assert.AreEqual(hasFooterButton ? 0 : 1, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
+        Assert.AreEqual(hasFooterButton ? 1 : 0, component.FindAll(".bit-msb-ftr .bit-btn[autofocus]").Count);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldMarkTheCloseButtonWithAutoFocusWhenTheFooterIsTheConsumersOwn()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.FooterTemplate, "<button class=\"custom-footer\"></button>");
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
+    }
 }

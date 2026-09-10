@@ -20,7 +20,13 @@ public class BitMessageBoxBeforeResultArgs
     /// The answer that is about to be handed over: the result of the button that was pressed, or
     /// <see cref="BitMessageBoxResult.None"/> for the close button.
     /// </summary>
-    public BitMessageBoxResult Result { get; set; }
+    /// <remarks>
+    /// Read-only: this is what was pressed, and the guard's say over it is <see cref="Cancel"/> - to let
+    /// the answer through or not. A message box that answers something other than the button that was
+    /// pressed is one whose buttons say the wrong thing, and <see cref="BitMessageBox.AnswerAsync"/> is
+    /// how an answer no button stands for is given.
+    /// </remarks>
+    public BitMessageBoxResult Result { get; init; }
 
     /// <summary>
     /// Set to <c>true</c> to keep the message box open and hand over no answer.

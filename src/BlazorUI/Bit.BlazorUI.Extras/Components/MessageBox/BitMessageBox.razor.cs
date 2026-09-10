@@ -31,7 +31,10 @@ public partial class BitMessageBox : BitComponentBase
     /// for the message boxes it shows, which is the case the accessibility pattern asks for:
     /// a dialog that interrupts has to put the focus inside itself.
     /// <br/>
-    /// <see cref="DefaultButton"/> picks which button it lands on.
+    /// <see cref="DefaultButton"/> picks which button it lands on. The button is also marked with the
+    /// <c>autofocus</c> attribute the surrounding layer reads, so a message box kept mounted between
+    /// showings - a <see cref="BitModal"/> given <see cref="BitModal.KeepMounted"/> - lands the focus on
+    /// it on every opening and not only on the first render.
     /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
 
@@ -353,6 +356,17 @@ public partial class BitMessageBox : BitComponentBase
                                                   (DefaultButton.Value is BitMessageBoxResult.None || Array.IndexOf(_Actions, DefaultButton.Value) >= 0)
                                                     ? DefaultButton.Value
                                                     : _Actions.Length > 0 ? _PrimaryAction : BitMessageBoxResult.None;
+
+    // What FocusAsync does imperatively, written into the markup: the layer the message box is the content
+    // of - a modal, a panel, a callout - focuses the element marked with autofocus every time it opens,
+    // which is what a message box that is kept mounted between showings needs. OnAfterRenderAsync's call
+    // is what covers the message box rendered on its own, where nothing else is looking for the mark.
+    private bool _AutoFocusAction(BitMessageBoxResult action) => AutoFocus && action == _DefaultAction;
+
+    // The fallback FocusAsync falls back to: a set with no action buttons in it, or a footer of the
+    // consumer's own, leaves the close button as the only button the message box knows about.
+    private bool _AutoFocusCloseButton => AutoFocus &&
+                                          (FooterTemplate is not null || _DefaultAction is BitMessageBoxResult.None);
 
     private BitMessageBoxResult[] _Actions
     {
