@@ -27,8 +27,8 @@ public partial class BitMessageBox : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Off by default, since a message box written inline in a page is part of that page and has no
-    /// business taking the focus off it. It is on for every message box the
-    /// <see cref="BitMessageBoxService"/> shows, which is the case the accessibility pattern asks for:
+    /// business taking the focus off it. The <see cref="BitMessageBoxService"/> defaults it to true
+    /// for the message boxes it shows, which is the case the accessibility pattern asks for:
     /// a dialog that interrupts has to put the focus inside itself.
     /// <br/>
     /// <see cref="DefaultButton"/> picks which button it lands on.

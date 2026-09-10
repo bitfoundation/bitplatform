@@ -9,7 +9,7 @@ public partial class BitMessageBoxDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves the focus onto the default action button once the message box is rendered. It is on for every message box the BitMessageBoxService shows.",
+            Description = "Moves the focus onto the default action button once the message box is rendered. The BitMessageBoxService defaults it to true for the message boxes it shows.",
         },
         new()
         {
