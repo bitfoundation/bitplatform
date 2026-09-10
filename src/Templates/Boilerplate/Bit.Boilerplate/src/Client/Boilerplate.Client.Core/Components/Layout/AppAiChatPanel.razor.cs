@@ -166,6 +166,10 @@ public partial class AppAiChatPanel
         // without going through the send button that the loading state is holding shut.
         if (isSending) return;
 
+        // The restore appends what it read to chatMessages, so a message sent while it is still running ends up above
+        // the conversation it belongs to - and, having already been stored, can come back a second time beneath it.
+        if (isRestoringHistory) return;
+
         // Rendered before anything is awaited, so the button is already saying so by the time the upload starts.
         isSending = true;
         StateHasChanged();
@@ -273,6 +277,10 @@ public partial class AppAiChatPanel
 
     private async Task ClearChat()
     {
+        // Clearing mid restore would empty the store and then let the restore put what it had already read back on
+        // screen, under the name it was just cleared from (See SyncHistoryOwner, which sits out a restore too).
+        if (isRestoringHistory) return;
+
         // The answer read aloud was following is one of the messages being thrown away.
         await StopReadAloud();
 
@@ -385,10 +393,13 @@ public partial class AppAiChatPanel
         {
             // A stream that ends with no error at all is how the server reports one (AppHub.StartChat yields nothing),
             // so the panel is released here rather than waiting for a marker that is not coming.
+            //
+            // Through StopChannel rather than by hand: a turn that never closed leaves its bubble queued and the
+            // reader mid document, and SendMessage starts the next channel without draining either - so the next
+            // answer would stream into this one's bubble, onto the end of an abandoned document.
             if (ReferenceEquals(channel, ownChannel) && CurrentCancellationToken.IsCancellationRequested is false)
             {
-                channel = null;
-                isLoading = false;
+                StopChannel();
                 StateHasChanged();
             }
         }

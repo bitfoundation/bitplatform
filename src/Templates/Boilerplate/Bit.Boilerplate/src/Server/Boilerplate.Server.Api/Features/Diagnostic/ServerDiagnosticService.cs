@@ -92,7 +92,13 @@ public partial class ServerDiagnosticService
     }
 
     /// <summary>
-    /// A header's value, except for the two that carry a credential: the report gets pasted into issues and, over
+    /// The headers that carry a credential of their own rather than in an <c>Authorization</c> scheme. Matched on the
+    /// whole name, so an ordinary <c>X-Request-Id</c> still reads as itself.
+    /// </summary>
+    private static readonly string[] credentialHeaders = ["Proxy-Authorization", "X-Api-Key", "Api-Key", "X-Auth-Token", "X-Access-Token", "X-Csrf-Token", "X-Xsrf-Token"];
+
+    /// <summary>
+    /// A header's value, except for those that carry a credential: the report gets pasted into issues and, over
     /// /dev-mcp, handed to a model, and nothing it is used for needs the secret itself.
     /// </summary>
     private static string ReadHeaderValue(string name, string value)
@@ -121,6 +127,11 @@ public partial class ServerDiagnosticService
 
             return $"{string.Join(", ", names)} (values redacted)";
         }
+
+        // Same reasoning as Authorization, minus the scheme there is nothing to keep: that one of these arrived is
+        // the diagnosis, its value is the credential.
+        if (credentialHeaders.Contains(name, StringComparer.OrdinalIgnoreCase))
+            return "(present, redacted)";
 
         return value;
     }

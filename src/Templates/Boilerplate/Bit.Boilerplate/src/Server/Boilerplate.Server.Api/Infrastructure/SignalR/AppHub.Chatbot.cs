@@ -60,15 +60,26 @@ public partial class AppHub
             // While processing a user message, a new message may arrive.
             // To handle this, we cancel the ongoing message processing using `messageSpecificCancellationTokenSrc` and start processing the new message.
             CancellationTokenSource? messageSpecificCancellationTokenSrc = null;
+            var processing = Task.CompletedTask;
             try
             {
                 await foreach (var incomingMessage in incomingMessages)
                 {
                     if (messageSpecificCancellationTokenSrc is not null)
+                    {
                         await messageSpecificCancellationTokenSrc.TryCancel();
 
+                        // Waited for, not just cancelled: a cancelled turn still writes its closing fragment, and on
+                        // purpose does so with CancellationToken.None (See AppChatbot.CloseTurn). Starting the next
+                        // turn before that lands puts two writers on a channel declared SingleWriter, and the client
+                        // gets the new turn's opening spliced into the old turn's document.
+                        await processing;
+
+                        messageSpecificCancellationTokenSrc.Dispose();
+                    }
+
                     messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                    _ = chatbotService.ProcessNewMessage(
+                    processing = chatbotService.ProcessNewMessage(
                         incomingMessage,
                         Context.GetHttpContext()!.User,
                         messageSpecificCancellationTokenSrc.Token);

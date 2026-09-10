@@ -37,7 +37,11 @@ public static class PublicIpProvider
         {
             return Normalize(await httpClient.GetStringAsync(url, cancellationToken));
         }
-        catch (Exception exp) when (exp is HttpRequestException or TaskCanceledException or FormatException)
+        // Not when the caller cancelled: that has to surface as cancellation rather than as the assertion above,
+        // which would report an unreachable ipify. HttpClient's own timeout arrives as the same type, and is one of
+        // the unreachable cases.
+        catch (Exception exp) when (exp is HttpRequestException or TaskCanceledException or FormatException
+                                    && cancellationToken.IsCancellationRequested is false)
         {
             // One family being unreachable is ordinary; both are what the assertion above catches.
             return null;

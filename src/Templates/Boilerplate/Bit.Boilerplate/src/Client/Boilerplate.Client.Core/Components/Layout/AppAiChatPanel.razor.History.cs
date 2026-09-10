@@ -186,7 +186,9 @@ public partial class AppAiChatPanel
         }
         catch (Exception exp)
         {
-            historyDb = null;
+            // Closed rather than just dropped: an operation can fail with the database open, and a connection left
+            // open blocks deleteDatabase - which is how AppDiagnosticModal deletes this one.
+            CloseHistory();
 
             logger.LogWarning(exp, "Failed to {Operation} the conversation stored on this device.", what);
         }

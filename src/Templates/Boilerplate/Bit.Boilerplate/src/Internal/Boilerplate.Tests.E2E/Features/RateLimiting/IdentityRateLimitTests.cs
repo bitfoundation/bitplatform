@@ -12,7 +12,10 @@ namespace Boilerplate.Tests.E2E.Features.RateLimiting;
 [TestClass, TestCategory(TestCategories.Api), Retry(2), DoNotParallelize]
 public class IdentityRateLimitTests
 {
-    private const int burstSize = 45; // The policy permits 30 a minute; the rest are what proves it stops serving.
+    // The policy permits 30 a minute. A burst that straddles a window boundary gets a fresh 30, so anything up to 60
+    // can be served without the limiter being wrong - 61 is the first count that cannot be, wherever the boundary
+    // falls. Sent at once rather than one after another, so the burst is over long before a boundary can matter.
+    private const int burstSize = 61;
 
     /// <summary>The policy's own window, and so the longest a partition can stay exhausted without a restart.</summary>
     private static readonly TimeSpan window = TimeSpan.FromMinutes(1);
@@ -28,35 +31,36 @@ public class IdentityRateLimitTests
 
         var identityController = apiClient.Services.GetRequiredService<IIdentityController>();
 
-        var served = 0;
-
         try
         {
-            for (var i = 0; i < burstSize; i++)
+            var outcomes = await Task.WhenAll(Enumerable.Range(0, burstSize).Select(async _ =>
             {
                 try
                 {
                     // An address no account owns: the endpoint answers UserNotFound, writes nothing and mails nobody.
                     await identityController.SendConfirmEmailToken(new() { Email = $"{Guid.NewGuid()}@e2e.invalid" }, TestContext.CancellationToken);
-                    served++;
+                    return true;
                 }
                 catch (BadRequestException)
                 {
-                    served++;
+                    return true;
                 }
                 catch (TooManyRequestsException)
                 {
                     // Only the middleware can answer 429 here - the endpoint's own resend delay needs an existing user.
-                    Assert.IsGreaterThan(0, served,
-                        $"{api} refused the very first request, so this run proved no throttling of its own: it inherited a window someone else had already exhausted.");
-
-                    await AssertHealthIsNotThrottled(api, apiClient);
-
-                    return;
+                    return false;
                 }
-            }
+            }));
 
-            Assert.Fail($"A burst of {burstSize} requests against {api}'s rate limited identity endpoint was never throttled ({served} served).");
+            var served = outcomes.Count(served => served);
+
+            Assert.IsGreaterThan(0, served,
+                $"{api} refused all {burstSize} requests, so this run proved no throttling of its own: it inherited a window someone else had already exhausted.");
+
+            Assert.IsLessThan(burstSize, served,
+                $"A burst of {burstSize} concurrent requests against {api}'s rate limited identity endpoint was never throttled ({served} served).");
+
+            await AssertHealthIsNotThrottled(api, apiClient);
         }
         finally
         {

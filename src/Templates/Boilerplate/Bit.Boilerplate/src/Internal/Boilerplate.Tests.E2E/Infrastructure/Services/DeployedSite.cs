@@ -34,17 +34,24 @@ public static class DeployedSite
             return $"could not write {appOffline}: {exception.Message}";
         }
 
+        bool stopped;
         try
         {
             // The old process has to be gone before the file is removed, or the next request reaches it and nothing
             // was reset.
-            await PollUntil(healthAddress, status => status is HttpStatusCode.ServiceUnavailable, stopDeadline, cancellationToken);
+            stopped = await PollUntil(healthAddress, status => status is HttpStatusCode.ServiceUnavailable, stopDeadline, cancellationToken);
         }
         finally
         {
             // Whatever the poll above decided, the site must never be left answering 503.
             File.Delete(appOffline);
         }
+
+        // Never observing the 503 means the file did not take - a wrong site path, or an IIS that ignored it. The old
+        // process is then still answering, so the poll below succeeds at once and would report a restart that never
+        // happened, leaving the caller to trust an in-memory state that was never dropped.
+        if (stopped is false)
+            return $"{healthAddress} never answered {(int)HttpStatusCode.ServiceUnavailable} within {stopDeadline}, so {appOfflineFileName} did not stop the app and nothing was reset.";
 
         return await PollUntil(healthAddress, status => status is HttpStatusCode.OK, startDeadline, cancellationToken)
             ? null

@@ -102,7 +102,9 @@ public abstract class AiChatbotTestsBase : AppTestBase
             price it gives for that car - appears in this catalogue:
             {string.Join(Environment.NewLine, benzCars.Select(car => $"- {car.Name}, {car.Price:N0}"))}
             A car named in the answer that is not in the catalogue, or one given a price the catalogue does not hold
-            for it, fails. Cars in the catalogue that the answer leaves out are fine, and so is any advice around them.
+            for it, fails. So does one recommended above the {ProductQuestionBudget:N0} budget the question set -
+            naming a car to rule it out as too expensive is fine, recommending it is not. Cars in the catalogue that
+            the answer leaves out are fine, and so is any advice around them.
             """,
             answer, TestContext.CancellationToken);
     }

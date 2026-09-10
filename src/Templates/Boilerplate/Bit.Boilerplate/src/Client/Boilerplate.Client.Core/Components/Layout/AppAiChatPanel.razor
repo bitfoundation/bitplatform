@@ -37,6 +37,7 @@
                            IconName="@BitIconName.Delete"
                            OnClick="WrapHandled(ClearChat)"
                            Color="BitColor.SecondaryBackground"
+                           IsEnabled="@(isRestoringHistory is false)"
                            Title="@Localizer[nameof(AppStrings.Clear)]" />
 
                 <BitButton IconOnly
@@ -293,7 +294,7 @@
                                        OnClick="WrapHandled(SendMessage)"
                                        FloatPosition="BitPosition.BottomEnd"
                                        Title="@Localizer[nameof(AppStrings.Send)]"
-                                       IsEnabled=@(isSending || string.IsNullOrWhiteSpace(userInput) is false || pendingAttachment is not null)
+                                       IsEnabled=@(isRestoringHistory is false && (isSending || string.IsNullOrWhiteSpace(userInput) is false || pendingAttachment is not null))
                                        IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send)" />
                         </BitStack>
                     </LabelTemplate>

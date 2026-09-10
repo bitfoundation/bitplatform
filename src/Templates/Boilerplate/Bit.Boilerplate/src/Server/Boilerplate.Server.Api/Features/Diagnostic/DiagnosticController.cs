@@ -67,13 +67,17 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
             if (connectionOwnerUserSessionId is not null && connectionOwnerUserSessionId != callerUserSessionId)
                 throw new ResourceNotFoundException().WithData("Reason", "The SignalR connection belongs to another user session.");
 
-            var success = await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", new Dictionary<string, string?> { { "pageUrl", PageUrls.Terms }, { "action", "testAction" } }, cancellationToken);
-            if (success is false) // Client would return false if it's unable to show the message with custom action.
-            {
-                _ = await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Simple message. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", null, cancellationToken);
-            }
+            var withAction = await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", new Dictionary<string, string?> { { "pageUrl", PageUrls.Terms }, { "action", "testAction" } }, cancellationToken);
 
-            sections.Add($"SignalR test message delivered: {success.ToString().ToLowerInvariant()}");
+            // Which of the two got through, not just whether anything did: a client that shows a plain message but no
+            // custom action is a different diagnosis from one the message never reached.
+            var delivered = withAction
+                ? "with custom action"
+                : await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Simple message. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", null, cancellationToken)
+                    ? "as a simple message, the custom action was refused"
+                    : "no";
+
+            sections.Add($"SignalR test message delivered: {delivered}.");
         }
         //#endif
 

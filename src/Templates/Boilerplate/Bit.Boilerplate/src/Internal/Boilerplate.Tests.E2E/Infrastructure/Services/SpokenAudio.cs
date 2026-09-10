@@ -67,16 +67,16 @@ public static class SpokenAudio
         var scriptFile = Path.ChangeExtension(wavFile, ".ps1");
         await File.WriteAllTextAsync(scriptFile, SynthesizeScript, cancellationToken);
 
+        using var process = Process.Start(new ProcessStartInfo("powershell")
+        {
+            ArgumentList = { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", scriptFile, wavFile, text },
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            CreateNoWindow = true
+        }) ?? throw new InvalidOperationException("powershell did not start.");
+
         try
         {
-            using var process = Process.Start(new ProcessStartInfo("powershell")
-            {
-                ArgumentList = { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", scriptFile, wavFile, text },
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            }) ?? throw new InvalidOperationException("powershell did not start.");
-
             var error = await process.StandardError.ReadToEndAsync(cancellationToken);
             await process.WaitForExitAsync(cancellationToken);
 
@@ -85,6 +85,23 @@ public static class SpokenAudio
                 throw new InvalidOperationException(
                     $"Windows' own speech engine did not record '{text}' to a wav file (exit {process.ExitCode}). {error}");
             }
+        }
+        catch
+        {
+            // Disposing the Process only releases the handle, so an engine still speaking would go on writing the wav
+            // after the caller has moved on and the gate is back open. The next attempt's cache check asks only for a
+            // non-empty file, so whatever it managed to write would be served as the recording.
+            if (process.HasExited is false)
+            {
+                process.Kill(entireProcessTree: true);
+
+                // Not on the caller's token: it is the one that was just cancelled, and this has to finish anyway.
+                await process.WaitForExitAsync(CancellationToken.None);
+            }
+
+            File.Delete(wavFile);
+
+            throw;
         }
         finally
         {
