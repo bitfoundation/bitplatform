@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
@@ -559,7 +559,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // consumer react to a number that was never there.
         if (Number.HasNoValue()) return;
 
-        await AssignNumber(null);
+        // AssignNumber returns false for a one-way controlled Number (set without NumberChanged).
+        // In that case the field cannot drop what it shows, so reporting a clear that never happened
+        // would have a consumer react to a number that is still there (see HandleOnCountrySelect).
+        if (await AssignNumber(null) is false) return;
+
         await UpdateValueFromParts();
         await OnClear.InvokeAsync();
     }
@@ -653,18 +657,84 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         return builder.ToString();
     }
 
+    // Reads the digits of the local number back out of a text the pattern has already been laid over.
+    // Walking the text and the pattern side by side is what tells a character the pattern inserted
+    // apart from one the user typed, which the digits alone cannot say for a pattern holding a literal
+    // digit ("0## ### ####"): laying such a pattern over its own result would otherwise keep the '0'
+    // the last formatting inserted and grow the number by a digit per keystroke - until the field
+    // reads "00...", the international call prefix of most of the world, which moves the country with it.
+    private static string StripMask(string text, string mask)
+    {
+        var builder = new StringBuilder(text.Length);
+        var maskIndex = 0;
+        var textIndex = 0;
+
+        while (textIndex < text.Length)
+        {
+            var c = text[textIndex];
+
+            // Past the end of the pattern there is nothing left but the digits that did not fit in it.
+            if (maskIndex >= mask.Length)
+            {
+                if (char.IsAsciiDigit(c))
+                {
+                    builder.Append(c);
+                }
+
+                textIndex++;
+            }
+            else if (mask[maskIndex] == '#')
+            {
+                // A separator where the pattern wants a digit is one the text carries of its own, so it
+                // is dropped without spending the placeholder it was found on.
+                if (char.IsAsciiDigit(c))
+                {
+                    builder.Append(c);
+                    maskIndex++;
+                }
+
+                textIndex++;
+            }
+            else if (c == mask[maskIndex])
+            {
+                // A literal of the pattern, in the very place the pattern puts it: it belongs to the
+                // layout rather than to the number.
+                textIndex++;
+                maskIndex++;
+            }
+            else if (char.IsAsciiDigit(c))
+            {
+                // The text has not been laid out this far yet, so the literal it is missing is stepped
+                // over and the same character is measured against what the pattern has after it.
+                maskIndex++;
+            }
+            else
+            {
+                textIndex++;
+            }
+        }
+
+        return builder.ToString();
+    }
+
     // The local number as the input shows it: formatted by the current pattern when there is one,
-    // and left exactly as it is when there is not. A number that still carries an international
-    // prefix belongs to no country of the list, so no national pattern can describe it.
+    // and left exactly as it is when there is not. Laying a pattern over a number it has already been
+    // laid over is what typing into the field does on every keystroke, so the pattern is peeled off
+    // again before it is applied.
     private string? FormatNumber(string? number)
     {
         var mask = CurrentMask;
 
         if (mask.HasNoValue() || string.IsNullOrEmpty(number)) return number;
 
-        var digits = KeepDigits(number, keepLeadingPlus: true);
+        // A number that still carries an international prefix belongs to no country of the list, so no
+        // national pattern can describe it - unless the pattern writes that prefix itself, where the
+        // '+' is a literal of the pattern rather than one the number came with.
+        if (mask!.Contains('+') is false && KeepDigits(number, keepLeadingPlus: true).StartsWith('+')) return number;
 
-        if (digits.Length == 0 || digits[0] == '+') return number;
+        var digits = StripMask(number!, mask!);
+
+        if (digits.Length == 0) return number;
 
         return ApplyMask(digits, mask!);
     }
@@ -782,6 +852,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         {
             await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownClosedKeys);
         }
+
+        // The callout this component had open is gone to make room for another one's, so whatever the
+        // focus was on inside it is gone along with it.
+        SetHasFocus(false);
 
         await OnClose.InvokeAsync();
 
@@ -949,11 +1023,16 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // Number/Country bindings about the parsed values.
             var (country, number) = ParseFullNumber(CurrentValue);
 
-            await AssignNumber(FormatNumber(number));
+            // The country is adopted before the number is laid out, because the pattern the number is
+            // laid out over can be the one the newly adopted country brings with it: formatting first
+            // would show the new number under the pattern of the country it is replacing
+            // (see HandleOnStringValueChangeAsync).
             if (country is not null)
             {
                 await AssignCountry(country);
             }
+
+            await AssignNumber(FormatNumber(number));
 
             _lastValue = CurrentValue;
             _lastNumber = Number;
@@ -989,9 +1068,12 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
             // A callout opened through the IsOpen parameter before the first render had no country
             // list to point at yet, so the active option is settled here instead.
+            var activeIndexSettled = false;
             if (IsOpen && _activeIndex < 0)
             {
                 ResetActiveIndexToSelection();
+
+                activeIndexSettled = true;
             }
 
             await ToggleCallout();
@@ -1013,6 +1095,14 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                     }
                 }
                 catch (JSException) { } // the element might not be ready/visible yet
+            }
+
+            // The active option was decided after the render that got here, so what names it - the
+            // active class on the option and the aria-activedescendant pointing at it - is asked for
+            // again instead of waiting for the next render to come along.
+            if (activeIndexSettled)
+            {
+                StateHasChanged();
             }
         }
 
@@ -1335,6 +1425,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         if (IsOpen)
         {
             await CloseCallout();
+
+            // Clicking the button is what closed the callout, so the focus is on the button and the
+            // ring CloseCallout dropped belongs right back on.
+            SetHasFocus(true);
         }
         else
         {
@@ -1530,6 +1624,12 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         _pendingCalloutToggle = true;
 
+        // The focus may well have been inside the callout that is now gone, and the focusout it fired
+        // on its way there was ignored while the callout was open, so the ring is dropped here. The
+        // flows that put the focus back into the field - Escape, picking a country, clicking the
+        // dropdown button - turn it on again themselves.
+        SetHasFocus(false);
+
         await OnClose.InvokeAsync();
     }
 
@@ -1602,6 +1702,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         else
         {
             ResetCalloutState();
+
+            // A callout closed through the IsOpen parameter takes whatever focus it holds down with it,
+            // and no focusout of the field is fired for it.
+            SetHasFocus(false);
         }
 
         _pendingCalloutToggle = true;
@@ -1694,6 +1798,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         try
         {
             await InputElement.FocusAsync();
+
+            // The input is part of the field, so the ring the closing callout dropped is put back on
+            // with the focus itself instead of a render later, once the focusin finds its way back.
+            SetHasFocus(true);
         }
         catch (JSException) { } // the element might not be ready/visible yet
     }
@@ -1805,16 +1913,31 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         try
         {
             await _dropdownButtonRef.FocusAsync();
+
+            // The button is part of the field, so the ring the closing callout dropped is put back on
+            // with the focus itself instead of a render later, once the focusin finds its way back.
+            SetHasFocus(true);
         }
         catch (JSException) { } // the element might not be ready/visible yet
+    }
+
+    // The focus ring is on while the focus is in the field, and stays on while the callout has taken
+    // it away from there. Only the three elements of the field report their focus, so what happens
+    // inside the callout is told to the ring by the flows that make it happen rather than by an event.
+    private void SetHasFocus(bool value)
+    {
+        if (_hasFocus == value) return;
+
+        _hasFocus = value;
+
+        ClassBuilder.Reset();
     }
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
         if (IsEnabled is false) return;
 
-        _hasFocus = true;
-        ClassBuilder.Reset();
+        SetHasFocus(true);
 
         await OnFocusIn.InvokeAsync(e);
     }
@@ -1825,10 +1948,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         // The focus ring belongs to the field as a whole, and the search box of an open callout is
         // part of that field as far as the user is concerned, so the ring stays on while it is open.
+        // Closing the callout is what turns it off again (see CloseCallout).
         if (IsOpen is false)
         {
-            _hasFocus = false;
-            ClassBuilder.Reset();
+            SetHasFocus(false);
         }
 
         await OnFocusOut.InvokeAsync(e);

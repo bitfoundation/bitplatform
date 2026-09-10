@@ -493,6 +493,57 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldLayAMaskHoldingALiteralDigitOutOnlyOnce()
+    {
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.Mask, "0## ### ####");
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        var input = component.Find("input.bit-phi-inp");
+
+        input.Input("4");
+        Assert.AreEqual("04", number);
+
+        // Every keystroke lays the pattern over a number the pattern has already been laid over, so
+        // the '0' the pattern writes must not be read back as a digit the number came with.
+        input.Input("041 555 5012");
+        Assert.AreEqual("041 555 5012", number);
+
+        // A number that grew a '0' per keystroke would read "00..." soon enough, which is the
+        // international call prefix of most of the world and would take the selection with it.
+        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldLayAnExternalValueOutOverThePatternOfTheCountryItNames()
+    {
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.MaskSelector, c => c?.Iso2 == "US" ? "(###) ###-####" : "## ## ## ##");
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Value, "+33155551234"));
+
+        Assert.AreEqual("FR", component.Instance.Country?.Iso2);
+
+        // The pattern is the one the newly adopted country brings with it, not the one of the country
+        // the value replaced.
+        Assert.AreEqual("15 55 51 234", number);
+    }
+
+    [TestMethod]
     public void BitPhoneInputShouldNotMaskANumberNoCountryClaims()
     {
         string? number = null;
@@ -1330,6 +1381,28 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldDropTheFocusRingWithTheCalloutTheOverlayDismisses()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").FocusIn();
+        component.Find("button.bit-phi-drp").Click();
+
+        // The focus went on to the search box of the callout, so the focusout the button fired on the
+        // way there is ignored and the ring stays on.
+        component.Find("button.bit-phi-drp").FocusOut();
+
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+
+        // Dismissing the callout puts the focus back nowhere, and there is no focusout of the field
+        // left to fire for it.
+        component.Find(".bit-phi-ovl").Click();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+    }
+
+    [TestMethod]
     public void BitPhoneInputShouldRespectResponsiveCloseIcon()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
@@ -1394,6 +1467,26 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.AreEqual("true", dropdown.GetAttribute("aria-expanded"));
         Assert.AreEqual(options[0].Id, dropdown.GetAttribute("aria-activedescendant"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNameTheActiveOptionOfACalloutOpenedOnItsFirstRender()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsOpenChanged, (bool _) => { });
+        });
+
+        var germany = component.FindAll("button.bit-phi-itm")
+                               .First(o => o.GetAttribute("title") == BitCountries.Germany.Name);
+
+        // There was no country list to point at until the render that put it in the document, so the
+        // active option is settled after it - and the render that names it has to be asked for.
+        Assert.IsTrue(germany.ClassList.Contains("bit-phi-act"));
+        Assert.AreEqual(germany.Id, component.Find(".bit-phi-srch").GetAttribute("aria-activedescendant"));
     }
 
     [TestMethod]
@@ -1656,6 +1749,26 @@ public class BitPhoneInputTests : BunitTestContext
         component.InvokeAsync(() => component.Instance.ClearAsync()).GetAwaiter().GetResult();
 
         Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotReportAClearItCannotCarryOut()
+    {
+        var cleared = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.Number, "5550123");
+            parameters.Add(p => p.OnClear, () => cleared++);
+        });
+
+        component.InvokeAsync(() => component.Instance.ClearAsync()).GetAwaiter().GetResult();
+
+        // Number is controlled one way (set without NumberChanged), so the field keeps what it shows
+        // and a clear that never happened must not be reported.
+        Assert.AreEqual("5550123", component.Instance.Number);
+        Assert.AreEqual(0, cleared);
     }
 
     [TestMethod]
