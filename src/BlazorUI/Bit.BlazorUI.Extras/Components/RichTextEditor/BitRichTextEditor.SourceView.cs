@@ -14,7 +14,7 @@ public partial class BitRichTextEditor
         // ReadOnly blocks *entering* source view, but exiting must stay possible: if the host
         // flips ReadOnly to true while source view is open, the editor would otherwise be
         // trapped there with no way back to the rendered view.
-        if (ReadOnly && _inSourceView is false) return;
+        if (EffectiveReadOnly && _inSourceView is false) return;
         ClearInlineError();
 
         if (_inSourceView is false)
@@ -28,7 +28,7 @@ public partial class BitRichTextEditor
         // If ReadOnly was flipped on while source view was open, leaving must not sanitize,
         // assign, or emit the edited source: that would mutate content the read-only contract
         // forbids. Just exit back to the rendered (unchanged) view.
-        if (ReadOnly)
+        if (EffectiveReadOnly)
         {
             _inSourceView = false;
             StateHasChanged();

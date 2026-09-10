@@ -8,7 +8,45 @@ namespace BitBlazorUI {
     export class RichTextEditor {
 
         private static readonly IMAGE_MIME = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'];
+
+        // The only hosts an <iframe> may point at under the built-in policy. Media embeds are
+        // useful enough to be on by default, but only because the sanitize pass host-restricts
+        // them: an iframe is the one allowlisted element that can run code from another origin.
+        private static readonly IFRAME_HOSTS = [
+            'www.youtube-nocookie.com', 'youtube-nocookie.com',
+            'www.youtube.com', 'youtube.com',
+            'player.vimeo.com'
+        ];
         private static readonly MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
+        // Elements that are never content: they are removed outright (with their subtree) rather
+        // than unwrapped, because unwrapping them can re-expose their body as markup on the next
+        // parse (the classic mutation-XSS vector) or leave foreign-namespace children behind.
+        private static readonly DROPPED_TAGS =
+            'script,style,iframe,object,embed,link,meta,title,head,base,form,noscript,template,' +
+            'svg,math,frame,frameset,applet,dialog,noembed,xmp,plaintext';
+
+        // CSS declarations kept when a 'style' attribute survives the tag/attribute allowlist.
+        // Everything outside this set is dropped, which keeps the formatting the editor itself
+        // produces (color, font, alignment, indentation, sizing) while denying layout/behavior
+        // properties that could be used to overlay or exfiltrate page content.
+        private static readonly ALLOWED_CSS_PROPS = new Set([
+            'color', 'background-color', 'background',
+            'font-family', 'font-size', 'font-weight', 'font-style', 'font-variant',
+            'text-align', 'text-decoration', 'text-decoration-line', 'text-indent', 'text-transform',
+            'letter-spacing', 'word-spacing', 'line-height', 'white-space', 'direction', 'unicode-bidi',
+            'vertical-align', 'list-style-type', 'list-style-position',
+            'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+            'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+            'width', 'height', 'max-width', 'max-height', 'min-width', 'min-height',
+            'border', 'border-top', 'border-right', 'border-bottom', 'border-left',
+            'border-color', 'border-style', 'border-width', 'border-radius', 'border-collapse',
+            'caption-side', 'table-layout', 'float', 'clear', 'display', 'opacity'
+        ]);
+
+        // Values that can smuggle a URL, a script, or a legacy IE behavior into a style
+        // declaration. Any declaration whose value matches is dropped.
+        private static readonly UNSAFE_CSS_VALUE = /url\s*\(|expression\s*\(|javascript\s*:|vbscript\s*:|behavior\s*:|-moz-binding|@import|\\/i;
 
         // Built-in secure default allowlist, mirroring BitRichTextEditorSanitizationPolicy.Default.
         // Applied when no custom policy is supplied so the no-policy path still enforces an
@@ -18,22 +56,34 @@ namespace BitBlazorUI {
             allowedTags: [
                 'p', 'br', 'span', 'div',
                 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'sub', 'sup',
+                'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'sub', 'sup', 'mark',
                 'ul', 'ol', 'li',
                 'blockquote', 'pre', 'code',
                 'a', 'img', 'hr',
-                'table', 'thead', 'tbody', 'tr', 'th', 'td',
-                'audio', 'video', 'source'
+                'table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+                'audio', 'video', 'source', 'iframe'
             ],
             allowedAttributes: {
-                '*': ['class', 'dir'],
+                // 'style' and 'align' carry the output of the formatting commands themselves
+                // (colors, fonts, font sizes, alignment, indentation), so they must survive the
+                // sanitize pass or the editor would show formatting the persisted value drops.
+                // Style values are additionally filtered through a CSS property allowlist.
+                '*': ['class', 'dir', 'style', 'align', 'title'],
+                'span': ['data-mention-id'],
                 'a': ['href', 'title', 'target', 'rel'],
-                'img': ['src', 'alt', 'width', 'height'],
-                'td': ['colspan', 'rowspan'],
-                'th': ['colspan', 'rowspan'],
+                'img': ['src', 'alt', 'width', 'height', 'loading'],
+                'ol': ['start', 'type', 'reversed'],
+                'ul': ['type'],
+                'li': ['value', 'data-checked'],
+                'table': ['border', 'cellpadding', 'cellspacing', 'width', 'height'],
+                'col': ['span', 'width'],
+                'colgroup': ['span'],
+                'td': ['colspan', 'rowspan', 'width', 'height', 'valign', 'headers'],
+                'th': ['colspan', 'rowspan', 'width', 'height', 'valign', 'scope', 'abbr'],
                 'audio': ['src', 'controls'],
-                'video': ['src', 'controls', 'width', 'height'],
-                'source': ['src', 'type']
+                'video': ['src', 'controls', 'width', 'height', 'poster'],
+                'source': ['src', 'type'],
+                'iframe': ['src', 'width', 'height', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'referrerpolicy']
             } as { [tag: string]: string[] },
             allowedUriSchemes: ['http', 'https', 'mailto', 'tel'],
             allowDataImageUris: true
@@ -98,6 +148,19 @@ namespace BitBlazorUI {
             };
             document.addEventListener('fullscreenchange', editor._onFullScreenChange);
 
+            // The selection rectangle is reported in component coordinates, so scrolling the
+            // surface moves the selection without firing selectionchange. Re-report on scroll (once
+            // per frame) so the selection toolbar follows the text instead of drifting off it.
+            let scrollFrame = 0;
+            editor._onScroll = () => {
+                if (!editor._quickToolbar || scrollFrame) return;
+                scrollFrame = requestAnimationFrame(() => {
+                    scrollFrame = 0;
+                    RichTextEditor.reportState(editor);
+                });
+            };
+            editor.addEventListener('scroll', editor._onScroll);
+
             editor._onPaste = (e: ClipboardEvent) => RichTextEditor.onPaste(editor, e);
             editor.addEventListener('paste', editor._onPaste);
 
@@ -115,6 +178,7 @@ namespace BitBlazorUI {
 
             RichTextEditor.enableImageResize(editor);
             RichTextEditor.enableTableResize(editor);
+            RichTextEditor.enableTaskToggle(editor);
             RichTextEditor.updateEmpty(editor);
         }
 
@@ -129,6 +193,16 @@ namespace BitBlazorUI {
             editor._hasUpload = options.hasUpload === true;
             editor._plainTextPaste = options.plainTextPaste === true;
             editor._maxLength = (typeof options.maxLength === 'number') ? options.maxLength : null;
+            // Mirrors ReadOnly/IsEnabled from C#. The DOM listeners stay bound (so the surface can
+            // become editable again without a re-init), but every mutating handler bails on it, so
+            // a read-only editor cannot be changed by paste, drop, typing, or a shortcut.
+            editor._readOnly = options.readOnly === true;
+            editor._autoLink = options.autoLink !== false;
+            // Measuring the selection forces layout on every selection change, and the result is
+            // only used to place the floating selection toolbar - so it is computed solely when
+            // that toolbar is actually enabled.
+            editor._quickToolbar = options.quickToolbar === true;
+            editor._mentions = options.mentions === true;
             editor._shortcutKeys = new Set((Array.isArray(options.shortcutKeys) ? options.shortcutKeys : [])
                 .map((k: string) => (k || '').toLowerCase()));
         }
@@ -139,6 +213,7 @@ namespace BitBlazorUI {
             editor.removeEventListener('input', editor._onInputMd);
             editor.removeEventListener('blur', editor._onBlur);
             editor.removeEventListener('focus', editor._onFocus);
+            editor.removeEventListener('scroll', editor._onScroll);
             editor.removeEventListener('paste', editor._onPaste);
             editor.removeEventListener('drop', editor._onDrop);
             editor.removeEventListener('keydown', editor._onKeyDown);
@@ -148,6 +223,7 @@ namespace BitBlazorUI {
             RichTextEditor.removeResizeHandle(editor);
             editor._dotNetRef = null;
             editor._range = null;
+            editor._activeImage = null;
         }
 
         // ====================================================================
@@ -352,43 +428,94 @@ namespace BitBlazorUI {
             return editor.innerHTML;
         }
 
-        public static createLink(editor: any, url: string) {
+        public static createLink(editor: any, url: string, newTab?: boolean, text?: string) {
             if (!editor || !url) return;
-            if (!RichTextEditor.isAllowedUri(editor, url, false)) {
-                RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
-                return;
+            if (!RichTextEditor.linkAllowed(editor, url)) return;
+
+            RichTextEditor.restoreSelection(editor);
+            const sel = document.getSelection();
+            const collapsed = !sel || sel.rangeCount === 0 || sel.isCollapsed;
+            const label = (text || '').trim();
+
+            if (collapsed || label) {
+                // Nothing is selected (or the caller supplied the link text), so the anchor and its
+                // text are inserted as one piece instead of linking whatever happens to be selected.
+                const shown = label || url;
+                RichTextEditor.dispatch(editor, 'insertHtml', {
+                    html: `<a href="${RichTextEditor.escapeAttr(url)}"${RichTextEditor.linkTargetAttrs(editor, newTab)}>${RichTextEditor.escapeHtml(shown)}</a>`
+                });
+            } else {
+                RichTextEditor.dispatch(editor, 'createLink', { value: url });
+                if (newTab) RichTextEditor.markSelectedLinksNewTab(editor);
             }
-            if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) {
-                RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
-                return;
-            }
-            RichTextEditor.dispatch(editor, 'createLink', { value: url });
             RichTextEditor.afterChange(editor);
         }
 
-        public static updateLink(editor: any, url: string) {
+        public static updateLink(editor: any, url: string, newTab?: boolean) {
             if (!editor || !url) return;
-            if (!RichTextEditor.isAllowedUri(editor, url, false)) {
-                RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
-                return;
-            }
-            if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) {
-                RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
-                return;
-            }
+            if (!RichTextEditor.linkAllowed(editor, url)) return;
             // Restore the editor's saved range first so the link is applied to the editor
             // selection rather than whatever the toolbar/dialog interaction left active.
             RichTextEditor.restoreSelection(editor);
             const a = RichTextEditor.linkAtSelection(editor);
             if (a) {
                 a.setAttribute('href', url);
+                RichTextEditor.setLinkTarget(editor, a, newTab === true);
             } else {
                 RichTextEditor.dispatch(editor, 'createLink', { value: url });
+                if (newTab) RichTextEditor.markSelectedLinksNewTab(editor);
             }
             RichTextEditor.afterChange(editor);
         }
 
-        public static insertImageUrl(editor: any, url: string) {
+        // Shared precondition for the two link entry points: the URL must clear the active scheme
+        // allowlist and the policy must actually permit an anchor with an href.
+        private static linkAllowed(editor: any, url: string): boolean {
+            if (!RichTextEditor.isAllowedUri(editor, url, false)) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
+                return false;
+            }
+            if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
+                return false;
+            }
+            return true;
+        }
+
+        // The target/rel pair for a new-tab link, or an empty string when the policy would strip
+        // target anyway (the sanitizer removes a blank target it cannot pair with a rel).
+        private static linkTargetAttrs(editor: any, newTab?: boolean): string {
+            if (!newTab || !RichTextEditor.isAttrAllowed(editor, 'a', 'target')) return '';
+            return RichTextEditor.isAttrAllowed(editor, 'a', 'rel')
+                ? ' target="_blank" rel="noopener noreferrer"'
+                : '';
+        }
+
+        // Adds or removes the new-tab behavior on one anchor, always pairing target="_blank" with
+        // rel="noopener noreferrer" so the opened page never gets window.opener access.
+        private static setLinkTarget(editor: any, a: HTMLElement, newTab: boolean) {
+            if (!newTab) {
+                a.removeAttribute('target');
+                a.removeAttribute('rel');
+                return;
+            }
+            if (!RichTextEditor.isAttrAllowed(editor, 'a', 'target') || !RichTextEditor.isAttrAllowed(editor, 'a', 'rel')) return;
+            a.setAttribute('target', '_blank');
+            a.setAttribute('rel', 'noopener noreferrer');
+        }
+
+        // execCommand('createLink') can produce several anchors across a multi-node selection, so
+        // every anchor the selection touches gets the new-tab treatment.
+        private static markSelectedLinksNewTab(editor: any) {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            (Array.from(editor.querySelectorAll('a[href]')) as HTMLElement[])
+                .filter(a => range.intersectsNode(a))
+                .forEach(a => RichTextEditor.setLinkTarget(editor, a, true));
+        }
+
+        public static insertImageUrl(editor: any, url: string, alt?: string) {
             if (!editor || !url) return;
             if (!RichTextEditor.isAllowedUri(editor, url, true)) {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That image URL is not allowed.');
@@ -398,7 +525,9 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'Images are not allowed by the current policy.');
                 return;
             }
-            RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="">` });
+            RichTextEditor.dispatch(editor, 'insertImage', {
+                html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="${RichTextEditor.escapeAttr(alt ?? '')}">`
+            });
             RichTextEditor.afterChange(editor);
         }
 
@@ -479,7 +608,7 @@ namespace BitBlazorUI {
             // Global attributes permitted on any allowed tag (e.g. wrapper p/br). Everything else
             // is denied by default so non-media tags cannot smuggle arbitrary attributes through.
             const globalAttrs = new Set(['class', 'dir']);
-            const iframeHosts = ['www.youtube-nocookie.com', 'youtube-nocookie.com', 'www.youtube.com', 'youtube.com', 'player.vimeo.com'];
+            const iframeHosts = RichTextEditor.IFRAME_HOSTS;
 
             tpl.content.querySelectorAll('*').forEach((el: Element) => {
                 const tag = el.tagName.toLowerCase();
@@ -568,7 +697,50 @@ namespace BitBlazorUI {
             RichTextEditor.afterChange(editor);
         }
 
-        public static insertTable(editor: any, rows: number, cols: number) {
+        // Inserts arbitrary markup at the caret after running it through the active policy, so an
+        // imperative InsertHtmlAsync can never introduce content the sanitizer would strip.
+        public static insertHtml(editor: any, html: string) {
+            if (!editor || !html) return;
+            const safe = RichTextEditor.sanitize(editor, html);
+            if (!safe) return;
+            RichTextEditor.restoreSelection(editor);
+            // Refuse (rather than truncate) an insert that would break the cap: a half-inserted
+            // fragment is worse than none, unlike a paste where trimming the tail is expected.
+            if (!RichTextEditor.fitsWithinMaxLength(editor, safe)) {
+                RichTextEditor.reportClientError(editor, 'max-length', 'The content would exceed the maximum length.');
+                return;
+            }
+            RichTextEditor.dispatch(editor, 'insertHtml', { html: safe });
+            RichTextEditor.afterChange(editor);
+        }
+
+        // Selects the whole document inside the editor (and records it as the editor's range) so a
+        // following command applies to everything.
+        public static selectAll(editor: any) {
+            if (!editor) return;
+            editor.focus();
+            const sel = document.getSelection();
+            if (!sel) return;
+            const range = document.createRange();
+            range.selectNodeContents(editor);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            editor._range = range.cloneRange();
+            RichTextEditor.reportState(editor);
+        }
+
+        // Returns the plain text of the current selection, or an empty string when the selection is
+        // collapsed or sits outside this editor.
+        public static getSelectedText(editor: any): string {
+            if (!editor) return '';
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return '';
+            const range = sel.getRangeAt(0);
+            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return '';
+            return sel.toString().replace(/\u00a0/g, ' ');
+        }
+
+        public static insertTable(editor: any, rows: number, cols: number, header?: boolean) {
             if (!editor) return;
             // Honor the active sanitization policy before injecting markup: if the policy would
             // strip the table tags during the sanitize pass that feeds the persisted Value, the
@@ -579,8 +751,16 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'table-not-allowed', 'Tables are not allowed by the current policy.');
                 return;
             }
-            let html = '<table class="bit-rte-table"><tbody>';
-            for (let r = 0; r < rows; r++) {
+            let html = '<table class="bit-rte-table">';
+            let bodyRows = rows;
+            if (header === true && rows > 0 && RichTextEditor.isTagAllowed(editor, 'thead') && RichTextEditor.isTagAllowed(editor, 'th')) {
+                html += '<thead><tr>';
+                for (let c = 0; c < cols; c++) html += '<th><br></th>';
+                html += '</tr></thead>';
+                bodyRows = rows - 1;
+            }
+            html += '<tbody>';
+            for (let r = 0; r < bodyRows; r++) {
                 html += '<tr>';
                 for (let c = 0; c < cols; c++) html += '<td><br></td>';
                 html += '</tr>';
@@ -591,6 +771,7 @@ namespace BitBlazorUI {
         }
 
         public static tableOp(editor: any, op: string) {
+            if (!editor || editor._readOnly) return;
             // Restore the editor selection so the operation targets the cell the user last
             // selected in the editor, not a selection left in the toolbar.
             RichTextEditor.restoreSelection(editor);
@@ -601,50 +782,10 @@ namespace BitBlazorUI {
             if (!table || !row) return;
 
             switch (op) {
-                case 'addRow': {
-                    // Use the logical grid (accounting for col/rowspans) so the inserted row spans
-                    // the full table even when the current row contains merged cells.
-                    const { rows, grid, colCount } = RichTextEditor.buildTableGrid(table);
-                    const ri = rows.indexOf(row);
-                    const nr = document.createElement('tr');
-                    const extended = new Set<HTMLTableCellElement>();
-                    for (let c = 0; c < colCount; c++) {
-                        const here = grid[ri] ? (grid[ri][c] || null) : null;
-                        const below = (ri + 1 < rows.length && grid[ri + 1]) ? (grid[ri + 1][c] || null) : null;
-                        // A cell whose rowspan straddles the insertion boundary is stretched once
-                        // instead of getting a fresh neighbor, so the merged region keeps covering
-                        // the new row rather than being split by it.
-                        if (here && here === below) {
-                            if (!extended.has(here)) { extended.add(here); here.rowSpan = (here.rowSpan || 1) + 1; }
-                            continue;
-                        }
-                        const td = document.createElement('td'); td.innerHTML = '<br>'; nr.appendChild(td);
-                    }
-                    row.after(nr);
-                    break;
-                }
-                case 'addCol': {
-                    const { rows, grid } = RichTextEditor.buildTableGrid(table);
-                    const targetCol = RichTextEditor.logicalColumnOf(grid, cell);
-                    if (targetCol < 0) break;
-                    const insertCol = targetCol + 1;
-                    const widened = new Set<HTMLTableCellElement>();
-                    for (let r = 0; r < rows.length; r++) {
-                        const before = grid[r][targetCol] || null;
-                        const at = grid[r][insertCol] || null;
-                        // A single cell whose colspan straddles the insertion boundary is widened
-                        // once instead of receiving a new neighbor.
-                        if (before && before === at) {
-                            if (!widened.has(before)) { widened.add(before); before.colSpan = (before.colSpan || 1) + 1; }
-                            continue;
-                        }
-                        const td = document.createElement('td'); td.innerHTML = '<br>';
-                        if (at && at.parentElement === rows[r]) at.before(td);
-                        else if (before && before.parentElement === rows[r]) before.after(td);
-                        else rows[r].appendChild(td);
-                    }
-                    break;
-                }
+                case 'addRow': RichTextEditor.insertTableRow(table, row, false); break;
+                case 'addRowBefore': RichTextEditor.insertTableRow(table, row, true); break;
+                case 'addCol': RichTextEditor.insertTableColumn(table, cell, false); break;
+                case 'addColBefore': RichTextEditor.insertTableColumn(table, cell, true); break;
                 case 'delRow': {
                     const { rows, grid, colCount } = RichTextEditor.buildTableGrid(table);
                     if (rows.length <= 1) { table.remove(); break; }
@@ -704,8 +845,148 @@ namespace BitBlazorUI {
                     RichTextEditor.mergeSelectedCells(editor, table);
                     break;
                 }
+                case 'split': {
+                    RichTextEditor.splitCell(table, cell);
+                    break;
+                }
+                case 'headerRow': {
+                    RichTextEditor.toggleHeaderRow(table);
+                    break;
+                }
+                case 'delTable': {
+                    table.remove();
+                    break;
+                }
             }
             RichTextEditor.afterChange(editor);
+        }
+
+        // Inserts a full-width row next to the given one. Cells whose rowspan straddles the
+        // insertion boundary are stretched instead of split, so a merged region keeps covering the
+        // rows it already spanned.
+        private static insertTableRow(table: HTMLTableElement, row: HTMLTableRowElement, before: boolean) {
+            const { rows, grid, colCount } = RichTextEditor.buildTableGrid(table);
+            const ri = rows.indexOf(row);
+            if (ri < 0) return;
+            // The neighbour on the far side of the boundary: a cell present in both the current row
+            // and that neighbour is one that spans across the boundary.
+            const neighbourIndex = before ? ri - 1 : ri + 1;
+            const neighbour = (neighbourIndex >= 0 && neighbourIndex < rows.length && grid[neighbourIndex])
+                ? grid[neighbourIndex]
+                : null;
+            const nr = document.createElement('tr');
+            const extended = new Set<HTMLTableCellElement>();
+            for (let c = 0; c < colCount; c++) {
+                const here = grid[ri] ? (grid[ri][c] || null) : null;
+                const across = neighbour ? (neighbour[c] || null) : null;
+                if (here && here === across) {
+                    if (!extended.has(here)) { extended.add(here); here.rowSpan = (here.rowSpan || 1) + 1; }
+                    continue;
+                }
+                const td = document.createElement(here && here.tagName === 'TH' ? 'th' : 'td');
+                td.innerHTML = '<br>';
+                nr.appendChild(td);
+            }
+            if (nr.childElementCount === 0) return;
+            if (before) row.before(nr); else row.after(nr);
+        }
+
+        // Inserts a column next to the one holding the given cell. A cell whose colspan straddles
+        // the insertion boundary is widened once instead of receiving a new neighbour.
+        private static insertTableColumn(table: HTMLTableElement, cell: HTMLTableCellElement, before: boolean) {
+            const { rows, grid } = RichTextEditor.buildTableGrid(table);
+            const targetCol = RichTextEditor.logicalColumnOf(grid, cell);
+            if (targetCol < 0) return;
+            const insertCol = before ? targetCol : targetCol + 1;
+            const widened = new Set<HTMLTableCellElement>();
+            for (let r = 0; r < rows.length; r++) {
+                const left = insertCol > 0 ? (grid[r][insertCol - 1] || null) : null;
+                const at = grid[r][insertCol] || null;
+                if (left && left === at) {
+                    if (!widened.has(left)) { widened.add(left); left.colSpan = (left.colSpan || 1) + 1; }
+                    continue;
+                }
+                const reference = at || left;
+                const td = document.createElement(reference && reference.tagName === 'TH' ? 'th' : 'td');
+                td.innerHTML = '<br>';
+                if (at && at.parentElement === rows[r]) at.before(td);
+                else if (left && left.parentElement === rows[r]) left.after(td);
+                else rows[r].appendChild(td);
+            }
+        }
+
+        // Undoes a merge: every logical position the cell covers gets its own empty cell back and
+        // the origin cell keeps the content.
+        private static splitCell(table: HTMLTableElement, cell: HTMLTableCellElement) {
+            const colspan = Math.max(1, cell.colSpan || 1);
+            const rowspan = Math.max(1, cell.rowSpan || 1);
+            if (colspan === 1 && rowspan === 1) return;
+
+            const { rows, grid } = RichTextEditor.buildTableGrid(table);
+            const startRow = rows.indexOf(cell.parentElement as HTMLTableRowElement);
+            const startCol = RichTextEditor.logicalColumnOf(grid, cell);
+            if (startRow < 0 || startCol < 0) return;
+
+            cell.removeAttribute('colspan');
+            cell.removeAttribute('rowspan');
+
+            for (let r = startRow; r < startRow + rowspan && r < rows.length; r++) {
+                // Walk right to left so each insertion leaves the columns still to be filled valid.
+                for (let c = startCol + colspan - 1; c >= startCol; c--) {
+                    if (r === startRow && c === startCol) continue;
+                    const td = document.createElement(cell.tagName === 'TH' ? 'th' : 'td');
+                    td.innerHTML = '<br>';
+                    // Anchor on the first cell of this row that starts after the released region.
+                    let ref: HTMLTableCellElement | null = null;
+                    for (let k = c + 1; k < grid[r].length; k++) {
+                        const cand = grid[r][k];
+                        if (cand && cand !== cell && cand.parentElement === rows[r]) { ref = cand; break; }
+                    }
+                    if (ref) rows[r].insertBefore(td, ref);
+                    else if (r === startRow) cell.after(td);
+                    else rows[r].appendChild(td);
+                }
+            }
+        }
+
+        // Promotes the first row to a thead of th cells, or demotes it back to body cells.
+        private static toggleHeaderRow(table: HTMLTableElement) {
+            const rows = (Array.from(table.querySelectorAll('tr')) as HTMLTableRowElement[])
+                .filter(tr => tr.closest('table') === table);
+            const first = rows[0];
+            if (!first || first.childElementCount === 0) return;
+
+            const isHeader = first.parentElement?.tagName === 'THEAD'
+                || Array.from(first.children).every(c => c.tagName === 'TH');
+
+            const retag = (from: HTMLTableRowElement, tag: string) => {
+                Array.from(from.children).forEach(child => {
+                    if (child.tagName === tag.toUpperCase()) return;
+                    const next = document.createElement(tag);
+                    Array.from(child.attributes).forEach(a => next.setAttribute(a.name, a.value));
+                    while (child.firstChild) next.appendChild(child.firstChild);
+                    child.replaceWith(next);
+                });
+            };
+
+            if (isHeader) {
+                retag(first, 'td');
+                const thead = first.parentElement;
+                if (thead && thead.tagName === 'THEAD') {
+                    let tbody = table.querySelector(':scope > tbody');
+                    if (!tbody) { tbody = document.createElement('tbody'); thead.after(tbody); }
+                    tbody.insertBefore(first, tbody.firstChild);
+                    if (thead.childElementCount === 0) thead.remove();
+                }
+                return;
+            }
+
+            retag(first, 'th');
+            if (first.parentElement?.tagName !== 'THEAD') {
+                const thead = document.createElement('thead');
+                table.insertBefore(thead, table.firstChild);
+                thead.appendChild(first);
+            }
         }
 
         // Builds a logical row x column model of the table that accounts for rowspan/colspan, so
@@ -757,11 +1038,10 @@ namespace BitBlazorUI {
             editor._findIndex = -1;
         }
 
-        public static find(editor: any, term: string, caseSensitive: boolean): number {
+        public static find(editor: any, term: string, caseSensitive: boolean, wholeWord?: boolean): number {
             RichTextEditor.clearFind(editor);
             if (!term) return 0;
-            const flags = caseSensitive ? 'g' : 'gi';
-            const rx = new RegExp(RichTextEditor.escapeRegExp(term), flags);
+            const rx = RichTextEditor.buildFindRegex(term, caseSensitive, wholeWord === true);
             let count = 0;
             const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
             const textNodes: Node[] = [];
@@ -786,10 +1066,45 @@ namespace BitBlazorUI {
                 (tn as ChildNode).replaceWith(frag);
             }
             editor._findIndex = count > 0 ? 0 : -1;
+            RichTextEditor.highlightCurrentMatch(editor);
             return count;
         }
 
-        public static replaceCurrent(editor: any, term: string, replacement: string, caseSensitive: boolean): number {
+        // Builds the match expression shared by find/replaceAll. Whole-word mode anchors the term
+        // between non-word characters, which is what every editor's "match whole word" toggle means.
+        private static buildFindRegex(term: string, caseSensitive: boolean, wholeWord: boolean): RegExp {
+            const flags = caseSensitive ? 'g' : 'gi';
+            const body = RichTextEditor.escapeRegExp(term);
+            return wholeWord
+                ? new RegExp(`(?<![\\p{L}\\p{N}_])${body}(?![\\p{L}\\p{N}_])`, flags + 'u')
+                : new RegExp(body, flags);
+        }
+
+        // Moves the current-match cursor by delta (wrapping) and returns its 1-based position, or 0
+        // when there is nothing to step through. Keeps the active match highlighted and in view.
+        public static findStep(editor: any, delta: number): number {
+            if (!editor) return 0;
+            const marks = editor.querySelectorAll('mark.bit-rte-find');
+            if (marks.length === 0) { editor._findIndex = -1; return 0; }
+            const current = typeof editor._findIndex === 'number' && editor._findIndex >= 0 ? editor._findIndex : 0;
+            const next = ((current + delta) % marks.length + marks.length) % marks.length;
+            editor._findIndex = next;
+            RichTextEditor.highlightCurrentMatch(editor);
+            return next + 1;
+        }
+
+        // Marks the active match so it reads differently from the rest and scrolls it into view.
+        private static highlightCurrentMatch(editor: any) {
+            const marks = editor.querySelectorAll('mark.bit-rte-find') as NodeListOf<HTMLElement>;
+            const idx = editor._findIndex;
+            marks.forEach((m, i) => m.classList.toggle('bit-rte-find-cur', i === idx));
+            if (idx >= 0 && idx < marks.length) {
+                marks[idx].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+        }
+
+        public static replaceCurrent(editor: any, term: string, replacement: string, caseSensitive: boolean, wholeWord?: boolean): number {
+            if (!editor || editor._readOnly) return 0;
             const marks = editor.querySelectorAll('mark.bit-rte-find');
             if (marks.length === 0) return 0;
             const idx = Math.min(Math.max(editor._findIndex ?? 0, 0), marks.length - 1);
@@ -808,14 +1123,21 @@ namespace BitBlazorUI {
             mark.replaceWith(document.createTextNode(repl));
             editor.normalize();
             RichTextEditor.afterChange(editor);
-            return RichTextEditor.find(editor, term, caseSensitive);
+            const remaining = RichTextEditor.find(editor, term, caseSensitive, wholeWord);
+            // Keep the cursor on the match that took the replaced one's place rather than snapping
+            // back to the first hit, so repeated Replace walks forward through the document.
+            if (remaining > 0) {
+                editor._findIndex = Math.min(idx, remaining - 1);
+                RichTextEditor.highlightCurrentMatch(editor);
+            }
+            return remaining;
         }
 
-        public static replaceAll(editor: any, term: string, replacement: string, caseSensitive: boolean): number {
+        public static replaceAll(editor: any, term: string, replacement: string, caseSensitive: boolean, wholeWord?: boolean): number {
+            if (!editor || editor._readOnly) return 0;
             RichTextEditor.clearFind(editor);
             if (!term) return 0;
-            const flags = caseSensitive ? 'g' : 'gi';
-            const rx = new RegExp(RichTextEditor.escapeRegExp(term), flags);
+            const rx = RichTextEditor.buildFindRegex(term, caseSensitive, wholeWord === true);
             let count = 0;
             // Track remaining visible-text capacity so cumulative replacements never exceed
             // _maxLength. Each match frees its own length (it is removed) and the inserted
@@ -864,6 +1186,7 @@ namespace BitBlazorUI {
         }
 
         public static setBlockDirection(editor: any, dir: string) {
+            if (!editor || editor._readOnly) return;
             // Restore the editor's saved range so the direction is applied to the editor's
             // block rather than a selection left active in the toolbar/dialog.
             RichTextEditor.restoreSelection(editor);
@@ -910,6 +1233,14 @@ namespace BitBlazorUI {
                 else if (e.key === 'ArrowLeft') { e.preventDefault(); idx = (idx - 1 + list.length) % list.length; }
                 else if (e.key === 'Home') { e.preventDefault(); idx = 0; }
                 else if (e.key === 'End') { e.preventDefault(); idx = list.length - 1; }
+                else if (e.key === 'Escape') {
+                    // Escape hands focus back to the text, so the toolbar is never a dead end for
+                    // a keyboard user who entered it with Alt+F10 or a Tab.
+                    e.preventDefault();
+                    const surface = toolbar.closest('.bit-rte')?.querySelector('.bit-rte-edt') as HTMLElement | null;
+                    surface?.focus();
+                    return;
+                }
                 else return;
                 setTabs(idx);
                 list[idx].focus();
@@ -954,6 +1285,9 @@ namespace BitBlazorUI {
         }
         private static dispatch(editor: any, command: string, args: any): boolean {
             if (!editor) return false;
+            // Single choke point for every mutating operation: a read-only (or disabled) editor
+            // never runs a command, whichever path asked for it.
+            if (editor._readOnly) return false;
             try {
                 return RichTextEditor.engineRun(editor, command, args || {});
             } catch (err: any) {
@@ -990,6 +1324,10 @@ namespace BitBlazorUI {
                     return RichTextEditor.execNative(editor, 'insertHTML', args?.html);
                 case 'insertHorizontalRule':
                     return RichTextEditor.insertHorizontalRule(editor);
+                case 'insertTaskList':
+                    return RichTextEditor.toggleTaskList(editor, false);
+                case 'inlineCode':
+                    return RichTextEditor.toggleInlineCode(editor);
                 case 'createLink':
                     return RichTextEditor.createLinkImpl(editor, args?.value);
                 case 'insertTable':
@@ -1022,7 +1360,7 @@ namespace BitBlazorUI {
         // Markdown shortcuts + slash trigger
         // ====================================================================
         private static onInputMarkdown(editor: any, e: InputEvent) {
-            if (editor._mdBusy) return;
+            if (editor._mdBusy || editor._readOnly) return;
             const block = RichTextEditor.currentBlock(editor);
             if (!block) return;
             const text = block.textContent || '';
@@ -1032,31 +1370,183 @@ namespace BitBlazorUI {
                 return;
             }
 
+            // A mention starts at a word boundary, so "@" only triggers at the start of the block or
+            // after whitespace - never inside an email address or a handle already being typed.
+            if (editor._mentions && e.inputType === 'insertText' && e.data === '@'
+                && RichTextEditor.atMentionBoundary(editor)) {
+                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnMentionTrigger');
+                return;
+            }
+
             if (e.inputType !== 'insertText' || e.data !== ' ') return;
+
+            // A trailing URL is linked as soon as the word is finished, matching the autolink
+            // behavior every mainstream editor ships. Done before the block markers so a line that
+            // merely ends in a URL is not mistaken for a marker.
+            if (RichTextEditor.autoLinkAtCaret(editor)) return;
+
             const map: { [key: string]: string } = {
                 '#': 'h1', '##': 'h2', '###': 'h3',
-                '>': 'blockquote'
+                '####': 'h4', '#####': 'h5', '######': 'h6',
+                '>': 'blockquote',
+                '```': 'pre', '~~~': 'pre'
             };
             const marker = text.trim();
+            const run = (fn: () => void) => {
+                editor._mdBusy = true;
+                RichTextEditor.clearBlockText(block);
+                fn();
+                editor._mdBusy = false;
+                RichTextEditor.afterChange(editor);
+            };
+
             if (map[marker]) {
-                editor._mdBusy = true;
-                RichTextEditor.clearBlockText(block);
-                RichTextEditor.dispatch(editor, 'formatBlock', { value: map[marker] });
-                editor._mdBusy = false;
-                RichTextEditor.afterChange(editor);
-            } else if (marker === '-' || marker === '*') {
-                editor._mdBusy = true;
-                RichTextEditor.clearBlockText(block);
-                RichTextEditor.dispatch(editor, 'insertUnorderedList', {});
-                editor._mdBusy = false;
-                RichTextEditor.afterChange(editor);
-            } else if (marker === '1.') {
-                editor._mdBusy = true;
-                RichTextEditor.clearBlockText(block);
-                RichTextEditor.dispatch(editor, 'insertOrderedList', {});
-                editor._mdBusy = false;
-                RichTextEditor.afterChange(editor);
+                run(() => RichTextEditor.dispatch(editor, 'formatBlock', { value: map[marker] }));
+            } else if (marker === '-' || marker === '*' || marker === '+') {
+                run(() => RichTextEditor.dispatch(editor, 'insertUnorderedList', {}));
+            } else if (marker === '1.' || marker === '1)') {
+                run(() => RichTextEditor.dispatch(editor, 'insertOrderedList', {}));
+            } else if (marker === '[]' || marker === '[ ]' || marker === '[x]' || marker === '[X]') {
+                const checked = marker === '[x]' || marker === '[X]';
+                run(() => RichTextEditor.toggleTaskList(editor, checked));
+            } else if (marker === '---' || marker === '***' || marker === '___') {
+                run(() => RichTextEditor.insertHorizontalRule(editor));
             }
+        }
+
+        // Wraps the bare URL immediately before the caret in an anchor. Returns true when a link
+        // was created so the caller can skip the block-marker rules for that keystroke.
+        private static autoLinkAtCaret(editor: any): boolean {
+            if (editor._autoLink === false) return false;
+            if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) return false;
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return false;
+            const node = sel.anchorNode;
+            if (!node || node.nodeType !== 3 || !editor.contains(node)) return false;
+            // Never nest a link inside an existing one.
+            if (RichTextEditor.linkAtSelection(editor)) return false;
+
+            const text = node.nodeValue || '';
+            // The caret sits just after the space that finished the word, so the candidate is the
+            // last whitespace-delimited token before it.
+            const upto = text.slice(0, Math.max(0, sel.anchorOffset - 1));
+            const match = /(^|\s)((?:https?:\/\/|www\.)[^\s<>"']{2,})$/.exec(upto);
+            if (!match) return false;
+            const candidate = match[2];
+            // Trailing sentence punctuation belongs to the sentence, not to the URL.
+            const raw = candidate.replace(/[.,;:!?)\]]+$/, '');
+            if (!raw) return false;
+            const href = /^www\./i.test(raw) ? `https://${raw}` : raw;
+            if (!RichTextEditor.isAllowedUri(editor, href, false)) return false;
+
+            // The match ends at the end of `upto`, so the URL starts a full candidate-length back -
+            // measuring from the trimmed length would slide the range past the start of the URL.
+            const start = upto.length - candidate.length;
+            const range = document.createRange();
+            range.setStart(node, start);
+            range.setEnd(node, start + raw.length);
+            const anchor = document.createElement('a');
+            anchor.setAttribute('href', href);
+            try { range.surroundContents(anchor); } catch { return false; }
+            // Put the caret back after the trailing space so typing continues outside the link.
+            const after = document.createRange();
+            after.setStartAfter(anchor);
+            after.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(after);
+            editor._range = after.cloneRange();
+            RichTextEditor.afterChange(editor);
+            return true;
+        }
+
+        // Turns the current block into a checklist item (or back into a plain list item when it
+        // already is one). A task list is a plain <ul class="bit-rte-tasks"> whose items carry
+        // data-checked, so it survives the sanitizer allowlist and needs no interactive element.
+        private static toggleTaskList(editor: any, checked: boolean): boolean {
+            const li = RichTextEditor.listItemAtSelection(editor);
+            const list = li ? (li.closest('ul') as HTMLElement | null) : null;
+            if (list && list.classList.contains('bit-rte-tasks')) {
+                list.classList.remove('bit-rte-tasks');
+                list.querySelectorAll('li').forEach((i: Element) => i.removeAttribute('data-checked'));
+                return true;
+            }
+            if (!list) {
+                if (!RichTextEditor.dispatch(editor, 'insertUnorderedList', {})) return false;
+            }
+            const item = RichTextEditor.listItemAtSelection(editor);
+            const ul = item ? (item.closest('ul') as HTMLElement | null) : null;
+            if (!ul) return false;
+            ul.classList.add('bit-rte-tasks');
+            ul.querySelectorAll('li').forEach((i: Element) => {
+                if (!i.hasAttribute('data-checked')) i.setAttribute('data-checked', 'false');
+            });
+            if (item && checked) item.setAttribute('data-checked', 'true');
+            return true;
+        }
+
+        // Clicking a checklist item's marker toggles it. The marker is drawn by CSS at the start of
+        // the item, so a click in that gutter (before the item's content box) is the toggle.
+        private static enableTaskToggle(editor: any) {
+            if (!editor || editor._taskWired) return;
+            editor._taskWired = true;
+            editor.addEventListener('click', (e: MouseEvent) => {
+                if (editor._readOnly) return;
+                const target = e.target as HTMLElement;
+                const li = target && target.closest ? (target.closest('li') as HTMLElement | null) : null;
+                if (!li || !li.parentElement || !li.parentElement.classList.contains('bit-rte-tasks')) return;
+                const rect = li.getBoundingClientRect();
+                const rtl = getComputedStyle(li).direction === 'rtl';
+                const inMarker = rtl ? e.clientX > rect.right - 24 : e.clientX < rect.left + 24;
+                if (!inMarker) return;
+                e.preventDefault();
+                li.setAttribute('data-checked', li.getAttribute('data-checked') === 'true' ? 'false' : 'true');
+                RichTextEditor.afterChange(editor);
+            });
+        }
+
+        // Whether the "@" just typed begins a word: the caret sits right after it, and what comes
+        // before it is either nothing or whitespace.
+        private static atMentionBoundary(editor: any): boolean {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return false;
+            const node = sel.anchorNode;
+            if (!node || node.nodeType !== 3 || !editor.contains(node)) return false;
+            const offset = sel.anchorOffset;
+            const text = node.nodeValue || '';
+            if (offset < 1 || text[offset - 1] !== '@') return false;
+            if (offset === 1) return true;
+            return /\s/.test(text[offset - 2]);
+        }
+
+        // Replaces the trigger character with the picked mention's markup. The trigger is removed
+        // first so the inserted mention reads as one token rather than "@@name".
+        public static applyMention(editor: any, html: string) {
+            if (!editor || !html || editor._readOnly) return;
+            RichTextEditor.restoreSelection(editor);
+            if (!RichTextEditor.fitsWithinMaxLength(editor, html)) {
+                RichTextEditor.reportClientError(editor, 'max-length', 'The content would exceed the maximum length.');
+                return;
+            }
+
+            const sel = document.getSelection();
+            if (sel && sel.rangeCount > 0 && sel.isCollapsed) {
+                const current = sel.getRangeAt(0);
+                const node = current.startContainer;
+                if (node.nodeType === 3 && current.startOffset > 0
+                    && (node.nodeValue || '')[current.startOffset - 1] === '@') {
+                    const trigger = document.createRange();
+                    trigger.setStart(node, current.startOffset - 1);
+                    trigger.setEnd(node, current.startOffset);
+                    trigger.deleteContents();
+                    trigger.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(trigger);
+                    editor._range = trigger.cloneRange();
+                }
+            }
+
+            RichTextEditor.dispatch(editor, 'insertHtml', { html: RichTextEditor.sanitize(editor, html) });
+            RichTextEditor.afterChange(editor);
         }
 
         private static currentBlock(editor: any): HTMLElement | null {
@@ -1085,6 +1575,7 @@ namespace BitBlazorUI {
             if (editor._tableResizeWired) return;
             editor._tableResizeWired = true;
             editor.addEventListener('mousedown', (e: MouseEvent) => {
+                if (editor._readOnly) return;
                 const target = e.target as HTMLElement;
                 const cell = target.closest && target.closest('td,th') as HTMLElement;
                 if (!cell) return;
@@ -1175,9 +1666,16 @@ namespace BitBlazorUI {
             if (!editor || editor._resizeWired) return;
             editor._resizeWired = true;
             editor.addEventListener('click', (e: MouseEvent) => {
+                if (editor._readOnly) { RichTextEditor.removeResizeHandle(editor); return; }
                 const target = e.target as HTMLElement;
-                if (target && target.tagName === 'IMG') RichTextEditor.startImageResize(editor, target as HTMLImageElement);
-                else RichTextEditor.removeResizeHandle(editor);
+                if (target && target.tagName === 'IMG') {
+                    editor._activeImage = target as HTMLImageElement;
+                    RichTextEditor.startImageResize(editor, target as HTMLImageElement);
+                } else {
+                    editor._activeImage = null;
+                    RichTextEditor.removeResizeHandle(editor);
+                }
+                RichTextEditor.reportState(editor);
             });
         }
 
@@ -1239,6 +1737,7 @@ namespace BitBlazorUI {
         }
 
         private static async handleImageFiles(editor: any, files: File[]) {
+            if (!editor || editor._readOnly) return;
             let accepted = 0;
             for (const file of files) {
                 if (accepted >= 20) {
@@ -1295,6 +1794,7 @@ namespace BitBlazorUI {
         // Events
         // ====================================================================
         private static onPaste(editor: any, e: ClipboardEvent) {
+            if (editor._readOnly) { e.preventDefault(); return; }
             const cb = e.clipboardData;
             if (!cb) return;
 
@@ -1345,6 +1845,7 @@ namespace BitBlazorUI {
         }
 
         private static onDrop(editor: any, e: DragEvent) {
+            if (editor._readOnly) { e.preventDefault(); return; }
             const dt = e.dataTransfer;
             if (!dt) return;
             const imageFiles = Array.from<File>(dt.files as any || []).filter((f: File) => f.type.startsWith('image/')) as File[];
@@ -1389,6 +1890,30 @@ namespace BitBlazorUI {
         }
 
         private static async onKeyDown(editor: any, e: KeyboardEvent) {
+            // Alt+F10 is the conventional "move focus to the toolbar" gesture for an editing
+            // surface, and it is the only way to reach the toolbar from the keyboard without
+            // shift-tabbing back past the whole editor. It works even while read-only, since the
+            // toolbar is still reachable (source view, full screen).
+            if (e.altKey && e.key === 'F10') {
+                e.preventDefault();
+                RichTextEditor.focusToolbar(editor);
+                return;
+            }
+
+            if (editor._readOnly) return;
+
+            // Tab indents / Shift+Tab outdents while the caret is inside a list, matching every
+            // other editor. Outside a list the key keeps its native meaning (move focus out of the
+            // editor), so the editor never becomes a keyboard trap.
+            if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                if (RichTextEditor.listItemAtSelection(editor)) {
+                    e.preventDefault();
+                    RichTextEditor.dispatch(editor, e.shiftKey ? 'outdent' : 'indent', {});
+                    RichTextEditor.afterChange(editor);
+                }
+                return;
+            }
+
             if (!(e.ctrlKey || e.metaKey)) return;
             const key = e.key.toLowerCase();
             const primary = e.ctrlKey || e.metaKey;
@@ -1416,6 +1941,9 @@ namespace BitBlazorUI {
         }
 
         private static onBeforeInput(editor: any, e: InputEvent) {
+            // A read-only surface is not contenteditable, but an assistive tool or an extension can
+            // still raise beforeinput against it; refuse the edit rather than relying on that.
+            if (editor._readOnly) { e.preventDefault(); return; }
             const max = editor._maxLength;
             if (max == null) return;
             const current = (editor.textContent || '').length;
@@ -1465,6 +1993,11 @@ namespace BitBlazorUI {
             try { block = (document.queryCommandValue('formatBlock') || '').toString().toLowerCase(); } catch { /* ignore */ }
 
             const link = RichTextEditor.linkAtSelection(editor);
+            const rect = editor._quickToolbar ? RichTextEditor.selectionRect(editor) : null;
+            const image = RichTextEditor.selectedImage(editor);
+            const codeEl = RichTextEditor.ancestorTag(editor, 'CODE');
+            const inlineCode = codeEl && !(codeEl.parentElement && codeEl.parentElement.tagName === 'PRE');
+            const listItem = RichTextEditor.listItemAtSelection(editor);
             return {
                 bold: q('bold'),
                 italic: q('italic'),
@@ -1475,29 +2008,139 @@ namespace BitBlazorUI {
                 justifyLeft: q('justifyLeft'),
                 justifyCenter: q('justifyCenter'),
                 justifyRight: q('justifyRight'),
+                justifyFull: q('justifyFull'),
                 block: block,
                 subscript: q('subscript'),
                 superscript: q('superscript'),
-                foreColor: v('foreColor') || null,
-                backColor: v('backColor') || null,
+                foreColor: RichTextEditor.toHexColor(v('foreColor')),
+                backColor: RichTextEditor.toHexColor(v('backColor')),
                 fontName: (v('fontName') || '').replace(/^['"]|['"]$/g, '') || null,
-                fontSize: v('fontSize') || null,
+                // queryCommandValue('fontSize') reports the legacy 1-7 scale, which never matches
+                // the CSS lengths the font-size selector offers. Read the resolved size instead so
+                // the selector reflects what is actually applied.
+                fontSize: RichTextEditor.computedFontSize(editor),
                 direction: RichTextEditor.directionAtSelection(editor),
                 inLink: !!link,
-                linkHref: link ? link.getAttribute('href') : null
+                linkHref: link ? link.getAttribute('href') : null,
+                inlineCode: !!inlineCode,
+                taskList: !!(listItem && listItem.parentElement && listItem.parentElement.classList.contains('bit-rte-tasks')),
+                inTable: !!RichTextEditor.cellAtSelection(editor),
+                hasSelection: !!rect,
+                selectionTop: rect ? rect.top : 0,
+                selectionLeft: rect ? rect.left : 0,
+                selectionWidth: rect ? rect.width : 0,
+                selectionHeight: rect ? rect.height : 0,
+                imageSelected: !!image,
+                imageAlign: image ? RichTextEditor.imageAlignOf(image) : null
             };
+        }
+
+        // The bounding box of the current (non-collapsed) selection, in coordinates relative to the
+        // component root - which is the positioning context the selection toolbar is placed in.
+        // Returns null whenever there is nothing to anchor to: a collapsed caret, a selection that
+        // reaches outside this editor, or a zero-sized range.
+        private static selectionRect(editor: any): { top: number, left: number, width: number, height: number } | null {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
+            const range = sel.getRangeAt(0);
+            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return null;
+            const root = editor.closest('.bit-rte');
+            if (!root) return null;
+            const rect = range.getBoundingClientRect();
+            if (!rect || (rect.width === 0 && rect.height === 0)) return null;
+            const origin = root.getBoundingClientRect();
+            return {
+                top: rect.top - origin.top,
+                left: rect.left - origin.left,
+                width: rect.width,
+                height: rect.height
+            };
+        }
+
+        // The image the user last clicked, as long as it is still in this editor. Clicking anywhere
+        // else clears it (see enableImageResize), so this doubles as "an image is selected".
+        private static selectedImage(editor: any): HTMLImageElement | null {
+            const img = editor._activeImage as HTMLImageElement | null;
+            if (!img || !editor.contains(img)) return null;
+            return img;
+        }
+
+        // Which of the three alignments an image currently carries, or null when it flows inline.
+        private static imageAlignOf(img: HTMLImageElement): string | null {
+            const float = (img.style.float || '').toLowerCase();
+            if (float === 'left' || float === 'right') return float;
+            if ((img.style.display || '').toLowerCase() === 'block'
+                && (img.style.marginLeft || '').toLowerCase() === 'auto') return 'center';
+            return null;
+        }
+
+        // Floats the selected image left or right, centers it as its own block, or clears the
+        // alignment. The alignment is written as inline style because that is what survives the
+        // sanitizer's CSS allowlist and what a consumer of the HTML will render.
+        public static alignImage(editor: any, align: string) {
+            if (!editor || editor._readOnly) return;
+            const img = RichTextEditor.selectedImage(editor);
+            if (!img) return;
+
+            img.style.removeProperty('float');
+            img.style.removeProperty('display');
+            img.style.removeProperty('margin-left');
+            img.style.removeProperty('margin-right');
+
+            if (align === 'left' || align === 'right') {
+                img.style.float = align;
+                img.style[align === 'left' ? 'marginRight' : 'marginLeft'] = '1em';
+            } else if (align === 'center') {
+                img.style.display = 'block';
+                img.style.marginLeft = 'auto';
+                img.style.marginRight = 'auto';
+            }
+            RichTextEditor.afterChange(editor);
+        }
+
+        // Normalizes a queryCommandValue color ("rgb(1, 2, 3)", "#abc", a color keyword) into the
+        // "#rrggbb" form an <input type="color"> can display. Returns null when the value is
+        // missing or cannot be resolved, which the toolbar reads as "no single active color".
+        private static toHexColor(value: string): string | null {
+            const raw = (value || '').trim();
+            if (!raw || raw === 'transparent') return null;
+
+            const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(raw);
+            if (rgb) {
+                const hex = (n: string) => Math.max(0, Math.min(255, parseInt(n, 10) || 0)).toString(16).padStart(2, '0');
+                return `#${hex(rgb[1])}${hex(rgb[2])}${hex(rgb[3])}`;
+            }
+            if (/^#[0-9a-f]{6}$/i.test(raw)) return raw.toLowerCase();
+            if (/^#[0-9a-f]{3}$/i.test(raw)) {
+                return `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`.toLowerCase();
+            }
+            return null;
+        }
+
+        // The resolved font-size at the selection, as a CSS length, or null when the selection is
+        // outside this editor.
+        private static computedFontSize(editor: any): string | null {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return null;
+            let node: any = sel.anchorNode;
+            if (node && node.nodeType === 3) node = node.parentNode;
+            if (!node || !editor.contains(node)) return null;
+            const size = getComputedStyle(node as Element).fontSize;
+            return size || null;
         }
 
         private static computeFacts(editor: any): any {
             const text = (editor.textContent || '').replace(/\u00a0/g, ' ');
             const hasText = text.trim().length > 0;
             const hasEmbedded = !!editor.querySelector('img,table,hr,audio,video,iframe');
-            const chars = text.replace(/\s+$/g, '').length === 0 && !hasText ? 0 : text.length;
             const words = (text.trim().match(/\S+/g) || []).length;
             return {
                 hasText: hasText,
                 hasEmbeddedContent: hasEmbedded,
-                characterCount: hasText ? text.length : (chars),
+                // Whitespace-only content reads as empty, so it counts as zero characters rather
+                // than as the length of the padding the browser left behind. Otherwise the count
+                // is the visible text length, which is exactly what MaxLength budgets against.
+                characterCount: hasText ? text.length : 0,
                 wordCount: words
             };
         }
@@ -1505,6 +2148,28 @@ namespace BitBlazorUI {
         // ====================================================================
         // Helpers
         // ====================================================================
+        // Moves keyboard focus to the first enabled control of this editor's toolbar (Alt+F10).
+        private static focusToolbar(editor: any) {
+            const toolbar = editor?.closest('.bit-rte')?.querySelector('.bit-rte-tlb') as HTMLElement | null;
+            if (!toolbar) return;
+            const first = (Array.from(toolbar.querySelectorAll('button,select,input')) as HTMLElement[])
+                .find(el => !(el as HTMLButtonElement).disabled);
+            first?.focus();
+        }
+
+        // The <li> containing the selection, or null when the caret is not inside a list.
+        private static listItemAtSelection(editor: any): HTMLElement | null {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return null;
+            let node: any = sel.anchorNode;
+            if (node && !editor.contains(node)) return null;
+            while (node && node !== editor) {
+                if (node.nodeType === 1 && node.tagName === 'LI') return node;
+                node = node.parentNode;
+            }
+            return null;
+        }
+
         private static linkAtSelection(editor: any): HTMLElement | null {
             const sel = document.getSelection();
             if (!sel || sel.rangeCount === 0) return null;
@@ -1531,6 +2196,55 @@ namespace BitBlazorUI {
         private static insertNodeHtml(editor: any, html: string): boolean {
             if (!html) return false;
             return RichTextEditor.execNative(editor, 'insertHTML', html);
+        }
+
+        // Toggles <code> around the selection. execCommand has no inline-code command, so the
+        // wrap/unwrap is done over the range directly; the surrounding markup is preserved because
+        // the existing nodes are moved into (or out of) the <code> element rather than reserialized.
+        private static toggleInlineCode(editor: any): boolean {
+            if (!RichTextEditor.isTagAllowed(editor, 'code')) return false;
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return false;
+
+            const existing = RichTextEditor.ancestorTag(editor, 'CODE');
+            if (existing) {
+                // Only unwrap an inline <code>; a <code> inside a <pre> is the code block itself.
+                if (existing.parentElement && existing.parentElement.tagName === 'PRE') return false;
+                const parent = existing.parentNode;
+                existing.replaceWith(...Array.from(existing.childNodes));
+                parent && (parent as Element).normalize?.();
+                return true;
+            }
+
+            const range = sel.getRangeAt(0);
+            if (range.collapsed) return false;
+            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return false;
+            const code = document.createElement('code');
+            try {
+                code.appendChild(range.extractContents());
+                range.insertNode(code);
+            } catch {
+                return false;
+            }
+            const after = document.createRange();
+            after.selectNodeContents(code);
+            sel.removeAllRanges();
+            sel.addRange(after);
+            editor._range = after.cloneRange();
+            return true;
+        }
+
+        // Nearest ancestor of the selection with the given tag name, bounded by the editor.
+        private static ancestorTag(editor: any, tagName: string): HTMLElement | null {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return null;
+            let node: any = sel.anchorNode;
+            if (node && !editor.contains(node)) return null;
+            while (node && node !== editor) {
+                if (node.nodeType === 1 && node.tagName === tagName) return node;
+                node = node.parentNode;
+            }
+            return null;
         }
 
         private static insertHorizontalRule(editor: any): boolean {
@@ -1568,11 +2282,34 @@ namespace BitBlazorUI {
         // listed tags/attributes survive, so non-URI attributes like formaction are dropped
         // unless explicitly allowed, and event handlers / disallowed URI schemes are stripped.
         private static sanitize(editor: any, html: string): string {
+            // Sanitize repeatedly until the serialized output stops changing. Parsing markup and
+            // re-serializing it can produce a *different* tree the second time around (mutation
+            // XSS via namespace switching, badly closed comments, ...), so a single pass can hand
+            // back a string that becomes dangerous when the browser parses it again. Re-running
+            // the pass on our own output closes that gap; three rounds is far past the point any
+            // known vector stabilizes and bounds the cost for pathological input.
+            let current = html ?? '';
+            for (let pass = 0; pass < 3; pass++) {
+                const next = RichTextEditor.sanitizePass(editor, current);
+                if (next === current) return next;
+                current = next;
+            }
+            return current;
+        }
+
+        private static sanitizePass(editor: any, html: string): string {
             const tpl = document.createElement('template');
             tpl.innerHTML = html;
             const policy = (editor && editor._policy) || RichTextEditor.DEFAULT_POLICY;
 
-            tpl.content.querySelectorAll('script,style,iframe,object,embed,link,meta,title,head').forEach((n: Element) => {
+            // Comments are never rendered content and are a known re-parse vector ("<!--><script>"
+            // style payloads), so drop them before anything else looks at the tree.
+            const comments = document.createTreeWalker(tpl.content, NodeFilter.SHOW_COMMENT);
+            const staleComments: Node[] = [];
+            while (comments.nextNode()) staleComments.push(comments.currentNode);
+            staleComments.forEach(c => c.parentNode && c.parentNode.removeChild(c));
+
+            tpl.content.querySelectorAll(RichTextEditor.DROPPED_TAGS).forEach((n: Element) => {
                 if (policy && policy.allowedTags && policy.allowedTags.includes(n.tagName.toLowerCase())) return;
                 n.remove();
             });
@@ -1609,7 +2346,21 @@ namespace BitBlazorUI {
                         ...(allowedAttributes[tag] || []),
                         ...(allowedAttributes['*'] || [])
                     ];
-                    if (!allowed.includes(name)) el.removeAttribute(attr.name);
+                    if (!allowed.includes(name)) { el.removeAttribute(attr.name); continue; }
+                    // A permitted 'style' attribute still has its declarations filtered: only the
+                    // presentational properties the editor itself emits survive, and any value that
+                    // could reference a URL or a script is dropped.
+                    if (name === 'style') {
+                        const safeStyle = RichTextEditor.sanitizeStyle(val);
+                        if (safeStyle) el.setAttribute('style', safeStyle);
+                        else el.removeAttribute(attr.name);
+                    }
+                }
+                if (tag === 'iframe' && !(editor && editor._policy)) {
+                    if (!RichTextEditor.isAllowedEmbedSrc(el.getAttribute('src'))) {
+                        el.remove();
+                        return;
+                    }
                 }
                 // Harden anchors that survive sanitization with target="_blank": a blank target
                 // gives the opened page access to window.opener unless rel includes noopener.
@@ -1632,18 +2383,58 @@ namespace BitBlazorUI {
             return tpl.innerHTML;
         }
 
+        // Filters a style attribute down to the allowlisted presentational declarations. Returns
+        // the rebuilt declaration list, or an empty string when nothing survives (the caller then
+        // removes the attribute entirely rather than leaving an empty one behind).
+        private static sanitizeStyle(style: string): string {
+            const kept: string[] = [];
+            for (const decl of (style || '').split(';')) {
+                const colon = decl.indexOf(':');
+                if (colon <= 0) continue;
+                const prop = decl.slice(0, colon).trim().toLowerCase();
+                const value = decl.slice(colon + 1).trim();
+                if (!value) continue;
+                if (!RichTextEditor.ALLOWED_CSS_PROPS.has(prop)) continue;
+                if (RichTextEditor.UNSAFE_CSS_VALUE.test(value)) continue;
+                kept.push(`${prop}: ${value}`);
+            }
+            return kept.join('; ');
+        }
+
+        // Cleans up the wrappers Word and Google Docs put around copied content before the
+        // markup reaches the allowlist. Without this the pasted text arrives buried in namespaced
+        // elements and mso-* declarations that would either survive as noise or take the real
+        // formatting with them when they are stripped.
         private static normalizeWordHtml(html: string): string {
             return html
                 .replace(/<!--[\s\S]*?-->/g, '')
+                // Word ships an <xml> island of document metadata alongside the content.
+                .replace(/<xml[\s\S]*?<\/xml>/gi, '')
                 .replace(/<\/?o:[^>]*>/gi, '')
                 .replace(/<\/?w:[^>]*>/gi, '')
-                .replace(/\s(class|style)="[^"]*mso[^"]*"/gi, '');
+                .replace(/<\/?m:[^>]*>/gi, '')
+                .replace(/<\/?st\d+:[^>]*>/gi, '')
+                .replace(/\s(class|style)="[^"]*mso[^"]*"/gi, '')
+                // Google Docs wraps everything in <b style="font-weight:normal" id="docs-internal-guid-...">,
+                // which would otherwise bold the whole paste once the style attribute is filtered.
+                .replace(/<b[^>]*id="docs-internal-guid-[^"]*"[^>]*>/gi, '');
         }
 
         private static escapeHtml(s: string): string {
             const d = document.createElement('div');
             d.textContent = s ?? '';
             return d.innerHTML;
+        }
+
+        // Whether inserting a fragment at the current selection keeps the visible text within
+        // _maxLength. Selected text is replaced by the insert, so it frees its own length.
+        private static fitsWithinMaxLength(editor: any, html: string): boolean {
+            const max = editor._maxLength;
+            if (max == null) return true;
+            const sel = document.getSelection();
+            const selected = (sel && !sel.isCollapsed) ? sel.toString().length : 0;
+            const current = (editor.textContent || '').length;
+            return current - selected + RichTextEditor.visibleTextLength(html) <= max;
         }
 
         // Measures the visible (text) length of an HTML fragment, matching how _maxLength is
@@ -1688,6 +2479,21 @@ namespace BitBlazorUI {
                 .replace(/"/g, '&quot;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
+        }
+
+        // Whether an iframe source is one of the approved embed hosts, over https. Anything else -
+        // including an unparseable value - is refused, so a downgraded or unknown embed is dropped
+        // rather than rendered.
+        private static isAllowedEmbedSrc(src: string | null): boolean {
+            const value = (src || '').trim();
+            if (!value) return false;
+            try {
+                const url = new URL(value);
+                return url.protocol.toLowerCase() === 'https:'
+                    && RichTextEditor.IFRAME_HOSTS.includes(url.host.toLowerCase());
+            } catch {
+                return false;
+            }
         }
 
         // Whether the active policy (or the secure default when none is set) permits a given tag.

@@ -19,8 +19,22 @@ public partial class BitRichTextEditor
         ["ctrl+u"] = "underline",
         ["ctrl+z"] = "undo",
         ["ctrl+y"] = "redo",
-        ["ctrl+shift+z"] = "redo"
+        ["ctrl+shift+z"] = "redo",
+        ["ctrl+shift+x"] = "strikeThrough",
+        ["ctrl+shift+7"] = "insertOrderedList",
+        ["ctrl+shift+8"] = "insertUnorderedList",
+        ["ctrl+shift+9"] = "insertTaskList",
+        ["ctrl+e"] = "inlineCode",
+        ["ctrl+k"] = LinkCommand,
+        ["ctrl+shift+k"] = "unlink",
+        ["ctrl+\\"] = "removeFormat"
     };
+
+    /// <summary>
+    /// The one shortcut command that is not an editing command: it opens the link panel instead of
+    /// mutating content, because a link needs a URL the user has not supplied yet.
+    /// </summary>
+    private const string LinkCommand = "link";
 
     /// <summary>
     /// Invoked by the JS bridge for Ctrl/Cmd keystrokes. Returns true when handled so the
@@ -55,6 +69,19 @@ public partial class BitRichTextEditor
 
         if (command is null) return false;
 
+        // "link" opens the link panel rather than running a command; the panel then applies the
+        // link through the normal validated path once a URL has been entered.
+        if (string.Equals(command, LinkCommand, StringComparison.OrdinalIgnoreCase))
+        {
+            // The panel lives inside the toolbar, so claiming the keystroke while the toolbar or
+            // the link group is off would swallow the browser default and show nothing.
+            if (ShowToolbar is false || Has(BitRichTextEditorToolbar.Link) is false) return false;
+
+            if (_showLinkInput is false) ToggleLinkInput();
+            StateHasChanged();
+            return true;
+        }
+
         if (IsKnownCommand(command) is false)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("unknown-shortcut",
@@ -79,9 +106,11 @@ public partial class BitRichTextEditor
     private static readonly HashSet<string> KnownCommands = new(StringComparer.OrdinalIgnoreCase)
     {
         "bold", "italic", "underline", "strikeThrough", "undo", "redo",
-        "insertOrderedList", "insertUnorderedList", "justifyLeft", "justifyCenter",
-        "justifyRight", "justifyFull", "indent", "outdent", "subscript", "superscript",
-        "removeFormat", "unlink", "insertHorizontalRule"
+        "insertOrderedList", "insertUnorderedList", "insertTaskList", "inlineCode",
+        "justifyLeft", "justifyCenter", "justifyRight", "justifyFull",
+        "indent", "outdent", "subscript", "superscript",
+        "removeFormat", "unlink", "insertHorizontalRule",
+        LinkCommand
     };
 
     private static bool IsKnownCommand(string command) => KnownCommands.Contains(command);

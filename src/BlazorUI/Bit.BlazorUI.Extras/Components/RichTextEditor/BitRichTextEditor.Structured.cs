@@ -7,12 +7,24 @@ public partial class BitRichTextEditor
 {
     private bool _showMediaInput;
     private string _mediaUrl = "";
+    private ElementReference _mediaInputRef = default!;
 
     private void ToggleMediaInput()
     {
         _showMediaInput = !_showMediaInput;
         _mediaUrl = "";
+        if (_showMediaInput)
+        {
+            CloseOtherPanels("media");
+            RequestPanelFocus(() => _mediaInputRef);
+        }
         ClearInlineError();
+    }
+
+    private async Task OnMediaKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await ApplyMediaAsync();
+        else if (e.Key == "Escape") ToggleMediaInput();
     }
 
     private async Task ApplyMediaAsync()

@@ -29,19 +29,42 @@ public partial class BitRichTextEditor : BitComponentBase
 
 
     /// <summary>
+    /// Automatically moves keyboard focus into the editor after the first render.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
+    /// Turns a URL typed into the editor into a link as soon as the word is finished.
+    /// </summary>
+    [Parameter] public bool AutoLink { get; set; } = true;
+
+    /// <summary>
     /// Custom CSS classes for different parts of the rich text editor.
     /// </summary>
     [Parameter] public BitRichTextEditorClassStyles? Classes { get; set; }
 
+    private int _debounceMs = 200;
     /// <summary>
-    /// Debounce window (ms) for content-change notifications while typing.
+    /// Debounce window (ms) for content-change notifications while typing. Negative values are
+    /// rejected and treated as 0 so the bridge never receives an invalid timer interval.
     /// </summary>
-    [Parameter] public int DebounceMs { get; set; } = 200;
+    [Parameter]
+    public int DebounceMs
+    {
+        get => _debounceMs;
+        set => _debounceMs = value < 0 ? 0 : value;
+    }
 
     /// <summary>
     /// Minimum height of the editing surface (any CSS length).
     /// </summary>
     [Parameter] public string Height { get; set; } = "300px";
+
+    /// <summary>
+    /// Maximum height of the editing surface (any CSS length). Content beyond it scrolls inside
+    /// the editor instead of growing the page. Null leaves the surface unbounded.
+    /// </summary>
+    [Parameter] public string? MaxHeight { get; set; }
 
     /// <summary>
     /// Callback for when the editor loses focus.
@@ -75,9 +98,19 @@ public partial class BitRichTextEditor : BitComponentBase
     public bool ReadOnly { get; set; }
 
     /// <summary>
+    /// Whether a small formatting toolbar floats next to the current text selection.
+    /// </summary>
+    [Parameter] public bool ShowQuickToolbar { get; set; }
+
+    /// <summary>
     /// Whether the formatting toolbar is shown.
     /// </summary>
     [Parameter] public bool ShowToolbar { get; set; } = true;
+
+    /// <summary>
+    /// Whether the browser's native spell checking runs over the editor content.
+    /// </summary>
+    [Parameter] public bool SpellCheck { get; set; } = true;
 
     /// <summary>
     /// Custom CSS styles for different parts of the rich text editor.
@@ -142,13 +175,121 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     /// <summary>
+    /// Returns the plain text of the current selection, or an empty string when nothing inside the
+    /// editor is selected.
+    /// </summary>
+    public async ValueTask<string> GetSelectedTextAsync()
+    {
+        if (_initialized is false || _inSourceView) return "";
+        return await _js.BitRichTextEditorGetSelectedText(_editorRef);
+    }
+
+    /// <summary>
     /// Runs a raw editing command against the editor.
     /// </summary>
     public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);
 
+    /// <summary>
+    /// Inserts plain text at the current caret position, honoring <see cref="MaxLength"/>.
+    /// </summary>
+    public async Task InsertTextAsync(string text)
+    {
+        if (ControlsDisabled || string.IsNullOrEmpty(text)) return;
+        await _js.BitRichTextEditorInsertText(_editorRef, text);
+    }
+
+    /// <summary>
+    /// Inserts HTML at the current caret position. The markup is run through the active
+    /// sanitization policy first, so it can never introduce content the editor would strip.
+    /// </summary>
+    public async Task InsertHtmlAsync(string html)
+    {
+        if (ControlsDisabled || string.IsNullOrEmpty(html)) return;
+        await _js.BitRichTextEditorInsertHtml(_editorRef, html);
+    }
+
+    /// <summary>
+    /// Replaces the whole content with the given HTML (sanitized), or clears it when null/empty.
+    /// </summary>
+    public async Task SetHtmlAsync(string? html)
+    {
+        if (ControlsDisabled) return;
+        var next = html ?? "";
+        if (string.IsNullOrEmpty(next) is false)
+        {
+            next = await _js.BitRichTextEditorSanitizeHtml(_editorRef, next);
+        }
+        if (next == _currentHtml) return;
+
+        await _js.BitRichTextEditorSetHtml(_editorRef, next);
+        _currentHtml = next;
+        await AssignValue(next);
+        NotifyEditContextChanged();
+        await OnChange.InvokeAsync(next);
+    }
+
+    /// <summary>Clears the editor content.</summary>
+    public Task ClearAsync() => SetHtmlAsync(null);
+
+    /// <summary>Undoes the last edit.</summary>
+    public Task UndoAsync() => ExecAsync("undo");
+
+    /// <summary>Redoes the last undone edit.</summary>
+    public Task RedoAsync() => ExecAsync("redo");
+
+    /// <summary>Selects the whole editor content.</summary>
+    public async ValueTask SelectAllAsync()
+    {
+        if (_initialized is false || _inSourceView) return;
+        await _js.BitRichTextEditorSelectAll(_editorRef);
+    }
 
 
-    private bool ControlsDisabled => ReadOnly || _inSourceView;
+
+    /// <summary>
+    /// The effective read-only state: an editor is locked either by ReadOnly or by being disabled
+    /// through the inherited IsEnabled parameter, and both must reach the surface, the bridge, and
+    /// the toolbar identically.
+    /// </summary>
+    private bool EffectiveReadOnly => ReadOnly || IsEnabled is false;
+
+    private bool ControlsDisabled => EffectiveReadOnly || _inSourceView;
+
+    /// <summary>
+    /// The size constraints shared by the WYSIWYG surface and the source-view textarea, so both
+    /// modes occupy the same box and toggling between them does not make the page jump.
+    /// </summary>
+    private string SurfaceSizeStyle
+        => MaxHeight is null ? $"min-height:{Height};" : $"min-height:{Height};max-height:{MaxHeight};";
+
+    /// <summary>
+    /// Whether the floating selection toolbar should be on screen: it is opt-in, needs a real
+    /// selection to anchor to, and never competes with the slash menu or a disabled surface.
+    /// </summary>
+    private bool ShowingQuickToolbar
+        => ShowQuickToolbar && _state.HasSelection && ControlsDisabled is false
+        && _showSlash is false && _showMention is false;
+
+    /// <summary>
+    /// Places the selection toolbar just above the selection, in the component root's coordinates.
+    /// The values are formatted with the invariant culture: a comma decimal separator would make
+    /// the browser drop the declaration under a locale like fr-FR.
+    /// </summary>
+    private string QuickToolbarStyle
+    {
+        get
+        {
+            // Roughly the toolbar's own height plus a small gap, so it sits clear of the text; when
+            // the selection is near the top of the component it flips below instead of off-screen.
+            const double offset = 44;
+            var top = _state.SelectionTop >= offset
+                ? _state.SelectionTop - offset
+                : _state.SelectionTop + _state.SelectionHeight + 8;
+            var left = Math.Max(0, _state.SelectionLeft);
+            return string.Create(System.Globalization.CultureInfo.InvariantCulture,
+                $"top:{top:0.##}px;left:{left:0.##}px");
+        }
+    }
 
     private bool Has(BitRichTextEditorToolbar group) => Toolbar.HasFlag(group);
 
@@ -229,9 +370,6 @@ public partial class BitRichTextEditor : BitComponentBase
         await _js.BitRichTextEditorExec(_editorRef, command, value);
     }
 
-    private Task UndoAsync() => ExecAsync("undo");
-    private Task RedoAsync() => ExecAsync("redo");
-
     private Task OnBlockFormatChanged(ChangeEventArgs e)
         => ExecBlockAsync(e.Value?.ToString() ?? "p");
 
@@ -254,6 +392,41 @@ public partial class BitRichTextEditor : BitComponentBase
 
 
     // ---- helpers ----
+
+    // The inline panels (link, image, media, find, emoji) open in response to a toolbar click,
+    // so without this the caret would stay in the editor and the panel's first field would have to
+    // be reached with a Tab. Each panel registers the field it wants focused and the focus is moved
+    // on the render that follows, once the element actually exists.
+    private Func<ElementReference>? _pendingPanelFocus;
+
+    private void RequestPanelFocus(Func<ElementReference> target) => _pendingPanelFocus = target;
+
+    /// <summary>
+    /// Closes every inline panel except the one being opened. They all occupy the same strip under
+    /// the toolbar, so leaving two open stacks unrelated bars over the editor and makes the
+    /// aria-expanded state of the toolbar buttons disagree with what is on screen.
+    /// </summary>
+    private void CloseOtherPanels(string keep)
+    {
+        if (keep != "link") { _showLinkInput = false; _linkUrl = ""; _linkText = ""; _linkNewTab = false; }
+        if (keep != "image") { _showImageInput = false; _imageUrl = ""; _imageAlt = ""; }
+        if (keep != "media") { _showMediaInput = false; _mediaUrl = ""; }
+        if (keep != "table") { _showTableInput = false; }
+        if (keep != "emoji") { _showEmoji = false; _emojiSearch = ""; }
+    }
+
+    private async Task FocusPanelIfPendingAsync()
+    {
+        if (_pendingPanelFocus is null) return;
+        var target = _pendingPanelFocus;
+        _pendingPanelFocus = null;
+        try
+        {
+            await target().FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // circuit gone; nothing to focus
+        catch (JSException) { } // interop unavailable or the element was not rendered
+    }
 
     private async Task RaiseErrorAsync(BitRichTextEditorError error)
     {
@@ -279,7 +452,7 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => _fullScreen ? "bit-rte-fsc" : string.Empty);
-        ClassBuilder.Register(() => ReadOnly ? "bit-rte-ro" : string.Empty);
+        ClassBuilder.Register(() => EffectiveReadOnly ? "bit-rte-ro" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -332,7 +505,11 @@ public partial class BitRichTextEditor : BitComponentBase
         HasUpload = OnImageUpload is not null,
         PlainTextPaste = PasteAsPlainText,
         MaxLength = MaxLength,
-        ShortcutKeys = BuildOwnedShortcutCombos()
+        ShortcutKeys = BuildOwnedShortcutCombos(),
+        ReadOnly = EffectiveReadOnly,
+        AutoLink = AutoLink,
+        QuickToolbar = ShowQuickToolbar,
+        Mentions = OnMentionSearch is not null
     };
 
     // Serializes the setup payload so OnParametersSetAsync can detect whether any bridge-backed
@@ -377,6 +554,11 @@ public partial class BitRichTextEditor : BitComponentBase
             }
 
             _initialized = true;
+
+            if (AutoFocus)
+            {
+                await FocusAsync();
+            }
         }
 
         // Wire (or re-wire) the toolbar roving tabindex whenever the toolbar becomes visible.
@@ -399,6 +581,8 @@ public partial class BitRichTextEditor : BitComponentBase
         // menu is keyboard-driven (filter, arrow navigation, Enter to apply) rather than leaving
         // focus in the editor.
         await FocusSlashIfPendingAsync();
+        await FocusMentionIfPendingAsync();
+        await FocusPanelIfPendingAsync();
     }
 
     private async ValueTask OnValueSet()

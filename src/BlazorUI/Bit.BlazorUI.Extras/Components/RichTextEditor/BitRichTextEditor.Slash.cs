@@ -10,18 +10,20 @@ public partial class BitRichTextEditor
     private bool _focusSlashPending;
     private ElementReference _slashInputRef = default!;
 
-    private readonly record struct SlashCommand(string Key, string Label, string Command);
+    private readonly record struct SlashCommand(string Key, string Label, string Command, string Keywords);
 
     private static readonly SlashCommand[] SlashCommands =
     [
-        new("heading-1", "Heading 1", "h1"),
-        new("heading-2", "Heading 2", "h2"),
-        new("heading-3", "Heading 3", "h3"),
-        new("paragraph", "Paragraph", "p"),
-        new("bullet-list", "Bulleted list", "insertUnorderedList"),
-        new("numbered-list", "Numbered list", "insertOrderedList"),
-        new("quote", "Quote", "blockquote"),
-        new("code-block", "Code block", "pre"),
+        new("heading-1", "Heading 1", "h1", "h1 title big"),
+        new("heading-2", "Heading 2", "h2", "h2 title"),
+        new("heading-3", "Heading 3", "h3", "h3 title small"),
+        new("paragraph", "Paragraph", "p", "text normal body"),
+        new("bullet-list", "Bulleted list", "insertUnorderedList", "ul unordered bullets"),
+        new("numbered-list", "Numbered list", "insertOrderedList", "ol ordered numbers"),
+        new("task-list", "Task list", "insertTaskList", "todo checklist checkbox"),
+        new("quote", "Quote", "blockquote", "blockquote citation"),
+        new("code-block", "Code block", "pre", "pre snippet monospace"),
+        new("divider", "Divider", "insertHorizontalRule", "hr rule separator line"),
     ];
 
     /// <summary>Called by the bridge when the user types the slash trigger.</summary>
@@ -31,6 +33,8 @@ public partial class BitRichTextEditor
         // Gate on ControlsDisabled (ReadOnly || _inSourceView), matching ApplySlashAsync, so the
         // slash UI is never opened while controls are disabled (e.g. in source-view mode).
         if (ControlsDisabled) return;
+        // The two menus answer different triggers and share the same spot, so only one is ever up.
+        CloseMention();
         _slashFilter = "";
         _slashIndex = 0;
         _showSlash = true;
@@ -45,7 +49,10 @@ public partial class BitRichTextEditor
     {
         var term = _slashFilter?.Trim();
         if (string.IsNullOrEmpty(term)) return SlashCommands;
-        return SlashCommands.Where(c => Label(c.Key, c.Label).Contains(term, StringComparison.OrdinalIgnoreCase));
+        // Match the localized label first, then the English keywords, so a command is still
+        // reachable by the word people know it by ("todo", "hr") and not only by its display name.
+        return SlashCommands.Where(c => Label(c.Key, c.Label).Contains(term, StringComparison.OrdinalIgnoreCase)
+                                     || c.Keywords.Contains(term, StringComparison.OrdinalIgnoreCase));
     }
 
     // Resets the highlighted item to the top of the (re)filtered list as the user types so the

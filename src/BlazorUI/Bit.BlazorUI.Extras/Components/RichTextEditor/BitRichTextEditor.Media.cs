@@ -32,12 +32,26 @@ public partial class BitRichTextEditor
     // ---- image insertion ----
     private bool _showImageInput;
     private string _imageUrl = "";
+    private string _imageAlt = "";
+    private ElementReference _imageInputRef = default!;
 
     private void ToggleImageInput()
     {
         _showImageInput = !_showImageInput;
         _imageUrl = "";
+        _imageAlt = "";
+        if (_showImageInput)
+        {
+            CloseOtherPanels("image");
+            RequestPanelFocus(() => _imageInputRef);
+        }
         ClearInlineError();
+    }
+
+    private async Task OnImageKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await ApplyImageUrlAsync();
+        else if (e.Key == "Escape") ToggleImageInput();
     }
 
     private async Task ApplyImageUrlAsync()
@@ -50,9 +64,10 @@ public partial class BitRichTextEditor
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("image-url-invalid", "That image URL is not valid.")));
             return;
         }
-        await _js.BitRichTextEditorInsertImageUrl(_editorRef, url);
+        await _js.BitRichTextEditorInsertImageUrl(_editorRef, url, _imageAlt.Trim());
         _showImageInput = false;
         _imageUrl = "";
+        _imageAlt = "";
         ClearInlineError();
     }
 
@@ -193,6 +208,20 @@ public partial class BitRichTextEditor
     [JSInvokable("OnClientError")]
     public Task _OnClientError(string code, string message)
         => RaiseErrorAsync(new BitRichTextEditorError(code, message));
+
+    /// <summary>
+    /// The image alignment buttons only mean anything while an image is selected, so they stay
+    /// disabled until the bridge reports one.
+    /// </summary>
+    private bool ImageOpsDisabled => ControlsDisabled || _state.ImageSelected is false;
+
+    // Applies (or clears, when the same alignment is already active) the alignment of the selected
+    // image. Clicking the active alignment again is the natural way to get an image back inline.
+    private async Task AlignImageAsync(string align)
+    {
+        if (ImageOpsDisabled) return;
+        await _js.BitRichTextEditorAlignImage(_editorRef, _state.ImageAlign == align ? "none" : align);
+    }
 
     // ---- color ----
     private async Task ApplyColorAsync(string kind, ChangeEventArgs e)

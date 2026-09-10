@@ -15,6 +15,7 @@ public sealed class BitRichTextEditorSelectionState
     public bool JustifyLeft { get; set; }
     public bool JustifyCenter { get; set; }
     public bool JustifyRight { get; set; }
+    public bool JustifyFull { get; set; }
 
     /// <summary>The current block tag (e.g. "p", "h1", "blockquote", "pre"), lowercase, or empty when no active block is reported.</summary>
     public string Block { get; set; } = "";
@@ -42,4 +43,34 @@ public sealed class BitRichTextEditorSelectionState
 
     /// <summary>The href of the link under the selection, or null when none/multiple.</summary>
     public string? LinkHref { get; set; }
+
+    /// <summary>True when the selection sits inside an inline code span (not a code block).</summary>
+    public bool InlineCode { get; set; }
+
+    /// <summary>True when the selection sits inside a checklist item.</summary>
+    public bool TaskList { get; set; }
+
+    /// <summary>True when the selection sits inside a table cell, enabling the table operations.</summary>
+    public bool InTable { get; set; }
+
+    /// <summary>True when a non-empty range inside the editor is selected.</summary>
+    public bool HasSelection { get; set; }
+
+    /// <summary>Top of the selection rectangle, in pixels relative to the component root.</summary>
+    public double SelectionTop { get; set; }
+
+    /// <summary>Left edge of the selection rectangle, in pixels relative to the component root.</summary>
+    public double SelectionLeft { get; set; }
+
+    /// <summary>Width of the selection rectangle in pixels.</summary>
+    public double SelectionWidth { get; set; }
+
+    /// <summary>Height of the selection rectangle in pixels.</summary>
+    public double SelectionHeight { get; set; }
+
+    /// <summary>True when an image inside the editor is selected.</summary>
+    public bool ImageSelected { get; set; }
+
+    /// <summary>Alignment of the selected image ("left", "center", "right"), or null when it flows inline.</summary>
+    public string? ImageAlign { get; set; }
 }

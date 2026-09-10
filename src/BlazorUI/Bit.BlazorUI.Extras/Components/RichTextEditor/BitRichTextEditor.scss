@@ -4,10 +4,23 @@
     border: $shp-border-width $shp-border-style $clr-brd-pri;
     border-radius: $shp-radius-surface;
     overflow: hidden;
+    // The floating selection toolbar is positioned in this element's coordinate space, which is
+    // also what the bridge measures the selection rectangle against.
+    position: relative;
     background: $clr-bg-pri;
     color: $clr-fg-pri;
     display: flex;
     flex-direction: column;
+}
+
+.bit-rte.bit-dis {
+    opacity: $opa-dis;
+
+    .bit-rte-tlb,
+    .bit-rte-edt,
+    .bit-rte-src {
+        pointer-events: none;
+    }
 }
 
 .bit-rte-fsc {
@@ -139,6 +152,17 @@
     color: $clr-fg-pri;
 }
 
+.bit-rte-num {
+    width: spacing(6);
+    height: spacing(3.75);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: $shp-radius-control;
+    padding: 0 spacing(0.6);
+    font-size: $tg-fs-sm;
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
+}
+
 .bit-rte-find-opt {
     font-size: $tg-fs-xs;
     display: inline-flex;
@@ -158,13 +182,28 @@
     background: $clr-bg-sec;
 }
 
+.bit-rte-emoji-scroll {
+    margin-top: spacing(0.7);
+    max-height: spacing(17.5);
+    overflow-y: auto;
+}
+
+.bit-rte-emoji-head {
+    font-size: $tg-fs-2xs;
+    font-weight: $tg-fw-semibold;
+    text-transform: uppercase;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: $clr-fg-sec;
+    padding: spacing(0.5) spacing(0.3) spacing(0.2);
+    position: sticky;
+    top: 0;
+    background: $clr-bg-sec;
+}
+
 .bit-rte-emoji-grid {
     display: flex;
     flex-wrap: wrap;
     gap: spacing(0.3);
-    margin-top: spacing(0.7);
-    max-height: spacing(17.5);
-    overflow-y: auto;
 }
 
 .bit-rte-emoji {
@@ -349,6 +388,89 @@
         background: $clr-wrn-light;
         color: $clr-fg-pri;
     }
+
+    span.bit-rte-mention {
+        background: $clr-pri-light;
+        color: $clr-pri-dark;
+        border-radius: $shp-radius-chip;
+        padding: 0 spacing(0.5);
+        white-space: nowrap;
+    }
+
+    mark.bit-rte-find-cur {
+        background: $clr-pri;
+        color: $clr-pri-text;
+    }
+
+    // Checklists are plain lists whose marker is drawn from the item's data-checked state, so the
+    // markup stays inside the sanitizer allowlist and needs no interactive element.
+    ul.bit-rte-tasks {
+        list-style: none;
+        padding-inline-start: spacing(1);
+
+        > li {
+            position: relative;
+            padding-inline-start: spacing(3);
+
+            &::before {
+                content: "";
+                position: absolute;
+                inset-inline-start: 0;
+                inset-block-start: spacing(0.4);
+                width: spacing(1.75);
+                height: spacing(1.75);
+                border: $shp-border-width-thick $shp-border-style $clr-brd-pri;
+                border-radius: $shp-radius-selection;
+                cursor: pointer;
+            }
+
+            &[data-checked="true"] {
+                color: $clr-fg-sec;
+                text-decoration: line-through;
+
+                &::before {
+                    content: "✔";
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: $tg-fs-2xs;
+                    text-decoration: none;
+                    background: $clr-pri;
+                    border-color: $clr-pri;
+                    color: $clr-pri-text;
+                }
+            }
+        }
+    }
+
+    code {
+        background: $clr-bg-sec;
+        border-radius: $shp-radius-xs;
+        padding: 0 spacing(0.4);
+        font-family: SFMono-Regular, Consolas, monospace;
+        font-size: $tg-fs-xs;
+    }
+
+    pre > code {
+        background: none;
+        padding: 0;
+        font-size: inherit;
+    }
+}
+
+.bit-rte-quick {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    gap: spacing(0.3);
+    padding: spacing(0.3);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: $shp-radius-popup;
+    background: $clr-bg-pri;
+    box-shadow: $box-shadow-popup;
+    // Never let the bar itself swallow a click meant for the text it is floating over.
+    max-width: calc(100% - #{spacing(1)});
+    flex-wrap: wrap;
 }
 
 .bit-rte-slash {
@@ -368,6 +490,20 @@
     display: flex;
     flex-direction: column;
     gap: spacing(0.25);
+}
+
+.bit-rte-mention-menu {
+    max-width: spacing(37.5);
+}
+
+.bit-rte-mention-name {
+    display: block;
+}
+
+.bit-rte-mention-desc {
+    display: block;
+    font-size: $tg-fs-2xs;
+    color: $clr-fg-sec;
 }
 
 .bit-rte-slash-item {

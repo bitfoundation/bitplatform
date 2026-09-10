@@ -81,19 +81,39 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.execBlock", editor, tag);
     }
 
-    public static ValueTask BitRichTextEditorCreateLink(this IJSRuntime jsRuntime, ElementReference editor, string url)
+    public static ValueTask BitRichTextEditorCreateLink(this IJSRuntime jsRuntime, ElementReference editor, string url, bool newTab, string? text)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.createLink", editor, url);
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.createLink", editor, url, newTab, text);
     }
 
-    public static ValueTask BitRichTextEditorUpdateLink(this IJSRuntime jsRuntime, ElementReference editor, string url)
+    public static ValueTask BitRichTextEditorUpdateLink(this IJSRuntime jsRuntime, ElementReference editor, string url, bool newTab)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.updateLink", editor, url);
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.updateLink", editor, url, newTab);
     }
 
-    public static ValueTask BitRichTextEditorInsertImageUrl(this IJSRuntime jsRuntime, ElementReference editor, string url)
+    public static ValueTask BitRichTextEditorInsertImageUrl(this IJSRuntime jsRuntime, ElementReference editor, string url, string? alt)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertImageUrl", editor, url);
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertImageUrl", editor, url, alt);
+    }
+
+    public static ValueTask BitRichTextEditorAlignImage(this IJSRuntime jsRuntime, ElementReference editor, string align)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.alignImage", editor, align);
+    }
+
+    public static ValueTask BitRichTextEditorInsertHtml(this IJSRuntime jsRuntime, ElementReference editor, string html)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertHtml", editor, html);
+    }
+
+    public static ValueTask BitRichTextEditorSelectAll(this IJSRuntime jsRuntime, ElementReference editor)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.selectAll", editor);
+    }
+
+    public static ValueTask<string> BitRichTextEditorGetSelectedText(this IJSRuntime jsRuntime, ElementReference editor)
+    {
+        return jsRuntime.Invoke<string>("BitBlazorUI.RichTextEditor.getSelectedText", editor);
     }
 
     public static ValueTask BitRichTextEditorApplyColor(this IJSRuntime jsRuntime, ElementReference editor, string kind, string value)
@@ -116,9 +136,9 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertText", editor, text);
     }
 
-    public static ValueTask BitRichTextEditorInsertTable(this IJSRuntime jsRuntime, ElementReference editor, int rows, int cols)
+    public static ValueTask BitRichTextEditorInsertTable(this IJSRuntime jsRuntime, ElementReference editor, int rows, int cols, bool header)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertTable", editor, rows, cols);
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertTable", editor, rows, cols, header);
     }
 
     public static ValueTask BitRichTextEditorTableOp(this IJSRuntime jsRuntime, ElementReference editor, string op)
@@ -131,19 +151,24 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.clearFind", editor);
     }
 
-    public static ValueTask<int> BitRichTextEditorFind(this IJSRuntime jsRuntime, ElementReference editor, string term, bool caseSensitive)
+    public static ValueTask<int> BitRichTextEditorFind(this IJSRuntime jsRuntime, ElementReference editor, string term, bool caseSensitive, bool wholeWord)
     {
-        return jsRuntime.Invoke<int>("BitBlazorUI.RichTextEditor.find", editor, term, caseSensitive);
+        return jsRuntime.Invoke<int>("BitBlazorUI.RichTextEditor.find", editor, term, caseSensitive, wholeWord);
     }
 
-    public static ValueTask BitRichTextEditorReplaceCurrent(this IJSRuntime jsRuntime, ElementReference editor, string term, string replacement, bool caseSensitive)
+    public static ValueTask<int> BitRichTextEditorFindStep(this IJSRuntime jsRuntime, ElementReference editor, int delta)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.replaceCurrent", editor, term, replacement, caseSensitive);
+        return jsRuntime.Invoke<int>("BitBlazorUI.RichTextEditor.findStep", editor, delta);
     }
 
-    public static ValueTask<int> BitRichTextEditorReplaceAll(this IJSRuntime jsRuntime, ElementReference editor, string term, string replacement, bool caseSensitive)
+    public static ValueTask<int> BitRichTextEditorReplaceCurrent(this IJSRuntime jsRuntime, ElementReference editor, string term, string replacement, bool caseSensitive, bool wholeWord)
     {
-        return jsRuntime.Invoke<int>("BitBlazorUI.RichTextEditor.replaceAll", editor, term, replacement, caseSensitive);
+        return jsRuntime.Invoke<int>("BitBlazorUI.RichTextEditor.replaceCurrent", editor, term, replacement, caseSensitive, wholeWord);
+    }
+
+    public static ValueTask<int> BitRichTextEditorReplaceAll(this IJSRuntime jsRuntime, ElementReference editor, string term, string replacement, bool caseSensitive, bool wholeWord)
+    {
+        return jsRuntime.Invoke<int>("BitBlazorUI.RichTextEditor.replaceAll", editor, term, replacement, caseSensitive, wholeWord);
     }
 
     public static ValueTask BitRichTextEditorSetFullScreen(this IJSRuntime jsRuntime, ElementReference editor, bool on)
@@ -159,6 +184,11 @@ internal static class BitRichTextEditorJsRuntimeExtensions
     public static ValueTask BitRichTextEditorBindSlashKeys(this IJSRuntime jsRuntime, ElementReference input)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.bindSlashKeys", input);
+    }
+
+    public static ValueTask BitRichTextEditorApplyMention(this IJSRuntime jsRuntime, ElementReference editor, string html)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.applyMention", editor, html);
     }
 
     public static ValueTask BitRichTextEditorApplySlashCommand(this IJSRuntime jsRuntime, ElementReference editor, string command)
