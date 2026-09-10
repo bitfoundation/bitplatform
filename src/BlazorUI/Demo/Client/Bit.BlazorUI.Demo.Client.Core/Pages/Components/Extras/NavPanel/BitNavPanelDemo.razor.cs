@@ -61,6 +61,27 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "CloseAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria-label and the tooltip of the close button of the nav panel.",
+        },
+        new()
+        {
+            Name = "CloseIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the close button of the nav panel. Takes precedence over CloseIconName when both are set.",
+        },
+        new()
+        {
+            Name = "CloseIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon of the close button of the nav panel.",
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
@@ -153,6 +174,13 @@ public partial class BitNavPanelDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Removes the toggle button.",
+        },
+        new()
+        {
+            Name = "IconAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name of the logo in the header of the nav panel: the name of the link an IconNavUrl wraps it in, and the alternative text of the image otherwise. Falls back to AriaLabel and then to a built-in name.",
         },
         new()
         {
@@ -289,10 +317,17 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "NoFocusTrap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the open drawer of a small screen from holding the focus inside itself. The focus is only ever held while the panel covers the page, which is the state its overlay is rendered in.",
+        },
+        new()
+        {
             Name = "NoOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the overlay that is rendered behind the open nav panel in small screens.",
+            Description = "Removes the overlay that is rendered behind the open nav panel in small screens. Without it the drawer no longer covers the page: it stops holding the focus and the page behind it keeps scrolling.",
         },
         new()
         {
@@ -300,6 +335,20 @@ public partial class BitNavPanelDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Disables the padded mode of the nav panel.",
+        },
+        new()
+        {
+            Name = "NoRestoreFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the closing drawer of a small screen from handing the focus back to the element that had it when the drawer opened. Only ever read by a panel that took the focus in the first place (see AutoFocus).",
+        },
+        new()
+        {
+            Name = "NoScrollLock",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the page behind the open drawer of a small screen keep scrolling. The page is only ever held while the panel covers it, which is the state its overlay is rendered in.",
         },
         new()
         {
@@ -346,6 +395,15 @@ public partial class BitNavPanelDemo
             Name = "OnSelectItem",
             Type = "EventCallback<TItem>",
             Description = "Callback invoked when an item is selected."
+        },
+        new()
+        {
+            Name = "Position",
+            Type = "BitNavPanelPosition",
+            DefaultValue = "BitNavPanelPosition.Start",
+            Description = "The edge the off-canvas drawer of a small screen comes from, and the side it is docked to while it is open. It has no effect on a wide screen, where the panel is a column in the normal flow of the page.",
+            LinkType = LinkType.Link,
+            Href = "#nav-panel-position-enum",
         },
         new()
         {
@@ -414,6 +472,20 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "SearchIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the button that the collapsed (rail) nav panel shows in place of its search box. Takes precedence over SearchIconName when both are set.",
+        },
+        new()
+        {
+            Name = "SearchIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon of the button that the collapsed (rail) nav panel shows in place of its search box.",
+        },
+        new()
+        {
             Name = "SearchText",
             Type = "string?",
             DefaultValue = "null",
@@ -435,12 +507,26 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "ShowCloseButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a close button in the header of the nav panel, on the screens the panel is an off-canvas drawer on. It is the control the toggle button is not: the toggle collapses a permanent panel into a rail, which a drawer that is either open or gone has no state for.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
             Description = "The size of the nav items.",
             Href = "#size-enum",
             LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "StickyEnds",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Pins the two ends of the nav panel - the header with its search box, and the footer - in place and scrolls only the items between them, instead of scrolling the whole panel as one.",
         },
         new()
         {
@@ -553,6 +639,13 @@ public partial class BitNavPanelDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the toggle button of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "CloseButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button of the BitNavPanel.",
                 },
                 new()
                 {
@@ -1134,6 +1227,12 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "IsItemExpanded",
+            Type = "bool",
+            Description = "Whether an item of the nav is currently expanded.",
+        },
+        new()
+        {
             Name = "Open",
             Type = "Task",
             Description = "Opens the nav panel.",
@@ -1326,6 +1425,27 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Id = "nav-panel-position-enum",
+            Name = "BitNavPanelPosition",
+            Description = "The edge of the viewport the off-canvas drawer of a BitNavPanel comes from.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Start",
+                    Description = "The drawer comes from the starting edge of the text direction: the left in a left-to-right layout, the right in a right-to-left one.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "End",
+                    Description = "The drawer comes from the ending edge of the text direction: the right in a left-to-right layout, the left in a right-to-left one.",
+                    Value = "1",
+                }
+            ]
+        },
+        new()
+        {
             Id = "nav-render-type-enum",
             Name = "BitNavRenderType",
             Description="Determines how the nav items are rendered visually.",
@@ -1418,6 +1538,9 @@ public partial class BitNavPanelDemo
     private bool sizeIsOpen;
     private bool classStyleIsOpen;
     private bool rtlIsOpen;
+    private bool groupedIsOpen;
+    private bool drawerIsOpen;
+    private bool stickyIsOpen;
 
     private bool publicApiIsOpen;
     private BitNavPanel<BitNavItem> navPanelRef = default!;

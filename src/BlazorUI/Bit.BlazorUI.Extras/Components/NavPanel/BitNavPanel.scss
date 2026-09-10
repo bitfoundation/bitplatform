@@ -1,4 +1,4 @@
-@import "../../Styles/extra-variables.scss";
+﻿@import "../../Styles/extra-variables.scss";
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 @import "../../../Bit.BlazorUI/Styles/media-queries.scss";
 
@@ -7,6 +7,9 @@
     position: sticky;
     padding: spacing(2);
     overflow: hidden auto;
+    // The panel scrolls its own overflow without drawing a bar for it: the bar would sit between the items
+    // and the edge of a surface that is already narrow, and the rail has no room for one at all.
+    scrollbar-width: none;
     background-color: $clr-bg-pri;
     height: $bit-env-height-available;
     // The Width parameter is a custom property rather than a width of its own, so the state-dependent widths
@@ -27,6 +30,32 @@
     // rather than a jump.
     &.bit-npn-eoh {
         transition: min-width 150ms $mot-easing, max-width 150ms $mot-easing;
+    }
+
+    // The panel that pins its two ends stops being the scroller: the nav between them takes the overflow,
+    // so the header (with the search box in it) and the footer stay where they are however long the list is.
+    &.bit-npn-ste {
+        overflow: hidden;
+
+        .bit-npn-swp {
+            min-height: 0;
+        }
+
+        .bit-npn-cnt {
+            height: 100%;
+            min-height: 0;
+        }
+
+        .bit-nav {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden auto;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                width: 0;
+            }
+        }
     }
 
     &.bit-npn-npd {
@@ -53,6 +82,7 @@
 
     @include lt-md {
         left: 0;
+        right: unset;
         padding: 0;
         opacity: 1;
         position: fixed;
@@ -63,9 +93,18 @@
         top: $bit-env-inset-top !important;
         transition: transform 150ms $mot-easing, opacity 100ms $mot-easing;
 
-        &.bit-rtl {
+        // The drawer is docked to the edge it comes from, which the Position expresses in the text direction:
+        // the End of a left-to-right layout and the Start of a right-to-left one are both the right of the
+        // screen, and a panel that is both is back where it started.
+        &.bit-rtl,
+        &.bit-npn-end {
             right: 0;
             left: unset;
+        }
+
+        &.bit-rtl.bit-npn-end {
+            left: 0;
+            right: unset;
         }
 
         &.bit-npn-cls {
@@ -77,8 +116,13 @@
             pointer-events: none;
             transition: transform 150ms $mot-easing, opacity 100ms $mot-easing, visibility 0s linear 150ms;
 
-            &.bit-rtl {
+            &.bit-rtl,
+            &.bit-npn-end {
                 transform: translateX(100%);
+            }
+
+            &.bit-rtl.bit-npn-end {
+                transform: translateX(-100%);
             }
         }
 
@@ -95,6 +139,10 @@
         .bit-npn-tbn {
             display: none;
         }
+
+        .bit-npn-cbw {
+            display: contents;
+        }
     }
 }
 
@@ -103,6 +151,13 @@
 
     .bit-npn-cnt {
         height: -webkit-fill-available;
+    }
+
+    // A panel that pins its ends bounds its own flex column instead, which is what lets the nav between them
+    // take the overflow: a container sized to fill what is available would grow with the list rather than
+    // hand it a scrollbar.
+    &.bit-npn-ste .bit-npn-cnt {
+        height: 100%;
     }
 }
 
@@ -126,6 +181,13 @@
     @include gt-sm {
         display: none;
     }
+}
+
+// The layer between the root element and the content: it is either the swipe trap of a panel that closes on
+// a gesture, or a plain element of the same shape for one that does not.
+.bit-npn-swp {
+    width: 100%;
+    height: 100%;
 }
 
 .bit-npn-cnt {
@@ -152,6 +214,12 @@
 
 .bit-npn-spc {
     flex-grow: 1;
+}
+
+// The close button is the drawer's, so it is out of the layout entirely on the screens where the panel is a
+// column of the page and the toggle button is the control that belongs there.
+.bit-npn-cbw {
+    display: none;
 }
 
 // The live region of the search: read by a screen reader, invisible on the page.

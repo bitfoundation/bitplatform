@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/navpanel"
             Title="NavPanel"
-            Description="BitNavPanel is a navigation component specialized to be rendered in a vertical panel: a searchable nav with a header, a footer, a rail mode, and an off-canvas drawer on small screens." />
+            Description="BitNavPanel is a navigation component specialized to be rendered in a vertical panel: a searchable nav with a header, a footer, a rail mode, and a modal off-canvas drawer on small screens." />
 
 <DemoPage Name="NavPanel"
-          Description="BitNavPanel is a navigation component specialized to be rendered in a vertical panel. It wraps a BitNav in the chrome a side navigation needs: a header holding a logo and the button that collapses the panel into a rail of icons, a search box that filters the items as they are typed, and a footer. On small screens it becomes an off-canvas drawer that opens over the page and closes on an overlay click, the Escape key, a swipe, or the navigation of an item."
+          Description="BitNavPanel is a navigation component specialized to be rendered in a vertical panel. It wraps a BitNav in the chrome a side navigation needs: a header holding a logo and the button that collapses the panel into a rail of icons, a search box that filters the items as they are typed, and a footer. On small screens it becomes a modal off-canvas drawer that holds the page and the focus while it covers them, and closes on an overlay click, the Escape key, a swipe, or the navigation of an item."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers"
@@ -28,7 +28,7 @@
     <DescriptionTemplate>
         BitNavPanel is a navigation component specialized to be rendered in a vertical panel. In its core it's utilizing the <BitLink Href="/components/nav">BitNav</BitLink> component to render the nav items, so the whole nav API - the item tree, the URL matching, the templates and the keyboard navigation - is available through it.
         <br /><br />
-        The <b>Open</b> button above each example is the one a small screen shows: the panel is a permanent column on a wide screen and an off-canvas drawer below the <b>lg</b> breakpoint, which is what <b>IsOpen</b> drives.
+        The <b>Open</b> button above each example is the one a small screen shows: the panel is a permanent column on a wide screen and an off-canvas drawer below the <b>md</b> breakpoint, which is what <b>IsOpen</b> drives.
     </DescriptionTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
@@ -88,9 +88,10 @@
         <DemoExample Title="ExpandOnHover" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>ExpandOnHover</b> brings the collapsed panel back to its full width while the pointer is over
-                it, so the rail stays a rail and still shows the text of its items on the way to one. The panel
+                it - or while the keyboard is inside it, so the text of the items is reachable without a mouse -
+                so the rail stays a rail and still shows what its icons stand for on the way to one. The panel
                 widens in place, which moves the content beside it along with it. Collapse the panel below with
-                its toggle button, then hover it.
+                its toggle button, then hover it or tab into it.
             </div>
             <br />
             <div class="open-btn">
@@ -106,7 +107,8 @@
                 <b>NoToggle</b> removes the rail mode altogether: the toggle button is gone and the panel can no
                 longer be collapsed, not even through <b>IsToggled</b> or the <b>Toggle</b> method.
                 <b>HideToggle</b> only takes the button away and leaves the mode itself in place, for a panel
-                that is toggled from somewhere else on the page.
+                that is toggled from somewhere else on the page. <b>ToggleAriaLabel</b> renames the button the
+                two of them take away, which otherwise says what it is about to do in English.
             </div>
             <br />
             <div class="open-btn">
@@ -121,7 +123,9 @@
             <div>
                 <b>IconUrl</b> renders a logo at the start of the header, and <b>IconNavUrl</b> wraps it in an
                 anchor pointing at the home page of the app. The logo is hidden while the panel is collapsed
-                into its rail, where there is no room for it.
+                into its rail, where there is no room for it. <b>IconAriaLabel</b> is what a screen reader
+                reads it as - the name of the link, or the alternative text of the bare image - which is not
+                the same thing as the name of the navigation landmark <b>AriaLabel</b> gives the nav.
             </div>
             <br />
             <div class="open-btn">
@@ -136,6 +140,7 @@
             <div>
                 <b>SearchBoxPlaceholder</b> replaces the text shown in the empty search box, and doubles as its
                 accessible name and as the tooltip of the search button the rail shows in place of the box.
+                <b>SearchIcon</b> and <b>SearchIconName</b> replace the glyph of that button.
             </div>
             <br />
             <div class="open-btn">
@@ -161,13 +166,15 @@
 
         <DemoExample Title="Search" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
-                An item matches when the term appears in its <b>Text</b>, its <b>Description</b> or its
-                <b>Data</b>, and a matched item keeps the whole branch under it, so a group that matches still
-                shows what it groups. <b>SearchText</b> two-way binds the term, so the search can be driven
-                from anywhere on the page, <b>OnSearch</b> reports every change of it, and
-                <b>SearchDebounceTime</b> sets how long the typing settles before the list is filtered.
-                <b>SearchFilter</b> replaces the matching itself with a function of your own - here only the
-                text of an item is looked at, and only from its start.
+                An item matches when every word of the term appears in its <b>Text</b>, its <b>Description</b>
+                or its <b>Data</b>, so each word typed narrows the list further; a matched item keeps the whole
+                branch under it, so a group that matches still shows what it groups. <b>SearchText</b> two-way
+                binds the term, so the search can be driven from anywhere on the page, <b>OnSearch</b> reports
+                every change of it, and <b>SearchDebounceTime</b> sets how long the typing settles before the
+                list is filtered. <b>SearchFilter</b> replaces the matching itself with a function of your own -
+                here only the text of an item is looked at, and only from its start. However many items the
+                search leaves, a live region announces the count to a screen reader, which
+                <b>SearchAnnouncementProvider</b> rewrites for a localized app.
             </div>
             <br />
             <div class="open-btn">
@@ -206,10 +213,13 @@
         <DemoExample Title="Selection" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 In the default <b>Automatic</b> mode the panel keeps the selection in sync with the current URL,
-                matched as <b>NavMatch</b> says (exactly, by prefix, by wildcard or by regular expression). The
-                <b>Manual</b> mode hands that over to the app: the clicked item becomes the selected one, the
-                initial selection comes from <b>DefaultSelectedItem</b>, and <b>SelectedItem</b> two-way binds
-                it so the selection can be driven from anywhere else on the page.
+                matched as <b>NavMatch</b> says (exactly, by prefix, by wildcard or by regular expression) and
+                against the <b>AdditionalUrls</b> of an item as well as its own. The <b>Manual</b> mode hands
+                that over to the app: the clicked item becomes the selected one, the initial selection comes
+                from <b>DefaultSelectedItem</b> (which the automatic mode has no use for, since the URL is what
+                decides there), and <b>SelectedItem</b> two-way binds it so the selection can be driven from
+                anywhere else on the page. <b>Reselectable</b> reports a click on the item that is already
+                selected as a selection of its own.
             </div>
             <br />
             <div class="open-btn">
@@ -234,7 +244,8 @@
                 <b>AllExpanded</b> opens every group as it is first rendered, <b>SingleExpand</b> keeps a single
                 open branch at a time - opening one closes the one that was open - and <b>NoCollapse</b> hides
                 the chevrons altogether, for a tree that is only ever opened by the URL or by the selection.
-                The panel below is in single-expand mode.
+                <b>ExpandAriaLabel</b> and <b>CollapseAriaLabel</b> name the chevron in each of its two states,
+                for the items that carry no name of their own for it. The panel below is in single-expand mode.
             </div>
             <br />
             <div class="open-btn">
@@ -284,9 +295,11 @@
         <DemoExample Title="Templates" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
                 <b>Header</b> and <b>Footer</b> replace the two ends of the panel - the header replaces the logo
-                and the toggle button with it, so a custom header that wants to keep the rail renders a control
-                of its own calling the <b>Toggle</b> method - while <b>ItemTemplate</b> customizes how the
-                content of every item is rendered.
+                and the buttons beside it, so a custom header that wants to keep the rail renders a control of
+                its own calling the <b>Toggle</b> method - while <b>ItemTemplate</b> customizes how the content
+                of every item is rendered, and <b>HeaderTemplate</b> does the same for the group headers of the
+                <b>Grouped</b> render type. <b>ItemTemplateRenderMode</b> and <b>HeaderTemplateRenderMode</b>
+                decide whether a template fills the link the panel renders, or replaces it outright.
             </div>
             <br />
             <div class="open-btn">
@@ -338,7 +351,10 @@
                 <b>Open</b> and <b>Close</b> drive the small-screen drawer, <b>ExpandAll</b> and
                 <b>CollapseAll</b> open and close every group, <b>ClearSearch</b> empties the search box, and
                 <b>FocusSearchBox</b> moves the focus into it, leaving the rail first when the panel is
-                collapsed.
+                collapsed. One item at a time is reached the same way: <b>ExpandItem</b>, <b>CollapseItem</b>
+                and <b>ToggleItem</b> open and close a single branch, <b>IsItemExpanded</b> reports whether one
+                is open, <b>SelectItem</b> selects an item exactly like a click on it would, and
+                <b>FocusItem</b> moves the focus onto it, opening the branches it is nested in on the way.
             </div>
             <br />
             <div class="open-btn">
@@ -357,7 +373,82 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <DemoExample Title="Grouped" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+            <div>
+                <b>RenderType</b> set to <b>Grouped</b> turns every root item into the header of the group it
+                holds instead of a link of its own, which is what a long menu split into named sections wants.
+                <b>ReversedChevron</b> moves the expander to the far end of each row, <b>IndentValue</b> sets
+                how far every level of depth is indented - with <b>IndentPadding</b> and
+                <b>IndentReversedPadding</b> for the room a row without children leaves in place of a chevron -
+                and <b>NoPad</b> takes the padding off the panel so its rows run to its edges.
+            </div>
+            <br />
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="groupedIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:240px">
+                <BitNavPanel @bind-IsOpen="groupedIsOpen"
+                             Items="singleExpandNavItems"
+                             RenderType="BitNavRenderType.Grouped"
+                             IndentValue="24"
+                             ReversedChevron
+                             NoPad />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Drawer" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+            <div>
+                Below the <b>md</b> breakpoint the panel is an off-canvas drawer that covers the page, and it
+                behaves like the modal surface it looks like: it reports itself as a dialog, the page behind it
+                stops scrolling, the focus stays inside it so Tab cannot wander onto the page underneath, and
+                it is handed back to whatever held it once the drawer closes. <b>Position</b> decides which
+                edge the drawer comes from - <b>End</b> docks it to the other side, and the swipe that closes
+                it goes that way too - while <b>NoScrollLock</b>, <b>NoFocusTrap</b> and <b>NoRestoreFocus</b>
+                each give one of those three behaviors back. A panel with <b>NoOverlay</b> never covers the
+                page at all, so none of them apply to it. <b>ShowCloseButton</b> puts a close button in the
+                header for the screens the panel is a drawer on - where the toggle button, which collapses a
+                permanent panel into a rail, has nothing to do - so a touch user has something to aim at
+                besides the overlay and the swipe; <b>CloseIcon</b>, <b>CloseIconName</b> and
+                <b>CloseAriaLabel</b> describe it. Narrow the window below the breakpoint to see all of it.
+            </div>
+            <br />
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="drawerIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:222px">
+                <BitNavPanel @bind-IsOpen="drawerIsOpen"
+                             Items="basicNavItems"
+                             AutoFocus
+                             ShowCloseButton
+                             Position="BitNavPanelPosition.End" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="StickyEnds" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+            <div>
+                The panel scrolls as one by default, so a long list carries the header and the search box out
+                of sight along with it. <b>StickyEnds</b> hands the overflow to the items instead: the header
+                (with the box that filters them) and the footer stay where they are, and only the list between
+                them scrolls.
+            </div>
+            <br />
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="stickyIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <div style="width:240px">
+                <BitNavPanel @bind-IsOpen="stickyIsOpen"
+                             Items="singleExpandNavItems"
+                             Style="height:264px"
+                             AllExpanded
+                             StickyEnds>
+                    <Footer>
+                        <BitActionButton IconName="@BitIconName.PowerButton">Logout</BitActionButton>
+                    </Footer>
+                </BitNavPanel>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
             <div>
                 <b>Color</b> sets the color of the parts that carry one - the icons, the search box and the
                 selection - and <b>Accent</b> paints the background of the panel itself.
@@ -371,7 +462,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <DemoExample Title="External Icons" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
             <div>
                 Besides the built-in icons, the <b>Icon</b> of an item, the <b>ToggleIcon</b> of the toggle
                 button and the <b>ChevronDownIcon</b> of the expanders all accept the CSS classes of any
@@ -391,7 +482,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <DemoExample Title="Size" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
             <div>
                 <b>Size</b> scales the metrics of every item at once: the height of the rows, the size of their
                 icons, and the size of their text and description.
@@ -416,7 +507,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
             <div>
                 <b>Styles</b> and <b>Classes</b> reach every part of the panel itself, while <b>NavStyles</b> /
                 <b>NavClasses</b> and <b>SearchBoxStyles</b> / <b>SearchBoxClasses</b> pass the same kind of map
@@ -441,7 +532,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+        <DemoExample Title="RTL" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
             <div>
                 Set <b>Dir</b> to <b>BitDir.Rtl</b> to render the panel in a right-to-left layout: it docks to
                 the right, the indentation and the chevrons flip, and the swipe that closes it goes the other
