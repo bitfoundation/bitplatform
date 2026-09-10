@@ -53,6 +53,26 @@ public class BitPhoneInputClassStyles
     public string? ClearButtonIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the container of the error message of the BitPhoneInput.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the error message of the BitPhoneInput.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the description of the BitPhoneInput.
+    /// </summary>
+    public string? DescriptionContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the description of the BitPhoneInput.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the overlay of the country dropdown of the BitPhoneInput.
     /// </summary>
     public string? Overlay { get; set; }

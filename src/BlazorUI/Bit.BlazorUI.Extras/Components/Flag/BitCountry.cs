@@ -8,7 +8,8 @@
 /// <param name="iso2">The ISO 3166-1 alpha-2 code of the country.</param>
 /// <param name="iso3">The ISO 3166-1 alpha-3 code of the country.</param>
 /// <param name="priority">The tie-breaking priority of the country among the ones sharing its dialing code.</param>
-public class BitCountry(string name, string code, string iso2, string iso3, int priority = 0)
+/// <param name="extraCodes">The other dialing codes the country answers to beyond its main one.</param>
+public class BitCountry(string name, string code, string iso2, string iso3, int priority = 0, string[]? extraCodes = null)
 {
     /// <summary>
     /// The full name of the country.
@@ -39,8 +40,19 @@ public class BitCountry(string name, string code, string iso2, string iso3, int 
     /// </summary>
     public int Priority { get; set; } = priority;
 
+    /// <summary>
+    /// The other dialing codes the country answers to beyond <see cref="Code"/>. Several countries own
+    /// more than one: the Dominican Republic is reached on +1-809, +1-829 and +1-849 alike. They are
+    /// matched when a full number is read back into its parts and when the country list is searched,
+    /// while <see cref="Code"/> stays the one code the country is shown with.
+    /// </summary>
+    public string[]? ExtraCodes { get; set; } = extraCodes;
+
     private string? _digitsCode;
     private string? _digitsCodeOf;
+    private string[]? _digitsCodes;
+    private string? _digitsCodesOfCode;
+    private string[]? _digitsCodesOfExtra;
 
     /// <summary>
     /// The dialing code of the country reduced to its digits, as it appears in an E.164 number.
@@ -53,13 +65,49 @@ public class BitCountry(string name, string code, string iso2, string iso3, int 
     {
         get
         {
-            if (ReferenceEquals(_digitsCodeOf, Code) is false)
+            // The countries of BitCountries are shared by every phone input of the process, so the
+            // cache is filled value first and key last: a reader that sees the new key is then
+            // guaranteed to see the value that goes with it rather than a half written one.
+            var code = Code;
+
+            if (ReferenceEquals(_digitsCodeOf, code) is false)
             {
-                _digitsCodeOf = Code;
-                _digitsCode = Code.Replace("-", string.Empty);
+                _digitsCode = code.Replace("-", string.Empty);
+                _digitsCodeOf = code;
             }
 
             return _digitsCode!;
+        }
+    }
+
+    /// <summary>
+    /// Every dialing code of the country - <see cref="Code"/> first, then <see cref="ExtraCodes"/> -
+    /// reduced to the digits each of them carries in an E.164 number.
+    /// </summary>
+    /// <remarks>
+    /// Cached against the codes it was derived from, for the same reason <see cref="DigitsCode"/> is:
+    /// a phone input matches a typed number against every code of every country it offers on every
+    /// keystroke.
+    /// </remarks>
+    public string[] DigitsCodes
+    {
+        get
+        {
+            var code = Code;
+            var extra = ExtraCodes;
+
+            // Filled value first and key last, for the same reason DigitsCode is.
+            if (ReferenceEquals(_digitsCodesOfCode, code) is false ||
+                ReferenceEquals(_digitsCodesOfExtra, extra) is false)
+            {
+                _digitsCodes = extra is null || extra.Length == 0
+                                ? [DigitsCode]
+                                : [DigitsCode, .. extra.Select(c => c.Replace("-", string.Empty))];
+                _digitsCodesOfExtra = extra;
+                _digitsCodesOfCode = code;
+            }
+
+            return _digitsCodes!;
         }
     }
 }

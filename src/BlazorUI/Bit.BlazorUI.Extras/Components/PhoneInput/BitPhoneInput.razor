@@ -60,7 +60,7 @@
                     @onfocusout="HandleOnFocusOut"
                     type="button"
                     id="@_dropdownId"
-                    role="combobox"
+                    role="@(NoSearchBox ? "combobox" : null)"
                     aria-haspopup="listbox"
                     aria-expanded="@(IsOpen ? "true" : "false")"
                     aria-controls="@(IsOpen ? _listId : null)"
@@ -68,7 +68,7 @@
                     aria-label="@DropdownLabel"
                     title="@(DropdownAriaLabel ?? Country?.Name)"
                     disabled="@(IsEnabled is false)"
-                    tabindex="@(IsEnabled && ReadOnly is false ? 0 : -1)"
+                    tabindex="@(IsEnabled && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
                     style="@Styles?.Dropdown"
                     class="bit-phi-drp @Classes?.Dropdown">
                 <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
@@ -111,18 +111,29 @@
                readonly="@ReadOnly"
                required="@Required"
                value="@Number"
-               placeholder="@Placeholder"
+               spellcheck="false"
+               tabindex="@TabIndex"
+               autocorrect="off"
+               autocapitalize="off"
                disabled="@(IsEnabled is false)"
+               placeholder="@InputPlaceholder"
+               inputmode="@InputModeValue"
+               enterkeyhint="@EnterKeyHint"
                maxlength="@(MaxLength >= 0 ? MaxLength : null)"
                style="@Styles?.Input"
                class="bit-phi-inp @Classes?.Input"
-               autocomplete="@AutoComplete"
+               autocomplete="@(AutoComplete ?? "tel")"
+               aria-label="@AriaLabel"
+               aria-invalid="@AriaInvalid"
                aria-required="@(Required ? "true" : null)"
-               aria-labelledby="@(HasLabel ? _labelId : null)" />
+               aria-describedby="@AriaDescribedBy"
+               aria-labelledby="@LabelledBy" />
 
         @if (ShowClear)
         {
             <button @onclick="HandleOnClearButtonClick"
+                    @onfocusin="HandleOnFocusIn"
+                    @onfocusout="HandleOnFocusOut"
                     type="button"
                     tabindex="@TabIndex"
                     style="@Styles?.ClearButton"
@@ -144,12 +155,60 @@
         }
     </div>
 
+    @if (HasErrorMessage)
+    {
+        @* What is wrong with the value is the first thing to read under the field, so the message sits
+           above the description rather than beside it. It carries no live role of its own: the region at
+           the end of the component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-phi-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasDescription)
+    {
+        @* A div rather than a span: a DescriptionTemplate is free to render block content, which is
+           not valid inside a span. *@
+        <div id="@_descriptionId"
+             style="@Styles?.DescriptionContainer"
+             class="bit-phi-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Description" class="@Classes?.Description">@Description</span>
+            }
+        </div>
+    }
+
     @if (Name.HasValue())
     {
         @* The visible input holds the local part of the number, so the full E.164 value a form is
            meant to post travels through a hidden field of its own instead. *@
         <input type="hidden" name="@Name" value="@CurrentValue" />
     }
+
+    @if (CountryName.HasValue())
+    {
+        @* The country is a selection rather than a text, so a form that needs to store it beside the
+           number is given its ISO code through a hidden field of its own. *@
+        <input type="hidden" name="@CountryName" value="@Country?.Iso2" />
+    }
+
+    @* The live region sits outside the callout on purpose: the content of a display:none callout is
+       never announced, so the result of a search made in it has to be reported from out here. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-phi-lvr">@_announcement</div>
 </div>
 
 @if (NoDropdown is false)

@@ -24,6 +24,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private bool _internalIsOpenChange;
     private bool _pendingCalloutToggle;
     private string? _searchText;
+    private string? _announcement;
+    private bool _announcementMarker;
     private int _activeIndex = -1;
     private int _lastScrolledIndex = -1;
 
@@ -33,6 +35,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private string? _lastValue;
     private string? _lastNumber;
     private string? _lastCountryIso;
+    private string? _lastErrorMessage;
 
     // Type-ahead state of the country list, used when there is no search box to type into.
     private string _typeAhead = string.Empty;
@@ -40,7 +43,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private static readonly TimeSpan _typeAheadTimeout = TimeSpan.FromMilliseconds(1000);
 
     private string _labelId = string.Empty;
+    private string _errorId = string.Empty;
     private string _inputId = string.Empty;
+    private string _descriptionId = string.Empty;
     private string _searchId = string.Empty;
     private string _listId = string.Empty;
     private string _calloutId = string.Empty;
@@ -60,6 +65,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private ElementReference _searchInputRef;
     private ElementReference _dropdownButtonRef;
     private ICollection<BitCountry>? _lastCountries;
+    private ICollection<BitCountry>? _lastExcludeCountries;
     private ICollection<BitCountry>? _lastPreferredCountries;
     private DotNetObjectReference<BitPhoneInput>? _dotnetObj;
 
@@ -94,6 +100,14 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Shows the pattern the number is currently formatted with as the placeholder of the number input,
+    /// so the shape a country expects is offered before anything is typed - "(###) ###-####" for a
+    /// number formatted by that mask. It only fills in for a missing placeholder: an explicit
+    /// <see cref="Placeholder"/> is always kept, and a country with no pattern of its own shows none.
+    /// </summary>
+    [Parameter] public bool AutoPlaceholder { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitPhoneInput.
@@ -141,9 +155,29 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     public BitCountry? Country { get; set; }
 
     /// <summary>
+    /// The name of the hidden field carrying the ISO 3166-1 alpha-2 code of the selected country, for a
+    /// plain HTML form that stores the country beside the number. The number itself is posted through
+    /// the field named by <see cref="BitInputBase{T}.Name"/>.
+    /// </summary>
+    [Parameter] public string? CountryName { get; set; }
+
+    /// <summary>
     /// The default selected country to be initially used when the Country parameter is not set.
     /// </summary>
     [Parameter] public BitCountry? DefaultCountry { get; set; }
+
+    /// <summary>
+    /// The description shown under the phone input, for the hint a label is too short to carry ("We
+    /// will text you a code"). It is tied to the number input through aria-describedby, so a screen
+    /// reader reads it with the field rather than as a stray line of text.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// The custom template for the description of the phone input, taking the place of
+    /// <see cref="Description"/> and tied to the number input the same way.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the country dropdown callout.
@@ -166,10 +200,54 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public RenderFragment<BitCountry?>? DropdownTemplate { get; set; }
 
     /// <summary>
+    /// Sets the enterkeyhint html attribute of the number input, which decides the label of the return
+    /// key of an on-screen keyboard ("done", "next", "send", ...).
+    /// </summary>
+    [Parameter] public string? EnterKeyHint { get; set; }
+
+    /// <summary>
+    /// The error message shown under the phone input, which also puts the field in its invalid state -
+    /// for a rejection that comes from a server or from a rule no data annotation can express. Inside an
+    /// EditContext the validation of the model is what decides the state instead, and its message is
+    /// rendered by a ValidationMessage of its own.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The custom template for the error message of the phone input, taking the place of
+    /// <see cref="ErrorMessage"/> and putting the field in the same invalid state.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
+    /// The countries to leave out of the country dropdown, which is how a list built from
+    /// <see cref="Countries"/> is trimmed without being written out in full. They are also left out of
+    /// the dialing-code lookup, so a number typed with the code of an excluded country is kept whole
+    /// instead of selecting it.
+    /// </summary>
+    [Parameter] public ICollection<BitCountry>? ExcludeCountries { get; set; }
+
+    /// <summary>
+    /// The url of the flag image of a country, replacing the flags that ship with the library - the
+    /// place to point at a sprite, a CDN or an icon set of your own. Returning null or an empty string
+    /// leaves that country with the built-in flag.
+    /// </summary>
+    [Parameter] public Func<BitCountry, string?>? FlagUrlSelector { get; set; }
+
+    /// <summary>
     /// Renders the phone input to fill 100% of its container width.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// Sets the inputmode html attribute of the number input, which decides the on-screen keyboard it
+    /// asks for. A tel input already asks for a telephone keypad, so this is only for the cases that
+    /// need another one.
+    /// </summary>
+    [Parameter] public BitInputMode? InputMode { get; set; }
 
     /// <summary>
     /// Renders the phone input in an invalid state without going through the validation of an EditContext.
@@ -251,6 +329,12 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public bool NoFlags { get; set; }
 
     /// <summary>
+    /// Stops the focus from moving to the number input once a country has been picked, for a form that
+    /// would rather decide itself where the focus goes next.
+    /// </summary>
+    [Parameter] public bool NoFocusOnSelect { get; set; }
+
+    /// <summary>
     /// The message to show when the search result of the country dropdown is empty.
     /// </summary>
     [Parameter] public string? NoResultsMessage { get; set; }
@@ -311,6 +395,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// The callback that is invoked when the Enter key is pressed in the number input.
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEnter { get; set; }
+
+    /// <summary>
+    /// The callback that is invoked when the Escape key is pressed in the number input.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEscape { get; set; }
 
     /// <summary>
     /// The callback that is invoked when the number input receives focus.
@@ -452,9 +541,39 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
+        // An empty field has nothing to clear, and reporting a clear that changed nothing would have a
+        // consumer react to a number that was never there.
+        if (Number.HasNoValue()) return;
+
         await AssignNumber(null);
         await UpdateValueFromParts();
         await OnClear.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Sets the local number of the phone input, laid out over the pattern of the selected country the
+    /// same way typing it would be, and recomposes the full value from it. A number carrying an
+    /// international prefix ('+' or its "00" equivalent) selects the country that owns its dialing code,
+    /// exactly as pasting it into the field does.
+    /// </summary>
+    public async Task SetNumberAsync(string? number)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        var (country, local) = ParseFullNumber(NormalizeTyped(number));
+
+        if (country is not null && country.Iso2 != Country?.Iso2 && await AssignCountry(country))
+        {
+            await AssignNumber(FormatNumber(local));
+
+            await OnCountryChange.InvokeAsync(country);
+        }
+        else
+        {
+            await AssignNumber(FormatNumber(local));
+        }
+
+        await UpdateValueFromParts();
     }
 
 
@@ -572,7 +691,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         {
             // "00" is the international call prefix of most of the world, so a number that starts
             // with it is read as an international one, minus that prefix.
-            if (digits.StartsWith("00", StringComparison.Ordinal) is false) return (Country, digits);
+            // Anything else is a national number, which is handed back exactly as it was written:
+            // the separators a user types (or a mask inserts) belong to the field, and only the
+            // composed value is reduced to its digits.
+            if (digits.StartsWith("00", StringComparison.Ordinal) is false) return (Country, text);
 
             digits = digits[2..];
         }
@@ -582,19 +704,23 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         var bestRank = int.MinValue;
         foreach (var country in _allItems)
         {
-            var code = country.DigitsCode;
-            if (code.Length == 0 || digits.StartsWith(code, StringComparison.Ordinal) is false) continue;
-
-            var rank = GetDialCodeRank(country);
-
-            // A longer (more specific) code always wins; among equally specific ones the ranking
-            // decides, so an ambiguous code (+1, +7) resolves to the country that owns it rather
-            // than to whichever one happens to come first in the list.
-            if (code.Length > bestLength || (code.Length == bestLength && rank > bestRank))
+            // A country can answer to several codes (+1-809, +1-829 and +1-849 are all the Dominican
+            // Republic), so every one of them is measured against the number rather than the main one.
+            foreach (var code in country.DigitsCodes)
             {
-                best = country;
-                bestLength = code.Length;
-                bestRank = rank;
+                if (code.Length == 0 || digits.StartsWith(code, StringComparison.Ordinal) is false) continue;
+
+                var rank = GetDialCodeRank(country);
+
+                // A longer (more specific) code always wins; among equally specific ones the ranking
+                // decides, so an ambiguous code (+1, +7) resolves to the country that owns it rather
+                // than to whichever one happens to come first in the list.
+                if (code.Length > bestLength || (code.Length == bestLength && rank > bestRank))
+                {
+                    best = country;
+                    bestLength = code.Length;
+                    bestRank = rank;
+                }
             }
         }
 
@@ -664,7 +790,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => NoDropdown ? "bit-phi-nod" : string.Empty);
 
-        ClassBuilder.Register(() => Invalid ? "bit-inv" : string.Empty);
+        ClassBuilder.Register(() => HasError ? "bit-inv" : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-phi-req" : string.Empty);
 
@@ -700,7 +826,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     protected override void OnInitialized()
     {
         _labelId = $"BitPhoneInput-{UniqueId}-label";
+        _errorId = $"BitPhoneInput-{UniqueId}-error";
         _inputId = $"BitPhoneInput-{UniqueId}-input";
+        _descriptionId = $"BitPhoneInput-{UniqueId}-description";
         _searchId = $"BitPhoneInput-{UniqueId}-search";
         _listId = $"BitPhoneInput-{UniqueId}-list";
         _dropdownId = $"BitPhoneInput-{UniqueId}-dropdown";
@@ -726,14 +854,28 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // (BitCountries.All) would allocate a new list of ~240 items each cycle because the
         // "as List<BitCountry>" cast always fails for arrays.
         if (ReferenceEquals(_lastCountries, Countries) is false ||
+            ReferenceEquals(_lastExcludeCountries, ExcludeCountries) is false ||
             ReferenceEquals(_lastPreferredCountries, PreferredCountries) is false)
         {
             _lastCountries = Countries;
+            _lastExcludeCountries = ExcludeCountries;
             _lastPreferredCountries = PreferredCountries;
             _allItems = BuildItems();
             _foldedNames = [.. _allItems.Select(c => Fold(c.Name))];
             _foldedWords = [.. _foldedNames.Select(n => n.Split([' ', '-'], StringSplitOptions.RemoveEmptyEntries))];
             _viewItemsValid = false;
+        }
+
+        // A message that says the value was rejected has to be heard as well as seen, and it is written
+        // into a part of the page a screen reader has already read past by the time it appears.
+        if (ErrorMessage != _lastErrorMessage)
+        {
+            _lastErrorMessage = ErrorMessage;
+
+            if (ErrorMessage.HasValue())
+            {
+                Announce(ErrorMessage);
+            }
         }
 
         base.OnParametersSet();
@@ -750,9 +892,17 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // were given, then the rest in the order of the Countries list.
     private List<BitCountry> BuildItems()
     {
+        var countries = Countries;
+
+        if (ExcludeCountries is not null && ExcludeCountries.Count > 0)
+        {
+            var excluded = new HashSet<string>(ExcludeCountries.Select(c => c.Iso2), StringComparer.OrdinalIgnoreCase);
+            countries = [.. countries.Where(c => excluded.Contains(c.Iso2) is false)];
+        }
+
         if (PreferredCountries is null || PreferredCountries.Count == 0)
         {
-            return Countries as List<BitCountry> ?? [.. Countries];
+            return countries as List<BitCountry> ?? [.. countries];
         }
 
         var preferred = new List<BitCountry>();
@@ -761,13 +911,13 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         foreach (var country in PreferredCountries)
         {
             // Only the countries the dropdown actually offers can be pinned to the top of it.
-            var match = Countries.FirstOrDefault(c => c.Iso2.Equals(country.Iso2, StringComparison.OrdinalIgnoreCase));
+            var match = countries.FirstOrDefault(c => c.Iso2.Equals(country.Iso2, StringComparison.OrdinalIgnoreCase));
             if (match is null || preferredIso.Add(match.Iso2) is false) continue;
 
             preferred.Add(match);
         }
 
-        return [.. preferred, .. Countries.Where(c => preferredIso.Contains(c.Iso2) is false)];
+        return [.. preferred, .. countries.Where(c => preferredIso.Contains(c.Iso2) is false)];
     }
 
     // Keeps the full Value and the (Number, Country) parts in sync when parameters change.
@@ -830,11 +980,21 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
             await ToggleCallout();
 
-            if (IsOpen && NoSearchBox is false && NoDropdown is false)
+            // The open list is driven from whichever element carries aria-activedescendant, so the focus
+            // is put on it: the search box when there is one, and the button itself when there is not -
+            // a callout opened through the IsOpen parameter would otherwise leave the keys nowhere to go.
+            if (IsOpen && NoDropdown is false)
             {
                 try
                 {
-                    await _searchInputRef.FocusAsync();
+                    if (NoSearchBox)
+                    {
+                        await _dropdownButtonRef.FocusAsync();
+                    }
+                    else
+                    {
+                        await _searchInputRef.FocusAsync();
+                    }
                 }
                 catch (JSException) { } // the element might not be ready/visible yet
             }
@@ -909,6 +1069,18 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private bool HasLabel => Label.HasValue() || LabelTemplate is not null;
 
+    // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of
+    // its own was given would quietly throw that name away. The visible label keeps naming the input
+    // through the for/id pair either way, which is what the label element is for.
+    private string? LabelledBy => HasLabel && AriaLabel.HasNoValue() ? _labelId : null;
+
+    private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
+
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // The invalid state the consumer forces, either as a flag or by handing the field a message to show.
+    private bool HasError => Invalid || HasErrorMessage;
+
     // The accessible name of the country selector. It carries the selected country, because an
     // aria-label replaces the content of the button for a screen reader: without the name in it, a
     // selector showing only a flag (NoDialCode) would be announced as "select country" and nothing
@@ -919,6 +1091,44 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                                         : DropdownPlaceholder ?? "Select country");
 
     private bool ShowClear => ShowClearButton && Number.HasValue();
+
+    // The placeholder of a field that has none of its own, which is the pattern the number is laid out
+    // over: it says the shape the country expects before a single digit has been typed.
+    private string? InputPlaceholder => Placeholder ?? (AutoPlaceholder ? CurrentMask : null);
+
+    private string? InputModeValue => InputMode?.ToString().ToLower();
+
+    // What is written under the field is what describes it, so both lines are pointed at rather than
+    // one of them. A value the consumer put on the input itself is kept: a field with a description of
+    // its own would otherwise lose it the moment the component has anything to reference.
+    private string? AriaDescribedBy
+    {
+        get
+        {
+            if (HasErrorMessage is false && HasDescription is false) return GetInputAttribute("aria-describedby");
+
+            var ids = string.Join(' ', new[]
+            {
+                GetInputAttribute("aria-describedby"),
+                HasErrorMessage ? _errorId : null,
+                HasDescription ? _descriptionId : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
+
+    private string? GetInputAttribute(string name)
+    {
+        return InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue(name, out var value)
+                ? value?.ToString()
+                : null;
+    }
+
+    // The forced invalid state and the one the EditContext produces end up on the same attribute, and
+    // the base class writes the latter into the splatted attributes, so the value of the consumer is
+    // read back here instead of being overwritten by the explicit attribute of the input.
+    private string? AriaInvalid => HasError || ValueInvalid is true ? "true" : GetInputAttribute("aria-invalid");
 
     // The list is only put in the document once the callout has been opened. A phone input renders
     // every country it offers - around 240 of them, each with a flag image - so a page holding
@@ -943,6 +1153,16 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // A dialing code is searched for the way it is written down: "+44", "0044" and "44" all mean
         // the same code, so the term is reduced to its digits before it is matched against one.
         var codeTerm = KeepDigits(text);
+
+        // A term that is nothing but punctuation asks for nothing: the '+' of a dialing code about to
+        // be typed is a term of that kind, and answering it with "no results" would say the country
+        // being typed does not exist.
+        if (codeTerm.Length == 0 && text.Any(char.IsLetterOrDigit) is false)
+        {
+            _viewItems = _allItems;
+            return _viewItems;
+        }
+
         if (codeTerm.Length > 2 && codeTerm.StartsWith("00", StringComparison.Ordinal))
         {
             codeTerm = codeTerm[2..];
@@ -989,24 +1209,37 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // country does not match the term at all.
     private static int GetSearchRank(BitCountry country, string name, string[] words, string text, string codeTerm)
     {
-        var code = country.DigitsCode;
+        var codes = country.DigitsCodes;
 
         if (country.Iso2.Equals(text, StringComparison.OrdinalIgnoreCase)) return 0;
         if (country.Iso3.Equals(text, StringComparison.OrdinalIgnoreCase)) return 1;
         if (name.StartsWith(text, StringComparison.InvariantCultureIgnoreCase)) return 2;
-        if (codeTerm.Length > 0 && code.Equals(codeTerm, StringComparison.Ordinal)) return DialCodeExactRank;
-        if (codeTerm.Length > 0 && code.StartsWith(codeTerm, StringComparison.Ordinal)) return DialCodeStartsRank;
+        if (AnyCode(codes, codeTerm, static (code, term) => code.Equals(term, StringComparison.Ordinal))) return DialCodeExactRank;
+        if (AnyCode(codes, codeTerm, static (code, term) => code.StartsWith(term, StringComparison.Ordinal))) return DialCodeStartsRank;
 
         // A term of several words matches a name whose words start with them, so "united sta" and
         // "so afr" both find their country without the term having to be a prefix of the whole name.
         if (MatchesWordStarts(words, text)) return 5;
 
         if (name.Contains(text, StringComparison.InvariantCultureIgnoreCase)) return 6;
-        if (codeTerm.Length > 0 && code.Contains(codeTerm, StringComparison.Ordinal)) return DialCodeContainsRank;
+        if (AnyCode(codes, codeTerm, static (code, term) => code.Contains(term, StringComparison.Ordinal))) return DialCodeContainsRank;
         if (country.Iso2.Contains(text, StringComparison.OrdinalIgnoreCase)) return 8;
         if (country.Iso3.Contains(text, StringComparison.OrdinalIgnoreCase)) return 9;
 
         return -1;
+    }
+
+    // A country is found by any of the codes it answers to, so a term is measured against all of them.
+    private static bool AnyCode(string[] codes, string term, Func<string, string, bool> matches)
+    {
+        if (term.Length == 0) return false;
+
+        foreach (var code in codes)
+        {
+            if (matches(code, term)) return true;
+        }
+
+        return false;
     }
 
     private static bool MatchesWordStarts(string[] words, string text)
@@ -1063,9 +1296,20 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private string GetOptionId(int index) => $"{_calloutId}-opt-{index}";
 
-    private static string GetFlagUrl(BitCountry country)
+    private string GetFlagUrl(BitCountry country)
     {
-        return _flagUrls.GetOrAdd(country.Iso2, static iso2 => $"_content/Bit.BlazorUI.Extras/flags/{iso2.ToUpperInvariant()}-flat-16.webp");
+        var url = FlagUrlSelector?.Invoke(country);
+
+        return url.HasValue() ? url! : _flagUrls.GetOrAdd(country.Iso2, static iso2 => $"_content/Bit.BlazorUI.Extras/flags/{iso2.ToUpperInvariant()}-flat-16.webp");
+    }
+
+    // A single live region carries everything the callout has to say, and a screen reader only
+    // announces what changes inside one: repeating the same sentence (two searches with the same
+    // number of results) would otherwise be silent, so an invisible marker alternates with it.
+    private void Announce(string? text)
+    {
+        _announcementMarker = !_announcementMarker;
+        _announcement = text.HasValue() && _announcementMarker ? text + '​' : text;
     }
 
     private async Task HandleOnDropdownClick()
@@ -1209,12 +1453,18 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         var term = Fold(_typeAhead);
         var start = _typeAhead.Length == 1 ? _activeIndex + 1 : Math.Max(_activeIndex, 0);
 
+        // The type-ahead only runs on the unfiltered list (there is no search box to filter it with),
+        // so the names folded once with the list are the same ones this walks over.
+        var folded = ReferenceEquals(_viewItems, _allItems) ? _foldedNames : null;
+
         for (var i = 0; i < _viewItems.Count; i++)
         {
             var index = (start + i) % _viewItems.Count;
             if (index < 0) index += _viewItems.Count;
 
-            if (Fold(_viewItems[index].Name).StartsWith(term, StringComparison.InvariantCultureIgnoreCase) is false) continue;
+            var name = folded is not null ? folded[index] : Fold(_viewItems[index].Name);
+
+            if (name.StartsWith(term, StringComparison.InvariantCultureIgnoreCase) is false) continue;
 
             _activeIndex = index;
             return;
@@ -1378,6 +1628,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _activeIndex = _viewItems.Count > 0 ? 0 : -1;
         _lastScrolledIndex = -1;
 
+        // The list the term filtered down to is inside a callout, so its length is only ever seen:
+        // it is announced here for the users who cannot see it.
+        Announce(_viewItems.Count switch
+        {
+            0 => NoResultsMessage ?? "No results found",
+            1 => "1 country found",
+            var count => $"{count} countries found"
+        });
+
         await OnSearch.InvokeAsync(_searchText);
     }
 
@@ -1395,12 +1654,24 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         {
             // The new country can carry a pattern of its own, so the number already typed is laid
             // out again over it instead of keeping the separators of the country left behind.
-            await AssignNumber(FormatNumber(Number));
+            // A number that was kept whole because no country claimed its dialing code stops being an
+            // international one the moment a country is picked for it by hand: its prefix is dropped so
+            // the selection is what carries the code, instead of a value naming one country while the
+            // field shows another.
+            var digits = KeepDigits(Number, keepLeadingPlus: true);
+
+            await AssignNumber(FormatNumber(digits.StartsWith('+') ? digits[1..] : Number));
 
             await UpdateValueFromParts();
 
             await OnCountryChange.InvokeAsync(country);
+
+            // The callout that showed the new selection is gone by now and the button naming it is
+            // not what the focus lands on, so the choice that was just made is said out loud.
+            Announce($"{country.Name}, +{country.Code}");
         }
+
+        if (NoFocusOnSelect) return;
 
         // The number is what the user came to type, so the focus lands there instead of being
         // dropped on the document body along with the callout the click happened in.
@@ -1430,7 +1701,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // ('+' or its "00" equivalent) selects the matching country and keeps only the local
         // digits in the number input. Without such a prefix ParseFullNumber returns the current
         // country unchanged and the whole input as the local number.
-        var (country, number) = ParseFullNumber(e.Value?.ToString());
+        // The text is normalized first, because a value that only ever travels on the change event
+        // (a paste followed by a blur, with Immediate off) has not been through the input handler.
+        var (country, number) = ParseFullNumber(NormalizeTyped(e.Value?.ToString()));
 
         // Only switch the country when parsing actually resolved a different one. AssignCountry
         // returns false for a one-way controlled Country (set without CountryChanged); in that
@@ -1464,32 +1737,36 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         if (IsEnabled is false || ReadOnly) return;
 
         var typed = e.Value?.ToString();
-        var text = typed;
 
-        // Strict throws away what cannot be part of a number, and a pattern lays out what is left.
-        // Both happen on the way in rather than on the way out, so the field shows what it holds
-        // even when the value itself only travels on the change event.
-        if (Strict)
-        {
-            text = KeepDigits(text, keepLeadingPlus: true);
-        }
-
-        text = FormatNumber(text);
+        var text = NormalizeTyped(typed);
 
         if (text != typed)
         {
             e.Value = text;
 
-            // Only written back when the text actually changed: assigning the value moves the caret
-            // to the end of the input, which must not happen on an ordinary keystroke.
+            // Only written back when the text actually changed, and through the helper that keeps the
+            // caret on the digit it was on: assigning the value of an input parks the caret at the end
+            // of it, which would make the middle of a formatted number impossible to edit.
             try
             {
-                await _js.BitUtilsSetProperty(InputElement, "value", text);
+                await _js.BitExtrasSetInputValue(InputElement, text);
             }
             catch (JSException) { } // the element might not be ready/visible yet
         }
 
         await base.HandleOnStringValueInputAsync(e);
+    }
+
+    // What the field shows for the text that was typed into it: Strict throws away what cannot be part
+    // of a number, the current pattern lays out what is left, and MaxLength caps the result - the
+    // attribute of the input caps what the user types, not what a pattern inserts around it.
+    private string? NormalizeTyped(string? typed)
+    {
+        var text = Strict ? KeepDigits(typed, keepLeadingPlus: true) : typed;
+
+        text = FormatNumber(text);
+
+        return MaxLength >= 0 && text is not null && text.Length > MaxLength ? text[..MaxLength] : text;
     }
 
     // Recomposes the full Value from the current Number and Country and pushes it out through
@@ -1571,6 +1848,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         if (e.Key == "Enter")
         {
             await OnEnter.InvokeAsync(e);
+        }
+        else if (e.Key == "Escape")
+        {
+            await OnEscape.InvokeAsync(e);
         }
     }
 

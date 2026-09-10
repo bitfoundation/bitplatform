@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -579,7 +580,10 @@ public class BitPhoneInputTests : BunitTestContext
 
         var dropdown = component.Find("button.bit-phi-drp");
 
-        Assert.AreEqual("combobox", dropdown.GetAttribute("role"));
+        // The search box of the open callout is the combobox of the listbox it filters, so the button
+        // that opens it stays the disclosure button it is: two comboboxes for one listbox would be two
+        // answers to the same question.
+        Assert.IsNull(dropdown.GetAttribute("role"));
         Assert.AreEqual("listbox", dropdown.GetAttribute("aria-haspopup"));
         Assert.AreEqual("false", dropdown.GetAttribute("aria-expanded"));
 
@@ -1368,6 +1372,695 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.IsNotNull(component.Find(".custom-clear"));
     }
 
+
+
+    [TestMethod]
+    public void BitPhoneInputShouldNameTheDropdownAComboboxWithoutASearchBox()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        var dropdown = component.Find("button.bit-phi-drp");
+
+        // Without a search box the button is what the list is navigated from, so it is the combobox.
+        Assert.AreEqual("combobox", dropdown.GetAttribute("role"));
+
+        dropdown.Click();
+
+        dropdown = component.Find("button.bit-phi-drp");
+        var options = component.FindAll("button.bit-phi-itm");
+
+        Assert.AreEqual("true", dropdown.GetAttribute("aria-expanded"));
+        Assert.AreEqual(options[0].Id, dropdown.GetAttribute("aria-activedescendant"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectExcludeCountries()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.ExcludeCountries, new List<BitCountry> { BitCountries.Germany, BitCountries.France });
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var items = component.FindAll("button.bit-phi-itm");
+
+        Assert.AreEqual(3, items.Count);
+        Assert.IsFalse(items.Any(i => i.GetAttribute("title") == BitCountries.Germany.Name));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepAnExcludedCountryOutOfTheDialCodeLookup()
+    {
+        BitCountry? country = null;
+        string? value = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.ExcludeCountries, new List<BitCountry> { BitCountries.Germany });
+            parameters.Add(p => p.CountryChanged, c => country = c);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+        });
+
+        component.Find("input.bit-phi-inp").Change("+4930123456");
+
+        // Germany is no longer offered, so nothing claims +49 and the number is kept whole.
+        Assert.IsNull(country);
+        Assert.AreEqual("+4930123456", value);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldExcludeAPreferredCountryTheListNoLongerHas()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.ExcludeCountries, new List<BitCountry> { BitCountries.Germany });
+            parameters.Add(p => p.PreferredCountries, new List<BitCountry> { BitCountries.Germany, BitCountries.France });
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var items = component.FindAll("button.bit-phi-itm");
+
+        Assert.AreEqual(4, items.Count);
+        Assert.AreEqual(BitCountries.France.Name, items[0].GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectAutoPlaceholder()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlaceholder, true);
+            parameters.Add(p => p.Mask, "(###) ###-####");
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+        });
+
+        Assert.AreEqual("(###) ###-####", component.Find("input.bit-phi-inp").GetAttribute("placeholder"));
+
+        // A placeholder of its own always wins: the pattern only fills in for a missing one.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AutoPlaceholder, true);
+            parameters.Add(p => p.Mask, "(###) ###-####");
+            parameters.Add(p => p.Placeholder, "Enter your number");
+        });
+
+        Assert.AreEqual("Enter your number", component.Find("input.bit-phi-inp").GetAttribute("placeholder"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldReadTheAutoPlaceholderOffTheMaskSelector()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlaceholder, true);
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.CountryChanged, (BitCountry? _) => { });
+            parameters.Add(p => p.MaskSelector, (BitCountry? c) => c?.Iso2 == "US" ? "(###) ###-####" : null);
+        });
+
+        Assert.AreEqual("(###) ###-####", component.Find("input.bit-phi-inp").GetAttribute("placeholder"));
+
+        component.Find("button.bit-phi-drp").Click();
+        component.FindAll("button.bit-phi-itm").First(i => i.GetAttribute("title") == BitCountries.France.Name).Click();
+
+        // France has no pattern of its own, so it has no placeholder to offer either.
+        Assert.IsNull(component.Find("input.bit-phi-inp").GetAttribute("placeholder"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectFlagUrlSelector()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+            parameters.Add(p => p.FlagUrlSelector, (BitCountry c) => c.Iso2 == "FR" ? null : $"https://flags.test/{c.Iso2}.png");
+        });
+
+        Assert.AreEqual("https://flags.test/DE.png", component.Find(".bit-phi-drp img.bit-phi-flg").GetAttribute("src"));
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var france = component.FindAll("button.bit-phi-itm").First(i => i.GetAttribute("title") == BitCountries.France.Name);
+
+        // A country the selector answers nothing for keeps the flag that ships with the library.
+        Assert.AreEqual("_content/Bit.BlazorUI.Extras/flags/FR-flat-16.webp", france.QuerySelector("img")!.GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRenderTheHiddenCountryFieldWhenNamed()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Name, "phone");
+            parameters.Add(p => p.CountryName, "phoneCountry");
+            parameters.Add(p => p.DefaultCountry, BitCountries.Canada);
+            parameters.Add(p => p.Value, "+16135550123");
+        });
+
+        var hidden = component.FindAll("input[type=hidden]");
+
+        Assert.AreEqual(2, hidden.Count);
+        Assert.AreEqual("phone", hidden[0].GetAttribute("name"));
+        Assert.AreEqual("+16135550123", hidden[0].GetAttribute("value"));
+        Assert.AreEqual("phoneCountry", hidden[1].GetAttribute("name"));
+        Assert.AreEqual("CA", hidden[1].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldSetTheInputAttributesOfAPhoneField()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var input = component.Find("input.bit-phi-inp");
+
+        Assert.AreEqual("tel", input.GetAttribute("type"));
+        // A phone field is what a browser autofills from, and none of the text assistances of a prose
+        // field has anything to say about a number.
+        Assert.AreEqual("tel", input.GetAttribute("autocomplete"));
+        Assert.AreEqual("false", input.GetAttribute("spellcheck"));
+        Assert.AreEqual("off", input.GetAttribute("autocorrect"));
+        Assert.AreEqual("off", input.GetAttribute("autocapitalize"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AutoComplete, "tel-national");
+            parameters.Add(p => p.EnterKeyHint, "send");
+            parameters.Add(p => p.InputMode, BitInputMode.Numeric);
+        });
+
+        input = component.Find("input.bit-phi-inp");
+
+        Assert.AreEqual("tel-national", input.GetAttribute("autocomplete"));
+        Assert.AreEqual("send", input.GetAttribute("enterkeyhint"));
+        Assert.AreEqual("numeric", input.GetAttribute("inputmode"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldMarkTheInputInvalidWhenForcedTo()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        Assert.IsNull(component.Find("input.bit-phi-inp").GetAttribute("aria-invalid"));
+
+        component.Render(parameters => parameters.Add(p => p.Invalid, true));
+
+        Assert.AreEqual("true", component.Find("input.bit-phi-inp").GetAttribute("aria-invalid"));
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheSeparatorsOfANationalNumber()
+    {
+        string? number = null;
+        string? value = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+        });
+
+        component.Find("input.bit-phi-inp").Change("(415) 555-0123");
+
+        // The separators belong to the field, and only the composed value is reduced to its digits.
+        Assert.AreEqual("(415) 555-0123", number);
+        Assert.AreEqual("+14155550123", value);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldApplyStrictOnTheChangeEventToo()
+    {
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Strict, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        // A number pasted into the field and left there travels on the change event alone.
+        component.Find("input.bit-phi-inp").Change("(415) 555-0123");
+
+        Assert.AreEqual("4155550123", number);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldHoldTheFormattedNumberToItsMaxLength()
+    {
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Mask, "###-###-####");
+            parameters.Add(p => p.MaxLength, 7);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        component.Find("input.bit-phi-inp").Input("4155550123");
+
+        // The separators the mask inserts are written back past the maxlength attribute of the input,
+        // so the cap is applied to the formatted text rather than only to what was typed.
+        Assert.AreEqual("415-555", number);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotReportAClearOfAnEmptyField()
+    {
+        var cleared = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.OnClear, () => cleared++);
+        });
+
+        component.InvokeAsync(() => component.Instance.ClearAsync()).GetAwaiter().GetResult();
+
+        Assert.AreEqual(0, cleared);
+
+        component.Find("input.bit-phi-inp").Change("5550123");
+        component.InvokeAsync(() => component.Instance.ClearAsync()).GetAwaiter().GetResult();
+
+        Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldSetTheNumberThroughItsPublicApi()
+    {
+        string? value = null;
+        string? number = null;
+        BitCountry? country = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+            parameters.Add(p => p.CountryChanged, c => country = c);
+        });
+
+        component.InvokeAsync(() => component.Instance.SetNumberAsync("5550123")).GetAwaiter().GetResult();
+
+        Assert.AreEqual("5550123", number);
+        Assert.AreEqual("+15550123", value);
+
+        // A number carrying an international prefix moves the selection, exactly as typing it does.
+        component.InvokeAsync(() => component.Instance.SetNumberAsync("+81 3 1234 5678")).GetAwaiter().GetResult();
+
+        Assert.AreEqual("JP", country?.Iso2);
+        Assert.AreEqual("312345678", number);
+        Assert.AreEqual("+81312345678", value);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldAnnounceTheResultOfASearch()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var live = component.Find(".bit-phi-lvr");
+
+        Assert.AreEqual("polite", live.GetAttribute("aria-live"));
+        Assert.AreEqual(string.Empty, live.TextContent);
+
+        component.Find("input.bit-phi-srch").Input("united");
+
+        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("2 countries found"));
+
+        component.Find("input.bit-phi-srch").Input("zzz");
+
+        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("No results found"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldAnnounceTheCountryItSwitchedTo()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.CountryChanged, (BitCountry? _) => { });
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+        component.FindAll("button.bit-phi-itm").First(i => i.GetAttribute("title") == BitCountries.Germany.Name).Click();
+
+        // The callout carrying the choice is gone by the time it is made, so it is said out loud.
+        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("Germany, +49"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectNoFocusOnSelect()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoFocusOnSelect, true);
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.CountryChanged, (BitCountry? _) => { });
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var focusCalls = Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus"));
+
+        component.FindAll("button.bit-phi-itm").First(i => i.GetAttribute("title") == BitCountries.Germany.Name).Click();
+
+        Assert.AreEqual("DE", component.Instance.Country?.Iso2);
+        Assert.AreEqual(focusCalls, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus")));
+    }
+
+
+
+    [TestMethod]
+    public void BitPhoneInputShouldNameTheNumberInputAfterItsAriaLabel()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Phone number");
+        });
+
+        var input = component.Find("input.bit-phi-inp");
+
+        Assert.AreEqual(component.Find("label.bit-phi-lbl").Id, input.GetAttribute("aria-labelledby"));
+        Assert.IsNull(input.GetAttribute("aria-label"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Label, "Phone number");
+            parameters.Add(p => p.AriaLabel, "Mobile number");
+        });
+
+        input = component.Find("input.bit-phi-inp");
+
+        // aria-labelledby wins over aria-label, so a name of its own would be thrown away by pointing
+        // at the visible label as well.
+        Assert.AreEqual("Mobile number", input.GetAttribute("aria-label"));
+        Assert.IsNull(input.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldAnnounceItsErrorMessage()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        Assert.AreEqual(string.Empty, component.Find(".bit-phi-lvr").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, "That number is already registered"));
+
+        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("That number is already registered"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheFocusRingWhileTheClearButtonIsFocused()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Number, "5550123");
+            parameters.Add(p => p.NumberChanged, (string? _) => { });
+        });
+
+        component.Find("input.bit-phi-inp").FocusIn();
+
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+
+        // Moving from the number to the button that empties it is still a focus inside the field, so
+        // the ring that says where the focus is must not blink off on the way.
+        component.Find("input.bit-phi-inp").FocusOut();
+        component.Find("button.bit-phi-cbt").FocusIn();
+
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+
+        component.Find("button.bit-phi-cbt").FocusOut();
+
+        Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+    }
+
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheWholeListForATermThatAsksForNothing()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The '+' of a dialing code about to be typed asks for nothing yet, so answering it with "no
+        // results" would say the country being typed does not exist.
+        component.Find(".bit-phi-srch").Input("+");
+
+        Assert.AreEqual(FiveCountries.Count, component.FindAll("button.bit-phi-itm").Count);
+
+        component.Find(".bit-phi-srch").Input("+44");
+
+        Assert.AreEqual(BitCountries.UnitedKingdom.Name, component.FindAll("button.bit-phi-itm")[0].GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRaiseOnEscape()
+    {
+        var escaped = 0;
+        var keyDowns = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.OnEscape, () => escaped++);
+            parameters.Add(p => p.OnKeyDown, () => keyDowns++);
+        });
+
+        var input = component.Find("input.bit-phi-inp");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, escaped);
+        Assert.AreEqual(1, keyDowns);
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(1, escaped);
+        Assert.AreEqual(2, keyDowns);
+    }
+
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectDescription()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "We will text you a code");
+        });
+
+        var description = component.Find(".bit-phi-des");
+        var input = component.Find("input.bit-phi-inp");
+
+        Assert.AreEqual("We will text you a code", description.TextContent.Trim());
+        Assert.AreEqual(description.Id, input.GetAttribute("aria-describedby"));
+
+        component.Render(parameters => parameters.Add(p => p.DescriptionTemplate, (RenderFragment)(builder =>
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "custom-description");
+            builder.CloseElement();
+        })));
+
+        Assert.IsNotNull(component.Find(".custom-description"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectErrorMessage()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-phi-erm").Count);
+        Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-inv"));
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, "That number is already registered"));
+
+        var error = component.Find(".bit-phi-erm");
+        var input = component.Find("input.bit-phi-inp");
+
+        Assert.AreEqual("That number is already registered", error.TextContent.Trim());
+
+        // A message saying what is wrong with the value is an invalid state as much as the flag is.
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.AreEqual(error.Id, input.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPointAtBothTheErrorMessageAndTheDescription()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Too short");
+            parameters.Add(p => p.Description, "Nine digits");
+        });
+
+        var describedBy = component.Find("input.bit-phi-inp").GetAttribute("aria-describedby");
+
+        Assert.AreEqual($"{component.Find(".bit-phi-erm").Id} {component.Find(".bit-phi-des").Id}", describedBy);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheDescribedByOfItsConsumer()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Nine digits");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "outside" } });
+        });
+
+        var describedBy = component.Find("input.bit-phi-inp").GetAttribute("aria-describedby");
+
+        Assert.AreEqual($"outside {component.Find(".bit-phi-des").Id}", describedBy);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectErrorMessageTemplate()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-error");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.IsNotNull(component.Find(".custom-error"));
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-inv"));
+    }
+
+
+    [TestMethod]
+    public void BitPhoneInputShouldResolveACountryByAnExtraDialCode()
+    {
+        BitCountry? country = null;
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.CountryChanged, c => country = c);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        // +1-829 is the Dominican Republic, not the +1 of the United States it starts with.
+        component.Find("input.bit-phi-inp").Change("+18295551234");
+
+        Assert.AreEqual("DO", country?.Iso2);
+        Assert.AreEqual("5551234", number);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldFindACountryByAnExtraDialCode()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+        component.Find(".bit-phi-srch").Input("1849");
+
+        Assert.AreEqual(BitCountries.DominicanRepublic.Name, component.FindAll("button.bit-phi-itm")[0].GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldAdoptANumberNoCountryClaimedWhenOneIsPicked()
+    {
+        string? value = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.CountryChanged, (BitCountry? _) => { });
+            parameters.Add(p => p.ValueChanged, v => value = v);
+        });
+
+        // Nothing in the list claims +999, so the number is kept whole with its prefix.
+        component.Find("input.bit-phi-inp").Change("+9991234567");
+
+        Assert.AreEqual("+9991234567", value);
+
+        component.Find("button.bit-phi-drp").Click();
+        component.FindAll("button.bit-phi-itm").First(i => i.GetAttribute("title") == BitCountries.Germany.Name).Click();
+
+        // Picking a country by hand is what decides the code from then on: a value naming +999 while
+        // the field shows Germany would be two answers to the same question.
+        Assert.AreEqual("+499991234567", value);
+        Assert.AreEqual("9991234567", component.Instance.Number);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRespectTabIndex()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Number, "5550123");
+            parameters.Add(p => p.NumberChanged, (string? _) => { });
+        });
+
+        Assert.AreEqual("3", component.Find("input.bit-phi-inp").GetAttribute("tabindex"));
+        Assert.AreEqual("3", component.Find("button.bit-phi-drp").GetAttribute("tabindex"));
+        Assert.AreEqual("3", component.Find("button.bit-phi-cbt").GetAttribute("tabindex"));
+
+        // A field nobody can type into is out of the tab order whatever the parameter says.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        Assert.AreEqual("-1", component.Find("button.bit-phi-drp").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldApplyStrictToTheNumberItIsGiven()
+    {
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Strict, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        component.InvokeAsync(() => component.Instance.SetNumberAsync("(415) 555-0123")).GetAwaiter().GetResult();
+
+        Assert.AreEqual("4155550123", number);
+    }
+
+    [TestMethod]
+    public void BitCountryShouldExposeEveryDialCodeItAnswersTo()
+    {
+        CollectionAssert.AreEqual(new[] { "1809", "1829", "1849" }, BitCountries.DominicanRepublic.DigitsCodes);
+        CollectionAssert.AreEqual(new[] { "1787", "1939" }, BitCountries.PuertoRico.DigitsCodes);
+
+        // A country with a single code answers with that one alone.
+        CollectionAssert.AreEqual(new[] { "49" }, BitCountries.Germany.DigitsCodes);
+    }
 
 
     [TestMethod]

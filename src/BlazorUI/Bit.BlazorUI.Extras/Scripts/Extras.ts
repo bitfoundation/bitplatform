@@ -57,6 +57,65 @@ namespace BitBlazorUI {
             delete el.bitPreventKeys;
         }
 
+        // Writes a reformatted text back into an input without throwing the caret to the end of it.
+        // A phone number laid out over a mask is rewritten on almost every keystroke, and assigning
+        // `value` alone always parks the caret after the last character, which makes editing the
+        // middle of a number impossible. The caret is therefore expressed as "the nth digit of the
+        // text" before the write and put back on the same digit afterwards, so the separators the
+        // mask inserts or removes around it never move it.
+        public static setInputValue(element: HTMLInputElement, value: string) {
+            if (!element) return;
+
+            value ??= '';
+
+            const typed = element.value ?? '';
+            const focused = document.activeElement === element;
+            const start = focused ? element.selectionStart : null;
+
+            if (typed !== value) {
+                element.value = value;
+            }
+
+            if (!focused || start === null) return;
+
+            const digits = Extras.countPhoneDigits(typed, start);
+            const total = Extras.countPhoneDigits(value, value.length);
+
+            let caret = value.length;
+
+            if (digits < total) {
+                caret = 0;
+                let seen = 0;
+                for (let i = 0; i < value.length; i++) {
+                    if (!Extras.isPhoneDigit(value[i])) continue;
+                    seen++;
+                    if (seen === digits) {
+                        caret = i + 1;
+                        break;
+                    }
+                }
+            }
+
+            try {
+                element.setSelectionRange(caret, caret);
+            } catch (e) { /* an input type that has no text selection to set */ }
+        }
+
+        // The characters a phone number is actually made of, which are the ones that survive the
+        // reformatting: everything else is a separator the mask owns rather than the user.
+        private static isPhoneDigit(char: string) {
+            return (char >= '0' && char <= '9') || char === '+';
+        }
+
+        private static countPhoneDigits(text: string, end: number) {
+            let count = 0;
+            const last = Math.min(end, text.length);
+            for (let i = 0; i < last; i++) {
+                if (Extras.isPhoneDigit(text[i])) count++;
+            }
+            return count;
+        }
+
         // Scrolls the option element into the visible area of its scroll container using
         // 'nearest' so keyboard navigation keeps the active item on screen with minimal movement.
         public static scrollOptionIntoView(optionId: string) {

@@ -201,6 +201,35 @@
     }
 }
 
+// A field is only as wide as it needs to be, and a width of fit-content is measured against the
+// widest thing inside it: a sentence written under the field would otherwise stretch the field
+// itself to the length of the sentence. A zero width keeps the line out of that measurement, and
+// the minimum width then fills whatever the field group settled on, so the text wraps under it.
+@mixin phi-under-field {
+    width: 0;
+    min-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    font-size: $tg-fs-2xs;
+    padding-block-start: spacing(0.5);
+}
+
+.bit-phi-erm {
+    @include phi-under-field;
+
+    color: $clr-err;
+
+    span {
+        color: $clr-err;
+    }
+}
+
+.bit-phi-des {
+    @include phi-under-field;
+
+    color: $clr-fg-sec;
+}
+
 .bit-phi-ovl {
     top: 0;
     left: 0;
@@ -233,7 +262,7 @@
 
 .bit-phi-sbx {
     box-sizing: border-box;
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-block-end: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-phi-srch {
@@ -246,6 +275,7 @@
     background-color: $clr-bg-pri;
     font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
+    letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(1) spacing(1.5);
 }
 
@@ -337,8 +367,8 @@
     box-sizing: border-box;
     justify-content: center;
     background-color: transparent;
-    width: spacing(4);
-    height: spacing(4);
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
     font-size: $siz-icon-md;
     margin-inline-start: auto;
     border-radius: $shp-radius-button;
@@ -396,24 +426,18 @@
         border-inline-end-color: transparent;
     }
 
-    &.bit-phi.bit-dis {
-    .bit-phi-lbl {
-        color: $clr-fg-dis;
+    // A field asked to show no border keeps none in any state, and both the disabled rule and the
+    // focus rule above set a border color of their own, which would put one back on it. The focus
+    // ring itself stays: it is the only thing left saying where the focus is.
+    &.bit-dis .bit-phi-fgp {
+        border-color: transparent;
     }
 
-    .bit-phi-fgp {
-        cursor: default;
-        color: $clr-fg-dis;
-        background: $clr-bg-dis;
-        border-color: $clr-brd-dis;
+    &.bit-dis .bit-phi-drp {
+        border-inline-end-color: transparent;
     }
 
-    .bit-phi-drp {
-        border-inline-end-color: $clr-brd-dis;
-    }
-}
-
-.bit-phi-fcs .bit-phi-fgp {
+    &.bit-phi-fcs .bit-phi-fgp {
         border-color: transparent;
     }
 }
@@ -431,27 +455,31 @@
         border-radius: 0;
     }
 
-    &.bit-phi.bit-dis {
-    .bit-phi-lbl {
-        color: $clr-fg-dis;
-    }
-
-    .bit-phi-fgp {
-        cursor: default;
-        color: $clr-fg-dis;
-        background: $clr-bg-dis;
-        border-color: $clr-brd-dis;
-    }
-
-    .bit-phi-drp {
-        border-inline-end-color: $clr-brd-dis;
-    }
-}
-
-.bit-phi-fcs .bit-phi-fgp {
+    &.bit-phi-fcs .bit-phi-fgp {
         box-shadow: none;
         border-block-end-width: $shp-border-width-thick;
     }
+}
+
+// The live region only exists for the assistive technologies, so it is removed from the visual
+// layout without ever being display:none or visibility:hidden, both of which would take it out of
+// the accessibility tree along with the announcement it carries.
+.bit-phi-lvr {
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// A phone number is written left to right wherever it is read, and the separators a mask inserts
+// ("(415) 555-0123") are neutral characters that a right-to-left paragraph would otherwise reorder
+// around the digits. The box itself stays on the right hand side of a right-to-left field.
+.bit-phi[dir="rtl"] .bit-phi-inp {
+    direction: ltr;
+    text-align: right;
 }
 
 .bit-phi-req {
@@ -488,24 +516,7 @@
 
 .bit-phi {
     &.bit-phi-err.bit-phi-fcs .bit-phi-fgp,
-    &.bit-inv.bit-phi.bit-dis {
-    .bit-phi-lbl {
-        color: $clr-fg-dis;
-    }
-
-    .bit-phi-fgp {
-        cursor: default;
-        color: $clr-fg-dis;
-        background: $clr-bg-dis;
-        border-color: $clr-brd-dis;
-    }
-
-    .bit-phi-drp {
-        border-inline-end-color: $clr-brd-dis;
-    }
-}
-
-.bit-phi-fcs .bit-phi-fgp {
+    &.bit-inv.bit-phi-fcs .bit-phi-fgp {
         @include focus-ring($clr-err);
 
         border-color: $clr-err;
@@ -522,24 +533,7 @@
         border-color: $color;
     }
 
-    &.bit-phi.bit-dis {
-    .bit-phi-lbl {
-        color: $clr-fg-dis;
-    }
-
-    .bit-phi-fgp {
-        cursor: default;
-        color: $clr-fg-dis;
-        background: $clr-bg-dis;
-        border-color: $clr-brd-dis;
-    }
-
-    .bit-phi-drp {
-        border-inline-end-color: $clr-brd-dis;
-    }
-}
-
-.bit-phi-fcs .bit-phi-fgp {
+    &.bit-phi-fcs .bit-phi-fgp {
         @include focus-ring($color);
 
         border-color: $color;

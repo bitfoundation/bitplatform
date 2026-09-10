@@ -62,8 +62,7 @@ public class BitCountries
     public static readonly BitCountry Denmark = new("Denmark", "45", "DK", "DNK");
     public static readonly BitCountry Djibouti = new("Djibouti", "253", "DJ", "DJI");
     public static readonly BitCountry Dominica = new("Dominica", "1-767", "DM", "DMA");
-    // DominicanRepublic = new("Dominican Republic", "1-809, 1-829, 1-849", "DO", "DOM");
-    public static readonly BitCountry DominicanRepublic = new("Dominican Republic", "1-809", "DO", "DOM");
+    public static readonly BitCountry DominicanRepublic = new("Dominican Republic", "1-809", "DO", "DOM", extraCodes: ["1-829", "1-849"]);
     public static readonly BitCountry EastTimor = new("East Timor", "670", "TL", "TLS");
     public static readonly BitCountry Ecuador = new("Ecuador", "593", "EC", "ECU");
     public static readonly BitCountry Egypt = new("Egypt", "20", "EG", "EGY");
@@ -177,8 +176,7 @@ public class BitCountries
     public static readonly BitCountry Pitcairn = new("Pitcairn", "64", "PN", "PCN");
     public static readonly BitCountry Poland = new("Poland", "48", "PL", "POL");
     public static readonly BitCountry Portugal = new("Portugal", "351", "PT", "PRT");
-    // PuertoRico = new("Puerto Rico", "1-787, 1-939", "PR", "PRI");
-    public static readonly BitCountry PuertoRico = new("Puerto Rico", "1-787", "PR", "PRI");
+    public static readonly BitCountry PuertoRico = new("Puerto Rico", "1-787", "PR", "PRI", extraCodes: ["1-939"]);
     public static readonly BitCountry Qatar = new("Qatar", "974", "QA", "QAT");
     public static readonly BitCountry RepublicOfTheCongo = new("Republic of the Congo", "242", "CG", "COG");
     public static readonly BitCountry Reunion = new("Reunion", "262", "RE", "REU", 1);
