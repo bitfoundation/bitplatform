@@ -9,6 +9,7 @@ namespace BitBlazorUI {
             lastElement: HTMLElement,
             threshold: number | undefined,
             rootMargin: string | undefined,
+            horizontal: boolean,
             autoLoad: boolean,
             dotnetObj: DotNetObject) {
 
@@ -16,7 +17,7 @@ namespace BitBlazorUI {
             // for an id that already has one is a change of those options: drop the old one first.
             InfiniteScrolling.dispose(id);
 
-            const instance = new InfiniteScrollingInstance(scrollerSelector, rootElement, lastElement, threshold, rootMargin, dotnetObj);
+            const instance = new InfiniteScrollingInstance(scrollerSelector, rootElement, lastElement, threshold, rootMargin, horizontal, dotnetObj);
             InfiniteScrolling._instances.set(id, instance);
 
             if (autoLoad) {
@@ -44,6 +45,14 @@ namespace BitBlazorUI {
             InfiniteScrolling._instances.get(id)?.scrollTo(toEnd, smooth);
         }
 
+        public static scrollToOffset(id: string, offset: number, smooth: boolean) {
+            InfiniteScrolling._instances.get(id)?.scrollToOffset(offset, smooth);
+        }
+
+        public static getScrollOffset(id: string): number {
+            return InfiniteScrolling._instances.get(id)?.getScrollOffset() ?? 0;
+        }
+
         public static dispose(id: string) {
             const instance = InfiniteScrolling._instances.get(id);
             if (!instance) return;
@@ -69,11 +78,11 @@ namespace BitBlazorUI {
         private _observer: IntersectionObserver;
         private _dotnetObj: DotNetObject;
         private _scroller: HTMLElement | null;   // null means the page viewport
+        private _horizontal: boolean;
         private _lastElement: HTMLElement | null = null;
         private _disposed = false;
         private _busy = false;
-        private _prevScrollHeight = -1;
-        private _prevScrollTop = 0;
+        private _prevScrollSize = -1;
 
         constructor(
             scrollerSelector: string | undefined,
@@ -81,17 +90,20 @@ namespace BitBlazorUI {
             lastElement: HTMLElement,
             threshold: number | undefined,
             rootMargin: string | undefined,
+            horizontal: boolean,
             dotnetObj: DotNetObject) {
 
             this._dotnetObj = dotnetObj;
+            this._horizontal = !!horizontal;
             this._scroller = InfiniteScrollingInstance._resolveScroller(scrollerSelector, rootElement, lastElement);
 
             const options: IntersectionObserverInit = {
                 root: this._scroller,
                 rootMargin: rootMargin || '0px',
                 // A zero threshold fires as soon as a single pixel of the sentinel shows up, which is what a
-                // one-pixel sentinel needs; a ratio is only meaningful for a sentinel with a real height.
-                threshold: threshold ?? 0,
+                // one-pixel sentinel needs; a ratio is only meaningful for a sentinel with a real size. Out
+                // of range values are rejected by the constructor, so they are clamped rather than thrown.
+                threshold: Math.min(1, Math.max(0, threshold ?? 0)),
             };
 
             try {
@@ -112,15 +124,18 @@ namespace BitBlazorUI {
             try {
                 element = document.querySelector(selector);
             } catch {
-                // An invalid selector is not worth breaking the component over: fall back to the root element.
-                return rootElement;
+                // An invalid selector is not worth breaking the component over.
+                return null;
             }
 
-            if (!element) return rootElement;
+            // A component that named a scroller stops scrolling itself, so its own root no longer clips
+            // anything: a sentinel measured against it would intersect for as long as the list exists and
+            // ask for every page at once. The page viewport is the honest fallback.
+            if (!element) return null;
 
             // The root of an IntersectionObserver has to be an ancestor of the observed element, otherwise
             // the callback simply never runs and the list silently stops loading.
-            if (!element.contains(lastElement)) return rootElement;
+            if (!element.contains(lastElement)) return null;
 
             return element as HTMLElement;
         }
@@ -158,37 +173,90 @@ namespace BitBlazorUI {
             }
         }
 
-        // The scroll geometry of the container, recorded right before items get inserted above the current
-        // ones so the insertion can be compensated for.
+        // The scroll size of the container, recorded right before items get inserted above (or before) the
+        // current ones so the insertion can be compensated for.
         public prepareScroll() {
             const el = this._scrollElement();
             if (!el) return;
 
-            this._prevScrollHeight = el.scrollHeight;
-            this._prevScrollTop = el.scrollTop;
+            this._prevScrollSize = this._scrollSize(el);
         }
 
         public restoreScroll() {
             const el = this._scrollElement();
-            if (!el || this._prevScrollHeight < 0) return;
+            if (!el || this._prevScrollSize < 0) return;
 
-            const delta = el.scrollHeight - this._prevScrollHeight;
-            this._prevScrollHeight = -1;
+            const delta = this._scrollSize(el) - this._prevScrollSize;
+            this._prevScrollSize = -1;
 
             if (delta === 0) return;
 
-            el.scrollTop = this._prevScrollTop + delta;
+            // The offset is read here rather than beside the previous size: scroll anchoring is off, so the
+            // browser leaves the offset alone while the content grows, and reading it now keeps a scroll the
+            // user made during the load.
+            this._setScrollOffset(el, this._scrollOffset(el) + delta);
         }
 
         public scrollTo(toEnd: boolean, smooth: boolean) {
             const el = this._scrollElement();
             if (!el) return;
 
-            el.scrollTo({ top: toEnd ? el.scrollHeight : 0, behavior: smooth ? 'smooth' : 'auto' });
+            this._applyScroll(el, () => toEnd ? this._scrollSize(el) : 0, smooth);
+        }
+
+        public scrollToOffset(offset: number, smooth: boolean) {
+            const el = this._scrollElement();
+            if (!el) return;
+
+            this._applyScroll(el, () => offset, smooth);
+        }
+
+        public getScrollOffset(): number {
+            const el = this._scrollElement();
+            if (!el) return 0;
+
+            return this._scrollOffset(el);
+        }
+
+        // The target is recomputed on the second pass: a list whose images or fonts land after the first one
+        // is taller by then, and the end of a chat that is scrolled to too early stops short of the newest item.
+        private _applyScroll(el: HTMLElement, target: () => number, smooth: boolean) {
+            const apply = () => this._setScrollOffset(el, target(), smooth);
+
+            apply();
+
+            if (smooth) return;
+
+            requestAnimationFrame(apply);
         }
 
         private _scrollElement(): HTMLElement | null {
             return this._scroller ?? (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
+        }
+
+        private _scrollSize(el: HTMLElement): number {
+            return this._horizontal ? el.scrollWidth : el.scrollHeight;
+        }
+
+        // Always the positive distance from the start of the list, so a right-to-left horizontal container
+        // (whose scrollLeft counts backwards from zero) is measured the same way as every other one.
+        private _scrollOffset(el: HTMLElement): number {
+            return Math.abs(this._horizontal ? el.scrollLeft : el.scrollTop);
+        }
+
+        // The offset arrives as a positive distance from the start of the list and gets the sign the container
+        // expects here, which is negative in a right-to-left horizontal one.
+        private _setScrollOffset(el: HTMLElement, offset: number, smooth?: boolean) {
+            const behavior: ScrollBehavior = smooth ? 'smooth' : 'auto';
+            const distance = Math.max(0, offset);
+
+            if (this._horizontal) {
+                const rtl = getComputedStyle(el).direction === 'rtl';
+                el.scrollTo({ left: rtl ? -distance : distance, behavior });
+            }
+            else {
+                el.scrollTo({ top: distance, behavior });
+            }
         }
 
         public dispose() {

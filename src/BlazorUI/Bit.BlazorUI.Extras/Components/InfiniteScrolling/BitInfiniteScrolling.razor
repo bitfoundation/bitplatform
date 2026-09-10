@@ -17,14 +17,29 @@
      aria-label="@AriaLabel"
      aria-busy="@(_isLoading ? "true" : "false")">
     @* A live region has to be in the DOM before its content changes for a screen reader to announce it, so
-       this one is always rendered and only its text changes as the list moves between its states. *@
-    <div class="bit-isc-sts" role="status">@GetStatusMessage()</div>
+       this one is always rendered and only its text changes as the list moves between its states. It marks
+       itself as not busy because the root above it is busy while a page is in flight, and a busy region tells
+       assistive technology to hold back the very updates this one exists to announce. *@
+    <div class="bit-isc-sts" role="status" aria-busy="false">@GetStatusMessage()</div>
 
     @if (template is not null)
     {
-        foreach (var item in _items)
+        if (ItemKey is null)
         {
-            @template(item)
+            foreach (var item in _items)
+            {
+                @template(item)
+            }
+        }
+        else
+        {
+            @* A keyed item is matched by its key instead of by its position, so a page prepended above the
+               rendered items inserts new nodes rather than rewriting the content of every node below it. The
+               wrapper the key needs is laid out with display:contents, so it adds nothing to the layout. *@
+            foreach (var item in _items)
+            {
+                <div @key="ItemKey(item)" class="bit-isc-itm">@template(item)</div>
+            }
         }
     }
 
@@ -92,10 +107,12 @@
         <button type="button"
                 class="bit-isc-btn @Classes?.Button"
                 style="@Styles?.Button"
-                @onclick="LoadMoreAsync">
+                disabled="@_isLoading"
+                aria-busy="@(_isLoading ? "true" : "false")"
+                @onclick="HandleLoadMoreClick">
             @if (LoadMoreTemplate is null)
             {
-                @(_error is null ? LoadMoreText : RetryText)
+                @_buttonText
             }
             else
             {

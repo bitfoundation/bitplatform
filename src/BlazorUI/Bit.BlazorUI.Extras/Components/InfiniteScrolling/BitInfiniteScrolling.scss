@@ -16,11 +16,57 @@
 
     > .bit-isc-lst,
     > .bit-isc-ldg,
+    > .bit-isc-emp,
     > .bit-isc-err,
     > .bit-isc-end,
     > .bit-isc-btn {
         order: -1;
     }
+}
+
+// The horizontal mode scrolls sideways, so the list lays its items out in a row and the sentinel becomes a
+// thin column at its end. Declared after the reversed block so a list that is both stays a row.
+.bit-isc-hor {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    // Along a row the status blocks are as wide as their text rather than as wide as the list, and none of
+    // them may be squeezed by the items that overflow the container.
+    > .bit-isc-ldg,
+    > .bit-isc-emp,
+    > .bit-isc-err,
+    > .bit-isc-end,
+    > .bit-isc-btn {
+        width: auto;
+        flex: 0 0 auto;
+        align-self: center;
+    }
+
+    // The sentinel is as tall as the row, and never thinner than the pixel the observer needs to see.
+    > .bit-isc-lst {
+        min-height: 1px;
+        align-self: stretch;
+    }
+}
+
+// A component that hands its scrolling over to another element must not clip and scroll its own content on
+// top of it. Declared last so it wins over the overflow of every mode above.
+.bit-isc-ext {
+    overflow: visible;
+}
+
+// The wrapper that carries the key of an item. It is not part of the layout: the item's own root element is
+// what the list (or its flex container) lays out.
+.bit-isc-itm {
+    display: contents;
+}
+
+// The sentinel is never squeezed by the flex line of a reversed or horizontal list: an element shrunk to no
+// area is one the observer stops reporting, and the list would silently stop loading.
+.bit-isc-lst {
+    flex: 0 0 auto;
 }
 
 // The always-present live region: out of sight, but never out of the accessibility tree.
@@ -86,5 +132,11 @@
 
     &:focus-visible {
         @include focus-ring;
+    }
+
+    // The button keeps its place while the load it started runs, so the focus that pressed it is not dropped.
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
     }
 }

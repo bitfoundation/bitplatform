@@ -64,10 +64,26 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
+            Name = "Horizontal",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lays the list out along the horizontal axis, so the pages are fetched while scrolling sideways and every scroll operation of the component works on the horizontal axis of its scroll container. The root element becomes a flex row in this mode and the sentinel element is given a width instead of a height.",
+         },
+         new()
+         {
+            Name = "ItemKey",
+            Type = "Func<TItem, object>?",
+            DefaultValue = "null",
+            Description = "The function that returns a stable key for each item, which is rendered as the @key of that item. A keyed item is matched by its key instead of by its position, so a page prepended above the rendered items inserts new nodes rather than rewriting the content of every node below it.",
+         },
+         new()
+         {
             Name = "ItemsProvider",
             Type = "BitInfiniteScrollingItemsProvider<TItem>?",
             DefaultValue = "null",
-            Description = "The item provider function that will be called when scrolling ends.",
+            Description = "The item provider function that will be called when scrolling ends. It receives a BitInfiniteScrollingItemsProviderRequest and returns the items of that page, optionally as a BitInfiniteScrollingItemsProviderResult that also states where the data ends.",
+            LinkType = LinkType.Link,
+            Href = "#items-provider-request",
          },
          new()
          {
@@ -99,6 +115,13 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
+            Name = "LastElementWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The width of the last element that triggers the loading, which is the size along the scroll axis in the horizontal mode.",
+         },
+         new()
+         {
             Name = "LoadingMessage",
             Type = "string",
             DefaultValue = "Loading...",
@@ -123,7 +146,7 @@ public partial class BitInfiniteScrollingDemo
             Name = "LoadMoreText",
             Type = "string",
             DefaultValue = "Load more",
-            Description = "The text of the button that loads the next page in the manual mode.",
+            Description = "The text of the button that loads the next page in the manual mode. The button keeps its place, disabled, while the page it asked for is loading.",
          },
          new()
          {
@@ -173,6 +196,13 @@ public partial class BitInfiniteScrollingDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Pre-loads the data at the initialization of the component. Useful in prerendering mode.",
+         },
+         new()
+         {
+            Name = "RefreshToken",
+            Type = "object?",
+            DefaultValue = "null",
+            Description = "An arbitrary value that resets the component whenever it changes: the loaded items are thrown away and the first page is fetched again from the items provider. It is what tells the component that a provider written as a lambda over a changed filter now answers differently.",
          },
          new()
          {
@@ -240,6 +270,18 @@ public partial class BitInfiniteScrollingDemo
         },
         new()
         {
+            Id = "items-provider-result",
+            Title = "BitInfiniteScrollingItemsProviderResult<T>",
+            Description = "The optional result of a BitInfiniteScrollingItemsProvider, which lets a provider state explicitly whether another page still exists and how many items the data source holds in total. It is itself an IEnumerable of the items of the page, so a provider can return one wherever a plain sequence is expected.",
+            Parameters =
+            [
+                new() { Name = "Items", Type = "IEnumerable<T>", DefaultValue = "", Description = "The items of the requested page." },
+                new() { Name = "HasMore", Type = "bool?", DefaultValue = "null", Description = "Whether another page can still be fetched, or null to let the component infer it from the size of the page: a page shorter than the requested count is the last one." },
+                new() { Name = "TotalCount", Type = "int?", DefaultValue = "null", Description = "The total number of the items of the data source, when the provider knows it. The component exposes the last reported value through its TotalCount member." },
+            ]
+        },
+        new()
+        {
             Id = "items-provider-request",
             Title = "BitInfiniteScrollingItemsProviderRequest",
             Description = "A request to a BitInfiniteScrollingItemsProvider for the next page of items.",
@@ -284,6 +326,15 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
+            Name = "TotalCount",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The total number of the items of the data source, as it was last reported by a BitInfiniteScrollingItemsProviderResult returned from the items provider.",
+            LinkType = LinkType.Link,
+            Href = "#items-provider-result",
+         },
+         new()
+         {
             Name = "AppendItemsAsync",
             Type = "Func<IEnumerable<TItem>, Task>",
             DefaultValue = "",
@@ -302,6 +353,34 @@ public partial class BitInfiniteScrollingDemo
             Type = "Func<IEnumerable<TItem>, Task>",
             DefaultValue = "",
             Description = "Prepends the provided items to the beginning of the already loaded items, without calling the items provider. The scroll position is kept stable.",
+         },
+         new()
+         {
+            Name = "RemoveItemAsync",
+            Type = "Func<TItem, Task<bool>>",
+            DefaultValue = "",
+            Description = "Removes the first occurrence of the provided item from the loaded items, and reports whether it was found.",
+         },
+         new()
+         {
+            Name = "SetItemsAsync",
+            Type = "Func<IEnumerable<TItem>, Task>",
+            DefaultValue = "",
+            Description = "Replaces every loaded item with the provided ones, without calling the items provider. It is the way to filter, sort, deduplicate or patch the loaded items in place.",
+         },
+         new()
+         {
+            Name = "GetScrollOffsetAsync",
+            Type = "Func<Task<double>>",
+            DefaultValue = "",
+            Description = "Returns the current offset of the scroll container, in pixels, along the scroll axis of the component.",
+         },
+         new()
+         {
+            Name = "ScrollToOffsetAsync",
+            Type = "Func<double, bool, Task>",
+            DefaultValue = "",
+            Description = "Scrolls the scroll container to the provided offset, in pixels, along the scroll axis of the component.",
          },
          new()
          {
@@ -328,16 +407,25 @@ public partial class BitInfiniteScrollingDemo
 
 
 
+    public record ChatMessage(int Id, string Text);
+
+
     private const int TotalItems = 40;
     private const int TotalMessages = 40;
+    private const int TotalCatalogItems = 35;
 
     private int loadedPages;
     private int loadedItems;
     private bool reachedEnd;
     private string? lastError;
     private int appendedItems;
+    private double membersOffset;
     private bool faultyLoadFailed;
+    private string filter = "even";
     private BitInfiniteScrolling<int>? membersRef;
+    private BitInfiniteScrolling<int>? catalogRef;
+
+    private bool IsEvenFilter => filter == "even";
 
 
     private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
@@ -393,6 +481,39 @@ public partial class BitInfiniteScrollingDemo
         return Enumerable.Range(request.Skip, 50);
     }
 
+    private async ValueTask<IEnumerable<int>> LoadCatalogItems(BitInfiniteScrollingItemsProviderRequest request)
+    {
+        await Task.Delay(1000);
+
+        var count = Math.Clamp(TotalCatalogItems - request.Skip, 0, request.Count);
+
+        return new BitInfiniteScrollingItemsProviderResult<int>(Enumerable.Range(request.Skip, count),
+                                                               hasMore: request.Skip + count < TotalCatalogItems,
+                                                               totalCount: TotalCatalogItems);
+    }
+
+    private async ValueTask<IEnumerable<ChatMessage>> LoadKeyedMessages(BitInfiniteScrollingItemsProviderRequest request)
+    {
+        await Task.Delay(1000);
+
+        var remaining = TotalMessages - request.Skip;
+        if (remaining <= 0) return [];
+
+        var count = Math.Min(remaining, request.Count);
+        var start = remaining - count;
+
+        return Enumerable.Range(start, count).Select(i => new ChatMessage(i, $"Message {i + 1}"));
+    }
+
+    private async ValueTask<IEnumerable<int>> LoadFilteredItems(BitInfiniteScrollingItemsProviderRequest request, string filter)
+    {
+        await Task.Delay(1000);
+
+        var source = Enumerable.Range(0, TotalItems).Where(i => filter == "even" ? i % 2 == 0 : i % 2 == 1);
+
+        return source.Skip(request.Skip).Take(request.Count);
+    }
+
     private async ValueTask<IEnumerable<int>> LoadRtlItems(BitInfiniteScrollingItemsProviderRequest request)
     {
         await Task.Delay(1000);
@@ -428,6 +549,13 @@ public partial class BitInfiniteScrollingDemo
         await membersRef.AppendItemsAsync([1000 + appendedItems++]);
     }
 
+    private async Task RemoveMemberItem()
+    {
+        if (membersRef is null || membersRef.Items.Count == 0) return;
+
+        await membersRef.RemoveItemAsync(membersRef.Items[0]);
+    }
+
     private async Task ScrollMembersToTop()
     {
         if (membersRef is null) return;
@@ -439,6 +567,32 @@ public partial class BitInfiniteScrollingDemo
         if (membersRef is null) return;
         await membersRef.ScrollToBottomAsync(true);
     }
+
+    private async Task SetMemberItems()
+    {
+        if (membersRef is null) return;
+        await membersRef.SetItemsAsync([101, 102, 103]);
+    }
+
+    private async Task ScrollMembersToOffset()
+    {
+        if (membersRef is null) return;
+        await membersRef.ScrollToOffsetAsync(150, true);
+    }
+
+    private async Task ReadMembersOffset()
+    {
+        if (membersRef is null) return;
+        membersOffset = await membersRef.GetScrollOffsetAsync();
+    }
+
+
+    private void HandleCatalogLoaded(IReadOnlyList<int> items) => StateHasChanged();
+
+
+    private void SelectEvenFilter() => filter = "even";
+
+    private void SelectOddFilter() => filter = "odd";
 
 
 
@@ -740,13 +894,21 @@ private void HandleOnError(Exception exception) => lastError = exception.Message
 <BitStack Horizontal Wrap Gap=""0.5rem"">
     <BitButton OnClick=""RefreshMembers"">RefreshDataAsync</BitButton>
     <BitButton OnClick=""AppendMemberItem"">AppendItemsAsync</BitButton>
+    <BitButton OnClick=""RemoveMemberItem"">RemoveItemAsync</BitButton>
+    <BitButton OnClick=""SetMemberItems"">SetItemsAsync</BitButton>
     <BitButton OnClick=""ScrollMembersToTop"">ScrollToTopAsync</BitButton>
     <BitButton OnClick=""ScrollMembersToBottom"">ScrollToBottomAsync</BitButton>
+    <BitButton OnClick=""ScrollMembersToOffset"">ScrollToOffsetAsync</BitButton>
+    <BitButton OnClick=""ReadMembersOffset"">GetScrollOffsetAsync</BitButton>
 </BitStack>
 
-<div>Items: @(membersRef?.Items.Count ?? 0) &nbsp; HasMore: @(membersRef?.HasMore) &nbsp; IsLoading: @(membersRef?.IsLoading)</div>";
+<div>
+    Items: @(membersRef?.Items.Count ?? 0) &nbsp; HasMore: @(membersRef?.HasMore) &nbsp;
+    IsLoading: @(membersRef?.IsLoading) &nbsp; Offset: @membersOffset
+</div>";
     private readonly string example9CsharpCode = @"
 private int appendedItems;
+private double membersOffset;
 private BitInfiniteScrolling<int>? membersRef;
 
 private void HandleMembersLoaded(IReadOnlyList<int> items) => StateHasChanged();
@@ -763,6 +925,12 @@ private async Task AppendMemberItem()
     await membersRef.AppendItemsAsync([1000 + appendedItems++]);
 }
 
+private async Task RemoveMemberItem()
+{
+    if (membersRef is null || membersRef.Items.Count == 0) return;
+    await membersRef.RemoveItemAsync(membersRef.Items[0]);
+}
+
 private async Task ScrollMembersToTop()
 {
     if (membersRef is null) return;
@@ -773,9 +941,195 @@ private async Task ScrollMembersToBottom()
 {
     if (membersRef is null) return;
     await membersRef.ScrollToBottomAsync(true);
+}
+
+private async Task SetMemberItems()
+{
+    if (membersRef is null) return;
+    await membersRef.SetItemsAsync([101, 102, 103]);
+}
+
+private async Task ScrollMembersToOffset()
+{
+    if (membersRef is null) return;
+    await membersRef.ScrollToOffsetAsync(150, true);
+}
+
+private async Task ReadMembersOffset()
+{
+    if (membersRef is null) return;
+    membersOffset = await membersRef.GetScrollOffsetAsync();
 }";
 
     private readonly string example10RazorCode = @"
+<style>
+    .basic {
+        max-height: 300px;
+    }
+</style>
+
+<BitInfiniteScrolling @ref=""catalogRef""
+                      TItem=""int""
+                      ItemsProvider=""LoadCatalogItems""
+                      PageSize=""10""
+                      Class=""basic""
+                      Context=""item""
+                      OnItemsLoaded=""HandleCatalogLoaded""
+                      EndMessage=""No more items to load."">
+    <div>Item @item</div>
+</BitInfiniteScrolling>
+
+<div>Loaded @(catalogRef?.Items.Count ?? 0) of @(catalogRef?.TotalCount?.ToString() ?? ""?"") items.</div>";
+    private readonly string example10CsharpCode = @"
+private const int TotalCatalogItems = 35;
+
+private BitInfiniteScrolling<int>? catalogRef;
+
+private async ValueTask<IEnumerable<int>> LoadCatalogItems(BitInfiniteScrollingItemsProviderRequest request)
+{
+    await Task.Delay(1000);
+
+    var count = Math.Clamp(TotalCatalogItems - request.Skip, 0, request.Count);
+
+    return new BitInfiniteScrollingItemsProviderResult<int>(Enumerable.Range(request.Skip, count),
+                                                           hasMore: request.Skip + count < TotalCatalogItems,
+                                                           totalCount: TotalCatalogItems);
+}
+
+// The counter below the list lives in the page, so it needs a render of its own to catch up.
+private void HandleCatalogLoaded(IReadOnlyList<int> items) => StateHasChanged();";
+
+    private readonly string example11RazorCode = @"
+<style>
+    .h-list {
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .h-item {
+        flex: 0 0 auto;
+        padding: 1rem;
+        white-space: nowrap;
+        border: 1px solid gray;
+    }
+</style>
+
+<BitInfiniteScrolling ItemsProvider=""LoadPagedItems""
+                      Horizontal
+                      PageSize=""10""
+                      Class=""h-list""
+                      Context=""item""
+                      EndMessage=""The end."">
+    <div class=""h-item"">Item @item</div>
+</BitInfiniteScrolling>";
+    private readonly string example11CsharpCode = @"
+private const int TotalItems = 40;
+
+private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
+{
+    await Task.Delay(1000);
+    var count = Math.Clamp(TotalItems - request.Skip, 0, request.Count);
+    return Enumerable.Range(request.Skip, count);
+}";
+
+    private readonly string example12RazorCode = @"
+<style>
+    .chat {
+        gap: 0.5rem;
+        padding: 0.5rem;
+        max-height: 300px;
+    }
+
+    .k-message {
+        gap: 0.5rem;
+        display: flex;
+        padding: 0.5rem;
+        align-items: center;
+        border-radius: 0.5rem;
+        justify-content: space-between;
+        background-color: #80808040;
+    }
+
+    .note {
+        width: 6rem;
+    }
+</style>
+
+<BitInfiniteScrolling TItem=""ChatMessage""
+                      ItemsProvider=""LoadKeyedMessages""
+                      Reversed
+                      Preload
+                      PageSize=""10""
+                      Class=""chat""
+                      Context=""message""
+                      ItemKey=""@(m => m.Id)""
+                      LoadingMessage=""Loading older messages...""
+                      EndMessage=""This is the beginning of the conversation."">
+    <div class=""k-message"">
+        <span>@message.Text</span>
+        <input class=""note"" placeholder=""note"" />
+    </div>
+</BitInfiniteScrolling>";
+    private readonly string example12CsharpCode = @"
+public record ChatMessage(int Id, string Text);
+
+private const int TotalMessages = 40;
+
+private async ValueTask<IEnumerable<ChatMessage>> LoadKeyedMessages(BitInfiniteScrollingItemsProviderRequest request)
+{
+    await Task.Delay(1000);
+
+    var remaining = TotalMessages - request.Skip;
+    if (remaining <= 0) return [];
+
+    var count = Math.Min(remaining, request.Count);
+    var start = remaining - count;
+
+    return Enumerable.Range(start, count).Select(i => new ChatMessage(i, $""Message {i + 1}""));
+}";
+
+    private readonly string example13RazorCode = @"
+<style>
+    .basic {
+        max-height: 300px;
+    }
+</style>
+
+<BitStack Horizontal Wrap Gap=""0.5rem"">
+    <BitButton Variant=""@(IsEvenFilter ? BitVariant.Fill : BitVariant.Outline)"" OnClick=""SelectEvenFilter"">Even</BitButton>
+    <BitButton Variant=""@(IsEvenFilter ? BitVariant.Outline : BitVariant.Fill)"" OnClick=""SelectOddFilter"">Odd</BitButton>
+</BitStack>
+
+<BitInfiniteScrolling TItem=""int""
+                      ItemsProvider=""@(request => LoadFilteredItems(request, filter))""
+                      RefreshToken=""filter""
+                      PageSize=""10""
+                      Class=""basic""
+                      Context=""item""
+                      EndMessage=""No more items to load."">
+    <div>Item @item</div>
+</BitInfiniteScrolling>";
+    private readonly string example13CsharpCode = @"
+private const int TotalItems = 40;
+
+private string filter = ""even"";
+
+private bool IsEvenFilter => filter == ""even"";
+
+private void SelectEvenFilter() => filter = ""even"";
+
+private void SelectOddFilter() => filter = ""odd"";
+
+private async ValueTask<IEnumerable<int>> LoadFilteredItems(BitInfiniteScrollingItemsProviderRequest request, string filter)
+{
+    await Task.Delay(1000);
+
+    var source = Enumerable.Range(0, TotalItems).Where(i => filter == ""even"" ? i % 2 == 0 : i % 2 == 1);
+
+    return source.Skip(request.Skip).Take(request.Count);
+}";
+
+        private readonly string example14RazorCode = @"
 <style>
     .custom-loading {
         font-style: italic;
@@ -798,7 +1152,7 @@ private async Task ScrollMembersToBottom()
                       EndMessage=""No more items to load."">
     <div>Item @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
@@ -808,7 +1162,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     return Enumerable.Range(request.Skip, count);
 }";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -824,7 +1178,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
                       EndMessage=""به انتهای لیست رسیدید."">
     <div>آیتم @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadRtlItems(BitInfiniteScrollingItemsProviderRequest request)
