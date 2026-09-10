@@ -5,11 +5,37 @@
     height: 100%;
     display: flex;
     gap: spacing(2);
+    text-align: center;
     align-items: center;
+    padding: spacing(3);
     box-sizing: border-box;
     flex-direction: column;
     justify-content: center;
     background-color: $clr-bg-pri;
+}
+
+.bit-erb-ico {
+    color: $clr-err;
+    font-size: $siz-icon-lg;
+}
+
+.bit-erb-svg {
+    flex-shrink: 0;
+}
+
+/* The illustration is drawn in the theme's error color rather than in two literals: the pale half is
+   the same color at a fraction of its alpha, so the glyph stays readable on it in both schemes. */
+.bit-erb-svg-bg {
+    fill: translucent($clr-err, 25%);
+}
+
+.bit-erb-svg-fg {
+    fill: $clr-err;
+}
+
+.bit-erb-msg {
+    color: $clr-fg-sec;
+    max-width: rem2(560px);
 }
 
 .bit-erb-exp {
@@ -18,11 +44,19 @@
     white-space: pre;
     text-align: start;
     margin: spacing(3);
+    padding: spacing(2);
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    max-height: rem2(320px);
+    background-color: $clr-bg-sec;
+    border-radius: $shp-radius-surface;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 .bit-erb-ftr {
     width: 100%;
     display: flex;
+    flex-wrap: wrap;
     gap: spacing(2);
     align-items: center;
     box-sizing: border-box;

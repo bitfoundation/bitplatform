@@ -65,6 +65,50 @@ namespace BitBlazorUI {
             } catch (e) { console.error('BitBlazorUI.Extras.scrollOptionIntoView:', e); }
         }
 
+        // Puts text on the clipboard, throwing when it could not be done so that the caller can tell.
+        // The async Clipboard API is the only one that works without a user gesture heuristic, but it
+        // is unavailable outside a secure context and in a few older browsers, so a hidden textarea and
+        // the deprecated execCommand stand in for it there rather than leaving the copy silently undone.
+        public static async copyToClipboard(text: string) {
+            text ??= '';
+
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                return;
+            }
+
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.setAttribute('aria-hidden', 'true');
+            // Pinned to the top-left of the viewport rather than left to flow: a textarea that is
+            // selected while it sits below the fold scrolls the page away from whatever the copy button
+            // belonged to. The size keeps it off the layout without making it unselectable.
+            textarea.style.position = 'fixed';
+            textarea.style.top = '0';
+            textarea.style.left = '0';
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.padding = '0';
+            textarea.style.border = 'none';
+            textarea.style.opacity = '0';
+            textarea.style.pointerEvents = 'none';
+            document.body.appendChild(textarea);
+
+            // Selecting the textarea takes the focus off whatever the user was on, so it is put back.
+            const previouslyFocused = document.activeElement as HTMLElement | null;
+
+            try {
+                textarea.select();
+                if (!document.execCommand('copy')) {
+                    throw new Error('the copy command was rejected');
+                }
+            } finally {
+                document.body.removeChild(textarea);
+                try { previouslyFocused?.focus?.(); } catch { }
+            }
+        }
+
         private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
         public static async initScripts(scripts: string[], isModule: boolean) {
             const key = scripts.join('|');

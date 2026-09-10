@@ -1,4 +1,6 @@
-﻿<BitErrorBoundary ShowException="_showException" OnError="HandleOnError">
+﻿@* The one boundary the whole site sits inside, so it outlives the page that threw: without
+   RecoverOnNavigation its error UI would stay on screen wherever the reader went next. *@
+<BitErrorBoundary RecoverOnNavigation ShowException="_showException" OnError="HandleOnError">
     <PageTitle>bit BlazorUI</PageTitle>
     <LayoutView Layout="@typeof(MainLayout)">
         <Router AppAssembly="@GetType().Assembly"
