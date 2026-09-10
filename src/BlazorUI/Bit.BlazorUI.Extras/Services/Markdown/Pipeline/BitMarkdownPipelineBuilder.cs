@@ -24,6 +24,12 @@ public sealed class BitMarkdownPipelineBuilder
     /// <summary>Node renderers. Later registrations take precedence over earlier ones.</summary>
     public List<BitMarkdownNodeRenderer> Renderers { get; } = new();
 
+    /// <summary>
+    /// The words the renderers write themselves - alert titles, footnote back-links, the accessible
+    /// names of the regions and controls the markup adds. Defaults to English.
+    /// </summary>
+    public BitMarkdownTexts Texts { get; set; } = BitMarkdownTexts.Default;
+
     /// <summary>Creates a builder pre-populated with the basic CommonMark core.</summary>
     public BitMarkdownPipelineBuilder()
     {

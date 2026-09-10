@@ -120,8 +120,7 @@
         margin-top: 0.25em;
     }
 
-    li:has(> .task-list-item-checkbox),
-    li:has(> p > .task-list-item-checkbox) {
+    li.task-list-item {
         list-style-type: none;
     }
 
@@ -139,12 +138,22 @@
         background-color: $clr-brd-pri;
     }
 
+    // The table scrolls inside its wrapper rather than by becoming a block itself, so it keeps
+    // the row/column semantics assistive technology reads it with.
+    .bit-mdv-table-wrapper {
+        max-width: 100%;
+        overflow-x: auto;
+        margin-bottom: 1em;
+
+        &:focus-visible {
+            outline: $shp-border-width-thick $shp-border-style $clr-pri;
+            outline-offset: 2px;
+        }
+    }
+
     table {
-        display: block;
         width: max-content;
         max-width: 100%;
-        overflow: auto;
-        margin-bottom: 1em;
         border-collapse: collapse;
 
         th,
@@ -165,6 +174,172 @@
     img {
         max-width: 100%;
         box-sizing: content-box;
+    }
+
+    // Emphasis extras. <sub> and <sup> keep the line height they sit on, and the two "changed
+    // text" marks read as such without borrowing the link or the error colour.
+    sub,
+    sup {
+        font-size: $tg-fs-2xs;
+        line-height: 0;
+    }
+
+    ins {
+        text-decoration: underline;
+    }
+
+    mark {
+        padding: 0 0.2em;
+        border-radius: $shp-radius-xs;
+        color: $clr-fg-pri;
+        background-color: $clr-wrn-light;
+    }
+
+    // The heading permalink stays out of the way until the heading is hovered or the link itself
+    // is focused, so it never competes with the heading it belongs to.
+    .bit-mdv-anchor {
+        margin-inline-start: 0.35em;
+        color: $clr-fg-sec;
+        opacity: 0;
+        text-decoration: none;
+        transition: opacity $mot-duration-short $mot-easing;
+
+        &:focus-visible {
+            opacity: 1;
+        }
+    }
+
+    h1:hover > .bit-mdv-anchor,
+    h2:hover > .bit-mdv-anchor,
+    h3:hover > .bit-mdv-anchor,
+    h4:hover > .bit-mdv-anchor,
+    h5:hover > .bit-mdv-anchor,
+    h6:hover > .bit-mdv-anchor {
+        opacity: 1;
+    }
+
+
+    // Custom containers. The generic block is a quiet surface; the names a documentation site
+    // reaches for most get the same colour vocabulary the alerts use, so a page that mixes both
+    // does not read as two design systems.
+    .markdown-container {
+        margin-bottom: 1em;
+        padding: 0.75em 1em;
+        border-radius: $shp-radius-surface;
+        border-inline-start: $shp-border-width-thick $shp-border-style $clr-brd-pri;
+        background-color: $clr-bg-sec;
+
+        > *:first-child {
+            margin-top: 0;
+        }
+
+        > *:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    // The collapsible container. The summary is the row you click, so it carries the title's
+    // weight and a pointer.
+    details.markdown-container {
+        > summary {
+            cursor: pointer;
+            font-weight: $tg-fw-semibold;
+            line-height: 1.2;
+        }
+
+        > *:not(summary):first-of-type {
+            margin-top: 0.5em;
+        }
+    }
+
+    .markdown-container-title {
+        margin-bottom: 0.25em;
+        font-weight: $tg-fw-semibold;
+        line-height: 1.2;
+    }
+
+    .markdown-container-note,
+    .markdown-container-info {
+        border-inline-start-color: $clr-inf;
+
+        > .markdown-container-title {
+            color: $clr-inf;
+        }
+    }
+
+    .markdown-container-tip,
+    .markdown-container-success {
+        border-inline-start-color: $clr-suc;
+
+        > .markdown-container-title {
+            color: $clr-suc;
+        }
+    }
+
+    .markdown-container-warning {
+        border-inline-start-color: $clr-wrn;
+
+        > .markdown-container-title {
+            color: $clr-wrn;
+        }
+    }
+
+    .markdown-container-caution,
+    .markdown-container-danger {
+        border-inline-start-color: $clr-err;
+
+        > .markdown-container-title {
+            color: $clr-err;
+        }
+    }
+
+    // Definition lists. The term leads and its definitions are indented under it, which is the
+    // shape a reader already expects from a glossary.
+    dl {
+        margin-top: 0;
+        margin-bottom: 1em;
+    }
+
+    dt {
+        margin-top: 0.75em;
+        font-weight: $tg-fw-semibold;
+    }
+
+    dd {
+        margin-inline-start: 2em;
+    }
+
+    // A figure is the picture and its caption as one block, so the caption is set apart from the
+    // body text it would otherwise be mistaken for.
+    figure {
+        margin: 0 0 1em 0;
+    }
+
+    figcaption {
+        margin-top: 0.5em;
+        font-size: $tg-fs-xs;
+        color: $clr-fg-sec;
+    }
+
+    // An abbreviation announces that it can be expanded, without the underline reading as a link.
+    abbr[title] {
+        cursor: help;
+        text-decoration: underline dotted;
+    }
+
+    // Mathematics is left as the TeX it is until a typesetter on the page replaces it; until then
+    // it at least reads as something set apart from the prose.
+    .math {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    // Display style is centred on a line of its own whether the run was written as a block or
+    // inside a paragraph - the element differs so the markup stays valid, the layout does not.
+    .math-display {
+        display: block;
+        overflow-x: auto;
+        margin-bottom: 1em;
+        text-align: center;
     }
 
     // Pipe-table column alignment. Applied as a class rather than an inline style so the
@@ -270,5 +445,55 @@
 
     .footnote-backref {
         text-decoration: none;
+    }
+}
+
+// Inline mode: the root is a span that flows with the text around it, and the blocks it may still
+// hold are kept from forcing a line of their own.
+.bit-mdv.bit-mdv-inline {
+    display: inline;
+    width: auto;
+
+    > * {
+        display: inline;
+    }
+
+    > ul,
+    > ol,
+    > table,
+    > pre,
+    > blockquote {
+        display: inline-block;
+        vertical-align: top;
+    }
+}
+
+// Print: a document is read on paper as often as on a screen, and the two things that ruin it
+// there are a code block or a table split across a page break, and a heading stranded at the
+// bottom of one.
+@media print {
+    .bit-mdv {
+        pre,
+        blockquote,
+        table,
+        figure,
+        .markdown-alert,
+        .markdown-container {
+            break-inside: avoid;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            break-after: avoid;
+        }
+
+        // The permalink is a screen affordance and says nothing on paper.
+        .bit-mdv-anchor {
+            display: none;
+        }
     }
 }

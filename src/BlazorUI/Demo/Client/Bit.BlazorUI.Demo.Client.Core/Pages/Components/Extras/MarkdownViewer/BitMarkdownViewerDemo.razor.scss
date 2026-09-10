@@ -146,6 +146,32 @@
         }
     }
 
+    // The code-block template's own chrome: a header naming the language beside a copy button,
+    // with the block itself underneath.
+    .mdv-code-card {
+        margin-bottom: 1rem;
+        overflow: hidden;
+        border-radius: 0.5rem;
+        border: 1px solid $bit-color-border-secondary;
+    }
+
+    .mdv-code-card-head {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.25rem 0.25rem 0.25rem 0.75rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.75rem;
+        color: $bit-color-foreground-secondary;
+        background: $bit-color-background-secondary;
+    }
+
+    .mdv-code-card pre {
+        margin: 0;
+        border-radius: 0;
+    }
+
     @media (max-width: 800px) {
         .mdv-split,
         .mdv-columns,

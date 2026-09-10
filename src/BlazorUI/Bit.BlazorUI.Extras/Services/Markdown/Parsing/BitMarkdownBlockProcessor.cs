@@ -38,6 +38,13 @@ public sealed class BitMarkdownBlockProcessor
     /// <summary>The current nesting depth of this processor within the document.</summary>
     internal int Depth { get; }
 
+    /// <summary>
+    /// True when these lines are the document's own, rather than the inside of a block quote, a
+    /// list item or any other nested container. A construct that is only meaningful at the top of
+    /// a file - front matter, for one - checks this before claiming its lines.
+    /// </summary>
+    public bool IsTopLevel => Depth == 0;
+
     /// <summary>The lines being parsed in the current scope.</summary>
     public IReadOnlyList<string> Lines { get; }
 

@@ -43,7 +43,12 @@ public sealed partial class BitMarkdownPipeline
         }
         DelimiterByChar = delimByChar;
         DelimiterChars = new HashSet<char>(delimByChar.Keys);
+
+        Texts = builder.Texts ?? BitMarkdownTexts.Default;
+        _renderer = new BitMarkdownRenderer(Renderers, Texts);
     }
+
+    private readonly BitMarkdownRenderer _renderer;
 
     // Matches a line that opens a link reference definition, a footnote definition, or any
     // other "[label]:" construct. Only the label is captured: the pre-scan exists purely to
@@ -133,8 +138,21 @@ public sealed partial class BitMarkdownPipeline
         return new BitMarkdownInlineProcessor(this, context, depth).Parse(text);
     }
 
+    /// <summary>
+    /// The words this pipeline's renderers write themselves - alert titles, footnote back-links,
+    /// the accessible names of the regions and controls the markup adds.
+    /// </summary>
+    public BitMarkdownTexts Texts { get; }
+
     /// <summary>Creates a renderer bound to this pipeline's node renderers.</summary>
-    public BitMarkdownRenderer CreateRenderer() => new(Renderers);
+    public BitMarkdownRenderer CreateRenderer() => new(Renderers, Texts);
+
+    /// <summary>
+    /// The renderer this pipeline hands its own callers. A renderer holds nothing but the
+    /// pipeline's (immutable) renderer list, so one instance serves every render of every
+    /// component sharing the pipeline instead of being allocated per render.
+    /// </summary>
+    public BitMarkdownRenderer Renderer => _renderer;
 
     private static List<string> SplitLines(string text)
     {

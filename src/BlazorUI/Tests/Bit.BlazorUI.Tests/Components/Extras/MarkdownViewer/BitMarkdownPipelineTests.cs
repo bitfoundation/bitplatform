@@ -223,6 +223,52 @@ public class BitMarkdownPipelineTests
         Assert.IsGreaterThan(0, document.Children.Count);
     }
 
+    [TestMethod]
+    public void BitMarkdownPipelineShouldShareOneRendererAcrossRenders()
+    {
+        var pipeline = BitMarkdownPipelines.GitHub;
+
+        // A renderer holds nothing but the pipeline's immutable renderer list, so the shared one
+        // is what every render uses instead of allocating a new instance each time.
+        Assert.AreSame(pipeline.Renderer, pipeline.Renderer);
+        Assert.AreNotSame(pipeline.Renderer, pipeline.CreateRenderer());
+    }
+
+    [TestMethod]
+    public void BitMarkdownPipelineShouldLetTheEmphasisExtrasAndStrikethroughShareTheTildeCharacter()
+    {
+        // Two processors claiming '~' would throw at Build time; the extras flavor replaces the
+        // strikethrough one instead, and strikethrough steps aside when it is already claimed.
+        Assert.IsNotNull(new BitMarkdownPipelineBuilder().UseStrikethrough().UseEmphasisExtras().Build());
+        Assert.IsNotNull(new BitMarkdownPipelineBuilder().UseEmphasisExtras().UseStrikethrough().Build());
+        Assert.IsNotNull(new BitMarkdownPipelineBuilder().UseGitHubFlavored().UseEmphasisExtras().Build());
+        Assert.IsNotNull(new BitMarkdownPipelineBuilder().UseEmphasisExtras().UseGitHubFlavored().Build());
+    }
+
+    [TestMethod]
+    public void BitMarkdownPipelineShouldKeepFrontMatterOutOfTheRenderedDocument()
+    {
+        var pipeline = new BitMarkdownPipelineBuilder().UseFrontMatter().Build();
+
+        var document = pipeline.Parse("---\na: 1\n---\n\n# t");
+
+        Assert.AreEqual(2, document.Children.Count);
+        Assert.IsInstanceOfType<BitMarkdownFrontMatterNode>(document.Children[0]);
+        Assert.IsInstanceOfType<BitMarkdownHeadingNode>(document.Children[1]);
+    }
+
+    [TestMethod]
+    public void BitMarkdownSmartyPantsShouldEducateOnlyWhatItIsGiven()
+    {
+        Assert.AreEqual("“a”", BitMarkdownSmartyPantsAstProcessor.Educate("\"a\""));
+        Assert.AreEqual("a–b", BitMarkdownSmartyPantsAstProcessor.Educate("a--b"));
+        Assert.AreEqual("a—b", BitMarkdownSmartyPantsAstProcessor.Educate("a---b"));
+        Assert.AreEqual("a…", BitMarkdownSmartyPantsAstProcessor.Educate("a..."));
+        Assert.AreEqual("don’t", BitMarkdownSmartyPantsAstProcessor.Educate("don't"));
+        // Nothing to educate is returned untouched, not rebuilt.
+        Assert.AreEqual("plain text", BitMarkdownSmartyPantsAstProcessor.Educate("plain text"));
+    }
+
     private static string Describe(BitMarkdownDocumentNode document)
         => string.Join("|", BitMarkdownAstHelper.Descendants(document).Select(n => n switch
         {

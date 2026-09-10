@@ -22,7 +22,7 @@ public sealed class BitMarkdownAlertRenderer : BitMarkdownNodeRenderer
         // and a monochrome print both miss.
         b.OpenElement(2, "p");
         b.AddAttribute(3, "class", "markdown-alert-title");
-        b.AddContent(4, alert.Kind.ToString());
+        b.AddContent(4, r.Texts.GetAlertTitle(alert.Kind));
         b.CloseElement();
         r.WriteNodes(b, alert.Children);
         b.CloseElement();

@@ -31,7 +31,10 @@ public partial class BitMarkdownViewer : BitComponentBase
     private int _parsedMaxDepth;
     private int _parsedMaxLength;
     private bool _parsedStripBidi;
+    private bool _parsedInteractiveTasks;
     private bool _notifyParsed;
+    private BitMarkdownRenderer? _templateRenderer;
+    private BitMarkdownPipeline? _templateRendererPipeline;
 
 
 
@@ -90,12 +93,59 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter] public bool StripBidiControlCharacters { get; set; }
 
     /// <summary>
+    /// Renders the document as inline content: the root element becomes a <c>span</c> and each
+    /// top-level paragraph contributes its inline content directly, without the <c>&lt;p&gt;</c>
+    /// that would otherwise force a line of its own. Use it where a short piece of Markdown has to
+    /// sit inside a sentence, a table cell or a label. Blocks that are not paragraphs (lists,
+    /// tables, headings) still render as themselves. Defaults to <c>false</c>.
+    /// </summary>
+    [Parameter, ResetClassBuilder] public bool Inline { get; set; }
+
+    /// <summary>
     /// Called after the Markdown source has been parsed, with the document that is about to
     /// be rendered. The tree is the same one the renderer walks, so a handler can read it -
     /// to build a table of contents from the headings, for example - or rewrite it before it
     /// reaches the DOM.
     /// </summary>
     [Parameter] public EventCallback<BitMarkdownDocumentNode> OnParsed { get; set; }
+
+    /// <summary>
+    /// Called when a reader ticks or unticks a task-list checkbox, with the source rewritten to
+    /// match. Setting it is what makes the checkboxes interactive at all: with no handler they stay
+    /// the read-only boxes GitHub renders, so a document nobody is storing cannot be half-edited.
+    /// The viewer does not change <see cref="Markdown"/> itself - it hands you the new source and
+    /// leaves storing it to you, which is what keeps the component's state the one you own.
+    /// Requires the task-list flavor.
+    /// </summary>
+    [Parameter] public EventCallback<BitMarkdownViewerTaskChangedEventArgs> OnTaskChanged { get; set; }
+
+    /// <summary>
+    /// Renders every fenced or indented code block, instead of the <c>&lt;pre&gt;&lt;code&gt;</c>
+    /// the viewer would otherwise draw. This is where a syntax highlighter, a copy button or a
+    /// diagram renderer goes: the template is given the block, so it can read the language off
+    /// <c>Info</c> and the source off <c>Content</c>.
+    /// </summary>
+    [Parameter] public RenderFragment<BitMarkdownCodeBlockNode>? CodeBlockTemplate { get; set; }
+
+    /// <summary>
+    /// Renders every image, instead of the <c>&lt;img&gt;</c> the viewer would otherwise draw -
+    /// for a lightbox, a placeholder while it loads, or a component that serves a modern format.
+    /// The <see cref="ImageRendering"/> policy has already been applied when the template runs, so
+    /// a blocked image reaches it with an empty <c>Url</c>.
+    /// </summary>
+    [Parameter] public RenderFragment<BitMarkdownImageNode>? ImageTemplate { get; set; }
+
+    /// <summary>
+    /// Renders every link, instead of the <c>&lt;a&gt;</c> the viewer would otherwise draw - to
+    /// route an in-app destination through the router, or to decorate an external one. The
+    /// destination has already been sanitized when the template runs.
+    /// </summary>
+    /// <remarks>
+    /// A link's own content is not rendered for you: write
+    /// <c>@context.Children</c> through a renderer of your own, or - far more usually - read
+    /// <c>BitMarkdownInlineHelpers.PlainText(context.Children)</c> for its text.
+    /// </remarks>
+    [Parameter] public RenderFragment<BitMarkdownLinkNode>? LinkTemplate { get; set; }
 
 
 
@@ -108,6 +158,11 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
     protected override string RootElementClass => "bit-mdv";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Inline ? "bit-mdv-inline" : string.Empty);
+    }
 
     private BitMarkdownPipeline EffectivePipeline => Pipeline ?? BitMarkdownPipelines.Basic;
 
@@ -122,16 +177,19 @@ public partial class BitMarkdownViewer : BitComponentBase
             _parsedImageRendering != ImageRendering ||
             _parsedMaxDepth != maxDepth ||
             _parsedMaxLength != MaxLength ||
-            _parsedStripBidi != StripBidiControlCharacters)
+            _parsedStripBidi != StripBidiControlCharacters ||
+            _parsedInteractiveTasks != OnTaskChanged.HasDelegate)
         {
             _document = ParseSafely(pipeline, maxDepth);
             ApplyImageRendering(_document.Children);
+            WireTaskCheckboxes();
             _parsedSource = Markdown;
             _parsedWith = pipeline;
             _parsedImageRendering = ImageRendering;
             _parsedMaxDepth = maxDepth;
             _parsedMaxLength = MaxLength;
             _parsedStripBidi = StripBidiControlCharacters;
+            _parsedInteractiveTasks = OnTaskChanged.HasDelegate;
             _notifyParsed = true;
         }
 
@@ -152,6 +210,36 @@ public partial class BitMarkdownViewer : BitComponentBase
                 await OnParsed.InvokeAsync(_document);
             }
         }
+    }
+
+    /// <summary>
+    /// Gives every task-list checkbox the handler that makes it interactive, when the host is
+    /// listening. The handler reads <see cref="OnTaskChanged"/> at the moment it fires rather than
+    /// capturing it, so the callback the host most recently supplied is always the one invoked.
+    /// </summary>
+    private void WireTaskCheckboxes()
+    {
+        if (OnTaskChanged.HasDelegate is false) return;
+
+        foreach (var checkbox in BitMarkdownAstHelper.Descendants(_document).OfType<BitMarkdownTaskCheckboxNode>())
+        {
+            var box = checkbox;
+            box.OnChange = EventCallback.Factory.Create<ChangeEventArgs>(this, args => HandleTaskChangedAsync(box, args));
+        }
+    }
+
+    private Task HandleTaskChangedAsync(BitMarkdownTaskCheckboxNode checkbox, ChangeEventArgs args)
+    {
+        bool isChecked = args.Value is bool value ? value : bool.TryParse(args.Value?.ToString(), out var parsed) && parsed;
+
+        // The tree is updated so the box keeps the state the reader just gave it even if the host
+        // stores the new source somewhere the component does not read back.
+        checkbox.Checked = isChecked;
+
+        return OnTaskChanged.InvokeAsync(new BitMarkdownViewerTaskChangedEventArgs(
+            checkbox.Index,
+            isChecked,
+            BitMarkdownTaskList.Toggle(Markdown, checkbox.Index, isChecked)));
     }
 
     /// <summary>
@@ -196,9 +284,14 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var renderer = EffectivePipeline.CreateRenderer();
+        var renderer = ResolveRenderer();
 
-        builder.OpenElement(0, "div");
+        // Inline mode wants a span, but a span may not legally hold a list or a table. A document
+        // that is nothing but paragraphs gets one; anything else keeps the div and is laid out
+        // inline by the stylesheet instead, so the markup stays valid either way.
+        bool asSpan = Inline && HoldsOnlyParagraphs(_document.Children);
+
+        builder.OpenElement(0, asSpan ? "span" : "div");
 
         builder.AddMultipleAttributes(1, HtmlAttributes);
         builder.AddAttribute(2, "id", _Id);
@@ -210,17 +303,82 @@ public partial class BitMarkdownViewer : BitComponentBase
         }
         if (AriaLabel is not null)
         {
-            builder.AddAttribute(7, "aria-label", AriaLabel);
+            builder.AddAttribute(6, "aria-label", AriaLabel);
         }
         if (TabIndex is not null)
         {
-            builder.AddAttribute(8, "tabindex", TabIndex);
+            builder.AddAttribute(7, "tabindex", TabIndex);
         }
-        builder.AddElementReferenceCapture(6, v => RootElement = v);
+        builder.AddElementReferenceCapture(8, v => RootElement = v);
 
-        renderer.WriteNodes(builder, _document.Children);
+        if (Inline)
+        {
+            WriteInline(renderer, builder, _document.Children);
+        }
+        else
+        {
+            renderer.WriteNodes(builder, _document.Children);
+        }
 
         builder.CloseElement();
+    }
+
+    /// <summary>
+    /// The renderer this viewer draws with. With no template supplied it is the pipeline's own,
+    /// shared instance - which holds nothing but the pipeline's immutable renderer list, so there
+    /// is nothing to allocate per render. A viewer that does supply one gets a renderer of its own,
+    /// built once, with the template renderer last so it wins over everything the pipeline
+    /// registered.
+    /// </summary>
+    private BitMarkdownRenderer ResolveRenderer()
+    {
+        var pipeline = EffectivePipeline;
+
+        if (CodeBlockTemplate is null && ImageTemplate is null && LinkTemplate is null)
+            return pipeline.Renderer;
+
+        if (_templateRenderer is null || ReferenceEquals(_templateRendererPipeline, pipeline) is false)
+        {
+            var renderers = new List<BitMarkdownNodeRenderer>(pipeline.Renderers)
+            {
+                new BitMarkdownViewerTemplateRenderer(this)
+            };
+            _templateRenderer = new BitMarkdownRenderer(renderers);
+            _templateRendererPipeline = pipeline;
+        }
+
+        return _templateRenderer;
+    }
+
+    private static bool HoldsOnlyParagraphs(IList<BitMarkdownNode> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            if (node is not BitMarkdownParagraphNode) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Writes the document without the block wrapper each top-level paragraph would otherwise get,
+    /// so a one-line piece of Markdown can sit inside a sentence, a table cell or a button label.
+    /// Every other block (a list, a table, a heading) still renders as itself.
+    /// </summary>
+    private static void WriteInline(BitMarkdownRenderer renderer, RenderTreeBuilder builder, IList<BitMarkdownNode> nodes)
+    {
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i] is BitMarkdownParagraphNode paragraph)
+            {
+                // Paragraphs are separated by a space rather than run together, so two of them do
+                // not read as one word.
+                if (i > 0) builder.AddContent(9, " ");
+                renderer.WriteNodes(builder, paragraph.Inlines);
+                continue;
+            }
+
+            renderer.WriteNode(builder, nodes[i]);
+        }
     }
 
     /// <summary>

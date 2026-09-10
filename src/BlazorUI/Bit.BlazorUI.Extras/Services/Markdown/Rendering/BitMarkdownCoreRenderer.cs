@@ -35,11 +35,18 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 break;
 
             case BitMarkdownCodeBlockNode code:
+                // The language class goes on both elements: a highlighter reads it off the <code>,
+                // while several of their plugins (line numbers, toolbars) read it off the <pre>.
+                // The info string may carry more than the language, so only its first word is used.
+                string? language = string.IsNullOrWhiteSpace(code.Info)
+                    ? null
+                    : "language-" + code.Info.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)[0];
                 b.OpenElement(3, "pre");
+                if (language is not null)
+                    b.AddAttribute(35, "class", language);
                 b.OpenElement(4, "code");
-                if (!string.IsNullOrWhiteSpace(code.Info))
-                    b.AddAttribute(5, "class", "language-"
-                        + code.Info.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)[0]);
+                if (language is not null)
+                    b.AddAttribute(5, "class", language);
                 b.AddContent(6, code.Content);
                 b.CloseElement();
                 b.CloseElement();
@@ -148,12 +155,18 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
         b.OpenElement(25, list.Ordered ? "ol" : "ul");
         if (list.Ordered && list.Start != 1)
             b.AddAttribute(26, "start", list.Start);
+        // The class GitHub puts on a list holding checkboxes, so a stylesheet can drop the
+        // bullets without depending on ":has()".
+        if (list.Items.Exists(i => i.IsTask))
+            b.AddAttribute(33, "class", "contains-task-list");
 
         foreach (var item in list.Items)
         {
             // The same literal is reused for every <li>; Blazor treats this like a
             // loop-rendered region and diffs the items by position.
             b.OpenElement(27, "li");
+            if (item.IsTask)
+                b.AddAttribute(34, "class", "task-list-item");
             // Tight lists render a lone paragraph's inlines directly inside <li>.
             if (list.Tight)
             {

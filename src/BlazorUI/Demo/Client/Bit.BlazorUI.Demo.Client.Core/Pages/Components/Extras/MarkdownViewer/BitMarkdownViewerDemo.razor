@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/markdownviewer"
             Title="MarkdownViewer"
-            Description="BitMarkdownViewer renders Markdown as real DOM entirely in C# - CommonMark plus GitHub flavors, alerts and footnotes - with no JavaScript interop and no third-party packages." />
+            Description="BitMarkdownViewer renders Markdown as real DOM entirely in C# - CommonMark plus the GitHub flavors, front matter, containers, definition lists, math and more - with no JavaScript interop and no third-party packages." />
 
 <DemoPage Name="MarkdownViewer"
-          Description="BitMarkdownViewer is a native, SEO friendly Blazor component that parses Markdown into an AST and renders it straight to the Blazor render tree. It covers CommonMark and, through composable pipelines, the GitHub flavors (tables, task lists, strikethrough, autolinks), alerts, footnotes and emoji - sanitizing URLs and hardening against untrusted input on the way."
+          Description="BitMarkdownViewer is a native, SEO friendly Blazor component that parses Markdown into an AST and renders it straight to the Blazor render tree - no JavaScript interop, no third-party packages. Composable pipelines add exactly the flavors a document needs, from the GitHub set to front matter, containers, definition lists and mathematics; URLs are sanitized and untrusted input bounded by default; and the parsed tree, the rendering of any node, and the words the renderers write themselves are all yours to change."
           SecondaryNames="@(["MdViewer", "MD"])"
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
@@ -78,7 +78,137 @@
             <BitMarkdownViewer Markdown="@referencesMarkdown" />
         </DemoExample>
 
-        <DemoExample Title="Line breaks" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Emphasis extras" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Beyond CommonMark's <code>*</code> / <code>_</code> and GFM's <code>~~</code>,
+                <code>UseEmphasisExtras()</code> adds the four marks technical writing keeps reaching for:
+                <code>~subscript~</code>, <code>^superscript^</code>, <code>++inserted++</code> and
+                <code>==highlighted==</code>, rendered as real <code>&lt;sub&gt;</code>, <code>&lt;sup&gt;</code>,
+                <code>&lt;ins&gt;</code> and <code>&lt;mark&gt;</code> elements rather than styled spans. Subscript
+                shares the <code>~</code> character with strikethrough - one tilde is subscript, two are strikethrough -
+                so enabling it implies strikethrough and the two can be added in either order. A lone <code>+</code> or
+                <code>=</code> in ordinary prose is never mistaken for a delimiter: both need a run of two.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@emphasisExtrasMarkdown" Pipeline="@emphasisExtrasPipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Typography" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <code>UseSmartyPants()</code> turns the ASCII stand-ins authors type into the characters they mean:
+                straight quotes curl into typographic ones, <code>--</code> and <code>---</code> become en and em dashes,
+                <code>...</code> becomes an ellipsis and <code>&lt;&lt;</code> / <code>&gt;&gt;</code> become guillemets.
+                Whether a quote opens or closes is read from what precedes it, which is also what gives
+                <code>don't</code> its apostrophe. Only text is rewritten - code spans, code blocks and URLs keep every
+                character exactly as it was written.
+            </div>
+            <br />
+            <div class="mdv-columns">
+                <div class="mdv-column">
+                    <div class="mdv-column-title">Default</div>
+                    <BitMarkdownViewer Markdown="@typographyMarkdown" />
+                </div>
+                <div class="mdv-column">
+                    <div class="mdv-column-title">UseSmartyPants()</div>
+                    <BitMarkdownViewer Markdown="@typographyMarkdown" Pipeline="@smartyPantsPipeline" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Front matter" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                A real <code>.md</code> file from a docs site or a static-site generator usually opens with a metadata
+                block fenced by <code>---</code> (YAML) or <code>+++</code> (TOML). Without
+                <code>UseFrontMatter()</code> that block is ordinary Markdown - a thematic break followed by a heading -
+                so the file renders with its metadata splashed across the top. The extension parses it into a
+                <code>BitMarkdownFrontMatterNode</code> that renders nothing and keeps the raw text, which
+                <code>BitMarkdownFrontMatterNode.Find(document)</code> reads back for you to hand to whichever
+                serializer you already use.
+            </div>
+            <br />
+            <div class="mdv-columns">
+                <div class="mdv-column">
+                    <div class="mdv-column-title">Default</div>
+                    <BitMarkdownViewer Markdown="@frontMatterMarkdown" />
+                </div>
+                <div class="mdv-column">
+                    <div class="mdv-column-title">UseFrontMatter()</div>
+                    <BitMarkdownViewer Markdown="@frontMatterMarkdown" Pipeline="@frontMatterPipeline" OnParsed="HandleFrontMatterParsed" />
+                    <div class="mdv-hint">Metadata read from the AST: @frontMatterText</div>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Containers" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <code>UseContainers()</code> adds the <code>:::</code> fence documentation sites are written with. The
+                word after the fence names the container and becomes its class, and anything after that word is its
+                title - so <code>:::warning Read this first</code> renders as a titled callout without the renderer
+                knowing that "warning" means anything. Containers nest, and the stylesheet already colours the names a
+                docs site reaches for (<code>note</code>, <code>info</code>, <code>tip</code>, <code>success</code>,
+                <code>warning</code>, <code>caution</code>, <code>danger</code>); any other name is a plain block you
+                style yourself. One name means more than a class: <code>:::details</code> renders a real
+                <code>&lt;details&gt;</code> with the title as its <code>&lt;summary&gt;</code>, which is the only way
+                to a collapsible section in a language that has no syntax for one.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@containersMarkdown" Pipeline="@containersPipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Definition lists" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                A glossary, a set of options or an API reference is a list of terms and what they mean, and HTML has an
+                element for exactly that. <code>UseDefinitionLists()</code> reads a term on its own line followed by
+                <code>: its definition</code> - the shape Pandoc and markdown-it use - into a real
+                <code>&lt;dl&gt;</code> of <code>&lt;dt&gt;</code> and <code>&lt;dd&gt;</code>. A term may carry several
+                definitions, and a definition indented under its own text may run to several paragraphs or hold a
+                nested list.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@definitionListMarkdown" Pipeline="@definitionListPipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Abbreviations" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <code>UseAbbreviations()</code> lets a document explain its jargon once. A
+                <code>*[HTML]: HyperText Markup Language</code> line declares the term and renders nothing; every
+                whole-word occurrence of it afterwards becomes an <code>&lt;abbr&gt;</code> carrying the expansion, so it
+                is a tooltip for a reader and a spoken expansion for a screen reader. Only text is rewritten -
+                <code>HTMLElement</code> keeps its own name and a term inside <code>code</code> stays literal - and where
+                two terms overlap the longer one wins.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@abbreviationMarkdown" Pipeline="@abbreviationPipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Mathematics" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <code>UseMathematics()</code> reads <code>$inline$</code> and <code>$$display$$</code>. Its first job is
+                protection: TeX is made of the underscores, asterisks and backslashes Markdown itself is made of, so
+                without it <code>$a_1 + b_1$</code> loses its subscripts to emphasis. What survives is kept verbatim and
+                marked up as <code>span.math-inline</code> / <code>div.math-display</code> with its delimiters intact, so
+                KaTeX or MathJax on the page typesets it with no configuration - and with neither loaded it simply reads
+                as the TeX it is. Prices are safe: a <code>$</code> followed by a space, or a closing one followed by a
+                digit, is never a delimiter.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@mathMarkdown" Pipeline="@mathPipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Figures" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                An image that stands on its own usually wants a caption under it. <code>UseFigures()</code> turns a
+                paragraph holding nothing but a titled image into a <code>&lt;figure&gt;</code> with the title as its
+                <code>&lt;figcaption&gt;</code>. The caption comes from the title and never from the alt text: alt
+                describes the picture for someone who cannot see it, a caption is read by everyone, and using one text
+                for both would have a screen reader say the same sentence twice. An image with no title is left exactly
+                as it was.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@figureMarkdown" Pipeline="@figurePipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Line breaks" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 Markdown reflows a single newline into the same paragraph; a break needs two trailing spaces or a
                 trailing backslash. That surprises people typing into a chat or comment box, so
@@ -98,7 +228,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Custom pipeline" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Custom pipeline" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
                 Compose exactly the flavors you want with <code>BitMarkdownPipelineBuilder</code>. A built pipeline is
                 immutable and thread-safe, so build it once (a field, or a singleton) and share it - passing a
@@ -108,7 +238,7 @@
             <BitMarkdownViewer Markdown="@customMarkdown" Pipeline="customPipeline" />
         </DemoExample>
 
-        <DemoExample Title="Untrusted content" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Untrusted content" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
                 Rendering Markdown you did not write needs more than URL sanitizing. <code>ImageRendering</code> decides
                 which image sources may load: a remote image is fetched the moment it renders, so
@@ -137,13 +267,15 @@
                                MaxLength="100000" />
         </DemoExample>
 
-        <DemoExample Title="Table of contents" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Table of contents" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 <code>OnParsed</code> hands you the parsed document just before it is rendered, and
                 <code>Document</code> exposes the same tree afterwards. Walking it with
                 <code>BitMarkdownAstHelper.Descendants</code> is how you read structure out of a document without parsing
                 it twice - here, the headings and the slugs the <code>UseAutoIdentifiers()</code> extension gave them,
-                turned into a navigation rail.
+                turned into a navigation rail. <code>BitMarkdownAstHelper.ToPlainText</code> reads the other half out of
+                the same tree: what the document says with none of the markup it says it with, which is the text a
+                search index, an excerpt or a meta description is built from.
             </div>
             <br />
             <div class="mdv-toc-layout">
@@ -156,9 +288,137 @@
                 </nav>
                 <BitMarkdownViewer Markdown="@tocMarkdown" Pipeline="BitMarkdownPipelines.Advanced" OnParsed="HandleParsed" />
             </div>
+            <div class="mdv-hint">Excerpt: @tocExcerpt</div>
         </DemoExample>
 
-        <DemoExample Title="Playground" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Heading anchors" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <div>
+                <code>UseAutoIdentifiers(anchorLinks: true)</code> adds the permalink a documentation site is expected
+                to have: every heading keeps its generated id and gains a <code>#</code> link back to itself, so a
+                reader can copy a link straight to a section. The glyph is hidden from assistive technology and the link
+                is named after its heading instead, so it is announced as "Permalink to Installation" rather than as a
+                punctuation mark; it stays invisible until the heading is hovered or the link itself is focused.
+                A heading may also name its own id by ending with <code>{#the-id}</code>, which is worth doing wherever a
+                generated slug would change with the wording - every link already pointing at that section breaks the
+                moment it does. The marker names the heading and is not part of what it says, so it never reaches the
+                rendered text.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@anchorsMarkdown" Pipeline="@anchorsPipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Inline" RazorCode="@example19RazorCode" Id="example19">
+            <div>
+                Markdown is a block language, so even a single sentence renders inside a <code>&lt;p&gt;</code> that
+                takes a line of its own. Setting <code>Inline</code> renders the root as a <code>span</code> and drops
+                the paragraph wrappers, letting a short piece of Markdown sit inside a sentence, a table cell or a
+                label. Blocks that are not paragraphs still render as themselves, so nothing is silently lost - and
+                because a <code>span</code> may not legally hold a list or a table, a document that turns out to hold
+                one keeps its <code>div</code> and is laid out inline by the stylesheet instead.
+            </div>
+            <br />
+            <div>
+                Formatting a value in place:
+                <BitMarkdownViewer Inline Markdown="@("the **fastest** path is `Span<T>` - [read why](https://learn.microsoft.com/dotnet/api/system.span-1)")" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example20RazorCode" Id="example20">
+            <div>
+                The three node types a host most often wants to draw itself take a template, so your
+                own component can sit in the middle of a rendered document without writing a renderer or a pipeline.
+                <code>CodeBlockTemplate</code> is where a syntax highlighter, a copy button or a diagram renderer goes -
+                it is handed the block, so it can read the language off <code>Info</code> and the source off
+                <code>Content</code>. <code>ImageTemplate</code> is for a lightbox or a placeholder, and
+                <code>LinkTemplate</code> for routing an in-app destination through the router. Every safeguard has
+                already run when a template does: the URL is sanitized, and an image the
+                <code>ImageRendering</code> policy blocked arrives with an empty <code>Url</code>. Anything else is
+                still open to a <code>BitMarkdownNodeRenderer</code> of your own on the pipeline.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@templatesMarkdown" Pipeline="BitMarkdownPipelines.GitHub">
+                <CodeBlockTemplate>
+                    <div class="mdv-code-card">
+                        <div class="mdv-code-card-head">
+                            <span>@(context.Info ?? "text")</span>
+                            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Copy" Title="Copy" />
+                        </div>
+                        <pre><code>@context.Content</code></pre>
+                    </div>
+                </CodeBlockTemplate>
+                <LinkTemplate>
+                    <BitLink Href="@context.Url">
+                        @BitMarkdownInlineHelpers.PlainText(context.Children)
+                        <BitIcon IconName="@BitIconName.NavigateExternalInline" />
+                    </BitLink>
+                </LinkTemplate>
+            </BitMarkdownViewer>
+        </DemoExample>
+
+        <DemoExample Title="Interactive task lists" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+            <div>
+                Task-list checkboxes are read-only by default, exactly as GitHub renders them. Handling
+                <code>OnTaskChanged</code> is what makes them live: the boxes become enabled, and ticking one reports
+                its index, its new state, and the <b>source rewritten to match</b> - so storing the change is one
+                assignment. The viewer never edits <code>Markdown</code> behind your back; the state stays the one you
+                own. The rewrite counts the same markers the renderer drew, skipping any inside code blocks, and
+                <code>BitMarkdownTaskList.Toggle</code> is the same helper if you would rather call it yourself.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@taskListMarkdown"
+                               Pipeline="BitMarkdownPipelines.GitHub"
+                               OnTaskChanged="HandleTaskChanged" />
+            <div class="mdv-hint">@taskListStatus</div>
+        </DemoExample>
+
+        <DemoExample Title="Link policy" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+            <div>
+                By default a link to another origin opens in a new tab with <code>rel="noopener noreferrer"</code>, and
+                a link within the site opens in place. <code>UseLinkOptions()</code> changes that policy: keep
+                everything in the same tab, which is what a viewer embedded in an app usually wants, or mark
+                user-written links <code>nofollow ugc</code> - the two words that stop a comment box from becoming a
+                link farm and tell a search engine the site did not write them.
+            </div>
+            <br />
+            <BitMarkdownViewer Markdown="@linkPolicyMarkdown" Pipeline="@linkPolicyPipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Rewriting URLs" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+            <div>
+                A README's relative paths point at the repository it lives in, so rendering it anywhere else breaks
+                every image and every link in it. <code>UseBaseUrl()</code> resolves the relative ones against an
+                address you choose and leaves absolute destinations and in-page fragments alone;
+                <code>UseUrlRewriter()</code> is the general form, for pointing images at a CDN or stripping tracking
+                parameters. Whatever a rewriter returns is sanitized again on the way out, so it cannot reintroduce an
+                unsafe destination - and returning <code>null</code> drops the destination while keeping the text.
+            </div>
+            <br />
+            <div class="mdv-columns">
+                <div class="mdv-column">
+                    <div class="mdv-column-title">Default</div>
+                    <BitMarkdownViewer Markdown="@baseUrlMarkdown" ImageRendering="BitMarkdownViewerImageRendering.All" />
+                </div>
+                <div class="mdv-column">
+                    <div class="mdv-column-title">UseBaseUrl(...)</div>
+                    <BitMarkdownViewer Markdown="@baseUrlMarkdown" Pipeline="@baseUrlPipeline" ImageRendering="BitMarkdownViewerImageRendering.All" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Localization" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+            <div>
+                Most of a rendered document is the author's words, but a few are the renderers' own: an alert's title,
+                a footnote's back-link, the accessible name of a table's scroll region or of a heading's permalink.
+                Those default to English, and <code>UseTexts()</code> replaces them. They belong to the pipeline
+                because a rendered document has no other place to learn what language it is in - so the same
+                <code>BitMarkdownTexts</code> travels with the flavors, and the numbered ones take their number
+                through <code>{0}</code>.
+            </div>
+            <br />
+            <BitMarkdownViewer Dir="BitDir.Rtl" Markdown="@localizedMarkdown" Pipeline="@localizedPipeline" />
+        </DemoExample>
+
+        <DemoExample Title="Playground" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
             <div>
                 Everything above, live. Type on the left and the right re-parses as you go; switch the flavor to see the
                 same source under the three ready-made pipelines - <code>Basic</code> (CommonMark only),
@@ -200,7 +460,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CodeFiles="@example11CodeFiles" Id="example11">
+        <DemoExample Title="Style & Class" RazorCode="@example26RazorCode" CodeFiles="@example26CodeFiles" Id="example26">
             <div>
                 Use <code>Style</code> and <code>Class</code> to style the wrapper the document is rendered into. Because
                 the output is real DOM, the elements inside it are styled with ordinary CSS descendant rules - no
@@ -213,7 +473,7 @@
             <BitMarkdownViewer Class="custom-mdv" Markdown="@("### A classy viewer\n\nEvery `code` span and heading inside it is restyled from the page's own stylesheet.")" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="RTL" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
             <div>
                 Set <code>Dir="BitDir.Rtl"</code> to render a right-to-left document. The stylesheet is written with
                 logical properties throughout, so block-quote bars, list indentation and table alignment all flip with

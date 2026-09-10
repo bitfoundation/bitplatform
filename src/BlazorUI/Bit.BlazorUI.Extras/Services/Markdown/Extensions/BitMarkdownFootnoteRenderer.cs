@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI;
@@ -32,7 +33,7 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(7, "section");
                 b.AddAttribute(8, "class", "footnotes");
                 b.AddAttribute(9, "id", "footnotes");
-                b.AddAttribute(10, "aria-label", "Footnotes");
+                b.AddAttribute(10, "aria-label", r.Texts.Footnotes);
                 b.OpenElement(11, "hr");
                 b.CloseElement();
                 b.OpenElement(12, "ol");
@@ -55,8 +56,8 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                     b.AddAttribute(18, "href", $"#fnref-{definition.Number}{(i > 1 ? "-" + i : string.Empty)}");
                     b.AddAttribute(19, "class", "footnote-backref");
                     b.AddAttribute(20, "aria-label", definition.ReferenceCount > 1
-                        ? $"Back to reference {definition.Number}-{i}"
-                        : $"Back to reference {definition.Number}");
+                        ? string.Format(CultureInfo.CurrentCulture, r.Texts.FootnoteBackReferenceOccurrence, definition.Number, i)
+                        : string.Format(CultureInfo.CurrentCulture, r.Texts.FootnoteBackReference, definition.Number));
                     b.AddContent(21, i > 1 ? $"↩︎{i}" : "↩︎");
                     b.CloseElement();
                 }

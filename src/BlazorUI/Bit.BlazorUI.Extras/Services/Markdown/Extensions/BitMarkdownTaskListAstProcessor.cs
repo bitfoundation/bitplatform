@@ -35,7 +35,16 @@ public sealed partial class BitMarkdownTaskListAstProcessor : BitMarkdownAstProc
 
                 text.Text = m.Groups[2].Value;
                 para.Inlines.Insert(0, new BitMarkdownTaskCheckboxNode { Checked = raw.Groups[1].Value is "x" or "X" });
+                item.IsTask = true;
             }
+        }
+
+        // Numbered in reading order once the whole tree is known, so a checkbox can name the
+        // marker it stands for in the source no matter how deeply its list is nested.
+        int index = 0;
+        foreach (var checkbox in BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownTaskCheckboxNode>())
+        {
+            checkbox.Index = index++;
         }
     }
 }
