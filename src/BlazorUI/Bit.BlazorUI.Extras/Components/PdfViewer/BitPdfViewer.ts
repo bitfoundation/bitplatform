@@ -97,33 +97,43 @@
                 return;
             }
             const rect = container.getBoundingClientRect();
-            const buffer = Math.max(container.clientHeight * 1.5, 800);
-            const lo = rect.top - buffer;
-            const hi = rect.bottom + buffer;
+            // Horizontal scrolling is the one layout whose pages do NOT run down the
+            // page: measure along the axis they actually flow on, so the early exit
+            // below stays valid (in every other mode - including wrapped - document
+            // order is monotonic in `top`).
+            const horizontal = container.getAttribute("data-bit-pdv-axis") === "h";
+            const extent = horizontal ? container.clientWidth : container.clientHeight;
+            const buffer = Math.max(extent * 1.5, 800);
+            const near = (r: DOMRect) => horizontal ? r.left : r.top;
+            const far = (r: DOMRect) => horizontal ? r.right : r.bottom;
+            const viewNear = horizontal ? rect.left : rect.top;
+            const viewFar = horizontal ? rect.right : rect.bottom;
+            const lo = viewNear - buffer;
+            const hi = viewFar + buffer;
 
             // Pages actually on screen are requested before buffer pages (which are
             // ordered by distance from the viewport) - pages render one at a time on
             // the .NET side, so this ordering is what the user perceives as speed.
             const visible: number[] = [];
             const buffered: { n: number, d: number }[] = [];
-            const mid = (rect.top + rect.bottom) / 2;
+            const mid = (viewNear + viewFar) / 2;
             for (let i = 0; i < pages.length; i++) {
                 const page = pages[i];
                 const r = page.getBoundingClientRect();
-                if (r.top > hi) {
-                    break; // pages are stacked in order; everything after is further down
+                if (near(r) > hi) {
+                    break; // pages are laid out in order; everything after is further along
                 }
-                if (r.bottom < lo || !page.querySelector(".bit-pdv-page-placeholder")) {
+                if (far(r) < lo || !page.querySelector(".bit-pdv-page-placeholder")) {
                     continue;
                 }
                 const n = parseInt(page.getAttribute("data-page") || "", 10);
                 if (Number.isNaN(n)) {
                     continue;
                 }
-                if (r.bottom >= rect.top && r.top <= rect.bottom) {
+                if (far(r) >= viewNear && near(r) <= viewFar) {
                     visible.push(n);
                 } else {
-                    buffered.push({ n, d: Math.abs((r.top + r.bottom) / 2 - mid) });
+                    buffered.push({ n, d: Math.abs((near(r) + far(r)) / 2 - mid) });
                 }
             }
             buffered.sort((a, b) => a.d - b.d);
@@ -210,6 +220,87 @@
             container.addEventListener("wheel", onWheel, { passive: false });
             (container as any).__bitPdvWheel = onWheel;
 
+            // Hand tool: while .bit-pdv-pan is on the surface, dragging scrolls it
+            // instead of selecting. Pointer events cover mouse, pen and single-finger
+            // touch alike; touch already pans natively, so only a mouse/pen primary
+            // button is captured (capturing touch here would fight the native scroll).
+            const pan = { active: false, id: -1, x: 0, y: 0, left: 0, top: 0 };
+            const onPointerDown = (e: PointerEvent) => {
+                if (!container.classList.contains("bit-pdv-pan") || e.button !== 0 || e.pointerType === "touch") {
+                    return;
+                }
+                pan.active = true;
+                pan.id = e.pointerId;
+                pan.x = e.clientX;
+                pan.y = e.clientY;
+                pan.left = container.scrollLeft;
+                pan.top = container.scrollTop;
+                container.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            };
+            const onPointerMove = (e: PointerEvent) => {
+                if (!pan.active || e.pointerId !== pan.id) {
+                    return;
+                }
+                container.scrollLeft = pan.left - (e.clientX - pan.x);
+                container.scrollTop = pan.top - (e.clientY - pan.y);
+            };
+            const onPointerUp = (e: PointerEvent) => {
+                if (!pan.active || e.pointerId !== pan.id) {
+                    return;
+                }
+                pan.active = false;
+                try {
+                    container.releasePointerCapture(e.pointerId);
+                } catch { /* the pointer may already be gone */ }
+            };
+            container.addEventListener("pointerdown", onPointerDown);
+            container.addEventListener("pointermove", onPointerMove);
+            container.addEventListener("pointerup", onPointerUp);
+            container.addEventListener("pointercancel", onPointerUp);
+            (container as any).__bitPdvPan = { onPointerDown, onPointerMove, onPointerUp };
+
+            // Two-finger pinch to zoom. Browsers report a trackpad pinch as ctrl+wheel
+            // (handled above), but a touchscreen pinch arrives as two touch points and
+            // is otherwise swallowed by the page's own zoom.
+            const pinch = { active: false, distance: 0, scale: 1 };
+            const spread = (t: TouchList) => Math.hypot(
+                t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+            const onTouchStart = (e: TouchEvent) => {
+                if (e.touches.length === 2) {
+                    pinch.active = true;
+                    pinch.distance = spread(e.touches);
+                    pinch.scale = 1;
+                }
+            };
+            const onTouchMove = (e: TouchEvent) => {
+                if (!pinch.active || e.touches.length !== 2 || pinch.distance <= 0) {
+                    return;
+                }
+                e.preventDefault();
+                const ratio = spread(e.touches) / pinch.distance;
+                // Only cross the interop boundary once the pinch has actually moved a
+                // step's worth: .NET clamps and re-renders, so a call per touchmove
+                // frame would stall the UI thread on WebAssembly.
+                if (ratio / pinch.scale > 1.1) {
+                    pinch.scale *= 1.1;
+                    dotnetRef.invokeMethodAsync("OnWheelZoom", -1);
+                } else if (pinch.scale / ratio > 1.1) {
+                    pinch.scale /= 1.1;
+                    dotnetRef.invokeMethodAsync("OnWheelZoom", 1);
+                }
+            };
+            const onTouchEnd = (e: TouchEvent) => {
+                if (e.touches.length < 2) {
+                    pinch.active = false;
+                }
+            };
+            container.addEventListener("touchstart", onTouchStart, { passive: true });
+            container.addEventListener("touchmove", onTouchMove, { passive: false });
+            container.addEventListener("touchend", onTouchEnd, { passive: true });
+            container.addEventListener("touchcancel", onTouchEnd, { passive: true });
+            (container as any).__bitPdvTouch = { onTouchStart, onTouchMove, onTouchEnd };
+
             // Notify .NET when the container resizes (used for fit-to-width/page).
             if (typeof ResizeObserver !== "undefined") {
                 const resize = new ResizeObserver(() => {
@@ -252,11 +343,137 @@
                 container.removeEventListener("wheel", c.__bitPdvWheel);
                 c.__bitPdvWheel = null;
             }
+            if (c.__bitPdvPan) {
+                container.removeEventListener("pointerdown", c.__bitPdvPan.onPointerDown);
+                container.removeEventListener("pointermove", c.__bitPdvPan.onPointerMove);
+                container.removeEventListener("pointerup", c.__bitPdvPan.onPointerUp);
+                container.removeEventListener("pointercancel", c.__bitPdvPan.onPointerUp);
+                c.__bitPdvPan = null;
+            }
+            if (c.__bitPdvTouch) {
+                container.removeEventListener("touchstart", c.__bitPdvTouch.onTouchStart);
+                container.removeEventListener("touchmove", c.__bitPdvTouch.onTouchMove);
+                container.removeEventListener("touchend", c.__bitPdvTouch.onTouchEnd);
+                container.removeEventListener("touchcancel", c.__bitPdvTouch.onTouchEnd);
+                c.__bitPdvTouch = null;
+            }
             c.__bitPdvDotnet = null;
             c.__bitPdvLastPage = null;
             if (c.__bitPdvResize) {
                 c.__bitPdvResize.disconnect();
                 c.__bitPdvResize = null;
+            }
+        }
+
+        // ----- Keyboard shortcuts -----
+        //
+        // Matched here rather than in .NET because only the event carries the target
+        // (so typing in the find or page box is never mistaken for a shortcut) and
+        // only preventDefault can stop the BROWSER's own Ctrl+P / Ctrl+F / Ctrl+S.
+        // Every match is forwarded to .NET as a single command string.
+
+        // Whether the event originates from something the user is typing into, where
+        // a bare letter is text and not a command.
+        private static isTypingTarget(target: EventTarget | null) {
+            const el = target as HTMLElement | null;
+            if (!el || !el.tagName) {
+                return false;
+            }
+            const tag = el.tagName.toLowerCase();
+            return tag === "input" || tag === "textarea" || tag === "select" || el.isContentEditable === true;
+        }
+
+        private static resolveShortcut(e: KeyboardEvent): { command: string, prevent: boolean } | null {
+            const mod = e.ctrlKey || e.metaKey;
+            const typing = PdfViewer.isTypingTarget(e.target);
+
+            if (mod && e.altKey && (e.key === "p" || e.key === "P")) {
+                return { command: "presentation", prevent: true };
+            }
+            if (mod && !e.altKey) {
+                switch (e.key) {
+                    case "+": case "=": return { command: "zoomIn", prevent: true };
+                    case "-": return { command: "zoomOut", prevent: true };
+                    case "0": return { command: "actualSize", prevent: true };
+                    case "f": case "F": return { command: "find", prevent: true };
+                    case "g": case "G": return { command: e.shiftKey ? "findPrev" : "findNext", prevent: true };
+                    case "p": case "P": return { command: "print", prevent: true };
+                    case "s": case "S": return { command: "download", prevent: true };
+                }
+                return null;
+            }
+
+            if (e.key === "F4") {
+                return { command: "sidebar", prevent: true };
+            }
+            if (e.key === "Escape") {
+                // Escape must reach .NET even from the find box, whose own handler
+                // closes it; the duplicate is harmless (the second call finds nothing
+                // open) and it is what makes Escape work from anywhere else.
+                return { command: "escape", prevent: false };
+            }
+            if (typing || e.altKey) {
+                return null;
+            }
+
+            switch (e.key) {
+                case "n": case "j": case "PageDown": return { command: "next", prevent: e.key !== "PageDown" };
+                case "p": case "k": case "PageUp": return { command: "prev", prevent: e.key !== "PageUp" };
+                case "Home": return { command: "first", prevent: true };
+                case "End": return { command: "last", prevent: true };
+                case "r": return { command: "rotateCw", prevent: true };
+                case "R": return { command: "rotateCcw", prevent: true };
+            }
+            return null;
+        }
+
+        public static registerKeyboard(root: HTMLElement, dotnetRef: any) {
+            if (!root || !dotnetRef) {
+                return;
+            }
+            PdfViewer.disposeKeyboard(root);
+            const onKeyDown = (e: KeyboardEvent) => {
+                const hit = PdfViewer.resolveShortcut(e);
+                if (!hit) {
+                    return;
+                }
+                if (hit.prevent) {
+                    e.preventDefault();
+                }
+                dotnetRef.invokeMethodAsync("OnShortcut", hit.command);
+            };
+            root.addEventListener("keydown", onKeyDown);
+            (root as any).__bitPdvKeys = onKeyDown;
+        }
+
+        public static disposeKeyboard(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            const r = root as any;
+            if (r.__bitPdvKeys) {
+                root.removeEventListener("keydown", r.__bitPdvKeys);
+                r.__bitPdvKeys = null;
+            }
+        }
+
+        // Moves focus to an element, used after .NET opens a control that was not in
+        // the DOM yet (the find box) so the user can type into it straight away.
+        public static focus(element: HTMLElement) {
+            if (element && element.focus) {
+                element.focus();
+            }
+        }
+
+        // Follows the roving tabindex of the thumbnail listbox: arrowing changes the
+        // active option, and focus has to move with it or the next key is lost.
+        public static focusThumb(container: HTMLElement, pageNumber: number) {
+            if (!container) {
+                return;
+            }
+            const target = container.querySelector(`[data-thumb='${pageNumber}']`) as HTMLElement | null;
+            if (target && target.focus) {
+                target.focus({ preventScroll: true });
             }
         }
 
@@ -416,6 +633,36 @@
                 document.exitFullscreen();
             } else if (element.requestFullscreen) {
                 element.requestFullscreen();
+            }
+        }
+
+        public static exitFullscreen() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+
+        // Reports fullscreen transitions to .NET. The browser can leave fullscreen on
+        // its own (Escape, or the user switching away), and presentation mode has to
+        // hear about it or the two states drift apart.
+        public static registerFullscreenSpy(root: HTMLElement, dotnetRef: any) {
+            if (!root || !dotnetRef) {
+                return;
+            }
+            PdfViewer.disposeFullscreenSpy(root);
+            const onChange = () => dotnetRef.invokeMethodAsync("OnFullscreenChanged", document.fullscreenElement === root);
+            document.addEventListener("fullscreenchange", onChange);
+            (root as any).__bitPdvFsc = onChange;
+        }
+
+        public static disposeFullscreenSpy(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            const r = root as any;
+            if (r.__bitPdvFsc) {
+                document.removeEventListener("fullscreenchange", r.__bitPdvFsc);
+                r.__bitPdvFsc = null;
             }
         }
 
@@ -811,22 +1058,38 @@
             return range;
         }
 
-        // Finds every case-insensitive occurrence of `query` across all pages and
-        // registers a highlight. Returns the match count, or -1 if unsupported.
-        public static searchAll(container: HTMLElement, query: string) {
-            PdfViewer.clearSearch(container);
-            if (!container || !query) {
-                return 0;
+        // Whether the character at `index` of `text` can be part of a word, used to
+        // reject a substring hit that sits inside a longer word in whole-word mode.
+        private static isWordChar(text: string, index: number) {
+            if (index < 0 || index >= text.length) {
+                return false;
             }
-            if (!PdfViewer.searchSupported()) {
-                return -1;
+            // Unicode-aware: letters, digits, marks and the underscore count as word
+            // characters, so accented and non-Latin scripts behave like ASCII does.
+            return /[\p{L}\p{N}\p{M}_]/u.test(text[index]);
+        }
+
+        // Paints every occurrence of `query` on the pages currently in the DOM and
+        // marks the one at (currentPage, currentOrdinal) - the match .NET counted its
+        // way to - optionally scrolling it into view. Counting happens in .NET over
+        // the whole document; this only decorates what is rendered, so an unrendered
+        // page costs nothing here.
+        // `matchCase` compares case-sensitively; `wholeWord` rejects hits whose
+        // neighbouring characters are word characters.
+        public static highlight(container: HTMLElement, query: string, matchCase: boolean, wholeWord: boolean,
+            currentPage: number, currentOrdinal: number, scrollToCurrent: boolean) {
+            PdfViewer.clearSearch(container);
+            if (!container || !query || !PdfViewer.searchSupported()) {
+                return;
             }
             PdfViewer.ensureSearchStyles();
 
-            const needle = query.toLowerCase();
+            const needle = matchCase ? query : query.toLowerCase();
             const ranges: Range[] = [];
+            let current: Range | null = null;
 
             container.querySelectorAll("[data-page]").forEach((page) => {
+                const pageNumber = parseInt(page.getAttribute("data-page") || "", 10);
                 // Search only the coalesced selection layer ([data-bit-pdv-sel]) - it
                 // holds the real Unicode in reading order. The painted layer beneath is
                 // presentational (real glyphs or Private-Use codepoints) and would
@@ -845,14 +1108,26 @@
                     nodes.push({ node, start: text.length });
                     text += node.nodeValue;
                 }
-                const haystack = text.toLowerCase();
+                const haystack = matchCase ? text : text.toLowerCase();
                 let idx = haystack.indexOf(needle);
+                let ordinal = 0;
                 while (idx !== -1) {
-                    const range = PdfViewer.buildRange(nodes, idx, idx + needle.length);
-                    if (range) {
-                        ranges.push(range);
+                    const end = idx + needle.length;
+                    const bounded = !wholeWord
+                        || (!PdfViewer.isWordChar(haystack, idx - 1) && !PdfViewer.isWordChar(haystack, end));
+                    if (bounded) {
+                        const range = PdfViewer.buildRange(nodes, idx, end);
+                        if (range) {
+                            ranges.push(range);
+                            if (pageNumber === currentPage && ordinal === currentOrdinal) {
+                                current = range;
+                            }
+                        }
+                        ordinal++;
                     }
-                    idx = haystack.indexOf(needle, idx + needle.length);
+                    // Advance by one when a whole-word hit was rejected, so an
+                    // overlapping later occurrence is still found.
+                    idx = haystack.indexOf(needle, bounded ? end : idx + 1);
                 }
             });
 
@@ -860,21 +1135,14 @@
             if (ranges.length) {
                 (CSS as any).highlights.set("bit-pdv-search", new (globalThis as any).Highlight(...ranges));
             }
-            return ranges.length;
-        }
-
-        // Marks the match at `index` as current and scrolls it into view.
-        public static gotoMatch(container: HTMLElement, index: number) {
-            const ranges = container && (container as any).__bitPdvRanges;
-            if (!ranges || !ranges.length || !PdfViewer.searchSupported()) {
-                return;
-            }
-            const i = ((index % ranges.length) + ranges.length) % ranges.length;
-            const range = ranges[i] as Range;
-            (CSS as any).highlights.set("bit-pdv-search-current", new (globalThis as any).Highlight(range));
-            const el = range.startContainer.parentElement;
-            if (el) {
-                PdfViewer.scrollWithin(container, el, "center", "smooth");
+            if (current) {
+                (CSS as any).highlights.set("bit-pdv-search-current", new (globalThis as any).Highlight(current));
+                if (scrollToCurrent) {
+                    const el = (current as Range).startContainer.parentElement;
+                    if (el) {
+                        PdfViewer.scrollWithin(container, el, "center", "smooth");
+                    }
+                }
             }
         }
 

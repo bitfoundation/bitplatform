@@ -85,6 +85,26 @@ public sealed class BitPdfDocument
     public IReadOnlyList<BitPdfStructElement> StructureTree =>
         _structure ??= BitPdfStructTree.Build(_xref, Catalog);
 
+    private IReadOnlyList<BitPdfLayer>? _layers;
+
+    /// <summary>
+    /// The optional-content groups (layers) the document declares, with the
+    /// visibility its default configuration gives each. Empty when the document
+    /// declares no <c>/OCProperties</c>.
+    /// </summary>
+    public IReadOnlyList<BitPdfLayer> Layers =>
+        _layers ??= BitPdfOptionalContent.Build(_xref, Catalog);
+
+    private IReadOnlyList<BitPdfAttachment>? _attachments;
+
+    /// <summary>
+    /// The files embedded in the document: the catalog's <c>/Names /EmbeddedFiles</c>
+    /// name tree plus any <c>/FileAttachment</c> annotation pinned to a page. Empty
+    /// when the document carries none.
+    /// </summary>
+    public IReadOnlyList<BitPdfAttachment> Attachments =>
+        _attachments ??= BitPdfEmbeddedFiles.Build(_xref, Catalog, Pages);
+
     private IReadOnlyList<BitPdfFormField>? _formFields;
 
     /// <summary>

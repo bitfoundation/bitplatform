@@ -106,7 +106,7 @@
 }
 
 .bit-pdv-right {
-    margin-left: auto;
+    margin-inline-start: auto;
 }
 
 .bit-pdv-title {
@@ -188,7 +188,7 @@
 }
 
 /* The pages-sidebar icon uses filled squares. */
-.bit-pdv-group:first-child .bit-pdv-btn svg {
+.bit-pdv-panels .bit-pdv-btn svg {
     stroke: none;
     fill: currentColor;
 }
@@ -234,6 +234,9 @@
     flex: 1;
     display: flex;
     min-height: 0;
+    /* The properties dialog overlays the body (not the toolbar), so this is its
+       containing block. */
+    position: relative;
 }
 
 .bit-pdv-thumbs {
@@ -245,7 +248,7 @@
     flex-direction: column;
     background: $clr-bg-sec;
     padding: spacing(1.5) spacing(1);
-    border-right: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-pdv-thumb {
@@ -267,7 +270,7 @@
 }
 
 .bit-pdv-thumb-label {
-    right: 4px;
+    inset-inline-end: 4px;
     bottom: 2px;
     line-height: 1.4;
     position: absolute;
@@ -293,18 +296,20 @@
     color: $clr-fg-pri;
     background: $clr-bg-sec;
     font-size: $tg-fs-sm;
-    padding: spacing(1) spacing(0.5) spacing(1) spacing(1);
-    border-right: $shp-border-width $shp-border-style $clr-brd-sec;
+    padding-block: spacing(1);
+    padding-inline: spacing(1) spacing(0.5);
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 
     > .bit-pdv-outline-list {
-        padding-left: 0;
+        padding-inline-start: 0;
     }
 }
 
 .bit-pdv-outline-list {
     margin: 0;
     list-style: none;
-    padding: 0 0 0 spacing(1.5);
+    padding: 0;
+    padding-inline-start: spacing(1.5);
 }
 
 .bit-pdv-outline-item {
@@ -395,4 +400,406 @@
 .bit-pdv-thumb-svg .bit-pdv-html-page span[data-bit-pdv-sel]::selection {
     color: transparent;
     background: color-mix(in srgb, #{$clr-pri} 35%, transparent);
+}
+
+/* Find options (match case, whole word): compact text toggles beside the query
+   box, styled as pressed/unpressed rather than as icon buttons so the two-letter
+   glyphs stay legible at toolbar size. */
+.bit-pdv-opt {
+    padding: 0;
+    cursor: pointer;
+    color: $clr-fg-sec;
+    height: $siz-ctrl-sm;
+    align-items: center;
+    display: inline-flex;
+    font-size: $tg-fs-xs;
+    justify-content: center;
+    min-width: spacing(3.25);
+    background: transparent;
+    font-weight: $tg-fw-semibold;
+    border-radius: $shp-radius-control;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:hover:not(:disabled) {
+        background: $clr-bg-sec-hover;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
+    &.bit-pdv-act {
+        color: $clr-pri-text;
+        background: $clr-pri;
+        border-color: $clr-pri;
+
+        &:hover:not(:disabled) {
+            background: $clr-pri-hover;
+        }
+    }
+}
+
+/* Bookmarks rows: the fold toggle and the label share a row so the label can
+   ellipsize while the toggle keeps its width. */
+.bit-pdv-outline-row {
+    display: flex;
+    align-items: center;
+    gap: spacing(0.25);
+}
+
+.bit-pdv-outline-toggle {
+    padding: 0;
+    border: none;
+    flex-shrink: 0;
+    cursor: pointer;
+    color: $clr-fg-sec;
+    align-items: center;
+    display: inline-flex;
+    width: spacing(2.25);
+    height: spacing(2.25);
+    background: transparent;
+    justify-content: center;
+
+    svg {
+        fill: none;
+        width: rem2(14px);
+        height: rem2(14px);
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transform: rotate(90deg);
+        transition: transform calc(#{$mot-duration} * 1) $mot-easing;
+    }
+
+    &.bit-pdv-col svg {
+        transform: rotate(0deg);
+    }
+}
+
+/* A leaf keeps the toggle's width so every label in the tree starts on the same
+   vertical line, whether or not its row has children. */
+.bit-pdv-outline-leaf {
+    cursor: default;
+}
+
+.bit-pdv-outline-row .bit-pdv-outline-item {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Document properties: a small centered dialog over the body, dismissed by the
+   backdrop, the close button or Escape. */
+.bit-pdv-dialog-overlay {
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    position: absolute;
+    place-items: center;
+    padding: spacing(2);
+    background: $clr-bg-overlay;
+}
+
+.bit-pdv-dialog {
+    display: flex;
+    max-width: 100%;
+    overflow: hidden;
+    max-height: 100%;
+    color: $clr-fg-pri;
+    width: spacing(46);
+    flex-direction: column;
+    background: $clr-bg-pri;
+    box-shadow: $box-shadow-dialog;
+    border-radius: $shp-radius-dialog;
+}
+
+.bit-pdv-dialog-head {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    font-size: $tg-fs-md;
+    justify-content: space-between;
+    font-weight: $tg-fw-semibold;
+    padding: $spa-dialog $spa-dialog 0 $spa-dialog;
+}
+
+.bit-pdv-dialog-body {
+    margin: 0;
+    overflow: auto;
+    font-size: $tg-fs-sm;
+    padding: $spa-dialog;
+
+    > div {
+        gap: spacing(1);
+        display: flex;
+        padding: spacing(0.4) 0;
+        align-items: flex-start;
+    }
+
+    dt {
+        flex-shrink: 0;
+        color: $clr-fg-sec;
+        width: spacing(14);
+    }
+
+    dd {
+        flex: 1;
+        margin: 0;
+        min-width: 0;
+        word-break: break-word;
+    }
+}
+
+/* Scroll modes. The surface itself never changes; only how .bit-pdv-pages flows,
+   so the render slots, the lazy-render spy and eviction stay untouched. */
+.bit-pdv-pages.bit-pdv-h {
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: center;
+}
+
+.bit-pdv-pages.bit-pdv-w {
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Page mode shows one page (or one spread) at a time. Hiding the rest keeps every
+   page's slot in place, so navigation, search and printing behave as they do in a
+   continuous mode. */
+.bit-pdv-pages.bit-pdv-single > *:not(.bit-pdv-cur) {
+    display: none;
+}
+
+/* A spread: the two facing pages of one row, gapless so they read as a sheet. */
+.bit-pdv-row {
+    display: flex;
+    align-items: flex-start;
+}
+
+/* The pan (hand) tool. Text selection is suppressed while dragging pans, which is
+   what makes a drag scroll instead of selecting. */
+.bit-pdv-surface.bit-pdv-pan {
+    cursor: grab;
+    user-select: none;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+/* Attachments sidebar: one row per embedded file, activated to save it. */
+.bit-pdv-attachments {
+    display: flex;
+    flex-shrink: 0;
+    overflow: auto;
+    gap: spacing(0.5);
+    width: spacing(29);
+    flex-direction: column;
+    background: $clr-bg-sec;
+    padding: spacing(1) spacing(0.5);
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+.bit-pdv-attachments > div {
+    display: flex;
+}
+
+.bit-pdv-attachment {
+    flex: 1;
+    min-width: 0;
+    gap: spacing(0.2);
+    display: flex;
+    cursor: pointer;
+    border: none;
+    text-align: start;
+    color: $clr-fg-pri;
+    flex-direction: column;
+    background: transparent;
+    font-size: $tg-fs-sm;
+    font-family: inherit;
+    padding: spacing(0.5) spacing(0.7);
+    border-radius: $shp-radius-surface;
+
+    &:hover {
+        color: $clr-pri-text;
+        background: $clr-pri;
+    }
+}
+
+.bit-pdv-attachment-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-pdv-attachment-meta {
+    opacity: 0.75;
+    font-size: $tg-fs-xs;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The password dialog: narrower than the properties one, and its body is a
+   prompt/field/actions column rather than a definition list. */
+.bit-pdv-dialog.bit-pdv-password {
+    width: spacing(36);
+
+    .bit-pdv-dialog-body {
+        gap: spacing(1.2);
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.bit-pdv-password-input {
+    width: 100%;
+    color: $clr-fg-pri;
+    height: $siz-ctrl-md;
+    font-size: $tg-fs-sm;
+    background: $clr-bg-pri;
+    padding: 0 spacing(0.8);
+    border-radius: $shp-radius-control;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &[aria-invalid="true"] {
+        border-color: $clr-err;
+    }
+}
+
+.bit-pdv-dialog-actions {
+    display: flex;
+    gap: spacing(1);
+    flex-direction: $layout-dialog-actions-direction;
+    justify-content: $layout-dialog-actions-justify;
+    align-items: $layout-dialog-actions-align;
+}
+
+.bit-pdv-dialog-btn {
+    cursor: pointer;
+    color: $clr-fg-pri;
+    height: $siz-ctrl-md;
+    font-size: $tg-fs-sm;
+    font-family: inherit;
+    background: transparent;
+    padding: 0 spacing(1.5);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    border-radius: $shp-radius-button;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    min-width: $siz-ctrl-min-width;
+
+    &:hover {
+        background: $clr-bg-sec-hover;
+    }
+
+    &.bit-pdv-act {
+        color: $clr-pri-text;
+        background: $clr-pri;
+        border-color: $clr-pri;
+
+        &:hover {
+            background: $clr-pri-hover;
+        }
+    }
+}
+
+/* Layers sidebar: one checkbox per optional-content group. Switching one
+   re-renders the pages, so the panel is the document's own layer switchboard. */
+.bit-pdv-layers {
+    display: flex;
+    flex-shrink: 0;
+    overflow: auto;
+    gap: spacing(0.25);
+    width: spacing(25);
+    flex-direction: column;
+    background: $clr-bg-sec;
+    padding: spacing(1) spacing(0.5);
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+.bit-pdv-layer {
+    gap: spacing(0.6);
+    display: flex;
+    cursor: pointer;
+    color: $clr-fg-pri;
+    align-items: center;
+    font-size: $tg-fs-sm;
+    padding: spacing(0.4) spacing(0.7);
+    border-radius: $shp-radius-surface;
+
+    &:hover {
+        background: $clr-bg-sec-hover;
+    }
+
+    input {
+        flex-shrink: 0;
+        cursor: pointer;
+        accent-color: $clr-pri;
+        width: $siz-sel-sm;
+        height: $siz-sel-sm;
+    }
+
+    span {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+/* Fullscreen (and presentation mode, which uses it): the viewer becomes the whole
+   screen. The height is normally an inline style from the Height parameter, so it
+   takes !important to override - this is the one place where the element's own
+   sizing must lose. */
+.bit-pdv:fullscreen {
+    width: 100%;
+    height: 100% !important;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+}
+
+/* Presentation mode puts the document alone on the screen: the chrome that helps
+   while reading only gets in the way while presenting. */
+.bit-pdv-presenting .bit-pdv-toolbar {
+    display: none;
+}
+
+.bit-pdv-presenting .bit-pdv-surface {
+    padding: 0;
+    display: grid;
+    place-items: center;
+    background: #000;
+}
+
+/* Smooth scrolling is motion the reader did not ask for; honour the preference,
+   with the same ForceAnimation escape hatch the rest of the component uses. */
+@media (prefers-reduced-motion: reduce) {
+    .bit-pdv-surface:not(.bit-fam):not(.bit-fam *) {
+        scroll-behavior: auto;
+    }
+}
+
+/* A full toolbar is wider than a phone. Rather than wrapping it into three rows
+   that eat the document, drop the controls a reader can reach another way: the
+   layout dropdowns (also on the public API), the first/last buttons (the page box
+   goes anywhere) and the file name. Everything essential stays. */
+@media (max-width: 45rem) {
+    .bit-pdv-toolbar {
+        gap: spacing(1);
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        /* The row must not shrink its controls into unusable slivers; scrolling it
+           is what keeps every button at its real size. */
+        scrollbar-width: thin;
+    }
+
+    .bit-pdv-toolbar > .bit-pdv-group {
+        flex-shrink: 0;
+    }
+
+    .bit-pdv-title {
+        display: none;
+    }
 }

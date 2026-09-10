@@ -14,11 +14,14 @@ public partial class BitPdfViewer : BitComponentBase
     private BitPdfSource? _source;
     private BitPdfDocument? _document;
     private BitPdfFontStore? _fontStore;
+    // The resolved bytes of the current document, kept after the load so Download
+    // and the properties dialog work for URL sources too (not just in-memory ones).
+    private byte[]? _bytes;
     private bool _correctWidthsPending; // run the JS text width-correction after render
     private string?[]? _pageText; // lazily-built per-page text index for search
     private int _loadVersion; // bumped per load; guards against a superseded load committing
     private int _renderEpoch; // bumped whenever page slots are rebuilt (load, rotation, mode change)
-    private string _status = "Idle.";
+    private string _status = string.Empty;
     private bool _loading;
 
     // Serializes page/thumbnail renders so a BackgroundRendering build (which may run
@@ -62,12 +65,24 @@ public partial class BitPdfViewer : BitComponentBase
     // A null slot is a not-yet-rendered thumbnail placeholder.
     private readonly List<MarkupString?> _thumbs = [];
 
-    private int _currentPage = 1;
-    private double _zoom = 1.0;
     private BitPdfZoomMode _zoomMode = BitPdfZoomMode.FitWidth;
     private BitPdfTextCoalescing _textCoalescing; // last applied; changes re-render pages
     private BitPdfRenderMode _renderMode;         // last applied; changes re-render pages
-    private int _rotation;
+    // Layout state. These start from their parameters but the toolbar (and the
+    // public API) can move them afterwards, so they are held rather than read.
+    private BitPdfScrollMode _scrollMode;
+    private BitPdfSpreadMode _spreadMode;
+    private BitPdfCursorTool _cursorTool;
+    // The last values the PARAMETERS carried, so a host re-render that does not
+    // change them cannot undo a choice the reader made in the toolbar.
+    private BitPdfScrollMode _scrollModeParam;
+    private BitPdfSpreadMode _spreadModeParam;
+    private BitPdfCursorTool _cursorToolParam;
+    // The last values the viewer itself put into the two-way parameters, so a set
+    // that did NOT come from the viewer is recognized as the host driving it.
+    private int _appliedPage = 1;
+    private double _appliedZoom = 1;
+    private int _appliedRotation;
 
     // Canvas mode: per-page display lists, and the pages whose freshly (re)created
     // canvases still need a JS replay after the current render.
@@ -88,19 +103,53 @@ public partial class BitPdfViewer : BitComponentBase
     private int _canvasPaintSignalGen;
     private bool _showThumbnails;
     private bool _showOutline;
+    private bool _showAttachments;
+    private bool _showLayers;
     private IReadOnlyList<BitPdfOutlineItem> _outline = [];
+    private IReadOnlyList<BitPdfAttachment> _attachments = [];
+    private IReadOnlyList<BitPdfLayer> _layers = [];
+    // The layers the reader has switched off. Non-null once a document declares any,
+    // so the renderer knows to consult it rather than the document's own default.
+    private HashSet<string>? _hiddenLayers;
+    // A frozen copy of the above, replaced (never mutated) on every change, so a
+    // background page build can read it without racing the UI thread.
+    private IReadOnlySet<string>? _hiddenLayersView;
 
     private bool _showSearch;
     private string _searchQuery = "";
+    private bool _matchCase;  // find option: case-sensitive matching
+    private bool _wholeWord;  // find option: match whole words only
     private int _searchTotal;
     private int _searchIndex = -1;
     private int _searchGeneration; // bumped per query so an in-flight search abandons when a newer query starts
+    private int[]? _matchCounts;   // matches per page for the current query, counted in C#
+    private bool _highlightPending; // re-paint the highlights after a page render brought new text in
+
+    private bool _showProperties; // the document-properties dialog
+
+    // Presentation mode, and the layout it replaced so leaving restores it.
+    private bool _presenting;
+    private BitPdfScrollMode _presentingScrollMode;
+    private BitPdfZoomMode _presentingZoomMode;
+    private BitPdfSidebar _presentingSidebar;
+
+    // The built-in password dialog. The load parks on this completion source while
+    // the reader types; submitting or cancelling completes it.
+    private TaskCompletionSource<string?>? _passwordRequest;
+    private string _passwordInput = "";
+    private bool _passwordRejected; // a password was supplied and turned out wrong
+    private ElementReference _passwordInputRef;
+    private bool _focusPasswordPending;
 
     private DotNetObjectReference<BitPdfViewer>? _dotnetObj;
     private ElementReference _containerRef;
     private ElementReference _thumbsRef;
+    private ElementReference _searchInputRef;
     private bool _spyPending;
     private bool _thumbSpyPending; // (re)attach the sidebar's lazy-render spy after render
+    private bool _keyboardPending = true; // (re)attach the keyboard-shortcut listener after render
+    private bool _keyboardAttached;
+    private bool _focusSearchPending; // focus the find box once it is in the DOM
 
 
 
@@ -116,6 +165,25 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public BitPdfSource? Source { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for the different parts of the viewer.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitPdfViewerClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for the different parts of the viewer.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitPdfViewerClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The texts of the viewer UI. Defaults to English; assign a
+    /// <see cref="BitPdfViewerTexts"/> with the properties you want to override
+    /// to localize the toolbar, the sidebars and the status messages.
+    /// </summary>
+    [Parameter] public BitPdfViewerTexts? Texts { get; set; }
+
+    /// <summary>
     /// The CSS height of the viewer container. When not set, the viewer height is
     /// responsive: capped at 780px and shrinking to fit the viewport on small screens.
     /// </summary>
@@ -128,9 +196,109 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public bool ShowToolbar { get; set; } = true;
 
     /// <summary>
+    /// Which controls the toolbar offers. Combine the flags to build a reduced
+    /// toolbar (e.g. navigation and zoom only). Default is
+    /// <see cref="BitPdfToolbarItems.All"/>.
+    /// </summary>
+    [Parameter] public BitPdfToolbarItems ToolbarItems { get; set; } = BitPdfToolbarItems.All;
+
+    /// <summary>
+    /// The side panel open when a document first loads. Default is
+    /// <see cref="BitPdfSidebar.None"/>. The panel can be changed afterwards from
+    /// the toolbar or through <see cref="ShowSidebar"/>.
+    /// </summary>
+    [Parameter] public BitPdfSidebar DefaultSidebar { get; set; } = BitPdfSidebar.None;
+
+    /// <summary>
+    /// The focused page (1-based), two-way bindable. Reading it gives the page the
+    /// reader is on; assigning it navigates there.
+    /// <br />
+    /// Bound one way (without <c>CurrentPageChanged</c>) the page becomes the host's
+    /// to control: the viewer then reports scroll and toolbar navigation through
+    /// <see cref="OnPageChanged"/> but does not move the value itself.
+    /// </summary>
+    [Parameter, TwoWayBound] public int CurrentPage { get; set; } = 1;
+
+    /// <summary>
+    /// The zoom factor (1 means 100%), two-way bindable. Assigning it switches the
+    /// viewer to <see cref="BitPdfZoomMode.Custom"/> and clamps the value to
+    /// <see cref="MinZoom"/>..<see cref="MaxZoom"/>.
+    /// </summary>
+    [Parameter, TwoWayBound] public double Zoom { get; set; } = 1;
+
+    /// <summary>
+    /// The rotation applied to every page, in degrees, two-way bindable. Assigned
+    /// values are normalized to the nearest quarter turn (0, 90, 180 or 270).
+    /// </summary>
+    [Parameter, TwoWayBound] public int Rotation { get; set; }
+
+    /// <summary>
     /// The initial zoom behavior.
     /// </summary>
     [Parameter] public BitPdfZoomMode InitialZoomMode { get; set; } = BitPdfZoomMode.FitWidth;
+
+    /// <summary>
+    /// How the pages are laid out on the scrollable surface: stacked vertically
+    /// (the default), side by side on one horizontally scrolling row, wrapped into
+    /// rows that fill the width, or one page (or spread) at a time.
+    /// </summary>
+    [Parameter] public BitPdfScrollMode ScrollMode { get; set; } = BitPdfScrollMode.Vertical;
+
+    /// <summary>
+    /// How pages are paired into spreads, the way a printed book falls open.
+    /// Default is <see cref="BitPdfSpreadMode.None"/>.
+    /// </summary>
+    [Parameter] public BitPdfSpreadMode SpreadMode { get; set; } = BitPdfSpreadMode.None;
+
+    /// <summary>
+    /// What dragging on the document surface does: select text (the default) or pan
+    /// the document, as the hand tool of a desktop viewer does.
+    /// </summary>
+    [Parameter] public BitPdfCursorTool CursorTool { get; set; } = BitPdfCursorTool.Select;
+
+    /// <summary>
+    /// The smallest zoom factor the viewer allows (1 means 100%). Default is <c>0.1</c>.
+    /// </summary>
+    [Parameter] public double MinZoom { get; set; } = 0.1;
+
+    /// <summary>
+    /// The largest zoom factor the viewer allows (1 means 100%). Default is <c>8</c>.
+    /// </summary>
+    [Parameter] public double MaxZoom { get; set; } = 8;
+
+    /// <summary>
+    /// The multiplier applied by <see cref="ZoomIn"/> and <see cref="ZoomOut"/>
+    /// (and by the toolbar's zoom buttons). Default is <c>1.2</c>, i.e. 20% a step.
+    /// </summary>
+    [Parameter] public double ZoomStep { get; set; } = 1.2;
+
+    /// <summary>
+    /// How many pages stay materialized in the DOM at once. Pages outside the window
+    /// centered on the current one revert to placeholders and are re-rendered when
+    /// scrolled back to, which is what keeps a long document from growing the DOM
+    /// (and a Blazor Server circuit's memory) without bound. Raise it to keep more
+    /// pages warm at the cost of memory. Default is <c>24</c>.
+    /// </summary>
+    [Parameter] public int MaxRenderedPageCount { get; set; } = 24;
+
+    /// <summary>
+    /// How many thumbnails stay materialized in the sidebar at once. A thumbnail
+    /// fragment is as heavy as a full page, so this bounds the sidebar the way
+    /// <see cref="MaxRenderedPageCount"/> bounds the document surface.
+    /// Default is <c>40</c>.
+    /// </summary>
+    [Parameter] public int MaxRenderedThumbnailCount { get; set; } = 40;
+
+    /// <summary>
+    /// Whether the viewer handles keyboard shortcuts while it has focus:
+    /// page navigation (<c>n</c>/<c>j</c>, <c>p</c>/<c>k</c>, Home/End), zoom
+    /// (<c>Ctrl +</c>, <c>Ctrl -</c>, <c>Ctrl 0</c>), rotation (<c>r</c>,
+    /// <c>Shift+r</c>), find (<c>Ctrl+F</c>, <c>Ctrl+G</c>, <c>Shift+Ctrl+G</c>),
+    /// print (<c>Ctrl+P</c>), download (<c>Ctrl+S</c>), presentation mode (<c>Ctrl+Alt+P</c>)
+    /// and the sidebar (<c>F4</c>).
+    /// Default is <c>true</c>.
+    /// </summary>
+    [Parameter] public bool EnableKeyboardShortcuts { get; set; } = true;
 
     /// <summary>
     /// How painted text is emitted. <see cref="BitPdfTextCoalescing.Compact"/> merges
@@ -173,6 +341,30 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
 
     /// <summary>
+    /// The callback for when the zoom factor changes (1 means 100%), whatever
+    /// caused it: the toolbar, a fit mode, Ctrl+wheel or the public API.
+    /// </summary>
+    [Parameter] public EventCallback<double> OnZoomChanged { get; set; }
+
+    /// <summary>
+    /// The callback for when the page rotation changes, with the new angle in
+    /// degrees (0, 90, 180 or 270).
+    /// </summary>
+    [Parameter] public EventCallback<int> OnRotationChanged { get; set; }
+
+    /// <summary>
+    /// The callback for when the open side panel changes.
+    /// </summary>
+    [Parameter] public EventCallback<BitPdfSidebar> OnSidebarChanged { get; set; }
+
+    /// <summary>
+    /// The callback for the download progress of a URL source, as a fraction from
+    /// <c>0</c> to <c>1</c>. Only raised when the server declares a content length;
+    /// a chunked response has no total to report against.
+    /// </summary>
+    [Parameter] public EventCallback<double> OnProgress { get; set; }
+
+    /// <summary>
     /// The callback for when loading or rendering fails, with the error message.
     /// </summary>
     [Parameter] public EventCallback<string> OnError { get; set; }
@@ -185,10 +377,18 @@ public partial class BitPdfViewer : BitComponentBase
 
     /// <summary>
     /// Invoked when an encrypted document needs a password. Return the password to
-    /// retry, or <c>null</c>/empty to cancel. If unset, a password error surfaces
-    /// through <see cref="OnError"/> instead.
+    /// retry, or <c>null</c>/empty to cancel. When unset, the viewer's own password
+    /// dialog asks instead (see <see cref="ShowPasswordPrompt"/>).
     /// </summary>
     [Parameter] public Func<Task<string?>>? OnPasswordRequested { get; set; }
+
+    /// <summary>
+    /// Whether the viewer asks for the password of an encrypted document with a
+    /// dialog of its own. Ignored when <see cref="OnPasswordRequested"/> is set,
+    /// which takes over the asking. Set to <c>false</c> to let a password failure
+    /// surface through <see cref="OnError"/> instead. Default is <c>true</c>.
+    /// </summary>
+    [Parameter] public bool ShowPasswordPrompt { get; set; } = true;
 
 
 
@@ -198,14 +398,33 @@ public partial class BitPdfViewer : BitComponentBase
     public int PageCount => _pages.Count;
 
     /// <summary>
-    /// The currently focused page (1-based).
+    /// The current zoom behavior (fit-width, fit-page, actual size or custom).
     /// </summary>
-    public int CurrentPage => _currentPage;
+    public BitPdfZoomMode ZoomMode => _zoomMode;
 
     /// <summary>
-    /// The current zoom factor (1 means 100%).
+    /// The current page layout on the scrollable surface.
     /// </summary>
-    public double Zoom => _zoom;
+    public BitPdfScrollMode CurrentScrollMode => _scrollMode;
+
+    /// <summary>
+    /// The current spread pairing.
+    /// </summary>
+    public BitPdfSpreadMode CurrentSpreadMode => _spreadMode;
+
+    /// <summary>
+    /// What dragging on the document surface currently does.
+    /// </summary>
+    public BitPdfCursorTool CurrentCursorTool => _cursorTool;
+
+    /// <summary>
+    /// Which side panel is currently open.
+    /// </summary>
+    public BitPdfSidebar Sidebar => _showThumbnails ? BitPdfSidebar.Thumbnails
+        : _showOutline ? BitPdfSidebar.Bookmarks
+        : _showAttachments ? BitPdfSidebar.Attachments
+        : _showLayers ? BitPdfSidebar.Layers
+        : BitPdfSidebar.None;
 
     /// <summary>
     /// Whether the document exposes any bookmarks.
@@ -213,14 +432,163 @@ public partial class BitPdfViewer : BitComponentBase
     public bool HasOutline => _outline.Count > 0;
 
     /// <summary>
+    /// The document outline (bookmarks) as a tree, empty when the document has none.
+    /// </summary>
+    public IReadOnlyList<BitPdfOutlineItem> Outline => _outline;
+
+    /// <summary>
+    /// Whether the document carries any embedded file.
+    /// </summary>
+    public bool HasAttachments => _attachments.Count > 0;
+
+    /// <summary>
+    /// The files embedded in the document (the <c>/EmbeddedFiles</c> name tree plus
+    /// any <c>/FileAttachment</c> annotation), empty when it carries none.
+    /// </summary>
+    public IReadOnlyList<BitPdfAttachment> Attachments => _attachments;
+
+    /// <summary>
+    /// Whether the document declares any optional-content group (layer).
+    /// </summary>
+    public bool HasLayers => _layers.Count > 0;
+
+    /// <summary>
+    /// The optional-content groups (layers) the document declares, empty when it
+    /// declares none.
+    /// </summary>
+    public IReadOnlyList<BitPdfLayer> Layers => _layers;
+
+    /// <summary>
+    /// Whether the layer is currently painted.
+    /// </summary>
+    public bool IsLayerVisible(BitPdfLayer layer)
+        => layer is not null && _hiddenLayers?.Contains(layer.Id) is not true;
+
+    /// <summary>
+    /// Shows or hides an optional-content group and re-renders the pages, the way a
+    /// desktop viewer's layers panel does.
+    /// </summary>
+    public async Task SetLayerVisible(BitPdfLayer layer, bool visible)
+    {
+        if (layer is null || _hiddenLayers is null) return;
+
+        bool changed = visible ? _hiddenLayers.Remove(layer.Id) : _hiddenLayers.Add(layer.Id);
+        if (changed is false) return;
+
+        _hiddenLayersView = new HashSet<string>(_hiddenLayers);
+
+        // Layer visibility is baked into the page fragments, so switching one is a
+        // re-render - the same path a rotation takes.
+        PreparePages();
+        await RenderCurrentPageEagerlyAsync();
+        if (IsDisposed) return;
+
+        _spyPending = true;
+        Repaint();
+    }
+
+    private Task ToggleLayer(BitPdfLayer layer) => SetLayerVisible(layer, IsLayerVisible(layer) is false);
+
+    /// <summary>
+    /// Saves an embedded file to the reader's machine.
+    /// </summary>
+    public async Task DownloadAttachment(BitPdfAttachment attachment)
+    {
+        if (attachment is null || attachment.Content.Length == 0) return;
+
+        using var stream = new MemoryStream(attachment.Content, writable: false);
+        using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
+        await _js.BitPdfViewerDownload(attachment.Name, streamRef);
+    }
+
+    /// <summary>
+    /// The parsed document model, or <c>null</c> when nothing is loaded. Exposes the
+    /// full engine surface (catalog, pages, cross-reference table) for callers that
+    /// need more than the viewer's own API.
+    /// </summary>
+    public BitPdfDocument? Document => _document;
+
+    /// <summary>
+    /// The document metadata (<c>/Info</c> fields plus the raw XMP packet), or
+    /// <c>null</c> when nothing is loaded.
+    /// </summary>
+    public BitPdfMetadata? Metadata => _document?.Metadata;
+
+    /// <summary>
+    /// The user access permissions of the loaded document. Every permission is
+    /// granted for an unencrypted document, and for no document at all.
+    /// </summary>
+    public BitPdfPermissions Permissions => _document?.Permissions ?? new BitPdfPermissions(-1, false);
+
+    /// <summary>
+    /// The document-defined page labels (e.g. "i", "ii", "1", "A-1"), one per page
+    /// in document order, or an empty list when nothing is loaded.
+    /// </summary>
+    public IReadOnlyList<string> PageLabels => _document?.PageLabels ?? [];
+
+    /// <summary>
+    /// The interactive form fields (<c>/AcroForm</c>) of the loaded document as a
+    /// flat list of name/type/value, or an empty list when there is no form.
+    /// </summary>
+    public IReadOnlyList<BitPdfFormField> FormFields => _document?.FormFields ?? [];
+
+    /// <summary>
+    /// The tagged-PDF logical structure tree of the loaded document, or an empty
+    /// list when the document is untagged.
+    /// </summary>
+    public IReadOnlyList<BitPdfStructElement> StructureTree => _document?.StructureTree ?? [];
+
+    /// <summary>
+    /// The PDF version the loaded document declares (e.g. "1.7"), or <c>null</c>.
+    /// </summary>
+    public string? PdfVersion => _document?.Version;
+
+    /// <summary>
+    /// Whether the loaded document declares an encryption dictionary.
+    /// </summary>
+    public bool IsEncrypted => _document?.IsEncrypted ?? false;
+
+    /// <summary>
+    /// The size in bytes of the loaded document, or <c>0</c> when nothing is loaded.
+    /// </summary>
+    public long FileSize => _bytes?.LongLength ?? 0;
+
+    /// <summary>
+    /// Whether the find box is open.
+    /// </summary>
+    public bool IsSearchOpen => _showSearch;
+
+    /// <summary>
+    /// The number of matches of the current find query, counted over the whole
+    /// document (<c>0</c> when there is no query, or no match).
+    /// </summary>
+    public int SearchMatchCount => _searchTotal;
+
+    /// <summary>
+    /// The raw bytes of the loaded document (fetched ones included), or <c>null</c>
+    /// when nothing is loaded.
+    /// </summary>
+    public byte[]? GetBytes() => _bytes;
+
+    /// <summary>
     /// Navigates to the next page.
     /// </summary>
-    public Task NextPage() => GoToPage(_currentPage + 1);
+    public Task NextPage() => GoToPage(CurrentPage + 1);
 
     /// <summary>
     /// Navigates to the previous page.
     /// </summary>
-    public Task PrevPage() => GoToPage(_currentPage - 1);
+    public Task PrevPage() => GoToPage(CurrentPage - 1);
+
+    /// <summary>
+    /// Navigates to the first page.
+    /// </summary>
+    public Task FirstPage() => GoToPage(1);
+
+    /// <summary>
+    /// Navigates to the last page.
+    /// </summary>
+    public Task LastPage() => GoToPage(_pages.Count);
 
     /// <summary>
     /// Navigates to the provided page number (1-based).
@@ -231,30 +599,40 @@ public partial class BitPdfViewer : BitComponentBase
 
         int version = _loadVersion; // a reload during the awaits below supersedes this navigation
         int target = Math.Clamp(pageNumber, 1, _pages.Count);
-        if (target != _currentPage)
+        if (target != CurrentPage)
         {
-            _currentPage = target;
-            await OnPageChanged.InvokeAsync(_currentPage);
+            // A host that bound the page one way owns it: the assignment is refused
+            // and this navigation stops rather than desynchronizing the two.
+            if (await AssignCurrentPage(target) is false) return;
+            _appliedPage = CurrentPage;
+            await OnPageChanged.InvokeAsync(CurrentPage);
             // OnPageChanged is user code: a reload (or new Source) during it makes
             // this navigation stale, and a newer GoToPage or a scroll-spy update
-            // (OnPageVisible) may have moved _currentPage on - either way this
+            // (OnPageVisible) may have moved CurrentPage on - either way this
             // navigation is superseded, so don't render or scroll for it.
-            if (version != _loadVersion || _currentPage != target) return;
+            if (version != _loadVersion || CurrentPage != target) return;
         }
 
         // Render the destination before scrolling so jumps (toolbar, thumbnails,
         // outline) land on content instead of a placeholder.
-        if (await RenderPageAsync(target - 1) && version == _loadVersion && _currentPage == target)
+        if (await RenderPageAsync(target - 1) && version == _loadVersion && CurrentPage == target)
         {
             EvictDistantPages();
             StateHasChanged();
         }
 
+        // A fit mode follows the page in front of the reader, so a jump onto a page of
+        // another size re-fits before the scroll lands on it.
+        if (IsDisposed is false && version == _loadVersion && CurrentPage == target)
+        {
+            await RefitForCurrentPageAsync();
+        }
+
         // RenderPageAsync may have yielded; if the component was disposed, this load
         // was superseded, or a newer navigation moved on in that window, don't drive
         // JS for this stale target. Scroll to the captured target, not the mutable
-        // _currentPage, so a concurrent update can't redirect this call's scroll.
-        if (IsDisposed || version != _loadVersion || _currentPage != target) return;
+        // CurrentPage, so a concurrent update can't redirect this call's scroll.
+        if (IsDisposed || version != _loadVersion || CurrentPage != target) return;
 
         await _js.BitPdfViewerScrollToPage(_containerRef, target);
         if (_showThumbnails)
@@ -264,14 +642,26 @@ public partial class BitPdfViewer : BitComponentBase
     }
 
     /// <summary>
-    /// Zooms in by 20%.
+    /// Zooms in by one <see cref="ZoomStep"/> (20% by default).
     /// </summary>
-    public Task ZoomIn() => SetCustomZoom(_zoom * 1.2);
+    public Task ZoomIn() => SetZoom(Zoom * EffectiveZoomStep);
 
     /// <summary>
-    /// Zooms out by 20%.
+    /// Zooms out by one <see cref="ZoomStep"/> (20% by default).
     /// </summary>
-    public Task ZoomOut() => SetCustomZoom(_zoom / 1.2);
+    public Task ZoomOut() => SetZoom(Zoom / EffectiveZoomStep);
+
+    /// <summary>
+    /// Sets an explicit zoom factor (1 means 100%), switching the viewer to
+    /// <see cref="BitPdfZoomMode.Custom"/>. The value is clamped to
+    /// <see cref="MinZoom"/>..<see cref="MaxZoom"/>.
+    /// </summary>
+    public async Task SetZoom(double zoom)
+    {
+        _zoomMode = BitPdfZoomMode.Custom;
+        await SetZoomValueAsync(zoom);
+        Repaint();
+    }
 
     /// <summary>
     /// Sets the zoom mode (fit-width, fit-page, actual size or custom).
@@ -281,37 +671,133 @@ public partial class BitPdfViewer : BitComponentBase
         _zoomMode = mode;
         if (mode == BitPdfZoomMode.ActualSize)
         {
-            _zoom = 1.0;
+            await SetZoomValueAsync(1.0);
         }
         else
         {
             await ApplyFitAsync();
         }
+        Repaint();
+    }
+
+    /// <summary>
+    /// Changes how the pages are laid out on the scrollable surface.
+    /// </summary>
+    public async Task SetScrollMode(BitPdfScrollMode mode)
+    {
+        if (mode == _scrollMode) return;
+
+        _scrollMode = mode;
+        // The layout axis changed under the scroll spy: re-register it (and re-fit)
+        // so lazy rendering measures against the new geometry.
+        _spyPending = true;
+        Repaint();
+        await GoToPage(CurrentPage);
+    }
+
+    /// <summary>
+    /// Changes how pages are paired into spreads.
+    /// </summary>
+    public async Task SetSpreadMode(BitPdfSpreadMode mode)
+    {
+        if (mode == _spreadMode) return;
+
+        _spreadMode = mode;
+        _spyPending = true;
+        Repaint();
+        await GoToPage(CurrentPage);
+    }
+
+    /// <summary>
+    /// Changes what dragging on the document surface does.
+    /// </summary>
+    public void SetCursorTool(BitPdfCursorTool tool)
+    {
+        if (tool == _cursorTool) return;
+
+        _cursorTool = tool;
+        Repaint();
     }
 
     /// <summary>
     /// Rotates all pages 90 degrees clockwise.
     /// </summary>
-    public async Task RotateClockwise()
+    public Task RotateClockwise() => SetRotation(Rotation + 90);
+
+    /// <summary>
+    /// Rotates all pages 90 degrees counter-clockwise.
+    /// </summary>
+    public Task RotateCounterClockwise() => SetRotation(Rotation - 90);
+
+    /// <summary>
+    /// Rotates all pages to the given absolute angle in degrees. The value is
+    /// normalized to the nearest quarter turn (0, 90, 180 or 270).
+    /// </summary>
+    public async Task SetRotation(int degrees)
     {
-        _rotation = (_rotation + 90) % 360;
+        int normalized = ((degrees / 90 * 90) % 360 + 360) % 360;
+        if (normalized == Rotation) return;
+
+        if (await AssignRotation(normalized) is false) return;
+        _appliedRotation = Rotation;
+        await OnRotationChanged.InvokeAsync(Rotation);
+        if (IsDisposed) return;
+
         PreparePages();
         await RenderCurrentPageEagerlyAsync();
         _spyPending = true;
+        Repaint();
     }
 
     /// <summary>
-    /// Downloads the original document bytes.
+    /// Requests a re-render after a state change made through the public API. The
+    /// toolbar's own handlers repaint on their own; a call from host code does not,
+    /// so every public mutator ends here.
+    /// </summary>
+    private void Repaint()
+    {
+        if (IsDisposed) return;
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Downloads the original document bytes. Works for URL sources too: the bytes
+    /// fetched for the current document are reused, so nothing is downloaded twice.
     /// </summary>
     public async Task Download()
     {
-        if (_source?.Bytes is null) return;
+        // _bytes holds whatever the current document was parsed from, whether it
+        // came in as a buffer or was fetched from a URL.
+        byte[]? bytes = _bytes ?? _source?.Bytes;
+        if (bytes is null) return;
 
         // Stream the bytes as a Blob rather than pushing a base64 data: URI (which
         // on Blazor Server would traverse SignalR as one huge string).
-        using var stream = new MemoryStream(_source.Bytes, writable: false);
+        using var stream = new MemoryStream(bytes, writable: false);
         using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
-        await _js.BitPdfViewerDownload(_source.FileName ?? "document.pdf", streamRef);
+        await _js.BitPdfViewerDownload(DownloadFileName, streamRef);
+    }
+
+    /// <summary>The file name a download is offered under: the source's own name,
+    /// then the document title, then a generic fallback.</summary>
+    private string DownloadFileName
+    {
+        get
+        {
+            string? name = _source?.FileName;
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                string? title = null;
+                try
+                {
+                    title = _document?.Metadata.Title;
+                }
+                catch { /* a damaged /Info dictionary must not break downloading */ }
+                name = string.IsNullOrWhiteSpace(title) ? null : $"{title}.pdf";
+            }
+            return string.IsNullOrWhiteSpace(name) ? "document.pdf" : name;
+        }
     }
 
     /// <summary>
@@ -347,7 +833,7 @@ public partial class BitPdfViewer : BitComponentBase
                     if (!rendered)
                     {
                         _loading = true;
-                        _status = "Preparing all pages for printing…";
+                        _status = ActiveTexts.PreparingPrint;
                         StateHasChanged();
                         await Task.Delay(1);
                         if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
@@ -366,7 +852,7 @@ public partial class BitPdfViewer : BitComponentBase
                     // lazy pump is fine - only a still-empty slot means a real failure.
                     if (!ok && _pages[i] is null)
                     {
-                        _status = "Printing aborted: a page failed to render.";
+                        _status = ActiveTexts.PrintAborted;
                         return;
                     }
                 }
@@ -429,6 +915,66 @@ public partial class BitPdfViewer : BitComponentBase
     }
 
     /// <summary>
+    /// Whether the viewer is in presentation mode: fullscreen, one page at a time,
+    /// scaled to fit, with the chrome out of the way.
+    /// </summary>
+    public bool IsPresenting => _presenting;
+
+    /// <summary>
+    /// Enters or leaves presentation mode. Entering remembers the layout the reader
+    /// had, so leaving - however it happens, including the browser's own Escape -
+    /// puts it back.
+    /// </summary>
+    public Task TogglePresentationMode()
+        => _presenting ? ExitPresentationMode() : EnterPresentationMode();
+
+    /// <summary>
+    /// Shows the document fullscreen, one page at a time, scaled to fit the screen.
+    /// </summary>
+    public async Task EnterPresentationMode()
+    {
+        if (_presenting || _pages.Count == 0) return;
+
+        _presentingScrollMode = _scrollMode;
+        _presentingZoomMode = _zoomMode;
+        _presentingSidebar = Sidebar;
+        _presenting = true;
+        ClassBuilder.Reset(); // the presenting modifier is on the root class
+
+        await ShowSidebar(BitPdfSidebar.None);
+        await SetScrollMode(BitPdfScrollMode.Page);
+        await SetZoomMode(BitPdfZoomMode.FitPage);
+        if (IsDisposed) return;
+
+        Repaint();
+        await _js.BitPdfViewerToggleFullscreen(RootElement);
+    }
+
+    /// <summary>
+    /// Leaves presentation mode and restores the layout it replaced.
+    /// </summary>
+    public async Task ExitPresentationMode()
+    {
+        if (_presenting is false) return;
+
+        _presenting = false;
+        ClassBuilder.Reset();
+        await SetScrollMode(_presentingScrollMode);
+        await SetZoomMode(_presentingZoomMode);
+        await ShowSidebar(_presentingSidebar);
+        if (IsDisposed) return;
+
+        Repaint();
+        // Only leave fullscreen when we are still in it: an Escape (or the browser's
+        // own exit) already did, and this call is the notification's aftermath.
+        try
+        {
+            await _js.BitPdfViewerExitFullscreen();
+        }
+        catch (JSDisconnectedException) { }
+    }
+
+    /// <summary>
     /// Renders a single page (1-based) to self-contained HTML, or an
     /// empty string when no document is loaded or the number is out of range.
     /// </summary>
@@ -438,9 +984,11 @@ public partial class BitPdfViewer : BitComponentBase
         {
             return string.Empty;
         }
-        return new BitPdfHtmlRenderer(_document.Pages[pageNumber - 1], _document.XRef, _rotation)
+        return new BitPdfHtmlRenderer(_document.Pages[pageNumber - 1], _document.XRef, Rotation)
         {
             TextCoalescing = TextCoalescing,
+            // The rendered fragment matches what the viewer is showing, layers included.
+            HiddenLayers = _hiddenLayersView,
         }.Render();
     }
 
@@ -455,6 +1003,154 @@ public partial class BitPdfViewer : BitComponentBase
             return string.Empty;
         }
         return _document.Pages[pageNumber - 1].ExtractText();
+    }
+
+    /// <summary>
+    /// Extracts the visible text of the whole document, one page per entry of the
+    /// returned sequence joined by <paramref name="pageSeparator"/>. Reuses the
+    /// index the find box builds, so a second call after a search is free.
+    /// </summary>
+    public string ExtractText(string pageSeparator = "\n\n")
+    {
+        if (_document is null) return string.Empty;
+
+        _pageText ??= new string?[_document.PageCount];
+        var builder = new System.Text.StringBuilder();
+        for (int i = 0; i < _document.PageCount; i++)
+        {
+            _pageText[i] ??= _document.Pages[i].ExtractText();
+            if (i > 0)
+            {
+                builder.Append(pageSeparator);
+            }
+            builder.Append(_pageText[i]);
+        }
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Opens the given side panel, or closes the open one when
+    /// <see cref="BitPdfSidebar.None"/> is passed. Opening the bookmarks panel of a
+    /// document without an outline closes the sidebar instead.
+    /// </summary>
+    public async Task ShowSidebar(BitPdfSidebar sidebar)
+    {
+        // A panel with nothing to show closes the sidebar rather than opening empty.
+        if ((sidebar == BitPdfSidebar.Bookmarks && HasOutline is false)
+            || (sidebar == BitPdfSidebar.Attachments && HasAttachments is false)
+            || (sidebar == BitPdfSidebar.Layers && HasLayers is false))
+        {
+            sidebar = BitPdfSidebar.None;
+        }
+        if (sidebar == Sidebar) return;
+
+        bool wasThumbnails = _showThumbnails;
+        _showThumbnails = sidebar == BitPdfSidebar.Thumbnails;
+        _showOutline = sidebar == BitPdfSidebar.Bookmarks;
+        _showAttachments = sidebar == BitPdfSidebar.Attachments;
+        _showLayers = sidebar == BitPdfSidebar.Layers;
+
+        if (_showThumbnails)
+        {
+            // Attach the sidebar spy after its element renders; it fills the
+            // visible thumbnails on its own.
+            _thumbSpyPending = true;
+        }
+        else if (wasThumbnails)
+        {
+            // The sidebar element is leaving the DOM; drop its scroll listener.
+            try
+            {
+                await _js.BitPdfViewerDisposeThumbSpy(_thumbsRef);
+            }
+            catch (JSDisconnectedException) { }
+        }
+
+        Repaint();
+        await OnSidebarChanged.InvokeAsync(sidebar);
+    }
+
+    /// <summary>
+    /// Opens the find box (when it is closed) and searches the document for
+    /// <paramref name="query"/>. An empty query just clears the current matches.
+    /// </summary>
+    public async Task Search(string? query)
+    {
+        _showSearch = true;
+        _searchQuery = query ?? "";
+        Repaint(); // the find box may not be in the DOM yet
+        await RunSearchAsync();
+    }
+
+    /// <summary>
+    /// Moves to the next find match, wrapping around at the end.
+    /// </summary>
+    public Task FindNext() => GotoMatch(_searchIndex + 1);
+
+    /// <summary>
+    /// Moves to the previous find match, wrapping around at the start.
+    /// </summary>
+    public Task FindPrevious() => GotoMatch(_searchIndex - 1);
+
+    /// <summary>
+    /// Clears the current find query and its highlights.
+    /// </summary>
+    public async Task ClearSearch()
+    {
+        _searchQuery = "";
+        await ClearSearchAsync();
+        Repaint();
+    }
+
+    // ----- Built-in password prompt -----
+
+    /// <summary>Parks the load until the reader submits a password or cancels. The
+    /// progress bar is hidden while waiting - the viewer is not working, it is
+    /// asking - and restored by the caller for the retry parse.</summary>
+    private Task<string?> PromptForPasswordAsync(bool rejected)
+    {
+        _passwordRejected = rejected;
+        _passwordInput = "";
+        _loading = false;
+        _focusPasswordPending = true;
+        _passwordRequest = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        StateHasChanged();
+        return _passwordRequest.Task;
+    }
+
+    private void SubmitPassword() => CompletePasswordRequest(_passwordInput);
+
+    private void CancelPassword() => CompletePasswordRequest(null);
+
+    private void CompletePasswordRequest(string? password)
+    {
+        var request = _passwordRequest;
+        _passwordRequest = null;
+        _passwordInput = "";
+        request?.TrySetResult(password);
+    }
+
+    private void OnPasswordInput(ChangeEventArgs e) => _passwordInput = e.Value?.ToString() ?? "";
+
+    private void OnPasswordKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            SubmitPassword();
+        }
+        else if (e.Key == "Escape")
+        {
+            CancelPassword();
+        }
+    }
+
+    /// <summary>
+    /// Opens or closes the document-properties dialog.
+    /// </summary>
+    public void ToggleProperties()
+    {
+        _showProperties = !_showProperties;
+        Repaint();
     }
 
 
@@ -635,18 +1331,28 @@ public partial class BitPdfViewer : BitComponentBase
     /// Invoked from JavaScript when the most-visible page changes.
     /// </summary>
     [JSInvokable]
-    public void OnPageVisible(int pageNumber)
+    public async Task OnPageVisible(int pageNumber)
     {
-        if (pageNumber != _currentPage && pageNumber >= 1 && pageNumber <= _pages.Count)
+        if (pageNumber != CurrentPage && pageNumber >= 1 && pageNumber <= _pages.Count)
         {
-            _currentPage = pageNumber;
-            _ = OnPageChanged.InvokeAsync(pageNumber);
+            // As GoToPage: a one-way-bound page belongs to the host, so a scroll must
+            // not move it behind the host's back.
+            if (await AssignCurrentPage(pageNumber) is false) return;
+            _appliedPage = CurrentPage;
+            await OnPageChanged.InvokeAsync(pageNumber);
+            if (IsDisposed) return;
+
             // Keep the sidebar's active thumbnail in view as the main surface
             // scrolls, so lazy-loaded thumbnails follow the reader.
             if (_showThumbnails)
             {
-                _ = ScrollActiveThumbIntoViewAsync();
+                await ScrollActiveThumbIntoViewAsync();
             }
+            // A document whose pages differ in size re-fits as the reader reaches one
+            // of another size; a uniform document never pays for the check.
+            await RefitForCurrentPageAsync();
+            if (IsDisposed) return;
+
             StateHasChanged();
         }
     }
@@ -670,22 +1376,130 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnWheelZoom(double deltaY)
     {
-        await SetCustomZoom(deltaY < 0 ? _zoom * 1.1 : _zoom / 1.1);
+        await SetZoom(deltaY < 0 ? Zoom * 1.1 : Zoom / 1.1);
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Invoked from JavaScript when the browser enters or leaves fullscreen. Leaving
+    /// it - by the browser's own Escape, say - also leaves presentation mode, so the
+    /// two never disagree.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnFullscreenChanged(bool isFullscreen)
+    {
+        if (IsDisposed) return;
+
+        if (isFullscreen is false && _presenting)
+        {
+            await ExitPresentationMode();
+        }
+    }
+
+    /// <summary>
+    /// Invoked from JavaScript for a keyboard shortcut. The key matching (and the
+    /// preventDefault that stops the browser's own Ctrl+P / Ctrl+F / Ctrl+S) lives
+    /// on the JS side, which is the only place that can see the event target and
+    /// so tell a shortcut apart from typing into the find or page box.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnShortcut(string command)
+    {
+        if (IsDisposed || IsEnabled is false) return;
+
+        switch (command)
+        {
+            case "next": await NextPage(); break;
+            case "prev": await PrevPage(); break;
+            case "first": await FirstPage(); break;
+            case "last": await LastPage(); break;
+            case "zoomIn": await ZoomIn(); break;
+            case "zoomOut": await ZoomOut(); break;
+            case "actualSize": await SetZoomMode(BitPdfZoomMode.ActualSize); break;
+            case "rotateCw": await RotateClockwise(); break;
+            case "rotateCcw": await RotateCounterClockwise(); break;
+            case "find":
+                if (HasToolbarItem(BitPdfToolbarItems.Search) is false) return;
+                _showSearch = true;
+                _focusSearchPending = true;
+                break;
+            case "findNext": await FindNext(); break;
+            case "findPrev": await FindPrevious(); break;
+            case "print": await Print(); break;
+            case "download": await Download(); break;
+            case "sidebar":
+                await ShowSidebar(Sidebar == BitPdfSidebar.None ? BitPdfSidebar.Thumbnails : BitPdfSidebar.None);
+                break;
+            case "fullscreen": await ToggleFullscreen(); break;
+            case "presentation": await TogglePresentationMode(); break;
+            case "escape":
+                // One Escape closes whatever overlay is open, innermost first.
+                if (_showProperties)
+                {
+                    _showProperties = false;
+                }
+                else if (_showSearch)
+                {
+                    await ToggleSearch();
+                }
+                else if (_presenting)
+                {
+                    await ExitPresentationMode();
+                }
+                break;
+            default: return;
+        }
+
+        if (IsDisposed is false)
+        {
+            StateHasChanged();
+        }
     }
 
 
 
     protected override string RootElementClass => "bit-pdv";
 
+    // One shared instance backs every viewer that does not localize, so the
+    // default strings are not re-allocated per component.
+    private static readonly BitPdfViewerTexts _defaultTexts = new();
+
+    /// <summary>The texts in effect: the host's, or the shared English defaults.</summary>
+    private BitPdfViewerTexts ActiveTexts => Texts ?? _defaultTexts;
+
+    /// <summary>Whether the toolbar shows the given group of controls.</summary>
+    private bool HasToolbarItem(BitPdfToolbarItems item) => (ToolbarItems & item) == item;
+
+    /// <summary>The literal "true"/"false" an ARIA state attribute needs. A bool bound
+    /// straight to an attribute is rendered as an HTML BOOLEAN attribute instead -
+    /// present-but-empty when true, absent when false - which assistive technology
+    /// reads as neither state.</summary>
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => _presenting ? "bit-pdv-presenting" : string.Empty);
+    }
+
     protected override void RegisterCssStyles()
     {
+        StyleBuilder.Register(() => Styles?.Root);
+
         StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
     }
 
     protected override void OnInitialized()
     {
         _zoomMode = InitialZoomMode;
+        _scrollMode = ScrollMode;
+        _spreadMode = SpreadMode;
+        _cursorTool = CursorTool;
+        _showThumbnails = DefaultSidebar == BitPdfSidebar.Thumbnails;
+        _showOutline = DefaultSidebar == BitPdfSidebar.Bookmarks;
+        _showAttachments = DefaultSidebar == BitPdfSidebar.Attachments;
+        _showLayers = DefaultSidebar == BitPdfSidebar.Layers;
 
         base.OnInitialized();
     }
@@ -694,15 +1508,81 @@ public partial class BitPdfViewer : BitComponentBase
     {
         await base.OnParametersSetAsync();
 
+        // The shortcut listener is attached on the root element, so a flip of the
+        // parameter has to (de)register it rather than just gate the handler.
+        if (EnableKeyboardShortcuts != _keyboardAttached)
+        {
+            _keyboardPending = true;
+        }
+
+        // The layout parameters seed state the toolbar can move afterwards, so only a
+        // change of the PARAMETER (not of the state) is adopted - otherwise every
+        // re-render of the host would snap the user's choice back to the default.
+        if (_scrollModeParam != ScrollMode)
+        {
+            _scrollModeParam = ScrollMode;
+            await SetScrollMode(ScrollMode);
+        }
+        if (_spreadModeParam != SpreadMode)
+        {
+            _spreadModeParam = SpreadMode;
+            await SetSpreadMode(SpreadMode);
+        }
+        if (_cursorToolParam != CursorTool)
+        {
+            _cursorToolParam = CursorTool;
+            SetCursorTool(CursorTool);
+        }
+
         if (ReferenceEquals(_source, Source) is false)
         {
+            // REPLACING a document starts it unrotated on page one - a page number
+            // belonging to the file just closed means nothing in the new one. The
+            // FIRST document is different: a host that opened the viewer at page 12
+            // asked for page 12, and resetting it would throw that away.
+            bool replacing = _pages.Count > 0;
             _source = Source;
-            _rotation = 0;
-            _currentPage = 1;
+            if (replacing)
+            {
+                // Through the two-way setters, so a bound host sees the reset.
+                await AssignRotation(0);
+                await AssignCurrentPage(1);
+            }
+            int wanted = Math.Max(1, CurrentPage);
+            _appliedRotation = Rotation;
+            _appliedPage = CurrentPage;
             _textCoalescing = TextCoalescing;
             _renderMode = RenderMode;
             await LoadAsync();
+            if (IsDisposed) return;
+
+            // The load renders around whatever CurrentPage says, but the requested
+            // page may be past the end of a shorter document; land on a real one.
+            if (wanted > 1 && _pages.Count > 0)
+            {
+                await GoToPage(wanted);
+                _appliedPage = CurrentPage;
+            }
             return;
+        }
+
+        // A host-driven change of a two-way value navigates, zooms or rotates. The
+        // applied snapshots tell a host assignment apart from the viewer's own, which
+        // already moved both the value and its snapshot.
+        if (CurrentPage != _appliedPage)
+        {
+            _appliedPage = CurrentPage;
+            await GoToPage(CurrentPage);
+        }
+        if (Math.Abs(Zoom - _appliedZoom) > 0.0001)
+        {
+            _appliedZoom = Zoom;
+            await SetZoom(Zoom);
+        }
+        if (Rotation != _appliedRotation)
+        {
+            _appliedRotation = Rotation;
+            await SetRotation(Rotation);
         }
 
         // Same document but a rendering mode changed: invalidate and re-render
@@ -726,6 +1606,56 @@ public partial class BitPdfViewer : BitComponentBase
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
+            try
+            {
+                await _js.BitPdfViewerRegisterFullscreenSpy(RootElement, _dotnetObj);
+            }
+            catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
+        }
+
+        // Keyboard shortcuts live on the root element (so they work wherever focus
+        // is inside the viewer) and are attached/detached as the parameter flips.
+        if (_keyboardPending && _dotnetObj is not null)
+        {
+            _keyboardPending = false;
+            try
+            {
+                if (EnableKeyboardShortcuts)
+                {
+                    await _js.BitPdfViewerRegisterKeyboard(RootElement, _dotnetObj);
+                    _keyboardAttached = true;
+                }
+                else if (_keyboardAttached)
+                {
+                    await _js.BitPdfViewerDisposeKeyboard(RootElement);
+                    _keyboardAttached = false;
+                }
+            }
+            catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
+        }
+
+        // The find box only exists in the DOM while it is open, so a shortcut that
+        // opened it has to wait for this pass to move focus into it.
+        if (_focusSearchPending && _showSearch)
+        {
+            _focusSearchPending = false;
+            try
+            {
+                await _js.BitPdfViewerFocus(_searchInputRef);
+            }
+            catch (JSDisconnectedException) { }
+        }
+
+        // Likewise the password box: a dialog the reader cannot type into without
+        // first clicking it would be a poor way to ask.
+        if (_focusPasswordPending && _passwordRequest is not null)
+        {
+            _focusPasswordPending = false;
+            try
+            {
+                await _js.BitPdfViewerFocus(_passwordInputRef);
+            }
+            catch (JSDisconnectedException) { }
         }
 
         if (_spyPending && _dotnetObj is not null)
@@ -750,7 +1680,7 @@ public partial class BitPdfViewer : BitComponentBase
             try
             {
                 await _js.BitPdfViewerRegisterThumbSpy(_thumbsRef, _dotnetObj);
-                await _js.BitPdfViewerScrollThumbIntoView(_thumbsRef, _currentPage);
+                await _js.BitPdfViewerScrollThumbIntoView(_thumbsRef, CurrentPage);
             }
             catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
         }
@@ -765,6 +1695,17 @@ public partial class BitPdfViewer : BitComponentBase
                 await _js.BitPdfViewerCorrectTextWidths(_containerRef);
             }
             catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
+        }
+
+        // Pages rendered since the last pass carry unhighlighted text; repaint the
+        // query's highlights over them without moving the viewport.
+        if (_highlightPending)
+        {
+            _highlightPending = false;
+            if (_searchTotal > 0)
+            {
+                await ApplyHighlightsAsync(scrollToCurrent: false);
+            }
         }
 
         // Canvas mode: replay the display lists of freshly (re)created page
@@ -782,10 +1723,10 @@ public partial class BitPdfViewer : BitComponentBase
             _canvasDirty.Clear();
             if (payload.Length > 0)
             {
-                _paintedZoom = _zoom;
+                _paintedZoom = Zoom;
                 try
                 {
-                    await _js.BitPdfViewerPaintCanvasPages(_containerRef, payload, _zoom);
+                    await _js.BitPdfViewerPaintCanvasPages(_containerRef, payload, Zoom);
                 }
                 catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
             }
@@ -800,12 +1741,12 @@ public partial class BitPdfViewer : BitComponentBase
         // Uses the ops cached on each canvas element, so no display lists cross
         // the interop boundary again.
         if (RenderMode == BitPdfRenderMode.Canvas
-            && Math.Abs(_zoom - _paintedZoom) > 0.001 && _pages.Count > 0)
+            && Math.Abs(Zoom - _paintedZoom) > 0.001 && _pages.Count > 0)
         {
-            _paintedZoom = _zoom;
+            _paintedZoom = Zoom;
             try
             {
-                await _js.BitPdfViewerRezoomCanvases(_containerRef, _zoom);
+                await _js.BitPdfViewerRezoomCanvases(_containerRef, Zoom);
             }
             catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
         }
@@ -830,6 +1771,57 @@ public partial class BitPdfViewer : BitComponentBase
         => OperatingSystem.IsBrowser() && BackgroundRendering is false
             ? Task.FromResult(BitPdfDocument.Load(bytes, password))
             : Task.Run(() => BitPdfDocument.Load(bytes, password));
+
+    /// <summary>
+    /// Fetches a URL source, reporting progress as the bytes arrive when the server
+    /// declares a length. Returns <c>null</c> when a newer load superseded this one
+    /// mid-transfer, so the caller drops it rather than parsing a document nobody
+    /// asked for any more.
+    /// </summary>
+    private async Task<byte[]?> FetchAsync(HttpClient http, BitPdfSource source, int version)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, source.Url);
+        if (source.Headers is { Count: > 0 } headers)
+        {
+            // A source that carries headers (an Authorization one, typically) needs a
+            // request of its own; GetByteArrayAsync cannot carry them.
+            foreach (var header in headers)
+            {
+                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+        }
+
+        // ResponseHeadersRead lets the body be read in chunks, which is what makes a
+        // progress report possible at all; without it the whole file arrives at once.
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
+
+        long? length = response.Content.Headers.ContentLength;
+        if (OnProgress.HasDelegate is false || length is not > 0)
+        {
+            // Nothing to report against (a chunked response declares no length), so
+            // take the simple path.
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        using var body = await response.Content.ReadAsStreamAsync();
+        var buffer = new byte[(int)Math.Min(length.Value, int.MaxValue)];
+        int read = 0;
+        // 64 KB is small enough that progress moves visibly on a slow link and large
+        // enough that the reports don't become the cost of the download.
+        const int chunk = 64 * 1024;
+        while (read < buffer.Length)
+        {
+            int got = await body.ReadAsync(buffer.AsMemory(read, Math.Min(chunk, buffer.Length - read)));
+            if (got <= 0) break; // the server sent less than it declared; take what came
+
+            read += got;
+            if (IsDisposed || version != _loadVersion) return null;
+            await OnProgress.InvokeAsync((double)read / buffer.Length);
+            if (IsDisposed || version != _loadVersion) return null;
+        }
+        return read == buffer.Length ? buffer : buffer[..read];
+    }
 
     private async Task LoadAsync()
     {
@@ -856,12 +1848,19 @@ public partial class BitPdfViewer : BitComponentBase
             _pageWidths.Clear();
             _pageHeights.Clear();
             _document = null;
+            _bytes = null;    // the old document's bytes; Download must not offer them for the new one
             _fontStore = null; // fresh embedded-font store per document
             _fontFaceStyle = string.Empty; // its @font-face snapshot belongs to the old document
             _pageText = null;  // invalidate the search text index
             _searchTotal = 0;
             _searchIndex = -1;
             _outline = [];
+            _attachments = []; // the old document's embedded files
+            _layers = [];      // and its layers
+            _hiddenLayers = null;
+            _hiddenLayersView = null;
+            _collapsedOutline.Clear(); // fold state belongs to the old document's bookmarks
+            _showProperties = false;   // the dialog described the old document
             // A superseded load's finally won't clear the progress bar (it no longer
             // owns _loadVersion); reset it here so e.g. Source = null while a load is
             // in flight doesn't leave the bar up forever.
@@ -874,7 +1873,7 @@ public partial class BitPdfViewer : BitComponentBase
 
         if (_source is null)
         {
-            _status = "No document loaded.";
+            _status = ActiveTexts.NoDocument;
             return;
         }
 
@@ -895,14 +1894,15 @@ public partial class BitPdfViewer : BitComponentBase
         {
             if (_services.GetService(typeof(HttpClient)) is not HttpClient http)
             {
-                _status = "URL sources require a registered HttpClient.";
+                _status = ActiveTexts.HttpClientRequired;
                 _loading = false;
                 await OnError.InvokeAsync(_status);
                 return;
             }
             try
             {
-                bytes = await http.GetByteArrayAsync(_source.Url);
+                bytes = await FetchAsync(http, _source, version);
+                if (bytes is null) return; // superseded while fetching
             }
             catch (Exception ex)
             {
@@ -910,7 +1910,7 @@ public partial class BitPdfViewer : BitComponentBase
                 // its failure is not the current document's, so don't publish a stale
                 // error or hide the newer load's progress bar (mirrors the parse catch).
                 if (version != _loadVersion) return;
-                _status = $"Failed to fetch document: {ex.Message}";
+                _status = string.Format(ActiveTexts.FetchFailedFormat, ex.Message);
                 _loading = false;
                 await OnError.InvokeAsync(_status);
                 return;
@@ -919,7 +1919,7 @@ public partial class BitPdfViewer : BitComponentBase
         }
         if (bytes is null)
         {
-            _status = "No document loaded.";
+            _status = ActiveTexts.NoDocument;
             _loading = false;
             return;
         }
@@ -927,33 +1927,46 @@ public partial class BitPdfViewer : BitComponentBase
         try
         {
             BitPdfDocument document;
-            try
+            string? password = _source.Password;
+            // Retry as long as a password keeps arriving: a reader who mistypes gets
+            // another try instead of one shot and an error. Cancelling (an empty
+            // answer, or no prompt at all) rethrows into the outer catch, which is
+            // what surfaces the failure through OnError.
+            while (true)
             {
-                document = await ParseAsync(bytes, _source.Password);
-            }
-            catch (BitPdfPasswordException) when (OnPasswordRequested is not null)
-            {
-                // The parse awaited (Task.Run / gate) long enough for a newer Source
-                // or a disposal; don't prompt the host for a password on a load that
-                // is already superseded - that user code would run for nothing.
-                if (IsDisposed || version != _loadVersion) return;
-                // Ask the host for a password and retry once. The callback returns
-                // null to cancel.
-                string? entered = await OnPasswordRequested();
-                if (string.IsNullOrEmpty(entered))
+                try
                 {
-                    throw;
+                    document = await ParseAsync(bytes, password);
+                    break;
                 }
-                // The prompt is user code that may have awaited long enough for a
-                // newer Source or a disposal; don't parse (or later publish) a
-                // superseded document - the retry parse is the expensive part.
-                if (IsDisposed || version != _loadVersion) return;
-                document = await ParseAsync(bytes, entered);
+                catch (BitPdfPasswordException ex)
+                {
+                    // The parse awaited (Task.Run / gate) long enough for a newer
+                    // Source or a disposal; don't prompt on a load already superseded.
+                    if (IsDisposed || version != _loadVersion) return;
+
+                    string? entered = OnPasswordRequested is not null
+                        ? await OnPasswordRequested()
+                        : ShowPasswordPrompt ? await PromptForPasswordAsync(ex.WasProvided) : null;
+                    if (string.IsNullOrEmpty(entered))
+                    {
+                        throw;
+                    }
+                    // The prompt awaits a human (or user code) and may have outlived
+                    // this load; don't parse - or later publish - a superseded document.
+                    if (IsDisposed || version != _loadVersion) return;
+                    password = entered;
+                    _loading = true; // the prompt cleared the bar; the retry parse is work again
+                    StateHasChanged();
+                }
             }
             // A password prompt (or the parse itself) may have awaited long enough
             // for a newer Source; don't clobber the newer load's document.
             if (version != _loadVersion) return;
             _document = document;
+            // Keep the bytes this document was parsed from: Download and the
+            // properties dialog then work for URL sources without re-fetching.
+            _bytes = bytes;
 
             PreparePages();
             await RenderCurrentPageEagerlyAsync();
@@ -971,7 +1984,34 @@ public partial class BitPdfViewer : BitComponentBase
             {
                 _outline = [];
             }
-            _status = $"{_document.PageCount} page(s).";
+            try
+            {
+                // Attachments are read up front (like the outline) so the toolbar can
+                // enable its toggle without the reader having to open the panel first.
+                _attachments = _document.Attachments;
+            }
+            catch
+            {
+                _attachments = [];
+            }
+            try
+            {
+                _layers = _document.Layers;
+                // Seed the reader's set from the document's own default configuration.
+                // A document with no layers leaves it null, so the renderer keeps
+                // consulting the default rather than an empty override.
+                _hiddenLayers = _layers.Count > 0
+                    ? [.. _layers.Where(l => l.VisibleByDefault is false).Select(l => l.Id)]
+                    : null;
+                _hiddenLayersView = _hiddenLayers is null ? null : new HashSet<string>(_hiddenLayers);
+            }
+            catch
+            {
+                _layers = [];
+                _hiddenLayers = null;
+                _hiddenLayersView = null;
+            }
+            _status = string.Format(ActiveTexts.PageCountFormat, _document.PageCount);
             _spyPending = true;
             if (_document.Warnings.Count > 0 && OnWarnings.HasDelegate)
             {
@@ -988,7 +2028,7 @@ public partial class BitPdfViewer : BitComponentBase
             // A superseded load's failure is not this document's failure: don't
             // publish a stale error over the newer load's state.
             if (version != _loadVersion) return;
-            _status = $"Error: {ex.Message}";
+            _status = string.Format(ActiveTexts.ErrorFormat, ex.Message);
             await OnError.InvokeAsync(ex.Message);
         }
         finally
@@ -1024,7 +2064,7 @@ public partial class BitPdfViewer : BitComponentBase
         _canvasDirty.Clear();
         if (_document is null) return;
 
-        bool swap = _rotation % 180 == 90;
+        bool swap = Rotation % 180 == 90;
         foreach (var page in _document.Pages)
         {
             _pages.Add(null);
@@ -1083,6 +2123,9 @@ public partial class BitPdfViewer : BitComponentBase
             DestinationResolver = dest => doc.ResolveDestinationPage(dest),
             TextCoalescing = textCoalescing,
             EmitCanvasOps = renderMode == BitPdfRenderMode.Canvas,
+            // The frozen snapshot, never the live set: a background build must not read
+            // it while the UI thread is switching a layer.
+            HiddenLayers = _hiddenLayersView,
         };
         return new BitPdfPageBuild(renderer.Render(), renderer.CanvasOpsJson);
     }
@@ -1096,6 +2139,11 @@ public partial class BitPdfViewer : BitComponentBase
     private MarkupString CommitPage(int index, BitPdfPageBuild build)
     {
         _correctWidthsPending = true; // measure/scale text runs after this render
+        // A page arriving while a query is active brings unhighlighted text with it.
+        if (_searchTotal > 0)
+        {
+            _highlightPending = true;
+        }
         // Canvas mode: hold the display list until the fragment's <canvas> exists
         // in the DOM, then OnAfterRenderAsync replays it via JS.
         if (build.Ops is { } ops)
@@ -1139,9 +2187,9 @@ public partial class BitPdfViewer : BitComponentBase
             version = _loadVersion; epoch = _renderEpoch;
 
             // Snapshot the render settings on the UI thread so a background build reads
-            // a consistent set even if _rotation/TextCoalescing/RenderMode change while
+            // a consistent set even if Rotation/TextCoalescing/RenderMode change while
             // it runs; a change also bumps _renderEpoch, so the result is discarded below.
-            int rotation = _rotation;
+            int rotation = Rotation;
             var textCoalescing = TextCoalescing;
             var renderMode = RenderMode;
 
@@ -1224,7 +2272,7 @@ public partial class BitPdfViewer : BitComponentBase
             }
 
             version = _loadVersion; epoch = _renderEpoch;
-            int rotation = _rotation;
+            int rotation = Rotation;
             var textCoalescing = TextCoalescing;
             var renderMode = RenderMode;
 
@@ -1273,14 +2321,14 @@ public partial class BitPdfViewer : BitComponentBase
     private Task RenderCurrentPageEagerlyAsync()
     {
         if (_pages.Count == 0) return Task.CompletedTask;
-        int center = Math.Clamp(_currentPage - 1, 0, _pages.Count - 1);
+        int center = Math.Clamp(CurrentPage - 1, 0, _pages.Count - 1);
         return RenderPageAsync(center);
     }
 
     // Cap how many pages stay materialized so a large document does not grow the
     // DOM (and Blazor Server circuit memory) unbounded. Evicted pages revert to
     // placeholders and are re-rendered lazily when scrolled back into view.
-    private const int MaxRenderedPages = 24;
+    private int MaxRenderedPages => MaxRenderedPageCount > 0 ? MaxRenderedPageCount : 24;
 
     private void EvictDistantPages()
     {
@@ -1300,8 +2348,8 @@ public partial class BitPdfViewer : BitComponentBase
 
         // Keep a window centered on the current page; drop everything outside it.
         int half = MaxRenderedPages / 2;
-        int keepLo = Math.Max(0, _currentPage - 1 - half);
-        int keepHi = Math.Min(_pages.Count - 1, _currentPage - 1 + half);
+        int keepLo = Math.Max(0, CurrentPage - 1 - half);
+        int keepHi = Math.Min(_pages.Count - 1, CurrentPage - 1 + half);
         for (int i = 0; i < _pages.Count; i++)
         {
             if ((i < keepLo || i > keepHi) && _pages[i] is not null)
@@ -1339,6 +2387,7 @@ public partial class BitPdfViewer : BitComponentBase
         var renderer = new BitPdfHtmlRenderer(doc.Pages[index], doc.XRef, store, rotation)
         {
             TextCoalescing = BitPdfTextCoalescing.Compact,
+            HiddenLayers = _hiddenLayersView,
         };
         return new BitPdfPageBuild(renderer.Render(), null);
     }
@@ -1346,7 +2395,7 @@ public partial class BitPdfViewer : BitComponentBase
     // Bound how many thumbnails stay materialized. A thumbnail fragment is as
     // heavy as a full page, so a large document scrolled end-to-end in the
     // sidebar would otherwise pin every page's markup in memory.
-    private const int MaxRenderedThumbs = 40;
+    private int MaxRenderedThumbs => MaxRenderedThumbnailCount > 0 ? MaxRenderedThumbnailCount : 40;
 
     private void EvictDistantThumbs(int visibleLo, int visibleHi)
     {
@@ -1374,6 +2423,75 @@ public partial class BitPdfViewer : BitComponentBase
         }
     }
 
+    // ----- Document properties dialog -----
+
+    /// <summary>One row of the properties dialog: a label and the value to show,
+    /// already reduced to text (an absent value becomes the "unknown" placeholder).</summary>
+    private IEnumerable<(string Label, string Value)> PropertyRows()
+    {
+        var texts = ActiveTexts;
+        BitPdfMetadata? meta = null;
+        try
+        {
+            meta = _document?.Metadata;
+        }
+        catch { /* a damaged /Info dictionary must not break the dialog */ }
+
+        yield return (texts.PropertyFileName, Text(_source?.FileName));
+        yield return (texts.PropertyFileSize, _bytes is null ? texts.PropertyUnknown : FormatFileSize(_bytes.LongLength));
+        yield return (texts.PropertyTitle, Text(meta?.Title));
+        yield return (texts.PropertyAuthor, Text(meta?.Author));
+        yield return (texts.PropertySubject, Text(meta?.Subject));
+        yield return (texts.PropertyKeywords, Text(meta?.Keywords));
+        yield return (texts.PropertyCreationDate, Text(FormatDate(meta?.CreationDate)));
+        yield return (texts.PropertyModificationDate, Text(FormatDate(meta?.ModificationDate)));
+        yield return (texts.PropertyCreator, Text(meta?.Creator));
+        yield return (texts.PropertyProducer, Text(meta?.Producer));
+        yield return (texts.PropertyVersion, Text(_document?.Version));
+        yield return (texts.PropertyPageCount, _pages.Count > 0
+            ? _pages.Count.ToString(System.Globalization.CultureInfo.CurrentCulture)
+            : texts.PropertyUnknown);
+        yield return (texts.PropertyPageSize, Text(CurrentPageSize));
+
+        string Text(string? value) => string.IsNullOrWhiteSpace(value) ? texts.PropertyUnknown : value;
+    }
+
+    private static string? FormatDate(DateTimeOffset? value)
+        => value?.LocalDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture);
+
+    /// <summary>The size of the current page in points and millimetres, the two
+    /// units every desktop viewer shows in its properties dialog.</summary>
+    private string? CurrentPageSize
+    {
+        get
+        {
+            int i = CurrentPage - 1;
+            if (i < 0 || i >= _pageWidths.Count) return null;
+
+            double w = _pageWidths[i], h = _pageHeights[i];
+            const double mmPerPoint = 25.4 / 72;
+            return string.Create(System.Globalization.CultureInfo.CurrentCulture,
+                $"{w:0.#} × {h:0.#} pt ({w * mmPerPoint:0} × {h * mmPerPoint:0} mm)");
+        }
+    }
+
+    /// <summary>A human-readable byte count (the binary units file managers use).</summary>
+    private static string FormatFileSize(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB"];
+        double value = bytes;
+        int unit = 0;
+        while (value >= 1024 && unit < units.Length - 1)
+        {
+            value /= 1024;
+            unit++;
+        }
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        return unit == 0
+            ? string.Create(culture, $"{bytes} {units[0]}")
+            : string.Create(culture, $"{value:0.##} {units[unit]}");
+    }
+
     /// <summary>The document-defined label for the current page (e.g. "iv", "A-1")
     /// when it differs from the plain page number; otherwise <c>null</c>.</summary>
     private string? CurrentPageLabel
@@ -1384,11 +2502,11 @@ public partial class BitPdfViewer : BitComponentBase
             try
             {
                 var labels = _document.PageLabels;
-                int i = _currentPage - 1;
+                int i = CurrentPage - 1;
                 if (i < 0 || i >= labels.Count) return null;
 
                 string label = labels[i];
-                return label == _currentPage.ToString(System.Globalization.CultureInfo.InvariantCulture) ? null : label;
+                return label == CurrentPage.ToString(System.Globalization.CultureInfo.InvariantCulture) ? null : label;
             }
             catch
             {
@@ -1403,7 +2521,7 @@ public partial class BitPdfViewer : BitComponentBase
     {
         try
         {
-            await _js.BitPdfViewerScrollThumbIntoView(_thumbsRef, _currentPage);
+            await _js.BitPdfViewerScrollThumbIntoView(_thumbsRef, CurrentPage);
         }
         catch (JSDisconnectedException) { }
     }
@@ -1416,12 +2534,29 @@ public partial class BitPdfViewer : BitComponentBase
         }
     }
 
-    private Task SetCustomZoom(double zoom)
+    // The zoom bounds and step, sanitized: a host can pass anything, and an
+    // inverted or degenerate range would otherwise clamp every zoom to nonsense.
+    private double EffectiveMinZoom => MinZoom > 0 ? Math.Min(MinZoom, EffectiveMaxZoom) : 0.1;
+
+    private double EffectiveMaxZoom => MaxZoom > 0 ? MaxZoom : 8.0;
+
+    private double EffectiveZoomStep => ZoomStep > 1 ? ZoomStep : 1.2;
+
+    /// <summary>Applies a clamped zoom factor and raises <see cref="OnZoomChanged"/>
+    /// when it actually changed. The zoom MODE is the caller's business.</summary>
+    private async Task SetZoomValueAsync(double zoom)
     {
-        _zoomMode = BitPdfZoomMode.Custom;
-        _zoom = Math.Clamp(zoom, 0.1, 8.0);
-        return Task.CompletedTask;
+        double clamped = Math.Clamp(zoom, EffectiveMinZoom, EffectiveMaxZoom);
+        if (Math.Abs(clamped - Zoom) < 0.0001) return;
+
+        if (await AssignZoom(clamped) is false) return;
+        _appliedZoom = Zoom;
+        await OnZoomChanged.InvokeAsync(Zoom);
     }
+
+    // The page index the current fit was computed for, so a document whose pages
+    // differ in size can be re-fitted when the reader reaches a different one.
+    private int _fitPageIndex = -1;
 
     private async Task ApplyFitAsync()
     {
@@ -1430,46 +2565,52 @@ public partial class BitPdfViewer : BitComponentBase
         var vp = await _js.BitPdfViewerGetViewport(_containerRef);
         if (vp.Width <= 0) return;
 
-        double maxW = _pageWidths.Count > 0 ? _pageWidths.Max() : 612;
-        double maxH = _pageHeights.Count > 0 ? _pageHeights.Max() : 792;
+        // Fit the page in front of the reader, not the biggest page anywhere in the
+        // document: one oversized plate would otherwise shrink every other page.
+        int index = Math.Clamp(CurrentPage - 1, 0, Math.Max(0, _pageWidths.Count - 1));
+        double pw = index < _pageWidths.Count ? _pageWidths[index] : 612;
+        double ph = index < _pageHeights.Count ? _pageHeights[index] : 792;
+        // A spread puts two pages across the surface, so each gets half the width.
+        double across = _spreadMode == BitPdfSpreadMode.None ? 1 : 2;
         const double padding = 32; // surface padding + page margin
 
-        double fitWidth = (vp.Width - padding) / maxW;
-        _zoom = _zoomMode == BitPdfZoomMode.FitPage
-            ? Math.Min(fitWidth, (vp.Height - padding) / maxH)
-            : fitWidth;
-        _zoom = Math.Clamp(_zoom, 0.1, 8.0);
+        double fitWidth = (vp.Width - padding) / (pw * across);
+        _fitPageIndex = index;
+        await SetZoomValueAsync(_zoomMode == BitPdfZoomMode.FitPage
+            ? Math.Min(fitWidth, (vp.Height - padding) / ph)
+            : fitWidth);
     }
 
-    private async Task ToggleThumbnails()
+    /// <summary>Re-fits when the reader moved to a page of a different size while a
+    /// fit mode is active. A same-sized page needs no interop round-trip, which is
+    /// what keeps ordinary scrolling free of viewport measurements.</summary>
+    private async Task RefitForCurrentPageAsync()
     {
-        _showThumbnails = !_showThumbnails;
-        if (_showThumbnails)
+        if (_zoomMode is BitPdfZoomMode.Custom or BitPdfZoomMode.ActualSize) return;
+
+        int index = CurrentPage - 1;
+        if (index < 0 || index >= _pageWidths.Count) return;
+        if (_fitPageIndex >= 0 && _fitPageIndex < _pageWidths.Count
+            && Math.Abs(_pageWidths[_fitPageIndex] - _pageWidths[index]) < 0.5
+            && Math.Abs(_pageHeights[_fitPageIndex] - _pageHeights[index]) < 0.5)
         {
-            _showOutline = false;
-            // Attach the sidebar spy after its element renders; it fills the
-            // visible thumbnails on its own.
-            _thumbSpyPending = true;
+            return;
         }
-        else
-        {
-            // The sidebar element is leaving the DOM; drop its scroll listener.
-            try
-            {
-                await _js.BitPdfViewerDisposeThumbSpy(_thumbsRef);
-            }
-            catch (JSDisconnectedException) { }
-        }
+
+        await ApplyFitAsync();
     }
 
-    private void ToggleOutline()
-    {
-        _showOutline = !_showOutline;
-        if (_showOutline)
-        {
-            _showThumbnails = false;
-        }
-    }
+    private Task ToggleThumbnails()
+        => ShowSidebar(_showThumbnails ? BitPdfSidebar.None : BitPdfSidebar.Thumbnails);
+
+    private Task ToggleOutline()
+        => ShowSidebar(_showOutline ? BitPdfSidebar.None : BitPdfSidebar.Bookmarks);
+
+    private Task ToggleAttachments()
+        => ShowSidebar(_showAttachments ? BitPdfSidebar.None : BitPdfSidebar.Attachments);
+
+    private Task ToggleLayers()
+        => ShowSidebar(_showLayers ? BitPdfSidebar.None : BitPdfSidebar.Layers);
 
     private async Task OnOutlineClick(BitPdfOutlineItem item)
     {
@@ -1483,9 +2624,8 @@ public partial class BitPdfViewer : BitComponentBase
 
     private string SearchLabel => _searchTotal switch
     {
-        < 0 => "n/a",
-        0 => string.IsNullOrEmpty(_searchQuery) ? "" : "0/0",
-        _ => $"{_searchIndex + 1}/{_searchTotal}",
+        <= 0 => string.IsNullOrEmpty(_searchQuery) ? "" : string.Format(ActiveTexts.MatchCountFormat, 0, 0),
+        _ => string.Format(ActiveTexts.MatchCountFormat, _searchIndex + 1, _searchTotal),
     };
 
     private async Task ToggleSearch()
@@ -1498,19 +2638,94 @@ public partial class BitPdfViewer : BitComponentBase
         }
     }
 
+    // Bumped per keystroke so a search only starts once typing pauses; without it
+    // every character would run a full index sweep on the UI thread.
+    private int _searchInputGeneration;
+
     private async Task OnSearchInput(ChangeEventArgs e)
     {
         _searchQuery = e.Value?.ToString() ?? "";
+
+        int generation = ++_searchInputGeneration;
+        await Task.Delay(SearchDebounceMilliseconds);
+        if (IsDisposed || generation != _searchInputGeneration) return;
+
+        await RunSearchAsync();
+        if (IsDisposed) return;
+
+        StateHasChanged();
+    }
+
+    private const int SearchDebounceMilliseconds = 250;
+
+    /// <summary>Toggles a find option and re-runs the current query against it, so
+    /// the match count and highlights update without the user retyping.</summary>
+    private async Task ToggleMatchCase()
+    {
+        _matchCase = !_matchCase;
+        await RunSearchAsync();
+    }
+
+    private async Task ToggleWholeWord()
+    {
+        _wholeWord = !_wholeWord;
         await RunSearchAsync();
     }
 
     /// <summary>Activates a control on Enter or Space, so keyboard users can
     /// operate the thumbnail list and outline tree like buttons.</summary>
-    private async Task OnActivateKey(KeyboardEventArgs e, Func<Task> action)
+    private static bool IsActivationKey(KeyboardEventArgs e) => e.Key is "Enter" or " " or "Spacebar";
+
+    /// <summary>Keyboard handling for the thumbnail listbox: activation plus the
+    /// arrow/Home/End roving the ARIA listbox pattern expects. The active option is
+    /// the only one in the tab order, so arrowing moves both selection and focus.</summary>
+    private async Task OnThumbKeyDown(KeyboardEventArgs e, int pageNo)
     {
-        if (e.Key is "Enter" or " " or "Spacebar")
+        if (IsActivationKey(e))
         {
-            await action();
+            await GoToPage(pageNo);
+            return;
+        }
+
+        int target = e.Key switch
+        {
+            "ArrowDown" or "ArrowRight" => pageNo + 1,
+            "ArrowUp" or "ArrowLeft" => pageNo - 1,
+            "Home" => 1,
+            "End" => _thumbs.Count,
+            _ => 0,
+        };
+        if (target == 0) return;
+
+        await GoToPage(target);
+        // The focused element left the tab order when the active thumbnail moved;
+        // follow the selection so the next arrow key still reaches this listbox.
+        try
+        {
+            await _js.BitPdfViewerFocusThumb(_thumbsRef, CurrentPage);
+        }
+        catch (JSDisconnectedException) { }
+    }
+
+    /// <summary>Keyboard handling for the bookmarks tree: activation plus the
+    /// left/right keys that fold and unfold a branch, as the ARIA tree pattern
+    /// expects.</summary>
+    private async Task OnOutlineKeyDown(KeyboardEventArgs e, BitPdfOutlineItem item)
+    {
+        if (IsActivationKey(e))
+        {
+            await OnOutlineClick(item);
+            return;
+        }
+        if (item.Children.Count == 0) return;
+
+        if (e.Key == "ArrowRight")
+        {
+            _collapsedOutline.Remove(item);
+        }
+        else if (e.Key == "ArrowLeft")
+        {
+            _collapsedOutline.Add(item);
         }
     }
 
@@ -1553,13 +2768,15 @@ public partial class BitPdfViewer : BitComponentBase
         if (IsDisposed || _document is null || generation != _searchGeneration) return;
         int version = _loadVersion; // captured only after confirming the component is still valid
 
-        // Search a per-page extracted-text index (built lazily) rather than the
-        // rendered DOM, so we only render the pages that actually contain matches
-        // - a 500-page document with matches on 3 pages renders 3, not 500.
+        // Matches are COUNTED in C# over the per-page extracted-text index, never by
+        // rendering pages and asking the DOM. A 500-page document with matches on 400
+        // of them therefore costs 400 string scans, not 400 page fragments in the DOM
+        // (which is what an earlier "render every hit" pass cost). Rendering happens
+        // one page at a time, when the reader actually walks to a match.
         _pageText ??= new string?[_document.PageCount];
-        string needle = _searchQuery;
         int pageCount = _document.PageCount; // captured so the loop condition never reads a nulled _document
-        bool rendered = false;
+        var counts = new int[pageCount];
+        int total = 0;
         for (int i = 0; i < pageCount; i++)
         {
             // A reload, disposal or newer query during a yield supersedes this run;
@@ -1567,66 +2784,132 @@ public partial class BitPdfViewer : BitComponentBase
             if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
 
             _pageText[i] ??= _document.Pages[i].ExtractText();
-            if (_pageText[i]!.Contains(needle, StringComparison.OrdinalIgnoreCase)
-                && i < _pages.Count && _pages[i] is null)
+            counts[i] = CountMatches(_pageText[i]!, _searchQuery, _matchCase, _wholeWord);
+            total += counts[i];
+
+            if ((i & 31) == 31)
             {
-                await RenderPageAsync(i);
-                rendered = true;
-                // Yield between match renders so a large result set doesn't
-                // monopolize the WASM UI thread (mirrors the lazy-render pumps).
+                // The first search over a large document extracts text for every page
+                // synchronously; yield every 32 pages so that sweep doesn't freeze the
+                // UI thread.
                 await Task.Delay(1);
-            }
-            else if ((i & 31) == 31)
-            {
-                // No render happened this page, but the first search over a large
-                // document extracts text for every page synchronously; yield every
-                // 32 pages so that extraction sweep doesn't freeze the UI thread.
-                await Task.Delay(1);
+                if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
             }
         }
-
-        // A reload, disposal or newer query during the final yield supersedes this
-        // search; don't touch shared state or JS on a torn-down/stale component.
-        if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
 
         _loading = false;
-        if (rendered)
-        {
-            StateHasChanged();
-            await Task.Delay(1); // let the freshly rendered pages paint before highlighting
-            // A reload, disposal or newer query during the paint delay supersedes
-            // this search; don't highlight the newer state for the old query.
-            if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
-        }
+        _matchCounts = counts;
+        _searchTotal = total;
+        _searchIndex = total > 0 ? 0 : -1;
+        StateHasChanged();
 
-        // Guard the interop against a disposal racing these calls (as
-        // ScrollActiveThumbIntoViewAsync does).
-        try
+        if (total > 0)
         {
-            int total = await _js.BitPdfViewerSearchAll(_containerRef, _searchQuery);
-            // The interop awaited: re-validate ownership before publishing the
-            // (now possibly stale) result or scrolling a torn-down viewer.
-            if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
-            _searchTotal = total;
-            _searchIndex = total > 0 ? 0 : -1;
-            if (total > 0)
-            {
-                await _js.BitPdfViewerGotoMatch(_containerRef, _searchIndex);
-            }
+            await GotoMatch(0);
         }
-        catch (JSDisconnectedException) { }
+        else
+        {
+            await ApplyHighlightsAsync(scrollToCurrent: false);
+        }
     }
 
-    private Task SearchNext() => GotoMatch(_searchIndex + 1);
+    /// <summary>
+    /// Counts the occurrences of <paramref name="needle"/> in <paramref name="text"/>
+    /// under the current find options. This is the same rule the browser-side
+    /// highlighter applies, so the counter and the highlights agree.
+    /// </summary>
+    private static int CountMatches(string text, string needle, bool matchCase, bool wholeWord)
+    {
+        if (string.IsNullOrEmpty(needle) || string.IsNullOrEmpty(text)) return 0;
 
-    private Task SearchPrev() => GotoMatch(_searchIndex - 1);
+        var comparison = matchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        int count = 0;
+        int index = 0;
+        while (index <= text.Length - needle.Length)
+        {
+            int hit = text.IndexOf(needle, index, comparison);
+            if (hit < 0) break;
+
+            int end = hit + needle.Length;
+            if (wholeWord is false || (IsWordBoundary(text, hit - 1) && IsWordBoundary(text, end)))
+            {
+                count++;
+                index = end;
+            }
+            else
+            {
+                // A rejected whole-word hit may still overlap a later accepted one.
+                index = hit + 1;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>Whether the character at <paramref name="index"/> is absent or is not
+    /// a word character, which is what makes the position a word boundary.</summary>
+    private static bool IsWordBoundary(string text, int index)
+    {
+        if (index < 0 || index >= text.Length) return true;
+
+        char c = text[index];
+        // Letters, digits, combining marks and the underscore are word characters -
+        // the same class the browser-side highlighter's \p{L}\p{N}\p{M}_ matches, so
+        // an accented or non-Latin word behaves like an ASCII one.
+        if (char.IsLetterOrDigit(c) || c == '_') return false;
+
+        var category = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c);
+        return category is not (System.Globalization.UnicodeCategory.NonSpacingMark
+            or System.Globalization.UnicodeCategory.SpacingCombiningMark
+            or System.Globalization.UnicodeCategory.EnclosingMark);
+    }
+
+    private Task SearchNext() => FindNext();
+
+    private Task SearchPrev() => FindPrevious();
 
     private async Task GotoMatch(int index)
     {
-        if (_searchTotal <= 0) return;
+        if (_searchTotal <= 0 || _matchCounts is null) return;
 
         _searchIndex = ((index % _searchTotal) + _searchTotal) % _searchTotal;
-        await _js.BitPdfViewerGotoMatch(_containerRef, _searchIndex);
+
+        // Resolve the flat match index to the page holding it and its ordinal within
+        // that page, then bring that one page in - the rest of the document stays
+        // unrendered however many matches it holds.
+        int remaining = _searchIndex;
+        int page = 0;
+        while (page < _matchCounts.Length && remaining >= _matchCounts[page])
+        {
+            remaining -= _matchCounts[page];
+            page++;
+        }
+        if (page >= _matchCounts.Length) return;
+
+        _matchPage = page + 1;
+        _matchOrdinal = remaining;
+        await GoToPage(_matchPage);
+        if (IsDisposed) return;
+
+        await ApplyHighlightsAsync(scrollToCurrent: true);
+    }
+
+    // Where the current match sits: its 1-based page and its ordinal on that page.
+    private int _matchPage;
+    private int _matchOrdinal;
+
+    /// <summary>
+    /// Paints the query's matches across the pages that are currently in the DOM and
+    /// marks the current one. Runs again after every lazy page render, so a match
+    /// scrolled into view is highlighted the moment its page materializes.
+    /// </summary>
+    private async Task ApplyHighlightsAsync(bool scrollToCurrent)
+    {
+        try
+        {
+            await _js.BitPdfViewerHighlight(_containerRef, _searchQuery, _matchCase, _wholeWord,
+                _searchTotal > 0 ? _matchPage : 0, _matchOrdinal, scrollToCurrent);
+        }
+        catch (JSDisconnectedException) { }
     }
 
     private async Task ClearSearchAsync()
@@ -1639,15 +2922,139 @@ public partial class BitPdfViewer : BitComponentBase
         _loading = false;
         _searchTotal = 0;
         _searchIndex = -1;
-        await _js.BitPdfViewerClearSearch(_containerRef);
+        _matchCounts = null;
+        _matchPage = 0;
+        _matchOrdinal = 0;
+        try
+        {
+            await _js.BitPdfViewerClearSearch(_containerRef);
+        }
+        catch (JSDisconnectedException) { }
     }
 
     private string PageStyle(int index)
     {
         double pw = index < _pageWidths.Count ? _pageWidths[index] : 612;
         double ph = index < _pageHeights.Count ? _pageHeights[index] : 792;
-        return string.Create(System.Globalization.CultureInfo.InvariantCulture,
-            $"width:{pw * _zoom:0.#}px;height:{ph * _zoom:0.#}px;--bit-pdv-scale:{_zoom:0.####}");
+        string style = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"width:{pw * Zoom:0.#}px;height:{ph * Zoom:0.#}px;--bit-pdv-scale:{Zoom:0.####}");
+        // A page's size is computed, so a host style is appended to it rather than
+        // replacing it - otherwise Styles.Page would strip the page's own geometry.
+        return Styles?.Page is { Length: > 0 } custom ? $"{style};{custom}" : style;
+    }
+
+    // ----- Layout -----
+
+    /// <summary>The layout modifier the pages container carries, so the whole surface
+    /// re-flows from CSS rather than from a second rendering path.</summary>
+    private string PagesLayoutClass
+    {
+        get
+        {
+            string axis = _scrollMode switch
+            {
+                BitPdfScrollMode.Horizontal => " bit-pdv-h",
+                BitPdfScrollMode.Wrapped => " bit-pdv-w",
+                _ => string.Empty,
+            };
+            // Page mode hides everything but the current page (or spread) instead of
+            // rendering a second time, so the slots, the spy and eviction are untouched.
+            return _scrollMode == BitPdfScrollMode.Page ? axis + " bit-pdv-single" : axis;
+        }
+    }
+
+    /// <summary>The axis the JS lazy-render pass measures along. Only a horizontal
+    /// run needs the other one: pages wrap downwards in every other mode, so their
+    /// document order stays monotonic in <c>top</c>.</summary>
+    private string? PagesAxis => _scrollMode == BitPdfScrollMode.Horizontal ? "h" : null;
+
+    /// <summary>The pages of the document grouped into the rows the current spread
+    /// mode asks for. Each row holds one page index, or the two of a spread.</summary>
+    private List<List<int>> PageRows()
+    {
+        var rows = new List<List<int>>();
+        if (_spreadMode == BitPdfSpreadMode.None)
+        {
+            for (int i = 0; i < _pages.Count; i++)
+            {
+                rows.Add([i]);
+            }
+            return rows;
+        }
+
+        int start = 0;
+        // Even pages start a spread, so the first page falls outside the pairing and
+        // stands alone - which is what makes page 1 read as a cover.
+        if (_spreadMode == BitPdfSpreadMode.Even && _pages.Count > 0)
+        {
+            rows.Add([0]);
+            start = 1;
+        }
+        for (int i = start; i < _pages.Count; i += 2)
+        {
+            rows.Add(i + 1 < _pages.Count ? [i, i + 1] : [i]);
+        }
+        return rows;
+    }
+
+    /// <summary>Whether a row holds the current page, which is the one row Page mode
+    /// leaves visible.</summary>
+    private bool IsCurrentRow(List<int> row) => row.Contains(CurrentPage - 1);
+
+    private Task OnScrollModeChanged(ChangeEventArgs e)
+        => Enum.TryParse<BitPdfScrollMode>(e.Value?.ToString(), out var mode)
+            ? SetScrollMode(mode)
+            : Task.CompletedTask;
+
+    private Task OnSpreadModeChanged(ChangeEventArgs e)
+        => Enum.TryParse<BitPdfSpreadMode>(e.Value?.ToString(), out var mode)
+            ? SetSpreadMode(mode)
+            : Task.CompletedTask;
+
+    private void ToggleCursorTool()
+        => SetCursorTool(_cursorTool == BitPdfCursorTool.Pan ? BitPdfCursorTool.Select : BitPdfCursorTool.Pan);
+
+    // The percentages every desktop viewer offers in its zoom dropdown, so a
+    // reader can jump straight to a known scale instead of stepping there.
+    private static readonly double[] ZoomPresets = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
+
+    /// <summary>The presets inside the configured zoom bounds.</summary>
+    private IEnumerable<double> AvailableZoomPresets
+        => ZoomPresets.Where(z => z >= EffectiveMinZoom && z <= EffectiveMaxZoom);
+
+    private static string ZoomPresetLabel(double zoom)
+        => string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{Math.Round(zoom * 100)}%");
+
+    /// <summary>The caption of a thumbnail: the document's own page label when it
+    /// differs from the page number, so a reader sees the same "iv" the pages show.</summary>
+    private string ThumbLabel(int index)
+    {
+        int pageNo = index + 1;
+        string number = pageNo.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        try
+        {
+            var labels = _document?.PageLabels;
+            if (labels is not null && index < labels.Count && string.IsNullOrEmpty(labels[index]) is false)
+            {
+                return labels[index];
+            }
+        }
+        catch { /* a damaged /PageLabels tree falls back to the plain number */ }
+        return number;
+    }
+
+    // Bookmarks the reader has folded shut. Keyed by the item instance, which the
+    // outline builder creates once per load, so a reload starts fully expanded.
+    private readonly HashSet<BitPdfOutlineItem> _collapsedOutline = new(ReferenceEqualityComparer.Instance);
+
+    private bool IsOutlineCollapsed(BitPdfOutlineItem item) => _collapsedOutline.Contains(item);
+
+    private void ToggleOutlineItem(BitPdfOutlineItem item)
+    {
+        if (_collapsedOutline.Remove(item) is false)
+        {
+            _collapsedOutline.Add(item);
+        }
     }
 
     private string ThumbStyle(int index)
@@ -1691,6 +3098,10 @@ public partial class BitPdfViewer : BitComponentBase
         _canvasPaintSignal?.TrySetResult();
         _canvasPaintSignal = null;
 
+        // Release a load parked on the password dialog: nobody will answer it now,
+        // and the load resumes only to see the bumped version and bail.
+        CompletePasswordRequest(null);
+
         // Wait for any in-flight render to release the gate before disposing it, so a
         // background build that is mid-flight can run its finally (Release) without
         // faulting on a disposed semaphore. New renders are already blocked above.
@@ -1704,6 +3115,8 @@ public partial class BitPdfViewer : BitComponentBase
         {
             await _js.BitPdfViewerDisposeScrollSpy(_containerRef);
             await _js.BitPdfViewerDisposeThumbSpy(_thumbsRef);
+            await _js.BitPdfViewerDisposeKeyboard(RootElement);
+            await _js.BitPdfViewerDisposeFullscreenSpy(RootElement);
         }
         catch (JSDisconnectedException) { } // Circuit already gone; nothing to clean up.
         catch (TaskCanceledException) { } // Disposal raced an in-flight interop call; safe to ignore.

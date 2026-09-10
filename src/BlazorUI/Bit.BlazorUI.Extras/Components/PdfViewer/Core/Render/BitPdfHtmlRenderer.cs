@@ -973,8 +973,21 @@ public sealed class BitPdfHtmlRenderer
         return IsOcgOff(raw);
     }
 
+    /// <summary>
+    /// The optional-content groups to treat as hidden, by
+    /// <see cref="BitPdfLayer.Id"/>. When set it REPLACES the document's default
+    /// configuration, which is what lets a viewer let its reader switch layers; when
+    /// null the default configuration decides.
+    /// </summary>
+    public IReadOnlySet<string>? HiddenLayers { get; set; }
+
     private bool IsOcgOff(object? raw)
     {
+        if (HiddenLayers is not null)
+        {
+            return raw is BitPdfRef overridden && HiddenLayers.Contains(overridden.ToRefString());
+        }
+
         if (_ocgOff is null)
         {
             _ocgOff = new HashSet<string>();
