@@ -10,10 +10,31 @@ public sealed class BitMarkdownAbbreviationDefinitionParser : BitMarkdownBlockPa
     // whose "*" marker the line also starts with.
     public override int Order => 3;
 
+    // A definition ends the paragraph above it, the way markdown-it's own abbreviation rule does.
+    // Written on the line right after a sentence - the natural place to explain a term just used -
+    // it would otherwise be absorbed into that paragraph and printed as raw text, expanding nothing.
+    public override bool CanInterruptParagraph(BitMarkdownBlockProcessor state, int lineIndex)
+        => TryReadDefinition(state.Lines[lineIndex], out _, out _);
+
     public override bool TryParse(BitMarkdownBlockProcessor state, List<BitMarkdownNode> output)
     {
-        var lines = state.Lines;
-        string line = lines[state.Line];
+        if (TryReadDefinition(state.Lines[state.Line], out string label, out string title) is false) return false;
+
+        output.Add(new BitMarkdownAbbreviationDefinitionNode
+        {
+            Label = label,
+            Title = BitMarkdownEntities.Decode(title)
+        });
+        state.Line++;
+        return true;
+    }
+
+    // Reads a "*[LABEL]: expansion" line. One reader for both the acceptance test and the parse, so
+    // the line that ends a paragraph and the line that becomes a definition cannot come apart.
+    private static bool TryReadDefinition(string line, out string label, out string title)
+    {
+        label = string.Empty;
+        title = string.Empty;
 
         if (BitMarkdownBlockProcessor.GetIndent(line) >= 4) return false;
 
@@ -25,19 +46,15 @@ public sealed class BitMarkdownAbbreviationDefinitionParser : BitMarkdownBlockPa
         if (labelEnd < 0) return false;
         if (labelEnd + 1 >= line.Length || line[labelEnd + 1] != ':') return false;
 
-        string label = line.Substring(p + 2, labelEnd - p - 2).Trim();
-        if (label.Length is 0 or > BitMarkdownLinkHelpers.MaxLabelLength) return false;
+        string read = line.Substring(p + 2, labelEnd - p - 2).Trim();
+        if (read.Length is 0 or > BitMarkdownLinkHelpers.MaxLabelLength) return false;
 
-        string title = line[(labelEnd + 2)..].Trim();
+        string expansion = line[(labelEnd + 2)..].Trim();
         // A definition with nothing on the right explains nothing; it is ordinary text.
-        if (title.Length == 0) return false;
+        if (expansion.Length == 0) return false;
 
-        output.Add(new BitMarkdownAbbreviationDefinitionNode
-        {
-            Label = label,
-            Title = BitMarkdownEntities.Decode(title)
-        });
-        state.Line++;
+        label = read;
+        title = expansion;
         return true;
     }
 }

@@ -27,8 +27,12 @@ public sealed class BitMarkdownFootnoteInlineParser : BitMarkdownInlineParser
         // knows every one of them, including those written after this point.
         if (state.HasReferenceLabel(label) is false) return false;
 
-        // "[^1]:" at this position is the definition itself, not a reference to it.
-        if (labelEnd + 1 < s.Length && s[labelEnd + 1] == ':') return false;
+        // "[^1]:" at the start of a line is the definition itself, not a reference to it. Only
+        // there: a citation that happens to be followed by a colon - "as noted[^1]: see below" -
+        // is a reference like any other, and rejecting it dropped both the citation and, since
+        // nothing then cited the label, the note it pointed at.
+        bool atLineStart = i == 0 || s[i - 1] == '\n';
+        if (atLineStart && labelEnd + 1 < s.Length && s[labelEnd + 1] == ':') return false;
 
         state.AppendNode(new BitMarkdownFootnoteReferenceNode
         {

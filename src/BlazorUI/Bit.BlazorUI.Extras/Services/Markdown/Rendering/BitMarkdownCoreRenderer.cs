@@ -94,7 +94,7 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 if (!string.IsNullOrEmpty(link.Url))
                 {
                     b.AddAttribute(15, "href", link.Url);
-                    if (IsExternal(link.Url))
+                    if (BitMarkdownLinkHelpers.IsExternalUrl(link.Url))
                     {
                         b.AddAttribute(16, "target", "_blank");
                         b.AddAttribute(17, "rel", "noopener noreferrer");
@@ -186,8 +186,4 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
         }
         b.CloseElement();
     }
-
-    private static bool IsExternal(string url) =>
-        url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-        url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
 }

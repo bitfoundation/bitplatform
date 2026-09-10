@@ -12,6 +12,22 @@ public static class BitMarkdownLinkHelpers
     public const int MaxLabelLength = 999;
 
     /// <summary>
+    /// True when <paramref name="url"/> is a destination that leaves the page's own origin, which
+    /// is what decides the <c>target</c> and <c>rel</c> a rendered link carries.
+    /// </summary>
+    /// <remarks>
+    /// A protocol-relative destination (<c>//host/path</c>) counts: the sanitizer allows it, and a
+    /// browser resolves it to another host exactly as an <c>https://</c> one would. Reading it as
+    /// internal is what would leave a <c>[spam](//evil.com)</c> without the <c>nofollow ugc</c> a
+    /// user-generated-content policy exists to put on it.
+    /// </remarks>
+    public static bool IsExternalUrl(string? url)
+        => string.IsNullOrEmpty(url) is false
+           && (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+               || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+               || url.StartsWith("//", StringComparison.Ordinal));
+
+    /// <summary>
     /// Returns the index of the <c>]</c> that closes the label opened at
     /// <paramref name="openBracket"/>, or -1 when there is none. Backslash escapes are
     /// skipped, nested brackets are balanced, and code spans are stepped over so a

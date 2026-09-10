@@ -40,6 +40,7 @@ public sealed class BitMarkdownDefinitionListBlockParser : BitMarkdownBlockParse
             while (i < lines.Count && TryReadMarker(lines[i], out int contentColumn, out string first))
             {
                 var content = new List<string> { first };
+                int markerLine = i;
                 i++;
 
                 // Continuation lines belong to this definition while they are indented to (or past)
@@ -66,7 +67,9 @@ public sealed class BitMarkdownDefinitionListBlockParser : BitMarkdownBlockParse
                 }
 
                 var description = new BitMarkdownDefinitionDescriptionNode();
-                description.Children.AddRange(state.ParseBlocks(content));
+                // The definition's first line is the remainder of its ":" line and every
+                // continuation line was taken one for one from there on.
+                description.Children.AddRange(state.ParseBlocks(content, markerLine));
                 list.Children.Add(description);
             }
 

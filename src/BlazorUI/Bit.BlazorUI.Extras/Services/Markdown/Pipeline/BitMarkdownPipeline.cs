@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
@@ -78,7 +78,7 @@ public sealed partial class BitMarkdownPipeline
         var lines = SplitLines(markdown);
         var context = new BitMarkdownParseContext(options, ScanReferenceLabels(lines));
 
-        document.Children.AddRange(ParseBlocks(lines, context, 0));
+        document.Children.AddRange(ParseBlocks(lines, context, 0, 0));
 
         foreach (var processor in AstProcessors)
             processor.Process(document, this);
@@ -115,7 +115,7 @@ public sealed partial class BitMarkdownPipeline
         return labels;
     }
 
-    internal List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines, BitMarkdownParseContext context, int depth)
+    internal List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines, BitMarkdownParseContext context, int depth, int lineOffset)
     {
         // Depth guard: stop recursing into ever-deeper nested blocks and instead keep
         // the remaining lines as a single plain-text paragraph. This caps recursion so
@@ -127,7 +127,7 @@ public sealed partial class BitMarkdownPipeline
             return new List<BitMarkdownNode> { para };
         }
 
-        return new BitMarkdownBlockProcessor(this, lines, context, depth).Run();
+        return new BitMarkdownBlockProcessor(this, lines, context, depth, lineOffset).Run();
     }
 
     internal List<BitMarkdownNode> ParseInlines(string text, BitMarkdownParseContext context, int depth)

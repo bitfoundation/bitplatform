@@ -8,17 +8,21 @@ namespace Bit.BlazorUI;
 public sealed class BitMarkdownBlockProcessor
 {
     internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines)
-        : this(pipeline, lines, BitMarkdownParseContext.Empty, 0)
+        : this(pipeline, lines, BitMarkdownParseContext.Empty, 0, UnknownLine)
     {
     }
 
-    internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownParseContext context, int depth)
+    internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownParseContext context, int depth, int lineOffset)
     {
         Pipeline = pipeline;
         Lines = lines;
         Context = context;
         Depth = depth;
+        LineOffset = lineOffset;
     }
+
+    /// <summary>The value a source line takes when it cannot be traced back to the document.</summary>
+    internal const int UnknownLine = -1;
 
     public BitMarkdownPipeline Pipeline { get; }
 
@@ -51,6 +55,23 @@ public sealed class BitMarkdownBlockProcessor
     /// <summary>Index of the line currently being considered.</summary>
     public int Line { get; set; }
 
+    /// <summary>
+    /// The document line <c>Lines[0]</c> was taken from, or <see cref="UnknownLine"/> when these
+    /// lines cannot be traced back to it. Every container that recurses hands its inner lines the
+    /// document line the first of them came from, so a node parsed inside a list item inside a
+    /// block quote still knows which line of the source it was written on.
+    /// </summary>
+    internal int LineOffset { get; }
+
+    /// <summary>
+    /// The document line <paramref name="localLine"/> of this scope was written on, or
+    /// <see cref="UnknownLine"/> when it cannot be traced back to the source. This is what lets a
+    /// node be edited in the source it came from - a ticked task box being written back into its
+    /// own <c>[ ]</c> marker - without a second scanner that has to agree with this parser.
+    /// </summary>
+    public int SourceLine(int localLine)
+        => LineOffset == UnknownLine ? UnknownLine : LineOffset + localLine;
+
     internal List<BitMarkdownNode> Run()
     {
         var output = new List<BitMarkdownNode>();
@@ -72,8 +93,21 @@ public sealed class BitMarkdownBlockProcessor
         return output;
     }
 
-    /// <summary>Recursively parses a nested set of lines (list items, block quotes).</summary>
-    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines) => Pipeline.ParseBlocks(lines, Context, Depth + 1);
+    /// <summary>
+    /// Recursively parses a nested set of lines (list items, block quotes) that cannot be traced
+    /// back to the document's own lines.
+    /// </summary>
+    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines)
+        => Pipeline.ParseBlocks(lines, Context, Depth + 1, UnknownLine);
+
+    /// <summary>
+    /// Recursively parses a nested set of lines, the first of which was taken from
+    /// <paramref name="firstLine"/> of this scope. Pass the local index the inner lines start at -
+    /// they have to map one-to-one onto the lines from there - so the nested nodes keep knowing
+    /// which document line they were written on.
+    /// </summary>
+    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines, int firstLine)
+        => Pipeline.ParseBlocks(lines, Context, Depth + 1, SourceLine(firstLine));
 
     /// <summary>Parses inline content using the pipeline's inline parsers.</summary>
     public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Context, Depth + 1);

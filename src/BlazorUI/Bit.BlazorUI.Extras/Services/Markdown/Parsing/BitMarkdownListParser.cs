@@ -82,6 +82,7 @@ public sealed class BitMarkdownListParser : BitMarkdownBlockParser
             }
 
             var itemLines = new List<string> { firstContent };
+            int markerLine = i;
             i++;
 
             bool itemHadBlank = false;
@@ -131,8 +132,14 @@ public sealed class BitMarkdownListParser : BitMarkdownBlockParser
                 break;
             }
 
-            var item = new BitMarkdownListItemNode { Source = firstContent };
-            item.Children.AddRange(state.ParseBlocks(itemLines));
+            var item = new BitMarkdownListItemNode
+            {
+                Source = firstContent,
+                SourceLine = state.SourceLine(markerLine)
+            };
+            // The item's lines were gathered one for one from the marker line on, blank
+            // separators included, so they map straight onto the document's own lines.
+            item.Children.AddRange(state.ParseBlocks(itemLines, markerLine));
             if (itemHadBlank) loose = true;
             list.Items.Add(item);
         }

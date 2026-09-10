@@ -12,8 +12,11 @@ public sealed class BitMarkdownMathBlockParser : BitMarkdownBlockParser
     // reinterpreted by anything that runs later.
     public override int Order => 12;
 
+    // Only a line that actually opens a block ends the paragraph before it. A "$$" that is neither
+    // a complete one-line block nor closed further down is prose - "The cost is\n$$5 for two" is
+    // one paragraph with a soft break in it, not two paragraphs split around a fence that never was.
     public override bool CanInterruptParagraph(BitMarkdownBlockProcessor state, int lineIndex)
-        => IsFence(state.Lines[lineIndex]);
+        => Opens(state.Lines, lineIndex);
 
     public override bool TryParse(BitMarkdownBlockProcessor state, List<BitMarkdownNode> output)
     {
@@ -53,6 +56,23 @@ public sealed class BitMarkdownMathBlockParser : BitMarkdownBlockParser
         });
         state.Line = i;
         return true;
+    }
+
+    // The same acceptance TryParse applies, asked of a line without consuming it: a complete
+    // one-line block, or an opening "$$" with a closing one somewhere below it.
+    private static bool Opens(IReadOnlyList<string> lines, int index)
+    {
+        if (IsFence(lines[index]) is false) return false;
+
+        string opening = lines[index].Trim();
+        if (opening.Length > 4 && opening.EndsWith("$$", StringComparison.Ordinal)) return true;
+        if (opening.Length != 2) return false;
+
+        for (int i = index + 1; i < lines.Count; i++)
+        {
+            if (lines[i].Trim() == "$$") return true;
+        }
+        return false;
     }
 
     private static bool IsFence(string line)

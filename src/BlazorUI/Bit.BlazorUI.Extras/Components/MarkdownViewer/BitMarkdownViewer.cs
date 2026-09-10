@@ -257,10 +257,12 @@ public partial class BitMarkdownViewer : BitComponentBase
         // stores the new source somewhere the component does not read back.
         checkbox.Checked = isChecked;
 
+        // The box itself carries the line its marker was parsed from, so the marker rewritten is
+        // the one the reader clicked - not one a second scan of the source went looking for.
         return OnTaskChanged.InvokeAsync(new BitMarkdownViewerTaskChangedEventArgs(
             checkbox.Index,
             isChecked,
-            BitMarkdownTaskList.Toggle(Markdown, checkbox.Index, isChecked)));
+            BitMarkdownTaskList.Toggle(Markdown, checkbox, isChecked)));
     }
 
     /// <summary>
@@ -364,7 +366,9 @@ public partial class BitMarkdownViewer : BitComponentBase
             {
                 new BitMarkdownViewerTemplateRenderer(this)
             };
-            _templateRenderer = new BitMarkdownRenderer(renderers);
+            // Given the pipeline's own words, so supplying a template does not silently put a
+            // localized document's alerts and back-links back into English.
+            _templateRenderer = new BitMarkdownRenderer(renderers, pipeline.Texts);
             _templateRendererPipeline = pipeline;
         }
 

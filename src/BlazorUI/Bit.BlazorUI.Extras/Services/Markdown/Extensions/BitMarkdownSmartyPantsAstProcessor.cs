@@ -8,8 +8,10 @@ namespace Bit.BlazorUI;
 /// an ellipsis, and <c>&lt;&lt;</c> / <c>&gt;&gt;</c> become guillemets.
 /// </summary>
 /// <remarks>
-/// Only <see cref="BitMarkdownTextNode"/>s are rewritten, so code spans, code blocks and URLs -
-/// none of which are text nodes - keep every character exactly as it was written. Whether a quote
+/// Only <see cref="BitMarkdownTextNode"/>s are rewritten, so code spans, code blocks and the
+/// destinations of links - none of which are text nodes - keep every character exactly as it was
+/// written. An autolink is the one case where a destination <em>is</em> a text node, since its text
+/// is its URL, and it is left alone too. Whether a quote
 /// opens or closes is decided from the character before it, the same way a typesetter would: a
 /// quote after whitespace or an opening bracket opens, and every other one closes. That also gives
 /// <c>don't</c> its apostrophe.
@@ -31,13 +33,25 @@ public sealed class BitMarkdownSmartyPantsAstProcessor : BitMarkdownAstProcessor
         // Descendants walks the tree in document order, which is what lets one running "previous
         // character" carry from one text node to the next.
         char previous = '\0';
+        // An autolink's text is its destination, so educating it would leave the reader looking at
+        // a URL that is not the one the link goes to. Collected by identity as each autolink is
+        // reached - it comes before its own children in document order - since a flat walk has no
+        // way to skip a subtree.
+        HashSet<BitMarkdownNode>? verbatim = null;
 
         foreach (var node in BitMarkdownAstHelper.Descendants(document))
         {
             switch (node)
             {
+                case BitMarkdownLinkNode { IsAutoLink: true } autoLink:
+                    verbatim ??= new HashSet<BitMarkdownNode>(ReferenceEqualityComparer.Instance);
+                    foreach (var child in BitMarkdownAstHelper.Descendants(autoLink)) verbatim.Add(child);
+                    break;
+
                 case BitMarkdownTextNode text:
-                    text.Text = Educate(text.Text, previous);
+                    // Still read for what comes after it: the URL is text on the line, and a quote
+                    // right after it closes rather than opens.
+                    if (verbatim?.Contains(text) is not true) text.Text = Educate(text.Text, previous);
                     if (text.Text.Length > 0) previous = text.Text[^1];
                     break;
 

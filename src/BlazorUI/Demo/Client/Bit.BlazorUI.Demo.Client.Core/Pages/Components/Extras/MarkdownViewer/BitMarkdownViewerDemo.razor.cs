@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MarkdownViewer;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MarkdownViewer;
 
 public partial class BitMarkdownViewerDemo
 {
@@ -1706,8 +1706,8 @@ Formatting a value in place:
     private readonly string example20RazorCode = @"
 <BitMarkdownViewer Markdown=""@templatesMarkdown"" Pipeline=""BitMarkdownPipelines.GitHub"">
     <CodeBlockTemplate>
-        <div class=""code-card"">
-            <div class=""code-card-head"">
+        <div class=""mdv-code-card"">
+            <div class=""mdv-code-card-head"">
                 <span>@(context.Info ?? ""text"")</span>
                 <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Copy"" Title=""Copy"" />
             </div>
@@ -1721,6 +1721,46 @@ Formatting a value in place:
         </BitLink>
     </LinkTemplate>
 </BitMarkdownViewer>";
+    private readonly string example20CsharpCode = @"
+private readonly string templatesMarkdown = @""Every code block below is drawn by the template, not by the viewer:
+
+```csharp
+var pipeline = new BitMarkdownPipelineBuilder().UseGitHubFlavored().Build();
+```
+
+```bash
+dotnet add package Bit.BlazorUI.Extras
+```
+
+And every link, like [the bit platform](https://bitplatform.dev), gets its own chrome.
+"";";
+    private readonly string example20ScssCode = @"
+// The code-block template's own chrome: a header naming the language beside a copy button,
+// with the block itself underneath.
+::deep .mdv-code-card {
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    border: 1px solid $bit-color-border-secondary;
+}
+
+::deep .mdv-code-card-head {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0.25rem 0.25rem 0.75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+    color: $bit-color-foreground-secondary;
+    background: $bit-color-background-secondary;
+}
+
+::deep .mdv-code-card pre {
+    margin: 0;
+    border-radius: 0;
+}";
+    private readonly DemoCodeFile[] example20CodeFiles;
 
     private readonly string example21RazorCode = @"
 <BitMarkdownViewer Markdown=""@taskListMarkdown""
@@ -1921,6 +1961,11 @@ private readonly string rtlMarkdown = @""# نمایشگر مارک‌داون
 
     public BitMarkdownViewerDemo()
     {
+        example20CodeFiles =
+        [
+            new("BitMarkdownViewerDemo.razor.scss", example20ScssCode),
+        ];
+
         example26CodeFiles =
         [
             new("BitMarkdownViewerDemo.razor.scss", example26ScssCode),

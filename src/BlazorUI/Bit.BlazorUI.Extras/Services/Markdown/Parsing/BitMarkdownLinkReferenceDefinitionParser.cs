@@ -96,11 +96,13 @@ public sealed class BitMarkdownLinkReferenceDefinitionParser : BitMarkdownBlockP
             }
         }
 
+        string decoded = BitMarkdownEntities.Decode(url);
         definition = new BitMarkdownLinkReferenceDefinitionNode
         {
             Label = label,
             NormalizedLabel = normalized,
-            Url = BitMarkdownUrlSanitizer.Sanitize(BitMarkdownEntities.Decode(url), isImage: false),
+            Url = BitMarkdownUrlSanitizer.Sanitize(decoded, isImage: false),
+            RawUrl = decoded,
             Title = title
         };
         index += consumed;

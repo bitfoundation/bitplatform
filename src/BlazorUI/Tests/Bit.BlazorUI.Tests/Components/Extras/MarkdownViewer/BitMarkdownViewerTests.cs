@@ -1,7 +1,9 @@
-using Bunit;
+﻿using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownViewer;
 
@@ -2866,5 +2868,64 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.AreEqual("DIV", root.QuerySelector(".math")!.TagName);
         Assert.IsNull(root.QuerySelector("p .math"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepTheConfiguredTextsWhenATemplateIsSupplied()
+    {
+        var pipeline = new BitMarkdownPipelineBuilder()
+            .UseAlerts()
+            .UseTexts(new BitMarkdownTexts { AlertNote = "Hinweis" })
+            .Build();
+
+        // Supplying a template gives the viewer a renderer of its own, which used to be built
+        // without the pipeline's words - putting a localized document's alerts back into English.
+        var component = RenderComponent<BitMarkdownViewer>(parameters => parameters
+            .Add(p => p.Markdown, "> [!NOTE]\n> body")
+            .Add(p => p.Pipeline, pipeline)
+            .Add(p => p.LinkTemplate, (RenderFragment<BitMarkdownLinkNode>)(link => builder => builder.AddContent(0, "x"))));
+
+        StringAssert.Contains(component.Markup, "Hinweis");
+        StringAssert.DoesNotMatch(component.Markup, new Regex(">Note<"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldTreatAProtocolRelativeLinkAsExternal()
+    {
+        var pipeline = new BitMarkdownPipelineBuilder()
+            .UseLinkOptions(externalRel: "noopener noreferrer nofollow ugc")
+            .Build();
+
+        // "//host/path" leaves the origin exactly as an "https://" URL does, so a link a reader
+        // wrote that way is the very link-farm case the policy exists to mark.
+        var component = RenderComponent<BitMarkdownViewer>(parameters => parameters
+            .Add(p => p.Markdown, "[spam](//evil.com/x)")
+            .Add(p => p.Pipeline, pipeline));
+
+        var link = component.Find("a");
+
+        Assert.AreEqual("noopener noreferrer nofollow ugc", link.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRewriteTheMarkerTheTickedBoxCameFrom()
+    {
+        BitMarkdownViewerTaskChangedEventArgs? reported = null;
+
+        // The quoted task is drawn first, so the top-level one is the second box. A source scan
+        // that could not see inside the block quote rewrote the wrong marker - or none at all.
+        var component = RenderComponent<BitMarkdownViewer>(parameters => parameters
+            .Add(p => p.Markdown, "> - [ ] quoted\n\n- [ ] top\n")
+            .Add(p => p.Pipeline, BitMarkdownPipelines.GitHub)
+            .Add(p => p.OnTaskChanged, args => reported = args));
+
+        var boxes = component.FindAll("input.task-list-item-checkbox");
+
+        Assert.AreEqual(2, boxes.Count);
+        boxes[1].Change(true);
+
+        Assert.IsNotNull(reported);
+        Assert.AreEqual(1, reported.Value.Index);
+        Assert.AreEqual("> - [ ] quoted\n\n- [x] top\n", reported.Value.Markdown);
     }
 }

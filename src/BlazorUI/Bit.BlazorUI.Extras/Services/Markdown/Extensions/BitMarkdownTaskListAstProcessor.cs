@@ -34,7 +34,13 @@ public sealed partial class BitMarkdownTaskListAstProcessor : BitMarkdownAstProc
                 if (!m.Success) continue;
 
                 text.Text = m.Groups[2].Value;
-                para.Inlines.Insert(0, new BitMarkdownTaskCheckboxNode { Checked = raw.Groups[1].Value is "x" or "X" });
+                para.Inlines.Insert(0, new BitMarkdownTaskCheckboxNode
+                {
+                    Checked = raw.Groups[1].Value is "x" or "X",
+                    // The marker is the start of the item's first line, so the box is written back
+                    // into the very line the parser read it from.
+                    SourceLine = item.SourceLine
+                });
                 item.IsTask = true;
             }
         }

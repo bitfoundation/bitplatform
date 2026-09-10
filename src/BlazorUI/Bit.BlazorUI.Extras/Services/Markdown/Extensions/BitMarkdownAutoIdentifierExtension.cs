@@ -18,6 +18,9 @@ public sealed class BitMarkdownAutoIdentifierExtension : IBitMarkdownExtension
     /// <summary>True when each heading also gets a visible permalink.</summary>
     public bool AnchorLinks { get; }
 
+    public bool IsSameConfigurationAs(IBitMarkdownExtension other)
+        => other is BitMarkdownAutoIdentifierExtension e && e.AnchorLinks == AnchorLinks;
+
     public void Setup(BitMarkdownPipelineBuilder builder)
     {
         builder.AstProcessors.Add(new BitMarkdownAutoIdentifierAstProcessor(AnchorLinks));

@@ -14,7 +14,12 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public class BitMarkdownTexts
 {
-    /// <summary>The shared instance used by a pipeline that was not given texts of its own.</summary>
+    /// <summary>
+    /// The shared instance a renderer falls back to when it was handed none. It is process-wide, so
+    /// setting a word on it translates every such renderer; a pipeline that needs its own wording
+    /// is given it with <c>UseTexts</c> (or by setting the builder's <c>Texts</c>), which starts
+    /// from an instance of that builder's own.
+    /// </summary>
     public static BitMarkdownTexts Default { get; } = new();
 
     /// <summary>The title of a <c>&gt; [!NOTE]</c> alert.</summary>

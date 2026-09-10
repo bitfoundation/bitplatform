@@ -106,9 +106,11 @@ public sealed class BitMarkdownLinkReferenceAstProcessor : BitMarkdownAstProcess
         {
             return new BitMarkdownImageNode
             {
-                // The definition's destination was sanitized as a link; an image is only
-                // allowed a narrower set of schemes, so it is sanitized again here.
-                Url = BitMarkdownUrlSanitizer.Sanitize(definition.Url, isImage: true),
+                // Sanitized from the destination as written, not from the link-sanitized one: the
+                // two sets of allowed schemes overlap but neither contains the other, so an
+                // embedded "data:image/png" - a valid image source, never a valid link - would
+                // already have been blanked by the first pass.
+                Url = BitMarkdownUrlSanitizer.Sanitize(definition.RawUrl, isImage: true),
                 Title = definition.Title,
                 Alt = BitMarkdownInlineHelpers.PlainText(reference.Children)
             };

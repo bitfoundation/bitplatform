@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Runs a caller-supplied rewrite over every link and image destination in the document - what a
@@ -37,7 +37,7 @@ public sealed class BitMarkdownUrlRewriteAstProcessor : BitMarkdownAstProcessor
                         string linkUrl = Rewrite(link.Url, isImage: false);
                         if (linkUrl == link.Url) break;
                         // Url is init-only, so the node is replaced by an identical one.
-                        var replacement = new BitMarkdownLinkNode { Url = linkUrl, Title = link.Title };
+                        var replacement = new BitMarkdownLinkNode { Url = linkUrl, Title = link.Title, IsAutoLink = link.IsAutoLink };
                         replacement.Children.AddRange(link.Children);
                         list[i] = replacement;
                         break;

@@ -44,6 +44,11 @@ public sealed class BitMarkdownLinkOptionsExtension : IBitMarkdownExtension
     /// <summary>The <c>rel</c> given to a link within the document or the site.</summary>
     public string? InternalRel { get; }
 
+    public bool IsSameConfigurationAs(IBitMarkdownExtension other)
+        => other is BitMarkdownLinkOptionsExtension e
+           && e.ExternalTarget == ExternalTarget && e.ExternalRel == ExternalRel
+           && e.InternalTarget == InternalTarget && e.InternalRel == InternalRel;
+
     public void Setup(BitMarkdownPipelineBuilder builder)
         => builder.Renderers.Add(new BitMarkdownLinkOptionsRenderer(
             ExternalTarget, ExternalRel, InternalTarget, InternalRel));

@@ -9,7 +9,9 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// A heading may also name its own id, by ending with <c>{#the-id}</c>. That is worth doing for a
 /// heading whose slug would otherwise change with its wording, since every link already pointing
-/// at it breaks the moment it does. The marker is removed from the rendered text.
+/// at it breaks the moment it does. The marker is removed from the rendered text. A named id is
+/// uniquified like a generated one when something earlier in the document already took it - two
+/// headings with one id is invalid markup either way.
 /// </remarks>
 public sealed class BitMarkdownAutoIdentifierAstProcessor : BitMarkdownAstProcessor
 {
@@ -37,22 +39,15 @@ public sealed class BitMarkdownAutoIdentifierAstProcessor : BitMarkdownAstProces
 
             if (string.IsNullOrEmpty(slug))
             {
-                string baseSlug = Slugify(BitMarkdownInlineHelpers.PlainText(heading.Inlines));
-                if (baseSlug.Length == 0) baseSlug = "section";
-
-                slug = baseSlug;
-                if (used.TryGetValue(baseSlug, out int count))
-                {
-                    do
-                    {
-                        slug = $"{baseSlug}-{++count}";
-                    }
-                    while (used.ContainsKey(slug));
-                    used[baseSlug] = count;
-                }
+                slug = Slugify(BitMarkdownInlineHelpers.PlainText(heading.Inlines));
+                if (slug.Length == 0) slug = "section";
             }
 
-            used.TryAdd(slug, 0);
+            // Suffixed if it is taken, whether it was generated or spelled out: two headings
+            // carrying one id is invalid markup, and every link to it - the permalinks this
+            // processor adds included - would land on whichever of them the browser found first.
+            slug = Claim(used, slug);
+
             bool alreadyAnchored = heading.Id == slug && heading.Inlines.Count > 0
                                    && heading.Inlines[^1] is BitMarkdownHeadingAnchorNode;
             heading.Id = slug;
@@ -68,6 +63,25 @@ public sealed class BitMarkdownAutoIdentifierAstProcessor : BitMarkdownAstProces
                 });
             }
         }
+    }
+
+    // Takes the id, suffixing it with "-2", "-3", ... until it is one nothing else has taken, and
+    // records it as taken.
+    private static string Claim(Dictionary<string, int> used, string baseSlug)
+    {
+        string slug = baseSlug;
+        if (used.TryGetValue(baseSlug, out int count))
+        {
+            do
+            {
+                slug = $"{baseSlug}-{++count}";
+            }
+            while (used.ContainsKey(slug));
+            used[baseSlug] = count;
+        }
+
+        used.TryAdd(slug, 0);
+        return slug;
     }
 
     /// <summary>

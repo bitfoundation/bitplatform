@@ -23,6 +23,12 @@ public sealed class BitMarkdownMathInlineParser : BitMarkdownInlineParser
         if (contentStart >= s.Length) return false;
         if (open == 1 && (s[contentStart] == ' ' || s[contentStart] == '\n')) return false;
 
+        // Whether a "$" closes a run is decided by the character before it and the length of its
+        // own run - never by where this attempt started - so once a scan has reached the end of
+        // the text without finding one, no later "$" in the same text will either. Saying so is
+        // what keeps a paragraph of prices linear: without it each of them rescans the remainder.
+        if (state.HasNoMatchFrom(this, open, contentStart)) return false;
+
         int i = contentStart;
         while (i < s.Length)
         {
@@ -47,6 +53,10 @@ public sealed class BitMarkdownMathInlineParser : BitMarkdownInlineParser
             return true;
         }
 
+        // The scan ran out of text, so there is no closing delimiter of this length anywhere from
+        // here on. The other exits above are decisions about this position alone and say nothing
+        // about a later one, which is why only this one is remembered.
+        state.SetNoMatchFrom(this, open, contentStart);
         return false;
     }
 }

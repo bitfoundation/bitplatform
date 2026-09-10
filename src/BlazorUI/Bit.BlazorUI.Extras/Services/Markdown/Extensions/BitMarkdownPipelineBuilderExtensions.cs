@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Fluent helpers for enabling the built-in Markdown flavors.</summary>
 public static class BitMarkdownPipelineBuilderExtensions
@@ -24,6 +24,11 @@ public static class BitMarkdownPipelineBuilderExtensions
         => b.Use(new BitMarkdownEmojiExtension());
 
     /// <summary>Adds <c>:shortcode:</c> emoji replacement with per-pipeline emoji overrides.</summary>
+    /// <remarks>
+    /// A flavor is configured once. Call this before <see cref="UseAdvanced"/> - which adds emoji
+    /// itself, and defers to a configuration already made - rather than after it, where the second
+    /// call would be a second configuration of the same flavor and throws.
+    /// </remarks>
     public static BitMarkdownPipelineBuilder UseEmojis(this BitMarkdownPipelineBuilder b, IReadOnlyDictionary<string, string> overrides)
         => b.Use(new BitMarkdownEmojiExtension(overrides));
 
@@ -93,6 +98,11 @@ public static class BitMarkdownPipelineBuilderExtensions
     /// Adds automatic heading id slugs and, when <paramref name="anchorLinks"/> is <c>true</c>, a
     /// permalink after each heading so a reader can copy a link straight to that section.
     /// </summary>
+    /// <remarks>
+    /// A flavor is configured once. Call this before <see cref="UseAdvanced"/> - which adds
+    /// auto-identifiers itself, and defers to a configuration already made - rather than after it,
+    /// where the second call would be a second configuration of the same flavor and throws.
+    /// </remarks>
     public static BitMarkdownPipelineBuilder UseAutoIdentifiers(this BitMarkdownPipelineBuilder b, bool anchorLinks)
         => b.Use(new BitMarkdownAutoIdentifierExtension(anchorLinks));
 
@@ -109,6 +119,11 @@ public static class BitMarkdownPipelineBuilderExtensions
     /// sanitized again on the way out, so a rewriter can never reintroduce an unsafe destination;
     /// returning <c>null</c> drops the destination and keeps the text.
     /// </summary>
+    /// <remarks>
+    /// Unlike the other flavors this one may be added more than once, each rewrite running in turn
+    /// in the order it was added - so a base URL and a rewriter of your own compose, rather than
+    /// one of them being the only one that applies.
+    /// </remarks>
     public static BitMarkdownPipelineBuilder UseUrlRewriter(
         this BitMarkdownPipelineBuilder b, Func<BitMarkdownUrlRewriteContext, string?> rewrite)
         => b.Use(new BitMarkdownUrlRewriteExtension(rewrite));
@@ -116,8 +131,13 @@ public static class BitMarkdownPipelineBuilderExtensions
     /// <summary>
     /// Resolves every relative link and image destination against <paramref name="baseUrl"/> -
     /// what a README needs before it can be rendered anywhere but the repository it came from.
-    /// Absolute destinations and in-page fragments are left alone.
+    /// Absolute destinations and in-page fragments are left alone, and so are root-relative ones,
+    /// which are already resolved against the site root.
     /// </summary>
+    /// <remarks>
+    /// This is a URL rewrite like <see cref="UseUrlRewriter"/>, so the two compose: a base URL
+    /// followed by a rewriter of your own runs both, in that order.
+    /// </remarks>
     public static BitMarkdownPipelineBuilder UseBaseUrl(this BitMarkdownPipelineBuilder b, string baseUrl)
         => b.Use(BitMarkdownUrlRewriteExtension.ForBaseUrl(baseUrl));
 
@@ -162,14 +182,23 @@ public static class BitMarkdownPipelineBuilderExtensions
     /// was written: SmartyPants, which rewrites characters, and mathematics, which needs a
     /// typesetter on the page to be worth anything.
     /// </summary>
+    /// <remarks>
+    /// The two flavors here that take options - emoji overrides and the auto-identifier's
+    /// permalinks - are added only if they are not already on, so configuring one before the bundle
+    /// keeps that configuration instead of being overruled by the bundle's default.
+    /// </remarks>
     public static BitMarkdownPipelineBuilder UseAdvanced(this BitMarkdownPipelineBuilder b)
-        => b.UseGitHubFlavored()
+    {
+        ArgumentNullException.ThrowIfNull(b);
+
+        return b.UseGitHubFlavored()
             .UseFrontMatter()
             .UseEmphasisExtras()
             .UseContainers()
             .UseDefinitionLists()
             .UseAbbreviations()
             .UseFigures()
-            .UseEmojis()
-            .UseAutoIdentifiers();
+            .UseIfAbsent(new BitMarkdownEmojiExtension())
+            .UseIfAbsent(new BitMarkdownAutoIdentifierExtension());
+    }
 }

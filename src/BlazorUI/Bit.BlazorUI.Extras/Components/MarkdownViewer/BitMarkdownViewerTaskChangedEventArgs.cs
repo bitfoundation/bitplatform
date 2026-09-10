@@ -7,6 +7,8 @@ namespace Bit.BlazorUI;
 /// <param name="Checked">Its new state.</param>
 /// <param name="Markdown">
 /// The source with that one marker rewritten, ready to be stored. It is produced by
-/// <see cref="BitMarkdownTaskList.Toggle"/>, which counts the same markers the viewer drew.
+/// <see cref="BitMarkdownTaskList.Toggle(string, BitMarkdownTaskCheckboxNode, bool)"/> from the
+/// checkbox itself, which carries the line its marker was parsed from - so the marker rewritten is
+/// the one the reader clicked, whatever else in the document looks like a task.
 /// </param>
 public readonly record struct BitMarkdownViewerTaskChangedEventArgs(int Index, bool Checked, string Markdown);

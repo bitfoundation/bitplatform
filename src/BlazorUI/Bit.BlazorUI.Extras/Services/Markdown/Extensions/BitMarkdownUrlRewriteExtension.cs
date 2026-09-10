@@ -48,11 +48,23 @@ public sealed class BitMarkdownUrlRewriteExtension : IBitMarkdownExtension
                 return resolved.ToString();
             }
 
+            // A root-relative destination is already resolved against the site root, which is
+            // exactly what the absolute-base branch above does with one ("/img/x" under
+            // "https://b.com/r/" is "https://b.com/img/x"). A site-relative prefix therefore
+            // leaves it alone rather than prepending itself and pointing at nothing.
+            if (relative.StartsWith('/')) return relative;
+
             // A relative base ("/docs/") cannot be resolved by Uri, so the two are joined by
             // hand - which is all a site-relative prefix ever needed.
-            return prefix + relative.TrimStart('/');
+            return prefix + relative;
         });
     }
+
+    // Several rewrites may be registered, each running in turn, so a base URL and a rewriter of
+    // one's own compose. Refusing the second - which is the only other honest option, since the
+    // extension is nothing but the function it was handed - would rule out the one combination
+    // this pair is most often written as.
+    public bool AllowsMultiple => true;
 
     public void Setup(BitMarkdownPipelineBuilder builder)
         => builder.AstProcessors.Add(new BitMarkdownUrlRewriteAstProcessor(_rewrite));

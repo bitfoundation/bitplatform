@@ -14,8 +14,16 @@ public sealed class BitMarkdownLinkReferenceDefinitionNode : BitMarkdownNode
     /// <summary>The normalized label used to match references (see <see cref="BitMarkdownLinkHelpers.NormalizeLabel"/>).</summary>
     public string NormalizedLabel { get; init; } = string.Empty;
 
-    /// <summary>The (already sanitized) destination.</summary>
+    /// <summary>The destination, sanitized as a link.</summary>
     public string Url { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The destination as written, decoded but not yet sanitized. A definition does not know
+    /// whether the references resolving against it are links or images, and the two are allowed
+    /// different schemes - an embedded <c>data:image/png</c> is a valid image source and never a
+    /// valid link - so each reference sanitizes this for what it actually is.
+    /// </summary>
+    public string RawUrl { get; init; } = string.Empty;
 
     /// <summary>The optional title.</summary>
     public string? Title { get; init; }

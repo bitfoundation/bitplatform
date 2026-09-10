@@ -39,7 +39,7 @@ public sealed class BitMarkdownLinkOptionsRenderer : BitMarkdownNodeRenderer
     public override void Write(BitMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownNode node)
     {
         var link = (BitMarkdownLinkNode)node;
-        bool external = IsExternal(link.Url);
+        bool external = BitMarkdownLinkHelpers.IsExternalUrl(link.Url);
 
         b.OpenElement(0, "a");
         if (string.IsNullOrEmpty(link.Url) is false)
@@ -60,8 +60,4 @@ public sealed class BitMarkdownLinkOptionsRenderer : BitMarkdownNodeRenderer
         r.WriteNodes(b, link.Children);
         b.CloseElement();
     }
-
-    private static bool IsExternal(string url) =>
-        url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-        url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
 }

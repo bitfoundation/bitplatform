@@ -121,9 +121,11 @@
                 block fenced by <code>---</code> (YAML) or <code>+++</code> (TOML). Without
                 <code>UseFrontMatter()</code> that block is ordinary Markdown - a thematic break followed by a heading -
                 so the file renders with its metadata splashed across the top. The extension parses it into a
-                <code>BitMarkdownFrontMatterNode</code> that renders nothing and keeps the raw text, which
-                <code>BitMarkdownFrontMatterNode.Find(document)</code> reads back for you to hand to whichever
-                serializer you already use.
+                <code>BitMarkdownFrontMatterNode</code> that renders nothing and keeps the raw text. Reading that text
+                back needs the parsed document, which is what <code>OnParsed</code> hands you - it is raised with the
+                tree the renderer is about to walk, just before it does - and
+                <code>BitMarkdownFrontMatterNode.Find(document)</code> finds the node in it, for you to hand to
+                whichever serializer you already use.
             </div>
             <br />
             <div class="mdv-columns">
@@ -269,8 +271,9 @@
 
         <DemoExample Title="Table of contents" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
-                <code>OnParsed</code> hands you the parsed document just before it is rendered, and
-                <code>Document</code> exposes the same tree afterwards. Walking it with
+                The document <code>OnParsed</code> hands over is good for more than reading one node out of:
+                <code>Document</code> exposes the same tree afterwards, and either way it is the whole document.
+                Walking it with
                 <code>BitMarkdownAstHelper.Descendants</code> is how you read structure out of a document without parsing
                 it twice - here, the headings and the slugs the <code>UseAutoIdentifiers()</code> extension gave them,
                 turned into a navigation rail. <code>BitMarkdownAstHelper.ToPlainText</code> reads the other half out of
@@ -323,7 +326,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Templates" RazorCode="@example20RazorCode" Id="example20">
+        <DemoExample Title="Templates" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" CodeFiles="@example20CodeFiles" Id="example20">
             <div>
                 The three node types a host most often wants to draw itself take a template, so your
                 own component can sit in the middle of a rendered document without writing a renderer or a pipeline.
