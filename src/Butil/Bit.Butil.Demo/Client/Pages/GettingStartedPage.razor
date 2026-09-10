@@ -122,41 +122,26 @@ var secure = await window.IsSecureContext();
 </DemoSection>
 
 <DemoSection Title="Optional: tree-shake the JavaScript"
-             Api="BitButilTrimScripts / BitButilScriptScan / BitButilScriptModule"
-             Description="The bundle behind step 2 covers every API on this site, and a published app can shed the parts it never calls. One property turns it on, and in a Blazor WebAssembly project it is already on: a trimmed publish rebuilds bit-butil.js from only the modules the trimmed Bit.Butil.dll still calls, so an app injecting Clipboard, LocalStorage and Window ships around 23 KB of JavaScript instead of 315 KB. Publishing without trimming - a WebAssembly app with PublishTrimmed off, Blazor Server, a server host that prerenders - has no trimmed assembly to read, and BitButilScriptScan answers the same question from the app's own assemblies instead. It defaults to TypeReferences wherever the switch is on, so there too the switch is the whole of what you write; None turns it off again and TypeNames is a coarser name-matching mode. BitButilScriptModule adds modules or Bit.Butil class names on top of whatever either concluded, for an API reached by reflection or from your own JavaScript. It is publish-only, so a build - dotnet run and dotnet watch included - always keeps the full bundle, and it takes effect only in the project that publishes the app's static web assets."
+             Api="BitButilTrimScripts"
+             Description="The bundle behind step 2 covers every API on this site, and a published app can shed the parts it never calls: a publish rebuilds bit-butil.js from only the modules your code can still reach, so an app injecting Clipboard, LocalStorage and Window ships around 23 KB of JavaScript instead of 315 KB. One property turns it on, and in a Blazor WebAssembly project it is already on. It is publish-only, so a build - dotnet run and dotnet watch included - always keeps the full bundle."
              Code=@("""
 <!-- In a Blazor WebAssembly project there is nothing to add. Anywhere else: -->
 <PropertyGroup>
   <BitButilTrimScripts>true</BitButilTrimScripts>
-
-  <!-- Implied by the switch above; write it out to pick a different value.
-       TypeNames is the coarser mode, None publishes the full bundle. -->
-  <BitButilScriptScan>TypeReferences</BitButilScriptScan>
-</PropertyGroup>
-
-<!-- Always kept, whatever the above concluded: -->
-<ItemGroup>
-  <BitButilScriptModule Include="Clipboard;geolocation" />
-</ItemGroup>
-
-<!-- ...and to opt out entirely, wherever it is on: -->
-<PropertyGroup>
-  <BitButilTrimScripts>false</BitButilTrimScripts>
 </PropertyGroup>
 """)
              Language="xml" />
 
 <Callout Type="info" Title="The full story is one page away">
-    <a href="javascript-trimming">JavaScript trimming</a> covers the rest of it: the three signals the
-    trimming works from and which one suits which hosting model, why these properties belong in the project
-    you publish rather than in a shared <code>Directory.Build.props</code>, the two overrides for a layout
-    where the defaults look in the wrong place, the build warnings it can produce - and a live check that
-    reads back which modules the app you are looking at actually downloaded.
+    <a href="javascript-trimming">JavaScript trimming</a> is the whole feature: the signals it works from and
+    which one suits which hosting model, the modules you name yourself for an API nothing static leads to,
+    where these properties go, the same switches from C# - and a live check that reads back which modules the
+    app you are looking at actually downloaded.
 </Callout>
 
 <DemoSection Title="Optional: lazy scripts"
              Api="BitButil.UseLazyScripts"
-             Description="The other way to ship only the JavaScript you use, and the one that works in every hosting model, trimmed or not: no script tag at all. The first call into an API imports that API's own module - _content/Bit.Butil/modules/clipboard.js for Clipboard - so the browser downloads the JavaScript for the APIs the app actually calls and nothing else. Each module file is self-contained and safe to load more than once. Set the property in every project that uses Butil, a Blazor Web App's server and client both, and drop the script tag from step 2. The cost is one extra request the first time each API is used."
+             Description="The other way to ship only the JavaScript you use, and the one that works in every hosting model, trimmed or not: no script tag at all. The first call into an API imports that API's own module - _content/Bit.Butil/modules/clipboard.js for Clipboard - so the browser downloads the JavaScript for the APIs the app actually calls and nothing else. Set the property in every project that uses Butil, a Blazor Web App's server and client both, and drop the script tag from step 2. The cost is one extra request the first time each API is used."
              Code=@("""
 <!-- No <script> tag needed anywhere -->
 <PropertyGroup>
@@ -164,27 +149,6 @@ var secure = await window.IsSecureContext();
 </PropertyGroup>
 """)
              Language="xml" />
-
-<DemoSection Title="Optional: the same switches from C#"
-             Api="AddBitButilServices"
-             Description="The registration call takes an options callback carrying the library's runtime toggles: LazyScripts, ScriptModulesPath for when the package's static web assets are served from somewhere else such as a CDN, and FastInvoke. It is the escape hatch for hosts where the csproj is not yours to edit, and it decides only how the scripts load, not what a publish contains. A default publish keeps the bundle and drops the per-module files, so this switch on its own leaves the imports with nothing to fetch - keep the modules with BitButilIncludeScriptModules. Publish-time tree-shaking has no C# counterpart at all, since it happens inside dotnet publish."
-             Files=@([
-new("Program.cs", """
-builder.Services.AddBitButilServices(options =>
-{
-    options.LazyScripts = true;                  // or false to insist on the bundle
-    options.ScriptModulesPath = "/cdn/butil/";   // optional, when served elsewhere
-});
-"""),
-new("App.csproj", """
-<!-- The C# switch decides only how the scripts load, not what a publish contains. A default publish
-     keeps the bundle and drops the per-module files, so LazyScripts on its own leaves the imports
-     with nothing to fetch. -->
-<PropertyGroup>
-  <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
-</PropertyGroup>
-"""),
-]) />
 
 <DemoSection Title="Optional: fast invoke"
              Api="BitButil.UseFastInvoke"

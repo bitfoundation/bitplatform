@@ -248,6 +248,27 @@ public class MyPayload
 </PropertyGroup>
 """)
                  Language="xml" />
+
+    <DemoSection Title="The same switches from C#"
+                 Api="AddBitButilServices"
+                 Description="Publish-time tree-shaking has no C# counterpart at all, since it happens inside dotnet publish - but the loading half of it does. The registration call takes an options callback carrying the library's runtime toggles: LazyScripts, ScriptModulesPath for when the package's static web assets are served from somewhere else such as a CDN, and FastInvoke. It is the escape hatch for hosts where the csproj is not yours to edit, and it decides only how the scripts load, not what a publish contains. A default publish keeps the bundle and drops the per-module files, so this switch on its own leaves the imports with nothing to fetch - keep the modules with BitButilIncludeScriptModules, which is also the one way of asking for them that outranks the trimming."
+                 Files=@([
+new("Program.cs", """
+builder.Services.AddBitButilServices(options =>
+{
+    options.LazyScripts = true;                  // or false to insist on the bundle
+    options.ScriptModulesPath = "/cdn/butil/";   // optional, when served elsewhere
+});
+"""),
+new("App.csproj", """
+<!-- The C# switch decides only how the scripts load, not what a publish contains. A default publish
+     keeps the bundle and drops the per-module files, so LazyScripts on its own leaves the imports
+     with nothing to fetch. -->
+<PropertyGroup>
+  <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+</PropertyGroup>
+"""),
+]) />
 </div>
 
 <Callout Type="warning" Title="What no signal can follow">
