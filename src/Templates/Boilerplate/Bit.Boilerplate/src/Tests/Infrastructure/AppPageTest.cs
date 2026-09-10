@@ -54,11 +54,23 @@ public class AppPageTest : PageTest
     /// </summary>
     protected async Task<IBrowserContext> NewBrowserContext(Uri serverAddress)
     {
-        var context = await Browser.NewContextAsync(ContextOptions());
-
-        context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
+        var context = await NewBrowserContext(Browser);
 
         await SetBlazorWebAssemblyServerAddress(serverAddress, context);
+
+        return context;
+    }
+
+    /// <summary>
+    /// A context on <paramref name="browser"/> set up like this test's own - the suite's timeout, the consent banner
+    /// answered - for a test that has to launch a browser of its own. Playwright launches one per worker and every
+    /// class landing there shares it, so a <see cref="LaunchOptionsAsync"/> override only counts for the first.
+    /// </summary>
+    protected async Task<IBrowserContext> NewBrowserContext(IBrowser browser)
+    {
+        var context = await browser.NewContextAsync(ContextOptions());
+
+        context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
 
         await AnswerConsentBanner(context);
 

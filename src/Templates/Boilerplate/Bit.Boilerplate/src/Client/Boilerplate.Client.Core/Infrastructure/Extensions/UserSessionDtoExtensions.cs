@@ -37,6 +37,16 @@ public static class UserSessionDtoExtensions
                         : BitPersonaPresence.Offline;
         }
 
+        //#if (signalR == true || notification == true)
+        /// <summary>Shown read-only: only the device itself changes it, through AppMenu's switch.</summary>
+        public string GetNotificationStatusTitle(IStringLocalizer<AppStrings> localizer)
+        {
+            return session.NotificationStatus is UserSessionNotificationStatus.Allowed
+                ? localizer[nameof(AppStrings.SessionNotificationsAllowedTitle)]
+                : localizer[nameof(AppStrings.SessionNotificationsMutedTitle)];
+        }
+        //#endif
+
         /// <summary>What the authorized application may do, from the scopes it was granted.</summary>
         public IEnumerable<string> ScopeDescriptions(IStringLocalizer<AppStrings> localizer)
         {

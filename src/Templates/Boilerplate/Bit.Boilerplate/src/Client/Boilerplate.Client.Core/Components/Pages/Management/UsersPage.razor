@@ -219,8 +219,7 @@
                                                 </BitPersona>
                                                 <BitSpacer />
                                                 @*#if (signalR == true || notification == true)*@
-                                                @* Read-only: only the receiving device can answer the permission prompt. *@
-                                                <BitIcon Title="@GetNotificationStatusTitle(session)"
+                                                <BitIcon Title="@session.GetNotificationStatusTitle(Localizer)"
                                                          IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
                                                          Color="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitColor.Success : BitColor.TertiaryForeground)" />
                                                 @*#endif*@

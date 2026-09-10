@@ -1493,20 +1493,20 @@
   <data name="SendRoleNotification" xml:space="preserve">
     <value>إرسال إشعار</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>تمكين الإشعارات</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>تعطيل الإشعارات</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>الإشعارات الفورية مفعّلة في هذه الجلسة.</value>
+    <value>الإشعارات مفعّلة في هذه الجلسة.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>الإشعارات الفورية مكتومة في هذه الجلسة.</value>
+    <value>الإشعارات مكتومة في هذه الجلسة.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>الإشعارات الفورية غير مهيّأة في هذه الجلسة.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>الإشعارات</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>تشغيل الإشعارات</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>إيقاف الإشعارات</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>تم تفعيل الإشعارات</value>
@@ -1829,15 +1829,6 @@
     <value>لا توجد منطقة زمنية تطابق بحثك.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>الإشعارات الفورية</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>تشغيل الإشعارات الفورية</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>إيقاف الإشعارات الفورية</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>الإشعارات الفورية محظورة لهذا التطبيق. اسمح بالإشعارات في إعدادات المتصفح أو نظام التشغيل ثم حاول مرة أخرى.</value>
   </data>

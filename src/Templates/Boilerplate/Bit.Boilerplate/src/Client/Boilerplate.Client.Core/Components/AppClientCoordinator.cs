@@ -37,6 +37,9 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
+    //#endif
     //#if (brouter == true)
     [AutoInject] private IBrouter brouter = default!;
     //#endif
@@ -441,6 +444,9 @@ public partial class AppClientCoordinator : AppComponentBase
             AppVersion = TelemetryContext.AppVersion,
             DeviceInfo = TelemetryContext.Platform,
             CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            //#if (signalR == true || notification == true)
+            NotificationStatus = await notificationPreferenceService.GetSessionStatus(),
+            //#endif
             PlatformType = AppPlatform.Type
         }, CurrentCancellationToken);
     }

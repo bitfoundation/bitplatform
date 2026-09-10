@@ -12,6 +12,11 @@ namespace Boilerplate.Tests.E2E.Features.Chatbot;
 /// Chromium only - firefox can fake a device but not its contents, webkit neither - so other runs report
 /// inconclusive. <see cref="SpeechToTextTests"/> covers the same endpoint with no browser at all.
 /// </para>
+/// <para>
+/// On a browser of its own (See <c>AppPageTest.NewBrowserContext</c>): the shared one is whatever the worker's first
+/// class launched - normally the headless shell, with none of the switches below, where getUserMedia answers
+/// NotSupportedError.
+/// </para>
 /// </summary>
 [TestClass, TestCategory(TestCategories.Web), Retry(2)]
 public partial class WebAiChatbotDictationTests : AppTestBase
@@ -29,18 +34,15 @@ public partial class WebAiChatbotDictationTests : AppTestBase
     /// Hands chromium the recording to play whenever the page opens the microphone, and auto-answers the permission
     /// prompt - a browser dialog the test cannot click.
     /// </summary>
-    public override async Task<BrowserTypeLaunchOptions?> LaunchOptionsAsync()
+    private async Task<BrowserTypeLaunchOptions> DictationLaunchOptions()
     {
-        var options = await base.LaunchOptionsAsync();
-
-        if (IsChromium is false)
-            return options;
+        var options = (await LaunchOptionsAsync())!;
 
         var wavFile = await SpokenAudio.WavFileOf(SpokenSentence, CancellationToken.None);
 
         // The full browser rather than playwright's default headless shell, which ships without the audio stack the
         // switches below feed: in the shell the microphone never opens and the panel never starts listening.
-        options!.Channel = "chromium";
+        options.Channel = "chromium";
 
         options.Args =
         [
@@ -75,7 +77,12 @@ public partial class WebAiChatbotDictationTests : AppTestBase
         if (IsChromium is false)
             Assert.Inconclusive($"Only chromium can play a file into the microphone; this run is on {PlaywrightSettingsProvider.BrowserName}.");
 
-        var page = await OpenApp(App.Sales);
+        // Its own browser rather than Page, which is the worker's shared one (See the class summary).
+        await using var browser = await BrowserType.LaunchAsync(await DictationLaunchOptions());
+        await using var context = await NewBrowserContext(browser);
+
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(DeployedApps.Sales);
 
         // Cloudflare in front of the demo turns away a large multipart POST from an automated browser with its own
         // html 403, before the deployment sees it. The same bytes from this process are accepted (See

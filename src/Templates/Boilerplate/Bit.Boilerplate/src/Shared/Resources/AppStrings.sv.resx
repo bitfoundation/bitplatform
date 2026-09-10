@@ -1493,20 +1493,20 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Skicka notis</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Aktivera notiser</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Inaktivera notiser</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>Pushnotiser är aktiverade för den här sessionen.</value>
+    <value>Notiser är aktiverade för den här sessionen.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>Pushnotiser är tystade för den här sessionen.</value>
+    <value>Notiser är tystade för den här sessionen.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>Pushnotiser är inte konfigurerade för den här sessionen.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notiser</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Slå på notiser</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Stäng av notiser</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Aviseringar är på</value>
@@ -1829,15 +1829,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Ingen tidszon matchar din sökning.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Pushnotiser</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Slå på pushnotiser</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Stäng av pushnotiser</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Pushnotiser är blockerade för den här appen. Tillåt notiser i webbläsarens eller operativsystemets inställningar och försök igen.</value>
   </data>

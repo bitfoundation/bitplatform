@@ -113,20 +113,28 @@
                             </BitStack>
                         </BitActionButton>
 
-                        @*#if (notification == true)*@
-                        @if (AppPlatform.IsWindows is false)
+                        @*#if (signalR == true || notification == true)*@
+                        @if (ShowNotificationsToggle)
                         {
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                                 <BitActionButton Style="flex-grow:1"
-                                                 OnClick="WrapHandled(TogglePushNotifications)"
-                                                 IconName="@(pushNotificationsEnabled ? BitIconName.Ringer : BitIconName.RingerOff)">
-                                    @Localizer[nameof(AppStrings.PushNotifications)]
+                                                 OnClick="WrapHandled(ToggleNotifications)"
+                                                 IconName="@(notificationsEnabled ? BitIconName.Ringer : BitIconName.RingerOff)">
+                                    @Localizer[nameof(AppStrings.Notifications)]
                                 </BitActionButton>
-                                @* One-way bound on purpose: the preference lives in the push notification service, so the switch only reports the click. *@
-                                <BitToggle AriaLabel="@PushNotificationsToggleLabel"
-                                           OnChange="WrapHandled(TogglePushNotifications)"
-                                           Value="pushNotificationsEnabled" />
+                                @* One-way bound on purpose: the preference lives in NotificationPreferenceService, so the switch only reports the click. *@
+                                <BitToggle AriaLabel="@NotificationsToggleLabel"
+                                           OnChange="WrapHandled(ToggleNotifications)"
+                                           Value="notificationsEnabled" />
                             </BitStack>
+                            @*#if (notification == true)*@
+                            @if (pushNotificationsBlocked)
+                            {
+                                <BitText Typography="BitTypography.Caption1" Color="BitColor.Warning" Class="push-blocked-hint">
+                                    @Localizer[nameof(AppStrings.PushNotificationsBlockedMessage)]
+                                </BitText>
+                            }
+                            @*#endif*@
                         }
                         @*#endif*@
 

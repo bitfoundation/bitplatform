@@ -1493,20 +1493,20 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Benachrichtigung senden</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Benachrichtigungen aktivieren</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Benachrichtigungen deaktivieren</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>Push-Benachrichtigungen sind für diese Sitzung aktiviert.</value>
+    <value>Benachrichtigungen sind für diese Sitzung aktiviert.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>Push-Benachrichtigungen sind für diese Sitzung stummgeschaltet.</value>
+    <value>Benachrichtigungen sind für diese Sitzung stummgeschaltet.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>Push-Benachrichtigungen sind für diese Sitzung nicht konfiguriert.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Benachrichtigungen</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Benachrichtigungen einschalten</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Benachrichtigungen ausschalten</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Benachrichtigungen sind aktiv</value>
@@ -1829,15 +1829,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Keine Zeitzone entspricht Ihrer Suche.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Push-Benachrichtigungen</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Push-Benachrichtigungen einschalten</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Push-Benachrichtigungen ausschalten</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Push-Benachrichtigungen sind für diese App blockiert. Erlauben Sie Benachrichtigungen in den Einstellungen Ihres Browsers oder Betriebssystems und versuchen Sie es erneut.</value>
   </data>

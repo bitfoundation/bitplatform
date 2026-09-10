@@ -14,6 +14,9 @@ public partial class AppDiagnosticModal
     [AutoInject] private SessionStorage sessionStorage = default!;
     //#if (api == "Integrated")
     [AutoInject] private IUserController userController = default!;
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
+    //#endif
     //#endif
     [AutoInject] private IStorageService storageService = default!;
     //#if (api == "Integrated")
@@ -57,6 +60,9 @@ public partial class AppDiagnosticModal
             AppVersion = TelemetryContext.AppVersion,
             DeviceInfo = TelemetryContext.Platform,
             CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            //#if (signalR == true || notification == true)
+            NotificationStatus = await notificationPreferenceService.GetSessionStatus(), // Left out, it would mute the session.
+            //#endif
             PlatformType = AppPlatform.Type
         }, CurrentCancellationToken);
 

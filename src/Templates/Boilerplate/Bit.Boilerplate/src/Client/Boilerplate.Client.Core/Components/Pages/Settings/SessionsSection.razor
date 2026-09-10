@@ -1,7 +1,3 @@
-@*#if (signalR == true || notification == true)*@
-@using Boilerplate.Shared.Features.PushNotification
-@*#endif*@
-
 @*+:cnd:noEmit*@
 @inherits AppComponentBase
 
@@ -47,14 +43,9 @@
                     </BitPersona>
                     <BitSpacer />
                     @*#if (signalR == true || notification == true)*@
-                    <BitButton IconOnly
-                               FixedColor
-                               AutoLoading
-                               Variant="BitVariant.Text"
-                               Color="BitColor.SecondaryBackground"
-                               OnClick="WrapHandled(() => ToggleNotification(currentSession))"
-                               IconName="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
-                               Title="@($"{(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
+                    <BitIcon Title="@currentSession.GetNotificationStatusTitle(Localizer)"
+                             IconName="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
+                             Color="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitColor.Success : BitColor.TertiaryForeground)" />
                     @*#endif*@
                 </BitStack>
             </BitCard>
@@ -114,6 +105,11 @@
                                     </PrimaryTextTemplate>
                                 </BitPersona>
                                 <BitSpacer />
+                                @*#if (signalR == true || notification == true)*@
+                                <BitIcon Title="@session.GetNotificationStatusTitle(Localizer)"
+                                         IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
+                                         Color="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitColor.Success : BitColor.TertiaryForeground)" />
+                                @*#endif*@
                                 <BitButton IconOnly
                                            Color="BitColor.Error"
                                            Variant="BitVariant.Text"
@@ -122,17 +118,6 @@
                                            Title="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
                                            AriaLabel="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
                                            OnClick="WrapHandled(() => RevokeSession(session))" />
-                                @*#if (signalR == true || notification == true)*@
-                                <BitButton IconOnly
-                                           FixedColor
-                                           AutoLoading
-                                           Variant="BitVariant.Text"
-                                           Color="BitColor.SecondaryBackground"
-                                           OnClick="WrapHandled(() => ToggleNotification(session))"
-                                           IsEnabled="session.NotificationStatus is not UserSessionNotificationStatus.NotConfigured"
-                                           IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
-                                           Title="@($"{(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
-                                @*#endif*@
                             </BitStack>
                         </BitCard>
                     </RowTemplate>
