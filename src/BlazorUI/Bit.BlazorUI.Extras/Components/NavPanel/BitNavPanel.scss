@@ -27,9 +27,13 @@
     }
 
     // A rail that expands on hover widens in place, so the two widths are the two ends of a transition
-    // rather than a jump.
+    // rather than a jump. Only on the screens the panel is a column of the page on: below the breakpoint it
+    // is an off-canvas drawer, and a transition declared here outranks the one the drawer slides in with
+    // (two classes against one) and would replace it with a widening the drawer never does.
     &.bit-npn-eoh {
-        transition: min-width 150ms $mot-easing, max-width 150ms $mot-easing;
+        @include gt-sm {
+            transition: min-width 150ms $mot-easing, max-width 150ms $mot-easing;
+        }
 
         // The expanded end of that transition needs a width of the same kind as the collapsed one: a rail
         // that widens into an unbounded max-width has nothing to travel to and snaps open instead. A panel

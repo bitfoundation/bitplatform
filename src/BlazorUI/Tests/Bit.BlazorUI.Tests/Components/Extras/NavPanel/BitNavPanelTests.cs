@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.NavPanel;
@@ -156,20 +157,18 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavPanelDisabledOverlayClickShouldNotClose()
+    public void BitNavPanelDisabledShouldDrawNoOverlay()
     {
-        var isOpen = true;
-
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.IsEnabled, false);
-            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.IsOpen, true);
         });
 
-        component.Find(".bit-npn-ovl").Click();
-
-        component.WaitForAssertion(() => Assert.IsTrue(isOpen));
+        // Nothing of a disabled panel answers a click, so it covers the page with nothing that would then
+        // have to be dismissed.
+        Assert.AreEqual(0, component.FindAll(".bit-npn-ovl").Count);
     }
 
     [TestMethod]
@@ -569,7 +568,7 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavPanelEscapeShouldCloseThePanel()
+    public void BitNavPanelEscapeShouldCloseTheDrawer()
     {
         var isOpen = true;
 
@@ -579,9 +578,31 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
+        SetDrawerScreen(component, true);
+
         component.Find(".bit-npn").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
 
         component.WaitForAssertion(() => Assert.IsFalse(isOpen));
+    }
+
+    [TestMethod]
+    public void BitNavPanelEscapeShouldLeaveTheColumnOfAWideScreenAlone()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        SetDrawerScreen(component, false);
+
+        // The column is not a surface over the page: closing it there would report a state change with
+        // nothing on screen to show for it.
+        component.Find(".bit-npn").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(() => Assert.IsTrue(isOpen));
     }
 
     [TestMethod]
@@ -595,6 +616,8 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.SearchDebounceTime, 0);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
+
+        SetDrawerScreen(component, true);
 
         component.Find(".bit-srb-inp").Change("settings");
 
@@ -893,6 +916,8 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
+        SetDrawerScreen(component, true);
+
         component.Find(".bit-srb-inp").Change("settings");
         component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
 
@@ -918,8 +943,9 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.SearchDebounceTime, 0);
         });
 
-        // Nothing is announced while there is no search in place.
-        Assert.AreEqual(0, component.FindAll(".bit-npn-lvr").Count);
+        // The region is there from the start, empty: one that enters the DOM together with its first
+        // message is never announced.
+        Assert.AreEqual(string.Empty, component.Find(".bit-npn-lvr").TextContent);
 
         component.Find(".bit-srb-inp").Change("settings");
         component.WaitForAssertion(() => Assert.AreEqual("1 item found.", component.Find(".bit-npn-lvr").TextContent));
@@ -945,6 +971,64 @@ public class BitNavPanelTests : BunitTestContext
         component.Find(".bit-srb-inp").Change("settings");
 
         component.WaitForAssertion(() => Assert.AreEqual("1 hits", component.Find(".bit-npn-lvr").TextContent));
+    }
+
+    [TestMethod]
+    public void BitNavPanelFocusSearchBoxShouldLeaveAnExpandedRailToggled()
+    {
+        var isToggled = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.ExpandOnHover, true);
+            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+        });
+
+        component.Find(".bit-npn").MouseEnter();
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("bit-npn-tgl")));
+
+        component.InvokeAsync(() => component.Instance.FocusSearchBox());
+
+        // The search box is already on screen, so the focus goes to it: leaving the rail for good is not what
+        // asking for the focus asked for.
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(isToggled);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        });
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldKeepTheKeyDownHandlerItWasGiven()
+    {
+        var isOpen = true;
+        var handled = false;
+
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so supply
+        // them as raw component attributes (as real markup would) rather than through the builder, which
+        // rejects unmatched params on components without [Parameter(CaptureUnmatchedValues)].
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitNavPanel<BitNavItem>>(0);
+            builder.AddAttribute(1, nameof(BitNavPanel<BitNavItem>.Items), Items);
+            builder.AddAttribute(2, nameof(BitNavPanel<BitNavItem>.IsOpen), isOpen);
+            builder.AddAttribute(3, nameof(BitNavPanel<BitNavItem>.IsOpenChanged), EventCallback.Factory.Create<bool>(this, v => isOpen = v));
+            builder.AddAttribute(4, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => handled = true));
+            builder.CloseComponent();
+        }).FindComponent<BitNavPanel<BitNavItem>>();
+
+        SetDrawerScreen(component, true);
+
+        component.Find(".bit-npn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // Both run: the panel still closes on the key, and the handler the caller splatted is still called.
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(isOpen);
+            Assert.IsTrue(handled);
+        });
     }
 
     [TestMethod]
@@ -1054,13 +1138,15 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavPanelAutoFocusShouldMoveTheFocusIntoThePanelOnOpen()
+    public void BitNavPanelAutoFocusShouldMoveTheFocusIntoTheDrawerOnOpen()
     {
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.AutoFocus, true);
         });
+
+        SetDrawerScreen(component, true);
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
@@ -1082,10 +1168,34 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.NoSearchBox, true);
         });
 
+        SetDrawerScreen(component, true);
+
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
         // A panel without a search box hands the focus to the first item of the nav instead.
         component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count));
+    }
+
+    [TestMethod]
+    public void BitNavPanelAutoFocusShouldLeaveTheKeyboardAloneOnAWideScreen()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        SetDrawerScreen(component, false);
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // Nothing opened over the page on a wide screen, so nothing takes the keyboard from it - and nothing
+        // was recorded to hand it back to either.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+            Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        });
     }
 
     [TestMethod]

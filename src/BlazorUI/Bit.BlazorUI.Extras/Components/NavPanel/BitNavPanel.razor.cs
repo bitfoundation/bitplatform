@@ -35,6 +35,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private bool _isHovered;
     private bool _isDrawer;
     private bool _isFocused;
+    private bool _screenChecked;
     private int _focusOutToken;
     private bool _scrollLocked;
     private bool _focusTrapped;
@@ -73,9 +74,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool AllExpanded { get; set; }
 
     /// <summary>
-    /// Moves the focus into the nav panel as it opens - onto the search box, or onto the first item of a panel
-    /// without one - which is what the drawer of a small screen is expected to do.
+    /// Moves the focus into the drawer of a small screen as it opens - onto the search box, or onto the first
+    /// item of a panel without one - which is what a surface covering the page is expected to do.
     /// </summary>
+    /// <remarks>
+    /// Only the drawer takes the focus: on a wide screen the panel is a column that was on screen all along,
+    /// and nothing opened for the keyboard to be moved into.
+    /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
@@ -561,7 +566,10 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     {
         if (NoSearchBox) return;
 
-        if (IsToggled && NoToggle is false)
+        // The state the markup renders rather than the parameter behind it: a rail that is currently expanded
+        // over its neighbours (ExpandOnHover) already shows the search box, and un-toggling it for good is not
+        // what asking for the focus asked for.
+        if (_IsToggled)
         {
             await ToggleForSearch();
             return;
@@ -715,12 +723,19 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         }
 
         // The panel that has just opened takes the focus with it, so the keyboard lands in the drawer that
-        // covers the page rather than on the page behind it.
-        if (_focusOnOpenPending)
+        // covers the page rather than on the page behind it. Only the drawer does: on a wide screen the panel
+        // is a column that was on screen all along, and nothing opened for the focus to be moved into - which
+        // is also why nothing is recorded there to hand the focus back to.
+        // The move waits for the browser to report which of the two shapes the panel has, since the first
+        // render of the panel happens before the media query has answered for the first time.
+        if (_focusOnOpenPending && _screenChecked)
         {
             _focusOnOpenPending = false;
 
-            await FocusFirstElement();
+            if (_isDrawer && IsOpen)
+            {
+                await FocusFirstElement();
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -757,7 +772,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     // one hands the focus to its first item instead. A panel with neither keeps the focus where it was.
     private async Task FocusFirstElement()
     {
-        if (NoSearchBox is false && IsToggled is false && _searchBoxRef is not null)
+        if (NoSearchBox is false && _IsToggled is false && _searchBoxRef is not null)
         {
             await _searchBoxRef.FocusAsync();
             return;
@@ -796,25 +811,58 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
         if (IsOpen is false) return;
 
+        // Only the drawer of a small screen is dismissed by the key: the column of a wide one is not a surface
+        // over the page, and closing it there would flip the open state - and report it - with nothing on
+        // screen to show for it.
+        if (_isDrawer is false) return;
+
         await ClosePanel();
     }
 
-    // The attributes of the root element: the ones the caller passed, plus the hover handlers of a panel that
-    // expands on hover. They are only attached in that mode, since an attached handler re-renders the whole
-    // panel every time the pointer enters or leaves it, whether it changes anything or not.
+    // The attributes of the root element: the ones the caller passed, plus the listeners of the panel itself.
+    // Those are added to the splatted set rather than written out beside it in the markup, where an attribute
+    // of the same name silently replaces the caller's - so a panel handed an onkeydown of its own still closes
+    // on Escape, and still runs the handler it was given.
+    // The hover listeners are only added in the mode that reads them, since an attached handler re-renders the
+    // whole panel every time the pointer enters or leaves it, whether it changes anything or not.
     private Dictionary<string, object> GetRootAttributes()
     {
-        if (ExpandOnHover is false) return HtmlAttributes;
+        Dictionary<string, object> attributes = new(HtmlAttributes);
 
-        return new(HtmlAttributes)
+        AddRootHandler<KeyboardEventArgs>(attributes, "onkeydown", HandleOnKeyDown);
+
+        if (ExpandOnHover)
         {
-            ["onmouseenter"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _isHovered = true),
-            ["onmouseleave"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _isHovered = false),
+            AddRootHandler<MouseEventArgs>(attributes, "onmouseenter", _ => { _isHovered = true; return Task.CompletedTask; });
+            AddRootHandler<MouseEventArgs>(attributes, "onmouseleave", _ => { _isHovered = false; return Task.CompletedTask; });
             // The keyboard reaches the rail the way the pointer does: an item that takes the focus opens the
             // panel it sits in, otherwise the text of the items would be readable by pointer only.
-            ["onfocusin"] = EventCallback.Factory.Create<FocusEventArgs>(this, () => _isFocused = true),
-            ["onfocusout"] = EventCallback.Factory.Create<FocusEventArgs>(this, HandleOnFocusOut),
-        };
+            AddRootHandler<FocusEventArgs>(attributes, "onfocusin", _ => { _isFocused = true; return Task.CompletedTask; });
+            AddRootHandler<FocusEventArgs>(attributes, "onfocusout", _ => HandleOnFocusOut());
+        }
+
+        return attributes;
+    }
+
+    // Adds a listener of the panel's own without dropping one the caller splatted under the same name: both
+    // run, the panel's first, so nothing the panel does for itself can be turned off by accident.
+    private void AddRootHandler<T>(Dictionary<string, object> attributes, string name, Func<T, Task> handler)
+    {
+        attributes.TryGetValue(name, out var splatted);
+
+        attributes[name] = EventCallback.Factory.Create<T>(this, async (T args) =>
+        {
+            await handler(args);
+
+            switch (splatted)
+            {
+                case EventCallback<T> callback: await callback.InvokeAsync(args); break;
+                case EventCallback callback: await callback.InvokeAsync(args); break;
+                case Func<T, Task> func: await func(args); break;
+                case Action<T> action: action(args); break;
+                case Action action: action(); break;
+            }
+        });
     }
 
     // The focus leaving an item and landing on the next one arrives as two events, in that order, so the
@@ -995,6 +1043,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         SearchNavItems(_searchText);
     }
 
+    // A rail that expands on hover renders everything the open panel does while the pointer is over it - or
+    // while the keyboard is inside it - so this, rather than IsToggled, is the rail state everything reads: the
+    // markup that lays the panel out, and the two focus moves that go to what that markup put on screen.
+    private bool _IsToggled => (NoToggle is false) && IsToggled && (ExpandOnHover is false || (_isHovered is false && _isFocused is false));
+
     // Which edge the drawer is docked to, and so which way the swipe that closes it goes. The position is
     // expressed in the text direction, so the End of a right-to-left layout is the left of the screen.
     private bool _IsDockedAtEnd => (Position is BitNavPanelPosition.End) != (Dir is BitDir.Rtl);
@@ -1007,7 +1060,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     // column of the page. A render is only asked for when the answer actually changes.
     private async Task HandleScreenChange(bool isDrawer)
     {
-        if (_isDrawer == isDrawer) return;
+        // The first report is acted on whatever it says: it is the render that follows it which everything
+        // waiting for the shape of the panel to be known runs in.
+        var reported = _screenChecked;
+
+        _screenChecked = true;
+
+        if (reported && _isDrawer == isDrawer) return;
 
         _isDrawer = isDrawer;
 

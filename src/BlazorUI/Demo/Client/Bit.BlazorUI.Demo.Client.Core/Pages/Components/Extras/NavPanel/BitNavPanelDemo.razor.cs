@@ -25,7 +25,7 @@ public partial class BitNavPanelDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves the focus into the nav panel as it opens - onto the search box, or onto the first item of a panel without one.",
+            Description = "Moves the focus into the drawer of a small screen as it opens - onto the search box, or onto the first item of a panel without one. The column of a wide screen was on screen all along and takes nothing.",
         },
         new()
         {

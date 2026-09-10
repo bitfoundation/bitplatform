@@ -2,10 +2,12 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (IsOpen && NoOverlay is false)
+@if (IsOpen && NoOverlay is false && IsEnabled)
 {
     @* The overlay is a duplicate of what the Escape key and the swipe gesture already do, so it is left out
-       of the accessibility tree instead of being announced as a control of its own. *@
+       of the accessibility tree instead of being announced as a control of its own. A disabled panel draws
+       none at all: nothing of it answers a click while it is disabled, and an overlay over a page that
+       nothing left can dismiss is a page that cannot be used any more. *@
     <div style="@Styles?.Overlay"
          class="bit-npn-ovl @Classes?.Overlay"
          aria-hidden="true"
@@ -18,10 +20,7 @@
 <BitMediaQuery NoWrapper ScreenQuery="BitScreenQuery.LtMd" OnChange="HandleScreenChange" />
 
 @{
-    // A rail that expands on hover renders everything the open panel does while the pointer is over it - or
-    // while the keyboard is inside it - so its own state is what the whole markup below reads instead of
-    // IsToggled.
-    var isToggled = (NoToggle is false) && IsToggled && (ExpandOnHover is false || (_isHovered is false && _isFocused is false));
+    var isToggled = _IsToggled;
     var items = Items ?? [];
     var isEmpty = items.Count > 0 && _filteredNavItems.Count == 0;
     var searchAnnouncement = GetSearchAnnouncement();
@@ -152,11 +151,11 @@
             }
 
             @* The only channel a screen reader has for the outcome of a search: how many items it matched, or
-               that it matched none. A filtered list of links reports nothing of its own. *@
-            @if (searchAnnouncement.HasValue())
-            {
-                <div role="status" aria-live="polite" aria-atomic="true" class="bit-npn-lvr">@searchAnnouncement</div>
-            }
+               that it matched none. A filtered list of links reports nothing of its own.
+               The region itself is always rendered, empty until there is something to say: a live region that
+               enters the DOM together with its first message is not announced at all - only a change of the
+               text of one that was already there is. *@
+            <div role="status" aria-live="polite" aria-atomic="true" class="bit-npn-lvr">@searchAnnouncement</div>
 
             @* The empty message is rendered beside the nav rather than in place of it, so the nav keeps its
                registrations (and the expansion state of the branches) while a search matches nothing. *@
@@ -223,10 +222,9 @@
         </div>;
 }
 
-@* The hover handlers are splatted rather than written out, so a panel that does not expand on hover has no
-   listener to re-render it every time the pointer crosses it. *@
+@* Every listener of the panel's own is added to the splatted attributes rather than written out beside them,
+   where one of the same name silently replaces what the caller passed. *@
 <div @ref="RootElement" @attributes="GetRootAttributes()"
-     @onkeydown="HandleOnKeyDown"
      id="@_Id"
      role="@(isModal ? "dialog" : null)"
      aria-modal="@(isModal && NoFocusTrap is false ? "true" : null)"

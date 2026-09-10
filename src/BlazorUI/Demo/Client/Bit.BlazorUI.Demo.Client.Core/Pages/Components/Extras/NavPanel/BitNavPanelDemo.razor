@@ -280,8 +280,10 @@
                 <b>NoAutoClose</b> keeps it open after a navigation, <b>NoOverlay</b> drops the overlay so the
                 page behind it stays clickable, and <b>NoSwipe</b> turns the swipe gesture off. The panel below
                 shows all three, so it can only be closed through its own button. <b>AutoFocus</b> goes the
-                other way and moves the focus into the panel as it opens - onto the search box, or onto the
-                first item of a panel without one - which is what a drawer covering the page is expected to do.
+                other way and moves the focus into the drawer as it opens - onto the search box, or onto the
+                first item of a panel without one - which is what a surface covering the page is expected to
+                do. All of these belong to the drawer of a small screen: the column of a wide one is not a
+                surface over the page, so it neither closes on the Escape key nor takes the focus.
             </div>
             <br />
             <div class="open-btn">
