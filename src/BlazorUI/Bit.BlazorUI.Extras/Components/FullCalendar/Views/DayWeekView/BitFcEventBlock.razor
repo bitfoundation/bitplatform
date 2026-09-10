@@ -6,16 +6,24 @@
     var displayStart = _previewStart ?? Event.StartDate;
     var displayEnd = _previewEnd ?? Event.EndDate;
     var durationMin = (displayEnd - displayStart).TotalMinutes;
-    var heightPx = (durationMin / 60.0) * BitFullCalendarHelpers.HourHeightPx;
+    @* Sized and offset against --bit-bfc-hour-height - the same custom property the hour rows read -
+       so a consumer that re-scales the grid keeps the blocks aligned with the hours they sit on.
+       The height the placement reports is the event's span clipped to the visible hour window, so a
+       block reaching past the last rendered hour stops there; a live resize preview is drawn at its
+       own length, since that is the span the pointer is currently dragging out. *@
+    var isPreviewing = _previewStart.HasValue || _previewEnd.HasValue;
+    var heightHours = isPreviewing || VisibleDurationHours is not { } visibleHours ? durationMin / 60.0 : visibleHours;
+    var height = BitFullCalendarHelpers.HoursToCssLength(heightHours);
     var isDotVariant = State.BadgeVariant == BitFullCalendarBadgeVariant.Dot;
     var colorClass = isDotVariant ? "dot-variant" : "bit-bfc-color";
     var colorStyleVar = ColorScheme.GetColorStyle(Event.Color);
-    double translateYPx = 0;
+    double translateYHours = 0;
     if (_isResizing && string.Equals(_resizeDirection, "top", StringComparison.Ordinal) && _resizeBaseEvent != null && _previewStart.HasValue)
-        translateYPx = (displayStart - _resizeBaseEvent.StartDate).TotalMinutes / 60.0 * BitFullCalendarHelpers.HourHeightPx;
+        translateYHours = (displayStart - _resizeBaseEvent.StartDate).TotalMinutes / 60.0;
     var inv = System.Globalization.CultureInfo.InvariantCulture;
-    var blockStyle = $"{colorStyleVar}height:{heightPx.ToString("F0", inv)}px;transform:translateY({translateYPx.ToString("F2", inv)}px);";
-    var tooltip = BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture);
+    var translateY = BitFullCalendarHelpers.HoursToCssLength(translateYHours);
+    var blockStyle = $"{colorStyleVar}height:{height};transform:translateY({translateY});";
+    var tooltip = BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel);
     var resizeClasses = "";
     if (_isResizing)
     {
@@ -25,12 +33,12 @@
     }
 }
 
-<div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses"
+<div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses @Event.CssClass"
      style="@blockStyle"
      title="@tooltip"
      role="button"
      tabindex="0"
-     draggable="@(State.ReadOnly ? "false" : "true")"
+     draggable="@(CanEdit ? "true" : "false")"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
@@ -38,7 +46,7 @@
      @onclick:stopPropagation="true"
      @onkeydown:stopPropagation="true">
 
-    @if (!State.ReadOnly)
+    @if (CanEdit)
     {
         <div id="@_topHandleId"
              class="bit-bfc-resize-handle bit-bfc-resize-handle-top"
@@ -69,7 +77,7 @@
         }
     }
 
-    @if (!State.ReadOnly)
+    @if (CanEdit)
     {
         <div id="@_bottomHandleId"
              class="bit-bfc-resize-handle bit-bfc-resize-handle-bottom"

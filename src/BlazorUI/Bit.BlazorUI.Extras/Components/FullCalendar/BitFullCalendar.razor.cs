@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace Bit.BlazorUI;
 
-public partial class BitFullCalendar : IDisposable
+public partial class BitFullCalendar
 {
     /// <summary>
     /// Culture for the calendar. Accepts any CultureInfo, e.g. new CultureInfo("fa-IR").
@@ -28,6 +28,8 @@ public partial class BitFullCalendar : IDisposable
     /// When set, the calendar navigates to the supplied date. User interactions (prev/next/today navigation,
     /// selecting a day or a month) update this value through the generated <c>DateChanged</c> callback. Use
     /// <see cref="DefaultDate"/> to provide an initial value without taking over control of the date.
+    /// A date outside the <see cref="MinDate"/>/<see cref="MaxDate"/> window is pulled back into it and the
+    /// corrected value is pushed back through the binding.
     /// </para>
     /// </summary>
     [Parameter, TwoWayBound] public DateTime Date { get; set; } = DateTime.Today;
@@ -88,10 +90,33 @@ public partial class BitFullCalendar : IDisposable
     [Parameter] public bool HideFilters { get; set; }
 
     /// <summary>
+    /// When <c>true</c>, the whole toolbar is removed - the today/prev/next navigation, the mode and
+    /// view tabs, the filters, the "Add Event" button, and the settings gear. Use it to drive the
+    /// calendar entirely from your own chrome through the two-way bound <see cref="View"/>,
+    /// <see cref="Mode"/>, and <see cref="Date"/> parameters or the navigation methods.
+    /// </summary>
+    [Parameter] public bool HideHeader { get; set; }
+
+    /// <summary>
     /// When <c>true</c>, the built-in settings gear button is hidden from the calendar header.
     /// Consumers can still drive settings programmatically through the <see cref="Settings"/> object.
     /// </summary>
     [Parameter] public bool HideSettings { get; set; }
+
+    /// <summary>
+    /// The latest date the calendar can navigate to and display. Navigation past it is refused, the
+    /// "next" button is disabled, and a bound <see cref="Date"/> beyond it is pulled back.
+    /// <c>null</c> (the default) leaves the calendar unbounded.
+    /// </summary>
+    [Parameter] public DateTime? MaxDate { get; set; }
+
+    /// <summary>
+    /// The earliest date the calendar can navigate to and display. Navigation before it is refused,
+    /// the "previous" button is disabled, and a bound <see cref="Date"/> before it is pulled forward.
+    /// <c>null</c> (the default) leaves the calendar unbounded. A window whose bounds are inverted is
+    /// ignored altogether.
+    /// </summary>
+    [Parameter] public DateTime? MinDate { get; set; }
 
     /// <summary>
     /// The currently active layout mode of the calendar (<see cref="BitFullCalendarMode.Event"/> or
@@ -127,9 +152,9 @@ public partial class BitFullCalendar : IDisposable
     [Parameter] public EventCallback<BitFullCalendarChangeEventArgs> OnChange { get; set; }
 
     /// <summary>
-    /// Raised when the visible date range changes - for example when the user navigates
-    /// with prev/next/today buttons or switches views. The callback receives the inclusive
-    /// start and end dates of the new range together with the active view.
+    /// Raised when the visible date range changes - on first render, and afterwards whenever the user
+    /// navigates with the prev/next/today buttons, switches views, or the grid shape changes. The
+    /// callback receives the inclusive start and end dates of the new range together with the active view.
     /// </summary>
     [Parameter] public EventCallback<BitFullCalendarDateChangeEventArgs> OnDateChange { get; set; }
 
@@ -148,6 +173,14 @@ public partial class BitFullCalendar : IDisposable
     [Parameter] public EventCallback<BitFullCalendarMode> OnModeChange { get; set; }
 
     /// <summary>
+    /// Raised when the calendar refuses a user-driven change: a drop or resize that would overlap
+    /// another event while <see cref="BitFullCalendarSettings.AllowEventOverlap"/> is <c>false</c>,
+    /// one that would land outside the <see cref="MinDate"/>/<see cref="MaxDate"/> window, or one
+    /// targeting an event marked <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// </summary>
+    [Parameter] public EventCallback<BitFullCalendarChangeRefusal> OnRefused { get; set; }
+
+    /// <summary>
     /// Raised when the active view changes - for example when the user selects a view tab or
     /// navigates from the year overview into a month. The callback receives the new <see cref="BitFullCalendarView"/>.
     /// </summary>
@@ -160,6 +193,7 @@ public partial class BitFullCalendar : IDisposable
     /// <para>
     /// Everything that does not modify events keeps working - date navigation, view and mode
     /// switching, filtering, the settings panel, and opening an event to read its details.
+    /// Setting <c>IsEnabled</c> to <c>false</c> has the same effect on the event-editing surface.
     /// </para>
     /// </summary>
     [Parameter] public bool ReadOnly { get; set; }
@@ -172,9 +206,11 @@ public partial class BitFullCalendar : IDisposable
     [Parameter] public IReadOnlyList<BitFullCalendarResource>? Resources { get; set; }
 
     /// <summary>
-    /// Configuration settings controlling initial calendar preferences
-    /// such as dark mode, time format, badge variant, day start hour, and agenda grouping.
-    /// Values are applied when the component initializes or when a new instance is assigned.
+    /// Configuration settings controlling calendar preferences such as the time format, the visible
+    /// hour window, the slot duration, hidden weekdays, week numbers, badge variant, and agenda
+    /// grouping. Values are applied when the component initializes and whenever the consumer changes
+    /// one of them; preferences the user changes from the built-in settings panel are written back
+    /// onto this instance so a parent re-render never reverts them.
     /// </summary>
     [Parameter] public BitFullCalendarSettings Settings { get; set; } = new();
 
@@ -221,13 +257,22 @@ public partial class BitFullCalendar : IDisposable
     /// </summary>
     [Parameter] public RenderFragment<BitFullCalendarEvent>? WeekEventTemplate { get; set; }
 
-    public BitFullCalendarState State { get; set; } = new();
+    /// <summary>
+    /// The calendar's live state: the active view, mode, selected date, resolved settings, and the
+    /// event/resource projections every inner view renders from. Exposed so consumers can read what
+    /// the calendar is currently showing; drive it through the parameters and the navigation methods
+    /// rather than mutating it directly.
+    /// </summary>
+    public BitFullCalendarState State { get; } = new();
+
     private BitFullCalendarChangeNotifier _changeNotifier = default!;
     private BitFullCalendarColorScheme _colorScheme = new(null);
-    private BitFullCalendarSettings? _appliedSettings;
+    private BitFcCalendarToast? _toast;
+    private SettingsSnapshot? _appliedSettings;
     private bool _defaultViewApplied;
     private bool _defaultModeApplied;
     private bool _defaultDateApplied;
+    private bool _initialDateChangeRaised;
     // The last view/mode/date the component reconciled with the bound parameters. Used to detect
     // genuine (user-driven) state changes so OnViewChange/OnModeChange are not raised for
     // parameter- or default-driven updates and the bound parameters stay in sync.
@@ -243,6 +288,15 @@ public partial class BitFullCalendar : IDisposable
     // resolved range to consumers once ApplyBoundState has finished, instead of forwarding every
     // intermediate range.
     private BitFullCalendarDateChangeEventArgs? _pendingDateChange;
+
+    protected override string RootElementClass => "bit-bfc";
+
+    /// <summary>
+    /// The direction the calendar renders in: the explicit <c>Dir</c> parameter when supplied,
+    /// otherwise the direction of the active culture, so a right-to-left culture flips the layout
+    /// without the consumer having to say so twice.
+    /// </summary>
+    private BitDir ResolvedDir => Dir ?? (State.IsRtl ? BitDir.Rtl : BitDir.Ltr);
 
     private BitCascadingValueList BuildCascadingValues() => new()
     {
@@ -282,8 +336,12 @@ public partial class BitFullCalendar : IDisposable
         Texts ??= new();
 
         State.Initialize(Events ?? [], ResolveCulture());
+        State.SetDateBounds(MinDate, MaxDate);
         ApplySettings();
-        _changeNotifier = new BitFullCalendarChangeNotifier(State, args => OnChange.InvokeAsync(args));
+        _changeNotifier = new BitFullCalendarChangeNotifier(State, args => OnChange.InvokeAsync(args))
+        {
+            RefusalReporter = ReportRefusal
+        };
         State.OnStateChanged += HandleStateChanged;
         State.OnDateRangeChanged += HandleDateRangeChanged;
 
@@ -292,6 +350,8 @@ public partial class BitFullCalendar : IDisposable
         _lastView = State.View;
         _lastMode = State.Mode;
         _lastDate = State.SelectedDate;
+
+        base.OnInitialized();
     }
 
     protected override void OnParametersSet()
@@ -326,7 +386,11 @@ public partial class BitFullCalendar : IDisposable
 
             State.SyncResources(Resources);
             State.SyncViews(Views);
-            State.SetReadOnly(ReadOnly);
+            // A disabled calendar cannot be edited either, so it takes the same presentation-only path.
+            State.SetReadOnly(ReadOnly || IsEnabled is false);
+            // The bounds are applied before the date so a bound Date outside them is clamped once,
+            // by the same rule the navigation buttons obey.
+            State.SetDateBounds(MinDate, MaxDate);
 
             // Apply the view, mode, and date after resources and views are synced: Timeline mode
             // requires Resources to be populated to take effect, and both the mode and the view are
@@ -346,6 +410,7 @@ public partial class BitFullCalendar : IDisposable
         if (_pendingDateChange is { } pending)
         {
             _pendingDateChange = null;
+            _initialDateChangeRaised = true;
             InvokeAsync(() => OnDateChange.InvokeAsync(pending));
         }
 
@@ -355,6 +420,32 @@ public partial class BitFullCalendar : IDisposable
         // echo of the parameters just applied, so it stays silent (raiseEvents: false) like the
         // reconciliations queued during the parameter-application window.
         InvokeAsync(() => ReconcileBoundState(raiseEvents: false));
+
+        base.OnParametersSet();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Consumers commonly fetch the events for the range the calendar is about to show, so the
+        // initial range is reported like every later one instead of only after the first navigation.
+        if (firstRender && _initialDateChangeRaised is false && OnDateChange.HasDelegate)
+        {
+            _initialDateChangeRaised = true;
+            var (start, end) = BitFullCalendarHelpers.GetDateRange(
+                State.View, State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
+            // This range never travelled through the state's own channel, so tell it the range has
+            // been reported - otherwise a first navigation that lands right back on it (pressing
+            // "Today" while today is already showing) would report the same range a second time.
+            State.MarkCurrentRangeReported();
+            InvokeAsync(() => OnDateChange.InvokeAsync(new BitFullCalendarDateChangeEventArgs
+            {
+                Start = start,
+                End = end,
+                View = State.View
+            }));
+        }
+
+        base.OnAfterRender(firstRender);
     }
 
     private void ApplyBoundState()
@@ -396,30 +487,184 @@ public partial class BitFullCalendar : IDisposable
         {
             // Controlled: keep the state aligned with the bound Date. SetSelectedDate does not
             // short-circuit on equal values, so guard against redundant navigation/re-render loops.
-            if (State.SelectedDate != Date)
-                State.SetSelectedDate(Date);
+            // The comparison uses the clamped target so a Date outside the allowed window doesn't
+            // re-trigger navigation on every parameter pass.
+            var target = State.ClampToAllowedRange(Date);
+            if (State.SelectedDate != target)
+                State.SetSelectedDate(target);
         }
         else if (!_defaultDateApplied && DefaultDate.HasValue)
         {
             _defaultDateApplied = true;
-            if (State.SelectedDate != DefaultDate.Value)
-                State.SetSelectedDate(DefaultDate.Value);
+            var target = State.ClampToAllowedRange(DefaultDate.Value);
+            if (State.SelectedDate != target)
+                State.SetSelectedDate(target);
         }
     }
 
+    /// <summary>
+    /// Pushes only the settings the CONSUMER changed into the state.
+    /// <para>
+    /// The previous pass's values are snapshotted, so a setting the consumer left alone is never
+    /// re-pushed. Blindly re-applying every value on each parameter pass would revert whatever the
+    /// user had just picked in the built-in settings panel as soon as anything re-rendered the parent.
+    /// User-driven changes travel the other way, through <see cref="SyncSettingsFromState"/>.
+    /// </para>
+    /// </summary>
     private void ApplySettings()
     {
-        // Sync each individual value rather than short-circuiting on a reference comparison: the same
-        // BitFullCalendarSettings instance can be mutated in place by the consumer, so comparing the
-        // reference would silently ignore those updates. The State.Set* methods each guard against
-        // no-op changes, so re-applying unchanged values is cheap and raises no spurious notifications.
-        _appliedSettings = Settings;
+        var current = SettingsSnapshot.From(Settings);
+        var previous = _appliedSettings;
+        _appliedSettings = current;
+
+        // First pass: nothing has been applied yet, so every value is the consumer's.
+        if (previous is null)
+        {
+            PushAllSettings();
+            return;
+        }
+
+        if (previous.Use24HourFormat != current.Use24HourFormat)
+            State.SetUse24HourFormat(current.Use24HourFormat);
+        if (previous.BadgeVariant != current.BadgeVariant)
+            State.SetBadgeVariant(current.BadgeVariant);
+        if (previous.VisibleStartHour != current.VisibleStartHour || previous.VisibleEndHour != current.VisibleEndHour)
+            State.SetVisibleHours(current.VisibleStartHour, current.VisibleEndHour);
+        if (previous.StartOfDayHour != current.StartOfDayHour)
+            State.SetStartOfDayHour(current.StartOfDayHour);
+        if (previous.SlotDurationMinutes != current.SlotDurationMinutes)
+            State.SetSlotDurationMinutes(current.SlotDurationMinutes);
+        if (previous.AgendaModeGroupBy != current.AgendaModeGroupBy)
+            State.SetAgendaModeGroupBy(current.AgendaModeGroupBy);
+        if (previous.EventLayout != current.EventLayout)
+            State.SetEventLayout(current.EventLayout);
+        if (previous.ShowDayViewCalendar != current.ShowDayViewCalendar)
+            State.SetShowDayViewCalendar(current.ShowDayViewCalendar);
+        if (previous.HiddenDays != current.HiddenDays)
+            State.SetHiddenDays(Settings.HiddenDays);
+        if (previous.FirstDayOfWeek != current.FirstDayOfWeek)
+            State.SetFirstDayOfWeek(current.FirstDayOfWeek);
+        if (previous.ShowWeekNumbers != current.ShowWeekNumbers)
+            State.SetShowWeekNumbers(current.ShowWeekNumbers);
+        if (previous.ShowCurrentTimeIndicator != current.ShowCurrentTimeIndicator)
+            State.SetShowCurrentTimeIndicator(current.ShowCurrentTimeIndicator);
+        if (previous.MaxEventsPerDayCell != current.MaxEventsPerDayCell)
+            State.SetMaxEventsPerDayCell(current.MaxEventsPerDayCell);
+        if (previous.RequireEventDescription != current.RequireEventDescription)
+            State.SetRequireEventDescription(current.RequireEventDescription);
+        if (previous.AllowEventOverlap != current.AllowEventOverlap)
+            State.SetAllowEventOverlap(current.AllowEventOverlap);
+        if (previous.AllowRangeSelection != current.AllowRangeSelection)
+            State.SetAllowRangeSelection(current.AllowRangeSelection);
+        if (previous.BusinessDays != current.BusinessDays)
+            State.SetBusinessDays(Settings.BusinessDays);
+        if (previous.BusinessStartHour != current.BusinessStartHour || previous.BusinessEndHour != current.BusinessEndHour)
+            State.SetBusinessHours(current.BusinessStartHour, current.BusinessEndHour);
+        if (previous.HighlightBusinessHours != current.HighlightBusinessHours)
+            State.SetHighlightBusinessHours(current.HighlightBusinessHours);
+        if (previous.RestrictToBusinessHours != current.RestrictToBusinessHours)
+            State.SetRestrictToBusinessHours(current.RestrictToBusinessHours);
+        if (previous.FixedWeekCount != current.FixedWeekCount)
+            State.SetFixedWeekCount(current.FixedWeekCount);
+        if (previous.ShowNonCurrentDates != current.ShowNonCurrentDates)
+            State.SetShowNonCurrentDates(current.ShowNonCurrentDates);
+        if (previous.NavLinks != current.NavLinks)
+            State.SetNavLinks(current.NavLinks);
+    }
+
+    private void PushAllSettings()
+    {
         State.SetUse24HourFormat(Settings.Use24HourFormat);
         State.SetBadgeVariant(Settings.BadgeVariant);
+        // The window comes first: it decides the band the scroll anchor is clamped into.
+        State.SetVisibleHours(Settings.VisibleStartHour, Settings.VisibleEndHour);
         State.SetStartOfDayHour(Settings.StartOfDayHour);
+        State.SetSlotDurationMinutes(Settings.SlotDurationMinutes);
         State.SetAgendaModeGroupBy(Settings.AgendaModeGroupBy);
         State.SetEventLayout(Settings.EventLayout);
         State.SetShowDayViewCalendar(Settings.ShowDayViewCalendar);
+        State.SetHiddenDays(Settings.HiddenDays);
+        State.SetFirstDayOfWeek(Settings.FirstDayOfWeek);
+        State.SetShowWeekNumbers(Settings.ShowWeekNumbers);
+        State.SetShowCurrentTimeIndicator(Settings.ShowCurrentTimeIndicator);
+        State.SetMaxEventsPerDayCell(Settings.MaxEventsPerDayCell);
+        State.SetRequireEventDescription(Settings.RequireEventDescription);
+        State.SetAllowEventOverlap(Settings.AllowEventOverlap);
+        State.SetAllowRangeSelection(Settings.AllowRangeSelection);
+        State.SetBusinessDays(Settings.BusinessDays);
+        State.SetBusinessHours(Settings.BusinessStartHour, Settings.BusinessEndHour);
+        State.SetHighlightBusinessHours(Settings.HighlightBusinessHours);
+        State.SetRestrictToBusinessHours(Settings.RestrictToBusinessHours);
+        State.SetFixedWeekCount(Settings.FixedWeekCount);
+        State.SetShowNonCurrentDates(Settings.ShowNonCurrentDates);
+        State.SetNavLinks(Settings.NavLinks);
+    }
+
+    /// <summary>
+    /// Copies the state's resolved preferences back onto the <see cref="Settings"/> instance after a
+    /// user-driven change, and re-snapshots it. Without this write-back the next parameter pass would
+    /// see the consumer's untouched object as "different" and revert what the user just picked.
+    /// <para>
+    /// Only the values the STATE actually changed are written back. A state change can be observed
+    /// after the consumer has already mutated <see cref="Settings"/> (for example inside an
+    /// <c>OnChange</c> handler) but before the next parameter pass reads it, and writing every value
+    /// would overwrite that pending edit with the value the calendar still holds.
+    /// </para>
+    /// </summary>
+    private void SyncSettingsFromState()
+    {
+        if (Settings is null) return;
+
+        var previous = _appliedSettings;
+
+        if (previous is null || previous.Use24HourFormat != State.Use24HourFormat)
+            Settings.Use24HourFormat = State.Use24HourFormat;
+        if (previous is null || previous.BadgeVariant != State.BadgeVariant)
+            Settings.BadgeVariant = State.BadgeVariant;
+        if (previous is null || previous.VisibleStartHour != State.VisibleStartHour)
+            Settings.VisibleStartHour = State.VisibleStartHour;
+        if (previous is null || previous.VisibleEndHour != State.VisibleEndHour)
+            Settings.VisibleEndHour = State.VisibleEndHour;
+        if (previous is null || previous.StartOfDayHour != State.StartOfDayHour)
+            Settings.StartOfDayHour = State.StartOfDayHour;
+        if (previous is null || previous.SlotDurationMinutes != State.SlotDurationMinutes)
+            Settings.SlotDurationMinutes = State.SlotDurationMinutes;
+        if (previous is null || previous.AgendaModeGroupBy != State.AgendaModeGroupBy)
+            Settings.AgendaModeGroupBy = State.AgendaModeGroupBy;
+        if (previous is null || previous.EventLayout != State.EventLayout)
+            Settings.EventLayout = State.EventLayout;
+        if (previous is null || previous.ShowDayViewCalendar != State.ShowDayViewCalendar)
+            Settings.ShowDayViewCalendar = State.ShowDayViewCalendar;
+        if (previous is null || previous.ShowWeekNumbers != State.ShowWeekNumbers)
+            Settings.ShowWeekNumbers = State.ShowWeekNumbers;
+        if (previous is null || previous.ShowCurrentTimeIndicator != State.ShowCurrentTimeIndicator)
+            Settings.ShowCurrentTimeIndicator = State.ShowCurrentTimeIndicator;
+        if (previous is null || previous.MaxEventsPerDayCell != State.MaxEventsPerDayCell)
+            Settings.MaxEventsPerDayCell = State.MaxEventsPerDayCell;
+        if (previous is null || previous.RequireEventDescription != State.RequireEventDescription)
+            Settings.RequireEventDescription = State.RequireEventDescription;
+        if (previous is null || previous.AllowEventOverlap != State.AllowEventOverlap)
+            Settings.AllowEventOverlap = State.AllowEventOverlap;
+        if (previous is null || previous.AllowRangeSelection != State.AllowRangeSelection)
+            Settings.AllowRangeSelection = State.AllowRangeSelection;
+        if (previous is null || previous.BusinessStartHour != State.BusinessStartHour)
+            Settings.BusinessStartHour = State.BusinessStartHour;
+        if (previous is null || previous.BusinessEndHour != State.BusinessEndHour)
+            Settings.BusinessEndHour = State.BusinessEndHour;
+        if (previous is null || previous.HighlightBusinessHours != State.HighlightBusinessHours)
+            Settings.HighlightBusinessHours = State.HighlightBusinessHours;
+        if (previous is null || previous.RestrictToBusinessHours != State.RestrictToBusinessHours)
+            Settings.RestrictToBusinessHours = State.RestrictToBusinessHours;
+        if (previous is null || previous.FixedWeekCount != State.FixedWeekCount)
+            Settings.FixedWeekCount = State.FixedWeekCount;
+        if (previous is null || previous.ShowNonCurrentDates != State.ShowNonCurrentDates)
+            Settings.ShowNonCurrentDates = State.ShowNonCurrentDates;
+        if (previous is null || previous.NavLinks != State.NavLinks)
+            Settings.NavLinks = State.NavLinks;
+
+        // The new baseline is what the STATE now holds, not what Settings holds: a pending consumer
+        // edit has to stay "different" so the next ApplySettings still pushes it.
+        _appliedSettings = SettingsSnapshot.FromState(State, previous);
     }
 
     private void HandleStateChanged()
@@ -429,6 +674,9 @@ public partial class BitFullCalendar : IDisposable
         var applyingParameters = _applyingParameters;
         InvokeAsync(async () =>
         {
+            if (applyingParameters is false)
+                SyncSettingsFromState();
+
             await ReconcileBoundState(raiseEvents: !applyingParameters);
             StateHasChanged();
         });
@@ -465,7 +713,10 @@ public partial class BitFullCalendar : IDisposable
                 await OnViewChange.InvokeAsync(State.View);
         }
 
-        if (_lastDate != State.SelectedDate)
+        // A bound Date the bounds clamped resolves to a value the state already holds, so the
+        // divergence has to be detected against the parameter too - otherwise the binding would keep
+        // reporting a date the calendar never navigated to.
+        if (_lastDate != State.SelectedDate || (DateHasBeenSet && Date != State.SelectedDate))
         {
             _lastDate = State.SelectedDate;
             await AssignDate(State.SelectedDate);
@@ -483,14 +734,167 @@ public partial class BitFullCalendar : IDisposable
             return;
         }
 
+        _initialDateChangeRaised = true;
         InvokeAsync(() => OnDateChange.InvokeAsync(args));
+    }
+
+    private void ReportRefusal(BitFullCalendarChangeRefusal refusal)
+    {
+        var message = refusal switch
+        {
+            BitFullCalendarChangeRefusal.Overlap => Texts.EventOverlapMessage,
+            BitFullCalendarChangeRefusal.OutOfRange => Texts.OutOfRangeMessage,
+            BitFullCalendarChangeRefusal.OutsideBusinessHours => Texts.OutsideBusinessHoursMessage,
+            _ => null
+        };
+
+        if (message is { Length: > 0 })
+            _toast?.Show(message, isError: true);
+
+        if (OnRefused.HasDelegate)
+            InvokeAsync(() => OnRefused.InvokeAsync(refusal));
     }
 
 
 
-    public void Dispose()
+    /// <summary>Moves the calendar to the supplied date, clamped into the allowed date window.</summary>
+    public void GoToDate(DateTime date) => State.SetSelectedDate(date);
+
+    /// <summary>Moves the calendar to today, clamped into the allowed date window.</summary>
+    public void GoToToday() => State.GoToToday();
+
+    /// <summary>
+    /// Steps the calendar one period forward (a day, week, month, or year depending on the active
+    /// view). Does nothing when the step would leave the allowed date window.
+    /// </summary>
+    public void NavigateNext() => State.NavigateNext();
+
+    /// <summary>
+    /// Steps the calendar one period back. Does nothing when the step would leave the allowed date window.
+    /// </summary>
+    public void NavigatePrevious() => State.NavigatePrevious();
+
+    /// <summary>
+    /// Switches the active view. The value is clamped into the allowed <see cref="Views"/> set and,
+    /// in Timeline mode, into the layouts the timeline can render.
+    /// </summary>
+    public void ChangeView(BitFullCalendarView view) => State.SetView(view);
+
+    /// <summary>
+    /// Switches the active layout mode. Timeline is refused (and falls back to Event) while there is
+    /// no resource or no timeline-capable view to render.
+    /// </summary>
+    public void ChangeMode(BitFullCalendarMode mode) => State.SetMode(mode);
+
+    /// <summary>The inclusive start and end dates the calendar is currently showing.</summary>
+    public (DateTime Start, DateTime End) GetVisibleRange()
+        => BitFullCalendarHelpers.GetDateRange(State.View, State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
+
+
+
+    protected override ValueTask DisposeAsync(bool disposing)
     {
-        State.OnStateChanged -= HandleStateChanged;
-        State.OnDateRangeChanged -= HandleDateRangeChanged;
+        if (disposing)
+        {
+            State.OnStateChanged -= HandleStateChanged;
+            State.OnDateRangeChanged -= HandleDateRangeChanged;
+        }
+
+        return base.DisposeAsync(disposing);
+    }
+
+    /// <summary>
+    /// The settings values last pushed into the state, so the next parameter pass can tell a
+    /// consumer-driven change apart from an unchanged value the user has since overridden.
+    /// <see cref="HiddenDays"/> is captured as a canonical string because the list itself is a
+    /// mutable reference the consumer may reuse.
+    /// </summary>
+    private sealed record SettingsSnapshot(
+        bool Use24HourFormat,
+        BitFullCalendarBadgeVariant BadgeVariant,
+        int StartOfDayHour,
+        int VisibleStartHour,
+        int VisibleEndHour,
+        int SlotDurationMinutes,
+        BitFullCalendarAgendaGroupBy AgendaModeGroupBy,
+        BitFullCalendarEventLayout EventLayout,
+        bool ShowDayViewCalendar,
+        string HiddenDays,
+        DayOfWeek? FirstDayOfWeek,
+        bool ShowWeekNumbers,
+        bool ShowCurrentTimeIndicator,
+        int MaxEventsPerDayCell,
+        bool RequireEventDescription,
+        bool AllowEventOverlap,
+        bool AllowRangeSelection,
+        string BusinessDays,
+        int BusinessStartHour,
+        int BusinessEndHour,
+        bool HighlightBusinessHours,
+        bool RestrictToBusinessHours,
+        bool FixedWeekCount,
+        bool ShowNonCurrentDates,
+        bool NavLinks)
+    {
+        /// <summary>
+        /// The baseline after a user-driven change: the values the state now holds, keeping the two
+        /// the panel cannot change (<paramref name="previous"/>'s hidden days and first day of week)
+        /// so a consumer edit to either is still detected on the next pass.
+        /// </summary>
+        public static SettingsSnapshot FromState(BitFullCalendarState state, SettingsSnapshot? previous) => new(
+            state.Use24HourFormat,
+            state.BadgeVariant,
+            state.StartOfDayHour,
+            state.VisibleStartHour,
+            state.VisibleEndHour,
+            state.SlotDurationMinutes,
+            state.AgendaModeGroupBy,
+            state.EventLayout,
+            state.ShowDayViewCalendar,
+            previous?.HiddenDays ?? string.Join(',', state.HiddenDays.Select(d => (int)d).Order()),
+            previous?.FirstDayOfWeek ?? state.FirstDayOfWeekOverride,
+            state.ShowWeekNumbers,
+            state.ShowCurrentTimeIndicator,
+            state.MaxEventsPerDayCell,
+            state.RequireEventDescription,
+            state.AllowEventOverlap,
+            state.AllowRangeSelection,
+            // The panel cannot change the business days either, so the consumer's value stays the
+            // baseline and an edit to it is still detected on the next pass.
+            previous?.BusinessDays ?? string.Join(',', state.BusinessDays.Select(d => (int)d).Order()),
+            state.BusinessStartHour,
+            state.BusinessEndHour,
+            state.HighlightBusinessHours,
+            state.RestrictToBusinessHours,
+            state.FixedWeekCount,
+            state.ShowNonCurrentDates,
+            state.NavLinks);
+
+        public static SettingsSnapshot From(BitFullCalendarSettings settings) => new(
+            settings.Use24HourFormat,
+            settings.BadgeVariant,
+            settings.StartOfDayHour,
+            settings.VisibleStartHour,
+            settings.VisibleEndHour,
+            settings.SlotDurationMinutes,
+            settings.AgendaModeGroupBy,
+            settings.EventLayout,
+            settings.ShowDayViewCalendar,
+            string.Join(',', BitFullCalendarHelpers.NormalizeHiddenDays(settings.HiddenDays).Select(d => (int)d).Order()),
+            settings.FirstDayOfWeek,
+            settings.ShowWeekNumbers,
+            settings.ShowCurrentTimeIndicator,
+            settings.MaxEventsPerDayCell,
+            settings.RequireEventDescription,
+            settings.AllowEventOverlap,
+            settings.AllowRangeSelection,
+            string.Join(',', BitFullCalendarHelpers.NormalizeBusinessDays(settings.BusinessDays).Select(d => (int)d).Order()),
+            settings.BusinessStartHour,
+            settings.BusinessEndHour,
+            settings.HighlightBusinessHours,
+            settings.RestrictToBusinessHours,
+            settings.FixedWeekCount,
+            settings.ShowNonCurrentDates,
+            settings.NavLinks);
     }
 }

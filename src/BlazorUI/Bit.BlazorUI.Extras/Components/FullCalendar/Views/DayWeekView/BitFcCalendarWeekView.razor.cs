@@ -18,6 +18,7 @@ public partial class BitFcCalendarWeekView
     private DateTime _addDate;
     private int _addHour;
     private int _addMinute;
+    private int? _addDurationMinutes;
 
     private BitFullCalendarEvent? _selectedEvent;
     private DateTime? _dragDate;
@@ -28,7 +29,235 @@ public partial class BitFcCalendarWeekView
     // of focusable no-op buttons to keyboard and assistive-technology users. A null attribute value
     // is omitted from the rendered markup.
     private string? _slotRole => State.ReadOnly ? null : "button";
-    private string? _slotTabIndex => State.ReadOnly ? null : "0";
+
+    // Roving tabindex: the grid is a single tab stop, and the arrow keys move both the tabbable slot
+    // and the focus. Without it a week would put hundreds of stops in the tab order - seven days
+    // times a slot per hour - and a keyboard user could not tab past the grid.
+    private (int DayIndex, int Hour, int Minute)? _focusedSlot;
+    private bool _pendingSlotFocus;
+
+    /// <summary>The columns the grid is currently rendering, captured by the markup.</summary>
+    private DateTime[] _weekDays = [];
+
+    private string SlotElementId(int dayIndex, int hour, int minute)
+        => $"{_timeGridScrollElementId}-slot-{dayIndex}-{hour}-{minute}";
+
+    /// <summary>True when the column at <paramref name="dayIndex"/> is inside the allowed date window.</summary>
+    private bool IsColumnInRange(int dayIndex)
+        => dayIndex >= 0
+           && dayIndex < _weekDays.Length
+           && State.IsDateInAllowedRange(_weekDays[dayIndex]);
+
+    /// <summary>
+    /// Index of the first column the grid may actually interact with, so the single tab stop never
+    /// lands on a column the date bounds have made inert.
+    /// </summary>
+    private int FirstInteractiveColumn
+    {
+        get
+        {
+            for (var i = 0; i < _weekDays.Length; i++)
+            {
+                if (State.IsDateInAllowedRange(_weekDays[i]))
+                    return i;
+            }
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// True when a remembered slot still exists in the grid being rendered. The visible hour window
+    /// and the slot duration are settings the user can change while the view is open, which would
+    /// otherwise leave the tab stop on an hour or a minute the grid no longer draws - and the grid
+    /// with no tab stop at all.
+    /// </summary>
+    private bool IsSlotInGrid((int DayIndex, int Hour, int Minute) slot)
+        => IsColumnInRange(slot.DayIndex)
+           && slot.Hour >= State.VisibleStartHour
+           && slot.Hour < State.VisibleEndHour
+           && Array.IndexOf(State.SlotMinutes, slot.Minute) >= 0;
+
+    private (int DayIndex, int Hour, int Minute) RovingSlot =>
+        _focusedSlot is { } slot && IsSlotInGrid(slot)
+            ? slot
+            : (FirstInteractiveColumn, State.VisibleStartHour, State.SlotMinutes[0]);
+
+    private string? SlotTabIndex(int dayIndex, int hour, int minute)
+    {
+        // A read-only grid exposes no add affordance at all, and a column the calendar may not
+        // navigate to accepts nothing, so neither carries a tab stop.
+        if (State.ReadOnly || IsColumnInRange(dayIndex) is false)
+            return null;
+
+        return RovingSlot == (dayIndex, hour, minute) ? "0" : "-1";
+    }
+
+    /// <summary>
+    /// Shades a slot that falls outside the business hours, so the schedulable part of the week reads
+    /// at a glance. Off unless the consumer asked for it.
+    /// </summary>
+    private string? OffHoursClass(DateTime day, int hour, int minute)
+        => State.HighlightBusinessHours
+           && State.IsBusinessTime(day.Date.AddHours(hour).AddMinutes(minute)) is false
+            ? "bit-bfc-slot-off"
+            : null;
+
+    /// <summary>
+    /// Opens a single day from its column header. The date moves in every case; the view only
+    /// follows when the consumer left the day view in the allowed set.
+    /// </summary>
+    private void GoToDayView(DateTime day)
+    {
+        if (State.IsDateInAllowedRange(day) is false)
+            return;
+
+        State.SetSelectedDate(day);
+        if (State.IsViewAvailable(BitFullCalendarView.Day))
+            State.SetView(BitFullCalendarView.Day);
+    }
+
+    /// <summary>
+    /// Moves the roving slot by <paramref name="dayDelta"/> columns and <paramref name="slotDelta"/>
+    /// slots along the time axis, clamped to the grid, and remembers that the focus has to follow on
+    /// the next render.
+    /// </summary>
+    private void MoveRovingSlot(int dayDelta, int slotDelta)
+    {
+        var slots = State.SlotMinutes;
+        var (dayIndex, hour, minute) = RovingSlot;
+
+        var index = Array.IndexOf(slots, minute);
+        if (index < 0) index = 0;
+
+        var absolute = ((hour - State.VisibleStartHour) * slots.Length) + index + slotDelta;
+        var total = State.VisibleHourCount * slots.Length;
+        absolute = Math.Clamp(absolute, 0, total - 1);
+
+        var columns = Math.Max(1, State.VisibleWeekDayCount);
+        // The chevrons follow the reading direction, so a right-to-left grid walks the columns the
+        // other way round for the same key.
+        var effectiveDayDelta = State.IsRtl ? -dayDelta : dayDelta;
+
+        var targetColumn = Math.Clamp(dayIndex + effectiveDayDelta, 0, columns - 1);
+        // A column the date bounds made inert has no tab stop to move onto, so the walk stops at the
+        // last column that has one instead of stranding the focus outside the tab order.
+        if (IsColumnInRange(targetColumn) is false)
+            targetColumn = IsColumnInRange(dayIndex) ? dayIndex : FirstInteractiveColumn;
+
+        _focusedSlot = (
+            targetColumn,
+            State.VisibleStartHour + (absolute / slots.Length),
+            slots[absolute % slots.Length]);
+        _pendingSlotFocus = true;
+    }
+
+    private void SetRovingSlot(int dayIndex, int hour, int minute)
+    {
+        _focusedSlot = (dayIndex, hour, minute);
+        _pendingSlotFocus = true;
+    }
+
+    // Range selection: pressing on a slot and dragging down its column picks the span the new event
+    // should cover. The selection is confined to the column it started in - an event belongs to one
+    // day - and a press and release on the SAME slot is left to the click handler, which is the path
+    // a plain click has always taken.
+    private int? _selectionDayIndex;
+    private int? _selectionAnchor;
+    private int? _selectionFocus;
+
+    private int SlotIndex(int hour, int minute)
+    {
+        var slots = State.SlotMinutes;
+        var minuteIndex = Array.IndexOf(slots, minute);
+        if (minuteIndex < 0) minuteIndex = 0;
+        return ((hour - State.VisibleStartHour) * slots.Length) + minuteIndex;
+    }
+
+    private (int Hour, int Minute) SlotAt(int index)
+    {
+        var slots = State.SlotMinutes;
+        var total = State.VisibleHourCount * slots.Length;
+        index = Math.Clamp(index, 0, Math.Max(0, total - 1));
+        return (State.VisibleStartHour + (index / slots.Length), slots[index % slots.Length]);
+    }
+
+    private bool CanSelectRange => State.ReadOnly is false && State.AllowRangeSelection;
+
+    private bool IsSlotSelected(int dayIndex, int hour, int minute)
+    {
+        if (_selectionDayIndex != dayIndex || _selectionAnchor is not { } anchor || _selectionFocus is not { } focus)
+            return false;
+
+        var index = SlotIndex(hour, minute);
+        return index >= Math.Min(anchor, focus) && index <= Math.Max(anchor, focus);
+    }
+
+    private void OnSlotMouseDown(int dayIndex, int hour, int minute)
+    {
+        if (CanSelectRange is false)
+            return;
+
+        _selectionDayIndex = dayIndex;
+        _selectionAnchor = _selectionFocus = SlotIndex(hour, minute);
+    }
+
+    private void OnSlotMouseEnter(int dayIndex, int hour, int minute)
+    {
+        // Dragging into another day's column extends nothing: the range stays in its own column.
+        if (_selectionAnchor is null || _selectionDayIndex != dayIndex)
+            return;
+
+        _selectionFocus = SlotIndex(hour, minute);
+    }
+
+    private async Task OnSlotMouseUpAsync(int dayIndex, DateTime day, int hour, int minute)
+    {
+        if (_selectionAnchor is not { } anchor || _selectionDayIndex != dayIndex)
+        {
+            CancelRangeSelection();
+            return;
+        }
+
+        var focus = SlotIndex(hour, minute);
+        CancelRangeSelection();
+
+        // One slot means a plain click, which the click handler already covers.
+        if (focus == anchor)
+            return;
+
+        var first = Math.Min(anchor, focus);
+        var last = Math.Max(anchor, focus);
+        var (startHour, startMinute) = SlotAt(first);
+        await OpenAddForRangeAsync(day, startHour, startMinute, (last - first + 1) * State.SlotDurationMinutes);
+    }
+
+    private void CancelRangeSelection()
+    {
+        _selectionDayIndex = null;
+        _selectionAnchor = null;
+        _selectionFocus = null;
+    }
+
+    private async Task OpenAddForRangeAsync(DateTime day, int hour, int minute, int durationMinutes)
+    {
+        if (State.ReadOnly || State.IsDateInAllowedRange(day) is false)
+            return;
+
+        State.SetSelectedDate(day);
+
+        if (OnAddClick.HasDelegate)
+        {
+            await OnAddClick.InvokeAsync(
+                BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, hour, minute, durationMinutes));
+            return;
+        }
+
+        _addDate = day;
+        _addHour = hour;
+        _addMinute = minute;
+        _addDurationMinutes = durationMinutes;
+        _showAddDialog = true;
+    }
 
     private async Task SelectEvent(BitFullCalendarEvent ev)
     {
@@ -45,14 +274,15 @@ public partial class BitFcCalendarWeekView
     {
         // The slot is purely an add affordance, so a read-only grid leaves it inert - including the
         // date selection, which the user can still perform from the header and the mini calendar.
-        if (State.ReadOnly)
+        // A day outside the allowed window is inert for the same reason.
+        if (State.ReadOnly || State.IsDateInAllowedRange(day) is false)
             return;
 
         State.SetSelectedDate(day);
 
         if (OnAddClick.HasDelegate)
         {
-            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, hour, minute);
+            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, hour, minute, State.SlotDurationMinutes);
             await OnAddClick.InvokeAsync(draft);
             return;
         }
@@ -60,14 +290,61 @@ public partial class BitFcCalendarWeekView
         _addDate = day;
         _addHour = hour;
         _addMinute = minute;
+        // A plain click covers one slot; only a dragged range carries its own length.
+        _addDurationMinutes = null;
         _showAddDialog = true;
     }
 
-    private async Task OnHourKeyDownAsync(KeyboardEventArgs e, DateTime day, int hour, int minute = 0)
+    private async Task OnHourKeyDownAsync(KeyboardEventArgs e, int dayIndex, DateTime day, int hour, int minute = 0)
     {
-        // Ignore auto-repeat keydown events so a held Enter/Space only creates a single draft event.
-        if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
-            await OnHourClickAsync(day, hour, minute);
+        // The slot the key came from is the one the roving tabindex should sit on, whatever the
+        // previous arrow keys had selected.
+        switch (e.Key)
+        {
+            case "Enter" or " " or "Spacebar":
+                // Ignore auto-repeat so a held key only creates a single draft event.
+                if (e.Repeat is false)
+                    await OnHourClickAsync(day, hour, minute);
+                return;
+
+            case "ArrowDown":
+                SetRovingSlot(dayIndex, hour, minute);
+                MoveRovingSlot(0, 1);
+                return;
+
+            case "ArrowUp":
+                SetRovingSlot(dayIndex, hour, minute);
+                MoveRovingSlot(0, -1);
+                return;
+
+            case "ArrowRight":
+                SetRovingSlot(dayIndex, hour, minute);
+                MoveRovingSlot(1, 0);
+                return;
+
+            case "ArrowLeft":
+                SetRovingSlot(dayIndex, hour, minute);
+                MoveRovingSlot(-1, 0);
+                return;
+
+            case "PageDown":
+                SetRovingSlot(dayIndex, hour, minute);
+                MoveRovingSlot(0, State.SlotMinutes.Length);
+                return;
+
+            case "PageUp":
+                SetRovingSlot(dayIndex, hour, minute);
+                MoveRovingSlot(0, -State.SlotMinutes.Length);
+                return;
+
+            case "Home":
+                SetRovingSlot(dayIndex, State.VisibleStartHour, State.SlotMinutes[0]);
+                return;
+
+            case "End":
+                SetRovingSlot(dayIndex, State.VisibleEndHour - 1, State.SlotMinutes[^1]);
+                return;
+        }
     }
 
     private string? HourSlotAriaLabel(DateTime day, int hour, int minute = 0)
@@ -85,6 +362,14 @@ public partial class BitFcCalendarWeekView
         _dragDate = null;
         _dragHour = null;
         _dragMinute = null;
+
+        if (State.IsDateInAllowedRange(day) is false)
+        {
+            State.EndDrag();
+            Notifier.ReportRefusal(BitFullCalendarChangeRefusal.OutOfRange);
+            return;
+        }
+
         await Notifier.HandleDropAsync(day, hour, minute);
     }
 
@@ -103,24 +388,35 @@ public partial class BitFcCalendarWeekView
         if (!State.IsDragging)
             return string.Empty;
 
+        // The first slot of an hour keeps the "hour" highlight; every later slot uses the plain one.
         return _dragDate == day.Date && _dragHour == hour && _dragMinute == minute
-            ? (minute == 30 ? "bit-bfc-drop-preview-half" : "bit-bfc-drop-preview-hour")
+            ? (minute == 0 ? "bit-bfc-drop-preview-hour" : "bit-bfc-drop-preview-half")
             : string.Empty;
     }
 
     private string BuildTimeGridScrollSignature() =>
-        $"{State.SelectedDate:yyyy-MM-dd}|{State.StartOfDayHour}";
+        $"{State.SelectedDate:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The arrow keys only moved the tabbable slot; the focus has to follow it here, once the
+        // new tabindex has actually been rendered.
+        if (_pendingSlotFocus)
+        {
+            _pendingSlotFocus = false;
+            var (dayIndex, hour, minute) = RovingSlot;
+            await BitFcFocusInterop.TryFocusAsync(JS, SlotElementId(dayIndex, hour, minute));
+        }
+
         var sig = BuildTimeGridScrollSignature();
         if (sig == _timeGridScrollSignature)
             return;
 
+        // The grid's first row is VisibleStartHour, so the scroll offset is measured from there.
         if (await BitFcTimeGridScrollInterop.TryScrollToStartOfDayAsync(
                 JS,
                 _timeGridScrollElementId,
-                State.StartOfDayHour))
+                State.StartOfDayHour - State.VisibleStartHour))
             _timeGridScrollSignature = sig;
     }
 }

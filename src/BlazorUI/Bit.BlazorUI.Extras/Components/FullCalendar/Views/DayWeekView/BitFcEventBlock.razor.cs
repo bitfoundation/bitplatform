@@ -7,6 +7,12 @@ public partial class BitFcEventBlock
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
+    /// <summary>
+    /// The block's height in hours as the grid measured it - the event's span clipped to the visible
+    /// hour window. Left null by a caller that has no window to clip against, in which case the
+    /// block sizes itself from the event's own start and end.
+    /// </summary>
+    [Parameter] public double? VisibleDurationHours { get; set; }
     [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
@@ -22,20 +28,29 @@ public partial class BitFcEventBlock
     private string _topHandleId => $"bit-bfc-resize-top-{_instanceId}";
     private string _bottomHandleId => $"bit-bfc-resize-bottom-{_instanceId}";
 
-    /// <summary>Minimum event length enforced by resize (minutes).</summary>
-    private const int MinEventDurationMinutes = 30;
+    /// <summary>
+    /// Minimum event length enforced by resize, and the interval the edges snap to: the calendar's
+    /// configured slot duration, so a 15-minute grid resizes in 15-minute steps.
+    /// </summary>
+    private int MinEventDurationMinutes => Math.Max(1, State.SlotDurationMinutes);
 
     /// <summary>
     /// Pointer movement below this (in minutes along the time axis) does not change start/end,
     /// so the edge does not jump as soon as the user presses the handle.
     /// </summary>
-    private const int ResizeDeadZoneMinutes = MinEventDurationMinutes / 2;
+    private int ResizeDeadZoneMinutes => Math.Max(1, MinEventDurationMinutes / 2);
+
+    /// <summary>
+    /// True while this block may be moved or resized: the calendar has to be editable AND the event
+    /// itself must not be locked with <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// </summary>
+    private bool CanEdit => State.ReadOnly is false && Event.IsReadOnly is false;
 
     private void OnDragStart()
     {
         if (_isResizing)
             return;
-            
+
         State.StartDrag(Event);
     }
 
@@ -57,7 +72,75 @@ public partial class BitFcEventBlock
         // Ignore auto-repeat keydown events (matching the month badge logic) so holding
         // Enter/Space cannot fire OnSelected repeatedly for the same event.
         if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
+        {
             await OnSelected.InvokeAsync(Event);
+            return;
+        }
+
+        if (e.Key is not ("ArrowUp" or "ArrowDown") || CanEdit is false)
+            return;
+
+        // Keyboard parity for the pointer gestures: Alt+Arrow moves the block by one slot,
+        // Shift+Arrow stretches or shrinks its end. Both commit through the same rules a drag or a
+        // resize obeys, so a refusal is reported the same way.
+        var step = TimeSpan.FromMinutes(e.Key == "ArrowDown" ? State.SlotDurationMinutes : -State.SlotDurationMinutes);
+
+        if (e.AltKey)
+            await ApplyKeyboardEditAsync(step, step, BitFullCalendarChangeSource.Drag);
+        else if (e.ShiftKey)
+            await ApplyKeyboardEditAsync(TimeSpan.Zero, step, BitFullCalendarChangeSource.Resize);
+    }
+
+    /// <summary>
+    /// Commits a keyboard-driven move or resize: the same range, overlap, and read-only rules the
+    /// pointer gestures obey, and the same <c>OnChange</c> payload.
+    /// </summary>
+    private async Task ApplyKeyboardEditAsync(TimeSpan startDelta, TimeSpan endDelta, BitFullCalendarChangeSource source)
+    {
+        var start = Event.StartDate + startDelta;
+        var end = Event.EndDate + endDelta;
+
+        // A resize can never shrink the event below one slot. A move keeps the span it already has, so
+        // it is not held to that minimum - an event shorter than one slot would otherwise be
+        // unmovable by keyboard.
+        if (endDelta != startDelta && end - start < TimeSpan.FromMinutes(MinEventDurationMinutes))
+            return;
+
+        // The same gate the pointer gestures pass through: allowed date window, business hours, and
+        // the booking rule, so a keyboard edit is never able to commit what a drag could not.
+        var refusal = State.ValidateRange(Event.Id, start, end, Event.Resource);
+        if (refusal is not BitFullCalendarChangeRefusal.None)
+        {
+            Notifier.ReportRefusal(refusal);
+            return;
+        }
+
+        var oldSnapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
+        // Cloning carries every field the event has - the series identity included - so a keyboard
+        // edit never silently drops one the way a hand-written copy does.
+        var updated = BitFullCalendarChangeNotifier.CloneEvent(Event);
+        updated.StartDate = start;
+        updated.EndDate = end;
+
+        State.UpdateEvent(updated);
+
+        try
+        {
+            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            {
+                Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
+                OldEvent = oldSnapshot,
+                Kind = BitFullCalendarChangeKind.Edit,
+                Source = source
+            });
+        }
+        catch
+        {
+            // Notification failed: restore the previous times so the local state stays in sync with
+            // what consumers believe, mirroring the pointer resize's compensation.
+            State.UpdateEvent(oldSnapshot);
+            throw;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -66,7 +149,7 @@ public partial class BitFcEventBlock
         // to. The handles are removed from the DOM (taking their listeners with them), so the flag
         // is cleared as well - otherwise the fresh handles rendered when read-only is turned back
         // off would be skipped here and never receive listeners.
-        if (State.ReadOnly)
+        if (CanEdit is false)
         {
             _resizeInitialized = false;
             return;
@@ -98,7 +181,7 @@ public partial class BitFcEventBlock
 
         // The handles are not rendered while read-only, but a listener bound before the switch can
         // still deliver a start; refuse it so the block never enters resize mode in read-only.
-        if (State.ReadOnly)
+        if (CanEdit is false)
             return;
 
         _isResizing = true;
@@ -121,7 +204,7 @@ public partial class BitFcEventBlock
         // pointer listeners keep running. Cancel the whole gesture (not just the preview) so the block
         // snaps back to the stored times and stays there - keeping the resize alive would let it pick
         // up again, and commit on release, if read-only were switched back off before the pointer up.
-        if (State.ReadOnly)
+        if (CanEdit is false)
         {
             _previewStart = null;
             _previewEnd = null;
@@ -148,7 +231,7 @@ public partial class BitFcEventBlock
         }
 
         var effectiveDelta = deltaMinutes - Math.Sign(deltaMinutes) * ResizeDeadZoneMinutes;
-        const int slotMinutes = MinEventDurationMinutes;
+        var slotMinutes = MinEventDurationMinutes;
         var baseEvent = _resizeBaseEvent;
 
         var newStart = baseEvent.StartDate;
@@ -209,13 +292,24 @@ public partial class BitFcEventBlock
         {
             // Never commit in read-only: the switch can land between the last move and the release,
             // which would otherwise persist a resize the calendar no longer allows.
-            if (State.ReadOnly is false && _resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
+            if (CanEdit && _resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
             {
                 var s = _previewStart.Value;
                 var e = _previewEnd.Value;
                 if (s != _resizeBaseEvent.StartDate || e != _resizeBaseEvent.EndDate)
                 {
                     var b = _resizeBaseEvent;
+
+                    // The resized span has to obey the same rules a drop does, so a calendar that
+                    // disallows double booking (or confines events to business hours) refuses the
+                    // resize instead of quietly creating what it would not accept from a drag.
+                    var refusal = State.ValidateRange(b.Id, s, e, b.Resource);
+                    if (refusal is not BitFullCalendarChangeRefusal.None)
+                    {
+                        Notifier.ReportRefusal(refusal);
+                        return;
+                    }
+
                     var updated = new BitFullCalendarEvent
                     {
                         Id = b.Id,
@@ -226,7 +320,11 @@ public partial class BitFcEventBlock
                         Color = b.Color,
                         Resource = b.Resource,
                         Data = b.Data,
-                        Attendees = [.. b.Attendees]
+                        Attendees = [.. b.Attendees],
+                        IsAllDay = b.IsAllDay,
+                        Recurrence = b.Recurrence,
+                        IsReadOnly = b.IsReadOnly,
+                        CssClass = b.CssClass
                     };
 
                     State.UpdateEvent(updated);

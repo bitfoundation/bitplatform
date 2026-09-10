@@ -3,7 +3,11 @@ namespace BitBlazorUI {
         public static scrollToHour(elementId: string, hour: number, pixelsPerHour: number | null): boolean {
             const el = document.getElementById(elementId);
             if (!el) return false;
-            const pxPerHour = pixelsPerHour ?? 96;
+            // The stylesheet sizes every hour row from --bit-bfc-hour-height, and a consumer may
+            // redeclare it to re-scale the grid, so the row height is read back from the element
+            // rather than assumed to be the value .NET compiled against.
+            const declared = parseFloat(getComputedStyle(el).getPropertyValue("--bit-bfc-hour-height"));
+            const pxPerHour = Number.isFinite(declared) && declared > 0 ? declared : (pixelsPerHour ?? 96);
             const top = hour * pxPerHour;
             if (typeof el.scrollTo === "function") {
                 el.scrollTo({ top: top, behavior: "auto" });
@@ -331,6 +335,35 @@ namespace BitBlazorUI {
 
         public static isMobile(): boolean {
             return window.innerWidth <= 768;
+        }
+
+        /**
+         * Moves DOM focus onto the element with the supplied id, scrolling it into view inside its
+         * own scroller. The date grids use a roving tabindex: only one cell is in the tab order at a
+         * time and the arrow keys move both the tabbable cell and the focus, which is what this call
+         * carries out after the re-render. Returns false when the element is no longer there.
+         */
+        public static focusElement(elementId: string): boolean {
+            const el = document.getElementById(elementId);
+            if (!el) return false;
+
+            // preventScroll keeps the browser from yanking the page; the explicit scrollIntoView
+            // below only nudges the nearest scrollable ancestor, which is the grid itself.
+            try {
+                el.focus({ preventScroll: true });
+            } catch {
+                el.focus();
+            }
+
+            if (typeof el.scrollIntoView === "function") {
+                try {
+                    el.scrollIntoView({ block: "nearest", inline: "nearest" });
+                } catch {
+                    /* older browsers ignore the options object; the focus above is enough */
+                }
+            }
+
+            return true;
         }
 
         /**

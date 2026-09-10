@@ -18,6 +18,9 @@ public partial class BitFcDayViewMultiDayEventsRow
 
     private string GetPosition(BitFullCalendarEvent ev)
     {
+        // A single-date all-day event has no leading/trailing edge to continue, so it renders as a
+        // standalone badge rather than as the first segment of a run.
+        if (ev.IsSingleDay) return "none";
         if (ev.StartDate.Date == Date.Date) return "first";
         // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
         // GetEventsForDay/GroupEventsByDayRange, so an event ending at midnight is still marked

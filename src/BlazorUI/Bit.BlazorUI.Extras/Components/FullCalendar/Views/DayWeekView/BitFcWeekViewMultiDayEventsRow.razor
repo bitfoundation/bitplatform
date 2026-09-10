@@ -3,7 +3,9 @@
 @if (_rowCount > 0)
 {
     <div class="bit-bfc-multiday-row" style="padding-inline-start:60px;">
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);column-gap:0;">
+        @* One column per VISIBLE weekday so the row lines up with the time grid under it when a
+           work week hides some days. *@
+        <div style="display:grid;grid-template-columns:repeat(@(_weekDays.Length),minmax(0,1fr));column-gap:0;">
             @foreach (var day in _weekDays)
             {
                 var d = day;
@@ -18,7 +20,9 @@
                             // via the shared helper, matching the row-placement logic so the badge on
                             // the true last day is tagged "last" rather than "middle".
                             var evEndInclusive = BitFullCalendarHelpers.GetInclusiveEndDate(ev);
-                            var position = ev.StartDate.Date == d.Date ? "first"
+                            // A single-date all-day event is a standalone badge, not a run segment.
+                            var position = ev.IsSingleDay ? "none"
+                                : ev.StartDate.Date == d.Date ? "first"
                                 : evEndInclusive == d.Date ? "last" : "middle";
                             <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="d" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
                         }

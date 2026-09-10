@@ -9,6 +9,18 @@ public partial class BitFcDateTimePicker : IDisposable
     [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
     /// <summary>When true the time selects/display use 24-hour values; otherwise a 12-hour hour list plus an AM/PM select.</summary>
     [Parameter] public bool Use24HourFormat { get; set; } = true;
+
+    /// <summary>
+    /// Day the picker's week starts on. <c>null</c> follows the culture. Supplied by the calendar so
+    /// the picker's grid starts on the same day its own grids do rather than drifting from them.
+    /// </summary>
+    [Parameter] public DayOfWeek? FirstDayOfWeek { get; set; }
+
+    /// <summary>Earliest selectable date; earlier days render disabled. <c>null</c> leaves it open.</summary>
+    [Parameter] public DateTime? MinDate { get; set; }
+
+    /// <summary>Latest selectable date; later days render disabled. <c>null</c> leaves it open.</summary>
+    [Parameter] public DateTime? MaxDate { get; set; }
     [Parameter] public string PreviousMonthAriaLabel { get; set; } = "Previous month";
     [Parameter] public string NextMonthAriaLabel { get; set; } = "Next month";
     [Parameter] public string HourAriaLabel { get; set; } = "Hour";
@@ -57,16 +69,31 @@ public partial class BitFcDateTimePicker : IDisposable
 
     private Calendar ActiveCalendar => Culture.DateTimeFormat.Calendar;
 
+    private DayOfWeek ResolvedFirstDayOfWeek
+        => BitFullCalendarHelpers.ResolveFirstDayOfWeek(Culture, FirstDayOfWeek);
+
     private string[] BuildWeekdayHeaders()
     {
         var source = Culture.DateTimeFormat.AbbreviatedDayNames;
-        var firstDay = (int)Culture.DateTimeFormat.FirstDayOfWeek;
+        var firstDay = (int)ResolvedFirstDayOfWeek;
         return Enumerable.Range(0, 7)
             .Select(i => source[(i + firstDay) % 7])
             .ToArray();
     }
 
+    /// <summary>True when the supplied date sits outside the window the calendar may navigate to.</summary>
+    private bool IsOutOfRange(DateTime date)
+        => (MinDate is { } min && date.Date < min.Date) || (MaxDate is { } max && date.Date > max.Date);
+
     private void ToggleOpen() => _isOpen = !_isOpen;
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        // Escape closes the popup rather than the surrounding dialog; the markup stops the event
+        // there while the popup is open so the two do not close together.
+        if (_isOpen && e.Key is "Escape" or "Esc")
+            _isOpen = false;
+    }
 
     private void ShowPreviousMonth()
     {
@@ -164,7 +191,7 @@ public partial class BitFcDateTimePicker : IDisposable
     private IEnumerable<CalendarDay> BuildCalendarDays()
     {
         var firstDayOfMonth = GetFirstDayOfMonth(_visibleMonthAnchor);
-        var firstDayOfWeek = Culture.DateTimeFormat.FirstDayOfWeek;
+        var firstDayOfWeek = ResolvedFirstDayOfWeek;
         var shift = ((int)firstDayOfMonth.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
         var gridStart = firstDayOfMonth.AddDays(-shift);
 

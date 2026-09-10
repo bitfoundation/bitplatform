@@ -13,7 +13,9 @@
     var colorClass = isDotVariant ? "dot-variant" : "bit-bfc-color";
     var colorStyleVar = ColorScheme.GetColorStyle(Event.Color);
     var showTitle = Position is "first" or "none";
-    var showTime = Position is "last" or "none";
+    // An all-day event has no meaningful clock time, so its badge shows the all-day label instead.
+    var showTime = Position is "last" or "none" && Event.IsAllDay is false;
+    var canDrag = State.ReadOnly is false && Event.IsReadOnly is false;
     // Include both the start and end dates (not just the times) so multi-day and overnight events
     // are announced unambiguously to assistive technology. BitFcDayCell.GetBadgePosition() treats a
     // 00:00 end as ending the previous day (exclusive midnight) via GetInclusiveEndDate, so the
@@ -24,15 +26,20 @@
     var displayEnd = endIsExclusiveMidnight ? Event.EndDate.AddTicks(-1) : Event.EndDate;
     var startLabel = $"{Event.StartDate.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)}";
     var endLabel = $"{displayEnd.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)}";
-    var badgeAriaLabel = $"{Event.Title}, {startLabel} - {endLabel}";
+    var badgeAriaLabel = Event.IsAllDay
+        ? $"{Event.Title}, {Texts.AllDayLabel}, {Event.StartDate.ToString("d", State.Culture)} - {displayEnd.ToString("d", State.Culture)}"
+        : $"{Event.Title}, {startLabel} - {endLabel}";
 }
 
-<div class="bit-bfc-event-badge @colorClass @positionClass"
+@* A badge is the narrowest surface an event is drawn on - the title alone rarely survives the cell
+   width - so the full title, span, and description are offered on hover as well. *@
+<div class="bit-bfc-event-badge @colorClass @positionClass @(Event.IsAllDay ? "bit-bfc-event-allday" : null) @Event.CssClass"
      style="@($"{colorStyleVar}{MarginStyle}")"
+     title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
      role="button"
      tabindex="0"
      aria-label="@badgeAriaLabel"
-     draggable="@(State.ReadOnly ? "false" : "true")"
+     draggable="@(canDrag ? "true" : "false")"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="() => OnSelected.InvokeAsync(Event)"
@@ -60,6 +67,10 @@
         @if (showTime)
         {
             <span class="bit-bfc-event-badge-time">@BitFullCalendarHelpers.FormatTime(Position == "last" ? displayEnd : Event.StartDate, State.Use24HourFormat, State.Culture)</span>
+        }
+        else if (Event.IsAllDay && Position is "last" or "none")
+        {
+            <span class="bit-bfc-event-badge-time">@Texts.AllDayLabel</span>
         }
     }
 </div>

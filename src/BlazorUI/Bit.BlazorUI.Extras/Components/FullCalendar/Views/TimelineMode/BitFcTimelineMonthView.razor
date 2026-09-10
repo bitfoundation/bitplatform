@@ -15,15 +15,11 @@
     const int minRowHeight = 60;
 
     var culture = State.Culture;
-    var cal = culture.Calendar;
-    // Capture the era from the selected date and pass it explicitly so multi-era calendars (e.g. the
-    // Japanese calendar) resolve the year/month/days against the date's own era instead of falling
-    // back to CurrentEra, which would mis-handle a SelectedDate from a previous era.
-    var era = cal.GetEra(State.SelectedDate);
-    var year = cal.GetYear(State.SelectedDate);
-    var month = cal.GetMonth(State.SelectedDate);
-    var monthStart = cal.ToDateTime(year, month, 1, 0, 0, 0, 0, era);
-    var daysInMonth = cal.GetDaysInMonth(year, month, era);
+    // Era-safe month anchors: the month is walked from the selected date itself rather than rebuilt
+    // from its year/month numbers, which resolve against the current era on multi-era calendars
+    // (e.g. the Japanese one) and would mis-handle a SelectedDate from a previous era.
+    var monthStart = BitFullCalendarHelpers.StartOfCulturalMonth(State.SelectedDate, culture);
+    var daysInMonth = (int)(BitFullCalendarHelpers.EndOfCulturalMonth(State.SelectedDate, culture).Date - monthStart.Date).TotalDays + 1;
     var monthDays = Enumerable.Range(0, daysInMonth).Select(i => monthStart.AddDays(i)).ToArray();
 
     var resources = State.Resources;
@@ -48,6 +44,9 @@
     var hasUnassignedEvents = perResource.TryGetValue(_unassignedKey, out var u) && u.Count > 0;
     var hasUnassigned = hasUnassignedEvents || resourceIds.Count == 0;
     var unassignedLaneCount = hasUnassignedEvents ? perResource[_unassignedKey].Count : 1;
+    // The rendered row and day order is what the roving tabindex walks.
+    _rowKeys = hasUnassigned ? [.. resourceIds, _unassignedKey] : [.. resourceIds];
+    _monthDays = monthDays;
 
     // If today falls inside the active month, scroll horizontally to today's day cell.
     var todayIdx = Array.FindIndex(monthDays, d => d.Date == DateTime.Today);
@@ -85,10 +84,11 @@
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
-            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
-                 style="left:@(leftPx)px;width:@(dayWidth)px;"
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day)"
+                 id="@SlotElementId(rowKey, day)"
+                 style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
-                 tabindex="@_slotTabIndex"
+                 tabindex="@SlotTabIndex(rowKey, day)"
                  aria-label="@SlotAriaLabel(day, resource.Title)"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
                  @ondragover:preventDefault="true"
@@ -109,6 +109,7 @@
         {
             @RenderLanes(lanes, monthStart, daysInMonth)
         }
+        @NowIndicator(todayIdx)
     </RowContent>
 
     <UnassignedRowContent>
@@ -119,10 +120,11 @@
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
-            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
-                 style="left:@(leftPx)px;width:@(dayWidth)px;"
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day)"
+                 id="@SlotElementId(rowKey, day)"
+                 style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
-                 tabindex="@_slotTabIndex"
+                 tabindex="@SlotTabIndex(rowKey, day)"
                  aria-label="@SlotAriaLabel(day, Texts.NoResourceLabel)"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
                  @ondragover:preventDefault="true"
@@ -134,6 +136,7 @@
         {
             @RenderLanes(perResource[_unassignedKey], monthStart, daysInMonth)
         }
+        @NowIndicator(todayIdx)
     </UnassignedRowContent>
 </BitFcTimelineLayout>
 
@@ -145,5 +148,21 @@
 @if (_selectedEvent != null)
 {
     <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+
+@code {
+    // The "current time" rule of a month row: one column is a whole day here, so the marker sits at
+    // the fraction of today's column the clock has reached. Nothing renders when today is not in the
+    // rendered month (todayIdx is then -1, which the component reads as "not today").
+    private RenderFragment<int> NowIndicator => todayIndex => @<text>
+        @if (State.ShowCurrentTimeIndicator && todayIndex >= 0)
+        {
+            <BitFcTimelineNowIndicator Day="DateTime.Today"
+                                       ColumnOffsetPx="@(todayIndex * BitFullCalendarHelpers.TimelineDayWidthPx)"
+                                       PixelsPerMinute="@(BitFullCalendarHelpers.TimelineDayWidthPx / 1440.0)"
+                                       VisibleStartHour="0"
+                                       VisibleEndHour="24" />
+        }
+    </text>;
 }
 

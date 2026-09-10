@@ -1,7 +1,9 @@
 @namespace Bit.BlazorUI
 
 <div class="bit-bfc-overlay" @onclick="OnClose">
-    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1" @ref="_dialogRef" @onclick:stopPropagation="true">
+    @* Escape dismisses the dialog, the way every modal is expected to behave. *@
+    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1" @ref="_dialogRef"
+         @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
             <h3 id="@_dialogTitleId">@Event.Title</h3>
             <button type="button" class="bit-bfc-dialog-close-btn" @onclick="OnClose" aria-label="@Texts.CloseAriaLabel">
@@ -43,7 +45,16 @@
                 <div>
                     <div class="bit-bfc-event-detail-label">@Texts.StartDateLabel</div>
                     <div class="bit-bfc-event-detail-value">
-                        @Event.StartDate.ToString("dddd dd MMMM", State.Culture) @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)
+                        @Event.StartDate.ToString("D", State.Culture)
+                        @* An all-day event has no clock time to announce, so the label stands in for it. *@
+                        @if (Event.IsAllDay)
+                        {
+                            <span> · @Texts.AllDayLabel</span>
+                        }
+                        else
+                        {
+                            <span> @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)</span>
+                        }
                     </div>
                 </div>
             </div>
@@ -52,7 +63,18 @@
                 <div>
                     <div class="bit-bfc-event-detail-label">@Texts.EndDateLabel</div>
                     <div class="bit-bfc-event-detail-value">
-                        @Event.EndDate.ToString("dddd dd MMMM", State.Culture) @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)
+                        @* A 00:00 end means the previous day everywhere else in the calendar, so the
+                           all-day form shows the last covered date rather than the exclusive bound. *@
+                        @(Event.IsAllDay ? BitFullCalendarHelpers.GetInclusiveEndDate(Event).ToString("D", State.Culture)
+                                         : Event.EndDate.ToString("D", State.Culture))
+                        @if (Event.IsAllDay)
+                        {
+                            <span> · @Texts.AllDayLabel</span>
+                        }
+                        else
+                        {
+                            <span> @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)</span>
+                        }
                     </div>
                 </div>
             </div>
@@ -63,11 +85,36 @@
                     <div class="bit-bfc-event-detail-value">@Event.Description</div>
                 </div>
             </div>
+            @* A recurring event says so: on the master, and on the occurrence the user actually
+               clicked - which is where it also explains why the edit and delete actions are gone. *@
+            @if (RecurrenceSummary is { Length: > 0 } recurrence)
+            {
+                <div class="bit-bfc-event-detail-row">
+                    <svg class="bit-bfc-event-detail-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    <div>
+                        <div class="bit-bfc-event-detail-label">@Texts.RepeatsLabel</div>
+                        <div class="bit-bfc-event-detail-value">@recurrence</div>
+                    </div>
+                </div>
+            }
+            @* The resource row shows on a calendar that was given resources to assign, and on an
+               event that carries one anyway - a stale assignment left over from a resource list that
+               has since been emptied is still what the event says, so it is not hidden. *@
+            @if (State.Resources.Count > 0 || string.IsNullOrEmpty(Event.Resource) is false)
+            {
+                <div class="bit-bfc-event-detail-row">
+                    <svg class="bit-bfc-event-detail-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>
+                    <div>
+                        <div class="bit-bfc-event-detail-label">@Texts.ResourceLabel</div>
+                        <div class="bit-bfc-event-detail-value">@ResourceTitle</div>
+                    </div>
+                </div>
+            }
         </div>
         @* Read-only keeps the details readable but drops the mutating actions, leaving Close alone
            in the footer - so the row switches from space-between to a plain trailing alignment. *@
-        <div class="bit-bfc-dialog-footer" style="justify-content:@(State.ReadOnly ? "flex-end" : "space-between");">
-            @if (!State.ReadOnly)
+        <div class="bit-bfc-dialog-footer" style="justify-content:@(CanEdit ? "space-between" : "flex-end");">
+            @if (CanEdit)
             {
                 <div style="display:flex;gap:8px;">
                     <button type="button" class="bit-bfc-btn" @onclick="Edit">@Texts.EditButton</button>
