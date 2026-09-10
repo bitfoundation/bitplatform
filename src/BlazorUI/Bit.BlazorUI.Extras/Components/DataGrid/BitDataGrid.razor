@@ -7,13 +7,18 @@
     @Columns
 </CascadingValue>
 
-<div class="@RootClasses()" style="@Style" @ref="_rootRef" dir="@(Direction switch { BitDir.Rtl => "rtl", BitDir.Auto => "auto", _ => "ltr" })">
+@* The two grid-owned Ctrl/⌘ shortcuts are conditional, so the capture-phase key guard that cancels
+   their browser defaults (see BitDataGrid.ts) reads whether they are live off the root rather than
+   guessing: a grid without them must leave Ctrl+A and Ctrl+C to the browser. *@
+<div class="@RootClasses()" style="@Style" @ref="_rootRef" dir="@(Direction switch { BitDir.Rtl => "rtl", BitDir.Auto => "auto", _ => "ltr" })"
+     data-bit-dtg-copy="@(ClipboardCopy ? "true" : null)"
+     data-bit-dtg-select-all="@(SelectionMode == BitDataGridSelectionMode.Multiple ? "true" : null)">
 
     @* Announces sort/filter/page changes to screen readers; these are otherwise silent view mutations. *@
     <div class="bit-dtg-visually-hidden" role="status" aria-live="polite">@_srAnnouncement</div>
 
     @* ---------------------------------------------------------- Toolbar *@
-    @if (ShowToolbar || ToolbarTemplate is not null || ShowColumnChooser || ShowCsvExport || ShowExcelExport || (Editable && NewItemFactory is not null))
+    @if (ShowToolbar || ToolbarTemplate is not null || ShowColumnChooser || ShowCsvExport || ShowExcelExport || SearchActive || (Editable && NewItemFactory is not null))
     {
         <div class="bit-dtg-toolbar">
             <div class="bit-dtg-toolbar-start">
@@ -21,6 +26,29 @@
                 @if (Editable && NewItemFactory is not null)
                 {
                     <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" @onclick="AddNewRowAsync">@Strings.AddRowText</button>
+                }
+                @if (SearchActive)
+                {
+                    @* type="search" gives the browser's own clear affordance and the right virtual
+                       keyboard; the explicit clear button covers the browsers that render neither. *@
+                    <div class="bit-dtg-search">
+                        @* type="search" already carries the searchbox role, so none is declared here. *@
+                        @* The term is applied as the user types, debounced by SearchDebounce, so the
+                           grid answers a keystroke instead of waiting for Enter or a blur - while a
+                           burst of typing still issues a single search. *@
+                        <input type="search" class="bit-dtg-search-input"
+                               placeholder="@Strings.SearchPlaceholder"
+                               aria-label="@Strings.SearchLabel"
+                               value="@(_searchBoxText ?? _search)"
+                               @oninput="e => DebouncedSearchAsync((string?)e.Value)" />
+                        @if (!string.IsNullOrEmpty(_search))
+                        {
+                            <button type="button" class="bit-dtg-icon-btn bit-dtg-search-clear"
+                                    title="@Strings.ClearSearchLabel"
+                                    aria-label="@Strings.ClearSearchLabel"
+                                    @onclick="() => SearchAsync(null)">✕</button>
+                        }
+                    </div>
                 }
             </div>
             <div class="bit-dtg-toolbar-end">
@@ -30,11 +58,11 @@
                 }
                 @if (ShowCsvExport)
                 {
-                    <button type="button" class="bit-dtg-btn" @onclick="ExportCsvAsync">@Strings.ExportCsvText</button>
+                    <button type="button" class="bit-dtg-btn" @onclick="() => ExportCsvAsync()">@Strings.ExportCsvText</button>
                 }
                 @if (ShowExcelExport)
                 {
-                    <button type="button" class="bit-dtg-btn" @onclick="ExportExcelAsync">@Strings.ExportExcelText</button>
+                    <button type="button" class="bit-dtg-btn" @onclick="() => ExportExcelAsync()">@Strings.ExportExcelText</button>
                 }
                 @if (ShowColumnChooser)
                 {
@@ -51,12 +79,18 @@
 
     @if (_showColumnChooserPanel)
     {
-        <div class="bit-dtg-column-chooser" id="@_columnChooserPanelId">
+        @* Escape closes the panel from anywhere inside it, the dismissal every popup owes its keyboard
+           users; the toggle button keeps aria-expanded in sync either way. *@
+        <div class="bit-dtg-column-chooser" id="@_columnChooserPanelId"
+             role="group" aria-label="@Strings.ColumnChooserLabel"
+             @onkeydown="OnColumnChooserKeyDown">
             @foreach (var col in AllColumns)
             {
+                @* The last visible column can't be hidden - a grid with no columns would be an empty
+                   shell - so its checkbox is disabled rather than silently refusing the click. *@
                 <label class="bit-dtg-chooser-item">
-                    <input type="checkbox" checked="@col.Visible"
-                           @onchange="e => SetColumnVisibilityAsync(col, (bool)e.Value!)" />
+                    <input type="checkbox" checked="@col.Visible" disabled="@(!CanHideColumn(col))"
+                           @onchange="e => SetColumnVisibility(col, (bool)e.Value!)" />
                     @col.DisplayTitle
                 </label>
             }
@@ -70,7 +104,19 @@
 
     @* ------------------------------------------------------- Grid viewport *@
     <div class="bit-dtg-viewport" style="@ViewportStyle" @ref="_infiniteViewport">
-        <div class="bit-dtg-table" role="grid" aria-rowcount="@(IsInfiniteMode ? -1 : TotalCount + HeaderRowCount)" aria-colcount="@TotalColumnSpan" style="--bit-dtg-template:@BuildGridTemplate();">
+        @* aria-multiselectable tells assistive tech that rows carry a meaningful aria-selected state
+           (only true for Multiple - Single selection is the default single-select behavior), and
+           aria-busy marks the grid as still updating while a load is in flight. *@
+        @* A hierarchical grid is a treegrid, not a grid: that is what tells assistive tech the rows
+           nest, and what makes the per-row aria-level/aria-expanded meaningful. *@
+        @* A grid needs an accessible name for assistive tech to announce it (and to tell several grids
+           on one page apart); AriaLabel names this one, falling back to the generic localized default. *@
+        <div class="bit-dtg-table" role="@(IsTreeMode ? "treegrid" : "grid")"
+             aria-label="@(string.IsNullOrWhiteSpace(AriaLabel) ? Strings.GridLabel : AriaLabel)"
+             aria-rowcount="@(IsInfiniteMode ? -1 : TotalCount + HeaderRowCount)" aria-colcount="@TotalColumnSpan"
+             aria-multiselectable="@(SelectionMode == BitDataGridSelectionMode.Multiple ? "true" : null)"
+             aria-busy="@(Loading || InfiniteLoading ? "true" : null)"
+             style="--bit-dtg-template:@BuildGridTemplate();">
 
             @if (ShowHeader)
             {
@@ -78,6 +124,10 @@
                     @if (HasColumnGroups)
                     {
                         <div class="bit-dtg-row bit-dtg-group-header-row" role="row" aria-rowindex="1" style="grid-template-columns:var(--bit-dtg-template);">
+                            @if (HasRowNumberColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@RowNumberStickyStyle" role="columnheader"></div>
+                            }
                             @if (HasReorderColumn)
                             {
                                 <div class="bit-dtg-hcell bit-dtg-sticky" style="@ReorderStickyStyle" role="columnheader"></div>
@@ -105,6 +155,16 @@
                     }
                     <div class="bit-dtg-row bit-dtg-header-row" role="row" aria-rowindex="@(HasColumnGroups ? 2 : 1)" style="grid-template-columns:var(--bit-dtg-template);">
                         @{ var headerColIndex = 0; }
+                        @if (HasRowNumberColumn)
+                        {
+                            headerColIndex++;
+                            @* The "#" glyph reads as nothing useful to a screen reader, so the cell
+                               carries a real name and hides the glyph from the accessibility tree. *@
+                            <div class="bit-dtg-hcell bit-dtg-sticky bit-dtg-hcell-rownumber" style="@RowNumberStickyStyle"
+                                 role="columnheader" aria-colindex="@headerColIndex" aria-label="@Strings.RowNumberLabel">
+                                <span aria-hidden="true">@Strings.RowNumberHeader</span>
+                            </div>
+                        }
                         @if (HasReorderColumn)
                         {
                             headerColIndex++;
@@ -167,18 +227,22 @@
                                         }
                                     </text>;
                                 }
+                                @* The header label ellipsises in a narrow column, so it carries its full
+                                   text as a native tooltip - except when a HeaderTemplate owns the markup
+                                   (and any tooltip it wants) itself. *@
                                 @if (ColumnSortable(column))
                                 {
                                     @* A real button gives native keyboard activation (Enter/Space) and an
                                        implicit button role, so no custom keydown handling is needed and
                                        Space won't scroll the page. *@
-                                    <button type="button" class="bit-dtg-htext" @onclick="e => OnHeaderClick(column, e)">
+                                    <button type="button" class="bit-dtg-htext" title="@(column.HeaderTemplate is null ? column.DisplayTitle : null)"
+                                            @onclick="e => OnHeaderClick(column, e)">
                                         @headerInner
                                     </button>
                                 }
                                 else
                                 {
-                                    <span class="bit-dtg-htext">
+                                    <span class="bit-dtg-htext" title="@(column.HeaderTemplate is null ? column.DisplayTitle : null)">
                                         @headerInner
                                     </span>
                                 }
@@ -197,9 +261,14 @@
 
                                 @if (ColumnResizable(column))
                                 {
-                                    <span class="bit-dtg-resizer"
+                                    @* Double-click auto-fits the column to its widest rendered content,
+                                       the gesture desktop grids share; stopPropagation keeps it off the
+                                       header's own sort handler. *@
+                                    <span class="bit-dtg-resizer" title="@Strings.ResizeColumnTitle"
                                           @onpointerdown="e => StartResizeAsync(column, e.ClientX)"
-                                          @onpointerdown:stopPropagation="true"></span>
+                                          @onpointerdown:stopPropagation="true"
+                                          @ondblclick="() => AutoFitAsync(column)"
+                                          @ondblclick:stopPropagation="true"></span>
                                 }
                             </div>
                         }
@@ -214,6 +283,10 @@
                     {
                         @* The filter row is always the last header row, so its aria-rowindex is HeaderRowCount. *@
                         <div class="bit-dtg-row bit-dtg-filter-row" role="row" aria-rowindex="@HeaderRowCount" style="grid-template-columns:var(--bit-dtg-template);">
+                            @if (HasRowNumberColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" role="columnheader" style="@RowNumberStickyStyle"></div>
+                            }
                             @if (HasReorderColumn)
                             {
                                 <div class="bit-dtg-hcell bit-dtg-sticky" role="columnheader" style="@ReorderStickyStyle"></div>
@@ -262,13 +335,23 @@
                 @if (Loading)
                 {
                     <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                        <div class="bit-dtg-cell bit-dtg-loading" role="gridcell" style="grid-column:1 / -1;"><span class="bit-dtg-spinner"></span> @Strings.LoadingText</div>
+                        <div class="bit-dtg-cell bit-dtg-loading" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
+                            @if (LoadingTemplate is not null)
+                            {
+                                @LoadingTemplate
+                            }
+                            else
+                            {
+                                <span class="bit-dtg-spinner"></span>
+                                <span>@Strings.LoadingText</span>
+                            }
+                        </div>
                     </div>
                 }
                 else if (TotalCount == 0 && PendingNewItem is null && !IsInfiniteMode && !UseServerVirtualization)
                 {
                     <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                        <div class="bit-dtg-cell bit-dtg-empty" role="gridcell" style="grid-column:1 / -1;">
+                        <div class="bit-dtg-cell bit-dtg-empty" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                             @if (EmptyTemplate is not null)
                             {
                                 @EmptyTemplate
@@ -289,7 +372,7 @@
                     @if (InfiniteItems.Count == 0 && !InfiniteLoading)
                     {
                         <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                            <div class="bit-dtg-cell bit-dtg-empty" role="gridcell" style="grid-column:1 / -1;">
+                            <div class="bit-dtg-cell bit-dtg-empty" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                                 @if (EmptyTemplate is not null)
                                 {
                                     @EmptyTemplate
@@ -324,7 +407,7 @@
                         {
                             <div class="bit-dtg-row bit-dtg-placeholder-row" role="row"
                                  style="grid-template-columns:var(--bit-dtg-template);min-height:@RowHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)px;">
-                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="gridcell" style="grid-column:1 / -1;">
+                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                                     <span class="bit-dtg-skeleton"></span>
                                 </div>
                             </div>
@@ -332,7 +415,7 @@
                         else if (!InfiniteHasMore)
                         {
                             <div class="bit-dtg-row bit-dtg-infinite-end" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                                <div class="bit-dtg-cell" role="gridcell" style="grid-column:1 / -1;">
+                                <div class="bit-dtg-cell" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                                     <span>@Strings.EndOfResultsText</span>
                                 </div>
                             </div>
@@ -347,7 +430,7 @@
                     @if (_serverVirtualizeEmpty)
                     {
                         <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                            <div class="bit-dtg-cell bit-dtg-empty" role="gridcell" style="grid-column:1 / -1;">
+                            <div class="bit-dtg-cell bit-dtg-empty" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                                 @if (EmptyTemplate is not null)
                                 {
                                     @EmptyTemplate
@@ -366,7 +449,7 @@
                         <Placeholder>
                             <div class="bit-dtg-row bit-dtg-placeholder-row" role="row"
                                  style="grid-template-columns:var(--bit-dtg-template);min-height:@RowHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)px;">
-                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="gridcell" style="grid-column:1 / -1;">
+                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                                     <span class="bit-dtg-skeleton"></span>
                                 </div>
                             </div>
@@ -392,6 +475,10 @@
             {
                 <div class="bit-dtg-footer" role="rowgroup">
                     <div class="bit-dtg-row bit-dtg-footer-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                        @if (HasRowNumberColumn)
+                        {
+                            <div class="bit-dtg-cell" role="gridcell"></div>
+                        }
                         @if (HasReorderColumn)
                         {
                             <div class="bit-dtg-cell" role="gridcell"></div>
@@ -476,7 +563,7 @@
         var groupCol = _columnsById.GetValueOrDefault(group.ColumnId);
         var collapsed = IsGroupCollapsed(group);
         <div class="bit-dtg-row bit-dtg-group-row" role="row" style="grid-template-columns:var(--bit-dtg-template);--bit-dtg-group-level:@group.Level;">
-            <div class="bit-dtg-group-cell" role="gridcell" style="grid-column:1 / -1;padding-inline-start:@(8 + group.Level * 20)px;">
+            <div class="bit-dtg-group-cell" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;padding-inline-start:@(8 + group.Level * 20)px;">
                 <button type="button" class="bit-dtg-icon-btn"
                         aria-label="@(string.Format(collapsed ? Strings.ExpandGroupFormat : Strings.CollapseGroupFormat, groupCol?.DisplayTitle, group.KeyText))"
                         aria-expanded="@(collapsed ? "false" : "true")"
@@ -522,17 +609,22 @@
 
         if (showOps)
         {
+            var current = EffectiveFilterOperator(column);
             <div class="bit-dtg-filter-wrap">
-                <select class="bit-dtg-filter-op"
+                <select class="bit-dtg-filter-op@(IsValuelessOperator(current) ? " bit-dtg-filter-op-only" : "")"
                         aria-label="@string.Format(Strings.FilterOperatorLabel, column.DisplayTitle)"
-                        value="@EffectiveFilterOperator(column).ToString()"
+                        value="@current.ToString()"
                         @onchange="e => SetFilterOperatorAsync(column, (string?)e.Value)">
                     @foreach (var op in OperatorChoices(type))
                     {
                         <option value="@op">@OperatorText(op)</option>
                     }
                 </select>
-                @RenderFilterInput(column)
+                @* A value-less operator ("is blank") carries its whole criterion, so no editor follows it. *@
+                @if (!IsValuelessOperator(current))
+                {
+                    @RenderFilterInput(column)
+                }
             </div>
         }
         else
@@ -541,6 +633,8 @@
         }
     };
 
+    // The blank/not-blank pair closes the list for every type: they are the two criteria that need no
+    // value at all, and without them "show me the rows that are missing this" has no expression in the UI.
     private static IEnumerable<BitDataGridFilterOperator> OperatorChoices(BitDataGridColumnDataType type)
         => type == BitDataGridColumnDataType.Text
             ? new[]
@@ -548,13 +642,20 @@
                 BitDataGridFilterOperator.Contains, BitDataGridFilterOperator.DoesNotContain,
                 BitDataGridFilterOperator.StartsWith, BitDataGridFilterOperator.EndsWith,
                 BitDataGridFilterOperator.Equals, BitDataGridFilterOperator.NotEquals,
+                BitDataGridFilterOperator.IsEmpty, BitDataGridFilterOperator.IsNotEmpty,
             }
             : new[]
             {
                 BitDataGridFilterOperator.Equals, BitDataGridFilterOperator.NotEquals,
                 BitDataGridFilterOperator.GreaterThan, BitDataGridFilterOperator.GreaterThanOrEqual,
                 BitDataGridFilterOperator.LessThan, BitDataGridFilterOperator.LessThanOrEqual,
+                BitDataGridFilterOperator.IsEmpty, BitDataGridFilterOperator.IsNotEmpty,
             };
+
+    /// <summary>The value-less operators: they carry their whole criterion in the operator itself, so
+    /// the editor beside them has nothing to collect.</summary>
+    private static bool IsValuelessOperator(BitDataGridFilterOperator op)
+        => op is BitDataGridFilterOperator.IsEmpty or BitDataGridFilterOperator.IsNotEmpty;
 
     private string OperatorText(BitDataGridFilterOperator op) => op switch
     {
@@ -568,6 +669,8 @@
         BitDataGridFilterOperator.GreaterThanOrEqual => Strings.FilterOpGreaterThanOrEqual,
         BitDataGridFilterOperator.LessThan => Strings.FilterOpLessThan,
         BitDataGridFilterOperator.LessThanOrEqual => Strings.FilterOpLessThanOrEqual,
+        BitDataGridFilterOperator.IsEmpty => Strings.FilterOpIsEmpty,
+        BitDataGridFilterOperator.IsNotEmpty => Strings.FilterOpIsNotEmpty,
         _ => op.ToString()
     };
 
@@ -576,6 +679,16 @@
     {
         if (!Enum.TryParse<BitDataGridFilterOperator>(raw, out var op)) return;
         _filterOps[column.Id] = op;
+
+        // A value-less operator is the whole criterion, so it applies the moment it is chosen instead of
+        // waiting for an editor that no longer renders beside it.
+        if (IsValuelessOperator(op))
+        {
+            _filterRaw.Remove(column.Id);
+            await SetFilterAsync(column, op, null);
+            return;
+        }
+
         if (_filterRaw.TryGetValue(column.Id, out var text) && !string.IsNullOrWhiteSpace(text))
         {
             await SetTypedFilterAsync(column, text);
@@ -649,7 +762,7 @@
     // Date handling: an Equals on DateTime uses a boundary-safe half-open same-day range
     // ([start, nextDay)) built from standard comparison operators, so a row's time-of-day never
     // prevents a match and remote OnRead consumers can apply the filter with ordinary comparisons
-    // (see SetDateRangeFilterAsync). DateOnly and DateTimeOffset use a date-only Equals so day
+    // (see SetRangeFilterAsync). DateOnly and DateTimeOffset use a date-only Equals so day
     // matching follows each row's own calendar date. Ordering operators compare against the selected
     // day's midnight.
     private Task SetTypedFilterAsync(BitDataGridColumn<TItem> column, string? raw)
@@ -715,10 +828,10 @@
                         // the data processor's day-equality handling gives it whole-day semantics.
                         // Ordering operators compare against the selected day's midnight.
                         if (op == BitDataGridFilterOperator.Equals)
-                            return SetDateRangeFilterAsync(column, start, start.AddDays(1));
+                            return SetRangeFilterAsync(column, start, start.AddDays(1));
                         return SetFilterAsync(column, op, start);
                     }
-                    return SetDateRangeFilterAsync(column, null, null);
+                    return SetRangeFilterAsync(column, null, null);
                 }
             }
 
@@ -759,10 +872,18 @@
         }
     }
 
+    // Escape dismisses the column chooser from anywhere inside the panel.
+    private void OnColumnChooserKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") CloseColumnChooser();
+    }
+
     private async Task OnHeaderClick(BitDataGridColumn<TItem> column, MouseEventArgs e)
     {
         if (!ColumnSortable(column)) return;
-        await ToggleSortAsync(column, MultiSort && (e.CtrlKey || e.MetaKey));
+        // Ctrl/⌘ and Shift both add to the sort rather than replacing it: grids are split between the
+        // two conventions (AG Grid uses Shift, Excel and Fluent use Ctrl), so accept either.
+        await ToggleSortAsync(column, MultiSort && (e.CtrlKey || e.MetaKey || e.ShiftKey));
     }
 
     private RenderFragment RenderPager => @<div class="bit-dtg-pager">
@@ -773,7 +894,7 @@
             }
             <span>@string.Format(Strings.PagerRangeFormat, from, to, TotalCount)</span>
             <select class="bit-dtg-page-size" aria-label="@Strings.RowsPerPageLabel" @onchange="e => { if (int.TryParse((string?)e.Value, out var ps)) return SetPageSizeAsync(ps); return Task.CompletedTask; }">
-                @foreach (var size in PageSizeOptions)
+                @foreach (var size in EffectivePageSizeOptions)
                 {
                     <option value="@size" selected="@(size == _effectivePageSize)">@string.Format(Strings.PerPageFormat, size)</option>
                 }

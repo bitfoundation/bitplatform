@@ -21,11 +21,30 @@ public sealed class BitDataGridState
     /// <summary>The user-selected page size, or <c>null</c> when the grid's <c>PageSize</c> parameter applies.</summary>
     public int? PageSize { get; set; }
 
+    /// <summary>The grid-wide quick-search term, or <c>null</c> when no search was active.</summary>
+    public string? Search { get; set; }
+
     public List<BitDataGridSortDescriptor> Sorts { get; set; } = new();
 
     public List<BitDataGridFilterDescriptor> Filters { get; set; } = new();
 
     public List<BitDataGridGroupDescriptor> Groups { get; set; } = new();
+
+    /// <summary>
+    /// Whether groups were collapsed by default when the snapshot was taken (the state
+    /// <c>GroupsInitiallyCollapsed</c> sets and <c>ExpandAllGroupsAsync</c>/<c>CollapseAllGroupsAsync</c>
+    /// flip). Only meaningful together with <see cref="Groups"/>.
+    /// </summary>
+    public bool GroupsCollapsed { get; set; }
+
+    /// <summary>
+    /// The groups whose expanded state differs from <see cref="GroupsCollapsed"/>, as the stable paths
+    /// the grid identifies them by. Restoring both fields brings back exactly which groups were open,
+    /// so a persisted view opens the way the user left it.
+    /// <para>Tree-node expansion is deliberately not captured: a tree node is identified by whatever
+    /// <c>KeyField</c> returns, which is not guaranteed to be serializable.</para>
+    /// </summary>
+    public List<string> GroupExpansionOverrides { get; set; } = new();
 
     /// <summary>Per-column layout state (visibility, resized width, display order).</summary>
     public List<BitDataGridColumnState> Columns { get; set; } = new();
