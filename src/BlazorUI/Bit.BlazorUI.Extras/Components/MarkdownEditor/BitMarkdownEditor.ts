@@ -86,12 +86,12 @@
             return MarkdownEditor._editors[id]?.replaceAll(search, replacement, all, matchCase) ?? 0;
         }
 
-        public static replaceOne(id: string, search: string, replacement: string, matchCase: boolean): MdeFindResult {
-            return MarkdownEditor._editors[id]?.replaceOne(search, replacement, matchCase) ?? { count: 0, index: 0 };
+        public static replaceOne(id: string, search: string, replacement: string, matchCase: boolean, focusEditor: boolean = true): MdeFindResult {
+            return MarkdownEditor._editors[id]?.replaceOne(search, replacement, matchCase, focusEditor) ?? { count: 0, index: 0 };
         }
 
-        public static find(id: string, search: string, matchCase: boolean, backwards: boolean): MdeFindResult {
-            return MarkdownEditor._editors[id]?.find(search, matchCase, backwards) ?? { count: 0, index: 0 };
+        public static find(id: string, search: string, matchCase: boolean, backwards: boolean, focusEditor: boolean = true): MdeFindResult {
+            return MarkdownEditor._editors[id]?.find(search, matchCase, backwards, focusEditor) ?? { count: 0, index: 0 };
         }
 
         public static getSelection(id: string): MdeSelection {
@@ -656,7 +656,7 @@
 
         // Replaces the match the selection is sitting on (if any) and moves to the next
         // one, which is what a find & replace panel's "Replace" button is expected to do.
-        public replaceOne(search: string, replacement: string, matchCase: boolean): MdeFindResult {
+        public replaceOne(search: string, replacement: string, matchCase: boolean, focusEditor: boolean = true): MdeFindResult {
             if (this.textArea.readOnly || !search) return { count: 0, index: 0 };
 
             const start = this.textArea.selectionStart;
@@ -666,14 +666,17 @@
                 (matchCase ? selected === search : selected.toLowerCase() === search.toLowerCase());
 
             if (isMatch) {
-                this.replaceRange(start, end, replacement, start + replacement.length, start + replacement.length);
+                this.replaceRange(start, end, replacement, start + replacement.length, start + replacement.length, focusEditor);
             }
 
-            return this.find(search, matchCase, false);
+            return this.find(search, matchCase, false, focusEditor);
         }
 
-        // Selects the next (or previous) occurrence, wrapping around the document ends.
-        public find(search: string, matchCase: boolean, backwards: boolean): MdeFindResult {
+        // Selects the next (or previous) occurrence, wrapping around the document ends. The
+        // find panel drives this with `focusEditor` off: a textarea shows the selection it was
+        // given whether or not it has the focus, and taking the focus would pull it out of the
+        // find input the next Enter is meant to reach.
+        public find(search: string, matchCase: boolean, backwards: boolean, focusEditor: boolean = true): MdeFindResult {
             if (!search) return { count: 0, index: 0 };
 
             const found = this.matches(search, matchCase);
@@ -692,7 +695,7 @@
                 target = found.find(m => m >= from) ?? found[0];
             }
 
-            this.textArea.focus();
+            if (focusEditor) this.textArea.focus();
             this.textArea.setSelectionRange(target, target + search.length);
             this.saveSelection();
             this.scrollSelectionIntoView();
@@ -1032,13 +1035,13 @@
             this.replaceRange(start, end, open + selected + close, start + open.length, end + open.length);
         }
 
-        private replaceRange(start: number, end: number, replacement: string, selStart: number, selEnd: number) {
+        private replaceRange(start: number, end: number, replacement: string, selStart: number, selEnd: number, focusEditor: boolean = true) {
             const value = this.textArea.value;
             this.endTypingGroup();
             this.pushUndo({ text: value, selStart: start, selEnd: end });
             this._redo = [];
             this.textArea.value = this.limit(value.slice(0, start) + replacement + value.slice(end));
-            this.textArea.focus();
+            if (focusEditor) this.textArea.focus();
             const max = this.textArea.value.length;
             this.textArea.setSelectionRange(Math.min(selStart, max), Math.min(selEnd, max));
             this.saveSelection();

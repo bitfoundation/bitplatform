@@ -849,21 +849,36 @@ public static partial class BitMarkdownEditorCommands
             set.Add(BitMarkdownEditorCommand.Subscript);
         }
         // A caret is inside emphasis when an odd number of markers precede it on the line; a
-        // selection has to carry the delimiters itself. Bold's doubled marker counts even
-        // either way, so a caret in **bold** never reports italic alongside it.
-        char italic = options.ItalicMarker[0];
+        // selection is italic when the delimiters sit just outside it or are carried inside
+        // it, which is what toggling italic on that selection unwraps. Bold's doubled marker
+        // counts even either way, so a caret in **bold** never reports italic alongside it.
         if (start == end)
         {
             if (IsWrapped(text, start, end, options.ItalicMarker)) set.Add(BitMarkdownEditorCommand.Italic);
         }
-        else if (text[start..end] is { Length: >= 2 } sel &&
-                 sel[0] == italic && sel[^1] == italic &&
-                 IsSingleCharDelimiter(sel, 0, italic) && IsSingleCharDelimiter(sel, sel.Length - 1, italic))
+        else if (IsItalicSelection(text, start, end, options.ItalicMarker[0]))
         {
             set.Add(BitMarkdownEditorCommand.Italic);
         }
 
         return set;
+    }
+
+    // A selection is italic when a single-char marker delimits it - either just outside the
+    // selection or captured at both of its ends - and that marker is not one half of the
+    // doubled bold/strikethrough marker. Mirrors what ToggleWrap unwraps.
+    private static bool IsItalicSelection(string text, int start, int end, char marker)
+    {
+        if (start > 0 && end < text.Length &&
+            text[start - 1] == marker && text[end] == marker &&
+            IsSingleCharDelimiter(text, start - 1, marker) && IsSingleCharDelimiter(text, end, marker))
+        {
+            return true;
+        }
+
+        string selected = text[start..end];
+        return selected.Length >= 2 && selected[0] == marker && selected[^1] == marker &&
+               IsSingleCharDelimiter(selected, 0, marker) && IsSingleCharDelimiter(selected, selected.Length - 1, marker);
     }
 
     private static bool IsWrapped(string text, int start, int end, string marker)
@@ -923,7 +938,9 @@ public static partial class BitMarkdownEditorCommands
     [GeneratedRegex(@"__(.+?)__")]
     private static partial Regex UnderscoreBoldMarker();
 
-    [GeneratedRegex(@"(?<!_)_(?!_)(.+?)(?<!_)_(?!_)")]
+    // Underscore emphasis is delimited at word boundaries (the rule CommonMark applies to
+    // '_'), so the underscores inside snake_case_name are left where they are.
+    [GeneratedRegex(@"(?<!\w)_(?!_)(.+?)(?<!_)_(?!\w)")]
     private static partial Regex UnderscoreItalicMarker();
 
     [GeneratedRegex(@"`(.+?)`")]

@@ -393,7 +393,7 @@ public partial class BitMarkdownEditor : BitComponentBase
     {
         if (IsRendered is false || string.IsNullOrEmpty(search)) return BitMarkdownEditorFindResult.None;
 
-        return await _js.BitMarkdownEditorFind(_Id, search, matchCase, backwards: false);
+        return await _js.BitMarkdownEditorFind(_Id, search, matchCase, backwards: false, focusEditor: true);
     }
 
     /// <summary>
@@ -405,7 +405,7 @@ public partial class BitMarkdownEditor : BitComponentBase
     {
         if (IsRendered is false || string.IsNullOrEmpty(search)) return BitMarkdownEditorFindResult.None;
 
-        return await _js.BitMarkdownEditorFind(_Id, search, matchCase, backwards: true);
+        return await _js.BitMarkdownEditorFind(_Id, search, matchCase, backwards: true, focusEditor: true);
     }
 
     /// <summary>
@@ -413,7 +413,9 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// </summary>
     public async ValueTask<BitMarkdownEditorSelection> GetSelection()
     {
-        if (IsRendered is false) return default;
+        // Text is documented as empty for a caret, so the answer before the first render
+        // says the same rather than handing back a null string.
+        if (IsRendered is false) return new BitMarkdownEditorSelection(0, 0, string.Empty);
 
         return await _js.BitMarkdownEditorGetSelection(_Id);
     }
@@ -1101,18 +1103,21 @@ public partial class BitMarkdownEditor : BitComponentBase
         _findResult = null;
     }
 
-    private async Task FindNextMatch()
+    private Task FindNextMatch() => FindFromPanel(backwards: false);
+
+    private Task FindPreviousMatch() => FindFromPanel(backwards: true);
+
+    // The panel walks the matches from its own controls, so the match is selected without the
+    // focus moving into the textarea: otherwise the Enter that found a match would leave the
+    // caret in the document and the next Enter would type a newline into it instead of
+    // reaching the find input again.
+    private async Task FindFromPanel(bool backwards)
     {
         if (string.IsNullOrEmpty(_findText)) { _findResult = null; return; }
 
-        _findResult = await FindNext(_findText, _matchCase);
-    }
+        if (IsRendered is false) return;
 
-    private async Task FindPreviousMatch()
-    {
-        if (string.IsNullOrEmpty(_findText)) { _findResult = null; return; }
-
-        _findResult = await FindPrevious(_findText, _matchCase);
+        _findResult = await _js.BitMarkdownEditorFind(_Id, _findText, _matchCase, backwards, focusEditor: false);
     }
 
     // Opening the panel seeds it with whatever is selected, the way every find box does, so
@@ -1153,7 +1158,7 @@ public partial class BitMarkdownEditor : BitComponentBase
     {
         if (IsRendered is false || ReadOnly || IsEnabled is false || string.IsNullOrEmpty(_findText)) return;
 
-        _findResult = await _js.BitMarkdownEditorReplaceOne(_Id, _findText, _replaceText, _matchCase);
+        _findResult = await _js.BitMarkdownEditorReplaceOne(_Id, _findText, _replaceText, _matchCase, focusEditor: false);
     }
 
     private async Task ReplaceAll()
@@ -1163,7 +1168,7 @@ public partial class BitMarkdownEditor : BitComponentBase
         await Replace(_findText, _replaceText, all: true, matchCase: _matchCase);
 
         // Report what is left: a replacement containing the search term still has matches.
-        _findResult = await FindNext(_findText, _matchCase);
+        await FindFromPanel(backwards: false);
     }
 
     // Focus guards wrap the help dialog: tabbing onto either sentinel bounces focus

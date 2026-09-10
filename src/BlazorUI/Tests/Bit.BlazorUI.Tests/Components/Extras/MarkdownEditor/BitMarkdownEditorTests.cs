@@ -673,6 +673,28 @@ public class BitMarkdownEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMarkdownEditorShouldNotPullTheFocusOutOfTheFindInputWhileWalkingMatches()
+    {
+        Context.JSInterop.Setup<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.find", _ => true).SetResult(new(2, 1));
+
+        var component = RenderComponent<BitMarkdownEditor>();
+        await component.Instance._OnShortcut("find");
+
+        component.Find(".bit-mde-fni").Input("md");
+        component.Find(".bit-mde-fni").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        // focusEditor is the last argument: the panel selects the match without focusing the
+        // textarea, so the next Enter still reaches the find input instead of the document.
+        var fromPanel = Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.find"].First();
+        Assert.AreEqual(false, fromPanel.Arguments[^1]);
+
+        await component.Instance.FindNext("md");
+
+        var fromApi = Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.find"].Last();
+        Assert.AreEqual(true, fromApi.Arguments[^1]);
+    }
+
+    [TestMethod]
     public async Task BitMarkdownEditorShouldReportNoMatchesInTheFindPanel()
     {
         Context.JSInterop.Setup<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.find", _ => true).SetResult(BitMarkdownEditorFindResult.None);

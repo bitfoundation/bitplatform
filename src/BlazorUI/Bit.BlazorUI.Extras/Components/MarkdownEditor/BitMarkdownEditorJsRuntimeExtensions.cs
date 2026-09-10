@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class BitMarkdownEditorJsRuntimeExtensions
 {
@@ -43,14 +43,14 @@ internal static class BitMarkdownEditorJsRuntimeExtensions
         return jsRuntime.Invoke<int>("BitBlazorUI.MarkdownEditor.replaceAll", id, search, replacement, all, matchCase);
     }
 
-    public static ValueTask<BitMarkdownEditorFindResult> BitMarkdownEditorFind(this IJSRuntime jsRuntime, string id, string search, bool matchCase, bool backwards)
+    public static ValueTask<BitMarkdownEditorFindResult> BitMarkdownEditorFind(this IJSRuntime jsRuntime, string id, string search, bool matchCase, bool backwards, bool focusEditor)
     {
-        return jsRuntime.Invoke<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.find", id, search, matchCase, backwards);
+        return jsRuntime.Invoke<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.find", id, search, matchCase, backwards, focusEditor);
     }
 
-    public static ValueTask<BitMarkdownEditorFindResult> BitMarkdownEditorReplaceOne(this IJSRuntime jsRuntime, string id, string search, string replacement, bool matchCase)
+    public static ValueTask<BitMarkdownEditorFindResult> BitMarkdownEditorReplaceOne(this IJSRuntime jsRuntime, string id, string search, string replacement, bool matchCase, bool focusEditor)
     {
-        return jsRuntime.Invoke<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.replaceOne", id, search, replacement, matchCase);
+        return jsRuntime.Invoke<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.replaceOne", id, search, replacement, matchCase, focusEditor);
     }
 
     public static ValueTask<BitMarkdownEditorSelection> BitMarkdownEditorGetSelection(this IJSRuntime jsRuntime, string id)

@@ -507,6 +507,21 @@ public class BitMarkdownEditorCommandsTests
     }
 
     [TestMethod]
+    public void DetectActiveFormatsShouldDetectItalicDelimitedOutsideTheSelection()
+    {
+        // The delimiters sit outside the selection, which is what toggling italic unwraps.
+        var italic = BitMarkdownEditorCommands.DetectActiveFormats("*italic*", 1, 7);
+
+        Assert.IsTrue(italic.Contains(BitMarkdownEditorCommand.Italic));
+
+        // The single '*' either side of a bold selection belongs to '**', not to italic.
+        var bold = BitMarkdownEditorCommands.DetectActiveFormats("**bold**", 2, 6);
+
+        Assert.IsTrue(bold.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.IsFalse(bold.Contains(BitMarkdownEditorCommand.Italic));
+    }
+
+    [TestMethod]
     public void DetectActiveFormatsShouldDetectTaskList()
     {
         var formats = BitMarkdownEditorCommands.DetectActiveFormats("- [ ] task", 8, 8);
@@ -941,6 +956,16 @@ public class BitMarkdownEditorCommandsTests
         var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, "__very__ _plain_ **now** *here*", 0, 30);
 
         Assert.AreEqual("very plain now here", result.Text);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldLeaveUnderscoresInsideWordsAlone()
+    {
+        const string text = "call snake_case_name _now_";
+
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, text, 0, text.Length);
+
+        Assert.AreEqual("call snake_case_name now", result.Text);
     }
 
     [TestMethod]
