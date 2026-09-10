@@ -15,6 +15,7 @@ namespace BitBlazorUI {
             _viewTimer: any,
             _moveEndCallback: any,
             _drag: { entity: any, markerId: string } | null,
+            _dragEndedAt: number,
             _contextMenuBlocker: { canvas: HTMLCanvasElement, preventMenu: (evt: MouseEvent) => void } | null,
             suppressBrowserContextMenu: boolean,
             _baseImageryLayer: any,
@@ -130,6 +131,7 @@ namespace BitBlazorUI {
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 _cesiumHandler: null as any, _viewTimer: null as any, _moveEndCallback: null as any,
                 _drag: null as ({ entity: any, markerId: string } | null),
+                _dragEndedAt: 0,
                 _contextMenuBlocker: null as ({ canvas: HTMLCanvasElement, preventMenu: (evt: MouseEvent) => void } | null),
                 suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
                 _baseImageryLayer: null as any,
@@ -767,9 +769,14 @@ namespace BitBlazorUI {
 
             const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
             handler.setInputAction((click: any) => {
-                // A drag ends with a LEFT_UP that the browser also reports as a click;
-                // skip it so finishing a drag doesn't also raise OnMarkerClick.
-                if (s._drag) return;
+                // A drag ends with a LEFT_UP that Cesium also reports as a LEFT_CLICK - but the
+                // LEFT_UP handler has already cleared s._drag by then, so the drag is remembered as
+                // a timestamp instead. Only the click Cesium synthesizes in the same turn as that
+                // LEFT_UP is swallowed; a genuine click afterwards still raises OnMarkerClick.
+                if (s._dragEndedAt && (performance.now() - s._dragEndedAt) < 100) {
+                    s._dragEndedAt = 0;
+                    return;
+                }
                 const picked = viewer.scene.pick(click.position);
                 if (picked && picked.id) {
                     const ent = picked.id;
@@ -844,6 +851,7 @@ namespace BitBlazorUI {
                 const drag = s._drag;
                 if (!drag) return;
                 s._drag = null;
+                s._dragEndedAt = performance.now();
                 cameraController.enableInputs = true;
                 const p = pickPosition(event.position);
                 if (!p) return;

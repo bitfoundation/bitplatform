@@ -113,10 +113,14 @@ namespace BitBlazorUI {
             // Re-syncing identical markers would tear down and rebuild every DOM marker, losing
             // any open popup and the keyboard focus along with it.
             //
-            // The count is part of the signature, not just the id: a bubble's id is its grid cell,
-            // which does not change as markers enter and leave that cell during a pan - so an
-            // id-only signature would leave a bubble labelled with a count it no longer stands for.
-            const signature = rendered.map(m => `${m.id}:${m.members?.length ?? 0}`).join('|');
+            // The count and the centroid are part of the signature, not just the id: a bubble's id
+            // is its grid cell, which does not change as markers enter and leave that cell during a
+            // pan - so an id-only signature would leave a bubble labelled with a count it no longer
+            // stands for, and a count-only one would leave it at the centroid of a membership it has
+            // since swapped (one marker out, another in, the count unchanged).
+            const signature = rendered
+                .map(m => `${m.id}:${m.members?.length ?? 0}:${m.payload?.lat ?? ''},${m.payload?.lng ?? ''}`)
+                .join('|');
             if (signature === s.lastSignature) return;
             s.lastSignature = signature;
 

@@ -73,7 +73,7 @@ public class BitMapTests : BunitTestContext
     /// </summary>
     private void SetupSuccessfulMount()
     {
-        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL).SetResult(true);
+        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
     }
 
@@ -486,7 +486,7 @@ public class BitMapTests : BunitTestContext
         // The component has to check up front, or the user just sees an empty box.
         Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
-        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL).SetResult(false);
+        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL, _ => true).SetResult(false);
 
         var component = RenderComponent<BitMap<WebGlTestProvider>>();
 
@@ -504,7 +504,7 @@ public class BitMapTests : BunitTestContext
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
         Context.JSInterop.SetupVoid("BitBlazorUI.WebGlTestProvider.init");
         Context.JSInterop.SetupVoid(CHROME_ATTACH);
-        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL).SetResult(true);
+        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
 
         var component = RenderComponent<BitMap<WebGlTestProvider>>();
@@ -654,7 +654,7 @@ public class BitMapTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.SharedAssetProviderA.init");
         Context.JSInterop.SetupVoid("BitBlazorUI.SharedAssetProviderB.init");
         Context.JSInterop.SetupVoid(CHROME_ATTACH);
-        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL).SetResult(true);
+        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
 
         RenderComponent<BitMap<SharedAssetProviderA>>();
@@ -1529,7 +1529,7 @@ public class BitMapTests : BunitTestContext
     {
         // The clustering layer renders through a named JS object, so a swap to a different backend
         // has to re-point it - otherwise it keeps syncing markers into the disposed one.
-        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL).SetResult(true);
+        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
 
         var component = RenderComponent<BitMap<TestMapProviderA>>(parameters =>
@@ -1663,7 +1663,7 @@ public class BitMapTests : BunitTestContext
     public void BitMapShouldNotReplayAHiddenLayerOnAProviderSwap()
     {
         // Replaying a hidden layer visible would silently undo the caller's choice.
-        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL).SetResult(true);
+        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL, _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
 
         var component = RenderComponent<BitMap<TestMapProviderA>>(parameters =>
@@ -1835,7 +1835,8 @@ public class BitMapTests : BunitTestContext
         var rows = component.FindAll(".bit-map-marker-table tbody tr");
         Assert.AreEqual(2, rows.Count);
         StringAssert.Contains(rows[0].TextContent, "Kyiv office");
-        StringAssert.Contains(rows[0].TextContent, "50.45000");
+        // The component formats coordinates in the current culture, so the expectation has to too.
+        StringAssert.Contains(rows[0].TextContent, 50.45.ToString("F5"));
         StringAssert.Contains(rows[1].TextContent, "Lviv office");
     }
 
@@ -3055,7 +3056,9 @@ public class BitMapTests : BunitTestContext
 
     /// <summary>Builds the payload shape the providers send to <c>OnViewChanged</c>.</summary>
     private static JsonElement ViewPayload(double lat, double lng, double zoom)
-        => JsonSerializer.Deserialize<JsonElement>($$"""
+        // Invariant, not the current culture: a comma-decimal culture would format 51.5 as "51,5"
+        // and hand JsonSerializer a payload that is no longer valid JSON.
+        => JsonSerializer.Deserialize<JsonElement>(FormattableString.Invariant($$"""
             {
               "center": { "lat": {{lat}}, "lng": {{lng}} },
               "zoom": {{zoom}},
@@ -3064,13 +3067,13 @@ public class BitMapTests : BunitTestContext
                 "northEast": { "lat": {{lat + 1}}, "lng": {{lng + 1}} }
               }
             }
-            """);
+            """));
 
     private sealed class WebGlTestProvider : BitMapProviderBase
     {
         public override string Key => "webgl-test";
         public override string JsObjectName => "WebGlTestProvider";
-        public override bool RequiresWebGl => true;
+        public override BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.WebGl;
         public override object BuildOptionsPayload() => GetCommonOptions();
     }
 

@@ -107,7 +107,7 @@ public partial class BitMapDemo
             Name = "MarkerListTemplate",
             Type = "RenderFragment<IReadOnlyList<BitMapMarker>>?",
             DefaultValue = "null",
-            Description = "Replaces the built-in marker table. Receives the markers in the order they were added.",
+            Description = "Replaces the built-in marker table. Receives the markers in no guaranteed order.",
          },
          new()
          {
@@ -391,7 +391,7 @@ public partial class BitMapDemo
             Name = "MarkerIds",
             Type = "IReadOnlyCollection<string>",
             DefaultValue = "",
-            Description = "Ids of the markers currently on the map, in insertion order. Read from the component's own snapshot, so it costs no interop round-trip.",
+            Description = "Ids of the markers currently on the map, in no guaranteed order. Read from the component's own snapshot, so it costs no interop round-trip.",
          },
          new()
          {
@@ -419,21 +419,21 @@ public partial class BitMapDemo
             Name = "OrderedMarkers",
             Type = "IReadOnlyList<BitMapMarker>",
             DefaultValue = "",
-            Description = "The markers currently on the map, in the order they were added. Costs no interop round-trip.",
+            Description = "The markers currently on the map, in no guaranteed order. Costs no interop round-trip.",
          },
          new()
          {
             Name = "LayerIds",
             Type = "IReadOnlyCollection<string>",
             DefaultValue = "",
-            Description = "Ids of the vector layers currently on the map, in insertion order. Costs no interop round-trip.",
+            Description = "Ids of the vector layers currently on the map, in no guaranteed order. Costs no interop round-trip.",
          },
          new()
          {
             Name = "TileOverlayIds",
             Type = "IReadOnlyCollection<string>",
             DefaultValue = "",
-            Description = "Ids of the tile overlays currently on the map, in insertion order. Costs no interop round-trip.",
+            Description = "Ids of the tile overlays currently on the map, in no guaranteed order. Costs no interop round-trip.",
          },
          new()
          {
@@ -1256,12 +1256,11 @@ public partial class BitMapDemo
         await layersMapRef.AddTileOverlay(new BitMapTileOverlay
         {
             Id = "labels",
-            UrlTemplate = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            Attribution = "&copy; OpenStreetMap contributors",
+            UrlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png",
+            Attribution = "Map tiles by Stamen Design, hosted by Stadia Maps. Data by OpenStreetMap.",
             Opacity = 0.35,
             MinZoom = 3,
             MaxZoom = 19,
-            Subdomains = "abc",
         });
     }
 
@@ -2223,12 +2222,11 @@ private async Task OnLayersReady()
     await layersMapRef.AddTileOverlay(new BitMapTileOverlay
     {
         Id = ""labels"",
-        UrlTemplate = ""https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"",
-        Attribution = ""&copy; OpenStreetMap contributors"",
+        UrlTemplate = ""https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png"",
+        Attribution = ""Map tiles by Stamen Design, hosted by Stadia Maps. Data by OpenStreetMap."",
         Opacity = 0.35,
         MinZoom = 3,
         MaxZoom = 19,
-        Subdomains = ""abc"",
     });
 }
 

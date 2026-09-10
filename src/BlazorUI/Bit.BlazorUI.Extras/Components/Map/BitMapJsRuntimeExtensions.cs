@@ -170,9 +170,9 @@ internal static class BitMapJsRuntimeExtensions
     // scroll-jacking, keyboard escape and WebGL support are handled once, above whichever
     // mapping library happens to be active, so all seven backends behave identically.
 
-    public static ValueTask<bool> BitMapChromeHasWebGl(this IJSRuntime jsRuntime)
+    public static ValueTask<bool> BitMapChromeHasWebGl(this IJSRuntime jsRuntime, int requiredVersion)
     {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.BitMapChrome.hasWebGl");
+        return jsRuntime.Invoke<bool>("BitBlazorUI.BitMapChrome.hasWebGl", requiredVersion);
     }
 
     public static ValueTask<bool> BitMapChromePrefersReducedMotion(this IJSRuntime jsRuntime)
@@ -182,7 +182,10 @@ internal static class BitMapJsRuntimeExtensions
 
     public static ValueTask BitMapChromeWaitForVisible(this IJSRuntime jsRuntime, string canvasId, ElementReference element, string rootMargin)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.waitForVisible", canvasId, element, rootMargin);
+        // The promise resolves only once the map scrolls into view, which may be minutes away or
+        // never - so this one call opts out of the default interop timeout instead of failing a
+        // lazy map that is simply still below the fold.
+        return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.waitForVisible", CancellationToken.None, canvasId, element, rootMargin);
     }
 
     public static ValueTask BitMapChromeAttach<TProvider>(this IJSRuntime jsRuntime,

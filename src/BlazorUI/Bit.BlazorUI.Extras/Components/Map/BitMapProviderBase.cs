@@ -92,7 +92,7 @@ public abstract class BitMapProviderBase : IBitMapProvider
     public virtual bool ScriptsAreModules => false;
 
     /// <inheritdoc />
-    public virtual bool RequiresWebGl => false;
+    public virtual BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.None;
 
     /// <summary>
     /// Provider-specific extra fields. Override in a derived class and merge with

@@ -91,6 +91,15 @@ namespace BitBlazorUI {
                         (view as any).__bmPrevTabIndex = undefined;
                     }
                 }
+                // The contextmenu listener goes on the view's container rather than the element
+                // above, so it needs the same removal dispose() does - otherwise a failed init
+                // leaves a handler on the DOM node holding a destroyed view.
+                const ctxHandler = (view as any).__bmContextMenuHandler;
+                if (ctxHandler) {
+                    const ctxContainer = view.container as HTMLElement | null | undefined;
+                    if (ctxContainer) try { ctxContainer.removeEventListener('contextmenu', ctxHandler); } catch { /* ignore */ }
+                    (view as any).__bmContextMenuHandler = null;
+                }
                 try { view?.destroy?.(); } catch { /* ignore */ }
                 state.dotnetObj = null;
                 delete BitMapArcGis._maps[id];

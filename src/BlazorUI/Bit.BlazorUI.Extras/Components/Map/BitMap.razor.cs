@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Bit.BlazorUI;
 
@@ -315,7 +315,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public BitMapMarkerListMode MarkerListMode { get; set; }
 
     /// <summary>
-    /// Replaces the built-in marker table. Receives the markers in the order they were added.
+    /// Replaces the built-in marker table. Receives the markers in no guaranteed order.
     /// </summary>
     [Parameter] public RenderFragment<IReadOnlyList<BitMapMarker>>? MarkerListTemplate { get; set; }
 
@@ -457,15 +457,16 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     public Exception? LoadError => _loadError;
 
     /// <summary>
-    /// Ids of the markers currently on the map, in insertion order. Read from the component's own
-    /// snapshot, so it costs no interop round-trip.
+    /// Ids of the markers currently on the map. Read from the component's own snapshot, so it
+    /// costs no interop round-trip. The order is the snapshot dictionary's own and is not
+    /// guaranteed - a removal makes a later addition reuse the freed slot.
     /// </summary>
     public IReadOnlyCollection<string> MarkerIds => [.. _markerState.Keys];
 
-    /// <summary>Ids of the vector layers currently on the map, in insertion order. Costs no interop round-trip.</summary>
+    /// <summary>Ids of the vector layers currently on the map, in no guaranteed order. Costs no interop round-trip.</summary>
     public IReadOnlyCollection<string> LayerIds => [.. _vectorState.Keys];
 
-    /// <summary>Ids of the tile overlays currently on the map, in insertion order. Costs no interop round-trip.</summary>
+    /// <summary>Ids of the tile overlays currently on the map, in no guaranteed order. Costs no interop round-trip.</summary>
     public IReadOnlyCollection<string> TileOverlayIds => [.. _tileOverlayState.Keys];
 
     /// <summary>Whether the map is currently displayed fullscreen.</summary>
@@ -474,7 +475,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>The marker whose <see cref="MarkerPopupTemplate"/> popup is open, or null when none is.</summary>
     public BitMapMarker? OpenPopupMarker => _openPopupMarker;
 
-    /// <summary>The markers currently on the map, in the order they were added.</summary>
+    /// <summary>The markers currently on the map, in no guaranteed order.</summary>
     public IReadOnlyList<BitMapMarker> OrderedMarkers => [.. _markerState.Values];
 
 
@@ -580,8 +581,13 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         var center = _lastView?.Center;
         if (center is null)
         {
-            var view = await GetView();
-            center = view.Center;
+            // GetView is the one call here that can throw at the caller: every other camera
+            // command on this component reports a provider failure through OnInteropError. Read
+            // it back the same way so a failing getView doesn't escape as a JSException from what
+            // looks like a plain SetZoom.
+            var view = await SafeInvokeAsync(_js.BitMapGetView(JsObject, _Id), nameof(SetZoom));
+            if (view is null) return;
+            center = ParseViewState(view.Value).Center;
         }
 
         await SafeInvokeAsync(_js.BitMapSetView(JsObject, _Id, center.Value.Latitude, center.Value.Longitude, zoom, ShouldAnimate(animate, essential)), nameof(SetZoom));
@@ -933,6 +939,24 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         ArgumentNullException.ThrowIfNull(markers);
 
         var list = markers as ICollection<BitMapMarker> ?? [.. markers];
+
+        if (IsClustering)
+        {
+            // The clustering layer builds its own payloads from the snapshot, so the per-marker
+            // payload below would be thrown away - only the validation it does is still owed.
+            foreach (var m in list)
+            {
+                ArgumentNullException.ThrowIfNull(m);
+                BitMapValidation.ValidateId(m.Id, $"{nameof(BitMapMarker)}.{nameof(BitMapMarker.Id)}");
+            }
+
+            _markerState.Clear();
+            foreach (var m in list) _markerState[m.Id] = m;
+            await PushClusteredMarkersAsync(nameof(SyncMarkers));
+            await NotifyMarkerListChanged();
+            return;
+        }
+
         var payload = new object[list.Count];
         var ids = new string[list.Count];
         var i = 0;
@@ -943,14 +967,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             ids[i] = m.Id;
             payload[i] = ToMarkerPayload(m);
             i++;
-        }
-        if (IsClustering)
-        {
-            _markerState.Clear();
-            foreach (var m in list) _markerState[m.Id] = m;
-            await PushClusteredMarkersAsync(nameof(SyncMarkers));
-            await NotifyMarkerListChanged();
-            return;
         }
 
         // Defer the snapshot rewrite until the JS-side bulk replace succeeds. If interop
@@ -1515,9 +1531,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             var initial = Provider ?? new TMapProvider();
             BitMapValidation.ValidateJsObjectName(initial.JsObjectName);
 
-            // A WebGL-backed provider on a browser without WebGL renders a permanently blank
-            // canvas. Check first so the consumer sees a message instead of an empty box.
-            if (initial.RequiresWebGl && await HasWebGlSupport() is false)
+            // A WebGL-backed provider on a browser that cannot give out the context version it
+            // needs renders a permanently blank canvas. Check first so the consumer sees a message
+            // instead of an empty box.
+            if (await HasWebGlSupport(initial.WebGlRequirement) is false)
             {
                 await SetLoadState(BitMapLoadState.Unsupported);
                 return;
@@ -1891,9 +1908,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         if (IsDisposed) return;
 
-        // The new backend may need WebGL where the old one did not. Check before tearing the
-        // working map down, so an unsupported swap leaves the existing map alone.
-        if (effective.RequiresWebGl && await HasWebGlSupport() is false)
+        // The new backend may need WebGL - or a newer WebGL - than the old one did. Check before
+        // tearing the working map down, so an unsupported swap leaves the existing map alone.
+        if (await HasWebGlSupport(effective.WebGlRequirement) is false)
         {
             await SetLoadState(BitMapLoadState.Unsupported);
             return;
@@ -2037,9 +2054,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     private async ValueTask ReplayImperativeStateAsync()
     {
-        // Replay everything that was added imperatively, in stable insertion order. We tolerate
-        // individual failures per item so a single bad payload doesn't abort the rest of the
-        // restore.
+        // Replay everything that was added imperatively, in whatever order the snapshot
+        // dictionaries enumerate. We tolerate individual failures per item so a single bad payload
+        // doesn't abort the rest of the restore.
         //
         // Markers are skipped while clustering is on: the clustering layer was just re-pointed at
         // the new backend and handed the whole set, so adding each one again here would draw every
@@ -2131,9 +2148,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         CooperativeGesturesTouchHint,
         EscapeToExit);
 
-    private async ValueTask<bool> HasWebGlSupport()
+    private async ValueTask<bool> HasWebGlSupport(BitMapWebGlRequirement requirement)
     {
-        try { return await _js.BitMapChromeHasWebGl(); }
+        if (requirement == BitMapWebGlRequirement.None) return true;
+
+        try { return await _js.BitMapChromeHasWebGl((int)requirement); }
         catch { return true; /* can't tell - assume yes rather than block a working browser */ }
     }
 
@@ -2531,5 +2550,35 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, callSite);
         }
         return false;
+    }
+
+    /// <summary>
+    /// The value-returning counterpart of <see cref="SafeInvokeAsync(ValueTask, string)"/>: the
+    /// same interop failures reach <see cref="OnInteropError"/>, and the caller is handed null
+    /// instead of a value the call never produced.
+    /// </summary>
+    private async ValueTask<T?> SafeInvokeAsync<T>(ValueTask<T> task, string callSite) where T : struct
+    {
+        try
+        {
+            return await task;
+        }
+        catch (JSDisconnectedException ex)
+        {
+            await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, callSite);
+        }
+        catch (JSException ex)
+        {
+            await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, callSite);
+        }
+        catch (ObjectDisposedException ex)
+        {
+            await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, callSite);
+        }
+        catch (TaskCanceledException ex)
+        {
+            await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, callSite);
+        }
+        return null;
     }
 }

@@ -222,6 +222,12 @@ namespace BitBlazorUI {
                     try { s.map.popups.remove(existing.popup); } catch { /* ignore */ }
                     try { existing.popup.remove(); } catch { /* ignore */ }
                 }
+                // The tooltip is a second popup, so a replaced marker leaks one the same way a
+                // replaced popup would - and an open one would hang over the map with no marker.
+                if (existing.tooltip) {
+                    try { s.map.popups.remove(existing.tooltip); } catch { /* ignore */ }
+                    try { existing.tooltip.remove(); } catch { /* ignore */ }
+                }
                 try { s.map.markers.remove(existing.marker); } catch { /* ignore */ }
             }
             s.map.markers.add(marker);
@@ -230,8 +236,14 @@ namespace BitBlazorUI {
             if (tooltip) {
                 // Atlas has no tooltip concept, so it is a second popup shown on hover - and on
                 // focus too, so a keyboard user reaches the same label.
-                const position = [opts.lng, opts.lat];
-                const show = () => { try { tooltip.setOptions({ position }); tooltip.open(s.map); } catch { /* ignore */ } };
+                // The position is read at open time, not captured: a draggable marker has moved
+                // by the time the pointer comes back, and a captured one would label empty map.
+                const show = () => {
+                    try {
+                        tooltip.setOptions({ position: marker.getOptions().position ?? [opts.lng, opts.lat] });
+                        tooltip.open(s.map);
+                    } catch { /* ignore */ }
+                };
                 const hide = () => { try { tooltip.close(); } catch { /* ignore */ } };
                 if (opts.tooltipPermanent) {
                     show();

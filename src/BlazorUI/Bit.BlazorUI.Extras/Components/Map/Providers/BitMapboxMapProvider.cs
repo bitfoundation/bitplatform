@@ -31,8 +31,8 @@ public sealed class BitMapboxMapProvider : BitMapProviderBase
     public override IReadOnlyList<string> Stylesheets => ["https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css"];
 
     /// <inheritdoc />
-    /// <remarks>This backend renders through WebGL.</remarks>
-    public override bool RequiresWebGl => true;
+    /// <remarks>Mapbox GL JS v3 renders through WebGL 2 and refuses to start on a WebGL 1-only browser.</remarks>
+    public override BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.WebGl2;
 
     /// <inheritdoc />
     public override object BuildOptionsPayload()

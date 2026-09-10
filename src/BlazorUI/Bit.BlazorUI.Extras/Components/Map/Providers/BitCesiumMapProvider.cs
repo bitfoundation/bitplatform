@@ -63,7 +63,7 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
 
     /// <inheritdoc />
     /// <remarks>This backend renders through WebGL.</remarks>
-    public override bool RequiresWebGl => true;
+    public override BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.WebGl;
 
     /// <inheritdoc />
     public override object BuildOptionsPayload()

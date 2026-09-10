@@ -36,16 +36,16 @@ public interface IBitMapProvider
     bool ScriptsAreModules { get; }
 
     /// <summary>
-    /// Whether this backend renders through WebGL. A browser with WebGL disabled or
-    /// unavailable paints a permanently blank canvas for such a provider, so
-    /// <see cref="BitMap{TMapProvider}"/> checks for support up front and shows its
-    /// unsupported state instead of an empty box.
+    /// Which WebGL context this backend needs. A browser that cannot give out that version
+    /// paints a permanently blank canvas for such a provider, so <see cref="BitMap{TMapProvider}"/>
+    /// checks for it up front and shows its unsupported state instead of an empty box - the
+    /// version matters because a WebGL 1-only browser runs MapLibre and fails Mapbox GL JS v3.
     /// <para>
-    /// Defaults to <c>false</c> so existing providers keep compiling; the built-in
-    /// GL-backed ones (MapLibre, Mapbox, Azure Maps, Cesium) override it.
+    /// Defaults to <see cref="BitMapWebGlRequirement.None"/> so existing providers keep compiling;
+    /// the built-in GL-backed ones (MapLibre, Azure Maps, Cesium, and Mapbox at WebGL 2) override it.
     /// </para>
     /// </summary>
-    bool RequiresWebGl => false;
+    BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.None;
 
     /// <summary>
     /// Build a JS-friendly anonymous options payload that the provider's <c>init</c> /

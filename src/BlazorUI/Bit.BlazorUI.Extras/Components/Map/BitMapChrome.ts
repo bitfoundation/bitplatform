@@ -55,14 +55,17 @@ namespace BitBlazorUI {
         private static _instances: { [id: string]: ChromeState } = {};
 
         /**
-         * Whether the browser can give us a WebGL context at all. The GL-backed providers
-         * (MapLibre, Mapbox, Azure Maps, Cesium) render a permanently blank canvas without
-         * one, so the component checks this first and shows its unsupported state instead.
+         * Whether the browser can give us a WebGL context of at least `requiredVersion` (1 or 2).
+         * The GL-backed providers render a permanently blank canvas without one, so the component
+         * checks this first and shows its unsupported state instead - and the version matters:
+         * MapLibre 4 runs on WebGL 1 where Mapbox GL JS v3 refuses to start.
          */
-        public static hasWebGl(): boolean {
+        public static hasWebGl(requiredVersion: number): boolean {
             try {
+                const required = requiredVersion >= 2 ? 2 : 1;
                 const canvas = document.createElement('canvas');
-                const context = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
+                const gl2 = canvas.getContext('webgl2');
+                const context = gl2 ?? (required === 2 ? null : canvas.getContext('webgl'));
                 if (!context) return false;
                 // Release the probe's context immediately. Browsers cap how many may be live at
                 // once (roughly 8-16) and drop the least recently used one without warning, so a
@@ -396,7 +399,14 @@ namespace BitBlazorUI {
             const keydown = (e: KeyboardEvent) => {
                 if (e.key !== 'Escape') return;
                 e.stopPropagation();
-                try { s.canvas.blur(); } catch { /* ignore */ }
+                try {
+                    // Focus may be on any focusable descendant - a marker button, a provider's own
+                    // control - not only the canvas, so blur whatever inside the map actually holds
+                    // it. Otherwise Escape leaves the user exactly where the trap was.
+                    const active = document.activeElement;
+                    if (active instanceof HTMLElement && s.root.contains(active)) active.blur();
+                    else s.canvas.blur();
+                } catch { /* ignore */ }
             };
             // Same reasoning as the gesture listeners: capture on the parent, so a provider that
             // binds Escape for its own purposes cannot consume it first.

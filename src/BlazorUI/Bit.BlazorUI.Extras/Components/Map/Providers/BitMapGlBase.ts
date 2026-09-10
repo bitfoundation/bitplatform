@@ -284,7 +284,9 @@ namespace BitBlazorUI {
 
         public static panBy(provider: string, id: string, dx: number, dy: number, animate: boolean) {
             const s = BitMapGlBase._require(provider, id);
-            s.map.panBy([dx, dy], { duration: animate === false ? 0 : 300 }, { essential: true });
+            // `essential` is an animation option, not event data - passed as the third argument it
+            // is handed to the emitted events and a reduced-motion browser still skips the pan.
+            s.map.panBy([dx, dy], { duration: animate === false ? 0 : 300, essential: true });
         }
 
         public static fitBounds(provider: string, id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
