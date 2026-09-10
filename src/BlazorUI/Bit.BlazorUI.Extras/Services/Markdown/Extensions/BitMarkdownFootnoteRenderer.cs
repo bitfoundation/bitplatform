@@ -18,12 +18,13 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
         switch (node)
         {
             case BitMarkdownFootnoteReferenceNode reference:
+                string referenceScope = Scope(reference.IdScope);
                 b.OpenElement(0, "sup");
                 b.AddAttribute(1, "class", "footnote-ref");
                 b.OpenElement(2, "a");
-                b.AddAttribute(3, "href", $"#fn-{reference.Number}");
+                b.AddAttribute(3, "href", $"#{referenceScope}fn-{reference.Number}");
                 b.AddAttribute(4, "id", FootnoteRefId(reference));
-                b.AddAttribute(5, "aria-describedby", "footnotes");
+                b.AddAttribute(5, "aria-describedby", $"{referenceScope}footnotes");
                 b.AddContent(6, reference.Number.ToString());
                 b.CloseElement();
                 b.CloseElement();
@@ -32,7 +33,7 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
             case BitMarkdownFootnotesNode footnotes:
                 b.OpenElement(7, "section");
                 b.AddAttribute(8, "class", "footnotes");
-                b.AddAttribute(9, "id", "footnotes");
+                b.AddAttribute(9, "id", $"{Scope(footnotes.IdScope)}footnotes");
                 b.AddAttribute(10, "aria-label", r.Texts.Footnotes);
                 b.OpenElement(11, "hr");
                 b.CloseElement();
@@ -44,7 +45,7 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
 
             case BitMarkdownFootnoteDefinitionNode definition:
                 b.OpenElement(13, "li");
-                b.AddAttribute(14, "id", $"fn-{definition.Number}");
+                b.AddAttribute(14, "id", $"{Scope(definition.IdScope)}fn-{definition.Number}");
                 b.AddAttribute(15, "class", "footnote-item");
                 r.WriteNodes(b, definition.Children);
                 // One back-link per reference, so a note cited several times can return to
@@ -53,7 +54,7 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                 {
                     b.AddContent(16, " ");
                     b.OpenElement(17, "a");
-                    b.AddAttribute(18, "href", $"#fnref-{definition.Number}{(i > 1 ? "-" + i : string.Empty)}");
+                    b.AddAttribute(18, "href", $"#{Scope(definition.IdScope)}fnref-{definition.Number}{(i > 1 ? "-" + i : string.Empty)}");
                     b.AddAttribute(19, "class", "footnote-backref");
                     b.AddAttribute(20, "aria-label", definition.ReferenceCount > 1
                         ? string.Format(CultureInfo.CurrentCulture, r.Texts.FootnoteBackReferenceOccurrence, definition.Number, i)
@@ -68,6 +69,11 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
 
     private static string FootnoteRefId(BitMarkdownFootnoteReferenceNode reference)
         => reference.Occurrence > 1
-            ? $"fnref-{reference.Number}-{reference.Occurrence}"
-            : $"fnref-{reference.Number}";
+            ? $"{Scope(reference.IdScope)}fnref-{reference.Number}-{reference.Occurrence}"
+            : $"{Scope(reference.IdScope)}fnref-{reference.Number}";
+
+    // Every id the section emits carries the host viewer's own prefix, so two viewers on one
+    // page keep their links pointing at their own notes instead of at each other's.
+    private static string Scope(string? idScope)
+        => string.IsNullOrEmpty(idScope) ? string.Empty : idScope + "-";
 }

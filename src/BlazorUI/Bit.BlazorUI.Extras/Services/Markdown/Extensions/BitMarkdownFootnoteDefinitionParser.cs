@@ -26,7 +26,12 @@ public sealed class BitMarkdownFootnoteDefinitionParser : BitMarkdownBlockParser
         if (labelEnd < 0) return false;
         if (labelEnd + 1 >= line.Length || line[labelEnd + 1] != ':') return false;
 
-        string label = BitMarkdownLinkHelpers.NormalizeLabel(line.Substring(p + 1, labelEnd - p - 1));
+        // The length limit is on the label as written, so whitespace a normalized label
+        // collapses away cannot smuggle an over-long one through.
+        string raw = line.Substring(p + 1, labelEnd - p - 1);
+        if (raw.Length > BitMarkdownLinkHelpers.MaxLabelLength) return false;
+
+        string label = BitMarkdownLinkHelpers.NormalizeLabel(raw);
         // "^" alone is not a label.
         if (label.Length <= 1 || label.Length > BitMarkdownLinkHelpers.MaxLabelLength) return false;
 

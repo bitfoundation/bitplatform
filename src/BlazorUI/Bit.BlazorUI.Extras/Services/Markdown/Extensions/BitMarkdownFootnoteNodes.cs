@@ -16,6 +16,13 @@ public sealed class BitMarkdownFootnoteDefinitionNode : BitMarkdownNode
     /// <summary>How many references point at this footnote, which is how many back-links it gets.</summary>
     public int ReferenceCount { get; set; }
 
+    /// <summary>
+    /// The prefix the rendered ids are given, so two viewers showing footnotes on the same page
+    /// do not emit the same ids. Set by the viewer from its own unique id; empty when the
+    /// document is rendered by something that does not scope its ids.
+    /// </summary>
+    public string? IdScope { get; set; }
+
     /// <summary>The blocks making up the footnote's content.</summary>
     public List<BitMarkdownNode> Children { get; } = new();
 
@@ -42,6 +49,13 @@ public sealed class BitMarkdownFootnoteReferenceNode : BitMarkdownNode
 
     /// <summary>Which occurrence of this label this is, so each back-link has a unique target.</summary>
     public int Occurrence { get; set; } = 1;
+
+    /// <summary>
+    /// The prefix the rendered ids are given, so two viewers showing footnotes on the same page
+    /// do not emit the same ids. Set by the viewer from its own unique id; empty when the
+    /// document is rendered by something that does not scope its ids.
+    /// </summary>
+    public string? IdScope { get; set; }
 }
 
 /// <summary>
@@ -50,6 +64,13 @@ public sealed class BitMarkdownFootnoteReferenceNode : BitMarkdownNode
 /// </summary>
 public sealed class BitMarkdownFootnotesNode : BitMarkdownNode
 {
+    /// <summary>
+    /// The prefix the rendered ids are given, so two viewers showing footnotes on the same page
+    /// do not emit the same ids. Set by the viewer from its own unique id; empty when the
+    /// document is rendered by something that does not scope its ids.
+    /// </summary>
+    public string? IdScope { get; set; }
+
     public List<BitMarkdownNode> Children { get; } = new();
 
     public override IList<BitMarkdownNode> ChildNodes => Children;

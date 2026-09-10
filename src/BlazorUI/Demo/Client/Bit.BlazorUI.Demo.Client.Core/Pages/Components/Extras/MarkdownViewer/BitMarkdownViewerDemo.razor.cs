@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MarkdownViewer;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MarkdownViewer;
 
 public partial class BitMarkdownViewerDemo
 {
@@ -213,9 +213,16 @@ public partial class BitMarkdownViewerDemo
                 new()
                 {
                     Name = "UseEmojis",
-                    Type = "BitMarkdownPipelineBuilder UseEmojis(IReadOnlyDictionary<string, string>? overrides)",
+                    Type = "BitMarkdownPipelineBuilder UseEmojis()",
                     DefaultValue = "",
-                    Description = "Adds :shortcode: emoji replacement, optionally extending the built-in map with per-pipeline overrides.",
+                    Description = "Adds :shortcode: emoji replacement, using the built-in map.",
+                },
+                new()
+                {
+                    Name = "UseEmojis",
+                    Type = "BitMarkdownPipelineBuilder UseEmojis(IReadOnlyDictionary<string, string> overrides)",
+                    DefaultValue = "",
+                    Description = "Adds :shortcode: emoji replacement, extending the built-in map with per-pipeline overrides. An override replaces the built-in shortcode of the same name.",
                 },
                 new()
                 {
@@ -914,11 +921,11 @@ this costs $5 and that one $10.
         .UseFigures()
         .Build();
 
-    private readonly string figureMarkdown = @"![The bit platform logo](/images/bit-logo-blue.png ""The logo, as a captioned figure"")
+    private readonly string figureMarkdown = @"![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png ""The logo, as a captioned figure"")
 
 An image with no title stays an ordinary image:
 
-![The bit platform logo](/images/bit-logo-blue.png)
+![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png)
 ";
 
 
@@ -973,7 +980,7 @@ Autolinks were left out, so https://bitplatform.dev stays plain text.
 
 A same-origin image always loads:
 
-![the bit logo](/images/bit-logo-blue.png)
+![the bit logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png)
 
 A cross-origin one only loads under `All`:
 
@@ -1109,7 +1116,7 @@ A link to [another page here](/components/markdownviewer) is untouched, and so i
     // -- Rewriting URLs example ----------------------------------------------
 
     private readonly BitMarkdownPipeline baseUrlPipeline = new BitMarkdownPipelineBuilder()
-        .UseBaseUrl("/images/")
+        .UseBaseUrl("/_content/Bit.BlazorUI.Demo.Client.Core/images/")
         .Build();
 
     private readonly string baseUrlMarkdown = @"![the bit logo](bit-logo-blue.png)
@@ -1534,11 +1541,11 @@ private readonly BitMarkdownPipeline figurePipeline = new BitMarkdownPipelineBui
     .UseFigures()
     .Build();
 
-private readonly string figureMarkdown = @""![The bit platform logo](/images/bit-logo-blue.png """"The logo, as a captioned figure"""")
+private readonly string figureMarkdown = @""![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png """"The logo, as a captioned figure"""")
 
 An image with no title stays an ordinary image:
 
-![The bit platform logo](/images/bit-logo-blue.png)
+![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png)
 "";";
 
     private readonly string example14RazorCode = @"
@@ -1613,7 +1620,7 @@ private readonly string untrustedMarkdown = @""### Content from somewhere else
 
 A same-origin image always loads:
 
-![the bit logo](/images/bit-logo-blue.png)
+![the bit logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png)
 
 A cross-origin one only loads under `All`:
 
@@ -1772,7 +1779,7 @@ A link to [another page here](/components/markdownviewer) is untouched, and so i
 </div>";
     private readonly string example23CsharpCode = @"
 private readonly BitMarkdownPipeline baseUrlPipeline = new BitMarkdownPipelineBuilder()
-    .UseBaseUrl(""/images/"")
+    .UseBaseUrl(""/_content/Bit.BlazorUI.Demo.Client.Core/images/"")
     .Build();
 
 // The general form, for a CDN or for stripping tracking parameters:
@@ -1875,7 +1882,7 @@ private string playgroundHint => playgroundFlavor switch
 <BitMarkdownViewer Class=""custom-mdv""
                    Markdown=""@(""### A classy viewer\n\nEvery `code` span and heading inside it is restyled from the page's own stylesheet."")"" />";
     private readonly string example26ScssCode = @"
-.custom-mdv {
+::deep .custom-mdv {
     padding: 1rem;
     border-radius: 0.5rem;
     background: $bit-color-background-secondary;

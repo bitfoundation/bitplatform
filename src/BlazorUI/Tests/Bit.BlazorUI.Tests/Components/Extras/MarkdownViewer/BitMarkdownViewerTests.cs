@@ -1,4 +1,4 @@
-﻿using Bunit;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
@@ -753,11 +753,12 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var markup = component.Markup;
+        var scope = component.Instance.UniqueId;
 
         Assert.Contains("class=\"footnote-ref\"", markup);
-        Assert.Contains("href=\"#fn-1\"", markup);
-        Assert.Contains("id=\"fnref-1\"", markup);
-        Assert.Contains("id=\"fn-1\"", markup);
+        Assert.Contains($"href=\"#{scope}-fn-1\"", markup);
+        Assert.Contains($"id=\"{scope}-fnref-1\"", markup);
+        Assert.Contains($"id=\"{scope}-fn-1\"", markup);
         Assert.Contains("The note itself.", markup);
         Assert.Contains("class=\"footnote-backref\"", markup);
         // The definition is lifted out of the flow into the footnotes section.
@@ -794,10 +795,37 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var markup = component.Markup;
+        var scope = component.Instance.UniqueId;
 
-        Assert.Contains("id=\"fnref-1\"", markup);
-        Assert.Contains("id=\"fnref-1-2\"", markup);
+        Assert.Contains($"id=\"{scope}-fnref-1\"", markup);
+        Assert.Contains($"id=\"{scope}-fnref-1-2\"", markup);
         Assert.AreEqual(2, component.FindAll(".bit-mdv .footnote-backref").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldScopeFootnoteIdsToTheInstance()
+    {
+        const string markdown = "Text with a note[^1].\n\n[^1]: The note itself.";
+
+        var first = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+        var second = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        // Two viewers on one page must not emit the same ids, or a reference in one would
+        // jump into the other's notes.
+        Assert.AreNotEqual(
+            first.Find(".bit-mdv .footnotes").Id,
+            second.Find(".bit-mdv .footnotes").Id);
+        Assert.AreEqual(
+            $"#{first.Find(".bit-mdv .footnote-item").Id}",
+            first.Find(".bit-mdv .footnote-ref a").GetAttribute("href"));
     }
 
     [TestMethod]

@@ -183,6 +183,7 @@ public partial class BitMarkdownViewer : BitComponentBase
             _document = ParseSafely(pipeline, maxDepth);
             ApplyImageRendering(_document.Children);
             WireTaskCheckboxes();
+            ScopeFootnoteIds();
             _parsedSource = Markdown;
             _parsedWith = pipeline;
             _parsedImageRendering = ImageRendering;
@@ -225,6 +226,26 @@ public partial class BitMarkdownViewer : BitComponentBase
         {
             var box = checkbox;
             box.OnChange = EventCallback.Factory.Create<ChangeEventArgs>(this, args => HandleTaskChangedAsync(box, args));
+        }
+    }
+
+    /// <summary>
+    /// Stamps this instance's unique id onto every footnote node, so the ids and the links
+    /// between them belong to this viewer alone. Two viewers showing footnotes on the same page
+    /// would otherwise emit the same ids, and a reference in one would jump into the other.
+    /// </summary>
+    private void ScopeFootnoteIds()
+    {
+        if (_document.Children.OfType<BitMarkdownFootnotesNode>().Any() is false) return;
+
+        foreach (var node in BitMarkdownAstHelper.Descendants(_document))
+        {
+            switch (node)
+            {
+                case BitMarkdownFootnotesNode footnotes: footnotes.IdScope = UniqueId; break;
+                case BitMarkdownFootnoteDefinitionNode definition: definition.IdScope = UniqueId; break;
+                case BitMarkdownFootnoteReferenceNode reference: reference.IdScope = UniqueId; break;
+            }
         }
     }
 
