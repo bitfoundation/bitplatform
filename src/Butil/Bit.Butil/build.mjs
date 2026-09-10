@@ -99,10 +99,12 @@ for (const name of sources) {
 const SIZE_WARN_LINES = 250;
 const SIZE_FAIL_LINES = 400;
 
-// The one module allowed past FAIL, and why: it is a single vendored parsing algorithm - one
-// function and its private helpers - with no seam to split along. It is already the far side of a
-// split (userAgent holds the Client Hints members, which is what most callers want) and exists
-// precisely so that its weight is only downloaded by an app that asks for UserAgent.Extract().
+// The one module over the line budget, and why: its length is pattern tables, not features. One
+// call reads all of them - browser, engine, system, device - so there is nothing to split off that
+// a caller would not immediately download again. It is already the far side of a split (userAgent
+// holds the Client Hints members, which is what most callers want) and exists precisely so that
+// its weight is only downloaded by an app that asks for UserAgent.Extract(). Weight is what the
+// budget is really about, and by that measure it now sits mid-pack rather than first.
 const SIZE_EXEMPT = new Set(['userAgentParser']);
 
 const oversized = [];

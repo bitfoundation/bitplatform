@@ -80,7 +80,7 @@ registering everything.
 | `Navigation` | The Navigation API: read the history entry list, traverse to a key, and know whether you can go back |
 | `Location` | Read and mutate the current URL, reload, navigate |
 | `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory, `isInputPending`, protocol handlers, installed related apps |
-| `UserAgent` | Parsed user-agent brands, platform and mobile-ness (UA Client Hints) |
+| `UserAgent` | Parse any user-agent string into browser, engine, OS and device - plus the UA Client Hints brands, platform and mobile-ness |
 | `TextFragment` | Scroll-to-text URLs (`#:~:text=`): deep-link to a phrase rather than an anchor |
 | `Url` | `URL`, `URLSearchParams` and `URLPattern`: parse and edit URLs as the browser does, and match routes |
 | `Speculation` | Speculation rules (prefetch/prerender), `document.prerendering` and the activation event |

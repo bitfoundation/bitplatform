@@ -11,8 +11,16 @@ namespace Bit.Butil;
 public class UserAgent(IJSRuntime js)
 {
     /// <summary>
-    /// Extracts the user agent properties from the browser or web-view.
+    /// Extracts the user agent properties from the browser or web-view, or from a string you pass
+    /// in - a line out of a server log, say.
     /// </summary>
+    /// <remarks>
+    /// Anything the string does not state comes back <c>null</c> rather than guessed, so a missing
+    /// version is visible as missing. One property is not read from the string at all: Brave ships
+    /// Chrome's string deliberately and is identified through <c>navigator.brave</c>, which
+    /// describes the browser this code is running in - so it is only ever applied to that browser's
+    /// own string, never to one you passed in.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UserAgentProperties))]
     public async ValueTask<UserAgentProperties> Extract(string? userAgentString = null)
     {

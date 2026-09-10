@@ -30,8 +30,12 @@ internal static class Budgets
     /// The heaviest a single module's download may be - the module plus the dependencies its
     /// lazy-loaded file inlines. Held against the worst module rather than an average because the
     /// average hides exactly the case that matters: one module nobody noticed growing.
+    /// <br/>
+    /// It was 4,600 while the user-agent parser was a port of platform.js; the table-driven parser
+    /// that replaced it moved the worst module to the WebAudio family, and the ceiling came down
+    /// with it. A budget left at the old figure would have quietly stopped measuring anything.
     /// </summary>
-    internal const int MaxModuleClosureBrotli = 4_600;
+    internal const int MaxModuleClosureBrotli = 3_700;
 
     /// <summary>
     /// The ninetieth percentile of the same figure. This is the one that catches a shared

@@ -47,9 +47,17 @@ public class CacheLocksAndPlatformTests : ButilObserversPageTest
     }
 
     [TestMethod]
-    public async Task UserAgent_Extract_Returns_The_Raw_User_Agent()
+    public async Task UserAgent_Extract_Names_The_Running_Browser()
     {
         await ClickAndExpectAsync("ua-extract", "ua:extract:True");
+    }
+
+    [TestMethod]
+    public async Task UserAgent_Extract_Parses_A_String_It_Was_Given()
+    {
+        // A fixed iPhone string, so the expectation is the parse itself rather than whatever
+        // browser the suite happens to be running in.
+        await ClickAndExpectAsync("ua-extract-string", "ua:extract-string:Safari/18.2/WebKit/iOS/18.2/iPhone");
     }
 
     [TestMethod]

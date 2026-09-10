@@ -160,6 +160,7 @@
     <button id="nav-info" @onclick="NavInfo">navigator info</button>
     <button id="nav-input-pending" @onclick="NavInputPending">isInputPending</button>
     <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
+    <button id="ua-extract-string" @onclick="UaExtractString">userAgent.extract(string)</button>
     <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
     <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
 </section>
@@ -983,9 +984,21 @@
 
     private async Task UaExtract()
     {
+        // Whatever engine the suite runs in names itself, its engine and its system, so this holds
+        // for Chromium, Firefox and WebKit alike without pinning any of them to a version.
         var props = await userAgent.Extract();
-        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue);
+        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue)
+                 && props.Name is { Length: > 0 } && props.Layout is { Length: > 0 } && props.OsName is { Length: > 0 };
         Set($"ua:extract:{ok}");
+    }
+
+    private async Task UaExtractString()
+    {
+        // The other half of Extract: a string that did not come from this browser. Being a fixed
+        // input it is the deterministic test of the parsing itself - an iPhone, named as one.
+        var props = await userAgent.Extract(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1");
+        Set($"ua:extract-string:{props?.Name}/{props?.Version}/{props?.Layout}/{props?.OsName}/{props?.OsVersion}/{props?.Product}");
     }
 
     private async Task ScreenMetrics()
