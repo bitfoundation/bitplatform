@@ -382,8 +382,10 @@ public partial class BitMessageBox : BitComponentBase
             };
 
             // A reversed set is a new array rather than the shared one reversed in place, which would
-            // reverse it again on every render.
-            return Reversed ? [.. actions.Reverse()] : actions;
+            // reverse it again on every render. AsEnumerable is what keeps it that way: on net8/net9
+            // an array binds to MemoryExtensions.Reverse (in place, returning void) rather than
+            // LINQ's, whose array overload only arrived in net10.
+            return Reversed ? [.. actions.AsEnumerable().Reverse()] : actions;
         }
     }
 
