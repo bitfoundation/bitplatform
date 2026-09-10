@@ -473,7 +473,7 @@ public static class ComponentCatalog
         ["Chart"] = "A native Blazor charting component rendered entirely with SVG.",
         ["DataGrid"] = "An information-rich grid with sorting, filtering, paging and virtualization.",
         ["ErrorBoundary"] = "Catches exceptions thrown by its children and renders a fallback.",
-        ["Flag"] = "Renders the flag of a country from its code.",
+        ["Flag"] = "Renders the flag of a country from its ISO code, dialing code or name.",
         ["FullCalendar"] = "A scheduler with day, week, month, year, agenda and resource views.",
         ["InfiniteScrolling"] = "Loads the next page of a list as the reader reaches the bottom.",
         ["Map"] = "An interactive map with pluggable providers, markers, vectors and GeoJSON.",
