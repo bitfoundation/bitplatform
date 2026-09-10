@@ -108,7 +108,7 @@ public partial class BitMessageBoxDemo
             Name = "DefaultButton",
             Type = "BitMessageBoxResult?",
             DefaultValue = "null",
-            Description = "The action button that AutoFocus moves the focus onto. Defaults to the affirmative button of the set (Ok, or Yes).",
+            Description = "The action button that AutoFocus moves the focus onto, or None for the close button. Defaults to the affirmative button of the set (Ok, or Yes), and to the close button for a message box that renders no action buttons.",
             LinkType = LinkType.Link,
             Href = "#result-enum",
         },
@@ -117,7 +117,7 @@ public partial class BitMessageBoxDemo
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The template used to render the footer of the message box, which takes the place of its action buttons.",
+            Description = "The template used to render the footer of the message box, which takes the place of its action buttons. The controls in it are the page's own, so AnswerAsync is what ends the message box with an answer.",
         },
         new()
         {
@@ -174,6 +174,15 @@ public partial class BitMessageBoxDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The text of the Ok button.",
+        },
+        new()
+        {
+            Name = "OnBeforeResult",
+            Type = "EventCallback<BitMessageBoxBeforeResultArgs>",
+            DefaultValue = "",
+            Description = "The event callback asked before the message box hands over an answer. Setting Cancel on its arguments refuses the answer and keeps the message box open. It guards every button the message box draws, the close button included.",
+            LinkType = LinkType.Link,
+            Href = "#before-result-args",
         },
         new()
         {
@@ -280,6 +289,13 @@ public partial class BitMessageBoxDemo
     [
         new()
         {
+            Name = "AnswerAsync",
+            Type = "Task",
+            DefaultValue = "",
+            Description = "Answers the message box as though the button standing for that result had been pressed, down the same road: the guard is asked first, then the callback of that answer, OnResult and OnClose. This is how a footer of your own ends the message box with a real answer.",
+        },
+        new()
+        {
             Name = "Result",
             Type = "BitMessageBoxResult",
             DefaultValue = "BitMessageBoxResult.None",
@@ -292,7 +308,7 @@ public partial class BitMessageBoxDemo
             Name = "FocusAsync",
             Type = "ValueTask",
             DefaultValue = "",
-            Description = "Moves the focus onto the default action button of the message box. A message box whose footer is a FooterTemplate renders no buttons of its own, so the call does nothing there.",
+            Description = "Moves the focus onto the default action button of the message box, or onto its close button where it renders no action buttons of its own.",
         },
     ];
 
@@ -425,6 +441,31 @@ public partial class BitMessageBoxDemo
         },
         new()
         {
+            Id = "before-result-args",
+            Title = "BitMessageBoxBeforeResultArgs",
+            Description = "The arguments of the OnBeforeResult callback, which is asked before a message box hands over the answer a button of its own was pressed for.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Result",
+                    Type = "BitMessageBoxResult",
+                    DefaultValue = "BitMessageBoxResult.None",
+                    Description = "The answer that is about to be handed over: the result of the button that was pressed, or None for the close button.",
+                    LinkType = LinkType.Link,
+                    Href = "#result-enum"
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to keep the message box open and hand over no answer."
+                }
+            ]
+        },
+        new()
+        {
             Id = "messagebox-parameters",
             Title = "BitMessageBoxParameters",
             Description = "The set of parameters a message box shown through the BitMessageBoxService is customized with. Every member is nullable and null means \"not set\", so the BitMessageBox default stands.",
@@ -523,7 +564,7 @@ public partial class BitMessageBoxDemo
                     Name = "DefaultButton",
                     Type = "BitMessageBoxResult?",
                     DefaultValue = "null",
-                    Description = "The action button the focus is moved onto.",
+                    Description = "The action button the focus is moved onto, or None for the close button.",
                     LinkType = LinkType.Link,
                     Href = "#result-enum"
                 },
@@ -615,6 +656,15 @@ public partial class BitMessageBoxDemo
                 },
                 new()
                 {
+                    Name = "OnBeforeResult",
+                    Type = "EventCallback<BitMessageBoxBeforeResultArgs>",
+                    DefaultValue = "",
+                    Description = "The event callback asked before the message box hands over an answer. Setting Cancel on its arguments keeps the message box open and leaves the caller of the service still waiting.",
+                    LinkType = LinkType.Link,
+                    Href = "#before-result-args"
+                },
+                new()
+                {
                     Name = "Persistent",
                     Type = "bool?",
                     DefaultValue = "null",
@@ -689,7 +739,8 @@ public partial class BitMessageBoxDemo
                 new() { Name = "Ok", Description = "A single Ok button, which answers with BitMessageBoxResult.Ok.", Value = "0" },
                 new() { Name = "OkCancel", Description = "An Ok and a Cancel button.", Value = "1" },
                 new() { Name = "YesNo", Description = "A Yes and a No button.", Value = "2" },
-                new() { Name = "YesNoCancel", Description = "A Yes, a No and a Cancel button.", Value = "3" }
+                new() { Name = "YesNoCancel", Description = "A Yes, a No and a Cancel button.", Value = "3" },
+                new() { Name = "None", Description = "No action buttons at all, which leaves the footer off the message box entirely: it is dismissed rather than answered, so it answers with BitMessageBoxResult.None.", Value = "4" }
             ]
         },
         new()
@@ -723,9 +774,31 @@ public partial class BitMessageBoxDemo
 
 
     private bool isModalOpen;
+    private BitMessageBox? templatesMessageBox;
+    private BitMessageBoxResult templatesResult;
+    private bool guardConfirmed;
+    private bool guardRefused;
+    private BitMessageBoxResult guardResult;
     private BitMessageBoxResult buttonsResult;
     private BitMessageBoxResult modalServiceResult;
     private bool? confirmResult;
+
+    private async Task HandleBeforeResult(BitMessageBoxBeforeResultArgs args)
+    {
+        guardRefused = false;
+
+        // Only the destructive answer is guarded: Keep and the close button end the box as they always would.
+        if (args.Result is not BitMessageBoxResult.Yes) return;
+
+        // The work the answer starts, which AutoLoading spins the pressed button through.
+        await Task.Delay(1000);
+
+        if (guardConfirmed) return;
+
+        // Refused: nothing is reported, and a box shown through the service would stay open.
+        args.Cancel = true;
+        guardRefused = true;
+    }
 
     [AutoInject] private BitModalService modalService { get; set; } = default!;
     private async Task ShowMessageBox()
@@ -761,6 +834,11 @@ public partial class BitMessageBoxDemo
     private async Task ShowWarningMessageBox()
     {
         await messageBoxService.ShowWarning("Warning", "This workspace is almost out of space.");
+    }
+
+    private async Task ShowSevereWarningMessageBox()
+    {
+        await messageBoxService.ShowSevereWarning("Severe warning", "This workspace is out of space.");
     }
 
     private async Task ShowErrorMessageBox()

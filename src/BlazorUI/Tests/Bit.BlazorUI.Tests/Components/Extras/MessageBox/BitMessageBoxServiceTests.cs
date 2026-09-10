@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -353,5 +355,109 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         Assert.AreEqual(BitMessageBoxResult.None, await MessageBoxService.Show("Title", "Body"));
         Assert.IsFalse(await MessageBoxService.Confirm("Title", "Body"));
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldAnnounceASevereWarningAsAnAlertWithItsOwnGlyph()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var showing = MessageBoxService.ShowSevereWarning("Severe warning", "Out of space.");
+
+        container.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count);
+            Assert.AreEqual(1, container.FindAll(".bit-msb-ico.bit-icon--WarningSolid").Count);
+        });
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.AreEqual(BitMessageBoxResult.Ok, await showing);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldShowAMessageBoxWithNoActionButtons()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters
+        {
+            Title = "Title",
+            Body = "Body",
+            Buttons = BitMessageBoxButtons.None
+        });
+
+        container.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, container.FindAll(".bit-msb").Count);
+            Assert.AreEqual(0, container.FindAll(".bit-msb-ftr").Count);
+        });
+
+        // Dismissed rather than answered, which is what the None set is for.
+        container.Find(".bit-msb-hdr .bit-btn").Click();
+
+        Assert.AreEqual(BitMessageBoxResult.None, await showing);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldKeepTheModalOpenWhileTheGuardRefusesTheAnswer()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var refuse = true;
+
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters
+        {
+            Title = "Title",
+            Body = "Body",
+            OnBeforeResult = EventCallback.Factory.Create<BitMessageBoxBeforeResultArgs>(
+                                this, args => args.Cancel = refuse)
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        // Refused, so the box is still on the screen and the caller is still waiting for its answer.
+        Assert.AreEqual(1, container.FindAll(".bit-msb").Count);
+        Assert.IsFalse(showing.IsCompleted);
+
+        refuse = false;
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.AreEqual(BitMessageBoxResult.Ok, await showing);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldAskTheGuardForTheCloseButtonToo()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var seen = new List<BitMessageBoxResult>();
+
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters
+        {
+            Title = "Title",
+            Body = "Body",
+            OnBeforeResult = EventCallback.Factory.Create<BitMessageBoxBeforeResultArgs>(
+                                this, args =>
+                                {
+                                    seen.Add(args.Result);
+                                    args.Cancel = args.Result is BitMessageBoxResult.None;
+                                })
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        container.Find(".bit-msb-hdr .bit-btn").Click();
+
+        Assert.AreEqual(1, container.FindAll(".bit-msb").Count);
+        Assert.IsFalse(showing.IsCompleted);
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.AreEqual(BitMessageBoxResult.Ok, await showing);
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None, BitMessageBoxResult.Ok }, seen);
     }
 }

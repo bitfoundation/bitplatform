@@ -56,9 +56,11 @@
 
                     @if (ShowCloseButton)
                     {
-                        <BitButton OnClick="HandleOnCloseClick"
+                        <BitButton @ref="_closeButtonRef"
+                                   OnClick="HandleOnCloseClick"
                                    IsEnabled="IsEnabled"
                                    Size="@Size"
+                                   AutoLoading="@AutoLoading"
                                    Icon="@_CloseIcon"
                                    Title="@_CloseButtonTitle"
                                    AriaLabel="@_CloseButtonTitle"
@@ -71,40 +73,49 @@
             </div>
         }
 
-        <div id="@_BodyId" style="@Styles?.Body" class="bit-msb-bdy @Classes?.Body">
-            @if (_HasBodyTemplate)
-            {
-                @(BodyTemplate ?? ChildContent)
-            }
-            else
-            {
-                @Body
-            }
-        </div>
-
-        <div style="@Styles?.Footer" class="bit-msb-ftr @Classes?.Footer">
-            @if (FooterTemplate is not null)
-            {
-                @FooterTemplate
-            }
-            else
-            {
-                @foreach (var action in _Actions)
+        @if (_HasBody)
+        {
+            @* The line breaks written into a body of text are kept, which is what the pre-wrap class is
+               for. A body that is markup is laid out by the markup itself: keeping the whitespace of
+               the razor file there would turn the newlines between its elements into blank lines. *@
+            <div id="@_BodyId" style="@Styles?.Body" class="bit-msb-bdy @(_HasBodyTemplate ? null : "bit-msb-txt") @Classes?.Body">
+                @if (_HasBodyTemplate)
                 {
-                    <BitButton @key="action"
-                               @ref="_buttonRefs[action]"
-                               OnClick="@(() => HandleAction(action))"
-                               IsEnabled="IsEnabled"
-                               Size="@Size"
-                               AutoLoading="@AutoLoading"
-                               Color="@GetActionColor(action)"
-                               Variant="@(action == _PrimaryAction ? BitVariant.Fill : BitVariant.Outline)"
-                               Styles="@GetActionStyles(action)"
-                               Classes="@GetActionClasses(action)">
-                        @GetActionText(action)
-                    </BitButton>
+                    @(BodyTemplate ?? ChildContent)
                 }
-            }
-        </div>
+                else
+                {
+                    @Body
+                }
+            </div>
+        }
+
+        @if (_HasFooter)
+        {
+            <div style="@Styles?.Footer" class="bit-msb-ftr @Classes?.Footer">
+                @if (FooterTemplate is not null)
+                {
+                    @FooterTemplate
+                }
+                else
+                {
+                    @foreach (var action in _Actions)
+                    {
+                        <BitButton @key="action"
+                                   @ref="_buttonRefs[action]"
+                                   OnClick="@(() => HandleAction(action))"
+                                   IsEnabled="IsEnabled"
+                                   Size="@Size"
+                                   AutoLoading="@AutoLoading"
+                                   Color="@GetActionColor(action)"
+                                   Variant="@(action == _PrimaryAction ? BitVariant.Fill : BitVariant.Outline)"
+                                   Styles="@GetActionStyles(action)"
+                                   Classes="@GetActionClasses(action)">
+                            @GetActionText(action)
+                        </BitButton>
+                    }
+                }
+            </div>
+        }
     </div>
 </div>

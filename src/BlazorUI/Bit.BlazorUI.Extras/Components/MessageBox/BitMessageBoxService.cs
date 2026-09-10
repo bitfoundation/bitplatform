@@ -59,6 +59,15 @@ public class BitMessageBoxService(BitModalService modalService)
     }
 
     /// <summary>
+    /// Shows a severe warning <see cref="BitMessageBox"/>, which carries the WarningSolid glyph and is
+    /// announced as an alert.
+    /// </summary>
+    public Task<BitMessageBoxResult> ShowSevereWarning(string title, string body)
+    {
+        return Show(new BitMessageBoxParameters { Title = title, Body = body, Color = BitColor.SevereWarning });
+    }
+
+    /// <summary>
     /// Shows an error <see cref="BitMessageBox"/>, which carries the ErrorBadge glyph and is announced as an alert.
     /// </summary>
     public Task<BitMessageBoxResult> ShowError(string title, string body)
@@ -166,6 +175,13 @@ public class BitMessageBoxService(BitModalService modalService)
             { nameof(BitMessageBox.OnResult), EventCallback.Factory.Create<BitMessageBoxResult>(this, r => modalRef.CloseWith(r)) },
             { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, modalRef.Close) }
         };
+
+        // An EventCallback is a struct, so "not set" is a callback with no delegate behind it rather than
+        // a null the Add below would leave out.
+        if (parameters.OnBeforeResult.HasDelegate)
+        {
+            result[nameof(BitMessageBox.OnBeforeResult)] = parameters.OnBeforeResult;
+        }
 
         Add(nameof(BitMessageBox.AutoLoading), parameters.AutoLoading);
         Add(nameof(BitMessageBox.Body), parameters.Body);

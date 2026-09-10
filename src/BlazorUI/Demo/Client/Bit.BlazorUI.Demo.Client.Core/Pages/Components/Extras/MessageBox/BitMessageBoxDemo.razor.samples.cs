@@ -27,6 +27,11 @@ public partial class BitMessageBoxDemo
                Buttons=""BitMessageBoxButtons.YesNoCancel""
                OnResult=""v => buttonsResult = v"" />
 
+<BitMessageBox Title=""None""
+               Body=""No buttons at all - only the close button ends this one.""
+               Buttons=""BitMessageBoxButtons.None""
+               OnResult=""v => buttonsResult = v"" />
+
 <div>Last answer: <b>@buttonsResult</b></div>";
     private readonly string example2CsharpCode = @"
 private BitMessageBoxResult buttonsResult;";
@@ -74,7 +79,9 @@ private BitMessageBoxResult buttonsResult;";
                CloseButtonTitle=""Dismiss this message"" />";
 
     private readonly string example6RazorCode = @"
-<BitMessageBox Title=""Delete the workspace?"">
+<BitMessageBox @ref=""templatesMessageBox""
+               Title=""Delete the workspace?""
+               OnResult=""v => templatesResult = v"">
     <BodyTemplate>
         <div>
             Everything in <b>Design system</b> is removed, including:
@@ -86,10 +93,23 @@ private BitMessageBoxResult buttonsResult;";
         </div>
     </BodyTemplate>
     <FooterTemplate>
-        <BitButton Color=""BitColor.Error"" IconName=""@BitIconName.Delete"">Delete forever</BitButton>
-        <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"">Keep it</BitButton>
+        <BitButton Color=""BitColor.Error""
+                   IconName=""@BitIconName.Delete""
+                   OnClick=""() => templatesMessageBox!.AnswerAsync(BitMessageBoxResult.Yes)"">
+            Delete forever
+        </BitButton>
+        <BitButton Variant=""BitVariant.Outline""
+                   Color=""BitColor.Tertiary""
+                   OnClick=""() => templatesMessageBox!.AnswerAsync(BitMessageBoxResult.No)"">
+            Keep it
+        </BitButton>
     </FooterTemplate>
-</BitMessageBox>";
+</BitMessageBox>
+
+<div>Last answer: <b>@templatesResult</b></div>";
+    private readonly string example6CsharpCode = @"
+private BitMessageBox? templatesMessageBox;
+private BitMessageBoxResult templatesResult;";
 
     private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => isModalOpen = true"">Show</BitButton>
@@ -132,6 +152,7 @@ private async Task ShowMessageBox()
 <BitButton Color=""BitColor.Info"" OnClick=""ShowInfoMessageBox"">Info</BitButton>
 <BitButton Color=""BitColor.Success"" OnClick=""ShowSuccessMessageBox"">Success</BitButton>
 <BitButton Color=""BitColor.Warning"" OnClick=""ShowWarningMessageBox"">Warning</BitButton>
+<BitButton Color=""BitColor.SevereWarning"" OnClick=""ShowSevereWarningMessageBox"">SevereWarning</BitButton>
 <BitButton Color=""BitColor.Error"" OnClick=""ShowErrorMessageBox"">Error</BitButton>
 
 @* The service shows the message box through the BitModalService, so mount its container. *@
@@ -157,6 +178,11 @@ private async Task ShowSuccessMessageBox()
 private async Task ShowWarningMessageBox()
 {
     await messageBoxService.ShowWarning(""Warning"", ""This workspace is almost out of space."");
+}
+
+private async Task ShowSevereWarningMessageBox()
+{
+    await messageBoxService.ShowSevereWarning(""Severe warning"", ""This workspace is out of space."");
 }
 
 private async Task ShowErrorMessageBox()
@@ -198,6 +224,52 @@ private async Task ShowDangerousConfirm()
 }";
 
     private readonly string example11RazorCode = @"
+<BitCard Style=""padding:0"">
+    <BitMessageBox AutoLoading
+                   Title=""Delete the file?""
+                   Buttons=""BitMessageBoxButtons.YesNo""
+                   YesText=""Delete""
+                   NoText=""Keep""
+                   PrimaryButtonColor=""BitColor.Error""
+                   DefaultButton=""BitMessageBoxResult.No""
+                   OnBeforeResult=""HandleBeforeResult""
+                   OnResult=""v => guardResult = v"">
+        <BodyTemplate>
+            <BitCheckbox @bind-Value=""guardConfirmed"" Label=""Yes, I understand this cannot be undone."" />
+        </BodyTemplate>
+    </BitMessageBox>
+</BitCard>
+
+<div>
+    Last answer: <b>@guardResult</b>
+    @if (guardRefused)
+    {
+        <span> - the last Delete was refused, since the box was not ticked.</span>
+    }
+</div>";
+    private readonly string example11CsharpCode = @"
+private bool guardConfirmed;
+private bool guardRefused;
+private BitMessageBoxResult guardResult;
+
+private async Task HandleBeforeResult(BitMessageBoxBeforeResultArgs args)
+{
+    guardRefused = false;
+
+    // Only the destructive answer is guarded: Keep and the close button end the box as they always would.
+    if (args.Result is not BitMessageBoxResult.Yes) return;
+
+    // The work the answer starts, which AutoLoading spins the pressed button through.
+    await Task.Delay(1000);
+
+    if (guardConfirmed) return;
+
+    // Refused: nothing is reported, and a box shown through the service would stay open.
+    args.Cancel = true;
+    guardRefused = true;
+}";
+
+    private readonly string example12RazorCode = @"
 <BitMessageBox Color=""BitColor.Info"" Title=""Info"" Body=""Something worth knowing."" />
 <BitMessageBox Color=""BitColor.Success"" Title=""Success"" Body=""Something went well."" />
 <BitMessageBox Color=""BitColor.Warning"" Title=""Warning"" Body=""Something needs attention."" />
@@ -205,7 +277,7 @@ private async Task ShowDangerousConfirm()
 <BitMessageBox Color=""BitColor.Error"" Title=""Error"" Body=""Something went wrong."" />
 <BitMessageBox Color=""BitColor.Primary"" Title=""Primary"" Body=""The accent of the theme."" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -220,12 +292,12 @@ private async Task ShowDangerousConfirm()
                Title=""Bootstrap Icons""
                Body=""The glyph and the close icon come from Bootstrap Icons."" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitMessageBox Size=""BitSize.Small"" Color=""BitColor.Info"" Title=""Small"" Body=""The small size."" />
 <BitMessageBox Size=""BitSize.Medium"" Color=""BitColor.Info"" Title=""Medium"" Body=""The medium size."" />
 <BitMessageBox Size=""BitSize.Large"" Color=""BitColor.Info"" Title=""Large"" Body=""The large size."" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-msg {
         background: linear-gradient(180deg, #3e0f0f, transparent) #000;
@@ -261,7 +333,7 @@ private async Task ShowDangerousConfirm()
                    Classes=""@(new() { Root = ""custom-msg"", ActionButton = new() { Root = ""custom-msg-btn"" } })"" />
 </BitCard>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitCard Style=""padding:0"">
     <BitMessageBox Dir=""BitDir.Rtl""
                    Color=""BitColor.Warning""

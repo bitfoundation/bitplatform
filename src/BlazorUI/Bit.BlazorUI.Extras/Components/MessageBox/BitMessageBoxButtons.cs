@@ -33,5 +33,17 @@ public enum BitMessageBoxButtons
     /// <summary>
     /// A Yes, a No and a Cancel button.
     /// </summary>
-    YesNoCancel
+    YesNoCancel,
+
+    /// <summary>
+    /// No action buttons at all, which leaves the footer off the message box entirely.
+    /// </summary>
+    /// <remarks>
+    /// A message box that only tells the reader something is dismissed rather than answered - through its
+    /// close button, or, for one shown through the <see cref="BitMessageBoxService"/>, through the Escape
+    /// key or the overlay - so the answer it hands back is <see cref="BitMessageBoxResult.None"/>. Leave
+    /// <see cref="BitMessageBox.ShowCloseButton"/> on for it: a message box with neither an action button
+    /// nor a close button can only be dismissed by the layer around it.
+    /// </remarks>
+    None
 }

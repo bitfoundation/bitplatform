@@ -10,6 +10,8 @@
 /// </remarks>
 public partial class BitMessageBox : BitComponentBase
 {
+    private bool _answering;
+    private BitButton? _closeButtonRef;
     private readonly Dictionary<BitMessageBoxResult, BitButton> _buttonRefs = [];
 
 
@@ -108,7 +110,9 @@ public partial class BitMessageBox : BitComponentBase
     /// <remarks>
     /// The primary button (Ok, or Yes) by default. Point it at the Cancel or the No button for the
     /// message boxes that ask about something destructive, so that the answer a stray keystroke gives
-    /// is the harmless one.
+    /// is the harmless one, and at <see cref="BitMessageBoxResult.None"/> to land the focus on the
+    /// close button instead - which is also where it goes on its own for a message box that renders no
+    /// action buttons.
     /// <br/>
     /// A button that is not part of the current <see cref="Buttons"/> set is ignored.
     /// </remarks>
@@ -117,6 +121,10 @@ public partial class BitMessageBox : BitComponentBase
     /// <summary>
     /// The template used to render the footer of the message box, which takes the place of its action buttons.
     /// </summary>
+    /// <remarks>
+    /// The controls in it are the page's own, so nothing in them answers the message box on its own:
+    /// <see cref="AnswerAsync"/> is what ends it with an answer of the caller's choosing.
+    /// </remarks>
     [Parameter] public RenderFragment? FooterTemplate { get; set; }
 
     /// <summary>
@@ -161,6 +169,24 @@ public partial class BitMessageBox : BitComponentBase
     /// The text of the Ok button.
     /// </summary>
     [Parameter] public string? OkText { get; set; }
+
+    /// <summary>
+    /// The event callback asked before the message box hands over an answer, which is what can refuse to
+    /// let it be answered - a form in the body that has not been filled in, or a save that failed.
+    /// </summary>
+    /// <remarks>
+    /// Setting <see cref="BitMessageBoxBeforeResultArgs.Cancel"/> keeps the message box where it is:
+    /// none of the callbacks of the answer are raised, and a message box shown through the
+    /// <see cref="BitMessageBoxService"/> stays open with its caller still waiting.
+    /// <br/>
+    /// It guards the buttons the message box draws, the close button included. The Escape key and the
+    /// overlay belong to the layer around it, which
+    /// <see cref="BitModalParameters.CanClose"/> is the guard for.
+    /// <br/>
+    /// Turn <see cref="AutoLoading"/> on beside it to keep the pressed button spinning while the guard
+    /// works out its answer.
+    /// </remarks>
+    [Parameter] public EventCallback<BitMessageBoxBeforeResultArgs> OnBeforeResult { get; set; }
 
     /// <summary>
     /// The event callback for the Cancel button of the message box.
@@ -242,17 +268,49 @@ public partial class BitMessageBox : BitComponentBase
     public BitMessageBoxResult Result { get; private set; }
 
     /// <summary>
+    /// Answers the message box as though the button standing for that result had been pressed, which is
+    /// what lets a footer of your own - or anything else the page decides with - end it with a real answer.
+    /// </summary>
+    /// <remarks>
+    /// The answer takes the same road a pressed button does: <see cref="OnBeforeResult"/> is asked first and
+    /// can refuse it, the callback of that answer is raised, then <see cref="OnResult"/> and
+    /// <see cref="OnClose"/> - so a message box shown through the <see cref="BitMessageBoxService"/> closes
+    /// and hands the answer back to whoever was waiting for it. A disabled message box answers nothing, and
+    /// neither does one that is still working out an answer it was already given.
+    /// <br/>
+    /// The result need not be one of the buttons the current <see cref="Buttons"/> set renders.
+    /// </remarks>
+    public Task AnswerAsync(BitMessageBoxResult result) => HandleAction(result);
+
+    /// <summary>
     /// Moves the focus onto the default action button of the message box.
     /// </summary>
     /// <remarks>
-    /// A message box whose footer is a <see cref="FooterTemplate"/> renders no buttons of its own, so
-    /// there is nothing for this to focus and the call does nothing.
+    /// A message box that renders no action buttons of its own - one given a <see cref="FooterTemplate"/>,
+    /// or the <see cref="BitMessageBoxButtons.None"/> set - focuses its close button instead, so that a
+    /// dialog which has just taken over the screen still has the focus somewhere inside it. Where there is
+    /// neither, the call does nothing.
     /// </remarks>
     public async ValueTask FocusAsync()
     {
-        if (_buttonRefs.TryGetValue(_DefaultAction, out var button))
+        var action = _DefaultAction;
+
+        // A stale ref left behind by a button an earlier Buttons set rendered is not one of the buttons on
+        // the screen, so the current set has the last word on what there is to focus.
+        if (action is not BitMessageBoxResult.None &&
+            FooterTemplate is null &&
+            Array.IndexOf(_Actions, action) >= 0 &&
+            _buttonRefs.TryGetValue(action, out var button))
         {
             await button.FocusAsync();
+            return;
+        }
+
+        // The same goes for the close button: a HeaderTemplate takes it off the message box, and so does
+        // ShowCloseButton, while the ref that captured it stays behind.
+        if (_HasCloseButton && _closeButtonRef is not null)
+        {
+            await _closeButtonRef.FocusAsync();
         }
     }
 
@@ -272,6 +330,13 @@ public partial class BitMessageBox : BitComponentBase
 
     private bool _HasHeader => HeaderTemplate is not null || _HasIcon || Title.HasValue() || ShowCloseButton;
 
+    private bool _HasBody => _HasBodyTemplate || Body.HasValue();
+
+    private bool _HasCloseButton => ShowCloseButton && HeaderTemplate is null;
+
+    // A footer with nothing in it is an empty row of padding under the body, so the None set leaves it off.
+    private bool _HasFooter => FooterTemplate is not null || _Actions.Length > 0;
+
     private BitIconInfo? _CloseIcon => BitIconInfo.From(CloseIcon, CloseIconName ?? "ChromeClose");
 
     private string _CloseButtonTitle => CloseButtonTitle ?? "Close";
@@ -282,10 +347,12 @@ public partial class BitMessageBox : BitComponentBase
                                                     : BitMessageBoxResult.Ok;
 
     // A DefaultButton naming a button this set does not render would leave the focus nowhere, so the
-    // primary one stands in for it.
-    private BitMessageBoxResult _DefaultAction => DefaultButton.HasValue && Array.IndexOf(_Actions, DefaultButton.Value) >= 0
+    // primary one stands in for it - and None, which is the close button, is always a button to name.
+    // A set with no action buttons in it has nothing but the close button to fall back on.
+    private BitMessageBoxResult _DefaultAction => DefaultButton.HasValue &&
+                                                  (DefaultButton.Value is BitMessageBoxResult.None || Array.IndexOf(_Actions, DefaultButton.Value) >= 0)
                                                     ? DefaultButton.Value
-                                                    : _PrimaryAction;
+                                                    : _Actions.Length > 0 ? _PrimaryAction : BitMessageBoxResult.None;
 
     private BitMessageBoxResult[] _Actions
     {
@@ -296,6 +363,7 @@ public partial class BitMessageBox : BitComponentBase
                 BitMessageBoxButtons.OkCancel => _OkCancelActions,
                 BitMessageBoxButtons.YesNo => _YesNoActions,
                 BitMessageBoxButtons.YesNoCancel => _YesNoCancelActions,
+                BitMessageBoxButtons.None => _NoActions,
                 _ => _OkActions
             };
 
@@ -305,6 +373,7 @@ public partial class BitMessageBox : BitComponentBase
         }
     }
 
+    private static readonly BitMessageBoxResult[] _NoActions = [];
     private static readonly BitMessageBoxResult[] _OkActions = [BitMessageBoxResult.Ok];
     private static readonly BitMessageBoxResult[] _OkCancelActions = [BitMessageBoxResult.Ok, BitMessageBoxResult.Cancel];
     private static readonly BitMessageBoxResult[] _YesNoActions = [BitMessageBoxResult.Yes, BitMessageBoxResult.No];
@@ -423,28 +492,53 @@ public partial class BitMessageBox : BitComponentBase
     {
         if (IsEnabled is false) return;
 
-        Result = result;
+        // Only one answer is given per showing: a slow callback leaves every other button pressable, and
+        // a message box answered Ok and then Cancel while the first answer is still being worked out is
+        // one whose caller is told two different things.
+        if (_answering) return;
 
-        switch (result)
+        _answering = true;
+
+        try
         {
-            case BitMessageBoxResult.Ok:
-                await OnOk.InvokeAsync();
-                break;
-            case BitMessageBoxResult.Cancel:
-                await OnCancel.InvokeAsync();
-                break;
-            case BitMessageBoxResult.Yes:
-                await OnYes.InvokeAsync();
-                break;
-            case BitMessageBoxResult.No:
-                await OnNo.InvokeAsync();
-                break;
+            if (OnBeforeResult.HasDelegate)
+            {
+                var args = new BitMessageBoxBeforeResultArgs { Result = result };
+
+                await OnBeforeResult.InvokeAsync(args);
+
+                // A refused answer leaves the message box exactly as it was: nothing is reported, nothing
+                // is closed, and Result still holds whatever the last answer that went through was.
+                if (args.Cancel) return;
+            }
+
+            Result = result;
+
+            switch (result)
+            {
+                case BitMessageBoxResult.Ok:
+                    await OnOk.InvokeAsync();
+                    break;
+                case BitMessageBoxResult.Cancel:
+                    await OnCancel.InvokeAsync();
+                    break;
+                case BitMessageBoxResult.Yes:
+                    await OnYes.InvokeAsync();
+                    break;
+                case BitMessageBoxResult.No:
+                    await OnNo.InvokeAsync();
+                    break;
+            }
+
+            await OnResult.InvokeAsync(result);
+
+            // Raised last, so a handler that tears the message box down does not do it before the answer
+            // has been handed to whoever was waiting for it.
+            await OnClose.InvokeAsync();
         }
-
-        await OnResult.InvokeAsync(result);
-
-        // Raised last, so a handler that tears the message box down does not do it before the answer
-        // has been handed to whoever was waiting for it.
-        await OnClose.InvokeAsync();
+        finally
+        {
+            _answering = false;
+        }
     }
 }

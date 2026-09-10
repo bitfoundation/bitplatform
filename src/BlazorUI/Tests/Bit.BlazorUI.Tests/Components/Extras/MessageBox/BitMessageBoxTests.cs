@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MessageBox;
@@ -748,5 +750,308 @@ public class BitMessageBoxTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-msb-ttl").GetAttribute("style")!.Contains("color: yellow"));
         Assert.IsTrue(component.Find(".bit-msb-bdy").GetAttribute("style")!.Contains("color: purple"));
         Assert.IsTrue(component.Find(".bit-msb-ftr").GetAttribute("style")!.Contains("color: orange"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldRenderNoFooterWithTheNoneSet()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.Body, "Body");
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.None);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-msb-ftr").Count);
+
+        // The close button is the only way left to end it, so it is still there.
+        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn").Count);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldStillRenderAFooterTemplateWithTheNoneSet()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.None);
+            parameters.Add(p => p.FooterTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "custom-footer");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-msb-ftr .custom-footer").Count);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldAnswerWithNoAnswerFromTheCloseButtonOfTheNoneSet()
+    {
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.None);
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        component.Find(".bit-msb-hdr .bit-btn").Click();
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldRenderNoBodyElementWithoutABody()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Only a title.");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-msb-bdy").Count);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldKeepTheWhitespaceOfABodyOfTextOnly()
+    {
+        var text = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Body, "First line.\nSecond line.");
+        });
+
+        Assert.IsTrue(text.Find(".bit-msb-bdy").ClassList.Contains("bit-msb-txt"));
+
+        // A body that is markup lays itself out, so the whitespace of the razor file around its elements
+        // is not kept: it would show up as blank lines between them.
+        var template = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.BodyTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.IsFalse(template.Find(".bit-msb-bdy").ClassList.Contains("bit-msb-txt"));
+    }
+
+
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldAnswerItselfOnDemandFromAFooterOfItsOwn()
+    {
+        var order = new List<string>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.YesNo);
+            parameters.Add(p => p.FooterTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "custom-footer");
+                builder.CloseElement();
+            }));
+            parameters.Add(p => p.OnYes, () => order.Add("yes"));
+            parameters.Add(p => p.OnResult, r => order.Add($"result:{r}"));
+            parameters.Add(p => p.OnClose, () => order.Add("close"));
+        });
+
+        await component.InvokeAsync(() => component.Instance.AnswerAsync(BitMessageBoxResult.Yes));
+
+        CollectionAssert.AreEqual(new[] { "yes", "result:Yes", "close" }, order);
+        Assert.AreEqual(BitMessageBoxResult.Yes, component.Instance.Result);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldAnswerNothingOnDemandWhileDisabled()
+    {
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        await component.InvokeAsync(() => component.Instance.AnswerAsync(BitMessageBoxResult.Ok));
+
+        Assert.AreEqual(0, results.Count);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldAskItsGuardForAnAnswerGivenOnDemandToo()
+    {
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs args) => args.Cancel = true);
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        await component.InvokeAsync(() => component.Instance.AnswerAsync(BitMessageBoxResult.Ok));
+
+        Assert.AreEqual(0, results.Count);
+        Assert.AreEqual(BitMessageBoxResult.None, component.Instance.Result);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldAskItsGuardBeforeHandingOverTheAnswer()
+    {
+        var order = new List<string>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs _) => order.Add("before"));
+            parameters.Add(p => p.OnOk, () => order.Add("ok"));
+            parameters.Add(p => p.OnResult, _ => order.Add("result"));
+            parameters.Add(p => p.OnClose, () => order.Add("close"));
+        });
+
+        component.Find(".bit-msb-ftr .bit-btn").Click();
+
+        CollectionAssert.AreEqual(new[] { "before", "ok", "result", "close" }, order);
+        Assert.AreEqual(BitMessageBoxResult.Ok, component.Instance.Result);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldHandOverNothingWhenItsGuardRefusesTheAnswer()
+    {
+        var order = new List<string>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs args) =>
+            {
+                order.Add("before");
+                args.Cancel = true;
+            });
+            parameters.Add(p => p.OnOk, () => order.Add("ok"));
+            parameters.Add(p => p.OnResult, _ => order.Add("result"));
+            parameters.Add(p => p.OnClose, () => order.Add("close"));
+        });
+
+        component.Find(".bit-msb-ftr .bit-btn").Click();
+
+        CollectionAssert.AreEqual(new[] { "before" }, order);
+
+        // A refused answer is not one the message box was given, so it still holds no answer at all.
+        Assert.AreEqual(BitMessageBoxResult.None, component.Instance.Result);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldAskItsGuardForTheCloseButtonToo()
+    {
+        var seen = new List<BitMessageBoxResult>();
+        var closed = 0;
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs args) =>
+            {
+                seen.Add(args.Result);
+                args.Cancel = true;
+            });
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.Find(".bit-msb-hdr .bit-btn").Click();
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, seen);
+        Assert.AreEqual(0, closed);
+    }
+
+    [TestMethod,
+        DataRow(0, BitMessageBoxResult.Yes),
+        DataRow(1, BitMessageBoxResult.No),
+        DataRow(2, BitMessageBoxResult.Cancel)]
+    public void BitMessageBoxShouldTellItsGuardWhichAnswerIsAboutToBeGiven(int index, BitMessageBoxResult expected)
+    {
+        var seen = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.YesNoCancel);
+            parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs args) => seen.Add(args.Result));
+        });
+
+        component.FindAll(".bit-msb-ftr .bit-btn")[index].Click();
+
+        CollectionAssert.AreEqual(new[] { expected }, seen);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldNotAskItsGuardWhileDisabled()
+    {
+        var asked = 0;
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs _) => asked++);
+        });
+
+        component.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.AreEqual(0, asked);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldTakeAnAnswerAgainOnceARefusedOneIsDone()
+    {
+        var refuse = true;
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs args) => args.Cancel = refuse);
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        component.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.AreEqual(0, results.Count);
+
+        refuse = false;
+
+        component.Find(".bit-msb-ftr .bit-btn").Click();
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Ok }, results);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldTakeNoSecondAnswerWhileTheFirstOneIsStillRunning()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.OnOk, () => gate.Task);
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        var answering = buttons[0].ClickAsync(new MouseEventArgs());
+
+        // The Cancel press lands while the Ok answer is still being worked out: the caller is told one
+        // answer, not two.
+        await buttons[1].ClickAsync(new MouseEventArgs());
+
+        Assert.AreEqual(0, results.Count);
+
+        gate.SetResult();
+
+        await answering;
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, results.Count);
+            Assert.AreEqual(BitMessageBoxResult.Ok, results[0]);
+        });
     }
 }

@@ -75,7 +75,8 @@ public class BitMessageBoxParameters
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The action button the focus is moved onto.
+    /// The action button the focus is moved onto, or <see cref="BitMessageBoxResult.None"/> for the
+    /// close button.
     /// </summary>
     public BitMessageBoxResult? DefaultButton { get; set; }
 
@@ -150,12 +151,24 @@ public class BitMessageBoxParameters
     public string? OkText { get; set; }
 
     /// <summary>
+    /// The event callback asked before the message box hands over an answer, which is what can refuse to
+    /// let it be answered.
+    /// </summary>
+    /// <remarks>
+    /// Setting <see cref="BitMessageBoxBeforeResultArgs.Cancel"/> keeps the message box open and leaves
+    /// the caller of the service still waiting for its answer. It guards the buttons the message box
+    /// draws, the close button included; the Escape key and the overlay are guarded by
+    /// <see cref="BitModalParameters.CanClose"/> on <see cref="Modal"/>.
+    /// </remarks>
+    public EventCallback<BitMessageBoxBeforeResultArgs> OnBeforeResult { get; set; }
+
+    /// <summary>
     /// Keeps the message box alive through the lifecycle of the application until it is closed, rather than
     /// only for as long as the modal container that renders it.
     /// </summary>
     public bool? Persistent { get; set; }
 
-/// <summary>
+    /// <summary>
     /// The color of the affirmative action button (Ok, or Yes), which falls back to ButtonColor.
     /// </summary>
     public BitColor? PrimaryButtonColor { get; set; }

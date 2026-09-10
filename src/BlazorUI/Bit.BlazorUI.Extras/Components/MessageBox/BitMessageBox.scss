@@ -65,13 +65,18 @@
     overflow: auto;
     color: $clr-ter;
     line-height: 1.5;
-    // The line breaks written into the body are kept, but a line with none of them still wraps: "pre"
-    // alone leaves a long sentence running off the side of a box that cannot scroll sideways.
-    white-space: pre-wrap;
     overflow-wrap: anywhere;
     font-weight: $tg-fw-regular;
     font-size: var(--bit-msb-fontsize);
     letter-spacing: 0.01em;
+}
+
+// Only a body written as text is laid out by its own whitespace: the line breaks in it are kept, while a
+// line with none of them still wraps - "pre" alone leaves a long sentence running off the side of a box
+// that cannot scroll sideways. A body that is markup lays itself out, and keeping the whitespace there
+// would turn every newline between its elements into a blank line.
+.bit-msb-txt {
+    white-space: pre-wrap;
 }
 
 .bit-msb-ftr {
@@ -97,6 +102,15 @@
     --bit-msb-ico-fontsize: #{$siz-icon-sm};
 }
 
+// The title is a heading, so its size is the theme's h5 and stays that for an unsized message box -
+// including the smaller h5 the theme steps down to on a narrow viewport. Only the two sized boxes step
+// it off that, one stop of the ramp either way, so the title is not left as the one part of a small
+// message box that did not get smaller. A descendant selector is what puts these above the typography
+// class of the heading itself, whichever stylesheet order the two are loaded in.
+.bit-msb-sm .bit-msb-ttl {
+    font-size: $tg-fs-lg;
+}
+
 .bit-msb-md {
     --bit-msb-pad: #{spacing(2)};
     --bit-msb-minwidth: #{spacing(40)};
@@ -109,6 +123,10 @@
     --bit-msb-minwidth: #{spacing(50)};
     --bit-msb-fontsize: #{$tg-fs-lg};
     --bit-msb-ico-fontsize: #{$siz-icon-lg};
+}
+
+.bit-msb-lg .bit-msb-ttl {
+    font-size: $tg-fs-2xl;
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Only the
