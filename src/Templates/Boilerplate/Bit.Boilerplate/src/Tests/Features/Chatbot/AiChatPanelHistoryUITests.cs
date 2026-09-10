@@ -15,6 +15,10 @@ namespace Boilerplate.Tests.Features.Chatbot;
 /// A real browser is the only place for this: IndexedDB, the rebuild and the identity's timing are the framework's
 /// doing rather than the panel's.
 /// </para>
+/// <para>
+/// There is only one culture to be in when invariant globalization is on (See <c>CultureInfoManager.InvariantGlobalization</c>),
+/// so nothing changes it and no soft restart happens - the test is inconclusive on such a build.
+/// </para>
 /// </summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
 public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
@@ -33,6 +37,12 @@ public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
     [TestMethod]
     public async Task ASignedInUsersConversation_Should_SurviveTheSoftRestartOfACultureChange()
     {
+        if (CultureInfoManager.InvariantGlobalization)
+        {
+            Assert.Inconclusive("A culture change, and so the soft restart this test is about, only exists when invariant globalization is disabled.");
+            return;
+        }
+
         var chatClient = new TestChatClient();
 
         await using var server = new AppTestServer(Context);
