@@ -15,6 +15,8 @@ namespace BitBlazorUI {
         cullOffscreen: boolean;
         /** Upper bound on how many individual markers may be handed to the provider at once. */
         maxRenderedMarkers: number;
+        /** Accessible name of a bubble, with {0} standing for the count. Localized by .NET. */
+        ariaLabelFormat: string;
     };
 
     type SourceMarker = { id: string, payload: any };
@@ -110,7 +112,11 @@ namespace BitBlazorUI {
 
             // Re-syncing identical markers would tear down and rebuild every DOM marker, losing
             // any open popup and the keyboard focus along with it.
-            const signature = rendered.map(m => m.id).join('|');
+            //
+            // The count is part of the signature, not just the id: a bubble's id is its grid cell,
+            // which does not change as markers enter and leave that cell during a pan - so an
+            // id-only signature would leave a bubble labelled with a count it no longer stands for.
+            const signature = rendered.map(m => `${m.id}:${m.members?.length ?? 0}`).join('|');
             if (signature === s.lastSignature) return;
             s.lastSignature = signature;
 
@@ -131,10 +137,15 @@ namespace BitBlazorUI {
          * Zooms to fit the members of a cluster. Returns the number of markers it contained, or 0
          * when the id is unknown - which is how the caller tells a cluster click from a real one.
          */
-        public static expand(id: string, clusterId: string, paddingPixels: number): number {
+        public static expand(id: string, clusterId: string, paddingPixels: number, zoom: boolean = true): number {
             const s = BitMapCluster._maps[id];
             const members = s?.clusters[clusterId];
             if (!s || !members || members.length === 0) return 0;
+
+            // The count is reported either way. A consumer who handles the click themselves still
+            // needs to know how big the bubble was, and reading it back separately would cost a
+            // second round-trip for something already in hand.
+            if (!zoom) return members.length;
 
             let swLat = 90, swLng = 180, neLat = -90, neLng = -180;
             for (const member of members) {
@@ -251,20 +262,34 @@ namespace BitBlazorUI {
                     payload: {
                         lat, lng,
                         // The count is the accessible name as well as the label: a bubble that
-                        // announces as "marker" tells a screen-reader user nothing.
+                        // announces as "marker" tells a screen-reader user nothing. The wording
+                        // comes from .NET, where it can be translated with every other label.
                         title: `${count}`,
-                        alt: `Cluster of ${count} markers`,
+                        alt: BitMapCluster._bubbleLabel(count, options),
                         focusable: true,
                         draggable: false,
                         iconUrl: BitMapCluster._bubbleIcon(count, size, options),
                         iconWidth: size,
                         iconHeight: size,
+                        // A bubble is a disc, not a pin: the coordinate it stands for is at its
+                        // centre, so it is anchored there rather than at the bottom edge every
+                        // pin-shaped icon defaults to.
+                        iconAnchorX: Math.round(size / 2),
+                        iconAnchorY: Math.round(size / 2),
                         opacity: 1,
                     },
                 });
             }
 
             return result;
+        }
+
+        /** The bubble's accessible name, from the format .NET supplied. */
+        private static _bubbleLabel(count: number, options: ClusterOptions): string {
+            const format = typeof options.ariaLabelFormat === 'string' && options.ariaLabelFormat.length > 0
+                ? options.ariaLabelFormat
+                : 'Cluster of {0} markers';
+            return format.split('{0}').join(`${count}`);
         }
 
         /** Bubble diameter grows with the log of the count, so 10 and 10,000 stay distinguishable. */

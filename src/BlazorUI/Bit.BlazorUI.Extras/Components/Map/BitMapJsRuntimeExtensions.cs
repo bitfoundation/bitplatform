@@ -65,14 +65,20 @@ internal static class BitMapJsRuntimeExtensions
     public static ValueTask BitMapFitBounds(this IJSRuntime jsRuntime, string jsObjectName, string id,
                                             double swLat, double swLng,
                                             double neLat, double neLng,
-                                            int paddingPixels)
+                                            int paddingPixels,
+                                            double maxZoom)
     {
-        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.fitBounds", id, swLat, swLng, neLat, neLng, paddingPixels);
+        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.fitBounds", id, swLat, swLng, neLat, neLng, paddingPixels, maxZoom);
     }
 
-    public static ValueTask BitMapFitBoundsToMarkers(this IJSRuntime jsRuntime, string jsObjectName, string id, int paddingPixels)
+    public static ValueTask BitMapFitBoundsToMarkers(this IJSRuntime jsRuntime, string jsObjectName, string id, int paddingPixels, double maxZoom)
     {
-        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.fitBoundsToMarkers", id, paddingPixels);
+        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.fitBoundsToMarkers", id, paddingPixels, maxZoom);
+    }
+
+    public static ValueTask<System.Text.Json.JsonElement> BitMapProject(this IJSRuntime jsRuntime, string jsObjectName, string id, double lat, double lng)
+    {
+        return jsRuntime.Invoke<System.Text.Json.JsonElement>($"BitBlazorUI.{jsObjectName}.project", id, lat, lng);
     }
 
     public static ValueTask BitMapAddMarker(this IJSRuntime jsRuntime, string jsObjectName, string id, string markerId, object marker)
@@ -195,6 +201,11 @@ internal static class BitMapJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.detach", id);
     }
 
+    public static ValueTask BitMapChromeCancelWaitForVisible(this IJSRuntime jsRuntime, string canvasId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.cancelWaitForVisible", canvasId);
+    }
+
     public static ValueTask BitMapChromeTrackAnchor(this IJSRuntime jsRuntime, string id, string elementId, double lat, double lng)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.trackAnchor", id, elementId, lat, lng);
@@ -235,9 +246,9 @@ internal static class BitMapJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.BitMapCluster.render", id);
     }
 
-    public static ValueTask<int> BitMapClusterExpand(this IJSRuntime jsRuntime, string id, string clusterId, int paddingPixels)
+    public static ValueTask<int> BitMapClusterExpand(this IJSRuntime jsRuntime, string id, string clusterId, int paddingPixels, bool zoom)
     {
-        return jsRuntime.Invoke<int>("BitBlazorUI.BitMapCluster.expand", id, clusterId, paddingPixels);
+        return jsRuntime.Invoke<int>("BitBlazorUI.BitMapCluster.expand", id, clusterId, paddingPixels, zoom);
     }
 
     public static ValueTask<System.Text.Json.JsonElement> BitMapChromeLocate(this IJSRuntime jsRuntime,

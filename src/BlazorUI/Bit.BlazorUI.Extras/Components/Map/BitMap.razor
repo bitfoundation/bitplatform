@@ -95,9 +95,13 @@
            position every frame. The element stays exactly where Blazor put it - handing it to the
            provider's own popup would move it out of the container Blazor patches by position. *@
         <div class="bit-map-anchor" id="@_popupAnchorId">
+            @* tabindex="-1" so the popup can be focused on open without becoming a tab stop of its
+               own - the WAI-ARIA dialog pattern, and what makes the Escape handler below reachable. *@
             <div class="bit-map-popup"
+                 @ref="_popupElement"
                  role="dialog"
                  aria-modal="false"
+                 tabindex="-1"
                  aria-label="@(_openPopupMarker.Alt ?? _openPopupMarker.Title ?? PopupLabel)"
                  @onkeydown="HandlePopupKeyDown"
                  @onkeydown:stopPropagation="true">
@@ -120,8 +124,10 @@
 
 @if (MarkerListMode != BitMapMarkerListMode.None)
 {
-    @* The non-visual equivalent of the markers. Rendered outside the map's own element so it is
-       not clipped by its overflow, and so it survives the map going fullscreen. *@
+    @* The non-visual equivalent of the markers. Rendered outside the map's own element so the
+       map's own overflow does not clip it, and so a long list scrolls with the page rather than
+       inside the map. It is a sibling of the map, so it is not carried into fullscreen - which is
+       the right way round: fullscreen is a look-at-the-map mode. *@
     <div class="@MarkerListClass">
         @if (MarkerListTemplate is not null)
         {

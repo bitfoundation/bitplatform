@@ -156,6 +156,26 @@ public sealed record BitMapMarker
     private readonly int? _iconHeight;
 
     /// <summary>
+    /// Horizontal offset, in pixels from the icon image's left edge, of the point that sits on the
+    /// coordinate. Defaults to the horizontal centre.
+    /// <para>
+    /// Together with <see cref="IconAnchorY"/> this is what decides whether an icon is a pin
+    /// (whose tip marks the place) or a dot (whose centre does). Leave both unset for the pin
+    /// behaviour every mapping library defaults to; set them to half the icon's size for a dot.
+    /// </para>
+    /// <para><b>Provider support:</b> Leaflet, MapLibre and Mapbox. The canvas-rendered backends
+    /// centre their symbols and ignore it.</para>
+    /// </summary>
+    public int? IconAnchorX { get; init; }
+
+    /// <summary>
+    /// Vertical offset, in pixels from the icon image's top edge, of the point that sits on the
+    /// coordinate. Defaults to the icon's bottom edge, which is where a pin's tip is.
+    /// <para><b>Provider support:</b> see <see cref="IconAnchorX"/>.</para>
+    /// </summary>
+    public int? IconAnchorY { get; init; }
+
+    /// <summary>
     /// Stack order offset for overlapping markers.
     /// <para>
     /// <b>Provider support:</b> Leaflet only. Other providers (MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium)

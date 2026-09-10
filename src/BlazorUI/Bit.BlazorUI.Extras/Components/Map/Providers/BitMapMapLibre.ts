@@ -30,11 +30,11 @@ namespace BitBlazorUI {
         public static panBy(id: string, dx: number, dy: number, animate: boolean) {
             return BitMapGlBase.panBy(BitMapMapLibre._key, id, dx, dy, animate);
         }
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
-            return BitMapGlBase.fitBounds(BitMapMapLibre._key, id, swLat, swLng, neLat, neLng, paddingPx);
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
+            return BitMapGlBase.fitBounds(BitMapMapLibre._key, id, swLat, swLng, neLat, neLng, paddingPx, maxZoom);
         }
-        public static fitBoundsToMarkers(id: string, paddingPx: number) {
-            return BitMapGlBase.fitBoundsToMarkers(BitMapMapLibre._key, id, paddingPx);
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
+            return BitMapGlBase.fitBoundsToMarkers(BitMapMapLibre._key, id, paddingPx, maxZoom);
         }
         public static addMarker(id: string, markerId: string, opts: any) { return BitMapGlBase.addMarker(BitMapMapLibre._key, id, markerId, opts); }
         public static removeMarker(id: string, markerId: string) { return BitMapGlBase.removeMarker(BitMapMapLibre._key, id, markerId); }

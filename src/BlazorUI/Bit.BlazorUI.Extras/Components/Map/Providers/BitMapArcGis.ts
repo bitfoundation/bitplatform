@@ -244,7 +244,7 @@ namespace BitBlazorUI {
             s.view.goTo({ center: target }, animate === false ? { animate: false } : {}).catch(() => {});
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, _maxZoom?: number) {
             const s = BitMapArcGis._require(id);
             const pad = paddingPx ?? 48;
             const latFrac = ((neLat - swLat) * pad) / 300;
@@ -257,7 +257,7 @@ namespace BitBlazorUI {
             s.view.goTo(ext).catch(() => {});
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, _maxZoom?: number) {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
             const geoms = s.markerLayer.graphics.toArray().map((g: any) => g.geometry).filter(Boolean);

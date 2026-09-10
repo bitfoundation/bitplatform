@@ -40,6 +40,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     private bool _isFullscreen;
     private string _popupAnchorId = string.Empty;
     private BitMapMarker? _openPopupMarker;
+    private ElementReference _popupElement;
 
     // Snapshot of the options the chrome was last attached with, so a re-render that changed
     // none of them doesn't pay an interop round-trip.
@@ -616,27 +617,75 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         await SafeInvokeAsync(_js.BitMapPanBy(JsObject, _Id, offsetX, offsetY, ShouldAnimate(animate, essential)), nameof(PanBy));
     }
 
+    /// <summary>
+    /// Pan to a new centre, keeping the current zoom. Shorthand for
+    /// <see cref="SetView"/> with no zoom.
+    /// </summary>
+    public ValueTask PanTo(BitMapLatLng center, bool animate = true, bool essential = false)
+        => SetView(center, null, animate, essential);
+
+    /// <summary>
+    /// Where a geographic coordinate currently sits inside the map's container, in CSS pixels
+    /// measured from its top-left corner. Returns null when the coordinate is not on screen - or,
+    /// on the 3D backend, when it is behind the globe.
+    /// <para>
+    /// This is what a custom overlay of your own is positioned from, the same way the built-in
+    /// <see cref="MarkerPopupTemplate"/> popup is. The answer is only valid for the viewport it was
+    /// read at, so recompute it whenever <see cref="OnViewChanged"/> fires.
+    /// </para>
+    /// </summary>
+    public async ValueTask<BitMapPoint?> Project(BitMapLatLng position)
+    {
+        if (_initialized is false) return null;
+        try
+        {
+            var point = await _js.BitMapProject(JsObject, _Id, position.Latitude, position.Longitude);
+            if (point.ValueKind is not JsonValueKind.Object) return null;
+            return new BitMapPoint(point.GetProperty("x").GetDouble(), point.GetProperty("y").GetDouble());
+        }
+        catch (Exception ex)
+        {
+            await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(Project));
+            return null;
+        }
+    }
+
     /// <summary>Fit the view to the given bounding box.</summary>
-    public async ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48)
+    /// <param name="bounds">The box to frame.</param>
+    /// <param name="paddingPixels">Breathing room, in screen pixels, left on every side.</param>
+    /// <param name="maxZoom">
+    /// Ceiling on how far the fit may zoom in. Without one, framing a box that encloses a single
+    /// place drops the view to street level; the default of 18 is what every backend that honours
+    /// a ceiling has always used here.
+    /// <para><b>Provider support:</b> Leaflet, MapLibre, Mapbox, OpenLayers and Azure Maps.
+    /// ArcGIS and Cesium have no equivalent and ignore it.</para>
+    /// </param>
+    public async ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48, double maxZoom = 18)
     {
         EnsureReady();
         BitMapValidation.ValidatePadding(paddingPixels, nameof(paddingPixels));
+        BitMapValidation.ValidateZoom(maxZoom, nameof(maxZoom));
         await SafeInvokeAsync(_js.BitMapFitBounds(JsObject, _Id,
             bounds.SouthWest.Latitude, bounds.SouthWest.Longitude,
             bounds.NorthEast.Latitude, bounds.NorthEast.Longitude,
-            paddingPixels), nameof(FitBounds));
+            paddingPixels, maxZoom), nameof(FitBounds));
     }
 
     /// <summary>Fit the view to include all currently rendered markers.</summary>
+    /// <param name="paddingPixels">Breathing room, in screen pixels, left on every side.</param>
+    /// <param name="maxZoom">Ceiling on how far the fit may zoom in. See <see cref="FitBounds"/>.</param>
     /// <remarks>
     /// While <see cref="Clustering"/> is on this fits what is drawn - the cluster bubbles - rather
-    /// than every source marker, so a marker culled as offscreen is not accounted for.
+    /// than every source marker, so a marker culled as offscreen is not accounted for. Fit the box
+    /// from <see cref="BitMapLatLngBounds.FromMarkers"/> over <see cref="OrderedMarkers"/> when you
+    /// need every source marker framed regardless.
     /// </remarks>
-    public async ValueTask FitBoundsToMarkers(int paddingPixels = 48)
+    public async ValueTask FitBoundsToMarkers(int paddingPixels = 48, double maxZoom = 18)
     {
         EnsureReady();
         BitMapValidation.ValidatePadding(paddingPixels, nameof(paddingPixels));
-        await SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels), nameof(FitBoundsToMarkers));
+        BitMapValidation.ValidateZoom(maxZoom, nameof(maxZoom));
+        await SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels, maxZoom), nameof(FitBoundsToMarkers));
     }
 
     /// <summary>
@@ -730,6 +779,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 await PushClusteredMarkersAsync(nameof(RemoveMarker));
                 await NotifyMarkerListChanged();
             }
+            // A popup for a marker that is no longer on the map would hang in space - true
+            // whether the marker went through the clustering layer or straight to the provider.
+            if (_openPopupMarker?.Id == markerId) await ClosePopup();
             return;
         }
 
@@ -739,7 +791,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             await NotifyMarkerListChanged();
         }
 
-        // A popup for a marker that is no longer on the map would hang in space.
         if (_openPopupMarker?.Id == markerId) await ClosePopup();
     }
 
@@ -753,6 +804,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             _markerState.Clear();
             await PushClusteredMarkersAsync(nameof(ClearMarkers));
             await NotifyMarkerListChanged();
+            await ClosePopup();
             return;
         }
 
@@ -815,19 +867,41 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, marker.Position.Latitude, marker.Position.Longitude),
             nameof(OpenPopup));
 
+        // A dialog nobody is standing in is a dialog whose Escape handler never fires and whose
+        // content a screen reader never reaches - the WAI-ARIA pattern puts focus inside it on
+        // open, and returns it to the opener on close.
+        if (_popupElement.Id is not null)
+        {
+            try { await _popupElement.FocusAsync(preventScroll: true); }
+            catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(OpenPopup)); }
+        }
+
         if (OnPopupOpened.HasDelegate is false) return;
         try { await OnPopupOpened.InvokeAsync(marker); }
         catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(OnPopupOpened)); }
     }
 
     /// <summary>Closes the <see cref="MarkerPopupTemplate"/> popup, if one is open.</summary>
-    public async ValueTask ClosePopup()
+    /// <param name="restoreFocus">
+    /// Return keyboard focus to the map canvas. On by default when the popup is dismissed from the
+    /// keyboard; a close triggered by something other than the popup itself passes false so focus
+    /// is not yanked away from wherever the user actually is.
+    /// </param>
+    public async ValueTask ClosePopup(bool restoreFocus = false)
     {
         if (_openPopupMarker is null) return;
 
         _openPopupMarker = null;
         await SafeInvokeAsync(_js.BitMapChromeUntrackAnchor(_Id), nameof(ClosePopup));
         await InvokeAsync(StateHasChanged);
+
+        if (restoreFocus)
+        {
+            // Blazor's own focus call rather than an interop helper of ours - the canvas is an
+            // element this component already holds a reference to.
+            try { await _mapElement.FocusAsync(); }
+            catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(ClosePopup)); }
+        }
 
         if (OnPopupClosed.HasDelegate is false) return;
         try { await OnPopupClosed.InvokeAsync(); }
@@ -1141,6 +1215,26 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
     }
 
+    /// <summary>
+    /// Remove every tile overlay, leaving the base map alone. The counterpart of
+    /// <see cref="ClearMarkers"/> and <see cref="ClearVectorLayers"/>.
+    /// </summary>
+    public async ValueTask ClearTileOverlays()
+    {
+        EnsureReady();
+
+        // Removed one at a time rather than through a bulk call: the overlays are keyed on the JS
+        // side too, and a per-id remove is the one operation every backend already implements.
+        foreach (var overlayId in _tileOverlayState.Keys.ToList())
+        {
+            if (_hiddenTileOverlays.Contains(overlayId)) continue;
+            await SafeInvokeAsync(_js.BitMapRemoveTileOverlay(JsObject, _Id, overlayId), nameof(ClearTileOverlays));
+        }
+
+        _tileOverlayState.Clear();
+        _hiddenTileOverlays.Clear();
+    }
+
 
 
     [JSInvokable("OnClick")]
@@ -1252,13 +1346,15 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     private async Task HandleClusterClick(string clusterId)
     {
         var count = 0;
-        if (Clustering?.ZoomOnClick ?? false)
+        try
         {
-            // expand() both zooms and reports how many markers the bubble stood for, so the count
-            // costs no second round-trip.
-            try { count = await _js.BitMapClusterExpand(_Id, clusterId, Clustering!.ExpandPaddingPixels); }
-            catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(OnClusterClick)); }
+            // expand() reports how many markers the bubble stood for either way, and only zooms
+            // when asked to - so the count costs no second round-trip, and a consumer who handles
+            // the click themselves still learns how big the bubble was.
+            count = await _js.BitMapClusterExpand(_Id, clusterId,
+                Clustering!.ExpandPaddingPixels, Clustering!.ZoomOnClick);
         }
+        catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(OnClusterClick)); }
 
         if (OnClusterClick.HasDelegate is false) return;
         try { await OnClusterClick.InvokeAsync(new BitMapClusterClickArgs { ClusterId = clusterId, Count = count }); }
@@ -1547,10 +1643,23 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
 
         var center = Center ?? _lastView?.Center;
-        if (center is null) return;
 
         // A camera the consumer asked for is not a gesture the user is watching, so it jumps
         // rather than animating - the same call with animate:true would fight a rapid @bind write.
+        if (center is null)
+        {
+            // Zoom is bound but Center is not, and the map has not reported a viewport yet - so
+            // there is no centre to restate. Push the zoom on its own rather than dropping it,
+            // which is what an initial `@bind-Zoom` with no `@bind-Center` would otherwise do.
+            // SetZoom reads the centre back over interop here, and this runs inside
+            // OnParametersSetAsync - so a provider whose getView fails must not escape as an
+            // unhandled exception from a render.
+            if (Zoom is null) return;
+            try { await SetZoom(Zoom.Value, animate: false); }
+            catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(Zoom)); }
+            return;
+        }
+
         await SetView(center.Value, Zoom, animate: false);
     }
 
@@ -1600,6 +1709,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             ["textColor"] = options.TextColor,
             ["cullOffscreen"] = options.CullOffscreen,
             ["maxRenderedMarkers"] = options.MaxRenderedMarkers,
+            ["ariaLabelFormat"] = options.AriaLabelFormat,
         }), nameof(Clustering)) is false) return;
 
         await PushClusteredMarkersAsync(nameof(Clustering));
@@ -1666,21 +1776,24 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         if (desired.Count > 0 && stale.Count + changed.Count >= Math.Max(2, (desired.Count + 1) / 2))
         {
             await SyncMarkers(desired);
-            return;
         }
-
-        foreach (var id in stale)
+        else
         {
-            await RemoveMarker(id);
+            foreach (var id in stale)
+            {
+                await RemoveMarker(id);
+            }
+
+            foreach (var marker in changed)
+            {
+                // AddMarker replaces a marker that already carries this id, so an update needs no
+                // separate remove.
+                await AddMarker(marker);
+            }
         }
 
-        foreach (var marker in changed)
-        {
-            // AddMarker replaces a marker that already carries this id, so an update needs no
-            // separate remove.
-            await AddMarker(marker);
-        }
-
+        // Reached on both paths: a wholesale replace is exactly the case where an open popup is
+        // most likely to be pointing at a marker that is gone or has moved.
         await ReconcileOpenPopupAsync(openId);
     }
 
@@ -1839,14 +1952,28 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         _activeProvider = effective;
         _initialized = true;
         await AttachChromeAsync();
+        // The camera goes back first: the new map was built from the provider's own Center/Zoom,
+        // which is not necessarily where the user had panned to.
+        _cameraParametersDirty = false;
+        await PushCameraParametersAsync();
         // The clustering layer holds the name of the JS object it renders through, so a swap to a
         // different backend has to re-point it or it would keep syncing markers to the old one.
+        // This also hands it the whole marker set again, which is why the replay below skips
+        // markers while it is on.
         if (IsClustering) await ApplyClusteringAsync();
         await SetLoadState(BitMapLoadState.Ready);
 
         if (ReplayStateOnProviderSwap)
         {
             await ReplayImperativeStateAsync();
+        }
+        else if (Markers is not null && IsClustering is false)
+        {
+            // The declarative collection is this component's own state, not something the consumer
+            // applied imperatively - so it is restored whether or not the replay opt-in is set.
+            // Without this a provider swap silently empties a `Markers`-driven map.
+            _markerState.Clear();
+            await ApplyMarkersAsync();
         }
 
         // Fire OnReady again so consumers can rebuild their map state on the new provider.
@@ -1913,10 +2040,17 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         // Replay everything that was added imperatively, in stable insertion order. We tolerate
         // individual failures per item so a single bad payload doesn't abort the rest of the
         // restore.
-        foreach (var (id, marker) in _markerState)
+        //
+        // Markers are skipped while clustering is on: the clustering layer was just re-pointed at
+        // the new backend and handed the whole set, so adding each one again here would draw every
+        // marker a second time, on top of the bubbles that stand for them.
+        if (IsClustering is false)
         {
-            try { await _js.BitMapAddMarker(JsObject, _Id, id, ToMarkerPayload(marker)); }
-            catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, $"replay marker '{id}'"); }
+            foreach (var (id, marker) in _markerState)
+            {
+                try { await _js.BitMapAddMarker(JsObject, _Id, id, ToMarkerPayload(marker)); }
+                catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, $"replay marker '{id}'"); }
+            }
         }
 
         foreach (var snap in _vectorState.Values)
@@ -2024,14 +2158,82 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     private async Task AnnounceView(BitMapViewState view)
     {
         var now = DateTimeOffset.UtcNow;
-        if (now - _lastAnnouncementAt < ViewAnnouncementThrottle) return;
-        _lastAnnouncementAt = now;
+        if (now - _lastAnnouncementAt < ViewAnnouncementThrottle)
+        {
+            // Inside the throttle window. Dropping this outright would lose the announcement the
+            // user actually cares about - the one for where the map came to rest - so it is held
+            // and spoken when the window closes instead.
+            _pendingAnnouncementView = view;
+            ScheduleTrailingAnnouncement();
+            return;
+        }
 
-        _announcement = ViewAnnouncementFormatter?.Invoke(view)
+        _pendingAnnouncementView = null;
+        _lastAnnouncementAt = now;
+        await PublishAnnouncement(view);
+    }
+
+    /// <summary>
+    /// Writes the announcement text into the live region. A screen reader ignores a live region
+    /// whose text did not change, so an identical announcement is nudged with a trailing
+    /// zero-width space rather than being silently swallowed.
+    /// </summary>
+    private async Task PublishAnnouncement(BitMapViewState view)
+    {
+        var text = ViewAnnouncementFormatter?.Invoke(view)
             ?? $"Map centred at {view.Center.Latitude:F4}, {view.Center.Longitude:F4}, zoom level {view.Zoom:F0}.";
+
+        _announcement = string.Equals(_announcement, text, StringComparison.Ordinal)
+            ? text + AnnouncementNudge
+            : text;
+
         // Reached from a JS callback, which does not necessarily arrive on the renderer's
         // dispatcher - so the re-render is marshalled onto it rather than assumed.
         await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Zero-width space appended to an announcement identical to the one already in the live
+    /// region. It changes the text - which is what makes the region announce again - without
+    /// changing a single spoken character.
+    /// </summary>
+    private const string AnnouncementNudge = "\u200b";
+
+    private BitMapViewState? _pendingAnnouncementView;
+    private CancellationTokenSource? _announcementCts;
+
+    /// <summary>
+    /// Arms a single timer to speak the most recent held-back view once the throttle window has
+    /// passed. Re-arming replaces the previous timer, so a continuous drag produces exactly one
+    /// trailing announcement rather than one per event.
+    /// </summary>
+    private void ScheduleTrailingAnnouncement()
+    {
+        _announcementCts?.Cancel();
+        _announcementCts?.Dispose();
+        var cts = new CancellationTokenSource();
+        _announcementCts = cts;
+
+        var due = ViewAnnouncementThrottle - (DateTimeOffset.UtcNow - _lastAnnouncementAt);
+        if (due < TimeSpan.Zero) due = TimeSpan.Zero;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(due, cts.Token);
+                if (cts.IsCancellationRequested || IsDisposed) return;
+
+                var view = _pendingAnnouncementView;
+                if (view is null || AnnounceViewChanges is false) return;
+
+                _pendingAnnouncementView = null;
+                _lastAnnouncementAt = DateTimeOffset.UtcNow;
+                await PublishAnnouncement(view);
+            }
+            catch (OperationCanceledException) { /* superseded by a newer view */ }
+            catch (ObjectDisposedException) { /* the component went away mid-wait */ }
+        }, cts.Token);
     }
 
     private async ValueTask SetLoadState(BitMapLoadState state, Exception? error = null)
@@ -2051,14 +2253,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
     /// <summary>
-    /// Re-renders when the marker list is on. Imperative marker calls mutate the snapshot without
-    /// touching a parameter, so nothing else would tell Blazor the table is out of date.
-    /// </summary>
-    /// <summary>
     /// Close button handler. A separate Task-returning wrapper because Blazor's event binding
     /// cannot take a ValueTask-returning method group.
     /// </summary>
-    private async Task ClosePopupFromUi() => await ClosePopup();
+    private async Task ClosePopupFromUi() => await ClosePopup(restoreFocus: true);
 
     /// <summary>
     /// Escape closes the popup and returns focus to the map, which is where the user was before
@@ -2067,11 +2265,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     private async Task HandlePopupKeyDown(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return;
-        await ClosePopup();
-        // Blazor's own focus call rather than an interop helper of ours - the canvas is an element
-        // this component already holds a reference to.
-        try { await _mapElement.FocusAsync(); }
-        catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(ClosePopup)); }
+        await ClosePopup(restoreFocus: true);
     }
 
     private Task NotifyMarkerListChanged()
@@ -2130,6 +2324,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         ["iconUrl"] = m.IconUrl,
         ["iconWidth"] = m.IconWidth,
         ["iconHeight"] = m.IconHeight,
+        ["iconAnchorX"] = m.IconAnchorX,
+        ["iconAnchorY"] = m.IconAnchorY,
         ["opacity"] = m.Opacity,
         ["riseOnHover"] = m.RiseOnHover,
         ["zIndexOffset"] = m.ZIndexOffset,
@@ -2254,12 +2450,20 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         try
         {
+            _announcementCts?.Cancel();
+            _announcementCts?.Dispose();
+            _announcementCts = null;
+
             _dotnetObj?.Dispose();
             _dotnetObj = null;
 
             try
             {
-                // Detach the chrome first: its observers and listeners are ours, and the
+                // A map disposed while still below the fold is still being watched by the
+                // visibility observer that would have started it. Stop that first: nothing else
+                // holds a reference to it, so nothing else would ever take it down.
+                if (LazyLoad) await _js.BitMapChromeCancelWaitForVisible(_canvasId);
+                // Detach the chrome next: its observers and listeners are ours, and the
                 // provider's dispose is free to remove the container out from under them.
                 await _js.BitMapChromeDetach(_Id);
                 // The clustering layer keeps the whole marker set alive; drop it with the map.

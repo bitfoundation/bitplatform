@@ -287,18 +287,18 @@ namespace BitBlazorUI {
             s.map.panBy([dx, dy], { duration: animate === false ? 0 : 300 }, { essential: true });
         }
 
-        public static fitBounds(provider: string, id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
+        public static fitBounds(provider: string, id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
             const s = BitMapGlBase._require(provider, id);
-            s.map.fitBounds([[swLng, swLat], [neLng, neLat]], { padding: paddingPx ?? 48, maxZoom: 18 });
+            s.map.fitBounds([[swLng, swLat], [neLng, neLat]], { padding: paddingPx ?? 48, maxZoom: maxZoom ?? 18 });
         }
 
-        public static fitBoundsToMarkers(provider: string, id: string, paddingPx: number) {
+        public static fitBoundsToMarkers(provider: string, id: string, paddingPx: number, maxZoom?: number) {
             const s = BitMapGlBase._require(provider, id);
             const ids = Object.keys(s.markers);
             if (ids.length === 0) return;
             const b = new s.gl.LngLatBounds();
             for (const k of ids) b.extend(s.markers[k].marker.getLngLat());
-            s.map.fitBounds(b, { padding: paddingPx ?? 48, maxZoom: 18 });
+            s.map.fitBounds(b, { padding: paddingPx ?? 48, maxZoom: maxZoom ?? 18 });
         }
 
         public static addMarker(provider: string, id: string, markerId: string, opts: any) {
@@ -309,13 +309,20 @@ namespace BitBlazorUI {
 
             let marker: any;
             if (opts.iconUrl) {
+                const w = opts.iconWidth || 32;
+                const h = opts.iconHeight || 32;
                 const el = document.createElement('div');
-                el.style.width = `${opts.iconWidth || 32}px`;
-                el.style.height = `${opts.iconHeight || 32}px`;
+                el.style.width = `${w}px`;
+                el.style.height = `${h}px`;
                 el.style.backgroundImage = `url(${opts.iconUrl})`;
                 el.style.backgroundSize = 'contain';
                 el.style.cursor = 'pointer';
-                marker = new gl.Marker({ element: el, draggable }).setLngLat([lng, lat]).addTo(s.map);
+                // A GL marker built from a custom element is centred on the coordinate, where
+                // Leaflet anchors the image's bottom-centre. Translate the anchor into the offset
+                // that reproduces it, so the same marker lands in the same place on every backend.
+                const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+                const offset: [number, number] = [Math.round(w / 2) - ax, Math.round(h / 2) - ay];
+                marker = new gl.Marker({ element: el, draggable, offset }).setLngLat([lng, lat]).addTo(s.map);
             } else {
                 marker = new gl.Marker({ draggable }).setLngLat([lng, lat]).addTo(s.map);
             }

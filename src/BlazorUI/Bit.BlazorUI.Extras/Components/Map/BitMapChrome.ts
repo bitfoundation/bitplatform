@@ -35,6 +35,14 @@ namespace BitBlazorUI {
     };
 
     /**
+     * Visibility observers still waiting for their container to be scrolled to, keyed by the id of
+     * the canvas they watch. Held so a map that is torn down before it ever became visible can
+     * stop observing - otherwise the observer, its callback and the element it holds outlive the
+     * component that asked the question.
+     */
+    const pendingVisibilityObservers: { [canvasId: string]: { observer: IntersectionObserver, resolve: () => void } } = {};
+
+    /**
      * Provider-agnostic chrome that sits above whichever mapping library is active.
      *
      * Every backend BitMap supports (Leaflet, MapLibre, Mapbox, OpenLayers, ArcGIS,
@@ -86,18 +94,38 @@ namespace BitBlazorUI {
             if (!target) return Promise.resolve();
             if (typeof IntersectionObserver !== 'function') return Promise.resolve();
 
+            // A second wait for the same canvas supersedes the first - a re-render that re-entered
+            // initialization must not leave the earlier observer running.
+            BitMapChrome.cancelWaitForVisible(canvasId);
+
             return new Promise<void>(resolve => {
                 let settled = false;
-                const observer = new IntersectionObserver(entries => {
+                const finish = () => {
                     if (settled) return;
-                    if (entries.some(e => e.isIntersecting)) {
-                        settled = true;
-                        observer.disconnect();
-                        resolve();
-                    }
+                    settled = true;
+                    observer.disconnect();
+                    delete pendingVisibilityObservers[canvasId];
+                    resolve();
+                };
+                const observer = new IntersectionObserver(entries => {
+                    if (entries.some(e => e.isIntersecting)) finish();
                 }, { rootMargin: rootMargin || '200px' });
+                pendingVisibilityObservers[canvasId] = { observer, resolve: finish };
                 observer.observe(target);
             });
+        }
+
+        /**
+         * Stops a pending visibility wait and lets its promise settle, so a component disposed
+         * while still below the fold does not leave an observer - and an awaiting .NET task -
+         * alive for the life of the page.
+         */
+        public static cancelWaitForVisible(canvasId: string) {
+            const pending = pendingVisibilityObservers[canvasId];
+            if (!pending) return;
+            delete pendingVisibilityObservers[canvasId];
+            try { pending.observer.disconnect(); } catch { /* ignore */ }
+            pending.resolve();
         }
 
         /**

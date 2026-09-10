@@ -86,6 +86,21 @@ namespace BitBlazorUI {
             return ring;
         }
 
+        /**
+         * The point of a marker icon, in pixels from its top-left corner, that sits on the
+         * coordinate. Defaults to bottom-centre - where a pin's tip is, and what every mapping
+         * library defaults to - so an icon that is a dot rather than a pin has to say so.
+         */
+        static readIconAnchor(opts: any, width: number, height: number): [number, number] {
+            const x = typeof opts?.iconAnchorX === 'number' && Number.isFinite(opts.iconAnchorX)
+                ? opts.iconAnchorX
+                : Math.round(width / 2);
+            const y = typeof opts?.iconAnchorY === 'number' && Number.isFinite(opts.iconAnchorY)
+                ? opts.iconAnchorY
+                : height;
+            return [Math.round(x), Math.round(y)];
+        }
+
         /** Split a subdomains option ("abc" or "a,b,c") into its individual values. */
         static readSubdomains(subdomains: string | undefined): string[] {
             const raw = (subdomains ?? 'abc').trim();

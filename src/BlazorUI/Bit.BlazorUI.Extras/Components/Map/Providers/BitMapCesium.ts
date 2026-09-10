@@ -426,7 +426,7 @@ namespace BitBlazorUI {
             camera.setView({ destination: s.Cesium.Cartesian3.fromDegrees(lng, lat, carto.height) });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, _paddingPx: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, _paddingPx: number, _maxZoom?: number) {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             s.viewer.camera.flyTo({
@@ -435,7 +435,7 @@ namespace BitBlazorUI {
             });
         }
 
-        public static fitBoundsToMarkers(id: string, _paddingPx: number) {
+        public static fitBoundsToMarkers(id: string, _paddingPx: number, _maxZoom?: number) {
             const s = BitMapCesium._require(id);
             const ents = Object.values(s.markers);
             if (ents.length === 0) return;

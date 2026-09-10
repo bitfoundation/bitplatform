@@ -500,17 +500,31 @@ public partial class BitMapDemo
          },
          new()
          {
-            Name = "FitBounds",
-            Type = "Func<BitMapLatLngBounds, int, ValueTask>",
+            Name = "PanTo",
+            Type = "Func<BitMapLatLng, bool, bool, ValueTask>",
             DefaultValue = "",
-            Description = "Fit the view to the given bounding box.",
+            Description = "Move the centre while keeping the current zoom.",
+         },
+         new()
+         {
+            Name = "Project",
+            Type = "Func<BitMapLatLng, ValueTask<BitMapPoint?>>",
+            DefaultValue = "",
+            Description = "Where a coordinate currently sits inside the map container, in CSS pixels from its top-left corner. Null when it is not on screen. Only valid for the viewport it was read at.",
+         },
+         new()
+         {
+            Name = "FitBounds",
+            Type = "Func<BitMapLatLngBounds, int, double, ValueTask>",
+            DefaultValue = "",
+            Description = "Fit the view to the given bounding box, with a pixel padding and a maxZoom ceiling (default 18) so framing a box around a single place does not drop to street level.",
          },
          new()
          {
             Name = "FitBoundsToMarkers",
-            Type = "Func<int, ValueTask>",
+            Type = "Func<int, double, ValueTask>",
             DefaultValue = "",
-            Description = "Fit the view to include all current markers.",
+            Description = "Fit the view to include every marker currently drawn, with the same padding and maxZoom ceiling as FitBounds.",
          },
          new()
          {
@@ -686,6 +700,13 @@ public partial class BitMapDemo
             Type = "Func<string, double, ValueTask>",
             DefaultValue = "",
             Description = "Changes a tile overlay's opacity, which is how a raster overlay is blended against the basemap underneath it.",
+         },
+         new()
+         {
+            Name = "ClearTileOverlays",
+            Type = "Func<ValueTask>",
+            DefaultValue = "",
+            Description = "Remove every tile overlay, leaving the base map alone.",
          },
          new()
          {
@@ -1317,6 +1338,130 @@ public partial class BitMapDemo
     }
 
     // ── Example 21 – Style & Class ────────────────────────────────────────────
+
+    private BitMap<BitLeafletMapProvider> iconsMapRef = default!;
+    private readonly BitLeafletMapProvider iconsProvider = new() { Center = new(51.5045, -0.0865), Zoom = 15 };
+    private bool iconCentreAnchor = true;
+    private List<BitMapMarker> iconMarkers = [];
+
+    /// <summary>The coordinate every icon in the sample points at, so the anchoring is comparable.</summary>
+    private static readonly BitMapLatLng IconAnchorProbe = new(51.5045, -0.0865);
+
+    private static string DiscIcon(string fill) =>
+        "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(
+            $"""<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="{fill}" stroke="#fff" stroke-width="3"/></svg>""");
+
+    private static string PinIcon(string fill) =>
+        "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(
+            $"""<svg xmlns="http://www.w3.org/2000/svg" width="24" height="36" viewBox="0 0 24 36"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z" fill="{fill}" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>""");
+
+    private async Task OnIconsReady()
+    {
+        BuildIconMarkers();
+        // A thin ring drawn at the exact coordinate, so the anchoring is visible rather than
+        // something you have to take on trust.
+        await iconsMapRef.AddCircle("probe", IconAnchorProbe, 12, new BitMapVectorPathStyle
+        {
+            Color = "#111",
+            Weight = 2,
+            Fill = false,
+        });
+        StateHasChanged();
+    }
+
+    private void ToggleIconAnchor(bool centred)
+    {
+        iconCentreAnchor = centred;
+        BuildIconMarkers();
+    }
+
+    private void BuildIconMarkers()
+    {
+        iconMarkers =
+        [
+            // A pin: its tip is at the bottom, which is exactly what the default anchor assumes.
+            new()
+            {
+                Id = "pin",
+                Position = IconAnchorProbe.Offset(90, 270),
+                Alt = "Pin icon, anchored at its tip",
+                IconUrl = PinIcon("#d13438"),
+                IconWidth = 24,
+                IconHeight = 36,
+            },
+            // A disc: the coordinate it stands for is at its centre, so it has to say so.
+            new()
+            {
+                Id = "disc",
+                Position = IconAnchorProbe,
+                Alt = iconCentreAnchor ? "Disc icon, anchored at its centre" : "Disc icon, left on the default anchor",
+                IconUrl = DiscIcon(iconCentreAnchor ? "#107c10" : "#8a8886"),
+                IconWidth = 28,
+                IconHeight = 28,
+                IconAnchorX = iconCentreAnchor ? 14 : null,
+                IconAnchorY = iconCentreAnchor ? 14 : null,
+            },
+        ];
+    }
+
+
+
+    private BitMap<BitLeafletMapProvider> geoMapRef = default!;
+    private readonly BitLeafletMapProvider geoProvider = new() { Center = new(51.5045, -0.0865), Zoom = 11 };
+    private string geoLog = "Click the map to drop a probe.";
+
+    /// <summary>Big Ben - the fixed point every measurement in this sample is taken from.</summary>
+    private static readonly BitMapLatLng GeoOrigin = new(51.5007, -0.1246);
+
+    private readonly List<BitMapMarker> geoMarkers =
+    [
+        new() { Id = "bigben", Position = GeoOrigin, Alt = "Big Ben", TooltipText = "Big Ben" },
+        new() { Id = "tower", Position = new(51.5055, -0.0754), Alt = "Tower Bridge", TooltipText = "Tower Bridge" },
+        new() { Id = "eye", Position = new(51.5033, -0.1196), Alt = "London Eye", TooltipText = "London Eye" },
+    ];
+
+    private Task OnGeoMapClick(BitMapLatLng point)
+    {
+        var km = GeoOrigin.DistanceTo(point) / 1000;
+        var box = BitMapLatLngBounds.FromMarkers(geoMarkers);
+        var inside = box.Contains(point) ? "inside" : "outside";
+        geoLog = $"""
+            Probe {point.Latitude:F5}, {point.Longitude:F5}
+            {km:F2} km from Big Ben, {inside} the markers' bounding box
+            Box centre {box.Center.Latitude:F5}, {box.Center.Longitude:F5} — {box.LatitudeSpan:F4}° x {box.LongitudeSpan:F4}°
+            """;
+        return Task.CompletedTask;
+    }
+
+    private async Task FitGeoMarkers()
+    {
+        // Padded in map units so the outermost pins are never flush against the edge, then framed
+        // with a zoom ceiling so three markers a few hundred metres apart do not slam to street level.
+        var box = BitMapLatLngBounds.FromMarkers(geoMarkers).Pad(0.15);
+        await geoMapRef.FitBounds(box, paddingPixels: 24, maxZoom: 15);
+        geoLog = $"Fitted {box.LatitudeSpan:F4}° x {box.LongitudeSpan:F4}° around {geoMarkers.Count} markers.";
+    }
+
+    private async Task FitGeoRadius()
+    {
+        await geoMapRef.FitBounds(GeoOrigin.ToBounds(5_000), maxZoom: 16);
+        geoLog = "Framed the box that holds everything within 5 km of Big Ben.";
+    }
+
+    private async Task PanToGeoOrigin()
+    {
+        await geoMapRef.PanTo(GeoOrigin);
+        geoLog = "Panned to Big Ben, keeping the zoom that was already set.";
+    }
+
+    private async Task ProjectGeoOrigin()
+    {
+        var point = await geoMapRef.Project(GeoOrigin);
+        geoLog = point is null
+            ? "Big Ben is off screen, so it has no pixel position right now."
+            : $"Big Ben is at {point.Value.X:F0}, {point.Value.Y:F0} pixels inside the map container.";
+    }
+
 
     private readonly BitLeafletMapProvider styleProvider = new() { Center = new(45.4642, 9.1900), Zoom = 11 };
     private readonly BitLeafletMapProvider classProvider = new() { Center = new(41.3874, 2.1686), Zoom = 11 };
@@ -2224,7 +2369,151 @@ private readonly BitAzureMapsMapProvider azureMapsProvider = new()
 // Bind a stable field so the provider isn't reallocated on every render.
 private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 0), Zoom = 2, SceneMode = ""scene3d"" };";
 
-    private const string example21ScssCode = @"::deep {
+    private readonly string example21RazorCode = @"
+<BitToggle Value=""iconCentreAnchor"" ValueChanged=""ToggleIconAnchor"" Text=""Anchor the disc at its centre"" />
+
+<div style=""height:380px"">
+    <BitMap TMapProvider=""BitLeafletMapProvider""
+            @ref=""iconsMapRef""
+            Provider=""@iconsProvider""
+            Markers=""iconMarkers""
+            OnReady=""OnIconsReady"" />
+</div>";
+    private readonly string example21CsharpCode = @"
+private BitMap<BitLeafletMapProvider> iconsMapRef = default!;
+private readonly BitLeafletMapProvider iconsProvider = new() { Center = new(51.5045, -0.0865), Zoom = 15 };
+private bool iconCentreAnchor = true;
+private List<BitMapMarker> iconMarkers = [];
+
+// The coordinate every icon points at, so the anchoring is comparable.
+private static readonly BitMapLatLng IconAnchorProbe = new(51.5045, -0.0865);
+
+private static string DiscIcon(string fill) =>
+    ""data:image/svg+xml;charset=utf-8,"" + Uri.EscapeDataString(
+        $@""<svg xmlns=""""http://www.w3.org/2000/svg"""" width=""""28"""" height=""""28"""" viewBox=""""0 0 28 28""""><circle cx=""""14"""" cy=""""14"""" r=""""11"""" fill=""""{fill}"""" stroke=""""#fff"""" stroke-width=""""3""""/></svg>"");
+
+private static string PinIcon(string fill) =>
+    ""data:image/svg+xml;charset=utf-8,"" + Uri.EscapeDataString(
+        $@""<svg xmlns=""""http://www.w3.org/2000/svg"""" width=""""24"""" height=""""36"""" viewBox=""""0 0 24 36""""><path d=""""M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z"""" fill=""""{fill}"""" stroke=""""#fff"""" stroke-width=""""2""""/><circle cx=""""12"""" cy=""""12"""" r=""""4.5"""" fill=""""#fff""""/></svg>"");
+
+private async Task OnIconsReady()
+{
+    BuildIconMarkers();
+    // A thin ring at the exact coordinate, so the anchoring is visible rather than
+    // something you have to take on trust.
+    await iconsMapRef.AddCircle(""probe"", IconAnchorProbe, 12, new BitMapVectorPathStyle
+    {
+        Color = ""#111"",
+        Weight = 2,
+        Fill = false,
+    });
+    StateHasChanged();
+}
+
+private void ToggleIconAnchor(bool centred)
+{
+    iconCentreAnchor = centred;
+    BuildIconMarkers();
+}
+
+private void BuildIconMarkers()
+{
+    iconMarkers =
+    [
+        // A pin: its tip is at the bottom, which is what the default anchor assumes.
+        new()
+        {
+            Id = ""pin"",
+            Position = IconAnchorProbe.Offset(90, 270),
+            Alt = ""Pin icon, anchored at its tip"",
+            IconUrl = PinIcon(""#d13438""),
+            IconWidth = 24,
+            IconHeight = 36,
+        },
+        // A disc: the coordinate it stands for is at its centre, so it has to say so.
+        new()
+        {
+            Id = ""disc"",
+            Position = IconAnchorProbe,
+            Alt = iconCentreAnchor ? ""Disc icon, anchored at its centre"" : ""Disc icon, left on the default anchor"",
+            IconUrl = DiscIcon(iconCentreAnchor ? ""#107c10"" : ""#8a8886""),
+            IconWidth = 28,
+            IconHeight = 28,
+            IconAnchorX = iconCentreAnchor ? 14 : null,
+            IconAnchorY = iconCentreAnchor ? 14 : null,
+        },
+    ];
+}";
+
+    private readonly string example22RazorCode = @"
+<div style=""height:380px"">
+    <BitMap TMapProvider=""BitLeafletMapProvider""
+            @ref=""geoMapRef""
+            Provider=""@geoProvider""
+            Markers=""geoMarkers""
+            OnClick=""OnGeoMapClick"" />
+</div>
+
+<BitButton OnClick=""FitGeoMarkers"">Fit to the markers</BitButton>
+<BitButton OnClick=""FitGeoRadius"" Variant=""BitVariant.Outline"">Frame 5 km around Big Ben</BitButton>
+<BitButton OnClick=""PanToGeoOrigin"" Variant=""BitVariant.Outline"">Pan to Big Ben</BitButton>
+<BitButton OnClick=""ProjectGeoOrigin"" Variant=""BitVariant.Outline"">Where is it on screen?</BitButton>
+
+<pre>@geoLog</pre>";
+    private readonly string example22CsharpCode = @"
+private BitMap<BitLeafletMapProvider> geoMapRef = default!;
+private readonly BitLeafletMapProvider geoProvider = new() { Center = new(51.5045, -0.0865), Zoom = 11 };
+private string geoLog = ""Click the map to drop a probe."";
+
+// Big Ben - the fixed point every measurement here is taken from.
+private static readonly BitMapLatLng GeoOrigin = new(51.5007, -0.1246);
+
+private readonly List<BitMapMarker> geoMarkers =
+[
+    new() { Id = ""bigben"", Position = GeoOrigin, Alt = ""Big Ben"", TooltipText = ""Big Ben"" },
+    new() { Id = ""tower"", Position = new(51.5055, -0.0754), Alt = ""Tower Bridge"", TooltipText = ""Tower Bridge"" },
+    new() { Id = ""eye"", Position = new(51.5033, -0.1196), Alt = ""London Eye"", TooltipText = ""London Eye"" },
+];
+
+private Task OnGeoMapClick(BitMapLatLng point)
+{
+    var km = GeoOrigin.DistanceTo(point) / 1000;
+    var box = BitMapLatLngBounds.FromMarkers(geoMarkers);
+    var inside = box.Contains(point) ? ""inside"" : ""outside"";
+    geoLog = $""Probe {point.Latitude:F5}, {point.Longitude:F5} - {km:F2} km from Big Ben, {inside} the markers' box."";
+    return Task.CompletedTask;
+}
+
+private async Task FitGeoMarkers()
+{
+    // Padded in map units so the outermost pins are never flush against the edge, then framed
+    // with a zoom ceiling so three markers a few hundred metres apart do not slam to street level.
+    var box = BitMapLatLngBounds.FromMarkers(geoMarkers).Pad(0.15);
+    await geoMapRef.FitBounds(box, paddingPixels: 24, maxZoom: 15);
+}
+
+private async Task FitGeoRadius()
+{
+    // ToBounds turns a radius into the box that frames it.
+    await geoMapRef.FitBounds(GeoOrigin.ToBounds(5_000), maxZoom: 16);
+}
+
+private async Task PanToGeoOrigin()
+{
+    // PanTo moves the centre and leaves the zoom where the user put it.
+    await geoMapRef.PanTo(GeoOrigin);
+}
+
+private async Task ProjectGeoOrigin()
+{
+    // Null when the coordinate is not on screen - which is an answer, not a failure.
+    var point = await geoMapRef.Project(GeoOrigin);
+    geoLog = point is null
+        ? ""Big Ben is off screen, so it has no pixel position right now.""
+        : $""Big Ben is at {point.Value.X:F0}, {point.Value.Y:F0} pixels inside the map container."";
+}";
+
+    private const string example23ScssCode = @"::deep {
     .custom-map {
         height: 260px;
         border: 2px dashed tomato;
@@ -2232,7 +2521,7 @@ private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 
         filter: saturate(0.4);
     }
 }";
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <div style=""display:flex;gap:1rem;flex-wrap:wrap"">
     <BitMap TMapProvider=""BitLeafletMapProvider""
             Provider=""@styleProvider""
@@ -2242,15 +2531,15 @@ private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 
             Class=""custom-map""
             Style=""flex:1 1 260px"" />
 </div>";
-    private readonly string example21CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private readonly BitLeafletMapProvider styleProvider = new() { Center = new(45.4642, 9.1900), Zoom = 11 };
 private readonly BitLeafletMapProvider classProvider = new() { Center = new(41.3874, 2.1686), Zoom = 11 };";
-    private readonly DemoCodeFile[] example21CodeFiles =
+    private readonly DemoCodeFile[] example23CodeFiles =
     [
-        new("BitMapDemo.razor.scss", example21ScssCode),
+        new("BitMapDemo.razor.scss", example23ScssCode),
     ];
 
-    private readonly string example22RazorCode = @"
+    private readonly string example24RazorCode = @"
 <div style=""height:320px"">
     <BitMap TMapProvider=""BitLeafletMapProvider"" Dir=""BitDir.Rtl"" Provider=""@rtlProvider"" AriaLabel=""نقشه تهران"">
         <div style=""position:absolute;inset-inline-start:0.75rem;inset-block-start:0.75rem;padding:0.5rem 0.75rem"">
@@ -2258,6 +2547,6 @@ private readonly BitLeafletMapProvider classProvider = new() { Center = new(41.3
         </div>
     </BitMap>
 </div>";
-    private readonly string example22CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private readonly BitLeafletMapProvider rtlProvider = new() { Center = new(35.6892, 51.3890), Zoom = 11 };";
 }

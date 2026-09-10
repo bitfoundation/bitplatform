@@ -43,6 +43,11 @@ public class BitMapTests : BunitTestContext
     private const string CHROME_HAS_WEBGL = "BitBlazorUI.BitMapChrome.hasWebGl";
     private const string CHROME_REDUCED_MOTION = "BitBlazorUI.BitMapChrome.prefersReducedMotion";
     private const string CHROME_LOCATE = "BitBlazorUI.BitMapChrome.locate";
+    private const string CHROME_CANCEL_WAIT_VISIBLE = "BitBlazorUI.BitMapChrome.cancelWaitForVisible";
+    private const string FIT_BOUNDS = "BitBlazorUI.BitMapLeaflet.fitBounds";
+    private const string FIT_BOUNDS_TO_MARKERS = "BitBlazorUI.BitMapLeaflet.fitBoundsToMarkers";
+    private const string GET_VIEW = "BitBlazorUI.BitMapLeaflet.getView";
+    private const string PROJECT = "BitBlazorUI.BitMapLeaflet.project";
 
     [TestInitialize]
     public void ResetAssetCache()
@@ -1419,6 +1424,9 @@ public class BitMapTests : BunitTestContext
     [TestMethod]
     public async Task BitMapShouldNotZoomOnAClusterClickWhenZoomOnClickIsOff()
     {
+        // The layer is still asked to resolve the bubble - that is where the member count comes
+        // from, and a consumer handling the click themselves still needs it - but it is told not
+        // to move the camera.
         SetupSuccessfulMount();
 
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
@@ -1428,7 +1436,48 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnMarkerClick(CLUSTER_ID);
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_EXPAND));
+        var expand = Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND);
+        Assert.AreEqual(false, expand.Arguments[3]);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldAskTheClusterLayerToZoomWhenZoomOnClickIsOn()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering { ZoomOnClick = true, ExpandPaddingPixels = 24 });
+        });
+
+        await component.Instance._OnMarkerClick(CLUSTER_ID);
+
+        var expand = Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND);
+        Assert.AreEqual(24, expand.Arguments[2]);
+        Assert.AreEqual(true, expand.Arguments[3]);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldReportTheClusterCountEvenWhenItDoesNotZoom()
+    {
+        // The count is what the callback is for. Losing it because the consumer turned the zoom
+        // off would leave them with an id and nothing to do with it.
+        SetupSuccessfulMount();
+
+        Context.JSInterop.Setup<int>(CLUSTER_EXPAND, _ => true).SetResult(7);
+
+        BitMapClusterClickArgs? clicked = null;
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering { ZoomOnClick = false });
+            parameters.Add(p => p.OnClusterClick, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapClusterClickArgs>(this, a => clicked = a));
+        });
+
+        await component.Instance._OnMarkerClick(CLUSTER_ID);
+
+        Assert.IsNotNull(clicked);
+        Assert.AreEqual(CLUSTER_ID, clicked.ClusterId);
+        Assert.AreEqual(7, clicked.Count);
     }
 
     [TestMethod]
@@ -2349,6 +2398,655 @@ public class BitMapTests : BunitTestContext
         component.Find(".bit-map-marker-table-action").Click();
 
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.openMarkerPopup"));
+    }
+
+    // ---------------------------------------------------------------- geographic helpers
+
+    [TestMethod]
+    public void BitMapLatLngShouldMeasureGreatCircleDistance()
+    {
+        // London to Paris, which every mapping library agrees is a hair under 344 km.
+        var london = new BitMapLatLng(51.5074, -0.1278);
+        var paris = new BitMapLatLng(48.8566, 2.3522);
+
+        Assert.AreEqual(343_500, london.DistanceTo(paris), 2_000);
+        // Symmetric, and zero against itself.
+        Assert.AreEqual(london.DistanceTo(paris), paris.DistanceTo(london), 1e-6);
+        Assert.AreEqual(0, london.DistanceTo(london), 1e-9);
+    }
+
+    [TestMethod]
+    public void BitMapLatLngShouldTravelAlongABearing()
+    {
+        // One degree of latitude is the radius times one degree in radians, by definition.
+        var moved = new BitMapLatLng(0, 0).Offset(BitMapLatLng.EarthRadiusMeters * Math.PI / 180, 0);
+
+        Assert.AreEqual(1, moved.Latitude, 1e-9);
+        Assert.AreEqual(0, moved.Longitude, 1e-9);
+        // And the trip back measures what it cost.
+        Assert.AreEqual(BitMapLatLng.EarthRadiusMeters * Math.PI / 180, new BitMapLatLng(0, 0).DistanceTo(moved), 1e-3);
+    }
+
+    [TestMethod]
+    public void BitMapLatLngShouldWrapPastTheAntimeridian()
+    {
+        // Travelling east from just short of 180 lands just past -180, not at an out-of-range
+        // longitude the constructor would reject.
+        var moved = new BitMapLatLng(0, 179.9).Offset(50_000, 90);
+
+        Assert.IsTrue(moved.Longitude < 0, $"expected a wrapped longitude, got {moved.Longitude}");
+        Assert.IsTrue(moved.Longitude > -180);
+    }
+
+    [TestMethod]
+    public void BitMapLatLngShouldCompareWithATolerance()
+    {
+        var a = new BitMapLatLng(51.5074, -0.1278);
+        var b = new BitMapLatLng(51.50740000001, -0.12780000001);
+
+        Assert.IsFalse(a == b, "an exact comparison should still see two different values");
+        Assert.IsTrue(a.IsCloseTo(b, 1e-6));
+        Assert.IsFalse(a.IsCloseTo(new BitMapLatLng(51.6, -0.1278), 1e-6));
+    }
+
+    [TestMethod]
+    public void BitMapLatLngShouldBuildABoxAroundARadius()
+    {
+        var center = new BitMapLatLng(51.5074, -0.1278);
+        var bounds = center.ToBounds(1_000);
+
+        Assert.IsTrue(bounds.Contains(center));
+        Assert.IsTrue(bounds.Center.IsCloseTo(center, 1e-6));
+        Assert.IsTrue(bounds.Contains(center.Offset(900, 0)));
+        Assert.IsFalse(bounds.Contains(center.Offset(2_000, 0)));
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldExposeItsCornersAndCentre()
+    {
+        var bounds = new BitMapLatLngBounds(new(0, 0), new(10, 20));
+
+        Assert.AreEqual(new BitMapLatLng(10, 0), bounds.NorthWest);
+        Assert.AreEqual(new BitMapLatLng(0, 20), bounds.SouthEast);
+        Assert.AreEqual(new BitMapLatLng(5, 10), bounds.Center);
+        Assert.AreEqual(10, bounds.LatitudeSpan, 1e-9);
+        Assert.AreEqual(20, bounds.LongitudeSpan, 1e-9);
+        Assert.IsFalse(bounds.IsPoint);
+        Assert.IsFalse(bounds.CrossesAntimeridian);
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldMeasureABoxThatCrossesTheAntimeridian()
+    {
+        // 170E to 170W: twenty degrees the short way round, and a centre on the antimeridian
+        // itself rather than at Greenwich.
+        var bounds = new BitMapLatLngBounds(new(0, 170), new(10, -170));
+
+        Assert.IsTrue(bounds.CrossesAntimeridian);
+        Assert.AreEqual(20, bounds.LongitudeSpan, 1e-9);
+        Assert.AreEqual(180, Math.Abs(bounds.Center.Longitude), 1e-9);
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldTestContainment()
+    {
+        var bounds = new BitMapLatLngBounds(new(0, 0), new(10, 20));
+
+        Assert.IsTrue(bounds.Contains(new BitMapLatLng(5, 10)));
+        Assert.IsTrue(bounds.Contains(new BitMapLatLng(0, 0)), "edges count as inside");
+        Assert.IsFalse(bounds.Contains(new BitMapLatLng(5, 30)));
+        Assert.IsFalse(bounds.Contains(new BitMapLatLng(-1, 10)));
+
+        Assert.IsTrue(bounds.Contains(new BitMapLatLngBounds(new(1, 1), new(9, 19))));
+        Assert.IsFalse(bounds.Contains(new BitMapLatLngBounds(new(1, 1), new(9, 21))));
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldTestContainmentAcrossTheAntimeridian()
+    {
+        var bounds = new BitMapLatLngBounds(new(0, 170), new(10, -170));
+
+        Assert.IsTrue(bounds.Contains(new BitMapLatLng(5, 175)));
+        Assert.IsTrue(bounds.Contains(new BitMapLatLng(5, -175)));
+        // The complement - almost the whole globe - is outside, which is the whole point of
+        // treating an inverted longitude pair as a crossing rather than an error.
+        Assert.IsFalse(bounds.Contains(new BitMapLatLng(5, 0)));
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldTestIntersection()
+    {
+        var bounds = new BitMapLatLngBounds(new(0, 0), new(10, 10));
+
+        Assert.IsTrue(bounds.Intersects(new BitMapLatLngBounds(new(5, 5), new(15, 15))));
+        Assert.IsTrue(bounds.Intersects(new BitMapLatLngBounds(new(-5, -5), new(5, 5))));
+        Assert.IsTrue(bounds.Intersects(bounds));
+        Assert.IsFalse(bounds.Intersects(new BitMapLatLngBounds(new(20, 20), new(30, 30))));
+        Assert.IsFalse(bounds.Intersects(new BitMapLatLngBounds(new(0, 20), new(10, 30))),
+            "overlapping latitudes alone are not an intersection");
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldGrowToIncludeAPoint()
+    {
+        var bounds = new BitMapLatLngBounds(new(0, 0), new(10, 10));
+
+        var extended = bounds.Extend(new BitMapLatLng(20, -5));
+        Assert.AreEqual(new BitMapLatLng(0, -5), extended.SouthWest);
+        Assert.AreEqual(new BitMapLatLng(20, 10), extended.NorthEast);
+
+        // A point already inside changes nothing at all.
+        Assert.AreEqual(bounds, bounds.Extend(new BitMapLatLng(5, 5)));
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldKeepItsCrossingWhenExtended()
+    {
+        // Widening a Pacific box must not flip it into the complementary box that wraps the long
+        // way round the globe - which is exactly what a naive min/max would do.
+        var bounds = new BitMapLatLngBounds(new(0, 170), new(10, -170));
+
+        var extended = bounds.Extend(new BitMapLatLng(5, 165));
+
+        Assert.IsTrue(extended.CrossesAntimeridian);
+        Assert.AreEqual(165, extended.SouthWest.Longitude, 1e-9);
+        Assert.AreEqual(-170, extended.NorthEast.Longitude, 1e-9);
+        Assert.IsTrue(extended.Contains(new BitMapLatLng(5, 165)));
+        Assert.IsFalse(extended.Contains(new BitMapLatLng(5, 0)));
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldPadItself()
+    {
+        var padded = new BitMapLatLngBounds(new(0, 0), new(10, 10)).Pad(0.1);
+
+        Assert.AreEqual(-1, padded.SouthWest.Latitude, 1e-9);
+        Assert.AreEqual(-1, padded.SouthWest.Longitude, 1e-9);
+        Assert.AreEqual(11, padded.NorthEast.Latitude, 1e-9);
+        Assert.AreEqual(11, padded.NorthEast.Longitude, 1e-9);
+
+        // Latitudes clamp at the poles rather than throwing on the way out.
+        var clamped = new BitMapLatLngBounds(new(-80, 0), new(80, 10)).Pad(1);
+        Assert.AreEqual(-90, clamped.SouthWest.Latitude, 1e-9);
+        Assert.AreEqual(90, clamped.NorthEast.Latitude, 1e-9);
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldBeBuiltFromCoordinatesAndMarkers()
+    {
+        var bounds = BitMapLatLngBounds.FromCoordinates([new(1, 2), new(3, 4), new(-5, 6)]);
+        Assert.AreEqual(new BitMapLatLng(-5, 2), bounds.SouthWest);
+        Assert.AreEqual(new BitMapLatLng(3, 6), bounds.NorthEast);
+
+        var fromMarkers = BitMapLatLngBounds.FromMarkers([
+            new BitMapMarker { Id = "a", Position = new(1, 2) },
+            new BitMapMarker { Id = "b", Position = new(3, 4) },
+        ]);
+        Assert.AreEqual(new BitMapLatLng(1, 2), fromMarkers.SouthWest);
+        Assert.AreEqual(new BitMapLatLng(3, 4), fromMarkers.NorthEast);
+
+        Assert.ThrowsExactly<ArgumentException>(() => BitMapLatLngBounds.FromCoordinates([]));
+        Assert.ThrowsExactly<ArgumentNullException>(() => BitMapLatLngBounds.FromCoordinates(null!));
+    }
+
+    [TestMethod]
+    public void BitMapLatLngBoundsShouldExposeTheWholeWorld()
+    {
+        Assert.IsTrue(BitMapLatLngBounds.World.Contains(new BitMapLatLng(0, 0)));
+        Assert.IsTrue(BitMapLatLngBounds.World.Contains(new BitMapLatLng(-90, -180)));
+        Assert.IsTrue(BitMapLatLngBounds.World.Contains(new BitMapLatLng(90, 180)));
+    }
+
+    // ---------------------------------------------------------------- camera additions
+
+    [TestMethod]
+    public async Task BitMapFitBoundsShouldForwardThePaddingAndTheZoomCeiling()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(FIT_BOUNDS);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.FitBounds(new BitMapLatLngBounds(new(0, 0), new(10, 10)), 24, 12);
+
+        var call = Context.JSInterop.Invocations.Single(i => i.Identifier == FIT_BOUNDS);
+        Assert.AreEqual(24, call.Arguments[5]);
+        Assert.AreEqual(12d, call.Arguments[6]);
+    }
+
+    [TestMethod]
+    public async Task BitMapFitBoundsToMarkersShouldForwardTheZoomCeiling()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(FIT_BOUNDS_TO_MARKERS);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.FitBoundsToMarkers(16, 9);
+
+        var call = Context.JSInterop.Invocations.Single(i => i.Identifier == FIT_BOUNDS_TO_MARKERS);
+        Assert.AreEqual(16, call.Arguments[1]);
+        Assert.AreEqual(9d, call.Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task BitMapFitBoundsShouldRejectAnOutOfRangeZoomCeiling()
+    {
+        SetupSuccessfulMount();
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(
+            async () => await component.Instance.FitBounds(BitMapLatLngBounds.World, 0, 99));
+    }
+
+    [TestMethod]
+    public async Task BitMapPanToShouldKeepTheCurrentZoom()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(SET_VIEW);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.PanTo(new BitMapLatLng(1, 2));
+
+        var call = Context.JSInterop.Invocations.Single(i => i.Identifier == SET_VIEW);
+        Assert.AreEqual(1d, call.Arguments[1]);
+        Assert.AreEqual(2d, call.Arguments[2]);
+        Assert.IsNull(call.Arguments[3], "no zoom means keep the one the map already has");
+    }
+
+    [TestMethod]
+    public async Task BitMapProjectShouldReturnThePixelPositionOfACoordinate()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<JsonElement>(PROJECT, _ => true)
+            .SetResult(JsonSerializer.Deserialize<JsonElement>("""{ "x": 12.5, "y": 34 }"""));
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var point = await component.Instance.Project(new BitMapLatLng(1, 2));
+
+        Assert.IsNotNull(point);
+        Assert.AreEqual(12.5, point.Value.X);
+        Assert.AreEqual(34, point.Value.Y);
+    }
+
+    [TestMethod]
+    public async Task BitMapProjectShouldReturnNullForACoordinateThatIsNotOnScreen()
+    {
+        // The providers answer null for a coordinate outside the viewport - or, on the 3D
+        // backend, behind the globe. That is an answer, not a failure.
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<JsonElement>(PROJECT, _ => true)
+            .SetResult(JsonSerializer.Deserialize<JsonElement>("null"));
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        Assert.IsNull(await component.Instance.Project(new BitMapLatLng(1, 2)));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldApplyABoundZoomEvenWithNoBoundCentre()
+    {
+        // Zoom alone is a legitimate binding, and before the map has reported a viewport there is
+        // no centre to restate - so the zoom has to be pushed on its own rather than dropped.
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(SET_VIEW);
+        Context.JSInterop.Setup<JsonElement>(GET_VIEW, _ => true).SetResult(ViewPayload(0, 0, 3));
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Bind(p => p.Zoom, (double?)9, v => { });
+        });
+
+        await Task.Yield();
+
+        var call = Context.JSInterop.Invocations.Last(i => i.Identifier == SET_VIEW);
+        Assert.AreEqual(9d, call.Arguments[3]);
+    }
+
+    // ---------------------------------------------------------------- tile overlays
+
+    [TestMethod]
+    public async Task BitMapShouldClearEveryTileOverlay()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(ADD_TILE_OVERLAY);
+        Context.JSInterop.SetupVoid(REMOVE_TILE_OVERLAY);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.AddTileOverlay(new BitMapTileOverlay { Id = "radar", UrlTemplate = "https://t/{z}/{x}/{y}.png" });
+        await component.Instance.AddTileOverlay(new BitMapTileOverlay { Id = "labels", UrlTemplate = "https://t/{z}/{x}/{y}.png" });
+
+        await component.Instance.ClearTileOverlays();
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_TILE_OVERLAY));
+        Assert.AreEqual(0, component.Instance.TileOverlayIds.Count);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldNotRemoveAnAlreadyHiddenOverlayWhenClearing()
+    {
+        // A hidden overlay is not on the map, so removing it again would be a wasted round-trip -
+        // but it still has to leave the snapshot.
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(ADD_TILE_OVERLAY);
+        Context.JSInterop.SetupVoid(REMOVE_TILE_OVERLAY);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.AddTileOverlay(new BitMapTileOverlay { Id = "radar", UrlTemplate = "https://t/{z}/{x}/{y}.png" });
+        await component.Instance.SetTileOverlayVisible("radar", false);
+
+        var before = Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_TILE_OVERLAY);
+        await component.Instance.ClearTileOverlays();
+
+        Assert.AreEqual(before, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_TILE_OVERLAY));
+        Assert.AreEqual(0, component.Instance.TileOverlayIds.Count);
+        Assert.IsFalse(component.Instance.IsTileOverlayVisible("radar"));
+    }
+
+    // ---------------------------------------------------------------- marker icon anchor
+
+    [TestMethod]
+    public async Task BitMapShouldSendTheMarkersIconAnchor()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(ADD_MARKER);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.AddMarker(new BitMapMarker
+        {
+            Id = "dot",
+            Position = new(1, 2),
+            IconUrl = "https://example.com/dot.png",
+            IconWidth = 24,
+            IconHeight = 24,
+            IconAnchorX = 12,
+            IconAnchorY = 12,
+        });
+
+        var payload = (Dictionary<string, object?>)Context.JSInterop.Invocations
+            .Single(i => i.Identifier == ADD_MARKER).Arguments[2]!;
+
+        Assert.AreEqual(12, payload["iconAnchorX"]);
+        Assert.AreEqual(12, payload["iconAnchorY"]);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldLeaveTheIconAnchorUnsetWhenItIsNotGiven()
+    {
+        // Unset means "the library's own default", which is a pin's tip - not a zero offset.
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(ADD_MARKER);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "pin", Position = new(1, 2) });
+
+        var payload = (Dictionary<string, object?>)Context.JSInterop.Invocations
+            .Single(i => i.Identifier == ADD_MARKER).Arguments[2]!;
+
+        Assert.IsNull(payload["iconAnchorX"]);
+        Assert.IsNull(payload["iconAnchorY"]);
+    }
+
+    // ---------------------------------------------------------------- clustering
+
+    [TestMethod]
+    public void BitMapShouldSendTheClusterBubbleLabelFormatToTheClusteringLayer()
+    {
+        // The bubble is a keyboard-reachable marker, so its accessible name is user-facing text -
+        // and has to be translatable like every other label on the component.
+        SetupSuccessfulMount();
+
+        RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering { AriaLabelFormat = "{0} Orte" });
+        });
+
+        var options = (Dictionary<string, object?>)Context.JSInterop.Invocations
+            .Single(i => i.Identifier == CLUSTER_CONFIGURE).Arguments[2]!;
+
+        Assert.AreEqual("{0} Orte", options["ariaLabelFormat"]);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldCloseThePopupWhenAClusteredMarkerIsRemoved()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance.OpenPopup("a");
+        Assert.IsNotNull(component.Instance.OpenPopupMarker);
+
+        await component.Instance.RemoveMarker("a");
+
+        Assert.IsNull(component.Instance.OpenPopupMarker, "a popup for a marker that is gone would hang in space");
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldCloseThePopupWhenClusteredMarkersAreCleared()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance.OpenPopup("a");
+
+        await component.Instance.ClearMarkers();
+
+        Assert.IsNull(component.Instance.OpenPopupMarker);
+    }
+
+    [TestMethod]
+    public void BitMapShouldNotDoubleDrawMarkersWhenAClusteredProviderIsSwapped()
+    {
+        // The clustering layer is re-pointed at the new backend and handed the whole set, so
+        // replaying each marker on top of it would draw every one twice.
+        const string A_INIT = "BitBlazorUI.TestProviderA.init";
+        const string A_DISPOSE = "BitBlazorUI.TestProviderA.dispose";
+        const string B_INIT = "BitBlazorUI.TestProviderB.init";
+        const string B_ADD_MARKER = "BitBlazorUI.TestProviderB.addMarker";
+
+        Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
+        Context.JSInterop.SetupVoid(INIT_SCRIPTS);
+        Context.JSInterop.SetupVoid(A_INIT);
+        Context.JSInterop.SetupVoid(A_DISPOSE);
+        Context.JSInterop.SetupVoid(B_INIT);
+        Context.JSInterop.SetupVoid(B_ADD_MARKER);
+
+        var component = RenderComponent<BitMap<TestMapProviderA>>(parameters =>
+        {
+            parameters.Add(p => p.Provider, new TestMapProviderA());
+            parameters.Add(p => p.ReplayStateOnProviderSwap, true);
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+        });
+
+        component.Instance.AddMarker(new BitMapMarker { Id = "x", Position = new(0, 0) }).GetAwaiter().GetResult();
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Provider, new TestMapProviderB());
+            parameters.Add(p => p.ReplayStateOnProviderSwap, true);
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == B_ADD_MARKER),
+            "the clustering layer owns what the provider draws");
+        Assert.IsTrue(Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_SET_MARKERS) > 0);
+    }
+
+    // ---------------------------------------------------------------- provider swap
+
+    [TestMethod]
+    public void BitMapShouldReapplyTheDeclarativeMarkersAfterAProviderSwap()
+    {
+        // Markers passed as a collection are the component's own state, not something the
+        // consumer applied imperatively - so they come back whether or not the replay opt-in is
+        // set. Without this a swap silently empties the map.
+        const string A_INIT = "BitBlazorUI.TestProviderA.init";
+        const string A_DISPOSE = "BitBlazorUI.TestProviderA.dispose";
+        const string B_INIT = "BitBlazorUI.TestProviderB.init";
+        const string B_SYNC_MARKERS = "BitBlazorUI.TestProviderB.syncMarkers";
+        const string A_ADD_MARKER = "BitBlazorUI.TestProviderA.addMarker";
+        const string A_SYNC_MARKERS = "BitBlazorUI.TestProviderA.syncMarkers";
+
+        Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
+        Context.JSInterop.SetupVoid(INIT_SCRIPTS);
+        Context.JSInterop.SetupVoid(A_INIT);
+        Context.JSInterop.SetupVoid(A_DISPOSE);
+        Context.JSInterop.SetupVoid(B_INIT);
+        Context.JSInterop.SetupVoid(A_ADD_MARKER);
+        Context.JSInterop.SetupVoid(A_SYNC_MARKERS);
+        Context.JSInterop.SetupVoid(B_SYNC_MARKERS);
+
+        var markers = new List<BitMapMarker>
+        {
+            new() { Id = "a", Position = new(0, 0) },
+            new() { Id = "b", Position = new(1, 1) },
+        };
+
+        var component = RenderComponent<BitMap<TestMapProviderA>>(parameters =>
+        {
+            parameters.Add(p => p.Provider, new TestMapProviderA());
+            parameters.Add(p => p.Markers, markers);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Provider, new TestMapProviderB());
+            parameters.Add(p => p.Markers, markers);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == B_SYNC_MARKERS),
+            "the bound collection must be pushed to the new backend");
+        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
+    }
+
+    // ---------------------------------------------------------------- popup
+
+    [TestMethod]
+    public async Task BitMapPopupShouldBeFocusableWithoutBeingATabStop()
+    {
+        // A dialog nobody is standing in is a dialog whose Escape handler never fires. It is
+        // focused on open, which needs a tabindex - but it must not add a tab stop of its own.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+
+        Assert.AreEqual("-1", component.Find(".bit-map-popup").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldKeepAnOpenPopupInStepAcrossAWholesaleMarkerReplacement()
+    {
+        // A replacement large enough to take the batched path is exactly when an open popup is
+        // most likely to be pointing at a marker that is gone.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+            parameters.Add(p => p.Markers,
+            [
+                new BitMapMarker { Id = "a", Position = new(0, 0) },
+                new BitMapMarker { Id = "b", Position = new(1, 1) },
+            ]);
+        });
+
+        await component.Instance._OnMarkerClick("a");
+        Assert.IsNotNull(component.Instance.OpenPopupMarker);
+
+        var batchesBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == SYNC_MARKERS);
+
+        // Everything changes, so the reconciler takes the single batched replace.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+            parameters.Add(p => p.Markers,
+            [
+                new BitMapMarker { Id = "x", Position = new(5, 5) },
+                new BitMapMarker { Id = "y", Position = new(6, 6) },
+            ]);
+        });
+
+        Assert.AreEqual(batchesBefore + 1, Context.JSInterop.Invocations.Count(i => i.Identifier == SYNC_MARKERS));
+        Assert.IsNull(component.Instance.OpenPopupMarker);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldReAnchorAnOpenPopupAcrossAWholesaleMarkerReplacement()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+            parameters.Add(p => p.Markers,
+            [
+                new BitMapMarker { Id = "a", Position = new(0, 0) },
+                new BitMapMarker { Id = "b", Position = new(1, 1) },
+            ]);
+        });
+
+        await component.Instance._OnMarkerClick("a");
+        var anchorsBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == TRACK_ANCHOR);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+            parameters.Add(p => p.Markers,
+            [
+                new BitMapMarker { Id = "a", Position = new(9, 9) },
+                new BitMapMarker { Id = "c", Position = new(2, 2) },
+            ]);
+        });
+
+        Assert.IsNotNull(component.Instance.OpenPopupMarker);
+        Assert.AreEqual(9d, component.Instance.OpenPopupMarker.Position.Latitude);
+        Assert.IsTrue(Context.JSInterop.Invocations.Count(i => i.Identifier == TRACK_ANCHOR) > anchorsBefore,
+            "the popup has to follow its marker to its new position");
+    }
+
+    // ---------------------------------------------------------------- lazy load teardown
+
+    [TestMethod]
+    public async Task BitMapShouldStopWatchingForVisibilityWhenDisposedBeforeItEverAppears()
+    {
+        // The visibility observer is the only thing holding the map's container while it waits
+        // below the fold. Nothing else would ever take it down.
+        Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
+        Context.JSInterop.SetupVoid(INIT_SCRIPTS);
+        Context.JSInterop.SetupVoid(CHROME_CANCEL_WAIT_VISIBLE);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.LazyLoad, true);
+        });
+
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CHROME_CANCEL_WAIT_VISIBLE));
     }
 
     /// <summary>A popup body with no content of its own, for tests that only care about the shell.</summary>

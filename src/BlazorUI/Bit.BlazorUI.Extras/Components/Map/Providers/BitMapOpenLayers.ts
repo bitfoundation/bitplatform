@@ -378,20 +378,20 @@ namespace BitBlazorUI {
             else v.animate({ center: target, duration: 250 });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
             const extent = ol.transformExtent([Math.min(swLng, neLng), Math.min(swLat, neLat), Math.max(swLng, neLng), Math.max(swLat, neLat)], 'EPSG:4326', 'EPSG:3857');
             const pad = paddingPx ?? 48;
-            s.map.getView().fit(extent, { padding: [pad, pad, pad, pad], maxZoom: 18, duration: 0 });
+            s.map.getView().fit(extent, { padding: [pad, pad, pad, pad], maxZoom: maxZoom ?? 18, duration: 0 });
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
             const s = BitMapOpenLayers._require(id);
             const ext = s.markerSource.getExtent();
             if (!ext || !Number.isFinite(ext[0])) return;
             const pad = paddingPx ?? 48;
-            s.map.getView().fit(ext, { padding: [pad, pad, pad, pad], maxZoom: 18, duration: 0 });
+            s.map.getView().fit(ext, { padding: [pad, pad, pad, pad], maxZoom: maxZoom ?? 18, duration: 0 });
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {

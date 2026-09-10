@@ -157,13 +157,13 @@ namespace BitBlazorUI {
             s.map.setCamera({ center: positions[0], type: animate === false ? 'jump' : 'ease' });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
             const s = BitMapAzureMaps._require(id);
             const pad = paddingPx ?? 48;
-            s.map.setCamera({ bounds: [swLng, swLat, neLng, neLat], padding: { top: pad, right: pad, bottom: pad, left: pad }, type: 'ease' });
+            s.map.setCamera({ bounds: [swLng, swLat, neLng, neLat], padding: { top: pad, right: pad, bottom: pad, left: pad }, maxZoom: maxZoom ?? 18, type: 'ease' });
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
             const s = BitMapAzureMaps._require(id);
             const positions: number[][] = [];
             for (const k in s.markers) {
@@ -173,7 +173,7 @@ namespace BitBlazorUI {
             if (positions.length === 0) return;
             const bounds = s.atlas.data.BoundingBox.fromPositions(positions);
             const pad = paddingPx ?? 48;
-            s.map.setCamera({ bounds, padding: { top: pad, right: pad, bottom: pad, left: pad }, type: 'ease' });
+            s.map.setCamera({ bounds, padding: { top: pad, right: pad, bottom: pad, left: pad }, maxZoom: maxZoom ?? 18, type: 'ease' });
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {

@@ -5,7 +5,7 @@
             Description="BitMap is a provider-pluggable interactive map. One API drives markers, clustering, vector shapes, GeoJSON and tile overlays across Leaflet, MapLibre GL, Mapbox GL, OpenLayers, ArcGIS, Azure Maps and CesiumJS." />
 
 <DemoPage Name="Map"
-          Description="BitMap is a provider-pluggable interactive map. The same API drives markers, vector shapes, GeoJSON layers and tile overlays across seven backends - Leaflet, MapLibre GL, Mapbox GL, OpenLayers, ArcGIS, Azure Maps and CesiumJS - with two-way bound camera and marker collections on top. It also supplies what the backends leave out, uniformly: marker clustering, popups whose content is live Blazor markup, container auto-resizing, cooperative gestures, a keyboard and screen-reader story, and explicit loading, failure and unsupported states."
+          Description="BitMap is a provider-pluggable interactive map. The same API drives markers, vector shapes, GeoJSON layers and tile overlays across seven backends - Leaflet, MapLibre GL, Mapbox GL, OpenLayers, ArcGIS, Azure Maps and CesiumJS - with two-way bound camera and marker collections on top. It also supplies what the backends leave out, uniformly: marker clustering, popups whose content is live Blazor markup, container auto-resizing, cooperative gestures, a keyboard and screen-reader story, geodesic distance and bounding-box arithmetic, and explicit loading, failure and unsupported states."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           GitHubExtrasUrl="Map/BitMap.razor"
@@ -233,7 +233,8 @@
         <DemoExample Title="Navigation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 Move the camera from code: <code>ZoomIn</code>/<code>ZoomOut</code> step by whole zoom levels,
-                <code>SetZoom</code> jumps to an absolute one, and <code>PanBy</code> shifts the view by a pixel offset.
+                <code>SetZoom</code> jumps to an absolute one, <code>PanBy</code> shifts the view by a pixel offset,
+                and <code>PanTo</code> recentres on a coordinate without touching the zoom the user chose.
                 <br /><br />
                 The pan buttons are not just a convenience. WCAG 2.2 requires a single-pointer alternative to dragging
                 (SC 2.5.7), so a map that can only be panned by dragging fails an audit - <code>PanBy</code> is what you
@@ -388,7 +389,10 @@
                 they all separate again, and <code>CullOffscreen</code> (on by default) keeps markers outside the
                 viewport from reaching the provider at all - that is most of the performance win.
                 <code>OnClusterClick</code> fires instead of <code>OnMarkerClick</code>, because a bubble is not one of
-                your markers.
+                your markers - and it reports the count either way, so turning <code>ZoomOnClick</code> off to handle
+                the click yourself still tells you how big the bubble was. A bubble is a keyboard-reachable marker with
+                a name of its own, so that name is translatable too: <code>AriaLabelFormat</code> sets it, with
+                <code>{0}</code> standing for the count.
             </div>
             <br />
             <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:0.75rem">
@@ -420,6 +424,8 @@
                 or heat data is layered over a street map. A tile overlay also takes a
                 <code>MinZoom</code>/<code>MaxZoom</code> window, so a source that only publishes some zooms does not
                 answer with a grid of 404s, and <code>Subdomains</code> for sources that shard tiles across hostnames.
+                <code>ClearTileOverlays</code> takes them all off at once, the counterpart of
+                <code>ClearMarkers</code> and <code>ClearVectorLayers</code>.
                 <br /><br />
                 <code>RequestFullscreen</code> takes the map's own container fullscreen rather than the page, so your
                 overlay content and controls go with it. Call it from a real click: browsers only honour the request
@@ -459,9 +465,10 @@
                 all work inside it, where an HTML string is inert. Click a marker below and use the button in its popup.
                 <br /><br />
                 The popup is rendered by BitMap and pinned to its marker, so it looks and behaves the same on all seven
-                backends rather than inheriting each vendor's. It is a <code>role="dialog"</code> named after its marker,
-                closes on Escape, on a click elsewhere on the map, and through its own close button, and follows its
-                marker when the marker moves.
+                backends rather than inheriting each vendor's. It is a <code>role="dialog"</code> named after its marker;
+                opening it moves keyboard focus inside, Escape closes it and hands focus back to the map, and a click
+                elsewhere on the map or the popup's own close button dismisses it. It follows its marker when the
+                marker moves, and closes itself if that marker leaves the map.
                 <br /><br />
                 The mechanics are worth knowing if you build something similar: the popup's DOM stays exactly where Blazor
                 put it and only its <code>transform</code> is driven from JavaScript, recomputed per animation frame.
@@ -588,7 +595,75 @@
         </DemoExample>
 
 
-        <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" CodeFiles="@example21CodeFiles" Id="example21">
+        <DemoExample Title="Marker icons" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+            <div>
+                <code>IconUrl</code> replaces the default pin with an image of your own, sized by
+                <code>IconWidth</code> and <code>IconHeight</code>. The icons below are inline SVG data URIs, so
+                they cost no extra request and can be recoloured from the same C# that builds the marker.
+                <br /><br />
+                <code>IconAnchorX</code> and <code>IconAnchorY</code> say which pixel of the image sits on the
+                coordinate, measured from its top-left corner. They default to the bottom centre, which is where a
+                pin's tip is - so an icon that is a disc rather than a pin renders half a diameter too high until
+                you anchor it at its own centre. Toggle it below: the ring marks the true coordinate, and only the
+                centre-anchored disc actually sits on it.
+                <br /><br />
+                Getting this right matters beyond neatness. An unanchored icon is off by its own height, which at
+                street zoom is most of a city block - enough to put a delivery pin on the wrong side of the road.
+            </div>
+            <br />
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:0.75rem">
+                <BitToggle Value="iconCentreAnchor" ValueChanged="ToggleIconAnchor" Text="Anchor the disc at its centre" />
+            </div>
+            <div style="height:380px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="iconsMapRef"
+                        Provider="@iconsProvider"
+                        Markers="iconMarkers"
+                        OnReady="OnIconsReady" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Geographic helpers" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+            <div>
+                <code>BitMapLatLng</code> and <code>BitMapLatLngBounds</code> carry the arithmetic that map work
+                keeps needing, so it does not have to be rewritten - badly - in every app.
+                <code>DistanceTo</code> measures the great-circle distance in metres, <code>Offset</code> travels a
+                distance along a bearing, and <code>ToBounds</code> turns a radius into the box that frames it.
+                Click anywhere on the map to drop a probe and see all three.
+                <br /><br />
+                <code>BitMapLatLngBounds</code> answers the questions a viewport raises:
+                <code>FromMarkers</code> and <code>FromCoordinates</code> build the smallest box around a set,
+                <code>Contains</code> and <code>Intersects</code> test it, <code>Extend</code> grows it to take in
+                one more place, and <code>Pad</code> leaves breathing room in map units rather than pixels. Boxes
+                that cross the antimeridian are handled the short way round, which is where a hand-rolled min/max
+                quietly produces a box wrapping the wrong way across the globe.
+                <br /><br />
+                <code>FitBounds</code> takes both a pixel padding and a <code>maxZoom</code> ceiling - without the
+                ceiling, framing a box around a single place drops you to street level.
+                <code>PanTo</code> moves the centre while keeping the current zoom, and <code>Project</code>
+                reports where a coordinate currently sits inside the container in CSS pixels, which is what you
+                position an overlay of your own from.
+            </div>
+            <br />
+            <div style="height:380px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="geoMapRef"
+                        Provider="@geoProvider"
+                        Markers="geoMarkers"
+                        OnClick="OnGeoMapClick" />
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                <BitButton OnClick="FitGeoMarkers">Fit to the markers</BitButton>
+                <BitButton OnClick="FitGeoRadius" Variant="BitVariant.Outline">Frame 5 km around Big Ben</BitButton>
+                <BitButton OnClick="PanToGeoOrigin" Variant="BitVariant.Outline">Pan to Big Ben</BitButton>
+                <BitButton OnClick="ProjectGeoOrigin" Variant="BitVariant.Outline">Where is it on screen?</BitButton>
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@geoLog</pre>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" CodeFiles="@example23CodeFiles" Id="example23">
             <div>
                 <code>Style</code> and <code>Class</code> land on the map's root element. The root is
                 <code>position:relative</code> and fills its container, so this is also where you set the map's height -
@@ -606,7 +681,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
             <div>
                 Set <code>Dir="BitDir.Rtl"</code> for right-to-left pages. The map canvas itself is direction-neutral -
                 what flips is the component's own chrome: the keyboard-instructions panel, the cooperative-gestures hint,

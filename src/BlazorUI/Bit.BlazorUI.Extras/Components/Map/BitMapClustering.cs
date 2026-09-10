@@ -58,6 +58,17 @@ public sealed class BitMapClustering
     public int ExpandPaddingPixels { get; set; } = 48;
 
     /// <summary>
+    /// Accessible name of a cluster bubble. <c>{0}</c> is replaced by how many markers it stands
+    /// for.
+    /// <para>
+    /// A bubble is reachable by keyboard and drawn as a marker, so it needs a name of its own -
+    /// and that name is user-facing text, which means it has to be translatable like every other
+    /// label on this component.
+    /// </para>
+    /// </summary>
+    public string AriaLabelFormat { get; set; } = "Cluster of {0} markers";
+
+    /// <summary>
     /// Whether clicking a cluster zooms the map to fit the markers it stands for. Turn it off to
     /// handle the click yourself through <see cref="BitMap{TMapProvider}.OnClusterClick"/>.
     /// </summary>
@@ -70,6 +81,9 @@ public sealed class BitMapClusterClickArgs
     /// <summary>Generated identifier of the clicked cluster. Not stable across renders - do not persist it.</summary>
     public required string ClusterId { get; init; }
 
-    /// <summary>How many of your markers the bubble stands for.</summary>
+    /// <summary>
+    /// How many of your markers the bubble stands for. Reported whether or not
+    /// <see cref="BitMapClustering.ZoomOnClick"/> is on.
+    /// </summary>
     public required int Count { get; init; }
 }

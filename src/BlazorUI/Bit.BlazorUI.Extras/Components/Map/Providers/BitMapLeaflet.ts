@@ -321,15 +321,15 @@ namespace BitBlazorUI {
             s.map.panBy([dx, dy], { animate: animate !== false });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const pad = paddingPx ?? 48;
             s.map.fitBounds(L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng)),
-                { padding: [pad, pad], maxZoom: 18 });
+                { padding: [pad, pad], maxZoom: maxZoom ?? 18 });
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const layers = Object.values(s.markers);
@@ -337,7 +337,7 @@ namespace BitBlazorUI {
             const b = L.featureGroup(layers).getBounds();
             if (!b.isValid()) return;
             const pad = paddingPx ?? 48;
-            s.map.fitBounds(b, { padding: [pad, pad], maxZoom: 18 });
+            s.map.fitBounds(b, { padding: [pad, pad], maxZoom: maxZoom ?? 18 });
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {
@@ -347,11 +347,14 @@ namespace BitBlazorUI {
             if (opts.iconUrl) {
                 const w = opts.iconWidth ?? 32;
                 const h = opts.iconHeight ?? 32;
+                // The point of the image that sits on the coordinate. Bottom-centre by default,
+                // which is where a pin's tip is; a dot-shaped icon passes its own centre instead.
+                const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
                 icon = L.icon({
                     iconUrl: opts.iconUrl,
                     iconSize: [w, h],
-                    iconAnchor: [Math.floor(w / 2), h],
-                    popupAnchor: [0, -h],
+                    iconAnchor: [ax, ay],
+                    popupAnchor: [Math.round(w / 2) - ax, -ay],
                 });
             }
             const markerOpts: any = {
