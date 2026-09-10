@@ -1721,4 +1721,151 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         Assert.IsTrue(cancelled);
     }
+    [TestMethod]
+    public async Task BitInfiniteScrollingShouldNotEndOnAShortPageWhenOnlyMaxItemsNarrowsTheRequest()
+    {
+        // Without a PageSize there is no expected page size to compare against, so a page that is shorter
+        // than the room the cap still has says nothing about the end of the data. Reading the cap-derived
+        // count as one would stop this list after its very first page.
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, Provider);
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.MaxItems, 100);
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Items.Count));
+
+        Assert.IsTrue(component.Instance.HasMore);
+
+        await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
+
+        Assert.AreEqual(6, component.Instance.Items.Count);
+        Assert.IsTrue(component.Instance.HasMore);
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingShouldRenderTheEmptyStateOfAListTheCapNeverLetsLoad()
+    {
+        // The load ends before it starts, and its caller may be the JS callback, which renders nothing of
+        // its own: the empty state has to be rendered from inside the load.
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(100));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.MaxItems, 0);
+            parameters.Add(p => p.EmptyMessage, "Nothing here");
+        });
+
+        Assert.IsFalse(component.Markup.Contains("Nothing here"));
+
+        await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
+
+        Assert.IsTrue(component.Markup.Contains("Nothing here"));
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingSetItemsAsyncShouldReopenAListThatOnlyTheCapHadClosed()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(100));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 3);
+            parameters.Add(p => p.MaxItems, 3);
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Instance.HasMore));
+
+        await component.InvokeAsync(() => component.Instance.SetItemsAsync([100]));
+
+        Assert.IsTrue(component.Instance.HasMore);
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingRemoveItemAsyncShouldReopenAListThatOnlyTheCapHadClosedFromTheProvider()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(100));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.MaxItems, 3);
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+
+        // The list is filled to its cap by hand, and then taken back below it by hand as well.
+        await component.InvokeAsync(() => component.Instance.AppendItemsAsync([7]));
+
+        Assert.IsFalse(component.Instance.HasMore);
+
+        await component.InvokeAsync(() => component.Instance.RemoveItemAsync(7));
+
+        Assert.IsTrue(component.Instance.HasMore);
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingSetItemsAsyncShouldClearAFailedLoad()
+    {
+        // A stale error block (and the retry button with it) must not survive on top of items that were
+        // handed over afterwards, and the sentinel has to be watched again once it is gone.
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, _ => throw new InvalidOperationException("boom"));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.ErrorMessage, "It failed");
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.IsNotNull(component.Instance.Error));
+
+        await component.InvokeAsync(() => component.Instance.SetItemsAsync([1, 2]));
+
+        Assert.IsNull(component.Instance.Error);
+        Assert.IsFalse(component.Markup.Contains("It failed"));
+        Assert.IsFalse(component.Markup.Contains("bit-isc-btn"));
+        Assert.IsTrue(component.Markup.Contains("Item 1"));
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingAppendItemsAsyncShouldClearAFailedLoad()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, _ => throw new InvalidOperationException("boom"));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.ErrorMessage, "It failed");
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.IsNotNull(component.Instance.Error));
+
+        await component.InvokeAsync(() => component.Instance.AppendItemsAsync([1]));
+
+        Assert.IsNull(component.Instance.Error);
+        Assert.IsFalse(component.Markup.Contains("It failed"));
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingPrependItemsAsyncShouldClearAFailedLoad()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, _ => throw new InvalidOperationException("boom"));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.ErrorMessage, "It failed");
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.IsNotNull(component.Instance.Error));
+
+        await component.InvokeAsync(() => component.Instance.PrependItemsAsync([1]));
+
+        Assert.IsNull(component.Instance.Error);
+        Assert.IsFalse(component.Markup.Contains("It failed"));
+    }
 }

@@ -82,6 +82,8 @@ namespace BitBlazorUI {
         private _lastElement: HTMLElement | null = null;
         private _disposed = false;
         private _busy = false;
+        private _observing = false;
+        private _pending = false;
         private _prevScrollSize = -1;
 
         constructor(
@@ -141,10 +143,23 @@ namespace BitBlazorUI {
         }
 
         private async _onIntersect(entries: IntersectionObserverEntry[]) {
-            if (this._disposed || this._busy) return;
+            if (this._disposed) return;
 
             if (!entries.some(e => e.isIntersecting)) return;
 
+            // .NET re-observes the sentinel from inside the Load call, so the intersection of a sentinel that
+            // stayed in view is delivered while the previous page is still landing. An observer only reports
+            // a change, so dropping it here would be the last word on it and the list would stall: it is
+            // remembered instead, and replayed once the load it arrived during is done.
+            if (this._busy) {
+                this._pending = true;
+                return;
+            }
+
+            await this._load();
+        }
+
+        private async _load() {
             this._busy = true;
             this.unobserve();
 
@@ -156,6 +171,16 @@ namespace BitBlazorUI {
             } finally {
                 this._busy = false;
             }
+
+            if (!this._pending) return;
+
+            this._pending = false;
+
+            // .NET leaves the sentinel unobserved for everything it does not want loaded (an error, the end
+            // of the data, the manual mode), so a replay only follows one it asked to keep watching.
+            if (this._disposed || !this._observing) return;
+
+            await this._load();
         }
 
         public observe(lastElement: HTMLElement) {
@@ -164,10 +189,13 @@ namespace BitBlazorUI {
             this.unobserve();
 
             this._lastElement = lastElement;
+            this._observing = true;
             this._observer.observe(lastElement);
         }
 
         public unobserve() {
+            this._observing = false;
+
             if (this._lastElement) {
                 this._observer.unobserve(this._lastElement);
             }
@@ -261,6 +289,8 @@ namespace BitBlazorUI {
 
         public dispose() {
             this._disposed = true;
+            this._observing = false;
+            this._pending = false;
             this._observer.disconnect();
             this._lastElement = null;
         }

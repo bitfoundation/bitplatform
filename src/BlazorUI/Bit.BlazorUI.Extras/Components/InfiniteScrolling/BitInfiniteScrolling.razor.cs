@@ -346,6 +346,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         // end that was just written and the items that were already on screen keep their place.
         TrimToMaxItems(fromStart: false);
 
+        ResetLoadStateAfterEdit();
+
         var ended = CapHasMore();
 
         _initialized = true;
@@ -377,6 +379,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         _items.InsertRange(0, items);
 
         TrimToMaxItems(fromStart: true);
+
+        ResetLoadStateAfterEdit();
 
         var ended = CapHasMore();
 
@@ -412,6 +416,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         TrimToMaxItems(fromStart: false);
 
+        ResetLoadStateAfterEdit();
+
         var ended = CapHasMore();
 
         _initialized = true;
@@ -439,13 +445,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     {
         if (_items.Remove(item) is false) return false;
 
-        // A list that had stopped only because it was full has room for another page again. One that had
-        // reached the end of its data stays where it is: what was removed is not what the provider still has.
-        if (_endedByCap && IsMaxItemsReached() is false)
-        {
-            _hasMore = true;
-            _endedByCap = false;
-        }
+        ResetLoadStateAfterEdit();
 
         StateHasChanged();
 
@@ -653,6 +653,11 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
             _endedByCap = _endedByCap || IsMaxItemsReached();
             _hasMore = false;
             _initialized = true;
+
+            // The caller may well be the JS callback, which renders nothing of its own: without this the
+            // empty state of a list that never gets to load anything would never reach the DOM.
+            StateHasChanged();
+
             await UnobserveAsync();
             return;
         }
@@ -672,7 +677,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         // MaxItems narrows the page down to what is still allowed, so the provider is never asked for items
         // the component would have to throw away.
-        var requestCount = Math.Max(0, PageSize);
+        var pageSize = Math.Max(0, PageSize);
+        var requestCount = pageSize;
         if (_maxItems is int max)
         {
             var allowed = max - _items.Count;
@@ -708,7 +714,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
             {
                 _hasMore = providerHasMore;
             }
-            else if (requestCount > 0 && newItems.Length < requestCount)
+            else if (pageSize > 0 && newItems.Length < requestCount)
             {
                 _hasMore = false;
             }
@@ -803,6 +809,21 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     }
 
     private bool IsMaxItemsReached() => _maxItems is int max && _items.Count >= max;
+
+    // The items were edited from the outside, so what the last provider call left behind no longer describes
+    // the list: a stale error block (and the retry button with it) must not survive on top of items that are
+    // already there, and a list that had stopped only because it was full has room for another page again as
+    // soon as it is not. One that had reached the end of its data stays ended: what was edited here is not
+    // what the provider still has.
+    private void ResetLoadStateAfterEdit()
+    {
+        _error = null;
+
+        if (_endedByCap is false || IsMaxItemsReached()) return;
+
+        _hasMore = true;
+        _endedByCap = false;
+    }
 
     // A list that is full stops loading, and remembers that the cap - rather than the data - is what stopped
     // it. It reports whether this call is what ended it, which is what the OnEnd callback is told about.
