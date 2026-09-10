@@ -70,6 +70,21 @@ public sealed class BitPdfSource
     public static BitPdfSource FromBytes(byte[] bytes, string? fileName = null)
         => new() { Bytes = bytes ?? throw new ArgumentNullException(nameof(bytes)), FileName = fileName };
 
+    /// <summary>
+    /// Creates an in-memory source from a base64-encoded document - the shape a
+    /// document arrives in from a JSON API, a data URI or a database text column.
+    /// A <c>data:application/pdf;base64,</c> prefix is accepted and stripped.
+    /// </summary>
+    public static BitPdfSource FromBase64(string base64, string? fileName = null)
+    {
+        ArgumentNullException.ThrowIfNull(base64);
+
+        // A data URI carries the payload after the comma; a bare base64 string has none.
+        int comma = base64.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ? base64.IndexOf(',') : -1;
+        string payload = comma >= 0 ? base64[(comma + 1)..] : base64;
+        return FromBytes(Convert.FromBase64String(payload.Trim()), fileName);
+    }
+
     /// <summary>Creates a source that will be fetched from <paramref name="url"/>.</summary>
     public static BitPdfSource FromUrl(string url, string? fileName = null)
         => new() { Url = url ?? throw new ArgumentNullException(nameof(url)), FileName = fileName };

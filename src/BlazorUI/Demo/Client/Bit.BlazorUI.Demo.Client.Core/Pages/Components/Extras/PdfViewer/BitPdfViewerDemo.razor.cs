@@ -8,6 +8,13 @@ public partial class BitPdfViewerDemo
     [
         new()
         {
+            Name = "AllowDropFile",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether a pdf dropped onto the viewer opens in it. The dropped file goes through the same path as the toolbar's open-file button, so OnFileOpened and MaxOpenFileSize apply to it too.",
+        },
+        new()
+        {
             Name = "BackgroundRendering",
             Type = "bool",
             DefaultValue = "false",
@@ -52,7 +59,7 @@ public partial class BitPdfViewerDemo
             Name = "EnableKeyboardShortcuts",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the viewer handles keyboard shortcuts while it has focus: page navigation (n/j, p/k, Home/End), zoom (Ctrl +, Ctrl -, Ctrl 0), rotation (r, Shift+r), find (Ctrl+F, Ctrl+G, Shift+Ctrl+G), print (Ctrl+P), download (Ctrl+S), presentation mode (Ctrl+Alt+P) and the sidebar (F4).",
+            Description = "Whether the viewer handles keyboard shortcuts while it has focus: page navigation (n/j, p/k, PageUp/PageDown, Home/End, plus the arrow keys and Space while one page is shown at a time), zoom (Ctrl +, Ctrl -, Ctrl 0), rotation (r, Shift+r), find (Ctrl+F, Ctrl+G, Shift+Ctrl+G), print (Ctrl+P), download (Ctrl+S), presentation mode (Ctrl+Alt+P) and the sidebar (F4).",
         },
         new()
         {
@@ -69,6 +76,13 @@ public partial class BitPdfViewerDemo
             Description = "The initial zoom behavior.",
             LinkType = LinkType.Link,
             Href = "#pdf-zoom-mode-enum"
+        },
+        new()
+        {
+            Name = "MaxOpenFileSize",
+            Type = "long",
+            DefaultValue = "67108864",
+            Description = "The largest file the toolbar's open-file button - and a drop, when AllowDropFile allows one - accepts, in bytes (64 MB by default). The whole file is read into memory, and on Blazor Server it also travels the circuit.",
         },
         new()
         {
@@ -121,6 +135,20 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "OnFileOpened",
+            Type = "EventCallback<BitPdfSource>",
+            Description = "The callback for when the reader picks a file with the toolbar's open-file button, with the source built from it. Handle it to drive Source yourself; when unset the viewer opens the file on its own.",
+            LinkType = LinkType.Link,
+            Href = "#pdf-source"
+        },
+        new()
+        {
+            Name = "OnPageRendered",
+            Type = "EventCallback<int>",
+            Description = "The callback for when a page has been rendered into the document surface, with its 1-based page number. Lazy rendering means this is raised as the reader reaches a page, not once per page up front.",
+        },
+        new()
+        {
             Name = "OnPasswordRequested",
             Type = "Func<Task<string?>>?",
             DefaultValue = "null",
@@ -162,6 +190,13 @@ public partial class BitPdfViewerDemo
             Type = "EventCallback<double>",
             DefaultValue = "",
             Description = "The callback for when the zoom factor changes (1 means 100%), whatever caused it: the toolbar, a fit mode, Ctrl+wheel or the public API.",
+        },
+        new()
+        {
+            Name = "RespectPermissions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the document's own user access permissions are enforced. With it set, a document that forbids printing or copying has the corresponding toolbar control disabled, Print and Download refuse, and its text cannot be selected. Off by default, as in every browser pdf viewer: the flags are advisory, not a security boundary.",
         },
         new()
         {
@@ -212,6 +247,20 @@ public partial class BitPdfViewerDemo
             Description = "How pages are paired into spreads, the way a printed book falls open.",
             LinkType = LinkType.Link,
             Href = "#pdf-spread-mode-enum"
+        },
+        new()
+        {
+            Name = "Width",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS width of the viewer container. When not set, the viewer fills the width its host gives it.",
+        },
+        new()
+        {
+            Name = "ZoomPresets",
+            Type = "IEnumerable<double>?",
+            DefaultValue = "null",
+            Description = "The explicit zoom factors the toolbar's zoom dropdown offers (1 means 100%). Values outside MinZoom..MaxZoom are dropped. Defaults to 50%, 75%, 100%, 125%, 150%, 200%, 300% and 400%.",
         },
         new()
         {
@@ -308,6 +357,12 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "FailedPages",
+            Type = "IReadOnlyList<int>",
+            Description = "The 1-based numbers of the pages whose rendering failed, in ascending order. Such a page shows an error note in place of its content and is not retried; a reload, rotation or render-mode change gives every page a fresh attempt.",
+        },
+        new()
+        {
             Name = "FileSize",
             Type = "long",
             Description = "The size in bytes of the loaded document, or 0 when nothing is loaded.",
@@ -341,6 +396,12 @@ public partial class BitPdfViewerDemo
             Name = "IsEncrypted",
             Type = "bool",
             Description = "Whether the loaded document declares an encryption dictionary.",
+        },
+        new()
+        {
+            Name = "IsFullscreen",
+            Type = "bool",
+            Description = "Whether the viewer currently fills the screen.",
         },
         new()
         {
@@ -400,6 +461,42 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "SearchHighlightAll",
+            Type = "bool",
+            Description = "Whether the find box paints every match, not just the current one.",
+        },
+        new()
+        {
+            Name = "SearchMatchCase",
+            Type = "bool",
+            Description = "Whether the find box compares case-sensitively.",
+        },
+        new()
+        {
+            Name = "SearchMatchDiacritics",
+            Type = "bool",
+            Description = "Whether the find box tells an accented letter apart from its bare form.",
+        },
+        new()
+        {
+            Name = "SearchMatchIndex",
+            Type = "int",
+            Description = "The 1-based ordinal of the find match the reader is on, or 0 when there is no match.",
+        },
+        new()
+        {
+            Name = "SearchQuery",
+            Type = "string",
+            Description = "The current find query, or an empty string when nothing is being searched for.",
+        },
+        new()
+        {
+            Name = "SearchWholeWord",
+            Type = "bool",
+            Description = "Whether the find box matches whole words only.",
+        },
+        new()
+        {
             Name = "SearchMatchCount",
             Type = "int",
             Description = "The number of matches of the current find query (0 when there is no query or no match, -1 when the browser cannot highlight matches).",
@@ -415,6 +512,12 @@ public partial class BitPdfViewerDemo
             Name = "StructureTree",
             Type = "IReadOnlyList<BitPdfStructElement>",
             Description = "The tagged-pdf logical structure tree of the loaded document, or an empty list when the document is untagged.",
+        },
+        new()
+        {
+            Name = "Warnings",
+            Type = "IReadOnlyList<string>",
+            Description = "The non-fatal diagnostics collected while the current document was parsed (e.g. a damaged cross-reference table that had to be rebuilt), empty when there were none or nothing is loaded.",
         },
         new()
         {
@@ -439,6 +542,18 @@ public partial class BitPdfViewerDemo
             Name = "Download",
             Type = "Task Download()",
             Description = "Downloads the original document bytes. Works for URL sources too: the bytes fetched for the current document are reused, so nothing is downloaded twice.",
+        },
+        new()
+        {
+            Name = "ClearSelection",
+            Type = "Task ClearSelection()",
+            Description = "Drops the reader's selection inside the document. A selection made elsewhere on the hosting page is left alone.",
+        },
+        new()
+        {
+            Name = "GetSelectedText",
+            Type = "Task<string> GetSelectedText()",
+            Description = "The text the reader currently has selected in the document, or an empty string when nothing inside the viewer is selected. Reads the live DOM selection over the page's text layer, so it is the words the reader sees, in reading order.",
         },
         new()
         {
@@ -490,6 +605,18 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "GoToDestination",
+            Type = "Task GoToDestination(BitPdfDestination? destination)",
+            Description = "Navigates to a destination: its page, and - when the destination names a vertical position - that position within the page. The in-page offset is applied only while the pages are unrotated.",
+        },
+        new()
+        {
+            Name = "GoToNamedDestination",
+            Type = "Task GoToNamedDestination(string name)",
+            Description = "Navigates to a named destination (the /Dests entry a link or an external anchor refers to). Does nothing when the document does not declare it.",
+        },
+        new()
+        {
             Name = "GoToPage",
             Type = "Task GoToPage(int pageNumber)",
             Description = "Navigates to the provided page number (1-based).",
@@ -514,9 +641,23 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "OpenAsync",
+            Type = "Task OpenAsync(BitPdfSource? source)",
+            Description = "Loads a document without going through the Source parameter. Passing null closes the current one. The Source parameter still wins: a later host render that changes it replaces whatever was opened this way.",
+            LinkType = LinkType.Link,
+            Href = "#pdf-source"
+        },
+        new()
+        {
+            Name = "PrintCurrentPage",
+            Type = "Task PrintCurrentPage()",
+            Description = "Opens the browser print dialog with just the page the reader is on.",
+        },
+        new()
+        {
             Name = "Print",
             Type = "Task Print()",
-            Description = "Opens the browser print dialog with all pages of the document.",
+            Description = "Opens the browser print dialog with all pages of the document. An overload takes a page range: Print(int from, int to).",
         },
         new()
         {
@@ -541,6 +682,12 @@ public partial class BitPdfViewerDemo
             Name = "Search",
             Type = "Task Search(string? query)",
             Description = "Opens the find box (when it is closed) and searches the document for the query. An empty query just clears the current matches.",
+        },
+        new()
+        {
+            Name = "SetSearchOptions",
+            Type = "Task SetSearchOptions(bool? matchCase, bool? wholeWord, bool? matchDiacritics, bool? highlightAll)",
+            Description = "Sets the find options and re-runs the current query against them. A null leaves that option as it is.",
         },
         new()
         {
@@ -685,6 +832,13 @@ public partial class BitPdfViewerDemo
                     Type = "static Task<BitPdfSource> FromStreamAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default)",
                     DefaultValue = "",
                     Description = "Reads the stream to the end and creates an in-memory source from it - the shape an upload, a database blob or an embedded resource arrives in. The stream is read, not owned: the caller still disposes it.",
+                },
+                new()
+                {
+                    Name = "FromBase64",
+                    Type = "static BitPdfSource FromBase64(string base64, string? fileName = null)",
+                    DefaultValue = "",
+                    Description = "Creates an in-memory source from a base64-encoded document - the shape a document arrives in from a JSON API, a data URI or a database text column. A data:application/pdf;base64, prefix is accepted and stripped.",
                 },
             ]
         },
@@ -1004,6 +1158,18 @@ public partial class BitPdfViewerDemo
                     Value = "3",
                     Description = "Pages are shown at their natural size (one CSS pixel per point).",
                 },
+                new()
+                {
+                    Name = "FitHeight",
+                    Value = "4",
+                    Description = "Each page is scaled so its height fills the viewport, letting a wide page overflow horizontally rather than shrinking it to fit.",
+                },
+                new()
+                {
+                    Name = "Automatic",
+                    Value = "5",
+                    Description = "Fit-width, but never magnified past 125% - the behavior a desktop viewer calls \"automatic zoom\", which keeps a narrow page readable without blowing it up to fill a wide screen.",
+                },
             ]
         },
         new()
@@ -1285,6 +1451,12 @@ public partial class BitPdfViewerDemo
                 },
                 new()
                 {
+                    Name = "OpenFile",
+                    Value = "131072",
+                    Description = "The button that opens a pdf file from the reader's own machine.",
+                },
+                new()
+                {
                     Name = "All",
                     Value = "131071",
                     Description = "Every toolbar control (the default).",
@@ -1315,6 +1487,8 @@ public partial class BitPdfViewerDemo
     private BitPdfSource? bindingSource;
     private BitPdfSource? publicApiSource;
     private BitPdfSource? localizedSource;
+    private BitPdfSource? printSource;
+    private BitPdfSource? a11ySource;
     private BitPdfSource? styleSource;
     private BitPdfSource? rtlSource;
 
@@ -1333,7 +1507,26 @@ public partial class BitPdfViewerDemo
 
     private BitPdfViewer pdfViewerRef = default!;
     private BitPdfViewer searchViewerRef = default!;
+    private BitPdfViewer printViewerRef = default!;
     private BitPdfViewer? infoViewerRef;
+
+    // The zoom dropdown's percentages, replacing the defaults for the zoom example.
+    private readonly double[] zoomPresets = [0.5, 1, 1.5, 2];
+
+    private string? selectedText;
+
+    /// <summary>Reads back what the reader has highlighted in the document, which is
+    /// the starting point of any "quote this" or "look this up" action.</summary>
+    private async Task ShowSelectedText()
+    {
+        selectedText = await pdfViewerRef.GetSelectedText();
+    }
+
+    /// <summary>The destination of the document's first bookmark, which is what the
+    /// public-API example navigates to - a destination lands on the exact spot the
+    /// bookmark points at, not just the top of its page.</summary>
+    private BitPdfDestination? FirstBookmarkDestination()
+        => pdfViewerRef?.Outline.FirstOrDefault()?.Destination;
 
     private readonly BitPdfViewerTexts persianTexts = new()
     {
@@ -1349,6 +1542,8 @@ public partial class BitPdfViewerDemo
         ZoomLevel = "میزان بزرگ‌نمایی",
         FitWidth = "اندازه عرض",
         FitPage = "اندازه صفحه",
+        FitHeight = "اندازه ارتفاع",
+        Automatic = "بزرگ‌نمایی خودکار",
         ActualSize = "اندازه واقعی",
         Find = "جستجو در سند",
         FindPlaceholder = "جستجو در سند",
@@ -1356,11 +1551,16 @@ public partial class BitPdfViewerDemo
         NextMatch = "مورد بعدی",
         MatchCase = "حساس به حروف",
         WholeWord = "کلمه کامل",
+        MatchDiacritics = "حساس به اعراب",
+        HighlightAll = "برجسته‌سازی همه",
+        PhraseNotFound = "موردی یافت نشد",
         RotateClockwise = "چرخش ساعتگرد",
         RotateCounterClockwise = "چرخش پادساعتگرد",
         Download = "دانلود سند",
         Print = "چاپ سند",
         Fullscreen = "تمام صفحه",
+        ExitFullscreen = "خروج از تمام صفحه",
+        OpenFile = "باز کردن فایل",
         Properties = "مشخصات سند",
         Close = "بستن",
         NoDocument = "سندی بارگذاری نشده است.",

@@ -62,8 +62,11 @@ public enum BitPdfToolbarItems
     /// <summary>The optional-content (layers) sidebar toggle.</summary>
     Layers = 65536,
 
+    /// <summary>The button that opens a pdf file from the reader's own machine.</summary>
+    OpenFile = 131072,
+
     /// <summary>Every toolbar control (the default).</summary>
     All = Thumbnails | Bookmarks | Navigation | FirstLastPage | Zoom | Title
         | Search | Rotate | Download | Print | Fullscreen | Properties | Layout | CursorTool
-        | Attachments | Presentation | Layers,
+        | Attachments | Presentation | Layers | OpenFile,
 }

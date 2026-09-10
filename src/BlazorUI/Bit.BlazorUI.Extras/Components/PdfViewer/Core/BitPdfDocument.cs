@@ -119,10 +119,17 @@ public sealed class BitPdfDocument
     /// <c>[page …]</c> array, or a GoTo action's <c>/D</c>) to a 1-based page
     /// number, or <c>null</c> when it cannot be resolved. Used for internal links.
     /// </summary>
-    public int? ResolveDestinationPage(object? dest)
+    public int? ResolveDestinationPage(object? dest) => ResolveDestination(dest)?.PageNumber;
+
+    /// <summary>
+    /// Resolves a destination to its full view parameters - the page plus the fit
+    /// mode and coordinates it asks for - or <c>null</c> when it cannot be resolved.
+    /// <see cref="ResolveDestinationPage"/> is the page-only shortcut.
+    /// </summary>
+    public BitPdfDestination? ResolveDestination(object? dest)
     {
         _ = Pages; // ensure the page-index map is populated
-        return new BitPdfOutlineBuilder(_xref, Catalog, _pageIndexByDict).ResolveDestination(dest)?.PageNumber;
+        return new BitPdfOutlineBuilder(_xref, Catalog, _pageIndexByDict).ResolveDestination(dest);
     }
 
     /// <summary>Parses <paramref name="bytes"/> into a document model.</summary>

@@ -106,6 +106,13 @@ internal sealed class BitPdfOutlineBuilder
         {
             dest = LookupNamedDestination(s.AsLatin1());
         }
+        else if (dest is string plain)
+        {
+            // A caller naming a destination in C# (BitPdfDocument.ResolveDestination,
+            // the viewer's GoToNamedDestination) has a plain string, not the
+            // BitPdfName/BitPdfString a parsed document carries it as.
+            dest = LookupNamedDestination(plain);
+        }
         dest = _xref.FetchIfRef(dest);
 
         // A destination dictionary may wrap the array under /D.

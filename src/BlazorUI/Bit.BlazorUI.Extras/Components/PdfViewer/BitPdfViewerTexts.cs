@@ -60,6 +60,12 @@ public class BitPdfViewerTexts
     /// <summary>The actual-size (100%) option of the zoom dropdown.</summary>
     public string ActualSize { get; set; } = "Actual size";
 
+    /// <summary>The fit-height option of the zoom dropdown.</summary>
+    public string FitHeight { get; set; } = "Fit height";
+
+    /// <summary>The automatic-zoom option of the zoom dropdown.</summary>
+    public string Automatic { get; set; } = "Automatic zoom";
+
     /// <summary>The accessible name of the scroll-mode dropdown.</summary>
     public string ScrollMode { get; set; } = "Scroll mode";
 
@@ -108,6 +114,15 @@ public class BitPdfViewerTexts
     /// <summary>The label of the whole-word find option.</summary>
     public string WholeWord { get; set; } = "Whole words";
 
+    /// <summary>The label of the match-diacritics find option.</summary>
+    public string MatchDiacritics { get; set; } = "Match diacritics";
+
+    /// <summary>The label of the highlight-all find option.</summary>
+    public string HighlightAll { get; set; } = "Highlight all";
+
+    /// <summary>The message shown by the find box when the query matches nothing.</summary>
+    public string PhraseNotFound { get; set; } = "Phrase not found";
+
     /// <summary>The match counter format ({0} = the current match, {1} = the total).</summary>
     public string MatchCountFormat { get; set; } = "{0}/{1}";
 
@@ -123,14 +138,23 @@ public class BitPdfViewerTexts
     /// <summary>The label of the print button.</summary>
     public string Print { get; set; } = "Print document";
 
-    /// <summary>The label of the fullscreen toggle.</summary>
-    public string Fullscreen { get; set; } = "Toggle fullscreen";
+    /// <summary>The label of the fullscreen toggle while the viewer is windowed.</summary>
+    public string Fullscreen { get; set; } = "Enter fullscreen";
+
+    /// <summary>The label of the fullscreen toggle while the viewer fills the screen.</summary>
+    public string ExitFullscreen { get; set; } = "Exit fullscreen";
 
     /// <summary>The label of the presentation-mode toggle.</summary>
     public string Presentation { get; set; } = "Presentation mode";
 
     /// <summary>The label of the document-properties button.</summary>
     public string Properties { get; set; } = "Document properties";
+
+    /// <summary>The label of the open-file button, and of the file picker it opens.</summary>
+    public string OpenFile { get; set; } = "Open file";
+
+    /// <summary>The screen-reader announcement of the focused page ({0} = the page, {1} = the page count).</summary>
+    public string PageAnnouncementFormat { get; set; } = "Page {0} of {1}";
 
     /// <summary>The label of any close button.</summary>
     public string Close { get; set; } = "Close";
@@ -150,7 +174,10 @@ public class BitPdfViewerTexts
     /// <summary>The submit button of the password dialog.</summary>
     public string PasswordSubmit { get; set; } = "Open";
 
-    /// <summary>Shown on the surface before any source is assigned.</summary>
+    /// <summary>The note shown in place of a page whose rendering failed.</summary>
+    public string PageRenderFailed { get; set; } = "This page could not be rendered.";
+
+    /// <summary>The message shown when nothing is loaded.</summary>
     public string NoDocument { get; set; } = "No document loaded.";
 
     /// <summary>Shown while all pages are being rendered for printing.</summary>

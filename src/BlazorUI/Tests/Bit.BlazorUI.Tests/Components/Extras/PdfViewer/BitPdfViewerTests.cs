@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.PdfViewer;
@@ -168,6 +169,11 @@ public class BitPdfViewerTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
 
         var toolbar = component.Find(".bit-pdv-toolbar");
+        // A labelled group, not an aria toolbar: the bar holds a text box and three
+        // dropdowns whose own arrow keys must keep working, which is exactly what the
+        // toolbar pattern's single tab stop would take away.
+        Assert.AreEqual("group", toolbar.GetAttribute("role"));
+        Assert.AreEqual("PDF viewer toolbar", toolbar.GetAttribute("aria-label"));
         // Assert on what each control IS rather than on how many there are, so adding
         // one does not invalidate the expectation for all the others.
         string[] expected =
@@ -178,13 +184,16 @@ public class BitPdfViewerTests : BunitTestContext
             "Find in document", "Pan tool",
             "Rotate counter clockwise", "Rotate clockwise",
             "Download document", "Print document", "Document properties",
-            "Presentation mode", "Toggle fullscreen",
+            "Presentation mode", "Enter fullscreen",
         ];
         foreach (string label in expected)
         {
             Assert.AreEqual(1, toolbar.QuerySelectorAll($"button[aria-label='{label}']").Length, label);
         }
         Assert.AreEqual(expected.Length, toolbar.QuerySelectorAll("button.bit-pdv-btn").Length);
+        // The open-file control is the file input itself under a button-shaped span, so
+        // it is not one of the buttons counted above.
+        Assert.AreEqual(1, toolbar.QuerySelectorAll("input[type='file'].bit-pdv-file").Length);
         Assert.AreEqual(1, toolbar.QuerySelectorAll("input.bit-pdv-page-input").Length);
         // Zoom level, scroll mode, spread mode.
         Assert.AreEqual(3, toolbar.QuerySelectorAll("select.bit-pdv-select").Length);
@@ -1585,6 +1594,872 @@ public class BitPdfViewerTests : BunitTestContext
 
         Assert.AreEqual(BitPdfScrollMode.Wrapped, component.Instance.CurrentScrollMode);
     }
+
+    [TestMethod]
+    public void BitPdfViewerShouldRespectTheWidthParameter()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Width, "480px");
+            parameters.Add(p => p.Height, "300px");
+        });
+
+        string style = component.Find(".bit-pdv").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsTrue(style.Contains("width:480px"), style);
+        Assert.IsTrue(style.Contains("height:300px"), style);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldOfferEveryFitModeInTheZoomDropdown()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        var options = component.FindAll("select.bit-pdv-select")[0]
+            .QuerySelectorAll("option").Select(o => o.GetAttribute("value")).ToList();
+
+        // The five named modes come first, in the order the dropdown lists them.
+        CollectionAssert.AreEqual(
+            new List<string?> { "Automatic", "FitWidth", "FitPage", "FitHeight", "ActualSize" },
+            options.Take(5).ToList());
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldAdoptTheZoomModeItIsGiven()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.Automatic);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        Assert.AreEqual(BitPdfZoomMode.Automatic, component.Instance.ZoomMode);
+
+        await component.InvokeAsync(() => component.Instance.SetZoomMode(BitPdfZoomMode.FitHeight));
+        Assert.AreEqual(BitPdfZoomMode.FitHeight, component.Instance.ZoomMode);
+
+        // Actual size is the one mode that does not need to measure the viewport.
+        await component.InvokeAsync(() => component.Instance.SetZoomMode(BitPdfZoomMode.ActualSize));
+        Assert.AreEqual(BitPdfZoomMode.ActualSize, component.Instance.ZoomMode);
+        Assert.AreEqual(1, component.Instance.Zoom, 0.0001);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldOfferTheConfiguredZoomPresets()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            // Out of order, with a duplicate and two values outside the bounds.
+            parameters.Add(p => p.ZoomPresets, new double[] { 2, 0.5, 2, 0.05, 9 });
+            parameters.Add(p => p.MinZoom, 0.25);
+            parameters.Add(p => p.MaxZoom, 4);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        var presets = component.FindAll("select.bit-pdv-select")[0]
+            .QuerySelectorAll("option")
+            .Select(o => o.GetAttribute("value"))
+            .Where(v => v is not null && v.StartsWith('z'))
+            .ToList();
+
+        // Sorted, de-duplicated, and clipped to MinZoom..MaxZoom.
+        CollectionAssert.AreEqual(new List<string?> { "z0.5", "z2" }, presets);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldIgnoreDiacriticsUntilAskedNotTo()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("resume and resume")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.Search("resume"));
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.SearchMatchCount));
+
+        // The accented query still finds the bare word while diacritics are ignored.
+        await component.InvokeAsync(() => component.Instance.Search("r\u00e9sum\u00e9"));
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.SearchMatchCount));
+
+        // Turning the option on makes the accents count, and nothing matches any more.
+        await component.InvokeAsync(() => component.Instance.SetSearchOptions(matchDiacritics: true));
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.Instance.SearchMatchCount));
+        Assert.IsTrue(component.Instance.SearchMatchDiacritics);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldSayWhenAPhraseIsNotFound()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("only this")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.Search("nothing here"));
+
+        component.WaitForAssertion(() =>
+            Assert.IsTrue(component.Find(".bit-pdv-search-count").TextContent.Contains("Phrase not found")));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldExposeAndSetEveryFindOption()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("Cat cat")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        // The defaults every desktop find bar opens with.
+        Assert.IsFalse(component.Instance.SearchMatchCase);
+        Assert.IsFalse(component.Instance.SearchWholeWord);
+        Assert.IsFalse(component.Instance.SearchMatchDiacritics);
+        Assert.IsTrue(component.Instance.SearchHighlightAll);
+
+        await component.InvokeAsync(() => component.Instance.Search("cat"));
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.SearchMatchCount));
+        Assert.AreEqual("cat", component.Instance.SearchQuery);
+        Assert.AreEqual(1, component.Instance.SearchMatchIndex);
+
+        await component.InvokeAsync(() => component.Instance.SetSearchOptions(matchCase: true));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.SearchMatchCount));
+
+        // A null leaves an option where it was.
+        await component.InvokeAsync(() => component.Instance.SetSearchOptions(wholeWord: true));
+        Assert.IsTrue(component.Instance.SearchMatchCase);
+        Assert.IsTrue(component.Instance.SearchWholeWord);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldTellTheHighlighterWhetherToPaintEveryMatch()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("cat cat")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.Search("cat"));
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.SearchMatchCount));
+
+        await component.InvokeAsync(() => component.Instance.SetSearchOptions(highlightAll: false));
+
+        // The find options travel to the browser-side highlighter, which is the only
+        // thing that can decide what is painted.
+        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.highlight"].Last();
+        Assert.AreEqual("cat", call.Arguments[1]);
+        Assert.AreEqual(false, call.Arguments[4]); // matchDiacritics
+        Assert.AreEqual(false, call.Arguments[5]); // highlightAll
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldRenderTheOpenFileControlOnlyWhenAsked()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        var picker = component.Find("input[type='file'].bit-pdv-file");
+        Assert.AreEqual("Open file", picker.GetAttribute("aria-label"));
+        Assert.IsTrue((picker.GetAttribute("accept") ?? string.Empty).Contains("pdf"));
+
+        component.Render(parameters => parameters.Add(p => p.ToolbarItems,
+            BitPdfToolbarItems.All & ~BitPdfToolbarItems.OpenFile));
+
+        Assert.AreEqual(0, component.FindAll("input[type='file']").Count);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldRaiseOnPageRenderedForEveryPageItBuilds()
+    {
+        var rendered = new List<int>();
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(4)));
+            parameters.Add(p => p.OnPageRendered, EventCallback.Factory.Create<int>(this, n => rendered.Add(n)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+
+        // Only the page the viewer opens on is built up front; the rest are lazy.
+        CollectionAssert.Contains(rendered, 1);
+        Assert.IsFalse(rendered.Contains(4), "page 4 should not have been rendered before it was reached");
+
+        await component.InvokeAsync(() => component.Instance.LastPage());
+
+        CollectionAssert.Contains(rendered, 4);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldExposeTheParseWarningsOfADocument()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        // A well-formed fixture has nothing to complain about, but the list is always
+        // there to read rather than only reaching the host through OnWarnings.
+        Assert.IsNotNull(component.Instance.Warnings);
+        Assert.AreEqual(0, component.Instance.Warnings.Count);
+        // Nor is any page reported as unrenderable.
+        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldRoundRotationToTheNearestQuarterTurn()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.SetRotation(100));
+        Assert.AreEqual(90, component.Instance.Rotation);
+
+        await component.InvokeAsync(() => component.Instance.SetRotation(200));
+        Assert.AreEqual(180, component.Instance.Rotation);
+
+        await component.InvokeAsync(() => component.Instance.SetRotation(-100));
+        Assert.AreEqual(270, component.Instance.Rotation);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldPutTheOutlineTabStopOnOneBookmarkOnly()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNestedOutline()));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Bookmarks);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[role='treeitem']").Count));
+
+        var items = component.FindAll("[role='treeitem']");
+        // An aria tree is ONE tab stop; the arrow keys move between its items.
+        Assert.AreEqual("0", items[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", items[1].GetAttribute("tabindex"));
+        // The branch declares its state, the leaf declares none.
+        Assert.AreEqual("true", items[0].GetAttribute("aria-expanded"));
+        Assert.IsNull(items[1].GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldFoldAndUnfoldBookmarksWithTheArrowKeys()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNestedOutline()));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Bookmarks);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[role='treeitem']").Count));
+
+        // Left folds the open branch: its child leaves the tree.
+        component.FindAll("[role='treeitem']")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[role='treeitem']").Count));
+        Assert.AreEqual("false", component.Find("[role='treeitem']").GetAttribute("aria-expanded"));
+
+        // Right unfolds it again.
+        component.Find("[role='treeitem']").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[role='treeitem']").Count));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldNavigateWhenABookmarkIsActivatedFromTheKeyboard()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNestedOutline()));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Bookmarks);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[role='treeitem']").Count));
+        Assert.AreEqual(1, component.Instance.CurrentPage);
+
+        // The nested bookmark points at page 2.
+        component.FindAll("[role='treeitem']")[1].KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.CurrentPage));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldAnnounceThePageThroughALiveRegion()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+
+        var region = component.Find(".bit-pdv-sr");
+        Assert.AreEqual("status", region.GetAttribute("role"));
+        Assert.AreEqual("polite", region.GetAttribute("aria-live"));
+
+        await component.InvokeAsync(() => component.Instance.GoToPage(2));
+
+        component.WaitForAssertion(() =>
+            Assert.AreEqual("Page 2 of 3", component.Find(".bit-pdv-sr").TextContent.Trim()));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldReportTheFullscreenStateOnItsButton()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        Assert.IsFalse(component.Instance.IsFullscreen);
+        Assert.AreEqual("false", component.Find("button[aria-label='Enter fullscreen']").GetAttribute("aria-pressed"));
+
+        // The browser is the one that decides; the viewer mirrors what it reports.
+        await component.InvokeAsync(() => component.Instance.OnFullscreenChanged(true));
+
+        Assert.IsTrue(component.Instance.IsFullscreen);
+        Assert.AreEqual("true", component.Find("button[aria-label='Exit fullscreen']").GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldPrintOnlyTheRequestedRange()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.Print(2, 3));
+
+        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Last();
+        Assert.AreEqual(2, call.Arguments[1]);
+        Assert.AreEqual(3, call.Arguments[2]);
+
+        // A backwards range is reordered rather than printing nothing.
+        await component.InvokeAsync(() => component.Instance.Print(4, 2));
+
+        call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Last();
+        Assert.AreEqual(2, call.Arguments[1]);
+        Assert.AreEqual(4, call.Arguments[2]);
+
+        // And an out-of-range one is clamped to the document.
+        await component.InvokeAsync(() => component.Instance.Print(0, 99));
+
+        call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Last();
+        Assert.AreEqual(1, call.Arguments[1]);
+        Assert.AreEqual(5, call.Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldPrintOnlyTheCurrentPageWhenAsked()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(4)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.GoToPage(3));
+        await component.InvokeAsync(() => component.Instance.PrintCurrentPage());
+
+        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Last();
+        Assert.AreEqual(3, call.Arguments[1]);
+        Assert.AreEqual(3, call.Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldOpenADocumentThroughTheApiAndKeepItAcrossHostRenders()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.OpenAsync(
+            BitPdfSource.FromBytes(TestPdf.MultiPage(3), "opened.pdf")));
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+
+        // A host re-render that does not change Source must not close what the reader
+        // (or the host's own code) opened.
+        component.Render(parameters => parameters.Add(p => p.Height, "321px"));
+
+        Assert.AreEqual(3, component.Instance.PageCount);
+
+        // A host re-render that DOES change Source still wins.
+        component.Render(parameters => parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5))));
+
+        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldCloseTheDocumentWhenOpenedWithNothing()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.OpenAsync(null));
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.Instance.PageCount));
+        Assert.IsNull(component.Instance.Document);
+        Assert.IsTrue(component.Find(".bit-pdv").TextContent.Contains("No document loaded."));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNavigateToABookmarkDestination()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNestedOutline()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        var child = component.Instance.Outline[0].Children[0];
+        Assert.IsNotNull(child.Destination);
+
+        await component.InvokeAsync(() => component.Instance.GoToDestination(child.Destination));
+
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+        // A destination carrying a vertical position scrolls into the page rather
+        // than stopping at its top edge.
+        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPageOffset"].Last();
+        Assert.AreEqual(2, call.Arguments[1]);
+        Assert.IsTrue(Convert.ToDouble(call.Arguments[2]) > 0);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNavigateToANamedDestination()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNamedDestination()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.GoToNamedDestination("chapter2"));
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+
+        // A name the document does not declare leaves the reader where they were.
+        await component.InvokeAsync(() => component.Instance.GoToNamedDestination("nowhere"));
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitPdfSourceShouldReadBase64AndDataUris()
+    {
+        byte[] bytes = TestPdf.HelloWorld();
+
+        var plain = BitPdfSource.FromBase64(Convert.ToBase64String(bytes), "a.pdf");
+        CollectionAssert.AreEqual(bytes, plain.Bytes);
+        Assert.AreEqual("a.pdf", plain.FileName);
+
+        var dataUri = BitPdfSource.FromBase64($"data:application/pdf;base64,{Convert.ToBase64String(bytes)}");
+        CollectionAssert.AreEqual(bytes, dataUri.Bytes);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldOpenADocumentGivenAsBase64()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBase64(
+                Convert.ToBase64String(TestPdf.MultiPage(3)), "b64.pdf"));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNavigateByTypingAPageLabel()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithPageLabels()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.PageCount));
+
+        // The fixture labels its pages i, ii, 1, 2 - so the box shows the label, and
+        // the plain page number goes beside it.
+        var box = component.Find("input.bit-pdv-page-input");
+        Assert.AreEqual("i", box.GetAttribute("value"));
+        // A label is not a number, so the box stops being a number box.
+        Assert.AreEqual("text", box.GetAttribute("type"));
+        Assert.IsTrue(component.Find(".bit-pdv-page-label").TextContent.Contains("1"));
+
+        component.Find("input.bit-pdv-page-input").Change("ii");
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.CurrentPage));
+
+        // The label "1" belongs to page 3, not to page 1: the label wins over the
+        // number it happens to look like.
+        component.Find("input.bit-pdv-page-input").Change("1");
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.CurrentPage));
+
+        // Something that is neither leaves the reader where they were, and the box is
+        // put back on the page actually shown instead of keeping what was typed.
+        component.Find("input.bit-pdv-page-input").Change("nowhere");
+        await Task.Delay(1);
+        Assert.AreEqual(3, component.Instance.CurrentPage);
+        // Written back through the DOM rather than by re-creating the element, so the
+        // reader keeps their focus; the call is what the assertion can see.
+        component.WaitForAssertion(() =>
+        {
+            var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.setValue"].Last();
+            Assert.AreEqual("1", call.Arguments[1]);
+        });
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldStillAcceptAPlainPageNumber()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+
+        component.Find("input.bit-pdv-page-input").Change("4");
+
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.CurrentPage));
+        // An unlabelled document shows the number in the box and nothing beside it,
+        // and the box stays a number box - spinner, range and numeric keypad included.
+        Assert.AreEqual(0, component.FindAll(".bit-pdv-page-label").Count);
+        var box = component.Find("input.bit-pdv-page-input");
+        Assert.AreEqual("number", box.GetAttribute("type"));
+        Assert.AreEqual("1", box.GetAttribute("min"));
+        Assert.AreEqual("5", box.GetAttribute("max"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldKeepRenderingAPageWhoseAnnotationIsDamaged()
+    {
+        var errors = new List<string>();
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithBrokenAnnotation()));
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<string>(this, e => errors.Add(e)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        // The annotation is unusable, but the page - and the link annotation beside it -
+        // still render, so one damaged annotation never costs the whole page.
+        Assert.AreEqual(0, errors.Count);
+        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.AreEqual(1, component.FindAll("[data-page='1'] .bit-pdv-html-page").Count);
+        Assert.AreEqual(1, component.FindAll("[data-bit-pdv-page]").Count);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNavigateFromALinkIntoTheMiddleOfAPage()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithInternalLink()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        // The link's markup carries the destination's vertical position, so the click
+        // handler can ask for that spot rather than the page's top edge.
+        var hotspot = component.Find("[data-bit-pdv-page]");
+        Assert.AreEqual("2", hotspot.GetAttribute("data-bit-pdv-page"));
+        Assert.AreEqual("250", hotspot.GetAttribute("data-bit-pdv-top"));
+
+        await component.InvokeAsync(() => component.Instance.OnLinkNavigate(2, 250));
+
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPageOffset"].Last();
+        Assert.AreEqual(2, call.Arguments[1]);
+        Assert.IsTrue(Convert.ToDouble(call.Arguments[2]) > 0);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldRenderADropTargetInputOnlyWhenDropsAreAllowed()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            // The toolbar's own picker is off, so nothing would hold a dropped file.
+            parameters.Add(p => p.ToolbarItems, BitPdfToolbarItems.Navigation);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        Assert.AreEqual(0, component.FindAll("input.bit-pdv-file").Count);
+
+        component.Render(parameters => parameters.Add(p => p.AllowDropFile, true));
+
+        // Accepting drops renders a hidden one, which is what the drop handler fills.
+        var input = component.Find("input.bit-pdv-file");
+        Assert.AreEqual("-1", input.GetAttribute("tabindex"));
+        Assert.AreEqual("true", input.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldNotDuplicateTheFilePickerWhenBothOpenFileAndDropsAreOn()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            parameters.Add(p => p.AllowDropFile, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        // The toolbar's picker is the one the drop handler fills; a second would make
+        // "the first input in the viewer" ambiguous.
+        Assert.AreEqual(1, component.FindAll("input.bit-pdv-file").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldCloseThePropertiesDialogOnEscapeWithoutTheShortcutListener()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            // A modal must be closable from the keyboard even with shortcuts off.
+            parameters.Add(p => p.EnableKeyboardShortcuts, false);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        component.Find("button[aria-label='Document properties']").Click();
+        var dialog = component.Find("[role='dialog']");
+        Assert.AreEqual("-1", dialog.GetAttribute("tabindex"));
+
+        dialog.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll("[role='dialog']").Count));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldReadAndClearTheReaderSelection()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("quotable words")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        // The selection lives in the browser, so the viewer asks for it rather than
+        // keeping a copy - and an empty answer comes back as an empty string, never null.
+        string selected = await component.InvokeAsync(() => component.Instance.GetSelectedText());
+        Assert.AreEqual(string.Empty, selected);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.getSelectedText"].Count);
+
+        await component.InvokeAsync(() => component.Instance.ClearSelection());
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.clearSelection"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNotLeaveFullscreenWhenPresentingFromIt()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        // The reader is already fullscreen (the browser said so).
+        await component.InvokeAsync(() => component.Instance.OnFullscreenChanged(true));
+        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.toggleFullscreen"].Count;
+
+        await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
+
+        // Toggling would have LEFT fullscreen, which is the opposite of presenting.
+        Assert.IsTrue(component.Instance.IsPresenting);
+        Assert.AreEqual(before, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.toggleFullscreen"].Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldLeaveSelectionToTheTextLayerAlone()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("selectable words")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        // The painted layer carries the same words as the selection layer above it, so
+        // it must not be selectable - a copy would otherwise contain everything twice.
+        string painted = component.Find(".bit-pdv-html-page").GetAttribute("style") ?? string.Empty;
+        Assert.IsTrue(painted.Contains("user-select:none"), painted);
+
+        // Through a custom property, so a surface that forbids copying can veto it -
+        // no stylesheet rule could outrank an inline declaration.
+        string layer = component.Find(".bit-pdv-text-layer").GetAttribute("style") ?? string.Empty;
+        Assert.IsTrue(layer.Contains("user-select:var(--bit-pdv-select,text)"), layer);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldRenderAPageFragmentThatCopiesCorrectlyOnItsOwn()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithText("standalone")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        // The rule travels with the markup, so a fragment taken out of the viewer
+        // through the public API copies the way it does inside it.
+        string html = component.Instance.RenderPageHtml(1);
+
+        Assert.IsTrue(html.Contains("user-select:none"), "the painted layer must opt out");
+        // The custom property is unset outside the viewer, so the fallback applies and
+        // a standalone fragment stays selectable.
+        Assert.IsTrue(html.Contains("user-select:var(--bit-pdv-select,text)"),
+            "the selection layer must opt back in");
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldIgnoreDocumentPermissionsByDefault()
+    {
+        // The fixture grants everything, so this pins the DEFAULT rather than the
+        // enforcement: nothing is disabled and no method refuses without being asked.
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        Assert.IsTrue(component.Instance.Permissions.CanPrint);
+        Assert.IsTrue(component.Instance.Permissions.CanCopy);
+        Assert.IsFalse(component.Find("button[aria-label='Print document']").HasAttribute("disabled"));
+        Assert.AreEqual(0, component.FindAll(".bit-pdv-surface.bit-pdv-nocopy").Count);
+
+        await component.InvokeAsync(() => component.Instance.Print());
+        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Count > 0);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldEnforceDocumentPermissionsWhenAsked()
+    {
+        // Encrypted with printing and copying withheld.
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.Encrypted("pw", permissions: 0)).WithPassword("pw"));
+            parameters.Add(p => p.RespectPermissions, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        Assert.IsFalse(component.Instance.Permissions.CanPrint);
+        Assert.IsFalse(component.Instance.Permissions.CanCopy);
+
+        Assert.IsTrue(component.Find("button[aria-label='Print document']").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find("button[aria-label='Download document']").HasAttribute("disabled"));
+        // Text selection is off for the whole surface: the class the stylesheet turns
+        // into --bit-pdv-select:none, which is what the layer's inline rule reads.
+        Assert.AreEqual(1, component.FindAll(".bit-pdv-surface.bit-pdv-nocopy").Count);
+
+        // And the methods refuse rather than quietly going around the toolbar.
+        await component.InvokeAsync(() => component.Instance.Print());
+        await component.InvokeAsync(() => component.Instance.Download());
+
+        Assert.IsFalse(Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Count > 0);
+        Assert.IsFalse(Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.download"].Count > 0);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldStillAllowPrintingOfAPermissiveEncryptedDocument()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.Encrypted("pw")).WithPassword("pw"));
+            parameters.Add(p => p.RespectPermissions, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        // The default fixture grants every permission, so enforcing them changes nothing.
+        Assert.IsFalse(component.Find("button[aria-label='Print document']").HasAttribute("disabled"));
+        Assert.AreEqual(0, component.FindAll(".bit-pdv-surface.bit-pdv-nocopy").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldTrapFocusInsideItsDialogs()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        component.Find("button[aria-label='Document properties']").Click();
+
+        // The dialog is focusable itself (so focus has somewhere to land) and asks the
+        // browser side to keep Tab within it.
+        var dialog = component.Find("[role='dialog']");
+        Assert.AreEqual("true", dialog.GetAttribute("aria-modal"));
+        Assert.AreEqual("-1", dialog.GetAttribute("tabindex"));
+        component.WaitForAssertion(() =>
+            Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.trapFocus"].Count > 0));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldApplyTheZoomADestinationAsksFor()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithZoomedDestination()));
+            parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        Assert.AreEqual(1, component.Instance.Zoom, 0.0001);
+
+        var bookmark = component.Instance.Outline[0];
+        await component.InvokeAsync(() => component.Instance.GoToDestination(bookmark.Destination));
+
+        // The destination names 200%, which is the scale the reader lands at.
+        Assert.AreEqual(2, component.Instance.Zoom, 0.0001);
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+    }
 }
 
 /// <summary>
@@ -1698,6 +2573,132 @@ internal static class TestPdf
     }
 
     /// <summary>
+    /// A two-page document whose outline nests one bookmark under another, both with
+    /// explicit XYZ destinations. Exercises the tree's folding, its roving tab stop
+    /// and destination navigation into the middle of a page.
+    /// </summary>
+    public static byte[] WithNestedOutline()
+    {
+        var bodies = new List<string>
+        {
+            // 1: Catalog
+            "<< /Type /Catalog /Pages 2 0 R /Outlines 6 0 R >>",
+            // 2: Pages
+            "<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>",
+            // 3/4: the two pages, sharing one content stream
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 400] /Contents 5 0 R >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 400] /Contents 5 0 R >>",
+            // 5: Contents
+            Stream("BT ET"),
+            // 6: Outlines root
+            "<< /Type /Outlines /First 7 0 R /Last 7 0 R /Count 2 >>",
+            // 7: the parent bookmark -> page 1, with one child
+            "<< /Title (Part one) /Parent 6 0 R /First 8 0 R /Last 8 0 R /Count 1 /Dest [3 0 R /XYZ 0 400 0] >>",
+            // 8: the child bookmark -> partway down page 2
+            "<< /Title (Section 1.1) /Parent 7 0 R /Dest [4 0 R /XYZ 0 250 0] >>",
+        };
+        return Build(bodies, rootObjNum: 1);
+    }
+
+    /// <summary>
+    /// A four-page document whose /PageLabels tree labels the first two pages i and
+    /// ii and restarts the numbering at 1 on the third, so a label and the page
+    /// number it looks like belong to different pages.
+    /// </summary>
+    public static byte[] WithPageLabels()
+    {
+        var bodies = new List<string>
+        {
+            "<< /Type /Catalog /Pages 2 0 R /PageLabels << /Nums [0 << /S /r >> 2 << /S /D /St 1 >>] >> >>",
+            "<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R 6 0 R] /Count 4 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 7 0 R >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 7 0 R >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 7 0 R >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 7 0 R >>",
+            Stream("BT ET"),
+        };
+        return Build(bodies, rootObjNum: 1);
+    }
+
+    /// <summary>
+    /// A single-page document carrying two annotations: one whose appearance stream is
+    /// unusable (an operator token far past the length any real one has), and a link
+    /// after it. Exercises the rule that a damaged annotation costs only itself.
+    /// </summary>
+    public static byte[] WithBrokenAnnotation()
+    {
+        var bodies = new List<string>
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 400] /Contents 4 0 R /Annots [6 0 R 7 0 R] >>",
+            Stream("BT ET"),
+            // 5: the unusable appearance stream
+            Stream(new string('Q', 200), " /Type /XObject /Subtype /Form /BBox [0 0 40 20]"),
+            // 6: the annotation wearing it
+            "<< /Type /Annot /Subtype /Square /Rect [20 300 60 320] /AP << /N 5 0 R >> >>",
+            // 7: a link on the same page, which must survive it
+            "<< /Type /Annot /Subtype /Link /Rect [20 200 180 230] /Dest [3 0 R /Fit] >>",
+        };
+        return Build(bodies, rootObjNum: 1);
+    }
+
+    /// <summary>
+    /// A two-page document whose first page carries a link annotation pointing partway
+    /// down the second, so the hotspot's markup has a vertical position to carry.
+    /// </summary>
+    public static byte[] WithInternalLink()
+    {
+        var bodies = new List<string>
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 400] /Contents 5 0 R /Annots [6 0 R] >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 400] /Contents 5 0 R >>",
+            Stream("BT ET"),
+            "<< /Type /Annot /Subtype /Link /Rect [20 300 180 330] /Dest [4 0 R /XYZ 0 250 0] >>",
+        };
+        return Build(bodies, rootObjNum: 1);
+    }
+
+    /// <summary>
+    /// A two-page document whose single bookmark points at the second page with an
+    /// explicit 200% XYZ zoom, so the destination names the scale to read it at.
+    /// </summary>
+    public static byte[] WithZoomedDestination()
+    {
+        var bodies = new List<string>
+        {
+            "<< /Type /Catalog /Pages 2 0 R /Outlines 6 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 5 0 R >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 5 0 R >>",
+            Stream("BT ET"),
+            "<< /Type /Outlines /First 7 0 R /Last 7 0 R /Count 1 >>",
+            "<< /Title (Zoomed) /Parent 6 0 R /Dest [4 0 R /XYZ 0 200 2] >>",
+        };
+        return Build(bodies, rootObjNum: 1);
+    }
+
+    /// <summary>
+    /// A two-page document declaring a named destination ("chapter2") pointing at the
+    /// second page, through the catalog's /Names /Dests name tree.
+    /// </summary>
+    public static byte[] WithNamedDestination()
+    {
+        var bodies = new List<string>
+        {
+            "<< /Type /Catalog /Pages 2 0 R /Names << /Dests 6 0 R >> >>",
+            "<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 5 0 R >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 5 0 R >>",
+            Stream("BT ET"),
+            "<< /Names [(chapter2) [4 0 R /Fit]] >>",
+        };
+        return Build(bodies, rootObjNum: 1);
+    }
+
+    /// <summary>
     /// A single-page document showing exactly <paramref name="text"/>, for tests
     /// about what the text index and the find box make of particular wording.
     /// </summary>
@@ -1755,12 +2756,14 @@ internal static class TestPdf
     /// <summary>
     /// A single-page document encrypted with <paramref name="userPassword"/>
     /// (revision 2, 40-bit RC4). The owner password is the same, so opening it needs
-    /// exactly that string.
+    /// exactly that string. <paramref name="permissions"/> is the /P field: the
+    /// default grants everything, while <c>0</c> withholds every optional right
+    /// (printing and copying included).
     /// </summary>
-    public static byte[] Encrypted(string userPassword)
+    public static byte[] Encrypted(string userPassword, int permissions = -1)
     {
         byte[] id0 = Encoding.Latin1.GetBytes("0123456789abcdef");
-        const int p = -1; // every permission granted
+        int p = permissions;
 
         // Algorithm 3: /O is the padded user password, RC4'd with a key derived
         // from the owner password.

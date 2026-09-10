@@ -312,28 +312,40 @@
     padding-inline-start: spacing(1.5);
 }
 
-.bit-pdv-outline-item {
+/* The treeitem is the whole <li>, children included, so the hover and the fill are
+   scoped to its OWN row - hovering a nested bookmark must not also light up every
+   ancestor it happens to sit inside. */
+.bit-pdv-outline-node {
     cursor: pointer;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    border-radius: $shp-radius-surface;
-    padding: spacing(0.4) spacing(0.7);
 
-    &:hover {
+    > .bit-pdv-outline-row {
+        border-radius: $shp-radius-surface;
+        padding: spacing(0.4) spacing(0.7);
+    }
+
+    &:hover > .bit-pdv-outline-row {
         color: $clr-pri-text;
         background: $clr-pri;
     }
 
     &.bit-pdv-dis {
         cursor: default;
-        color: $clr-fg-dis;
 
-        &:hover {
+        > .bit-pdv-outline-row {
+            color: $clr-fg-dis;
+        }
+
+        &:hover > .bit-pdv-outline-row {
             color: $clr-fg-dis;
             background: transparent;
         }
     }
+}
+
+.bit-pdv-outline-item {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .bit-pdv-empty {
@@ -360,7 +372,7 @@
     background: #fff;
     overflow: hidden;
     position: relative;
-    box-shadow: $box-shadow-2;
+    box-shadow: $box-shadow-card;
     /* Pages always carry an explicit inline width/height, so full containment is
        safe. It isolates each page's (potentially huge) subtree: inserting or
        evicting one page no longer forces style/layout work across the rest of
@@ -579,6 +591,16 @@
     align-items: flex-start;
 }
 
+/* A document whose owner forbids copying, honoured because RespectPermissions asked
+   for it. The selection layer opts back in per page, so this is the one place that
+   has to override it. */
+.bit-pdv-surface.bit-pdv-nocopy {
+    /* Through a custom property, not a rule of its own: the layer's opt-in is an
+       INLINE style (so a fragment taken out of the viewer still copies correctly),
+       and no stylesheet rule can outrank one. */
+    --bit-pdv-select: none;
+}
+
 /* The pan (hand) tool. Text selection is suppressed while dragging pans, which is
    what makes a drag scroll instead of selecting. */
 .bit-pdv-surface.bit-pdv-pan {
@@ -746,6 +768,63 @@
         white-space: nowrap;
         text-overflow: ellipsis;
     }
+}
+
+/* While a pdf is being dragged over a viewer that accepts drops, the surface says
+   so - a drop target that looks identical to a non-target is not a drop target. */
+.bit-pdv-dropping .bit-pdv-surface {
+    outline: $shp-border-width-thick $shp-border-style $clr-pri;
+    outline-offset: calc(-1 * #{$shp-border-width-thick});
+}
+
+/* A page (or thumbnail) whose build threw. It says so rather than shimmering
+   forever, and - because it carries no .bit-pdv-page-placeholder - the browser-side
+   pass stops asking .NET to render it. */
+.bit-pdv-page-failed {
+    inset: 0;
+    display: grid;
+    padding: spacing(2);
+    position: absolute;
+    text-align: center;
+    place-items: center;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    line-height: 1.4;
+    background: $clr-bg-sec;
+}
+
+/* The polite live region: read by assistive technology, never seen. Clipped rather
+   than display:none, which would take it out of the accessibility tree entirely. */
+.bit-pdv-sr {
+    top: auto;
+    left: -1px;
+    width: 1px;
+    height: 1px;
+    border: none;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+/* The open-file control is the file input itself, laid transparently over a
+   button-shaped span: the input keeps the click and the keyboard focus, the span
+   supplies the look every other toolbar button has. */
+.bit-pdv-open {
+    position: relative;
+    cursor: pointer;
+}
+
+.bit-pdv-file {
+    top: 0;
+    left: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    position: absolute;
 }
 
 /* Fullscreen (and presentation mode, which uses it): the viewer becomes the whole

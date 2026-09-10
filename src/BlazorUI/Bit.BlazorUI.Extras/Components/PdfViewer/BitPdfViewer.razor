@@ -1,5 +1,6 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
+@using Microsoft.AspNetCore.Components.Forms
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -15,7 +16,11 @@
     }
     @if (ShowToolbar)
     {
-        <div class="bit-pdv-toolbar @Classes?.Toolbar" style="@Styles?.Toolbar" role="toolbar" aria-label="@ActiveTexts.ToolbarAriaLabel">
+        @* role="group", not "toolbar": an aria toolbar is ONE tab stop whose arrow keys
+           move between its controls, and this bar holds a text box and three dropdowns
+           whose own arrow keys must keep working. Claiming the pattern without
+           implementing it tells assistive technology something untrue. *@
+        <div class="bit-pdv-toolbar @Classes?.Toolbar" style="@Styles?.Toolbar" role="group" aria-label="@ActiveTexts.ToolbarAriaLabel">
             @if (HasToolbarItem(BitPdfToolbarItems.Thumbnails) || HasToolbarItem(BitPdfToolbarItems.Bookmarks) || HasToolbarItem(BitPdfToolbarItems.Attachments) || HasToolbarItem(BitPdfToolbarItems.Layers))
             {
                 <div class="bit-pdv-group bit-pdv-panels">
@@ -70,13 +75,22 @@
                                 title="@ActiveTexts.PreviousPage" aria-label="@ActiveTexts.PreviousPage" @onclick="PrevPage" disabled="@(CurrentPage <= 1)">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
                         </button>
-                        <input class="bit-pdv-page-input" type="number" min="1" max="@_pages.Count" aria-label="@ActiveTexts.PageNumber"
-                               value="@CurrentPage" @onchange="OnPageInput" @onkeydown:stopPropagation="true"
+                        @* A number box while the pages are plain numbers - it brings its own
+                           spinner, range and numeric keypad - and a text box once the
+                           document labels them, because "iv" is not a number. *@
+                        <input @ref="_pageInputRef" class="bit-pdv-page-input"
+                               type="@(HasPageLabels ? "text" : "number")" inputmode="numeric"
+                               min="@(HasPageLabels ? null : "1")" max="@(HasPageLabels ? null : _pages.Count.ToString())"
+                               aria-label="@ActiveTexts.PageNumber"
+                               value="@(CurrentPageLabel ?? CurrentPage.ToString())" @onchange="OnPageInput" @onkeydown:stopPropagation="true"
                                disabled="@(_pages.Count == 0)" />
                         <span class="bit-pdv-page-total">/ @_pages.Count</span>
-                        @if (CurrentPageLabel is { } lbl)
+                        @if (CurrentPageLabel is not null)
                         {
-                            <span class="bit-pdv-page-label" title="@ActiveTexts.PageLabel">(@lbl)</span>
+                            @* The box holds the document's own label for this page, so the
+                               plain page number goes beside it - otherwise a reader on
+                               page "iv" has no way of knowing it is the fourth page. *@
+                            <span class="bit-pdv-page-label" title="@ActiveTexts.PageNumber">(@CurrentPage)</span>
                         }
                         <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
                                 title="@ActiveTexts.NextPage" aria-label="@ActiveTexts.NextPage" @onclick="NextPage" disabled="@(CurrentPage >= _pages.Count)">
@@ -111,8 +125,10 @@
                         {
                             <option value="Custom" selected>@ZoomPresetLabel(Zoom)</option>
                         }
+                        <option value="Automatic" selected="@(_zoomMode == BitPdfZoomMode.Automatic)">@ActiveTexts.Automatic</option>
                         <option value="FitWidth" selected="@(_zoomMode == BitPdfZoomMode.FitWidth)">@ActiveTexts.FitWidth</option>
                         <option value="FitPage" selected="@(_zoomMode == BitPdfZoomMode.FitPage)">@ActiveTexts.FitPage</option>
+                        <option value="FitHeight" selected="@(_zoomMode == BitPdfZoomMode.FitHeight)">@ActiveTexts.FitHeight</option>
                         <option value="ActualSize" selected="@(_zoomMode == BitPdfZoomMode.ActualSize)">@ActiveTexts.ActualSize</option>
                         @foreach (var preset in AvailableZoomPresets)
                         {
@@ -162,6 +178,14 @@
                             <button type="button" class="bit-pdv-opt @(_wholeWord ? "bit-pdv-act" : "")"
                                     title="@ActiveTexts.WholeWord" aria-label="@ActiveTexts.WholeWord" aria-pressed="@AriaBool(_wholeWord)"
                                     @onclick="ToggleWholeWord" disabled="@(_pages.Count == 0)">ab</button>
+                            <button type="button" class="bit-pdv-opt @(_matchDiacritics ? "bit-pdv-act" : "")"
+                                    title="@ActiveTexts.MatchDiacritics" aria-label="@ActiveTexts.MatchDiacritics" aria-pressed="@AriaBool(_matchDiacritics)"
+                                    @onclick="ToggleMatchDiacritics" disabled="@(_pages.Count == 0)">á</button>
+                            <button type="button" class="bit-pdv-opt @(_highlightAll ? "bit-pdv-act" : "")"
+                                    title="@ActiveTexts.HighlightAll" aria-label="@ActiveTexts.HighlightAll" aria-pressed="@AriaBool(_highlightAll)"
+                                    @onclick="ToggleHighlightAll" disabled="@(_pages.Count == 0)">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
+                            </button>
                             <span class="bit-pdv-search-count" aria-live="polite">@SearchLabel</span>
                             <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
                                     title="@ActiveTexts.PreviousMatch" aria-label="@ActiveTexts.PreviousMatch" @onclick="SearchPrev" disabled="@(_searchTotal <= 0)">
@@ -200,17 +224,29 @@
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" /></svg>
                     </button>
                 }
+                @if (HasToolbarItem(BitPdfToolbarItems.OpenFile))
+                {
+                    @* The picker is the <input> itself, laid transparently over the button
+                       shape: a <label>'s click forwarding would leave keyboard users with
+                       nothing to focus, and a button that forwards to a hidden input needs
+                       js to do it. *@
+                    <span class="bit-pdv-btn bit-pdv-open @Classes?.ToolbarButton" style="@Styles?.ToolbarButton" title="@ActiveTexts.OpenFile">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h6l2 2h10v10H3zM3 7V5h6l2 2" /></svg>
+                        <InputFile @key="_filePickerGeneration" class="bit-pdv-file" accept="application/pdf,.pdf"
+                                   aria-label="@ActiveTexts.OpenFile" OnChange="OnFilePicked" />
+                    </span>
+                }
                 @if (HasToolbarItem(BitPdfToolbarItems.Download))
                 {
                     <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.Download" aria-label="@ActiveTexts.Download" @onclick="Download" disabled="@(_bytes is null)">
+                            title="@ActiveTexts.Download" aria-label="@ActiveTexts.Download" @onclick="Download" disabled="@(_bytes is null || CanDownload is false)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg>
                     </button>
                 }
                 @if (HasToolbarItem(BitPdfToolbarItems.Print))
                 {
                     <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.Print" aria-label="@ActiveTexts.Print" @onclick="Print" disabled="@(_pages.Count == 0)">
+                            title="@ActiveTexts.Print" aria-label="@ActiveTexts.Print" @onclick="Print" disabled="@(_pages.Count == 0 || CanPrint is false)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z" /></svg>
                     </button>
                 }
@@ -232,19 +268,40 @@
                 }
                 @if (HasToolbarItem(BitPdfToolbarItems.Fullscreen))
                 {
-                    <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.Fullscreen" aria-label="@ActiveTexts.Fullscreen" @onclick="ToggleFullscreen">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+                    <button type="button" class="bit-pdv-btn @(_fullscreen ? "bit-pdv-act" : "") @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
+                            title="@FullscreenLabel" aria-label="@FullscreenLabel" aria-pressed="@AriaBool(_fullscreen)" @onclick="ToggleFullscreen">
+                        @if (_fullscreen)
+                        {
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /></svg>
+                        }
+                        else
+                        {
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+                        }
                     </button>
                 }
             </div>
         </div>
     }
 
+    @* A polite live region, off-screen: the page box is an <input>, so moving to
+       another page announces nothing on its own. *@
+    <div class="bit-pdv-sr" role="status" aria-live="polite">@_announcement</div>
+
+    @if (AllowDropFile && HasToolbarItem(BitPdfToolbarItems.OpenFile) is false)
+    {
+        @* Dropping hands the file to this input and lets Blazor read it exactly as it
+           reads a picked one, so a drop needs no second path through interop. Hidden,
+           and out of the tab order: nothing in the chrome points at it. *@
+        <InputFile @key="_filePickerGeneration" class="bit-pdv-file bit-pdv-sr" accept="application/pdf,.pdf"
+                   tabindex="-1" aria-hidden="true" OnChange="OnFilePicked" />
+    }
+
     <div class="bit-pdv-body @Classes?.Body" style="@Styles?.Body">
         @if (_showOutline && HasOutline)
         {
             <div class="bit-pdv-outline @Classes?.Outline" style="@Styles?.Outline" role="tree" aria-label="@ActiveTexts.Bookmarks">
+                @{ _outlineOrdinal = 0; }
                 @RenderOutline(_outline)
             </div>
         }
@@ -297,6 +354,10 @@
                             {
                                 @thumb
                             }
+                            else if (HasThumbFailed(index))
+                            {
+                                <div class="bit-pdv-page-failed" role="note" title="@ActiveTexts.PageRenderFailed">!</div>
+                            }
                             else
                             {
                                 <div class="bit-pdv-page-placeholder"></div>
@@ -311,7 +372,7 @@
         @* tabindex makes the scrollable document region reachable by keyboard - it is
            what lets arrow keys scroll it and what puts focus inside the viewer, where
            the shortcut listener on the root element can see the key events. *@
-        <div class="bit-pdv-surface @(_cursorTool == BitPdfCursorTool.Pan ? "bit-pdv-pan" : "") @Classes?.Surface"
+        <div class="bit-pdv-surface @(_cursorTool == BitPdfCursorTool.Pan ? "bit-pdv-pan" : "") @(CanCopy ? "" : "bit-pdv-nocopy") @Classes?.Surface"
              style="@Styles?.Surface" @ref="_containerRef" data-bit-pdv-axis="@PagesAxis"
              tabindex="0" role="region" aria-label="@(_source?.FileName ?? ActiveTexts.ToolbarAriaLabel)">
             @* Document-wide @@font-face rules, kept here (not per page) so they
@@ -366,7 +427,8 @@
         @if (_passwordRequest is not null)
         {
             <div class="bit-pdv-dialog-overlay">
-                <div class="bit-pdv-dialog bit-pdv-password" role="dialog" aria-modal="true" aria-label="@ActiveTexts.PasswordTitle">
+                <div class="bit-pdv-dialog bit-pdv-password" role="dialog" aria-modal="true" aria-label="@ActiveTexts.PasswordTitle"
+                     tabindex="-1" @ref="_passwordDialogRef">
                     <div class="bit-pdv-dialog-head">
                         <span>@ActiveTexts.PasswordTitle</span>
                         <button type="button" class="bit-pdv-btn" title="@ActiveTexts.Close" aria-label="@ActiveTexts.Close" @onclick="CancelPassword">
@@ -392,8 +454,8 @@
         {
             <div class="bit-pdv-dialog-overlay" @onclick="() => _showProperties = false">
                 <div class="bit-pdv-dialog @Classes?.PropertiesDialog" style="@Styles?.PropertiesDialog"
-                     role="dialog" aria-modal="true" aria-label="@ActiveTexts.Properties"
-                     @onclick:stopPropagation="true">
+                     role="dialog" aria-modal="true" aria-label="@ActiveTexts.Properties" tabindex="-1" @ref="_propertiesRef"
+                     @onclick:stopPropagation="true" @onkeydown="OnPropertiesKeyDown">
                     <div class="bit-pdv-dialog-head">
                         <span>@ActiveTexts.Properties</span>
                         <button type="button" class="bit-pdv-btn" title="@ActiveTexts.Close" aria-label="@ActiveTexts.Close" @onclick="() => _showProperties = false">
@@ -436,14 +498,29 @@
         }
     }
 
+    // The paint order of the visible bookmarks, stamped onto each row so the arrow
+    // keys can move DOM focus to the item they moved the tab stop to. Reset (and
+    // consumed) while the tree renders, which is depth-first in exactly that order.
+    private int _outlineOrdinal;
+
+    /// <summary>The fullscreen button says which way it goes, not just that it toggles.</summary>
+    private string FullscreenLabel => _fullscreen ? ActiveTexts.ExitFullscreen : ActiveTexts.Fullscreen;
+
     private static string ZoomPresetValue(double zoom)
         => string.Create(System.Globalization.CultureInfo.InvariantCulture, $"z{zoom:0.####}");
 
+    @* A failed page carries NO .bit-pdv-page-placeholder: that class is what the
+       browser-side pass looks for when it asks .NET to render a page, so leaving it on
+       would have the pump re-run the same failing build on every scroll. *@
     private RenderFragment RenderPage(int index, bool isCurrent) =>
     @<div class="bit-pdv-page @(isCurrent ? "bit-pdv-cur" : "") @Classes?.Page" data-page="@(index + 1)" style="@PageStyle(index)">
         @if (_pages[index] is { } content)
         {
             @content
+        }
+        else if (HasPageFailed(index))
+        {
+            <div class="bit-pdv-page-failed" role="note">@ActiveTexts.PageRenderFailed</div>
         }
         else
         {
@@ -451,19 +528,32 @@
         }
     </div>;
 
+    @* An ARIA tree is ONE tab stop: the treeitem itself carries the focus and the
+       arrow keys move it between items, so the focusable element and the element the
+       role sits on have to be the same one - a focusable div nested inside the
+       treeitem would put focus somewhere assistive technology cannot name. *@
     private RenderFragment RenderOutline(IReadOnlyList<BitPdfOutlineItem> items) =>
     @<ul class="bit-pdv-outline-list" role="group">
         @foreach (var item in items)
         {
             bool hasChildren = item.Children.Count > 0;
             bool collapsed = IsOutlineCollapsed(item);
-            <li role="treeitem" aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"
-                aria-selected="@AriaBool(item.PageNumber == CurrentPage)">
+            <li role="treeitem" data-bit-pdv-outline="@_outlineOrdinal++"
+                class="bit-pdv-outline-node @(item.PageNumber is null ? "bit-pdv-dis" : "") @Classes?.OutlineItem" style="@Styles?.OutlineItem"
+                tabindex="@(IsOutlineTabStop(item) ? 0 : -1)"
+                aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"
+                aria-selected="@AriaBool(item.PageNumber == CurrentPage)"
+                title="@item.Title" @onclick="@(() => OnOutlineClick(item))"
+                @onkeydown="@(e => OnOutlineKeyDown(e, item))">
                 <div class="bit-pdv-outline-row">
                     @if (hasChildren)
                     {
+                        @* The fold arrow is presentational: the tree's own Left/Right keys
+                           are what a keyboard reader folds with, so it stays out of the tab
+                           order, and its click must not also count as picking the bookmark. *@
                         <button type="button" class="bit-pdv-outline-toggle @(collapsed ? "bit-pdv-col" : "")"
-                                tabindex="-1" aria-hidden="true" @onclick="@(() => ToggleOutlineItem(item))">
+                                tabindex="-1" aria-hidden="true"
+                                @onclick="@(() => ToggleOutlineItem(item))" @onclick:stopPropagation="true">
                             <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
                         </button>
                     }
@@ -471,10 +561,7 @@
                     {
                         <span class="bit-pdv-outline-toggle bit-pdv-outline-leaf"></span>
                     }
-                    <div class="bit-pdv-outline-item @(item.PageNumber is null ? "bit-pdv-dis" : "") @Classes?.OutlineItem"
-                         style="@Styles?.OutlineItem" tabindex="0"
-                         title="@item.Title" @onclick="@(() => OnOutlineClick(item))"
-                         @onkeydown="@(e => OnOutlineKeyDown(e, item))">@item.Title</div>
+                    <div class="bit-pdv-outline-item">@item.Title</div>
                 </div>
                 @if (hasChildren && collapsed is false)
                 {
