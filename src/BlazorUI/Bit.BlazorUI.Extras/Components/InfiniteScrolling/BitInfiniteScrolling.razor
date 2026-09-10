@@ -8,6 +8,12 @@
 
 @* The status blocks are rendered after the items in every mode; in the reversed mode the stylesheet
    pulls them to the top with a flex order, which keeps this markup free of a mirrored second copy. *@
+@* A live region has to be in the DOM before its content changes for a screen reader to announce it, so this
+   one is always rendered and only its text changes as the list moves between its states. It is kept outside
+   the root element, and not busy itself, because the root is marked busy while a page is in flight and
+   assistive technology holds back the updates under a busy element - the loading message among them. *@
+<div class="bit-isc-sts" role="status" aria-busy="false">@GetStatusMessage()</div>
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -16,12 +22,6 @@
      tabindex="@TabIndex"
      aria-label="@AriaLabel"
      aria-busy="@(_isLoading ? "true" : "false")">
-    @* A live region has to be in the DOM before its content changes for a screen reader to announce it, so
-       this one is always rendered and only its text changes as the list moves between its states. It marks
-       itself as not busy because the root above it is busy while a page is in flight, and a busy region tells
-       assistive technology to hold back the very updates this one exists to announce. *@
-    <div class="bit-isc-sts" role="status" aria-busy="false">@GetStatusMessage()</div>
-
     @if (template is not null)
     {
         if (ItemKey is null)

@@ -994,6 +994,27 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitInfiniteScrollingShouldEndOnAnEmptyPageEvenWhenTheProviderResultSaysThereIsMore()
+    {
+        // The Skip of the next request is the number of the loaded items, so a page that carries none cannot
+        // move the paging window along and would be requested again and again; it ends the list whatever the
+        // result says about the data that is left.
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, ResultProvider(0, hasMore: true));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, component.Instance.Items.Count);
+            Assert.IsFalse(component.Instance.HasMore);
+        });
+    }
+
+    [TestMethod]
     public void BitInfiniteScrollingShouldExposeTheTotalCountOfTheProviderResult()
     {
         var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
@@ -1570,6 +1591,30 @@ public class BitInfiniteScrollingTests : BunitTestContext
             Assert.IsFalse(component.Instance.HasMore);
             Assert.IsTrue(component.Markup.Contains("Nothing here"));
         });
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingShouldTreatANegativeCapAsZero()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(100));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.MaxItems, -5);
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, component.Instance.Items.Count);
+            Assert.IsFalse(component.Instance.HasMore);
+        });
+
+        // The surplus of a negative cap over an empty list comes out positive, which would hand the trimming
+        // a range that does not exist.
+        await component.InvokeAsync(() => component.Instance.AppendItemsAsync([1, 2]));
+
+        Assert.AreEqual(0, component.Instance.Items.Count);
     }
 
     [TestMethod]

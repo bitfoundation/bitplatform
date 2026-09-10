@@ -33,6 +33,11 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     private bool _isLoading => _cts is not null;
 
+    // The cap never goes below zero: a negative one means the very same thing as a cap of zero - nothing may
+    // be loaded - while the surplus computed from it would come out positive over an empty list and hand
+    // RemoveRange a range that does not exist.
+    private int? _maxItems => MaxItems is null ? null : Math.Max(0, MaxItems.Value);
+
     // The sentinel is only worth observing while another page can actually arrive: a failed load waits for a
     // retry, the manual mode waits for the button, and a disabled component (or one with no provider) loads
     // nothing at all. Observing it in any of those states would make the browser ask for a page that the
@@ -668,9 +673,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         // MaxItems narrows the page down to what is still allowed, so the provider is never asked for items
         // the component would have to throw away.
         var requestCount = Math.Max(0, PageSize);
-        if (MaxItems is not null)
+        if (_maxItems is int max)
         {
-            var allowed = MaxItems.Value - _items.Count;
+            var allowed = max - _items.Count;
             requestCount = requestCount == 0 ? allowed : Math.Min(requestCount, allowed);
         }
 
@@ -692,11 +697,18 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
                 _totalCount = providerResult.TotalCount;
             }
 
-            if (providerResult?.HasMore is bool providerHasMore)
+            if (newItems.Length == 0)
+            {
+                // The Skip of the next request is the number of the loaded items, so a page that carries none
+                // cannot move the paging window along: a provider that still reports more would be asked for
+                // the very same page as soon as the sentinel is observed again, and again after that.
+                _hasMore = false;
+            }
+            else if (providerResult?.HasMore is bool providerHasMore)
             {
                 _hasMore = providerHasMore;
             }
-            else if (newItems.Length == 0 || (requestCount > 0 && newItems.Length < requestCount))
+            else if (requestCount > 0 && newItems.Length < requestCount)
             {
                 _hasMore = false;
             }
@@ -790,7 +802,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         }
     }
 
-    private bool IsMaxItemsReached() => MaxItems is not null && _items.Count >= MaxItems.Value;
+    private bool IsMaxItemsReached() => _maxItems is int max && _items.Count >= max;
 
     // A list that is full stops loading, and remembers that the cap - rather than the data - is what stopped
     // it. It reports whether this call is what ended it, which is what the OnEnd callback is told about.
@@ -821,9 +833,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     private void TrimToMaxItems(bool fromStart)
     {
-        if (MaxItems is null || _items.Count <= MaxItems.Value) return;
+        if (_maxItems is not int max || _items.Count <= max) return;
 
-        var surplus = _items.Count - MaxItems.Value;
+        var surplus = _items.Count - max;
 
         _items.RemoveRange(fromStart ? 0 : _items.Count - surplus, surplus);
     }
