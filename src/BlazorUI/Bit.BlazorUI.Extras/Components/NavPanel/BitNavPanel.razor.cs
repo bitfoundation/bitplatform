@@ -911,7 +911,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
                     continue;
                 }
 
-                Collect(_bitNavRef.GetChildItems(item));
+                Collect(_bitNavRef!.GetChildItems(item));
             }
         }
     }

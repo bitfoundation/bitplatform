@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
@@ -255,7 +256,7 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavPanelNoToggleShouldIgnoreTheToggleMethod()
+    public async Task BitNavPanelNoToggleShouldIgnoreTheToggleMethod()
     {
         var isToggled = false;
 
@@ -266,9 +267,9 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
         });
 
-        component.InvokeAsync(() => component.Instance.Toggle());
+        await component.InvokeAsync(() => component.Instance.Toggle());
 
-        component.WaitForAssertion(() => Assert.IsFalse(isToggled));
+        Assert.IsFalse(isToggled);
     }
 
     [TestMethod]

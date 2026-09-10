@@ -30,6 +30,16 @@
     // rather than a jump.
     &.bit-npn-eoh {
         transition: min-width 150ms $mot-easing, max-width 150ms $mot-easing;
+
+        // The expanded end of that transition needs a width of the same kind as the collapsed one: a rail
+        // that widens into an unbounded max-width has nothing to travel to and snaps open instead. A panel
+        // given no Width keeps both ends open (an invalid max-width is dropped) and stays as wide as its
+        // container makes it, and so do the two modes that size the panel themselves - the Width they are
+        // documented to ignore is not allowed back in as a bound.
+        &:not(.bit-npn-tgl):not(.bit-npn-fiw):not(.bit-npn-fuw) {
+            min-width: var(--bit-npn-w, auto);
+            max-width: var(--bit-npn-w, auto);
+        }
     }
 
     // The panel that pins its two ends stops being the scroller: the nav between them takes the overflow,

@@ -1372,6 +1372,44 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Id = "nav-aria-current-enum",
+            Name = "BitNavAriaCurrent",
+            Items =
+            [
+                new()
+                {
+                    Name = "Page",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Step",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Location",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Date",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Time",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "True",
+                    Value = "5",
+                }
+            ]
+        },
+        new()
+        {
             Id = "nav-match-enum",
             Name = "BitNavMatch",
             Description = "Modifies the URL matching behavior for a BitNav<TItem>.",
