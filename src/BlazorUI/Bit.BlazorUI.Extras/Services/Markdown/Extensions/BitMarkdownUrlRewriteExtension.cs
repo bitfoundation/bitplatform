@@ -29,9 +29,15 @@ public sealed class BitMarkdownUrlRewriteExtension : IBitMarkdownExtension
         ArgumentException.ThrowIfNullOrWhiteSpace(baseUrl);
 
         // Resolved once, so every document parsed through this pipeline pays for it once.
-        if (Uri.TryCreate(baseUrl, UriKind.Absolute, out var absoluteBase) is false)
+        //
+        // A site-relative base ("/docs/") is ruled out before parsing: on Unix, Uri reads a rooted
+        // path as an absolute file:// URI, so every destination resolved against it came back as
+        // "file:///docs/x" - which the viewer's sanitizer then dropped, leaving no href at all.
+        // Ruling it out here is what makes the same base behave the same on every platform.
+        Uri? absoluteBase = null;
+        if (baseUrl.StartsWith('/') is false && Uri.TryCreate(baseUrl, UriKind.Absolute, out var parsed))
         {
-            absoluteBase = null;
+            absoluteBase = parsed;
         }
         string prefix = baseUrl.EndsWith('/') ? baseUrl : baseUrl + "/";
 
