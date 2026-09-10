@@ -2,20 +2,165 @@
 @inherits BitComponentBase
 @typeparam TMapProvider where TMapProvider : class, IBitMapProvider, new()
 
+@* role and aria-roledescription are written BEFORE the attribute splat so a consumer can
+   override them through HtmlAttributes; id/style/class come after so they always win. *@
 <div @ref="RootElement"
+     role="region"
+     aria-roledescription="interactive map"
      @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLowerInvariant()">
+     dir="@Dir?.ToString().ToLowerInvariant()"
+     aria-label="@(AriaLabel ?? "Map")">
+    @* The canvas is the focusable surface. It deliberately carries no role="application":
+       that would drop screen readers out of browse mode and swallow their own quick-nav
+       keys. A labelled, focusable region plus the instructions below reads correctly in
+       both modes. *@
     <div id="@_canvasId"
          @ref="_mapElement"
          class="bit-map-canvas"
          tabindex="0"
-         role="region"
-         aria-label="@(AriaLabel ?? "Map")"></div>
+         aria-label="@(AriaLabel ?? "Map")"
+         aria-describedby="@_helpId"></div>
+
+    @* Keyboard instructions, available to assistive tech and to sighted keyboard users
+       who focus the map (see the :focus-visible rule in BitMap.scss). *@
+    <div id="@_helpId" class="bit-map-help">@KeyboardInstructions</div>
+
+    @* Announcements of pan/zoom, throttled in code-behind so a drag can't flood the
+       screen reader. Always present (an aria-live region has to exist before the text
+       lands in it to be announced at all). *@
+    <div class="bit-map-live" aria-live="polite" aria-atomic="true">@_announcement</div>
+
+    @if (CooperativeGestures)
+    {
+        @* Static class attribute: the chrome layer toggles bit-map-gesture-hint-vis on it
+           directly, and Blazor only patches attributes it sees change. *@
+        <div id="@_hintId" class="bit-map-gesture-hint" aria-hidden="true">
+            <span id="@_hintTextId" class="bit-map-gesture-hint-text"></span>
+        </div>
+    }
+
+    @if (_loadState == BitMapLoadState.Loading && ShowLoading)
+    {
+        <div class="bit-map-status" role="status">
+            @if (LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <div class="bit-map-status-box">
+                    <span class="bit-map-status-spinner" aria-hidden="true"></span>
+                    <span>@LoadingLabel</span>
+                </div>
+            }
+        </div>
+    }
+    else if (_loadState == BitMapLoadState.Failed)
+    {
+        <div class="bit-map-status" role="alert">
+            @if (ErrorTemplate is not null)
+            {
+                @ErrorTemplate(_loadError)
+            }
+            else
+            {
+                <div class="bit-map-status-box bit-map-status-box-err">
+                    <span>@ErrorLabel</span>
+                </div>
+            }
+        </div>
+    }
+    else if (_loadState == BitMapLoadState.Unsupported)
+    {
+        <div class="bit-map-status" role="alert">
+            @if (UnsupportedTemplate is not null)
+            {
+                @UnsupportedTemplate
+            }
+            else
+            {
+                <div class="bit-map-status-box bit-map-status-box-err">
+                    <span>@UnsupportedLabel</span>
+                </div>
+            }
+        </div>
+    }
+
+    @if (MarkerPopupTemplate is not null && _openPopupMarker is not null)
+    {
+        @* Anchored by transform from the chrome layer, which recomputes the marker's pixel
+           position every frame. The element stays exactly where Blazor put it - handing it to the
+           provider's own popup would move it out of the container Blazor patches by position. *@
+        <div class="bit-map-anchor" id="@_popupAnchorId">
+            <div class="bit-map-popup"
+                 role="dialog"
+                 aria-modal="false"
+                 aria-label="@(_openPopupMarker.Alt ?? _openPopupMarker.Title ?? PopupLabel)"
+                 @onkeydown="HandlePopupKeyDown"
+                 @onkeydown:stopPropagation="true">
+                <button type="button"
+                        class="bit-map-popup-close"
+                        aria-label="@PopupCloseLabel"
+                        @onclick="ClosePopupFromUi">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div class="bit-map-popup-body">@MarkerPopupTemplate(_openPopupMarker)</div>
+            </div>
+        </div>
+    }
+
     @if (ChildContent is not null)
     {
         <div class="bit-map-overlay">@ChildContent</div>
     }
 </div>
+
+@if (MarkerListMode != BitMapMarkerListMode.None)
+{
+    @* The non-visual equivalent of the markers. Rendered outside the map's own element so it is
+       not clipped by its overflow, and so it survives the map going fullscreen. *@
+    <div class="@MarkerListClass">
+        @if (MarkerListTemplate is not null)
+        {
+            @MarkerListTemplate(OrderedMarkers)
+        }
+        else
+        {
+            <table class="bit-map-marker-table">
+                <caption>@MarkerListCaption</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">@MarkerListNameHeader</th>
+                        <th scope="col">@MarkerListLatitudeHeader</th>
+                        <th scope="col">@MarkerListLongitudeHeader</th>
+                        <th scope="col"><span class="bit-map-help">@MarkerListActionHeader</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var marker in OrderedMarkers)
+                    {
+                        <tr>
+                            <th scope="row">@DescribeMarker(marker)</th>
+                            <td>@marker.Position.Latitude.ToString("F5")</td>
+                            <td>@marker.Position.Longitude.ToString("F5")</td>
+                            <td>
+                                @* Named per row rather than a repeated "Show on map": a screen
+                                   reader listing the buttons on their own has to be able to tell
+                                   them apart. *@
+                                <button type="button"
+                                        class="bit-map-marker-table-action"
+                                        aria-label="@($"{MarkerListActionHeader}: {DescribeMarker(marker)}")"
+                                        @onclick="() => ShowMarker(marker.Id)">
+                                    @MarkerListActionHeader
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}

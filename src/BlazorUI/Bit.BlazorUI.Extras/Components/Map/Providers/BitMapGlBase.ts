@@ -4,12 +4,13 @@ namespace BitBlazorUI {
         gl: any;            // global namespace (maplibregl or mapboxgl)
         map: any;
         dotnetObj: DotNetObject | null | undefined;
-        markers: { [id: string]: { marker: any } };
+        markers: { [id: string]: { marker: any, tooltip?: any } };
         vectorCatalog: { [id: string]: { sourceId: string, layerIds: string[], handlers: { layerId: string, handler: any }[] } };
         tileOverlayCatalog: { [id: string]: { sourceId: string, layerId: string } };
         navControl: any;
         lastStyleUrl: string;
         isDisposed: boolean;
+        viewTimer: any;
         viewListeners?: { notify: () => void };
     };
 
@@ -53,28 +54,39 @@ namespace BitBlazorUI {
                 minZoom: o.minZoom ?? undefined,
                 maxZoom: o.maxZoom ?? undefined,
                 attributionControl: o.attributionControl !== false,
+                // Spread last so an escape-hatch entry wins over what the component models.
+                ...(o.additionalOptions || {}),
             });
 
-            await new Promise<void>((resolve, reject) => {
-                let settled = false;
-                const timeoutHandle = setTimeout(() => {
-                    if (settled) return;
-                    settled = true;
-                    reject(new Error('GL map load timeout (30s)'));
-                }, 30000);
-                map.once('load', () => {
-                    if (settled) return;
-                    settled = true;
-                    clearTimeout(timeoutHandle);
-                    resolve();
+            try {
+                await new Promise<void>((resolve, reject) => {
+                    let settled = false;
+                    const timeoutHandle = setTimeout(() => {
+                        if (settled) return;
+                        settled = true;
+                        reject(new Error('GL map load timeout (30s)'));
+                    }, 30000);
+                    map.once('load', () => {
+                        if (settled) return;
+                        settled = true;
+                        clearTimeout(timeoutHandle);
+                        resolve();
+                    });
+                    map.once('error', (e: any) => {
+                        if (settled) return;
+                        settled = true;
+                        clearTimeout(timeoutHandle);
+                        reject(e?.error ?? new Error('Map error'));
+                    });
                 });
-                map.once('error', (e: any) => {
-                    if (settled) return;
-                    settled = true;
-                    clearTimeout(timeoutHandle);
-                    reject(e?.error ?? new Error('Map error'));
-                });
-            });
+            } catch (err) {
+                // The gl.Map was constructed before we started waiting, so a load
+                // failure/timeout would otherwise strand a live map that holds a WebGL
+                // context. Browsers cap the number of simultaneous WebGL contexts (~8-16),
+                // so leaking one per failed init eventually kills every map on the page.
+                try { map.remove(); } catch { /* ignore */ }
+                throw err;
+            }
 
             BitMapGlBase._applyMaxBounds(map, o.maxBounds);
             BitMapGlBase._applyInteractivity(map, o);
@@ -87,6 +99,7 @@ namespace BitBlazorUI {
                 navControl: null,
                 lastStyleUrl: styleUrl,
                 isDisposed: false,
+                viewTimer: null,
             };
             BitMapGlBase._ensureNavControl(state, o);
 
@@ -109,14 +122,26 @@ namespace BitBlazorUI {
                     if (state.isDisposed || !state.dotnetObj) return;
                     state.dotnetObj.invokeMethodAsync('OnDoubleClick', { lat: e.lngLat.lat, lng: e.lngLat.lng });
                 });
+                map.on('contextmenu', (e: any) => {
+                    if (o.suppressBrowserContextMenu) e.originalEvent?.preventDefault?.();
+                    if (state.isDisposed || !state.dotnetObj) return;
+                    state.dotnetObj.invokeMethodAsync('OnContextMenu', { lat: e.lngLat.lat, lng: e.lngLat.lng });
+                });
                 // The microtask can run after dispose() has nulled state.dotnetObj
                 // and removed the map. Guard the lambda so it never invokes a disposed
                 // .NET object and never reads from a disposed map. dispose() also
                 // unwires these listeners explicitly via state.viewListeners.
-                const notify = () => queueMicrotask(() => {
-                    if (state.isDisposed || !state.dotnetObj) return;
-                    state.dotnetObj.invokeMethodAsync('OnViewChanged', BitMapGlBase._readView(map));
-                });
+                // Coalesce the move/zoom burst a single drag produces into one interop
+                // round-trip per idle window (each notification is a SignalR message
+                // under Blazor Server). Matches every other provider's 80ms window.
+                const notify = () => {
+                    if (state.isDisposed) return;
+                    clearTimeout(state.viewTimer);
+                    state.viewTimer = setTimeout(() => {
+                        if (state.isDisposed || !state.dotnetObj) return;
+                        state.dotnetObj.invokeMethodAsync('OnViewChanged', BitMapGlBase._readView(map));
+                    }, BitMapHelpers.viewNotifyDebounceMs);
+                };
                 map.on('moveend', notify);
                 map.on('zoomend', notify);
                 state.viewListeners = { notify };
@@ -158,6 +183,14 @@ namespace BitBlazorUI {
             // corresponding option, otherwise a partial sync (e.g. style/token-only update)
             // would silently reset bounds/interactivity/nav-control to their defaults.
             const has = (k: string) => Object.prototype.hasOwnProperty.call(o, k);
+            // Zoom limits are constructor options; without the setters a provider that
+            // changes MinZoom/MaxZoom after init would be silently ignored.
+            if (has('minZoom')) {
+                try { map.setMinZoom(o.minZoom ?? null); } catch { /* ignore */ }
+            }
+            if (has('maxZoom')) {
+                try { map.setMaxZoom(o.maxZoom ?? null); } catch { /* ignore */ }
+            }
             if (has('maxBounds')) {
                 BitMapGlBase._applyMaxBounds(map, o.maxBounds);
             }
@@ -177,6 +210,7 @@ namespace BitBlazorUI {
             // Mark disposed first so any queued microtask notify can short-circuit
             // before invoking the .NET object.
             s.isDisposed = true;
+            if (s.viewTimer) { clearTimeout(s.viewTimer); s.viewTimer = null; }
             try {
                 // Remove the view-change listeners so no further notifications can
                 // be queued after dispose. map.remove() below also tears down all
@@ -188,7 +222,7 @@ namespace BitBlazorUI {
                     s.viewListeners = undefined;
                 }
                 for (const key in s.markers) {
-                    try { s.markers[key].marker.remove(); } catch { /* ignore */ }
+                    BitMapGlBase._destroyMarker(s.markers[key]);
                 }
                 if (s.navControl) {
                     try { s.map.removeControl(s.navControl); } catch { /* ignore */ }
@@ -221,6 +255,36 @@ namespace BitBlazorUI {
         public static flyTo(provider: string, id: string, lat: number, lng: number, zoom: number | null) {
             const s = BitMapGlBase._require(provider, id);
             s.map.flyTo({ center: [lng, lat], zoom: zoom ?? s.map.getZoom(), essential: true });
+        }
+
+        /**
+         * Projects a geographic coordinate to a pixel offset inside the map container.
+         *
+         * This is what lets BitMap anchor its own DOM - a Blazor-rendered popup, say - to a place
+         * on the map without handing that DOM to the mapping library, which would take it out of
+         * Blazor's hands. Returns null when the coordinate is not currently on screen.
+         */
+        public static project(provider: string, id: string, lat: number, lng: number): { x: number, y: number } | null {
+            const s = BitMapGlBase._store(provider)[id];
+            if (!s) return null;
+            try {
+                const point = s.map.project([lng, lat]);
+                return { x: point.x, y: point.y };
+            } catch {
+                return null;
+            }
+        }
+
+        public static zoomBy(provider: string, id: string, delta: number, animate: boolean) {
+            const s = BitMapGlBase._require(provider, id);
+            const target = s.map.getZoom() + delta;
+            if (animate === false) s.map.jumpTo({ zoom: target });
+            else s.map.easeTo({ zoom: target, essential: true });
+        }
+
+        public static panBy(provider: string, id: string, dx: number, dy: number, animate: boolean) {
+            const s = BitMapGlBase._require(provider, id);
+            s.map.panBy([dx, dy], { duration: animate === false ? 0 : 300 }, { essential: true });
         }
 
         public static fitBounds(provider: string, id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
@@ -262,45 +326,77 @@ namespace BitBlazorUI {
             } else if (opts.popupText) {
                 marker.setPopup(new gl.Popup({ offset: 25 }).setText(String(opts.popupText)));
             }
-            if (opts.title) marker.getElement()?.setAttribute('title', opts.title);
-
-            if (s.dotnetObj) {
-                const dn = s.dotnetObj;
-                marker.getElement()?.addEventListener('click', (ev: Event) => {
-                    ev.stopPropagation();
-                    dn.invokeMethodAsync('OnMarkerClick', markerId);
-                });
-                if (draggable) {
-                    marker.on('dragend', () => {
-                        const p = marker.getLngLat();
-                        dn.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
+            const element = marker.getElement();
+            if (element) {
+                if (opts.title) element.setAttribute('title', opts.title);
+                // GL markers are anonymous <div>s, so without a label a screen reader reads a
+                // row of identical, meaningless entries.
+                const accessibleName = opts.alt || opts.title;
+                if (opts.focusable !== false) {
+                    // A GL marker is an anonymous <div>: not focusable, not activatable, and
+                    // unlabelled. Give it the three things a button has so a keyboard user can
+                    // reach it and a screen reader can name it.
+                    element.tabIndex = 0;
+                    element.setAttribute('role', 'button');
+                    if (accessibleName) element.setAttribute('aria-label', accessibleName);
+                    element.addEventListener('keydown', (ev: KeyboardEvent) => {
+                        if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+                        ev.preventDefault();
+                        if (s.isDisposed) return;
+                        s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
+                        if (typeof marker.togglePopup === 'function' && marker.getPopup()) marker.togglePopup();
                     });
+                } else if (accessibleName) {
+                    element.setAttribute('aria-label', accessibleName);
+                    element.setAttribute('role', 'img');
                 }
             }
+            if (opts.opacity != null && opts.opacity !== 1) {
+                // setOpacity exists on MapLibre 4+/Mapbox 3+; fall back to the element for older builds.
+                if (typeof marker.setOpacity === 'function') marker.setOpacity(String(opts.opacity));
+                else if (element) element.style.opacity = String(opts.opacity);
+            }
+
+            // Read s.dotnetObj at dispatch time rather than capturing it: dispose() nulls
+            // the field, and a stale capture would invoke a released .NET reference.
+            marker.getElement()?.addEventListener('click', (ev: Event) => {
+                ev.stopPropagation();
+                if (s.isDisposed) return;
+                s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
+            });
+            if (draggable) {
+                marker.on('dragend', () => {
+                    if (s.isDisposed) return;
+                    const p = marker.getLngLat();
+                    s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
+                });
+            }
+
+            const tooltip = BitMapGlBase._attachTooltip(s, marker, opts);
 
             const existing = s.markers[markerId];
-            if (existing) try { existing.marker.remove(); } catch { /* ignore */ }
-            s.markers[markerId] = { marker };
+            if (existing) BitMapGlBase._destroyMarker(existing);
+            s.markers[markerId] = { marker, tooltip };
         }
 
         public static removeMarker(provider: string, id: string, markerId: string) {
             const s = BitMapGlBase._store(provider)[id];
             if (!s) return;
             const row = s.markers[markerId];
-            if (row) { row.marker.remove(); delete s.markers[markerId]; }
+            if (row) { BitMapGlBase._destroyMarker(row); delete s.markers[markerId]; }
         }
 
         public static clearMarkers(provider: string, id: string) {
             const s = BitMapGlBase._store(provider)[id];
             if (!s) return;
-            for (const key in s.markers) s.markers[key].marker.remove();
+            for (const key in s.markers) BitMapGlBase._destroyMarker(s.markers[key]);
             s.markers = {};
         }
 
         public static syncMarkers(provider: string, id: string, markerIds: string[], markers: any[]) {
             const s = BitMapGlBase._store(provider)[id];
             if (!s) return;
-            for (const key in s.markers) s.markers[key].marker.remove();
+            for (const key in s.markers) BitMapGlBase._destroyMarker(s.markers[key]);
             s.markers = {};
             const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
             for (let i = 0; i < len; i++) BitMapGlBase.addMarker(provider, id, markerIds[i], markers[i]);
@@ -310,7 +406,10 @@ namespace BitBlazorUI {
             const s = BitMapGlBase._store(provider)[id];
             if (!s) return;
             const row = s.markers[markerId];
-            if (row) row.marker.setLngLat([lng, lat]);
+            if (!row) return;
+            row.marker.setLngLat([lng, lat]);
+            // A permanent tooltip is positioned independently of its marker, so it has to follow.
+            if (row.tooltip) try { row.tooltip.setLngLat([lng, lat]); } catch { /* ignore */ }
         }
 
         public static openMarkerPopup(provider: string, id: string, markerId: string) {
@@ -338,7 +437,7 @@ namespace BitBlazorUI {
             });
             s.map.addLayer({
                 id: lineId, type: 'line', source: sourceId,
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
+                layout: BitMapGlBase._lineLayout(style),
                 paint: BitMapGlBase._linePaint(style),
             });
             s.vectorCatalog[layerId] = { sourceId, layerIds: [lineId], handlers: [] };
@@ -386,19 +485,17 @@ namespace BitBlazorUI {
             s.map.addLayer({ id: fillId, type: 'fill', source: sourceId, paint: BitMapGlBase._fillPaint(style) });
             s.map.addLayer({ id: lineId, type: 'line', source: sourceId, paint: BitMapGlBase._linePaint(style) });
             s.map.addLayer({ id: circleId, type: 'circle', source: sourceId, paint: BitMapGlBase._circlePaint(style) });
-            const dn = s.dotnetObj;
             const handlers: { layerId: string, handler: any }[] = [];
-            if (dn) {
-                const handler = (e: any) => {
-                    if (e.features?.[0]) dn.invokeMethodAsync('OnGeoJsonFeatureClick', layerId, e.features[0].properties || {});
-                };
-                s.map.on('click', fillId, handler);
-                s.map.on('click', lineId, handler);
-                s.map.on('click', circleId, handler);
-                handlers.push({ layerId: fillId, handler });
-                handlers.push({ layerId: lineId, handler });
-                handlers.push({ layerId: circleId, handler });
-            }
+            const handler = (e: any) => {
+                if (s.isDisposed || !e.features?.[0]) return;
+                s.dotnetObj?.invokeMethodAsync('OnGeoJsonFeatureClick', layerId, e.features[0].properties || {});
+            };
+            s.map.on('click', fillId, handler);
+            s.map.on('click', lineId, handler);
+            s.map.on('click', circleId, handler);
+            handlers.push({ layerId: fillId, handler });
+            handlers.push({ layerId: lineId, handler });
+            handlers.push({ layerId: circleId, handler });
             s.vectorCatalog[layerId] = { sourceId, layerIds: [fillId, lineId, circleId], handlers };
         }
 
@@ -418,7 +515,9 @@ namespace BitBlazorUI {
             const s = BitMapGlBase._require(provider, id);
             const sourceId = `bm-raster-${id}-${opts.id}`;
             const layerId = `bm-raster-layer-${id}-${opts.id}`;
-            const url = (opts.urlTemplate || '').replace('{s}', 'a');
+            // A GL raster source takes a list of tile URLs, so an {s} placeholder becomes one
+            // entry per subdomain and the sharding is preserved.
+            const urls = BitMapHelpers.expandSubdomains(opts.urlTemplate || '', opts.subdomains);
             // Remove existing overlay if present so new options take effect.
             const existing = s.tileOverlayCatalog[opts.id];
             if (existing || s.map.getSource(sourceId)) {
@@ -429,8 +528,9 @@ namespace BitBlazorUI {
                 delete s.tileOverlayCatalog[opts.id];
             }
             s.map.addSource(sourceId, {
-                type: 'raster', tiles: [url], tileSize: 256,
+                type: 'raster', tiles: urls, tileSize: 256,
                 attribution: opts.attribution || '',
+                minzoom: opts.minZoom ?? 0,
                 maxzoom: opts.maxZoom ?? 19,
             });
             s.map.addLayer({
@@ -453,6 +553,69 @@ namespace BitBlazorUI {
         }
 
         // ---- helpers ----
+
+        /**
+         * Removes a GL marker along with the popup bound to it. `Marker.remove()` only
+         * detaches the marker element - a popup that is currently open stays parented to
+         * the map container, so clearing markers would leave orphaned popups behind.
+         */
+        private static _destroyMarker(row: { marker: any, tooltip?: any }) {
+            try {
+                const popup = typeof row.marker.getPopup === 'function' ? row.marker.getPopup() : null;
+                if (popup) try { popup.remove(); } catch { /* ignore */ }
+            } catch { /* ignore */ }
+            // The tooltip is a second popup owned by this marker; it is parented to the map, so
+            // removing the marker alone would strand it.
+            if (row.tooltip) try { row.tooltip.remove(); } catch { /* ignore */ }
+            try { row.marker.remove(); } catch { /* ignore */ }
+        }
+
+        /**
+         * Gives a GL marker the hover tooltip Leaflet has natively, built from a second Popup that
+         * is added on hover and removed on leave.
+         *
+         * It also opens on focus, not only on hover: the marker is a keyboard tab stop, and a
+         * label a keyboard user cannot reach is not much of a label.
+         */
+        private static _attachTooltip(s: GlState, marker: any, opts: any): any {
+            const html = opts.tooltipHtml;
+            const text = opts.tooltipText;
+            if (!html && !text) return undefined;
+
+            const gl = s.gl;
+            const direction = opts.tooltipDirection;
+            const tooltip = new gl.Popup({
+                closeButton: false,
+                closeOnClick: false,
+                focusAfterOpen: false,
+                offset: 14,
+                className: 'bit-map-gl-tooltip',
+                // 'auto' is spelled as "let the library decide", which is the absent option.
+                anchor: direction && direction !== 'auto' ? direction : undefined,
+            });
+            if (html) tooltip.setHTML(String(html));
+            else tooltip.setText(String(text));
+
+            const show = () => {
+                if (s.isDisposed) return;
+                try { tooltip.setLngLat(marker.getLngLat()).addTo(s.map); } catch { /* ignore */ }
+            };
+            const hide = () => { try { tooltip.remove(); } catch { /* ignore */ } };
+
+            if (opts.tooltipPermanent) {
+                show();
+            } else {
+                const element = marker.getElement();
+                if (element) {
+                    element.addEventListener('mouseenter', show);
+                    element.addEventListener('mouseleave', hide);
+                    element.addEventListener('focus', show);
+                    element.addEventListener('blur', hide);
+                }
+            }
+
+            return tooltip;
+        }
 
         private static _require(provider: string, id: string): GlState {
             const s = BitMapGlBase._store(provider)[id];
@@ -522,6 +685,14 @@ namespace BitBlazorUI {
                 s.navControl = new gl.NavigationControl();
                 s.map.addControl(s.navControl, 'top-right');
             }
+        }
+
+        /** line-cap / line-join are layout properties in the GL style spec, not paint ones. */
+        private static _lineLayout(style: any) {
+            return {
+                'line-join': style?.lineJoin ?? 'round',
+                'line-cap': style?.lineCap ?? 'round',
+            };
         }
 
         private static _linePaint(style: any) {
@@ -597,10 +768,9 @@ namespace BitBlazorUI {
         }
 
         private static _wireVectorClick(s: GlState, glLayerId: string, layerId: string, kind: string): { layerId: string, handler: any } | null {
-            if (!s.dotnetObj) return null;
-            const dn = s.dotnetObj;
             const handler = (e: any) => {
-                dn.invokeMethodAsync('OnVectorClick', layerId, kind, { lat: e.lngLat.lat, lng: e.lngLat.lng });
+                if (s.isDisposed) return;
+                s.dotnetObj?.invokeMethodAsync('OnVectorClick', layerId, kind, { lat: e.lngLat.lat, lng: e.lngLat.lng });
             };
             s.map.on('click', glLayerId, handler);
             return { layerId: glLayerId, handler };

@@ -5,6 +5,14 @@ namespace BitBlazorUI {
 
     /** Helpers shared by every BitMap provider implementation. */
     export class BitMapHelpers {
+        /**
+         * Debounce window (ms) every provider uses before pushing an OnViewChanged
+         * notification into .NET. A single drag emits a burst of move/zoom events and
+         * each notification costs an interop round-trip (a SignalR message under
+         * Blazor Server), so they are coalesced into one call per idle window.
+         */
+        static readonly viewNotifyDebounceMs = 80;
+
         /** Convert a CSS hex color + alpha (0..1) to an rgba() string. */
         static hexToRgba(hex: string | undefined, alpha: number): string {
             if (!hex || typeof hex !== 'string') return `rgba(51,136,255,${alpha})`;
@@ -51,6 +59,12 @@ namespace BitBlazorUI {
                 points = 64;
             }
             points = Math.max(1, Math.min(4096, Math.floor(points)));
+            // A non-finite or negative radius would propagate NaN through every
+            // coordinate below and hand the renderer an unusable ring. Degenerate to a
+            // zero-radius ring (a point) instead of drawing garbage.
+            if (!Number.isFinite(radiusMeters) || radiusMeters < 0) {
+                radiusMeters = 0;
+            }
             const R = 6371000;
             const ring: [number, number][] = [];
             const lat1 = (lat * Math.PI) / 180;
@@ -70,6 +84,32 @@ namespace BitBlazorUI {
                 ring.push([(lng2 * 180) / Math.PI, (lat2 * 180) / Math.PI]);
             }
             return ring;
+        }
+
+        /** Split a subdomains option ("abc" or "a,b,c") into its individual values. */
+        static readSubdomains(subdomains: string | undefined): string[] {
+            const raw = (subdomains ?? 'abc').trim();
+            if (!raw) return ['a'];
+            // Accept both the CSV form and Leaflet's shorthand, where each character is a subdomain.
+            const parts = raw.includes(',') ? raw.split(',') : raw.split('');
+            const cleaned = parts.map(p => p.trim()).filter(p => p.length > 0);
+            return cleaned.length > 0 ? cleaned : ['a'];
+        }
+
+        /**
+         * Expands an {s} placeholder into one URL per subdomain. Only Leaflet has a subdomain
+         * concept of its own; the other backends take a list of tile URLs instead, which comes to
+         * the same thing - the source is still sharded across the hostnames.
+         */
+        static expandSubdomains(url: string, subdomains: string | undefined): string[] {
+            if (!url) return [''];
+            if (!url.includes('{s}')) return [url];
+            return BitMapHelpers.readSubdomains(subdomains).map(sub => url.split('{s}').join(sub));
+        }
+
+        /** The first expansion of an {s} URL, for backends that accept only a single URL. */
+        static firstSubdomainUrl(url: string, subdomains: string | undefined): string {
+            return BitMapHelpers.expandSubdomains(url, subdomains)[0];
         }
 
         /** Wait for a global to become defined. */

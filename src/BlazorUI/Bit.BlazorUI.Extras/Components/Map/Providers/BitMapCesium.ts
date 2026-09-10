@@ -14,6 +14,9 @@ namespace BitBlazorUI {
             _cesiumHandler: any,
             _viewTimer: any,
             _moveEndCallback: any,
+            _drag: { entity: any, markerId: string } | null,
+            _contextMenuBlocker: { canvas: HTMLCanvasElement, preventMenu: (evt: MouseEvent) => void } | null,
+            suppressBrowserContextMenu: boolean,
             _baseImageryLayer: any,
             ionAccessToken: string | undefined,
             imageryStyle: string | undefined,
@@ -126,6 +129,9 @@ namespace BitBlazorUI {
                 Cesium, viewer, dotnetObj,
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 _cesiumHandler: null as any, _viewTimer: null as any, _moveEndCallback: null as any,
+                _drag: null as ({ entity: any, markerId: string } | null),
+                _contextMenuBlocker: null as ({ canvas: HTMLCanvasElement, preventMenu: (evt: MouseEvent) => void } | null),
+                suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
                 _baseImageryLayer: null as any,
                 ionAccessToken,
                 imageryStyle: o.imageryStyle,
@@ -223,6 +229,14 @@ namespace BitBlazorUI {
             }
 
             // ---- camera ----
+            // Only touch the camera when the caller actually supplied a camera option.
+            // Otherwise every unrelated sync (a style toggle, a widget flag) would yank
+            // the view back to the provider's configured centre, discarding wherever the
+            // user had navigated to.
+            const hasCameraOption = ['center', 'zoom', 'altitude']
+                .some(k => Object.prototype.hasOwnProperty.call(o, k) && o[k] !== undefined && o[k] !== null);
+            if (!hasCameraOption) return;
+
             let lat: number, lng: number, altitude: number;
 
             const currentCartographic = Cesium.Cartographic.fromCartesian(s.viewer.camera.position);
@@ -308,6 +322,14 @@ namespace BitBlazorUI {
         public static dispose(id: string) {
             const s = BitMapCesium._maps[id];
             if (!s) return;
+            if (s._drag) {
+                try { s.viewer.scene.screenSpaceCameraController.enableInputs = true; } catch { /* ignore */ }
+                s._drag = null;
+            }
+            if (s._contextMenuBlocker) {
+                try { s._contextMenuBlocker.canvas.removeEventListener('contextmenu', s._contextMenuBlocker.preventMenu); } catch { /* ignore */ }
+                s._contextMenuBlocker = null;
+            }
             if (s._cesiumHandler) { try { s._cesiumHandler.destroy(); } catch { /* ignore */ } s._cesiumHandler = null; }
             if (s._viewTimer) { clearTimeout(s._viewTimer); s._viewTimer = null; }
             if (s._moveEndCallback) { try { s.viewer.camera.moveEnd.removeEventListener(s._moveEndCallback); } catch { /* ignore */ } s._moveEndCallback = null; }
@@ -341,6 +363,69 @@ namespace BitBlazorUI {
             s.viewer.camera.flyTo({ destination: s.Cesium.Cartesian3.fromDegrees(lng, lat, altitude), duration: 1.5 });
         }
 
+        /**
+         * Projects a geographic coordinate to a pixel offset inside the map container.
+         *
+         * This is what lets BitMap anchor its own DOM - a Blazor-rendered popup, say - to a place
+         * on the map without handing that DOM to the mapping library, which would take it out of
+         * Blazor's hands. Returns null when the coordinate is not currently on screen.
+         */
+        public static project(id: string, lat: number, lng: number): { x: number, y: number } | null {
+            const s = BitMapCesium._maps[id];
+            if (!s) return null;
+            try {
+                const Cesium = s.Cesium;
+                const position = Cesium.Cartesian3.fromDegrees(lng, lat);
+                // The helper was renamed in Cesium 1.109; accept either spelling so the provider
+                // is not pinned to one side of that rename.
+                const transforms = Cesium.SceneTransforms;
+                const window2d = transforms?.worldToWindowCoordinates?.(s.viewer.scene, position)
+                    ?? transforms?.wgs84ToWindowCoordinates?.(s.viewer.scene, position);
+                return window2d ? { x: window2d.x, y: window2d.y } : null;
+            } catch {
+                return null;
+            }
+        }
+
+        public static zoomBy(id: string, delta: number, _animate: boolean) {
+            const s = BitMapCesium._require(id);
+            // The other providers speak in zoom levels; Cesium's camera speaks in altitude.
+            // Convert through the same zoom<->altitude curve getView() reports with, so a
+            // ZoomIn() moves the camera by the same perceived step as everywhere else.
+            const carto = s.viewer.camera.positionCartographic;
+            const currentZoom = BitMapCesium._altitudeToZoom(carto.height);
+            const altitude = BitMapCesium._zoomToAltitude(currentZoom + delta);
+            s.viewer.camera.setView({
+                destination: s.Cesium.Cartesian3.fromDegrees(
+                    s.Cesium.Math.toDegrees(carto.longitude),
+                    s.Cesium.Math.toDegrees(carto.latitude),
+                    altitude),
+            });
+        }
+
+        public static panBy(id: string, dx: number, dy: number, _animate: boolean) {
+            const s = BitMapCesium._require(id);
+            const camera = s.viewer.camera;
+            const canvas = s.viewer.scene.canvas;
+            if (!canvas?.clientWidth || !canvas?.clientHeight) return;
+            // Translate the screen offset into a ground position and recentre there. Using
+            // pickEllipsoid rather than camera.moveRight/moveUp keeps the step proportional
+            // to what the user actually sees at the current tilt.
+            const from = camera.pickEllipsoid(
+                new s.Cesium.Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2),
+                s.viewer.scene.globe.ellipsoid);
+            const to = camera.pickEllipsoid(
+                new s.Cesium.Cartesian2(canvas.clientWidth / 2 + dx, canvas.clientHeight / 2 + dy),
+                s.viewer.scene.globe.ellipsoid);
+            if (!from || !to) return;
+            const fromCarto = s.Cesium.Cartographic.fromCartesian(from);
+            const toCarto = s.Cesium.Cartographic.fromCartesian(to);
+            const carto = camera.positionCartographic;
+            const lng = s.Cesium.Math.toDegrees(carto.longitude + (toCarto.longitude - fromCarto.longitude));
+            const lat = s.Cesium.Math.toDegrees(carto.latitude + (toCarto.latitude - fromCarto.latitude));
+            camera.setView({ destination: s.Cesium.Cartesian3.fromDegrees(lng, lat, carto.height) });
+        }
+
         public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, _paddingPx: number) {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
@@ -360,14 +445,6 @@ namespace BitBlazorUI {
         public static addMarker(id: string, markerId: string, opts: any) {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
-            // Cesium provider does not implement draggable markers yet.
-            // Warn loudly so callers don't think Draggable=true is silently honored.
-            // TODO: implement drag handling in _wireEvents (LEFT_DOWN/MOUSE_MOVE/LEFT_UP on
-            // a picked marker entity) and emit dotnetObj.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat, lng })
-            // when the drag ends, mirroring the pattern in BitMapAzureMaps/BitMapMapLibre.
-            if (opts && opts.draggable === true) {
-                console.warn(`BitMapCesium: Draggable markers are not supported by the Cesium provider; marker '${markerId}' will be added as non-draggable.`);
-            }
             const existing = s.markers[markerId];
             if (existing) try { s.viewer.entities.remove(existing); } catch { /* ignore */ }
             const billboard = opts.iconUrl ? {
@@ -395,6 +472,7 @@ namespace BitBlazorUI {
                 label: opts.title ? { text: opts.title, font: '12px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -50) } : undefined,
                 description: description,
                 _bmMarkerId: markerId,
+                _bmDraggable: !!opts.draggable,
             });
             s.markers[markerId] = ent;
         }
@@ -566,8 +644,12 @@ namespace BitBlazorUI {
             const existingTile = s.tileOverlays[opts.id];
             if (existingTile) try { s.viewer.imageryLayers.remove(existingTile, true); } catch { /* ignore */ }
             const layer = s.viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
-                url: (opts.urlTemplate || '').replace('{s}', 'a'),
+                // UrlTemplateImageryProvider spells the placeholder {s} too, and takes the
+                // subdomain list separately.
+                url: opts.urlTemplate || '',
+                subdomains: BitMapHelpers.readSubdomains(opts.subdomains),
                 credit: opts.attribution || '',
+                minimumLevel: opts.minZoom ?? 0,
                 maximumLevel: opts.maxZoom ?? 19,
             }));
             layer.alpha = opts.opacity ?? 1;
@@ -678,53 +760,116 @@ namespace BitBlazorUI {
         }
 
         private static _wireEvents(s: any) {
-            const Cesium = s.Cesium, viewer = s.viewer, dn = s.dotnetObj;
+            const Cesium = s.Cesium, viewer = s.viewer;
+            // Read s.dotnetObj at dispatch time; dispose() nulls it, and a captured
+            // handle would invoke an already-released DotNetObjectReference.
+            const dn = () => s.dotnetObj;
 
             const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
             handler.setInputAction((click: any) => {
+                // A drag ends with a LEFT_UP that the browser also reports as a click;
+                // skip it so finishing a drag doesn't also raise OnMarkerClick.
+                if (s._drag) return;
                 const picked = viewer.scene.pick(click.position);
                 if (picked && picked.id) {
                     const ent = picked.id;
                     const mid = ent._bmMarkerId;
-                    if (mid && s.markers[mid]) { if (dn) dn.invokeMethodAsync('OnMarkerClick', mid); return; }
+                    if (mid && s.markers[mid]) { dn()?.invokeMethodAsync('OnMarkerClick', mid); return; }
                     const lid = ent._bmLayerId;
                     const kind = ent._bmVectorKind;
                     // GeoJSON feature click
                     if (lid && ent._bmKind === 'geojson' && s.geoJsonLayers[lid]) {
-                        if (dn) {
+                        const target = dn();
+                        if (target) {
                             const props = ent.properties ? ent.properties.getValue(Cesium.JulianDate.now()) : {};
-                            dn.invokeMethodAsync('OnGeoJsonFeatureClick', lid, props || {});
+                            target.invokeMethodAsync('OnGeoJsonFeatureClick', lid, props || {});
                         }
                         return;
                     }
                     // Vector layer click
                     if (lid && s.layers[lid]) {
                         const carte = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
-                        if (carte && dn) {
+                        if (carte) {
                             const c = Cesium.Cartographic.fromCartesian(carte);
-                            dn.invokeMethodAsync('OnVectorClick', lid, kind, { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) });
+                            dn()?.invokeMethodAsync('OnVectorClick', lid, kind, { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) });
                         }
                         return;
                     }
                 }
                 const carte = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
-                if (carte && dn) {
+                if (carte) {
                     const c = Cesium.Cartographic.fromCartesian(carte);
-                    dn.invokeMethodAsync('OnClick', { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) });
+                    dn()?.invokeMethodAsync('OnClick', { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) });
                 }
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
             handler.setInputAction((click: any) => {
                 const carte = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
-                if (carte && dn) {
+                if (carte) {
                     const c = Cesium.Cartographic.fromCartesian(carte);
-                    dn.invokeMethodAsync('OnDoubleClick', { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) });
+                    dn()?.invokeMethodAsync('OnDoubleClick', { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) });
                 }
             }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
+            // ---- draggable markers ----
+            // Cesium has no built-in marker dragging, so drive it from the screen-space
+            // events: grab the picked marker entity on LEFT_DOWN, follow the pointer on
+            // MOUSE_MOVE, and report the final position on LEFT_UP. Camera input is
+            // suspended for the duration so the globe doesn't spin under the marker.
+            const cameraController = viewer.scene.screenSpaceCameraController;
+            const pickPosition = (screenPosition: any) => {
+                const carte = viewer.camera.pickEllipsoid(screenPosition, viewer.scene.globe.ellipsoid);
+                if (!carte) return null;
+                const c = Cesium.Cartographic.fromCartesian(carte);
+                return { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) };
+            };
+
+            handler.setInputAction((event: any) => {
+                const picked = viewer.scene.pick(event.position);
+                const ent = picked?.id;
+                const mid = ent?._bmMarkerId;
+                if (!mid || !ent._bmDraggable || s.markers[mid] !== ent) return;
+                s._drag = { entity: ent, markerId: mid };
+                cameraController.enableInputs = false;
+            }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+
+            handler.setInputAction((movement: any) => {
+                if (!s._drag) return;
+                const p = pickPosition(movement.endPosition);
+                if (!p) return;
+                s._drag.entity.position = Cesium.Cartesian3.fromDegrees(p.lng, p.lat);
+            }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+            handler.setInputAction((event: any) => {
+                const drag = s._drag;
+                if (!drag) return;
+                s._drag = null;
+                cameraController.enableInputs = true;
+                const p = pickPosition(event.position);
+                if (!p) return;
+                drag.entity.position = Cesium.Cartesian3.fromDegrees(p.lng, p.lat);
+                dn()?.invokeMethodAsync('OnMarkerDragEnd', drag.markerId, p);
+            }, Cesium.ScreenSpaceEventType.LEFT_UP);
+
+            handler.setInputAction((click: any) => {
+                const carte = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
+                if (!carte) return;
+                const c = Cesium.Cartographic.fromCartesian(carte);
+                dn()?.invokeMethodAsync('OnContextMenu', { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) });
+            }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+
+            // Cesium's own handler already swallows the browser menu over the canvas, so the
+            // suppress option only has to cover the widget chrome around it.
+            if (s.suppressBrowserContextMenu) {
+                const canvas = viewer.scene.canvas as HTMLCanvasElement;
+                const preventMenu = (evt: MouseEvent) => evt.preventDefault();
+                canvas.addEventListener('contextmenu', preventMenu);
+                s._contextMenuBlocker = { canvas, preventMenu };
+            }
+
             const moveEndCallback = () => {
                 clearTimeout(s._viewTimer);
-                s._viewTimer = setTimeout(() => BitMapCesium._notifyView(s), 80);
+                s._viewTimer = setTimeout(() => BitMapCesium._notifyView(s), BitMapHelpers.viewNotifyDebounceMs);
             };
             viewer.camera.moveEnd.addEventListener(moveEndCallback);
 

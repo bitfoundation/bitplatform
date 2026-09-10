@@ -21,6 +21,15 @@ namespace BitBlazorUI {
         public static flyTo(id: string, lat: number, lng: number, zoom: number | null) {
             return BitMapGlBase.flyTo(BitMapMapLibre._key, id, lat, lng, zoom);
         }
+        public static project(id: string, lat: number, lng: number) {
+            return BitMapGlBase.project(BitMapMapLibre._key, id, lat, lng);
+        }
+        public static zoomBy(id: string, delta: number, animate: boolean) {
+            return BitMapGlBase.zoomBy(BitMapMapLibre._key, id, delta, animate);
+        }
+        public static panBy(id: string, dx: number, dy: number, animate: boolean) {
+            return BitMapGlBase.panBy(BitMapMapLibre._key, id, dx, dy, animate);
+        }
         public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
             return BitMapGlBase.fitBounds(BitMapMapLibre._key, id, swLat, swLng, neLat, neLng, paddingPx);
         }

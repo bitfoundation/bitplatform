@@ -12,6 +12,7 @@ namespace BitBlazorUI {
             geoJsonLayers: { [k: string]: { source: any, layerIds: string[] } },
             tileOverlays: { [k: string]: string },
             zoomControl: any, scaleControl: any,
+            suppressBrowserContextMenu: boolean,
         } } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -43,6 +44,7 @@ namespace BitBlazorUI {
                 atlas, map, dotnetObj,
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 zoomControl: null as any, scaleControl: null as any,
+                suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
             };
             BitMapAzureMaps._ensureZoom(state, o.zoomControl !== false);
             BitMapAzureMaps._ensureScale(state, !!o.showScaleControl);
@@ -74,8 +76,18 @@ namespace BitBlazorUI {
         public static dispose(id: string) {
             const s = BitMapAzureMaps._maps[id];
             if (!s) return;
-            try { s.map.dispose(); } catch { /* ignore */ }
+            // Drop the .NET handle before tearing down so any queued view notification
+            // short-circuits instead of invoking a released reference.
             s.dotnetObj = null;
+            // Popups are attached to the map, not to the marker, so map.dispose() alone
+            // can leave an open popup's DOM parented to the (now detached) container.
+            for (const k in s.markers) {
+                const popup = s.markers[k].popup;
+                if (popup) try { popup.remove(); } catch { /* ignore */ }
+                const tooltip = s.markers[k].tooltip;
+                if (tooltip) try { tooltip.remove(); } catch { /* ignore */ }
+            }
+            try { s.map.dispose(); } catch { /* ignore */ }
             delete BitMapAzureMaps._maps[id];
         }
 
@@ -108,6 +120,43 @@ namespace BitBlazorUI {
             s.map.setCamera({ center: [lng, lat], zoom: zoom ?? s.map.getCamera().zoom, type: 'fly', duration: 1200 });
         }
 
+        /**
+         * Projects a geographic coordinate to a pixel offset inside the map container.
+         *
+         * This is what lets BitMap anchor its own DOM - a Blazor-rendered popup, say - to a place
+         * on the map without handing that DOM to the mapping library, which would take it out of
+         * Blazor's hands. Returns null when the coordinate is not currently on screen.
+         */
+        public static project(id: string, lat: number, lng: number): { x: number, y: number } | null {
+            const s = BitMapAzureMaps._maps[id];
+            if (!s) return null;
+            try {
+                const pixels = s.map.positionsToPixels([[lng, lat]]);
+                const pixel = pixels && pixels[0];
+                return pixel ? { x: pixel[0], y: pixel[1] } : null;
+            } catch {
+                return null;
+            }
+        }
+
+        public static zoomBy(id: string, delta: number, animate: boolean) {
+            const s = BitMapAzureMaps._require(id);
+            const cam = s.map.getCamera();
+            s.map.setCamera({ zoom: (cam.zoom ?? 0) + delta, type: animate === false ? 'jump' : 'ease' });
+        }
+
+        public static panBy(id: string, dx: number, dy: number, animate: boolean) {
+            const s = BitMapAzureMaps._require(id);
+            // Atlas exposes no pixel-space pan, so project the container centre, offset it
+            // in screen space, and unproject the result back to a geographic position.
+            const canvas = s.map.getCanvasContainer?.() ?? s.map.getMapContainer?.();
+            const width = canvas?.clientWidth ?? 0, height = canvas?.clientHeight ?? 0;
+            if (!width || !height) return;
+            const positions = s.map.pixelsToPositions([[width / 2 + dx, height / 2 + dy]]);
+            if (!positions || positions.length === 0) return;
+            s.map.setCamera({ center: positions[0], type: animate === false ? 'jump' : 'ease' });
+        }
+
         public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
             const s = BitMapAzureMaps._require(id);
             const pad = paddingPx ?? 48;
@@ -130,22 +179,34 @@ namespace BitBlazorUI {
         public static addMarker(id: string, markerId: string, opts: any) {
             const s = BitMapAzureMaps._require(id);
             const atlas = s.atlas;
+            // Popup content is built as real DOM rather than an HTML string so plain-text
+            // content goes through textContent (no escaping to get wrong) and so the
+            // padding comes from a class in BitMap.scss instead of an inline style
+            // attribute, which a strict CSP without 'unsafe-inline' would strip.
             let popup: any = null;
-            if (opts.popupHtml) {
-                popup = new atlas.Popup({ content: `<div style="padding:6px 8px;">${opts.popupHtml}</div>`, pixelOffset: [0, -28], closeButton: true });
-            } else if (opts.popupText) {
-                const escaped = String(opts.popupText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                popup = new atlas.Popup({ content: `<div style="padding:6px 8px;">${escaped}</div>`, pixelOffset: [0, -28], closeButton: true });
+            if (opts.popupHtml || opts.popupText) {
+                const content = document.createElement('div');
+                content.className = 'bit-map-popup-content';
+                if (opts.popupHtml) content.innerHTML = String(opts.popupHtml);
+                else content.textContent = String(opts.popupText);
+                popup = new atlas.Popup({ content, pixelOffset: [0, -28], closeButton: true });
             }
             const markerOpts: any = { position: [opts.lng, opts.lat], draggable: !!opts.draggable };
             if (opts.iconUrl) {
                 const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
                 const div = document.createElement('div');
-                div.style.cssText = `position:relative;width:${w}px;height:${h}px;transform:translate(-50%,-100%);`;
+                // Size is per-marker data so it stays inline (CSP style-src does not
+                // block the style *property*, only a style *attribute* in parsed HTML);
+                // everything static lives in the .bit-map-marker-icon class.
+                div.className = 'bit-map-marker-icon';
+                div.style.width = `${w}px`;
+                div.style.height = `${h}px`;
                 const img = document.createElement('img');
                 img.src = opts.iconUrl;
                 img.width = w;
                 img.height = h;
+                // The accessible name of a marker is its title; the image itself is
+                // decorative, so keep it out of the accessibility tree.
                 img.alt = '';
                 div.appendChild(img);
                 markerOpts.htmlContent = div;
@@ -154,6 +215,7 @@ namespace BitBlazorUI {
             if (popup) markerOpts.popup = popup;
 
             const marker = new atlas.HtmlMarker(markerOpts);
+            const tooltip = BitMapAzureMaps._buildTooltip(s, opts);
             const existing = s.markers[markerId];
             if (existing) {
                 if (existing.popup) {
@@ -163,21 +225,34 @@ namespace BitBlazorUI {
                 try { s.map.markers.remove(existing.marker); } catch { /* ignore */ }
             }
             s.map.markers.add(marker);
-            s.markers[markerId] = { marker, popup };
+            s.markers[markerId] = { marker, popup, tooltip };
 
-            if (s.dotnetObj) {
-                const dn = s.dotnetObj;
-                s.map.events.add('click', marker, (e: any) => {
-                    e.originalEvent?.stopPropagation?.();
-                    dn.invokeMethodAsync('OnMarkerClick', markerId);
-                    if (popup) marker.togglePopup();
-                });
-                if (opts.draggable) {
-                    s.map.events.add('dragend', marker, () => {
-                        const p = marker.getOptions().position ?? [0, 0];
-                        dn.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p[1], lng: p[0] });
-                    });
+            if (tooltip) {
+                // Atlas has no tooltip concept, so it is a second popup shown on hover - and on
+                // focus too, so a keyboard user reaches the same label.
+                const position = [opts.lng, opts.lat];
+                const show = () => { try { tooltip.setOptions({ position }); tooltip.open(s.map); } catch { /* ignore */ } };
+                const hide = () => { try { tooltip.close(); } catch { /* ignore */ } };
+                if (opts.tooltipPermanent) {
+                    show();
+                } else {
+                    s.map.events.add('mouseenter', marker, show);
+                    s.map.events.add('mouseleave', marker, hide);
                 }
+            }
+
+            // Read s.dotnetObj at dispatch time rather than capturing it: dispose() nulls
+            // the field, and a stale capture would invoke a released .NET reference.
+            s.map.events.add('click', marker, (e: any) => {
+                e.originalEvent?.stopPropagation?.();
+                s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
+                if (popup) marker.togglePopup();
+            });
+            if (opts.draggable) {
+                s.map.events.add('dragend', marker, () => {
+                    const p = marker.getOptions().position ?? [0, 0];
+                    s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p[1], lng: p[0] });
+                });
             }
         }
 
@@ -187,6 +262,7 @@ namespace BitBlazorUI {
             const e = s.markers[markerId];
             if (!e) return;
             if (e.popup) e.popup.remove();
+            if (e.tooltip) e.tooltip.remove();
             s.map.markers.remove(e.marker);
             delete s.markers[markerId];
         }
@@ -196,6 +272,7 @@ namespace BitBlazorUI {
             if (!s) return;
             for (const k in s.markers) {
                 if (s.markers[k].popup) s.markers[k].popup.remove();
+                if (s.markers[k].tooltip) s.markers[k].tooltip.remove();
                 s.map.markers.remove(s.markers[k].marker);
             }
             s.markers = {};
@@ -206,6 +283,7 @@ namespace BitBlazorUI {
             if (!s) return;
             for (const k in s.markers) {
                 if (s.markers[k].popup) s.markers[k].popup.remove();
+                if (s.markers[k].tooltip) s.markers[k].tooltip.remove();
                 s.map.markers.remove(s.markers[k].marker);
             }
             s.markers = {};
@@ -217,7 +295,10 @@ namespace BitBlazorUI {
             const s = BitMapAzureMaps._maps[id];
             if (!s) return;
             const e = s.markers[markerId];
-            if (e) e.marker.setOptions({ position: [lng, lat] });
+            if (!e) return;
+            e.marker.setOptions({ position: [lng, lat] });
+            // A permanent tooltip is positioned independently of its marker, so it has to follow.
+            if (e.tooltip) try { e.tooltip.setOptions({ position: [lng, lat] }); } catch { /* ignore */ }
         }
 
         public static openMarkerPopup(id: string, markerId: string) {
@@ -348,8 +429,11 @@ namespace BitBlazorUI {
             if (existingTlId) { try { s.map.layers.remove(existingTlId); } catch { /* ignore */ } delete s.tileOverlays[opts.id]; }
             const tlId = `_bm_tile_${opts.id}`;
             const tl = new s.atlas.layer.TileLayer({
-                tileUrl: (opts.urlTemplate || '').replace('{s}', 'a'),
+                // Atlas has its own subdomains option and keeps the {s} placeholder in the URL.
+                tileUrl: opts.urlTemplate || '',
+                subdomains: BitMapHelpers.readSubdomains(opts.subdomains),
                 opacity: opts.opacity ?? 1,
+                minSourceZoom: opts.minZoom ?? 0,
                 maxSourceZoom: opts.maxZoom ?? 19,
             }, tlId);
             s.map.layers.add(tl);
@@ -369,6 +453,16 @@ namespace BitBlazorUI {
             const s = BitMapAzureMaps._maps[id];
             if (!s) throw new Error(`BitMapAzureMaps: unknown map id '${id}'`);
             return s;
+        }
+
+        /** Builds the hover tooltip popup for a marker, or undefined when it has no tooltip. */
+        private static _buildTooltip(s: any, opts: any): any {
+            if (!opts.tooltipHtml && !opts.tooltipText) return undefined;
+            const content = document.createElement('div');
+            content.className = 'bit-map-popup-content bit-map-popup-content-tooltip';
+            if (opts.tooltipHtml) content.innerHTML = String(opts.tooltipHtml);
+            else content.textContent = String(opts.tooltipText);
+            return new s.atlas.Popup({ content, pixelOffset: [0, -32], closeButton: false });
         }
 
         private static _removeExisting(s: any, layerId: string) {
@@ -428,31 +522,36 @@ namespace BitBlazorUI {
         }
 
         private static _wireEvents(s: any) {
-            const map = s.map, dn = s.dotnetObj;
+            const map = s.map;
+            // Read s.dotnetObj at dispatch time; dispose() nulls it.
+            const dn = () => s.dotnetObj;
             map.events.add('click', (e: any) => {
                 if (e.shapes && e.shapes.length > 0) {
                     const shape = e.shapes[0];
                     const props = shape.getProperties ? shape.getProperties() : (shape.properties ?? {});
                     if (props._bmKind === 'geojson' && s.geoJsonLayers[props._bmLayerId]) {
-                        if (dn) {
+                        const target = dn();
+                        if (target) {
                             const clean: any = {};
                             for (const [k, v] of Object.entries(props)) if (!k.startsWith('_bm')) clean[k] = v;
-                            dn.invokeMethodAsync('OnGeoJsonFeatureClick', props._bmLayerId, clean);
+                            target.invokeMethodAsync('OnGeoJsonFeatureClick', props._bmLayerId, clean);
                         }
                         return;
                     }
                     if (props._bmKind === 'vector' && s.layers[props._bmLayerId]) {
-                        if (dn) {
-                            const pos = e.position ?? [0, 0];
-                            dn.invokeMethodAsync('OnVectorClick', props._bmLayerId, props._bmVectorKind || 'vector', { lat: pos[1], lng: pos[0] });
-                        }
+                        const pos = e.position ?? [0, 0];
+                        dn()?.invokeMethodAsync('OnVectorClick', props._bmLayerId, props._bmVectorKind || 'vector', { lat: pos[1], lng: pos[0] });
                         return;
                     }
                 }
-                if (dn && e.position) dn.invokeMethodAsync('OnClick', { lat: e.position[1], lng: e.position[0] });
+                if (e.position) dn()?.invokeMethodAsync('OnClick', { lat: e.position[1], lng: e.position[0] });
             });
             map.events.add('dblclick', (e: any) => {
-                if (dn && e.position) dn.invokeMethodAsync('OnDoubleClick', { lat: e.position[1], lng: e.position[0] });
+                if (e.position) dn()?.invokeMethodAsync('OnDoubleClick', { lat: e.position[1], lng: e.position[0] });
+            });
+            map.events.add('contextmenu', (e: any) => {
+                if (s.suppressBrowserContextMenu) e.originalEvent?.preventDefault?.();
+                if (e.position) dn()?.invokeMethodAsync('OnContextMenu', { lat: e.position[1], lng: e.position[0] });
             });
             let viewTimer: any = null;
             map.events.add('moveend', () => { clearTimeout(viewTimer); viewTimer = setTimeout(() => BitMapAzureMaps._notifyView(s), 80); });

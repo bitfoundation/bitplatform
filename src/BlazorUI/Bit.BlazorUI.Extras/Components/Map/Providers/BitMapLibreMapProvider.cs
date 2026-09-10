@@ -28,6 +28,10 @@ public sealed class BitMapLibreMapProvider : BitMapProviderBase
     public override IReadOnlyList<string> Stylesheets => ["https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"];
 
     /// <inheritdoc />
+    /// <remarks>This backend renders through WebGL.</remarks>
+    public override bool RequiresWebGl => true;
+
+    /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
         if (string.IsNullOrWhiteSpace(StyleUrl))

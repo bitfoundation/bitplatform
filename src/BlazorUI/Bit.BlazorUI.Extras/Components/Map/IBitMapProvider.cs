@@ -36,6 +36,18 @@ public interface IBitMapProvider
     bool ScriptsAreModules { get; }
 
     /// <summary>
+    /// Whether this backend renders through WebGL. A browser with WebGL disabled or
+    /// unavailable paints a permanently blank canvas for such a provider, so
+    /// <see cref="BitMap{TMapProvider}"/> checks for support up front and shows its
+    /// unsupported state instead of an empty box.
+    /// <para>
+    /// Defaults to <c>false</c> so existing providers keep compiling; the built-in
+    /// GL-backed ones (MapLibre, Mapbox, Azure Maps, Cesium) override it.
+    /// </para>
+    /// </summary>
+    bool RequiresWebGl => false;
+
+    /// <summary>
     /// Build a JS-friendly anonymous options payload that the provider's <c>init</c> /
     /// <c>sync</c> functions consume.
     /// </summary>

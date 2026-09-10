@@ -41,8 +41,40 @@ public abstract class BitMapProviderBase : IBitMapProvider
     /// <summary>Enable +/- and arrow key navigation when the map container is focused.</summary>
     public bool KeyboardNavigation { get; set; } = true;
 
+    /// <summary>
+    /// Suppress the browser's own context menu over the map, so a right-click reaches
+    /// <see cref="BitMap{TMapProvider}.OnContextMenu"/> and nothing else.
+    /// <para>
+    /// Off by default: taking away the browser menu costs the user "open in new tab", "copy image"
+    /// and their assistive-technology equivalents, so it is only worth it when you actually put a
+    /// menu of your own in its place.
+    /// </para>
+    /// </summary>
+    public bool SuppressBrowserContextMenu { get; set; }
+
     /// <summary>Restrict panning to this geographic rectangle (Leaflet/MapLibre/Mapbox only).</summary>
     public BitMapLatLngBounds? MaxBounds { get; set; }
+
+    /// <summary>
+    /// Options passed straight through to the underlying mapping library's map constructor, for
+    /// anything this component does not model.
+    /// <para>
+    /// They are merged last, so an entry here also overrides one of the options above - which is
+    /// the point: no wrapper models every option of seven libraries, and without an escape hatch
+    /// the only remedy for a missing one is a new release.
+    /// </para>
+    /// <para>
+    /// <b>Provider support:</b> Leaflet, MapLibre and Mapbox spread these into their map
+    /// constructor. OpenLayers, ArcGIS, Azure Maps and Cesium split their configuration across
+    /// several objects with no single place to put them, so they ignore this.
+    /// </para>
+    /// <para>
+    /// Nothing here is validated: an option the library does not recognise is silently ignored by
+    /// it, and one it recognises but dislikes surfaces as an init failure through
+    /// <c>OnInteropError</c>.
+    /// </para>
+    /// </summary>
+    public Dictionary<string, object?> AdditionalOptions { get; } = new(StringComparer.Ordinal);
 
     /// <inheritdoc />
     public abstract string Key { get; }
@@ -58,6 +90,9 @@ public abstract class BitMapProviderBase : IBitMapProvider
 
     /// <inheritdoc />
     public virtual bool ScriptsAreModules => false;
+
+    /// <inheritdoc />
+    public virtual bool RequiresWebGl => false;
 
     /// <summary>
     /// Provider-specific extra fields. Override in a derived class and merge with
@@ -125,7 +160,7 @@ public abstract class BitMapProviderBase : IBitMapProvider
     {
         ValidateCommonOptions();
 
-        return new Dictionary<string, object?>
+        var options = new Dictionary<string, object?>
         {
             ["center"] = new Dictionary<string, object?> { ["lat"] = Center.Latitude, ["lng"] = Center.Longitude },
             ["zoom"] = Zoom,
@@ -139,6 +174,7 @@ public abstract class BitMapProviderBase : IBitMapProvider
             ["dragging"] = Dragging,
             ["dragPan"] = Dragging,
             ["keyboardNavigation"] = KeyboardNavigation,
+            ["suppressBrowserContextMenu"] = SuppressBrowserContextMenu,
             ["maxBounds"] = MaxBounds is { } b
                 ? new Dictionary<string, object?>
                 {
@@ -147,6 +183,16 @@ public abstract class BitMapProviderBase : IBitMapProvider
                 }
                 : null,
         };
+
+        if (AdditionalOptions.Count > 0)
+        {
+            // Carried separately rather than merged into the payload's own keys: the provider
+            // spreads them over the library's constructor options, where they are meant to win,
+            // while the keys above describe what this component itself understands.
+            options["additionalOptions"] = new Dictionary<string, object?>(AdditionalOptions, StringComparer.Ordinal);
+        }
+
+        return options;
     }
 
     /// <summary>

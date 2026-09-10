@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/map"
             Title="Map"
-            Description="BitMap is a generic, provider-pluggable interactive map component. It supports Leaflet, MapLibre GL, Mapbox GL, OpenLayers, ArcGIS, Azure Maps, and CesiumJS." />
+            Description="BitMap is a provider-pluggable interactive map. One API drives markers, clustering, vector shapes, GeoJSON and tile overlays across Leaflet, MapLibre GL, Mapbox GL, OpenLayers, ArcGIS, Azure Maps and CesiumJS." />
 
 <DemoPage Name="Map"
-          Description="BitMap is a generic, provider-pluggable interactive map component. It supports Leaflet, MapLibre GL, Mapbox GL, OpenLayers, ArcGIS, Azure Maps, and CesiumJS."
+          Description="BitMap is a provider-pluggable interactive map. The same API drives markers, vector shapes, GeoJSON layers and tile overlays across seven backends - Leaflet, MapLibre GL, Mapbox GL, OpenLayers, ArcGIS, Azure Maps and CesiumJS - with two-way bound camera and marker collections on top. It also supplies what the backends leave out, uniformly: marker clustering, popups whose content is live Blazor markup, container auto-resizing, cooperative gestures, a keyboard and screen-reader story, and explicit loading, failure and unsupported states."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           GitHubExtrasUrl="Map/BitMap.razor"
@@ -22,12 +22,28 @@
             Providers: <code>BitLeafletMapProvider</code>, <code>BitMapLibreMapProvider</code>, <code>BitMapboxMapProvider</code>,
             <code>BitOpenLayersMapProvider</code>, <code>BitArcGisMapProvider</code>, <code>BitAzureMapsMapProvider</code>, <code>BitCesiumMapProvider</code>.
             Mapbox, Azure Maps, and ArcGIS (for non-OSM basemaps) require an API key on the provider instance.
+            <br />
+            The provider is compared by reference, so mutating an instance you already passed in does not push anything to the
+            map - assign a new instance to apply changed options. Everything else is imperative: hold a <code>@@ref</code> and
+            wait for <code>OnReady</code> before calling a map method.
+            <br />
+            For anything this component does not model, <code>AdditionalOptions</code> on the provider is passed straight through
+            to the underlying library's map constructor and merged last, so it also overrides what the component does model.
+            Leaflet, MapLibre and Mapbox honour it; the rest split their configuration across several objects with no single
+            place to put it.
         </BitText>
     </NotesTemplate>
     <Examples>
 
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <div>The simplest usage: a Leaflet map centered on London using the bundled Leaflet 1.9.4 library (no CDN, no token).</div>
+            <div>
+                The simplest usage: a Leaflet map centred on London. Leaflet 1.9.4 ships inside the Extras package rather than
+                loading from a CDN, so this map needs no token, no network dependency beyond the tiles, and no CSP entry for a
+                third-party script host.
+                <br /><br />
+                The map fills its container, so give that container a height - a map inside a parent with no height of its own
+                collapses to nothing.
+            </div>
             <br />
             <div style="height:360px">
                 <BitMap TMapProvider="BitLeafletMapProvider" />
@@ -36,8 +52,14 @@
 
         <DemoExample Title="Markers" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                Add markers with HTML popups, tooltips, and drag support via the imperative API.
-                Always wait for <code>OnReady</code> before calling map methods.
+                Markers are added imperatively and keyed by a string id, so each one can be moved, removed or replaced on its own.
+                <code>PopupHtml</code> renders raw HTML and <code>PopupText</code> is escaped for you - pass anything
+                user-supplied through the latter. Set <code>Alt</code> on every marker: it becomes the accessible name, and
+                without one a screen reader reads a row of indistinguishable "marker" entries.
+                <br /><br />
+                Wait for <code>OnReady</code> before calling any map method; until then the underlying map does not exist yet and
+                the call throws. <code>SyncMarkers</code> replaces the whole set in a single interop call, which is worth reaching
+                for over a loop of <code>AddMarker</code> on a Blazor Server circuit.
             </div>
             <br />
             <div style="height:380px">
@@ -61,8 +83,14 @@
 
         <DemoExample Title="Vectors" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                Draw polylines, polygons, circles, and rectangles. Each layer has a string id so you can remove or replace it individually.
-                Clicking a shape raises <code>OnVectorClick</code>.
+                Draw polylines, polygons, circles (radius in metres, so they stay geographically true as you zoom) and rectangles.
+                Each layer carries a string id, so adding a shape under an id that already exists replaces it rather than stacking
+                a second copy.
+                <br /><br />
+                <code>BitMapVectorPathStyle</code> covers stroke colour, width, opacity, dash pattern and offset, line cap and
+                join, and the fill. Note <code>Fill = false</code> is not the same as a zero fill opacity: an invisible fill is
+                still rendered and still swallows clicks. Clicking a shape raises <code>OnVectorClick</code> with the layer id,
+                the kind of geometry, and where the click landed.
             </div>
             <br />
             <div style="height:380px">
@@ -83,7 +111,13 @@
 
         <DemoExample Title="GeoJSON" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                Load any GeoJSON string as a styled layer. Feature clicks forward the feature's <code>properties</code> as a <code>JsonElement</code>.
+                Load any GeoJSON document as a styled layer. It is passed as a string rather than a modelled object graph -
+                GeoJSON is already the wire format, so serializing it twice would be pure overhead on a large payload.
+                <br /><br />
+                Clicking a feature raises <code>OnGeoJsonFeatureClick</code> with that feature's <code>properties</code> as a
+                <code>JsonElement</code>, so you can read whatever fields your data actually carries without modelling them
+                up front. Treat those properties as untrusted: they are data, and rendering them as HTML is how a GeoJSON
+                document turns into a script injection.
             </div>
             <br />
             <div style="height:380px">
@@ -103,8 +137,13 @@
 
         <DemoExample Title="Custom tiles" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
-                Switch the base tile layer at runtime by updating the <code>Provider</code> parameter.
-                Any Leaflet-compatible XYZ template is accepted.
+                Switch the basemap at runtime by assigning a new <code>Provider</code> instance - any XYZ template with
+                <code>{z}</code>, <code>{x}</code> and <code>{y}</code> placeholders is accepted, plus the optional
+                <code>{s}</code> subdomain.
+                <br /><br />
+                Set <code>TileAttribution</code> to whatever the tile source requires. This is a licence term, not decoration:
+                OpenStreetMap-derived tiles must credit "© OpenStreetMap contributors" visibly, and the public
+                <code>tile.openstreetmap.org</code> server is explicitly not for production traffic.
             </div>
             <br />
             <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
@@ -119,8 +158,17 @@
 
         <DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                <code>OnClick</code> returns the clicked coordinate. <code>OnViewChanged</code> fires after every pan or zoom.
-                Use <code>FlyTo</code> for animated navigation and <code>InvalidateSize</code> after a container resize.
+                <code>OnClick</code> and <code>OnDoubleClick</code> report where the pointer landed, and only when the click did
+                not hit a marker or a vector layer - those raise their own events instead.
+                <br /><br />
+                <code>OnViewChanged</code> fires after a pan or zoom settles. Every provider coalesces the burst of move and zoom
+                events a single drag produces into one notification per idle window, because each one is an interop round-trip -
+                a SignalR message per event under Blazor Server. <code>GetView</code> reads the same snapshot on demand.
+                <br /><br />
+                <code>OnContextMenu</code> reports a right-click (or a long press on touch) with the coordinate under the
+                pointer - the usual way to offer "add a marker here". The browser's own menu still opens unless the provider
+                sets <code>SuppressBrowserContextMenu</code>; only suppress it when you put a menu of your own in its place,
+                because taking it away costs the user "open in new tab", "copy image" and their assistive-technology equivalents.
             </div>
             <br />
             <div style="height:320px">
@@ -129,6 +177,7 @@
                         Provider="@eventsProvider"
                         OnClick="OnMapClick"
                         OnDoubleClick="OnMapDoubleClick"
+                        OnContextMenu="OnMapContextMenu"
                         OnViewChanged="OnViewChanged" />
             </div>
             <br />
@@ -142,7 +191,19 @@
 
         <DemoExample Title="Advanced" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
-                Interaction toggles, scale bar, pan limits (<code>MaxBounds</code>), marker tooltips, z-order, and tile overlays.
+                Provider-level options: the interaction toggles (<code>ScrollWheelZoom</code>, <code>Dragging</code>,
+                <code>DoubleClickZoom</code>, <code>BoxZoom</code>, <code>KeyboardNavigation</code>), the scale bar, and
+                <code>MaxBounds</code> to keep the user inside a region. Changing any of them means assigning a new provider
+                instance - the parameter is compared by reference.
+                <br /><br />
+                On top of the basemap, <code>AddTileOverlay</code> stacks a second XYZ source with its own opacity and stacking
+                order, which is how weather radar, labels or a heat layer are usually delivered.
+                <br /><br />
+                Marker tooltips appear on hover - and on keyboard focus, since a marker is a tab stop - on Leaflet,
+                MapLibre, Mapbox, OpenLayers and Azure Maps; ArcGIS and Cesium have no equivalent and use
+                <code>Title</code> instead. <code>ZIndexOffset</code> is Leaflet-only. Each type's reference notes which
+                backend honours what, because a parameter silently ignored by the provider you happen to be using is
+                worse than one that is not there.
             </div>
             <br />
             <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem">
@@ -168,23 +229,295 @@
             <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@advLog</pre>
         </DemoExample>
 
-        <DemoExample Title="MapLibre GL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-            <div>MapLibre GL JS is loaded from unpkg on first render. No token required for the default demo style.</div>
+
+        <DemoExample Title="Navigation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                Move the camera from code: <code>ZoomIn</code>/<code>ZoomOut</code> step by whole zoom levels,
+                <code>SetZoom</code> jumps to an absolute one, and <code>PanBy</code> shifts the view by a pixel offset.
+                <br /><br />
+                The pan buttons are not just a convenience. WCAG 2.2 requires a single-pointer alternative to dragging
+                (SC 2.5.7), so a map that can only be panned by dragging fails an audit - <code>PanBy</code> is what you
+                build that alternative from.
+                <br /><br />
+                <code>FlyTo</code> animates the move. When the visitor has asked their system for reduced motion,
+                <code>RespectReducedMotion</code> (on by default) turns that flight into an instant jump to the same place;
+                pass <code>essential: true</code> for a move whose motion is what carries the meaning.
+                <code>Locate</code> asks the browser for the visitor's position - the browser shows its own permission
+                prompt, and a refusal comes back as <code>null</code> rather than an exception.
+            </div>
+            <br />
+            <div style="height:360px">
+                <BitMap TMapProvider="BitLeafletMapProvider" @ref="navMapRef" Provider="@navProvider" />
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+                <BitButton OnClick="NavZoomIn">Zoom in</BitButton>
+                <BitButton OnClick="NavZoomOut" Variant="BitVariant.Outline">Zoom out</BitButton>
+                <BitButton OnClick="NavSetZoom" Variant="BitVariant.Outline">Zoom 6</BitButton>
+                <BitButton OnClick="() => NavPan(-120, 0)" Variant="BitVariant.Outline" AriaLabel="Pan west">West</BitButton>
+                <BitButton OnClick="() => NavPan(120, 0)" Variant="BitVariant.Outline" AriaLabel="Pan east">East</BitButton>
+                <BitButton OnClick="() => NavPan(0, -120)" Variant="BitVariant.Outline" AriaLabel="Pan north">North</BitButton>
+                <BitButton OnClick="() => NavPan(0, 120)" Variant="BitVariant.Outline" AriaLabel="Pan south">South</BitButton>
+                <BitButton OnClick="FlyToRome">Fly to Rome</BitButton>
+                <BitButton OnClick="LocateMe" Variant="BitVariant.Outline">Locate me</BitButton>
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@navLog</pre>
+        </DemoExample>
+
+        <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                The map canvas is focusable, labelled by <code>AriaLabel</code>, and described by
+                <code>KeyboardInstructions</code> - which assistive tech reads and sighted keyboard users see the moment
+                the map takes focus. <code>EscapeToExit</code> (on by default) lets Escape return focus to the page, so a
+                focused map is never a keyboard trap.
+                <br /><br />
+                <code>AnnounceViewChanges</code> reports the new centre and zoom through a polite live region, throttled by
+                <code>ViewAnnouncementThrottle</code> so a drag cannot flood the screen reader. Supply
+                <code>ViewAnnouncementFormatter</code> to announce a place name instead of a pair of decimals - far more
+                useful to someone who cannot see the map.
+                <br /><br />
+                <code>CooperativeGestures</code> stops the map swallowing the page scroll: a bare wheel scrolls the page
+                and shows a hint, ctrl (⌘ on macOS) + wheel zooms, and on touch one finger scrolls while two fingers pan.
+                Turn it on for any map embedded in a longer page.
+                <br /><br />
+                None of that reaches the markers themselves, though: a map is a picture, and its pins are drawn rather
+                than written. <code>MarkerListMode</code> renders the same markers as a table - name, coordinates, and a
+                button that brings each one into view and raises the same <code>OnMarkerClick</code> a mouse user gets.
+                <code>ScreenReaderOnly</code> leaves the map looking untouched while making that table reachable;
+                <code>Visible</code> shows it to everyone, which is often the better answer for a store locator. It is
+                also what survives being printed.
+            </div>
+            <br />
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem">
+                <BitToggle @bind-Value="a11yCooperative" Text="Cooperative gestures" />
+                <BitToggle @bind-Value="a11yAnnounce" Text="Announce view changes" />
+                <BitToggle @bind-Value="a11yShowList" Text="Show the marker table" />
+            </div>
+            <div style="height:360px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="a11yMapRef"
+                        Provider="@a11yProvider"
+                        AriaLabel="Map of central Berlin"
+                        KeyboardInstructions="Arrow keys pan the map, plus and minus zoom, Escape leaves the map."
+                        CooperativeGestures="@a11yCooperative"
+                        AnnounceViewChanges="@a11yAnnounce"
+                        ViewAnnouncementFormatter="@FormatAnnouncement"
+                        MarkerListMode="@(a11yShowList ? BitMapMarkerListMode.Visible : BitMapMarkerListMode.ScreenReaderOnly)"
+                        MarkerListCaption="Berlin landmarks"
+                        OnReady="OnAccessibilityReady" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Loading and lifecycle" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <code>LoadState</code> distinguishes the four things that can happen on the way to a rendered map -
+                <code>Idle</code>, <code>Loading</code>, <code>Ready</code>, <code>Failed</code>, and
+                <code>Unsupported</code> for a browser that cannot give a WebGL-backed provider a context at all.
+                <code>OnLoadStateChanged</code> reports every transition; <code>LoadingTemplate</code>,
+                <code>ErrorTemplate</code> and <code>UnsupportedTemplate</code> replace the built-in messages.
+                <br /><br />
+                <code>AutoResize</code> (on by default) watches the container and re-measures the map itself, which also
+                covers the classic case of a map inside a collapsed panel that would otherwise render grey forever - drag
+                the resize handle below to see it. <code>LazyLoad</code> defers creating the map until it scrolls into
+                view, so a map below the fold does not compete with the page's first paint.
+            </div>
+            <br />
+            <div>State: <b>@lifecycleState</b></div>
+            <br />
+            <div style="height:320px;width:100%;max-width:100%;resize:both;overflow:auto;border:1px solid var(--bit-clr-brd-sec)">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        Provider="@lifecycleProvider"
+                        LazyLoad
+                        LoadingLabel="Fetching the basemap…"
+                        OnLoadStateChanged="@(s => { lifecycleState = s; StateHasChanged(); })" />
+            </div>
+        </DemoExample>
+
+
+        <DemoExample Title="Data binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <code>@@bind-Center</code> and <code>@@bind-Zoom</code> make the camera ordinary Blazor state: assigning
+                either moves the map, and panning or zooming writes the new value straight back into your field. The
+                component diffs the two directions against the map's last reported viewport, so echoing a value the map
+                itself produced does not move it again.
+                <br /><br />
+                <code>Markers</code> takes the whole set as a collection instead of a sequence of imperative calls.
+                <code>BitMapMarker</code> is a record, so the component compares the incoming markers by value against
+                what is already rendered and touches only the ones that changed - which matters beyond speed, because
+                re-adding a marker closes its open popup and drops its keyboard focus. When most of the set changed it
+                replaces everything in one batched call instead.
+                <br /><br />
+                Markers are keyboard-reachable by default: Tab moves between them and Enter or Space opens the popup.
+                Set <code>Focusable="false"</code> on decorative pins, and give every meaningful one an <code>Alt</code>
+                so it announces as a place rather than as "marker".
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:0.75rem">
+                <BitButton OnClick="() => boundCenter = new(41.9028, 12.4964)">Rome</BitButton>
+                <BitButton OnClick="() => boundCenter = new(48.8566, 2.3522)" Variant="BitVariant.Outline">Paris</BitButton>
+                <BitButton OnClick="AddBoundMarker" Variant="BitVariant.Outline">Add a marker</BitButton>
+                <BitButton OnClick="MoveFirstBoundMarker" Variant="BitVariant.Outline">Move the first marker</BitButton>
+            </div>
+            <div style="height:380px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @bind-Center="boundCenter"
+                        @bind-Zoom="boundZoom"
+                        Markers="boundMarkers" />
+            </div>
+            <br />
+            <div>
+                Centre <b>@boundCenter?.Latitude.ToString("F4")</b>, <b>@boundCenter?.Longitude.ToString("F4")</b> —
+                zoom <b>@boundZoom?.ToString("F1")</b> — <b>@boundMarkers.Count</b> marker(s)
+            </div>
+        </DemoExample>
+
+
+        <DemoExample Title="Clustering" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                Set <code>Clustering</code> and nearby markers collapse into a bubble showing how many they stand for;
+                clicking one zooms to fit its members. The map below carries @clusterMarkers.Count markers - drawn
+                individually they are unreadable, and each one is its own DOM node and its own keyboard tab stop.
+                <br /><br />
+                The grouping runs inside BitMap, in screen space, above whichever provider is active - so it behaves the
+                same on all seven backends instead of needing a Leaflet plugin here and a GeoJSON source there. Screen
+                space rather than degrees matters: a fixed distance in degrees covers far less ground near the poles, so
+                a degree-based radius over-clusters at high latitudes.
+                <br /><br />
+                <code>RadiusPixels</code> sets how aggressively markers merge, <code>MaxZoom</code> the level at which
+                they all separate again, and <code>CullOffscreen</code> (on by default) keeps markers outside the
+                viewport from reaching the provider at all - that is most of the performance win.
+                <code>OnClusterClick</code> fires instead of <code>OnMarkerClick</code>, because a bubble is not one of
+                your markers.
+            </div>
+            <br />
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:0.75rem">
+                <BitToggle Value="clusterEnabled" ValueChanged="ToggleClustering" Text="Cluster markers" />
+                <BitButton OnClick="RegenerateClusterMarkers" Variant="BitVariant.Outline">Scatter again</BitButton>
+            </div>
+            <div style="height:420px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        Provider="@clusterProvider"
+                        Markers="clusterMarkers"
+                        Clustering="@clusterOptions"
+                        OnClusterClick="OnClusterClick"
+                        OnMarkerClick="OnClusterMarkerClick" />
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@clusterLog</pre>
+        </DemoExample>
+
+
+        <DemoExample Title="Layer control" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                <code>SetLayerVisible</code> and <code>SetTileOverlayVisible</code> toggle something off the map while
+                keeping its definition, so switching it back on needs no re-declaration - and a provider swap brings it
+                back in whatever state you left it. Prefer this to a zero opacity: an invisible layer is still drawn and
+                still hit-tested, so it goes on swallowing clicks meant for what is underneath.
+                <br /><br />
+                <code>SetLayerStyle</code> restyles a shape without restating its geometry, and
+                <code>SetTileOverlayOpacity</code> blends a raster overlay against the basemap - the usual way weather
+                or heat data is layered over a street map. A tile overlay also takes a
+                <code>MinZoom</code>/<code>MaxZoom</code> window, so a source that only publishes some zooms does not
+                answer with a grid of 404s, and <code>Subdomains</code> for sources that shard tiles across hostnames.
+                <br /><br />
+                <code>RequestFullscreen</code> takes the map's own container fullscreen rather than the page, so your
+                overlay content and controls go with it. Call it from a real click: browsers only honour the request
+                inside the short activation window a gesture opens. <code>OnFullscreenChanged</code> reports the state
+                either way, including when the user leaves with Escape.
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:0.75rem">
+                <BitButton OnClick="ToggleLayerVisibility" Variant="BitVariant.Outline">
+                    @(layerVisible ? "Hide the area" : "Show the area")
+                </BitButton>
+                <BitButton OnClick="CycleLayerStyle" Variant="BitVariant.Outline">Restyle the area</BitButton>
+                <BitButton OnClick="ToggleOverlayVisibility" Variant="BitVariant.Outline">
+                    @(overlayVisible ? "Hide the overlay" : "Show the overlay")
+                </BitButton>
+                <BitButton OnClick="DimOverlay" Variant="BitVariant.Outline">Dim the overlay</BitButton>
+                <BitButton OnClick="GoFullscreen">Fullscreen</BitButton>
+            </div>
+            <div style="height:400px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="layersMapRef"
+                        Provider="@layersProvider"
+                        OnReady="OnLayersReady"
+                        OnFullscreenChanged="OnLayersFullscreenChanged" />
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@layersLog</pre>
+        </DemoExample>
+
+
+        <DemoExample Title="Popup content" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <code>MarkerPopupTemplate</code> makes a popup's content ordinary Blazor markup instead of an HTML string.
+                That is worth preferring over <code>PopupHtml</code> for two reasons. Blazor escapes what it renders, so a
+                popup built from data you do not control cannot become an injection point - the whole class of bug that a
+                raw-HTML popup puts on you. And the content is live: components, event handlers, bindings and validation
+                all work inside it, where an HTML string is inert. Click a marker below and use the button in its popup.
+                <br /><br />
+                The popup is rendered by BitMap and pinned to its marker, so it looks and behaves the same on all seven
+                backends rather than inheriting each vendor's. It is a <code>role="dialog"</code> named after its marker,
+                closes on Escape, on a click elsewhere on the map, and through its own close button, and follows its
+                marker when the marker moves.
+                <br /><br />
+                The mechanics are worth knowing if you build something similar: the popup's DOM stays exactly where Blazor
+                put it and only its <code>transform</code> is driven from JavaScript, recomputed per animation frame.
+                Handing that DOM to the mapping library's own popup would move it out of the container Blazor patches by
+                position, and the next render of that region would corrupt or throw.
+            </div>
+            <br />
+            <div style="height:400px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        Provider="@popupProvider"
+                        Markers="popupMarkers"
+                        OnPopupOpened="OnPopupOpened">
+                    <MarkerPopupTemplate Context="marker">
+                        <div style="display:flex;flex-flow:column;gap:0.5rem">
+                            <b>@marker.Alt</b>
+                            <div>Visitors this month: <b>@GetVisitorCount(marker.Id)</b></div>
+                            <BitButton Size="BitSize.Small" OnClick="() => RecordVisit(marker.Id)">Record a visit</BitButton>
+                        </div>
+                    </MarkerPopupTemplate>
+                </BitMap>
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@popupLog</pre>
+        </DemoExample>
+
+        <DemoExample Title="MapLibre GL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                MapLibre GL JS renders vector tiles on the GPU, which is what makes smooth zooming and runtime restyling
+                possible. It is BSD-licensed and needs no token for the default demo style - bring your own style URL and tile
+                source for production.
+                <br /><br />
+                The library is fetched from a CDN on first render, so it needs a <code>script-src</code> entry and a WebGL-capable
+                browser; without one the component shows its unsupported state rather than a blank canvas.
+            </div>
             <br />
             <div style="height:360px">
                 <BitMap TMapProvider="BitMapLibreMapProvider" Provider="@maplibreProvider" />
             </div>
         </DemoExample>
 
-        <DemoExample Title="OpenLayers" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-            <div>OpenLayers 10 is loaded as ES modules from esm.sh. No token required; defaults to OpenStreetMap tiles.</div>
+        <DemoExample Title="OpenLayers" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                OpenLayers 10 is loaded as ES modules through a small loader shipped in the Extras package - a real module, so the
+                dynamic imports need no <code>'unsafe-eval'</code> in your CSP. No token required; it defaults to OpenStreetMap
+                raster tiles.
+                <br /><br />
+                OpenLayers is the backend to reach for when the work is GIS-shaped rather than map-shaped: it is the only one here
+                with first-class support for arbitrary projections and a wide format library.
+            </div>
             <br />
             <div style="height:360px">
                 <BitMap TMapProvider="BitOpenLayersMapProvider" Provider="@olProvider" />
             </div>
         </DemoExample>
 
-        <DemoExample Title="Mapbox GL (token required)" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Mapbox GL (token required)" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 Mapbox GL JS requires a public access token to load <code>mapbox://</code> styles.
                 <br /><br />
@@ -204,7 +537,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="ArcGIS Maps SDK" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="ArcGIS Maps SDK" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
                 ArcGIS Maps SDK 5.0 is loaded as an ES module from the Esri CDN.
                 The <code>osm</code> basemap works without an API key.
@@ -219,7 +552,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Azure Maps (subscription key required)" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Azure Maps (subscription key required)" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
                 Azure Maps Web SDK v3 requires a subscription key for authentication.
                 <br /><br />
@@ -238,7 +571,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="CesiumJS 3D globe" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="CesiumJS 3D globe" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
             <div>
                 CesiumJS renders a 3D globe. OSM imagery and smooth-ellipsoid terrain work without a token.
                 A Cesium ion token unlocks Cesium World Terrain and Bing imagery.
@@ -251,6 +584,41 @@
             <br />
             <div style="height:420px">
                 <BitMap TMapProvider="BitCesiumMapProvider" Provider="@cesiumProvider" />
+            </div>
+        </DemoExample>
+
+
+        <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" CodeFiles="@example21CodeFiles" Id="example21">
+            <div>
+                <code>Style</code> and <code>Class</code> land on the map's root element. The root is
+                <code>position:relative</code> and fills its container, so this is also where you set the map's height -
+                a map inside a parent with no height of its own collapses to nothing.
+            </div>
+            <br />
+            <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        Provider="@styleProvider"
+                        Style="height:260px;flex:1 1 260px;border-radius:1rem;box-shadow:0 0 1rem #6664" />
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        Provider="@classProvider"
+                        Class="custom-map"
+                        Style="flex:1 1 260px" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+            <div>
+                Set <code>Dir="BitDir.Rtl"</code> for right-to-left pages. The map canvas itself is direction-neutral -
+                what flips is the component's own chrome: the keyboard-instructions panel, the cooperative-gestures hint,
+                and any content you place in <code>ChildContent</code>.
+            </div>
+            <br />
+            <div style="height:320px">
+                <BitMap TMapProvider="BitLeafletMapProvider" Dir="BitDir.Rtl" Provider="@rtlProvider" AriaLabel="نقشه تهران">
+                    <div style="position:absolute;inset-inline-start:0.75rem;inset-block-start:0.75rem;padding:0.5rem 0.75rem;background:var(--bit-clr-bg-pri);border-radius:0.5rem">
+                        تهران
+                    </div>
+                </BitMap>
             </div>
         </DemoExample>
 

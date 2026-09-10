@@ -14,11 +14,14 @@ namespace BitBlazorUI {
             scaleLine: any, zIndexCounter: number,
             markerSource: any, markerLayer: any,
             popupOverlay: any, popupElement: HTMLElement, popupContentElement: HTMLElement,
+            tooltipOverlay: any, tooltipElement: HTMLElement,
             translateInteraction: any,
             tileUrl: string, tileMaxZoom: number, tileAttribution: string, tileOpacity: number,
             scaleEnabled: boolean, scaleImperial: boolean,
             scrollWheelZoom: boolean, doubleClickZoom: boolean,
             dragging: boolean, boxZoom: boolean, keyboardNavigation: boolean,
+            viewTimer: any, isDisposed: boolean,
+            suppressBrowserContextMenu: boolean,
         } } = {};
 
         private static readonly _defaultTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -115,6 +118,20 @@ namespace BitBlazorUI {
             });
             map.addOverlay(popupOverlay);
 
+            // A second, lighter overlay for hover tooltips. Separate from the click popup so a
+            // tooltip cannot close a popup the user opened, and vice versa.
+            const tooltipElement = document.createElement('div');
+            tooltipElement.className = 'bit-map-ol-tooltip bit-map-ol-tooltip--hidden';
+            const tooltipOverlay = new ol.Overlay({
+                element: tooltipElement,
+                positioning: 'bottom-center',
+                offset: [0, -14],
+                // The tooltip must never sit under the pointer, or it would fight the hover that
+                // produced it.
+                stopEvent: false,
+            });
+            map.addOverlay(tooltipOverlay);
+
             popupCloser.addEventListener('click', (e) => {
                 e.stopPropagation();
                 popupOverlay.setPosition(undefined);
@@ -139,10 +156,13 @@ namespace BitBlazorUI {
                 zIndexCounter: 100,
                 markerSource, markerLayer,
                 popupOverlay, popupElement, popupContentElement: popupContent,
+                tooltipOverlay, tooltipElement,
                 translateInteraction: null as any,
                 tileUrl, tileMaxZoom, tileAttribution, tileOpacity,
                 scaleEnabled, scaleImperial,
                 scrollWheelZoom, doubleClickZoom, dragging, boxZoom, keyboardNavigation,
+                viewTimer: null as any, isDisposed: false,
+                suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
             };
 
             BitMapOpenLayers._ensureScale(state, scaleEnabled, scaleImperial);
@@ -157,12 +177,13 @@ namespace BitBlazorUI {
                 layers: [markerLayer],
             });
             translate.on('translateend', (evt: any) => {
+                if (state.isDisposed || !state.dotnetObj) return;
                 const features = evt.features?.getArray?.() || [];
                 for (const f of features) {
                     const mid = f.get('markerId');
-                    if (mid && dotnetObj) {
+                    if (mid) {
                         const coords = ol.toLonLat(f.getGeometry().getCoordinates());
-                        dotnetObj.invokeMethodAsync('OnMarkerDragEnd', mid, { lat: coords[1], lng: coords[0] });
+                        state.dotnetObj.invokeMethodAsync('OnMarkerDragEnd', mid, { lat: coords[1], lng: coords[0] });
                     }
                 }
             });
@@ -224,6 +245,25 @@ namespace BitBlazorUI {
                 s.tileOpacity = nextTileOpacity;
             }
 
+            // View zoom limits are constructor options on ol.View, so push them through
+            // the setters or a provider that changes MinZoom/MaxZoom after init is
+            // silently ignored.
+            if (Object.prototype.hasOwnProperty.call(o, 'minZoom')) {
+                try { view.setMinZoom(o.minZoom ?? 0); } catch { /* ignore */ }
+            }
+            if (Object.prototype.hasOwnProperty.call(o, 'maxZoom')) {
+                try { view.setMaxZoom(o.maxZoom ?? 28); } catch { /* ignore */ }
+            }
+
+            // The zoom / attribution controls are picked at construction time via
+            // ol.defaults(), so add or remove the instances to toggle them on a live map.
+            if (Object.prototype.hasOwnProperty.call(o, 'zoomControl')) {
+                BitMapOpenLayers._ensureDefaultControl(s, ol.Zoom, o.zoomControl !== false);
+            }
+            if (Object.prototype.hasOwnProperty.call(o, 'attributionControl')) {
+                BitMapOpenLayers._ensureDefaultControl(s, ol.Attribution, o.attributionControl !== false);
+            }
+
             // Only touch the scale bar when caller explicitly supplied either flag,
             // so a partial sync doesn't toggle visibility or units off.
             const hasShow = Object.prototype.hasOwnProperty.call(o, 'showScaleControl');
@@ -256,15 +296,22 @@ namespace BitBlazorUI {
         public static dispose(id: string) {
             const s = BitMapOpenLayers._maps[id];
             if (!s) return;
+            // Drop the .NET handle first so a debounced view notification or an
+            // in-flight click handler short-circuits instead of invoking a released
+            // DotNetObjectReference.
+            s.isDisposed = true;
+            s.dotnetObj = null;
+            if (s.viewTimer) { clearTimeout(s.viewTimer); s.viewTimer = null; }
             try {
                 if (s.translateInteraction) s.map.removeInteraction(s.translateInteraction);
                 for (const k in s.tileOverlays) s.map.removeLayer(s.tileOverlays[k]);
                 if (s.scaleLine) s.map.removeControl(s.scaleLine);
                 s.map.removeOverlay(s.popupOverlay);
                 s.popupElement.remove();
+                s.map.removeOverlay(s.tooltipOverlay);
+                s.tooltipElement.remove();
                 s.map.setTarget(null);
             } catch { /* ignore */ }
-            s.dotnetObj = null;
             delete BitMapOpenLayers._maps[id];
         }
 
@@ -291,6 +338,46 @@ namespace BitBlazorUI {
             v.animate({ center: s.ol.fromLonLat([lng, lat]), zoom: zoom ?? v.getZoom(), duration: 1200 });
         }
 
+        /**
+         * Projects a geographic coordinate to a pixel offset inside the map container.
+         *
+         * This is what lets BitMap anchor its own DOM - a Blazor-rendered popup, say - to a place
+         * on the map without handing that DOM to the mapping library, which would take it out of
+         * Blazor's hands. Returns null when the coordinate is not currently on screen.
+         */
+        public static project(id: string, lat: number, lng: number): { x: number, y: number } | null {
+            const s = BitMapOpenLayers._maps[id];
+            if (!s) return null;
+            try {
+                const pixel = s.map.getPixelFromCoordinate(s.ol.fromLonLat([lng, lat]));
+                return pixel ? { x: pixel[0], y: pixel[1] } : null;
+            } catch {
+                return null;
+            }
+        }
+
+        public static zoomBy(id: string, delta: number, animate: boolean) {
+            const s = BitMapOpenLayers._require(id);
+            const v = s.map.getView();
+            const target = (v.getZoom() ?? 0) + delta;
+            if (animate === false) v.setZoom(target);
+            else v.animate({ zoom: target, duration: 250 });
+        }
+
+        public static panBy(id: string, dx: number, dy: number, animate: boolean) {
+            const s = BitMapOpenLayers._require(id);
+            const v = s.map.getView();
+            const center = v.getCenter();
+            const resolution = v.getResolution();
+            if (!center || !resolution) return;
+            // OpenLayers works in projected map units, so a pixel offset becomes a
+            // distance of `pixels * resolution`. Screen Y grows downward while the
+            // projected Y axis grows upward, hence the sign flip on dy.
+            const target = [center[0] + dx * resolution, center[1] - dy * resolution];
+            if (animate === false) v.setCenter(target);
+            else v.animate({ center: target, duration: 250 });
+        }
+
         public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
@@ -313,6 +400,7 @@ namespace BitBlazorUI {
             const f = new ol.Feature({
                 geometry: new ol.Point(ol.fromLonLat([opts.lng, opts.lat])),
                 markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '', title: opts.title || '',
+                tooltipHtml: opts.tooltipHtml || '', tooltipText: opts.tooltipText || '',
                 draggable: !!opts.draggable,
             });
             f.setId(markerId);
@@ -459,9 +547,12 @@ namespace BitBlazorUI {
                 s.map.removeLayer(existing);
                 delete s.tileOverlays[opts.id];
             }
+            // ol.XYZ takes a list of URLs, so an {s} placeholder expands into one per subdomain.
+            const urls = BitMapHelpers.expandSubdomains(opts.urlTemplate || '', opts.subdomains);
             const tl = new ol.TileLayer({
                 source: new ol.XYZ({
-                    url: (opts.urlTemplate || '').replace('{s}', 'a'),
+                    urls,
+                    minZoom: opts.minZoom ?? 0,
                     maxZoom: opts.maxZoom ?? 19,
                     attributions: opts.attribution || '',
                 }),
@@ -504,6 +595,22 @@ namespace BitBlazorUI {
             };
         }
 
+        /**
+         * Adds or removes one of OpenLayers' default controls (Zoom / Attribution) so the
+         * cross-provider ZoomControl / AttributionControl options keep working after init.
+         * The control is matched with `instanceof` rather than by name because the esm.sh
+         * bundle is minified (see _applyInteractions).
+         */
+        private static _ensureDefaultControl(s: any, ctor: any, show: boolean) {
+            if (!ctor) return;
+            const existing = s.map.getControls().getArray().find((c: any) => c instanceof ctor);
+            if (show && !existing) {
+                s.map.addControl(new ctor());
+            } else if (!show && existing) {
+                s.map.removeControl(existing);
+            }
+        }
+
         private static _ensureScale(s: any, show: boolean, imperial: boolean) {
             const ol = s.ol;
             if (s.scaleLine) { s.map.removeControl(s.scaleLine); s.scaleLine = null; }
@@ -513,21 +620,34 @@ namespace BitBlazorUI {
             }
         }
 
+        /**
+         * Toggles the built-in OpenLayers interactions that back the cross-provider
+         * interaction options.
+         *
+         * Identification is by `instanceof` against the classes the loader exports, NOT
+         * by `constructor.name`: OpenLayers is loaded from esm.sh as a minified bundle,
+         * where every class name is mangled, so name matching silently matches nothing
+         * and every interaction toggle becomes a no-op.
+         */
         private static _applyInteractions(s: any, flags: any) {
-            const map = s.map;
+            const ol = s.ol, map = s.map;
             const interactions = map.getInteractions().getArray();
+            const set = (interaction: any, value: any) => {
+                if (value !== undefined) interaction.setActive(!!value);
+            };
             for (const interaction of interactions) {
-                const name = interaction.constructor?.name || '';
-                if (name === 'MouseWheelZoom' || name.includes('MouseWheel')) {
-                    if (flags.scrollWheelZoom !== undefined) interaction.setActive(!!flags.scrollWheelZoom);
-                } else if (name === 'DoubleClickZoom' || name.includes('DoubleClick')) {
-                    if (flags.doubleClickZoom !== undefined) interaction.setActive(!!flags.doubleClickZoom);
-                } else if (name === 'DragPan' || name.includes('DragPan')) {
-                    if (flags.dragging !== undefined) interaction.setActive(!!flags.dragging);
-                } else if (name === 'DragZoom' || name.includes('DragZoom')) {
-                    if (flags.boxZoom !== undefined) interaction.setActive(!!flags.boxZoom);
-                } else if (name === 'KeyboardPan' || name === 'KeyboardZoom' || name.includes('Keyboard')) {
-                    if (flags.keyboardNavigation !== undefined) interaction.setActive(!!flags.keyboardNavigation);
+                if (ol.MouseWheelZoom && interaction instanceof ol.MouseWheelZoom) {
+                    set(interaction, flags.scrollWheelZoom);
+                } else if (ol.DoubleClickZoom && interaction instanceof ol.DoubleClickZoom) {
+                    set(interaction, flags.doubleClickZoom);
+                } else if (ol.DragPan && interaction instanceof ol.DragPan) {
+                    set(interaction, flags.dragging);
+                } else if (ol.DragZoom && interaction instanceof ol.DragZoom) {
+                    set(interaction, flags.boxZoom);
+                } else if (ol.KeyboardPan && interaction instanceof ol.KeyboardPan) {
+                    set(interaction, flags.keyboardNavigation);
+                } else if (ol.KeyboardZoom && interaction instanceof ol.KeyboardZoom) {
+                    set(interaction, flags.keyboardNavigation);
                 }
             }
         }
@@ -572,14 +692,24 @@ namespace BitBlazorUI {
                     .filter((n: number) => Number.isFinite(n));
                 if (parsed.length > 0) lineDash = parsed;
             }
+            const lineDashOffset = style?.dashOffset != null ? parseFloat(String(style.dashOffset)) : undefined;
             return new ol.Stroke({
                 color: BitMapHelpers.hexToRgba(st.color, st.opacity),
                 width: st.weight,
+                lineCap: style?.lineCap ?? 'round',
+                lineJoin: style?.lineJoin ?? 'round',
                 lineDash,
+                lineDashOffset: Number.isFinite(lineDashOffset as number) ? lineDashOffset : undefined,
             });
         }
 
+        /**
+         * Returns undefined when the style opts out of filling. An ol.Style with no fill draws
+         * nothing inside the shape AND stops it hit-testing there, which is what an
+         * outline-only polygon should do - a transparent fill would still swallow clicks.
+         */
         private static _fill(ol: any, style: any) {
+            if (style && style.fill === false) return undefined;
             const st = BitMapHelpers.readPathStyle(style);
             return new ol.Fill({ color: BitMapHelpers.hexToRgba(st.fillColor, st.fillOpacity) });
         }
@@ -597,6 +727,27 @@ namespace BitBlazorUI {
             layer.set('bmVectorKind', kind);
             s.map.addLayer(layer);
             BitMapOpenLayers._setLayer(s, layerId, layer);
+        }
+
+        /** Returns whether the feature had anything to show. */
+        private static _showTooltipForFeature(s: any, feature: any): boolean {
+            const html = feature.get('tooltipHtml') || '';
+            const text = feature.get('tooltipText') || '';
+            if (!html && !text) return false;
+
+            // Same contract as the popup: html is written raw (the caller opted into that by
+            // typing it as MarkupString), text goes through textContent and is safe.
+            if (html) s.tooltipElement.innerHTML = html;
+            else s.tooltipElement.textContent = text;
+
+            s.tooltipElement.classList.remove('bit-map-ol-tooltip--hidden');
+            s.tooltipOverlay.setPosition(feature.getGeometry().getCoordinates());
+            return true;
+        }
+
+        private static _hideTooltip(s: any) {
+            s.tooltipOverlay.setPosition(undefined);
+            s.tooltipElement.classList.add('bit-map-ol-tooltip--hidden');
         }
 
         private static _showPopupForFeature(s: any, feature: any) {
@@ -622,7 +773,11 @@ namespace BitBlazorUI {
         }
 
         private static _wireEvents(s: any) {
-            const ol = s.ol, map = s.map, dn = s.dotnetObj;
+            const ol = s.ol, map = s.map;
+            // Read s.dotnetObj at dispatch time rather than closing over it: dispose()
+            // nulls the field, and a handler that fired against the captured value would
+            // invoke an already-released DotNetObjectReference.
+            const dn = () => (s.isDisposed ? null : s.dotnetObj);
             map.on('singleclick', (evt: any) => {
                 let hit = false;
                 map.forEachFeatureAtPixel(
@@ -631,7 +786,7 @@ namespace BitBlazorUI {
                         if (layer === s.markerLayer) {
                             hit = true;
                             const id = feature.get('markerId');
-                            if (id && dn) dn.invokeMethodAsync('OnMarkerClick', id);
+                            if (id) dn()?.invokeMethodAsync('OnMarkerClick', id);
                             BitMapOpenLayers._showPopupForFeature(s, feature);
                             return true;
                         }
@@ -640,23 +795,23 @@ namespace BitBlazorUI {
                             hit = true;
                             const props: any = { ...feature.getProperties() };
                             delete props.geometry;
-                            if (dn) dn.invokeMethodAsync('OnGeoJsonFeatureClick', lid, props);
+                            dn()?.invokeMethodAsync('OnGeoJsonFeatureClick', lid, props);
                             return true;
                         }
                         if (lid) {
                             hit = true;
                             const ll = ol.toLonLat(evt.coordinate);
                             const kind = layer.get('bmVectorKind') || 'vector';
-                            if (dn) dn.invokeMethodAsync('OnVectorClick', lid, kind, { lat: ll[1], lng: ll[0] });
+                            dn()?.invokeMethodAsync('OnVectorClick', lid, kind, { lat: ll[1], lng: ll[0] });
                             return true;
                         }
                         return false;
                     },
                     { hitTolerance: 6 }
                 );
-                if (!hit && dn) {
+                if (!hit) {
                     const ll = ol.toLonLat(evt.coordinate);
-                    dn.invokeMethodAsync('OnClick', { lat: ll[1], lng: ll[0] });
+                    dn()?.invokeMethodAsync('OnClick', { lat: ll[1], lng: ll[0] });
                 }
                 if (!hit) {
                     // Close popup when clicking elsewhere on the map
@@ -664,22 +819,51 @@ namespace BitBlazorUI {
                     s.popupElement.classList.add('bit-map-ol-popup--hidden');
                 }
             });
-            map.on('dblclick', (evt: any) => {
-                if (!dn) return;
-                const ll = ol.toLonLat(evt.coordinate);
-                dn.invokeMethodAsync('OnDoubleClick', { lat: ll[1], lng: ll[0] });
+            // OpenLayers renders markers into a canvas, so there is no element to hover - the
+            // tooltip comes from hit-testing the pointer against the marker layer instead.
+            map.on('pointermove', (evt: any) => {
+                if (evt.dragging) {
+                    BitMapOpenLayers._hideTooltip(s);
+                    return;
+                }
+                let shown = false;
+                map.forEachFeatureAtPixel(evt.pixel, (feature: any, layer: any) => {
+                    if (layer !== s.markerLayer) return false;
+                    shown = BitMapOpenLayers._showTooltipForFeature(s, feature);
+                    return true;
+                }, { hitTolerance: 6 });
+                if (!shown) BitMapOpenLayers._hideTooltip(s);
+                // A pointer over a marker should say so before it is clicked.
+                map.getTargetElement().style.cursor = shown ? 'pointer' : '';
             });
+            map.getViewport().addEventListener('pointerleave', () => BitMapOpenLayers._hideTooltip(s));
+
+            map.on('dblclick', (evt: any) => {
+                const target = dn();
+                if (!target) return;
+                const ll = ol.toLonLat(evt.coordinate);
+                target.invokeMethodAsync('OnDoubleClick', { lat: ll[1], lng: ll[0] });
+            });
+            // OpenLayers has no contextmenu event of its own, so it comes off the viewport
+            // element and the pixel is converted through the same projection a click uses.
+            map.getViewport().addEventListener('contextmenu', (evt: MouseEvent) => {
+                if (s.suppressBrowserContextMenu) evt.preventDefault();
+                const target = dn();
+                if (!target) return;
+                const coordinate = map.getEventCoordinate(evt);
+                if (!coordinate) return;
+                const ll = ol.toLonLat(coordinate);
+                target.invokeMethodAsync('OnContextMenu', { lat: ll[1], lng: ll[0] });
+            });
+
+            // Coalesce the burst of moveend events a drag produces into one interop
+            // round-trip per idle window, matching every other provider.
             map.on('moveend', () => {
-                // Snapshot the .NET handle so the microtask can verify it's still
-                // associated with a live state. dispose() nulls s.dotnetObj, so we
-                // bail out if it has been replaced (or cleared) by the time the
-                // microtask runs - otherwise we'd invoke a disposed DotNetObject.
-                const capturedDn = s.dotnetObj;
-                if (!capturedDn) return;
-                queueMicrotask(() => {
-                    if (s.dotnetObj !== capturedDn) return;
-                    capturedDn.invokeMethodAsync('OnViewChanged', BitMapOpenLayers._readView(s));
-                });
+                if (s.isDisposed) return;
+                clearTimeout(s.viewTimer);
+                s.viewTimer = setTimeout(() => {
+                    dn()?.invokeMethodAsync('OnViewChanged', BitMapOpenLayers._readView(s));
+                }, BitMapHelpers.viewNotifyDebounceMs);
             });
         }
 
