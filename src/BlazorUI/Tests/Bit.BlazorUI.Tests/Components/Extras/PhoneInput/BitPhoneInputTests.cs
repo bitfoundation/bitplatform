@@ -925,10 +925,10 @@ public class BitPhoneInputTests : BunitTestContext
     {
         var component = RenderComponent<BitPhoneInput>();
 
-        component.InvokeAsync(() => component.Instance.OpenAsync());
+        component.InvokeAsync(() => component.Instance.OpenAsync()).GetAwaiter().GetResult();
         Assert.IsTrue(component.Instance.IsOpen);
 
-        component.InvokeAsync(() => component.Instance.CloseAsync());
+        component.InvokeAsync(() => component.Instance.CloseAsync()).GetAwaiter().GetResult();
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
@@ -944,7 +944,7 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         component.Find("input.bit-phi-inp").Change("5550123");
-        component.InvokeAsync(() => component.Instance.SelectCountryAsync(BitCountries.France));
+        component.InvokeAsync(() => component.Instance.SelectCountryAsync(BitCountries.France)).GetAwaiter().GetResult();
 
         Assert.AreEqual("FR", component.Instance.Country?.Iso2);
         Assert.AreEqual("+335550123", value);

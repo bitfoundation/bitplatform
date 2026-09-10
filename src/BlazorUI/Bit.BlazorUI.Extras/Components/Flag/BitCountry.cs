@@ -66,14 +66,18 @@ public class BitCountry(string name, string code, string iso2, string iso3, int 
         get
         {
             // The countries of BitCountries are shared by every phone input of the process, so the
-            // cache is filled value first and key last: a reader that sees the new key is then
-            // guaranteed to see the value that goes with it rather than a half written one.
+            // cache is filled value first and key last, published with a release write and read back
+            // with an acquire read: a reader that sees the new key is then guaranteed to see the
+            // value that goes with it rather than a half written one.
             var code = Code;
 
-            if (ReferenceEquals(_digitsCodeOf, code) is false)
+            if (ReferenceEquals(Volatile.Read(ref _digitsCodeOf), code) is false)
             {
-                _digitsCode = code.Replace("-", string.Empty);
-                _digitsCodeOf = code;
+                var digits = code.Replace("-", string.Empty);
+                _digitsCode = digits;
+                Volatile.Write(ref _digitsCodeOf, code);
+
+                return digits;
             }
 
             return _digitsCode!;
@@ -97,14 +101,17 @@ public class BitCountry(string name, string code, string iso2, string iso3, int 
             var extra = ExtraCodes;
 
             // Filled value first and key last, for the same reason DigitsCode is.
-            if (ReferenceEquals(_digitsCodesOfCode, code) is false ||
-                ReferenceEquals(_digitsCodesOfExtra, extra) is false)
+            if (ReferenceEquals(Volatile.Read(ref _digitsCodesOfCode), code) is false ||
+                ReferenceEquals(Volatile.Read(ref _digitsCodesOfExtra), extra) is false)
             {
-                _digitsCodes = extra is null || extra.Length == 0
-                                ? [DigitsCode]
-                                : [DigitsCode, .. extra.Select(c => c.Replace("-", string.Empty))];
+                string[] digitsCodes = extra is null || extra.Length == 0
+                                        ? [DigitsCode]
+                                        : [DigitsCode, .. extra.Select(c => c.Replace("-", string.Empty))];
+                _digitsCodes = digitsCodes;
                 _digitsCodesOfExtra = extra;
-                _digitsCodesOfCode = code;
+                Volatile.Write(ref _digitsCodesOfCode, code);
+
+                return digitsCodes;
             }
 
             return _digitsCodes!;

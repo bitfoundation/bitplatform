@@ -520,14 +520,28 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// Opens the country dropdown callout.
     /// </summary>
-    public Task OpenAsync() => IsEnabled && ReadOnly is false && NoDropdown is false && IsOpen is false
-                                ? OpenCallout()
-                                : Task.CompletedTask;
+    public async Task OpenAsync()
+    {
+        // Called from outside a Blazor event handler as well as from one, so the render the opened
+        // callout needs is asked for here rather than left to the caller.
+        if (IsEnabled is false || ReadOnly || NoDropdown || IsOpen) return;
+
+        await OpenCallout();
+
+        StateHasChanged();
+    }
 
     /// <summary>
     /// Closes the country dropdown callout.
     /// </summary>
-    public Task CloseAsync() => IsOpen ? CloseCallout() : Task.CompletedTask;
+    public async Task CloseAsync()
+    {
+        if (IsOpen is false) return;
+
+        await CloseCallout();
+
+        StateHasChanged();
+    }
 
     /// <summary>
     /// Selects the given country exactly as picking it in the callout would, so the same events fire.
@@ -850,9 +864,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     protected override void OnParametersSet()
     {
         // Materialize the country list only when the source of it actually changes. The list is read
-        // on every render while the callout is open, so without this cache the default BitCountry[]
-        // (BitCountries.All) would allocate a new list of ~240 items each cycle because the
-        // "as List<BitCountry>" cast always fails for arrays.
+        // on every render while the callout is open, so without this cache the default country set
+        // (BitCountries.All) would be copied into a new list of ~240 items each cycle.
         if (ReferenceEquals(_lastCountries, Countries) is false ||
             ReferenceEquals(_lastExcludeCountries, ExcludeCountries) is false ||
             ReferenceEquals(_lastPreferredCountries, PreferredCountries) is false)
@@ -902,7 +915,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         if (PreferredCountries is null || PreferredCountries.Count == 0)
         {
-            return countries as List<BitCountry> ?? [.. countries];
+            // A copy even when the source already is a List: _foldedNames and _foldedWords are read
+            // by the index of _allItems, and a list the caller keeps a reference to could otherwise
+            // grow underneath them without the parameter reference ever changing.
+            return [.. countries];
         }
 
         var preferred = new List<BitCountry>();
