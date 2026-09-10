@@ -161,19 +161,26 @@ const concat = moduleNames => moduleNames.map(name => chunks.get(name)).join('')
 
 // --- Write everything ----------------------------------------------------------------------------
 
-rmSync(modulesOutDir, { recursive: true, force: true });
 rmSync(packOutDir, { recursive: true, force: true });
 mkdirSync(modulesOutDir, { recursive: true });
 mkdirSync(chunksOutDir, { recursive: true });
 
 // Every output is written to a temporary file and renamed into place, because a plain write truncates its
 // target first: an interrupted run would leave a half-written file newer than its inputs, which the MSBuild
-// Inputs/Outputs check in Bit.Butil.csproj would then take for an up-to-date build. A rename within a
-// directory is atomic, so an output holds either the previous run's content or this one's, never neither.
+// Inputs/Outputs check in Bit.Butil.csproj would then take for an up-to-date build. A rename is atomic
+// within a volume, so an output holds either the previous run's content or this one's, never neither.
+//
+// The temporary lives under obj/ instead of beside its target, and wwwroot/modules is pruned after the run
+// instead of emptied before it, because `dotnet watch` dies the moment a file *appears* under a watched
+// project's wwwroot (dotnet/roslyn#84062): a .tmp next to the bundle, or every module recreated in a
+// just-emptied directory, took the demo watcher down on every rebuild that reached this script. Renaming
+// over a file that is already there is an update, which the watcher survives. obj/ and wwwroot both sit
+// under the project directory, so the rename stays within one volume and stays atomic.
+const scratch = join(packOutDir, 'write.tmp');
+
 function write(path, contents) {
-    const temporary = `${path}.tmp`;
-    writeFileSync(temporary, contents);
-    renameSync(temporary, path);
+    writeFileSync(scratch, contents);
+    renameSync(scratch, path);
 }
 
 const everything = ordered(sources);
@@ -196,6 +203,17 @@ for (const name of sources) {
 // (Bit.Butil.Build) and checked by the test projects; keep the format that simple.
 write(join(chunksOutDir, 'manifest.txt'),
     everything.map(name => `${name}=${dependencies.get(name).join(',')}`).join('\n') + '\n');
+
+// Whatever a previous run left behind that this one did not produce: a module whose Scripts/*.ts was
+// renamed or deleted, or a .tmp from before these temporaries moved out of wwwroot. Pruning the stale
+// files afterwards is what lets every surviving module be written as an update rather than an addition.
+const expected = new Set(sources.map(name => `${name}.js`));
+for (const file of readdirSync(modulesOutDir)) {
+    if (!expected.has(file)) rmSync(join(modulesOutDir, file));
+}
+for (const file of readdirSync(wwwroot)) {
+    if (file.endsWith('.tmp')) rmSync(join(wwwroot, file));
+}
 
 console.log(`bit-butil: ${sources.length} modules -> bundle, ${sources.length} lazy modules, ${sources.length} chunks${minify ? ' (minified)' : ''}`);
 
