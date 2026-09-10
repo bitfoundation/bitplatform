@@ -18,17 +18,20 @@ public class BitAppShellClassStyles
     public string? Center { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the left area of the BitAppShell.
+    /// Custom CSS classes/styles for the leading side inset bar of the BitAppShell, which is the one on
+    /// the left of a left-to-right app shell and on the right of a right-to-left one.
     /// </summary>
     public string? Left { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the main area of the BitAppShell.
+    /// Custom CSS classes/styles for the main container of the BitAppShell, which is the one part of it
+    /// that scrolls and the one the content is rendered into.
     /// </summary>
     public string? Main { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the right area of the BitAppShell.
+    /// Custom CSS classes/styles for the trailing side inset bar of the BitAppShell, which is the one on
+    /// the right of a left-to-right app shell and on the left of a right-to-left one.
     /// </summary>
     public string? Right { get; set; }
 

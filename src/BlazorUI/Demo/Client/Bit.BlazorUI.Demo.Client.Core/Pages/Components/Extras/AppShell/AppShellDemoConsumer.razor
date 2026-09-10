@@ -1,0 +1,16 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AppShell
+
+@* A plain component that reads what the surrounding BitAppShell cascades. It is a separate component
+   because a cascading parameter can only be declared on one - which is the whole point the example
+   opposite is making: nothing between the shell and this had to pass any of it along. *@
+
+<div class="consumer">
+    <div>Cascaded by type: <b>@User?.Name</b> (@User?.Role)</div>
+    <div>Cascaded by name: <b>@Tenant</b></div>
+</div>
+
+@code {
+    [CascadingParameter] public AppShellDemoUser? User { get; set; }
+
+    [CascadingParameter(Name = "Tenant")] public string? Tenant { get; set; }
+}
