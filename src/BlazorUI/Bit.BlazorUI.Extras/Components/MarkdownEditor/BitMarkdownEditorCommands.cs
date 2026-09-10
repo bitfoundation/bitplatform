@@ -488,7 +488,9 @@ public static partial class BitMarkdownEditorCommands
                 return ClearLine(text, lineStart, lineEnd);
             }
 
-            string insertion = "\n" + task.Groups[1].Value + "- [ ] ";
+            // The line's own bullet is carried over, the way the unordered branch does:
+            // a list written with BulletStyle.Asterisk continues with "*", not with "-".
+            string insertion = "\n" + task.Groups[1].Value + task.Groups[2].Value + " [ ] ";
             int caret = start + insertion.Length;
             return new BitMarkdownEditorEditResult(true, text[..start] + insertion + text[end..], caret, caret);
         }
@@ -965,8 +967,8 @@ public static partial class BitMarkdownEditorCommands
     [GeneratedRegex(@"^(\s*)([-*+]) (?!\[[ xX]\])")]
     private static partial Regex UnorderedItem();
 
-    // group 1 = leading whitespace
-    [GeneratedRegex(@"^(\s*)[-*+] \[[ xX]\] ")]
+    // group 1 = leading whitespace, group 2 = bullet char
+    [GeneratedRegex(@"^(\s*)([-*+]) \[[ xX]\] ")]
     private static partial Regex TaskItem();
 
     // group 1 = leading whitespace, group 2 = number, group 3 = delimiter (. or ))

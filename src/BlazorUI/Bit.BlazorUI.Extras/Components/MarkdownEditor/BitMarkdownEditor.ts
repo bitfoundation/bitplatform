@@ -210,6 +210,7 @@
         private _openDropdown: HTMLElement | null = null;
         private _scrollSyncBound = false;
         private _toolbarObserver: MutationObserver | null = null;
+        private _rootObserver: MutationObserver | null = null;
 
         private textArea: HTMLTextAreaElement;
         private root: HTMLElement | undefined | null;
@@ -254,17 +255,54 @@
 
             this.applyScrollSync();
 
-            this.toolbar = root?.querySelector('.bit-mde-tlb') ?? null;
-            if (this.toolbar) {
-                this.toolbar.addEventListener('keydown', this.toolbarKeydownHandler);
-                this.toolbar.addEventListener('focusin', this.toolbarFocusInHandler);
-                this.toolbar.addEventListener('click', this.toolbarClickHandler);
-                this.toolbar.addEventListener('pointerover', this.toolbarPointerOverHandler);
-                this.toolbar.addEventListener('pointerleave', this.toolbarPointerLeaveHandler);
-                document.addEventListener('pointerdown', this.documentPointerDownHandler, true);
-                this.refreshToolbarRoving();
-                this.observeToolbar();
-            }
+            // Closes an open menu on a click anywhere outside it. Bound once for the editor's
+            // whole life, since the toolbar it belongs to can come and go under it.
+            document.addEventListener('pointerdown', this.documentPointerDownHandler, true);
+
+            this.bindToolbar();
+            this.observeRoot();
+        }
+
+        // ShowToolbar can be flipped after the editor is initialized, which replaces the
+        // toolbar element outright. Watching the root's own children re-binds the listeners
+        // to the new one, instead of leaving the menus and the roving tab stop on an element
+        // Blazor has already thrown away.
+        private observeRoot() {
+            if (!this.root || typeof MutationObserver === 'undefined') return;
+
+            this._rootObserver = new MutationObserver(() => this.bindToolbar());
+            this._rootObserver.observe(this.root, { childList: true });
+        }
+
+        private bindToolbar() {
+            const toolbar = this.root?.querySelector<HTMLElement>('.bit-mde-tlb') ?? null;
+            if (toolbar === this.toolbar) return;
+
+            this.unbindToolbar();
+            this.toolbar = toolbar;
+            if (!toolbar) return;
+
+            toolbar.addEventListener('keydown', this.toolbarKeydownHandler);
+            toolbar.addEventListener('focusin', this.toolbarFocusInHandler);
+            toolbar.addEventListener('click', this.toolbarClickHandler);
+            toolbar.addEventListener('pointerover', this.toolbarPointerOverHandler);
+            toolbar.addEventListener('pointerleave', this.toolbarPointerLeaveHandler);
+            this.refreshToolbarRoving();
+            this.observeToolbar();
+        }
+
+        private unbindToolbar() {
+            this._toolbarObserver?.disconnect();
+            this._toolbarObserver = null;
+
+            this.toolbar?.removeEventListener('keydown', this.toolbarKeydownHandler);
+            this.toolbar?.removeEventListener('focusin', this.toolbarFocusInHandler);
+            this.toolbar?.removeEventListener('click', this.toolbarClickHandler);
+            this.toolbar?.removeEventListener('pointerover', this.toolbarPointerOverHandler);
+            this.toolbar?.removeEventListener('pointerleave', this.toolbarPointerLeaveHandler);
+
+            this.toolbar = null;
+            this._openDropdown = null;
         }
 
         // Blazor re-renders the toolbar whenever a button's disabled state flips (undo and
@@ -579,6 +617,10 @@
                     // recomputing against the newest value rather than clobbering it.
                     if (this.textArea.value !== value) continue;
 
+                    // A command whose result overruns MaxLength is refused whole: truncating it
+                    // would cut characters off the end of a document the command never touched.
+                    if (this.exceedsLimit(result.text)) return;
+
                     // A command that only moved the selection (walking a table's cells) is not
                     // something to undo: a history step that restores the same text would just
                     // make Ctrl+Z look broken.
@@ -599,9 +641,11 @@
             }
         }
 
-        // Inserts text at the current selection as a single undo step.
-        public insertText(text: string) {
-            if (this.textArea.readOnly) return;
+        // Inserts text at the current selection as a single undo step. Returns false when
+        // MaxLength refused it; with `clamp` on (the default, matching how a browser cuts an
+        // over-long paste down) only as much of it as still fits is written.
+        public insertText(text: string, clamp: boolean = true): boolean {
+            if (this.textArea.readOnly) return false;
 
             // The call can come from a button that took the focus off the textarea, so fall
             // back to the range last captured while the textarea still had it.
@@ -611,7 +655,7 @@
             const start = Math.min(from, to);
             const end = Math.max(from, to);
 
-            this.replaceRange(start, end, text, start + text.length, start + text.length);
+            return this.replaceRange(start, end, text, start + text.length, start + text.length, true, clamp);
         }
 
         // Replaces occurrences of a literal search string; returns the replacement count.
@@ -641,10 +685,14 @@
             }
             result += value.slice(prev);
 
+            // The same rule as every other edit: a replacement run that would overrun MaxLength
+            // is refused whole, not paid for with the characters at the end of the document.
+            if (this.exceedsLimit(result)) return 0;
+
             this.endTypingGroup();
             this.pushUndo(this.snapshot());
             this._redo = [];
-            this.textArea.value = this.limit(result);
+            this.textArea.value = result;
             const caret = Math.min(this.textArea.selectionStart, this.textArea.value.length);
             this.textArea.setSelectionRange(caret, caret);
             this.saveSelection();
@@ -727,8 +775,9 @@
         public dispose() {
             this.clearTimers();
 
-            this._toolbarObserver?.disconnect();
-            this._toolbarObserver = null;
+            this._rootObserver?.disconnect();
+            this._rootObserver = null;
+            this.unbindToolbar();
 
             this.textArea.removeEventListener('keydown', this.keyDownHandler);
             this.textArea.removeEventListener('input', this.inputHandler);
@@ -744,11 +793,6 @@
             this.root?.removeEventListener('dragleave', this.dragLeaveHandler);
             this.root?.removeEventListener('dragend', this.dragLeaveHandler);
             this.detachScrollSync();
-            this.toolbar?.removeEventListener('keydown', this.toolbarKeydownHandler);
-            this.toolbar?.removeEventListener('focusin', this.toolbarFocusInHandler);
-            this.toolbar?.removeEventListener('click', this.toolbarClickHandler);
-            this.toolbar?.removeEventListener('pointerover', this.toolbarPointerOverHandler);
-            this.toolbar?.removeEventListener('pointerleave', this.toolbarPointerLeaveHandler);
 
             this._undo = [];
             this._redo = [];
@@ -756,8 +800,6 @@
             this.root = undefined;
             this.editorPane = null;
             this.previewPane = null;
-            this.toolbar = null;
-            this._openDropdown = null;
         }
 
         // ==========================================================
@@ -1035,12 +1077,29 @@
             this.replaceRange(start, end, open + selected + close, start + open.length, end + open.length);
         }
 
-        private replaceRange(start: number, end: number, replacement: string, selStart: number, selEnd: number, focusEditor: boolean = true) {
+        // Returns false when MaxLength refused the edit outright. `clamp` cuts a replacement
+        // down to what still fits instead of refusing it, which is what free text being
+        // inserted (a paste) wants; structural markup is refused whole, since half of a
+        // wrapped `**bold**` is broken markdown rather than a shorter edit.
+        private replaceRange(start: number, end: number, replacement: string, selStart: number, selEnd: number, focusEditor: boolean = true, clamp: boolean = false): boolean {
             const value = this.textArea.value;
+
+            // MaxLength caps the whole document, so an edit that would overrun it must never
+            // be honoured by deleting characters at the far end that the edit never touched.
+            const room = this.room(end - start);
+            if (replacement.length > room) {
+                if (!clamp) return false;
+
+                replacement = MarkdownEditorCore.truncate(replacement, room);
+                const stop = start + replacement.length;
+                selStart = Math.min(selStart, stop);
+                selEnd = Math.min(selEnd, stop);
+            }
+
             this.endTypingGroup();
             this.pushUndo({ text: value, selStart: start, selEnd: end });
             this._redo = [];
-            this.textArea.value = this.limit(value.slice(0, start) + replacement + value.slice(end));
+            this.textArea.value = value.slice(0, start) + replacement + value.slice(end);
             if (focusEditor) this.textArea.focus();
             const max = this.textArea.value.length;
             this.textArea.setSelectionRange(Math.min(selStart, max), Math.min(selEnd, max));
@@ -1049,16 +1108,42 @@
             this.flushChange();
             this._baseline = this.snapshot();
             this.notifyHistory();
+            return true;
         }
 
-        // Truncates to the configured MaxLength. The maxlength attribute already covers
-        // typing and pasting; this covers everything written programmatically.
+        // Truncates a whole value to the configured MaxLength. The maxlength attribute
+        // already covers typing and pasting; this covers the values written programmatically
+        // over the document as a whole (an external assignment, a lowered limit).
         private limit(text: string): string {
             const max = this.config.maxLength;
-            if (max <= 0 || text.length <= max) return text;
+            return max <= 0 ? text : MarkdownEditorCore.truncate(text, max);
+        }
 
-            // Never cut between the two halves of a surrogate pair: the lone half left behind
-            // is not a character at all, and renders as a replacement glyph.
+        // How many characters a replacement may write, given the edit removes `removed` of
+        // them. Infinity when no limit is configured, so callers can compare against it freely.
+        private room(removed: number): number {
+            const max = this.config.maxLength;
+            if (max <= 0) return Infinity;
+
+            const length = this.textArea.value.length;
+            // A value that is already over the limit (MaxLength lowered from outside) has to
+            // stay editable, so the ceiling is whichever of the two is higher: an edit that
+            // leaves the document no longer than it was always goes through.
+            return Math.max(max, length) - (length - removed);
+        }
+
+        // True when the given whole-document text would overrun MaxLength.
+        private exceedsLimit(text: string): boolean {
+            return text.length > this.room(this.textArea.value.length);
+        }
+
+        // Cuts `text` down to `max` characters, never between the two halves of a surrogate
+        // pair: the lone half left behind is not a character at all, and renders as a
+        // replacement glyph.
+        private static truncate(text: string, max: number): string {
+            if (max <= 0) return '';
+            if (text.length <= max) return text;
+
             const code = text.charCodeAt(max - 1);
             const cut = code >= 0xD800 && code <= 0xDBFF ? max - 1 : max;
 
@@ -1139,16 +1224,32 @@
             for (const file of files) {
                 const token = `…${this.config.uploadingText}-${++this._uploadSeq}…`;
                 const name = file.name || 'image';
-                // Insert a placeholder immediately so the user sees progress.
-                this.insertText(`![${token}]()`);
+                const placeholder = `![${token}]()`;
+
+                // Insert a placeholder immediately so the user sees progress. It has to go in
+                // whole or the URL that replaces it would never find it again, so when MaxLength
+                // leaves no room for it the file is refused instead of half-inserted.
+                if (this.insertText(placeholder, false) === false) {
+                    this.invoke('OnImageRejected', name, file.type, file.size, 'Length');
+                    continue;
+                }
 
                 try {
                     const base64 = await this.fileToBase64(file);
                     const url = await this.dotnetObj?.invokeMethodAsync<string | null>('UploadImage', name, base64, file.type);
                     const replacement = url ? `![${this.escapeAlt(name)}](${url})` : '';
-                    this.replaceToken(`![${token}]()`, replacement);
+
+                    // The finished markdown is usually longer than the placeholder it replaces.
+                    // When it no longer fits, the placeholder is taken back out rather than the
+                    // characters at the end of the document.
+                    if (replacement.length > this.room(placeholder.length)) {
+                        this.replaceToken(placeholder, '');
+                        this.invoke('OnImageRejected', name, file.type, file.size, 'Length');
+                    } else {
+                        this.replaceToken(placeholder, replacement);
+                    }
                 } catch {
-                    this.replaceToken(`![${token}]()`, '');
+                    this.replaceToken(placeholder, '');
                 }
             }
         }
@@ -1160,7 +1261,9 @@
             // Close any active typing session so undo captures the post-replacement
             // state instead of the stale placeholder baseline.
             this.endTypingGroup();
-            this.textArea.value = this.limit(value.slice(0, idx) + replacement + value.slice(idx + token.length));
+            // Not limited: the caller has already made room for the replacement, and a token
+            // half-written here could never be found and resolved again.
+            this.textArea.value = value.slice(0, idx) + replacement + value.slice(idx + token.length);
             const caret = Math.min(idx + replacement.length, this.textArea.value.length);
             if (document.activeElement === this.textArea) this.textArea.setSelectionRange(caret, caret);
             this.saveSelection();
@@ -1485,7 +1588,7 @@
         }
 
         private applyResult(result: MdeEditResult) {
-            this.textArea.value = this.limit(result.text);
+            this.textArea.value = result.text;
             this.flushChange();
             this.textArea.focus();
             const max = this.textArea.value.length;

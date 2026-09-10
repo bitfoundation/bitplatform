@@ -545,6 +545,62 @@ public class BitMarkdownEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownEditorShouldIgnoreAlwaysEnabledOnEditingToolbarItemsWhenReadOnly()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Toolbar, new BitMarkdownEditorToolbarItem[]
+            {
+                new() { Name = "bold", Title = "Bold", Type = BitMarkdownEditorToolbarItemType.Command, Command = BitMarkdownEditorCommand.Bold, AlwaysEnabled = true },
+                new() { Name = "undo", Title = "Undo", Type = BitMarkdownEditorToolbarItemType.Undo, AlwaysEnabled = true },
+                new() { Name = "redo", Title = "Redo", Type = BitMarkdownEditorToolbarItemType.Redo, AlwaysEnabled = true },
+            });
+        });
+
+        // Run/Undo/Redo refuse to touch a read-only editor, so an enabled-looking button here
+        // would be a button that does nothing.
+        Assert.IsTrue(component.Find("[data-cmd=bold]").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find("[data-cmd=undo]").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find("[data-cmd=redo]").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldKeepAReadOnlyDropdownOpenableWhenAChildStaysEnabled()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Toolbar, new BitMarkdownEditorToolbarItem[]
+            {
+                new()
+                {
+                    Name = "tools",
+                    Title = "Tools",
+                    Type = BitMarkdownEditorToolbarItemType.Dropdown,
+                    Children =
+                    [
+                        new() { Name = "export", Title = "Export", Type = BitMarkdownEditorToolbarItemType.Custom, AlwaysEnabled = true, OnClick = _ => Task.CompletedTask },
+                    ]
+                },
+                new()
+                {
+                    Name = "headings",
+                    Title = "Headings",
+                    Type = BitMarkdownEditorToolbarItemType.Dropdown,
+                    Children =
+                    [
+                        new() { Name = "h1", Title = "H1", Type = BitMarkdownEditorToolbarItemType.Command, Command = BitMarkdownEditorCommand.Heading1 },
+                    ]
+                },
+            });
+        });
+
+        Assert.IsFalse(component.Find("[data-cmd=tools]").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find("[data-cmd=headings]").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
     public void BitMarkdownEditorShouldInvokeCustomToolbarItemCallback()
     {
         var clicked = false;

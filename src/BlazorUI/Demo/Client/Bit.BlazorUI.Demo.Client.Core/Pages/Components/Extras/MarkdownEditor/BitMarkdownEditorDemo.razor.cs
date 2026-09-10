@@ -150,7 +150,7 @@ public partial class BitMarkdownEditorDemo
             Name = "MaxLength",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The maximum number of characters the editor accepts. When set, the status bar counter shows the limit alongside the count.",
+            Description = "The maximum number of characters the editor accepts. When set, the status bar counter shows the limit alongside the count. A command or an image upload that would overrun the limit is refused whole instead of cutting the end of the document off; pasted text is cut down to what still fits.",
         },
         new()
         {
@@ -920,6 +920,7 @@ public partial class BitMarkdownEditorDemo
             [
                 new() { Name = "Type", Value = "0", Description = "The file's type is not one of the accepted image types." },
                 new() { Name = "Size", Value = "1", Description = "The file is larger than the allowed maximum size." },
+                new() { Name = "Length", Value = "2", Description = "MaxLength leaves no room for the image's markdown, so nothing was inserted." },
             ]
         },
         new()
@@ -1182,6 +1183,7 @@ survolez la barre d'outils, ouvrez la recherche ou lisez la barre d'état.";
         imageStatus = rejection.Reason switch
         {
             BitMarkdownEditorImageRejectionReason.Size => $"{rejection.FileName} is too large ({rejection.Size} bytes).",
+            BitMarkdownEditorImageRejectionReason.Length => $"{rejection.FileName} does not fit in the remaining characters.",
             _ => $"{rejection.FileName} is not an accepted image type ({rejection.ContentType})."
         };
     }
@@ -1457,6 +1459,7 @@ private void ImageRejected(BitMarkdownEditorImageRejection rejection)
     imageStatus = rejection.Reason switch
     {
         BitMarkdownEditorImageRejectionReason.Size => $""{rejection.FileName} is too large ({rejection.Size} bytes)."",
+        BitMarkdownEditorImageRejectionReason.Length => $""{rejection.FileName} does not fit in the remaining characters."",
         _ => $""{rejection.FileName} is not an accepted image type ({rejection.ContentType}).""
     };
 }";

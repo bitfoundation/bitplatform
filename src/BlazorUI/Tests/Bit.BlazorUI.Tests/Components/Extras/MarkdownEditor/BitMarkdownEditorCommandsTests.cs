@@ -384,6 +384,17 @@ public class BitMarkdownEditorCommandsTests
     }
 
     [TestMethod]
+    [DataRow("* [x] done", "* [x] done\n* [ ] ")]
+    [DataRow("+ [ ] todo", "+ [ ] todo\n+ [ ] ")]
+    public void NewLineShouldContinueTaskListWithTheLinesOwnBullet(string text, string expected)
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.NewLine, text, text.Length, text.Length);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual(expected, result.Text);
+    }
+
+    [TestMethod]
     public void NewLineShouldClearEmptyListItem()
     {
         const string text = "- item\n- ";

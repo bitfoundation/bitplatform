@@ -153,6 +153,9 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// <summary>
     /// The maximum number of characters the editor accepts. Null (the default) leaves the
     /// length unlimited; when set, the status bar counter shows the limit alongside the count.
+    /// A command, a replace-all run or an image upload that would overrun the limit is refused
+    /// whole rather than applied and paid for by cutting the end of the document off; text
+    /// being pasted or inserted is cut down to what still fits, the way the browser cuts it.
     /// </summary>
     [Parameter] public int? MaxLength { get; set; }
 
@@ -553,14 +556,21 @@ public partial class BitMarkdownEditor : BitComponentBase
         var formats = BitMarkdownEditorCommands.DetectActiveFormats(value ?? string.Empty, start, end, CommandOptions);
 
         var formatsChanged = formats.Count != _activeFormats.Count || formats.All(_activeFormats.Contains) is false;
-        var positionChanged = line != _caretLine || column != _caretColumn || selectedLength != _selectedLength;
+        // The caret position is rendered by the status bar alone, so it only earns a re-render
+        // while that is showing. Counting it unconditionally would re-render (and, on Blazor
+        // Server, diff the circuit) on every single caret move.
+        var positionChanged = ShowStatusBar && ShowCursorPosition &&
+                              (line != _caretLine || column != _caretColumn || selectedLength != _selectedLength);
+
+        // Still recorded either way, so turning the status bar on shows where the caret
+        // actually is instead of where it was when the bar was last visible.
+        _caretLine = line;
+        _caretColumn = column;
+        _selectedLength = selectedLength;
 
         if (formatsChanged is false && positionChanged is false) return;
 
         _activeFormats = formats;
-        _caretLine = line;
-        _caretColumn = column;
-        _selectedLength = selectedLength;
 
         _ = InvokeAsync(StateHasChanged);
     }
@@ -900,15 +910,28 @@ public partial class BitMarkdownEditor : BitComponentBase
     {
         if (IsEnabled is false) return true;
 
-        var blockedByReadOnly = ReadOnly && item.AlwaysEnabled is false;
+        if (ReadOnly is false)
+        {
+            return item.Type switch
+            {
+                BitMarkdownEditorToolbarItemType.Undo => _canUndo is false,
+                BitMarkdownEditorToolbarItemType.Redo => _canRedo is false,
+                _ => false
+            };
+        }
 
+        // Read-only blocks everything that would change the text, and AlwaysEnabled is the
+        // opt-out for a custom item that only reads it. It deliberately does not reach the
+        // built-in editing items: Run/Undo/Redo refuse to touch a read-only editor whatever
+        // the toolbar says, so honouring it there would only draw a button that does nothing.
         return item.Type switch
         {
-            BitMarkdownEditorToolbarItemType.Command => blockedByReadOnly,
-            BitMarkdownEditorToolbarItemType.Dropdown => blockedByReadOnly,
-            BitMarkdownEditorToolbarItemType.Undo => blockedByReadOnly || _canUndo is false,
-            BitMarkdownEditorToolbarItemType.Redo => blockedByReadOnly || _canRedo is false,
-            BitMarkdownEditorToolbarItemType.Custom => blockedByReadOnly,
+            BitMarkdownEditorToolbarItemType.Custom => item.AlwaysEnabled is false,
+            // A menu is still worth opening while read-only when something inside it is.
+            BitMarkdownEditorToolbarItemType.Dropdown => item.Children?.Any(c => IsToolbarItemDisabled(c) is false) is not true,
+            BitMarkdownEditorToolbarItemType.Command or
+            BitMarkdownEditorToolbarItemType.Undo or
+            BitMarkdownEditorToolbarItemType.Redo => true,
             _ => false
         };
     }
