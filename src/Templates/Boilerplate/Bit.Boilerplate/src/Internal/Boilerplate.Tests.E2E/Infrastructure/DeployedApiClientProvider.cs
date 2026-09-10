@@ -1,8 +1,10 @@
 using OtpNet;
 using Npgsql;
 using Microsoft.JSInterop;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components;
+using System.ClientModel.Primitives;
 using Boilerplate.Client.Web.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 using Boilerplate.Tests.E2E.Infrastructure.Services;
@@ -18,12 +20,6 @@ public static class DeployedApiClientProvider
     private static readonly Lazy<IHost> host = new(Build, LazyThreadSafetyMode.ExecutionAndPublication);
     private static readonly SemaphoreSlim globalApiClientGate = new(1, 1);
     private static volatile DeployedApiClient? globalApiClient;
-
-    public static IServiceProvider Services => host.Value.Services;
-
-    // Where Identity stores the authenticator shared key (UserStore's InternalLoginProvider / AuthenticatorKeyTokenName).
-    private const string AuthenticatorLoginProvider = "[AspNetUserStore]";
-    private const string AuthenticatorKeyName = "AuthenticatorKey";
 
     /// <summary>
     /// The run-long global-admin session. The first caller signs it in; later callers share it, so it is not theirs
@@ -50,12 +46,18 @@ public static class DeployedApiClientProvider
     }
 
     /// <summary>
+    /// The model <see cref="AiAnswerJudge"/> reads a chatbot answer with, or null when this project's user secrets
+    /// name no <c>OpenAIChatApiKey</c> (See <see cref="AddAnswerJudge"/>).
+    /// </summary>
+    public static IChatClient? GetAnswerJudge() => host.Value.Services.GetService<IChatClient>();
+
+    /// <summary>
     /// A client of the caller's own, talking to <paramref name="apiAddress"/> - signed out, with no Dev MCP and no
     /// database. <see cref="DeployedApps.ApiOf"/> maps an <see cref="App"/> to its API.
     /// </summary>
     public static DeployedApiClient CreateApiClientFor(string apiAddress)
     {
-        var scope = Services.CreateAsyncScope();
+        var scope = host.Value.Services.CreateAsyncScope();
         Apply(scope.ServiceProvider.GetRequiredService<DeployedApi>(), apiAddress);
         return new DeployedApiClient(scope, scope.ServiceProvider.GetRequiredService<HttpClient>());
     }
@@ -92,53 +94,52 @@ public static class DeployedApiClientProvider
 
         AppEnvironment.Set(Environments.Development);
 
-        // AddClientConfigurations reflects over these assemblies.
-        _ = typeof(Boilerplate.Client.Core.ClientCoreSettings).Assembly;
-        _ = typeof(Boilerplate.Client.Web.Program).Assembly;
+        var services = builder.Services;
+        var configuration = builder.Configuration;
 
-        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
+        // AddClientConfigurations reflects over these assemblies.
+        _ = typeof(Client.Core.ClientCoreSettings).Assembly;
+        _ = typeof(Client.Web.Program).Assembly;
+
+        configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
         // Development already implies both sources; explicit so a run with DOTNET_ENVIRONMENT set keeps the secrets.
-        builder.Configuration.AddUserSecrets(typeof(DeployedApiClientProvider).Assembly, optional: true);
-        builder.Configuration.AddEnvironmentVariables();
+        configuration.AddUserSecrets(typeof(DeployedApiClientProvider).Assembly, optional: true);
+        configuration.AddEnvironmentVariables();
         // Required by ClientCoreSettings, and deliberately relative: an absolute value would pin
         // AbsoluteServerAddressProvider to one API for every scope instead of letting it follow the scope's HttpClient.
-        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["ServerAddress"] = "/"
         });
 
-        var connectionString = builder.Configuration.GetConnectionString("postgresdb")
-            ?? throw new InvalidOperationException("Connection string 'postgresdb' was found in neither this project's user secrets nor the environment variables.");
+        var connectionString = configuration.GetRequiredConnectionString("postgresdb");
 
-        builder.Services.AddClientCoreProjectServices(builder.Configuration);
-        builder.Services.AddIntegrationApiOnlyTestsServices();
-        builder.Services.AddSingleton<IJSRuntime, TestJsRuntime>();
-        builder.Services.AddSingleton<NavigationManager, TestNavigationManager>();
-        builder.Services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();
-        builder.Services.AddScoped<ClientExceptionHandlerBase, TestClientExceptionHandler>();
-        builder.Services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
-        builder.Services.AddScoped<DeployedApi>();
+        services.AddClientCoreProjectServices(configuration);
+        services.AddIntegrationApiOnlyTestsServices();
+        services.AddSingleton<IJSRuntime, TestJsRuntime>();
+        services.AddSingleton<NavigationManager, TestNavigationManager>();
+        services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();
+        services.AddScoped<ClientExceptionHandlerBase, TestClientExceptionHandler>();
+        services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
+        services.AddScoped<DeployedApi>();
 
-        // Same shape as Boilerplate.Tests' AddTestProjectServices, except the base address is a deployed API chosen
-        // per scope rather than the in-process test server.
-        builder.Services.AddTransient(sp =>
+        services.AddScoped<HttpClient>(sp =>
         {
-            var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
             var deployed = sp.GetRequiredService<DeployedApi>();
-            var httpClient = new HttpClient(handlerFactory.Invoke(new SupportedClientVersionHandler
-            {
-                InnerHandler = new SocketsHttpHandler
-                {
-                    AutomaticDecompression = DecompressionMethods.All,
-                    PooledConnectionLifetime = TimeSpan.FromMinutes(15)
-                }
-            }))
+            var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
+            var httpClient = new HttpClient(handlerFactory.Invoke())
             {
                 BaseAddress = deployed.ApiAddress
             };
+
+            httpClient.DefaultRequestHeaders.Add("X-App-Version", "400.0.0");
+            httpClient.DefaultRequestHeaders.Add("X-App-Platform", AppPlatformType.Web.ToString());
             httpClient.DefaultRequestHeaders.Add("X-Origin", deployed.WebAppOrigin);
+
             return httpClient;
         });
+
+        AddAnswerJudge(services, configuration);
 
         // Same shape as Server.Api's own registration, so what this queries is what the deployment writes.
         builder.Services.AddSingleton(_ =>
@@ -165,9 +166,35 @@ public static class DeployedApiClientProvider
         return builder.Build();
     }
 
+    /// <summary>
+    /// The model these tests read the deployed chatbot's answers with (See <see cref="AiAnswerJudge"/>).
+    /// <para>
+    /// The same registration Server.Api makes, minus what only the deployment needs: no agents, system prompts,
+    /// embeddings or tools - this model only reads what the chatbot wrote. Its own key too (<c>OpenAIChatApiKey</c>
+    /// in this project's user secrets), so a run costs the deployments nothing and a missing key skips those tests.
+    /// </para>
+    /// </summary>
+    private static void AddAnswerJudge(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHttpClient("AI");
+
+        if (configuration["OpenAIChatApiKey"] is not { Length: > 0 } apiKey)
+            return;
+
+        services.AddChatClient(sp => new OpenAI.Chat.ChatClient(
+            model: configuration["OpenAIChatModel"] ?? throw new InvalidOperationException("'OpenAIChatModel' is required alongside 'OpenAIChatApiKey'."),
+            credential: new(apiKey),
+            options: new()
+            {
+                Endpoint = configuration["OpenAIChatEndpoint"] is { Length: > 0 } endpoint ? new Uri(endpoint) : null,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsIChatClient())
+        .UseLogging();
+    }
+
     private static async Task<DeployedApiClient> ConnectGlobalApiClient()
     {
-        var scope = Services.CreateAsyncScope();
+        var scope = host.Value.Services.CreateAsyncScope();
         McpClient? mcp = null;
         try
         {
@@ -179,14 +206,8 @@ public static class DeployedApiClientProvider
             var password = configuration["GlobalAdminPassword"]!;
 
             var dbContextFactory = sp.GetRequiredService<IDbContextFactory<AppDbContext>>();
-            await using var db = await dbContextFactory.CreateDbContextAsync();
-            var normalizedEmail = email.ToUpperInvariant();
-            var admin = await db.Users.IgnoreQueryFilters()
-                .SingleAsync(user => user.NormalizedEmail == normalizedEmail);
 
             var authenticatorKey = configuration["GlobalAdminAuthenticatorKey"]!;
-
-            await EnsureUserCanSignIn(db, admin.Id, authenticatorKey, grantGlobalAdmin: true);
 
             var authManager = sp.GetRequiredService<AuthManager>();
             await authManager.SignIn(new() { Email = email, Password = password, RememberMe = true }, CancellationToken.None);
@@ -213,60 +234,6 @@ public static class DeployedApiClientProvider
         }
     }
 
-    /// <summary>
-    /// Aligns a live account with the secrets: confirmed, unlocked, and on two-factor with
-    /// <paramref name="authenticatorKey"/> (null turns 2FA off). A no-op once it matches.
-    /// </summary>
-    /// <remarks>
-    /// The key is why this exists: enrolling through the UI mints a random one, so nothing else can put the account on
-    /// two-factor with OURS - and /dev-mcp needs a 2FA session.
-    /// </remarks>
-    public static async Task EnsureUserCanSignIn(AppDbContext db, Guid userId, string? authenticatorKey = null, bool grantGlobalAdmin = false)
-    {
-        var user = await db.Users.IgnoreQueryFilters().SingleAsync(item => item.Id == userId);
-
-        // Undoing what an earlier run can leave behind: a failed sign-in raises AccessFailedCount and locks the account.
-        user.EmailConfirmed = true;
-        user.TwoFactorEnabled = authenticatorKey is not null;
-        user.LockoutEnd = null;
-        user.AccessFailedCount = 0;
-
-        if (authenticatorKey is not null)
-        {
-            // Where Identity keeps the shared key; written directly because this host has no UserManager.
-            var token = await db.UserTokens.SingleOrDefaultAsync(item =>
-                item.UserId == userId && item.LoginProvider == AuthenticatorLoginProvider && item.Name == AuthenticatorKeyName);
-
-            if (token is null)
-            {
-                await db.UserTokens.AddAsync(new UserToken
-                {
-                    UserId = userId,
-                    LoginProvider = AuthenticatorLoginProvider,
-                    Name = AuthenticatorKeyName,
-                    Value = authenticatorKey
-                });
-            }
-            else if (token.Value != authenticatorKey)
-            {
-                token.Value = authenticatorKey;
-            }
-        }
-
-        if (grantGlobalAdmin)
-        {
-            var globalAdminRoleId = await db.Roles
-                .Where(role => role.Name == AppRoles.GlobalAdmin)
-                .Select(role => role.Id)
-                .SingleAsync();
-
-            if (await db.UserRoles.AnyAsync(userRole => userRole.UserId == user.Id && userRole.RoleId == globalAdminRoleId) is false)
-                await db.UserRoles.AddAsync(new UserRole { UserId = user.Id, RoleId = globalAdminRoleId });
-        }
-
-        await db.SaveChangesAsync();
-    }
-
     private static async Task<McpClient> ConnectMcp(HttpClient httpClient, ILoggerFactory loggerFactory)
     {
         var transport = new HttpClientTransport(new HttpClientTransportOptions
@@ -283,19 +250,5 @@ public static class DeployedApiClientProvider
         var (address, origin) = DeployedApi.For(apiAddress);
         deployed.ApiAddress = address;
         deployed.WebAppOrigin = origin;
-    }
-
-    /// <summary>
-    /// Innermost, so it strips what RequestHeadersDelegatingHandler just wrote: this host is not a shipped client, and
-    /// ForceUpdate only applies when both headers are present.
-    /// </summary>
-    private sealed class SupportedClientVersionHandler : DelegatingHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            request.Headers.Remove("X-App-Version");
-            request.Headers.Remove("X-App-Platform");
-            return base.SendAsync(request, cancellationToken);
-        }
     }
 }

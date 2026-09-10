@@ -21,7 +21,7 @@ public class SynthesizeSpeechRequestDto
     public string Text { get; set; } = default!;
 
     /// <summary>
-    /// What the server signed <see cref="Text"/> with when it wrote it (<c>AiChatMessageResponse.Signature</c>).
+    /// What the server signed <see cref="Text"/> with when it wrote it (<see cref="AiChatMessage.Signature"/>).
     /// </summary>
     [Required(AllowEmptyStrings = false), StringLength(maximumLength: 1024)]
     public string Signature { get; set; } = default!;

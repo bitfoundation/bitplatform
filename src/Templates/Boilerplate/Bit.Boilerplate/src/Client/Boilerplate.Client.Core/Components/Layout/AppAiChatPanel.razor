@@ -26,7 +26,7 @@
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
-                @if (isLoading)
+                @if (isLoading || isRestoringHistory)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
                 }
@@ -98,7 +98,18 @@
                                 <BitStack Horizontal
                                           FitHeight
                                           Gap="0.25rem"
+                                          VerticalAlign="BitAlignment.Center"
                                           Class="@($"message-actions{(isReadAloudLoading && ReferenceEquals(readAloudMessage, message) ? " busy" : null)}")">
+                                    @if (SentAtLabel(message) is { Length: > 0 } sentAt)
+                                    {
+                                        <BitText NoWrap
+                                                 Numeric
+                                                 Class="message-time"
+                                                 Typography="BitTypography.Caption2"
+                                                 Color="BitColor.SecondaryForeground">
+                                            @sentAt
+                                        </BitText>
+                                    }
                                     @if (string.IsNullOrWhiteSpace(message.Content) is false)
                                     {
                                         <BitButton IconOnly

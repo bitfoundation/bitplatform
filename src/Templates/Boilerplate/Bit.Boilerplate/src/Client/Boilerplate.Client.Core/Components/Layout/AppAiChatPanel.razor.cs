@@ -39,18 +39,29 @@ public partial class AppAiChatPanel
     /// </summary>
     private bool isMaximized;
 
-    private int responseCounter;
-    private Channel<AiChatMessageRequest>? channel;
-    private AiChatMessageResponse? lastAssistantMessage;
+    private Channel<AiChatMessage>? channel;
+    private AiChatMessage? lastAssistantMessage;
+
+    /// <summary>
+    /// The bubbles waiting to be filled in, oldest first: the stream carries no message identity, so a frame belongs
+    /// to whichever question has waited longest, and a turn ends when its document does.
+    /// </summary>
+    private readonly Queue<AiChatMessage> unansweredMessages = new();
+
+    /// <summary>A turn arrives bit by bit, as one json document (See <see cref="AssistantTurn"/>). This reassembles it.</summary>
+    private PartialJsonReader<AssistantTurn>? turnReader;
 
     /// <summary>
     /// The line the panel opens on - the one assistant message the assistant did not write, so it carries no
     /// signature: read aloud is not offered on it and the server drops it from a resent history.
     /// </summary>
-    private AiChatMessageResponse? greetingMessage;
-    private List<AiChatMessageResponse> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
+    private AiChatMessage? greetingMessage;
+    private List<AiChatMessage> chatMessages = [];
     private List<string> followUpSuggestions = [];
-    private Action unsubFollowUpSuggestions = default!;
+
+    /// <summary>More than this pushes the message box off the screen on a phone.</summary>
+    private const int MaxFollowUpSuggestions = 3;
+
     //#if(module == "Sales")
     private Action unsubSearchProducts = default!;
     //#endif
@@ -61,29 +72,6 @@ public partial class AppAiChatPanel
 
     protected override Task OnInitAsync()
     {
-        // The assistant writes these itself, with the SendFollowUpSuggestions tool, so they arrive on their own
-        // whenever it calls it - not as part of the answer's stream (See AppChatbot.SendFollowUpSuggestions).
-        unsubFollowUpSuggestions = PubSubService.Subscribe(SharedAppMessages.SHOW_FOLLOW_UP_SUGGESTIONS, async payload =>
-        {
-            if (payload is null) return;
-
-            var followUpList = payload is JsonElement jsonElement
-                ? jsonElement.Deserialize(JsonSerializerOptions.GetTypeInfo<AiChatFollowUpList>()) /* Message gets published from server through SignalR */
-                : (AiChatFollowUpList)payload;
-
-            // The publisher is the hub connection's own callback, which is not the renderer's thread.
-            await InvokeAsync(() =>
-            {
-                // Suggestions for a conversation that is no longer on screen - the user cleared the chat while the
-                // assistant was still answering - would otherwise be offered on top of an empty panel.
-                if (chatMessages.Count is <= 1) return;
-
-                followUpSuggestions = followUpList?.FollowUpSuggestions ?? [];
-
-                StateHasChanged();
-            });
-        });
-
         //#if(module == "Sales")
         unsubSearchProducts = PubSubService.Subscribe(ClientAppMessages.SEARCH_PRODUCTS, async (value) =>
         {
@@ -136,7 +124,17 @@ public partial class AppAiChatPanel
         StateHasChanged();
         hubConnection.Reconnected += HubConnection_Reconnected;
 
+        await RestoreHistory();
+
         await base.OnAfterFirstRenderAsync();
+    }
+
+    protected override async Task OnParamsSetAsync()
+    {
+        // CurrentUser cascades, so this is where a sign in or a sign out reaches the panel.
+        await SyncHistoryOwner();
+
+        await base.OnParamsSetAsync();
     }
 
 
@@ -193,20 +191,20 @@ public partial class AppAiChatPanel
 
             followUpSuggestions = [];
 
-            var message = new AiChatMessageRequest
+            // The one the panel renders is the one it sends.
+            var message = new AiChatMessage
             {
+                Role = AiChatMessageRole.User,
                 Content = userInput,
-                AttachmentId = pendingAttachmentId
+                AttachmentId = pendingAttachmentId,
+                SentAt = TimeProvider.GetUtcNow()
             };
 
             userInput = string.Empty;
 
-            chatMessages.Add(new()
-            {
-                Role = AiChatMessageRole.User,
-                Content = message.Content,
-                AttachmentId = message.AttachmentId
-            });
+            chatMessages.Add(message);
+
+            await RememberMessage(message);
 
             if (pendingAttachment is not null)
             {
@@ -217,6 +215,7 @@ public partial class AppAiChatPanel
 
             lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
             chatMessages.Add(lastAssistantMessage);
+            unansweredMessages.Enqueue(lastAssistantMessage);
 
             if (readAloudEnabled)
             {
@@ -279,19 +278,23 @@ public partial class AppAiChatPanel
 
         SetDefaultValues();
 
+        await ForgetHistory(); // Clear means gone, not gone from the screen.
+
         RestartChannel();
     }
 
     private void SetDefaultValues()
     {
         isLoading = false;
-        responseCounter = 0;
         followUpSuggestions = [];
+        turnReader = null;
+        unansweredMessages.Clear();
         lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
         greetingMessage = new()
         {
             Role = AiChatMessageRole.Assistant,
             Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrWhiteSpace(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
+            SentAt = TimeProvider.GetUtcNow()
         };
         chatMessages = [greetingMessage];
     }
@@ -306,7 +309,20 @@ public partial class AppAiChatPanel
     }
 
 
-    private async Task CopyMessage(AiChatMessageResponse message)
+    /// <summary>
+    /// When a message was written, in the zone the user picked (See <c>TimeZoneService</c>). Empty while an answer is
+    /// still on its way.
+    /// </summary>
+    private string SentAtLabel(AiChatMessage message)
+    {
+        if (message.SentAt == default) return string.Empty;
+
+        var sentAt = TimeZoneService.ToLocalTime(message.SentAt);
+
+        return $"{sentAt:t} · {sentAt:d}";
+    }
+
+    private async Task CopyMessage(AiChatMessage message)
     {
         if (message.Content is not { Length: > 0 } content) return;
 
@@ -324,7 +340,7 @@ public partial class AppAiChatPanel
 
     private void StartChannel()
     {
-        var newChannel = Channel.CreateUnbounded<AiChatMessageRequest>(new() { SingleReader = true, SingleWriter = true });
+        var newChannel = Channel.CreateUnbounded<AiChatMessage>(new() { SingleReader = true, SingleWriter = true });
 
         channel = newChannel;
 
@@ -336,7 +352,7 @@ public partial class AppAiChatPanel
     /// Streams the user's input messages to the server and processes the streamed responses.
     /// It keeps the chat ongoing until CurrentCancellationToken is cancelled.
     /// </summary>
-    private async Task RunChannel(Channel<AiChatMessageRequest> ownChannel)
+    private async Task RunChannel(Channel<AiChatMessage> ownChannel)
     {
         try
         {
@@ -356,48 +372,7 @@ public partial class AppAiChatPanel
                 // Frames belonging to a conversation the panel has already replaced (Clear, or a reconnect) are dropped.
                 if (ReferenceEquals(channel, ownChannel) is false) continue;
 
-                int expectedResponsesCount = chatMessages.Count(c => c.Role is AiChatMessageRole.User);
-
-                // A success marker carries the signature of the answer it ends, after a ':' (See SharedAppMessages).
-                var isSuccessMarker = response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS
-                                      || response.StartsWith($"{SharedAppMessages.MESSAGE_PROCESS_SUCCESS}:", StringComparison.Ordinal);
-
-                if (isSuccessMarker || response is SharedAppMessages.MESSAGE_PROCESS_ERROR)
-                {
-                    // One marker per message. A second one for a message already answered - the server reporting the
-                    // follow-up generation that the next message cancelled - would leave this counter ahead of the
-                    // conversation for good, and a counter that is ahead discards every later answer in silence.
-                    if (responseCounter >= expectedResponsesCount) continue;
-
-                    responseCounter++;
-
-                    if (isSuccessMarker)
-                    {
-                        // Kept next to the answer so the panel can prove to the server that the server wrote it.
-                        if (response.Split(':', 2) is [_, var signature])
-                        {
-                            chatMessages[responseCounter * 2].Signature = signature;
-                        }
-
-                        isLoading = false;
-                        await ReadAloudCompletedAnswer(); // The answer is whole, so there is something worth reading out.
-                    }
-                    else
-                    {
-                        if (responseCounter == expectedResponsesCount)
-                        {
-                            isLoading = false; // Hide loading only if this is an error for the last user's message.
-                        }
-                        chatMessages[responseCounter * 2].Successful = false;
-                    }
-                }
-                else
-                {
-                    if ((responseCounter + 1) == expectedResponsesCount)
-                    {
-                        lastAssistantMessage!.Content += response;
-                    }
-                }
+                await ReadTurnSoFar(response);
 
                 StateHasChanged();
             }
@@ -419,6 +394,67 @@ public partial class AppAiChatPanel
         }
     }
 
+    /// <summary>
+    /// Adds the next piece of the turn's document and renders what it says so far - one property of that document,
+    /// so nothing the stream carries around the answer can be read as part of it.
+    /// </summary>
+    private async Task ReadTurnSoFar(string chunk)
+    {
+        // A frame with no bubble waiting for it belongs to a turn the panel has already given up on.
+        if (unansweredMessages.TryPeek(out var answer) is false) return;
+
+        turnReader ??= new(JsonSerializerOptions.GetTypeInfo<AssistantTurn>());
+
+        var turn = turnReader.Append(chunk);
+
+        // The first thing the server writes, so even a cancelled answer says when it was asked for.
+        if (turn is not null && turn.SentAt != default)
+        {
+            answer.SentAt = turn.SentAt;
+        }
+
+        if (turnReader.IsComplete is false)
+        {
+            answer.Content = turn?.Reply?.Answer ?? answer.Content;
+            return;
+        }
+
+        // From here the turn is over, whichever way it went, so the next frame starts the next one.
+        unansweredMessages.Dequeue();
+        turnReader = null;
+
+        if (turn?.Successful is not true)
+        {
+            // What streamed is kept and tagged, but not re-read: a cut-off turn has its closing spliced onto half a
+            // reply.
+            answer.Successful = false;
+
+            isLoading = unansweredMessages.Count > 0;
+
+            await RememberMessage(answer); // Tagged as it is, so what comes back next time is what is on screen now.
+            return;
+        }
+
+        answer.Content = turn.Reply?.Answer ?? answer.Content;
+        answer.Signature = turn.Signature; // So the panel can prove to the server that the server wrote this.
+
+        // Written once the turn is over rather than as it streams: an answer only settles when its document closes.
+        await RememberMessage(answer);
+
+        // Part of the turn's own document, so only the newest answer's are offered.
+        if (unansweredMessages.Count is 0)
+        {
+            followUpSuggestions = [.. (turn.Reply?.FollowUpSuggestions ?? [])
+                .Where(suggestion => string.IsNullOrWhiteSpace(suggestion) is false)
+                .Select(suggestion => suggestion.Trim())
+                .Take(MaxFollowUpSuggestions)];
+
+            isLoading = false;
+        }
+
+        await ReadAloudCompletedAnswer(); // The answer is whole, so there is something worth reading out.
+    }
+
     private void StopChannel()
     {
         if (channel is null) return;
@@ -427,12 +463,14 @@ public partial class AppAiChatPanel
         channel = null;
 
         // Keeps a half-written answer out of the history replayed to the model, which would otherwise read its own
-        // unfinished sentence as something it completed (see StartChatRequest's Successful).
-        if (isLoading && ReferenceEquals(chatMessages.LastOrDefault(), lastAssistantMessage))
+        // unfinished sentence as something it completed (see AiChatMessage.Successful).
+        foreach (var unanswered in unansweredMessages)
         {
-            lastAssistantMessage!.Successful = false;
+            unanswered.Successful = false;
         }
 
+        unansweredMessages.Clear();
+        turnReader = null;
         isLoading = false;
     }
 
@@ -446,8 +484,6 @@ public partial class AppAiChatPanel
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        unsubFollowUpSuggestions();
-
         //#if(module == "Sales")
         unsubSearchProducts();
         //#endif
@@ -463,6 +499,11 @@ public partial class AppAiChatPanel
         await StopReadAloud();
 
         StopChannel();
+
+        if (historyDb is not null)
+        {
+            await historyDb.DisposeAsync();
+        }
 
         await base.DisposeAsync(disposing);
     }

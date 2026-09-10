@@ -92,7 +92,7 @@ public partial class AppChatbot
     /// A resent assistant turn is believed only when it carries the signature this app wrote it with - anything else,
     /// the panel's own local greeting included, is the caller putting words in the assistant's mouth.
     /// </summary>
-    private bool WrittenByThisAssistantOrByTheUser(AiChatMessageResponse message)
+    private bool WrittenByThisAssistantOrByTheUser(AiChatMessage message)
     {
         return message.Role is not AiChatMessageRole.Assistant || answerSigner.Verify(message.Content, message.Signature);
     }
@@ -111,11 +111,15 @@ public partial class AppChatbot
     /// Process an incoming message and stream the AI response
     /// </summary>
     public async Task ProcessNewMessage(
-        AiChatMessageRequest incomingMessage,
+        AiChatMessage incomingMessage,
         ClaimsPrincipal? user,
         CancellationToken cancellationToken)
     {
-        StringBuilder assistantResponse = new();
+        // Everything sent for this turn is one json document (See AssistantTurn): the opening is written here, the
+        // reader follows the model's reply through the middle, and CloseTurn splices the closing on.
+        var reply = new PartialJsonReader<AssistantReply>(AppJsonContext.Default.AssistantReply);
+        var opened = false;
+
         try
         {
             if (string.IsNullOrWhiteSpace(variablesDefault))
@@ -123,7 +127,9 @@ public partial class AppChatbot
 
             supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
 
-            chatMessages.Add(await ToChatMessage(incomingMessage, cancellationToken));
+            // ChatRole.User rather than the role on the payload: whatever it claims, everything arriving on this
+            // stream is the user speaking.
+            chatMessages.Add(await ToChatMessage(ChatRole.User, incomingMessage.Content, incomingMessage.AttachmentId, cancellationToken));
 
             TrimChatHistory();
 
@@ -149,52 +155,92 @@ public partial class AppChatbot
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
+                    await CloseTurn(reply, opened, successful: false);
                     return;
                 }
 
-                var result = response.Text;
-                assistantResponse.Append(result);
-                await responseChannel.Writer.WriteAsync(result, cancellationToken);
+                if (response.Text is not { Length: > 0 } chunk) continue;
+
+                reply.Append(chunk);
+
+                if (opened is false)
+                {
+                    await SendStringToClient(OpenTurn(), cancellationToken);
+                    opened = true;
+                }
+
+                // Only json goes through as it comes. A provider that didn't hold the model to the schema is writing
+                // prose where a document belongs, which CloseTurn puts right instead.
+                if (reply.IsDocument)
+                {
+                    await responseChannel.Writer.WriteAsync(chunk, cancellationToken);
+                }
             }
 
-            var successMarker = SharedAppMessages.MESSAGE_PROCESS_SUCCESS;
-
-            if (assistantResponse.Length > 0)
+            if (AnswerOf(reply) is { Length: > 0 } answer)
             {
-                var answer = assistantResponse.ToString();
-
                 chatMessages.Add(new(ChatRole.Assistant, answer));
-
-                // Rides on the answer's own terminal marker so the two cannot be separated. The client hands it back
-                // whenever it asks the server to take this answer at its word - read aloud, or history on reconnect.
-                successMarker = $"{successMarker}:{answerSigner.Sign(answer)}";
             }
 
-            await SendTerminalMarkerToClient(successMarker);
+            await CloseTurn(reply, opened, successful: true);
         }
         catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)
         {
-            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
+            await CloseTurn(reply, opened, successful: false);
         }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
-            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
+            await CloseTurn(reply, opened, successful: false);
         }
     }
 
-    private Task<ChatMessage> ToChatMessage(AiChatMessageResponse message, CancellationToken cancellationToken)
+    /// <summary>Everything of the turn's document that comes before the model's reply.</summary>
+    private string OpenTurn() => $$"""{"sentAt":"{{timeProvider.GetUtcNow():O}}","reply":""";
+
+    /// <summary>
+    /// Finishes the turn's document: whatever a reply cut off mid word still owes, then the fields only the server
+    /// can fill in, over the answer the user was actually shown.
+    /// <para>
+    /// Never sent with the message's own token: the client ends a turn when the document closes, and on an unbounded
+    /// channel WriteAsync drops what it is given once that token is cancelled - which is the case here.
+    /// </para>
+    /// </summary>
+    private Task CloseTurn(PartialJsonReader<AssistantReply> reply, bool opened, bool successful)
+    {
+        var rest = opened is false
+            // Nothing was written at all, so the opening still has to go out with it.
+            ? $"{OpenTurn()}null"
+            : reply.IsDocument
+                // What a reply cut off mid word still owes. Empty for one that ended on its own.
+                ? reply.Completion()
+                // Prose that was held back above, put where a reply belongs.
+                : JsonSerializer.Serialize(new AssistantReply { Answer = reply.Json }, AppJsonContext.Default.AssistantReply);
+
+        var signature = successful && AnswerOf(reply) is { Length: > 0 } answer
+            ? $"\"{JsonEncodedText.Encode(answerSigner.Sign(answer))}\""
+            : "null";
+
+        return SendStringToClient($$"""{{rest}},"signature":{{signature}},"successful":{{(successful ? "true" : "false")}}}""",
+                                  CancellationToken.None);
+    }
+
+    /// <summary>
+    /// The text the user was shown - what gets signed and what is replayed to the model as its own previous turn -
+    /// read with the same reader the panel uses (See <c>AppAiChatPanel.RunChannel</c>).
+    /// </summary>
+    private static string? AnswerOf(PartialJsonReader<AssistantReply> reply)
+        => reply.IsDocument ? reply.Append(null)?.Answer : reply.Json;
+
+    /// <summary>
+    /// A message of the resent history, as the role it claims. Only messages that got past
+    /// <see cref="WrittenByThisAssistantOrByTheUser"/> reach here, so an assistant turn is one this app signed.
+    /// </summary>
+    private Task<ChatMessage> ToChatMessage(AiChatMessage message, CancellationToken cancellationToken)
         => ToChatMessage(message.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User,
                          message.Content,
                          message.AttachmentId,
                          cancellationToken);
-
-    /// <summary>
-    /// The role is not taken from the payload: everything arriving on this stream is the user speaking.
-    /// </summary>
-    private Task<ChatMessage> ToChatMessage(AiChatMessageRequest message, CancellationToken cancellationToken)
-        => ToChatMessage(ChatRole.User, message.Content, message.AttachmentId, cancellationToken);
 
     /// <summary>
     /// The text of a message, plus the image the user attached to it, if any.
@@ -253,8 +299,8 @@ public partial class AppChatbot
     /// </summary>
     private const int MaxImagesInHistory = 3;
 
-    /// <summary>How many of the newest messages the model is shown.</summary>
-    private const int MaxMessagesInHistory = 40;
+    /// <inheritdoc cref="StartChatRequest.MaxChatMessagesHistory"/>
+    private const int MaxMessagesInHistory = StartChatRequest.MaxChatMessagesHistory;
 
     /// <summary>
     /// The conversation is resent in full on every message, so an unbounded history grows the prompt (and its
@@ -294,13 +340,6 @@ public partial class AppChatbot
     }
 
     /// <summary>
-    /// Terminal markers must never be sent with the per-message token: the client advances its response counter
-    /// only when a marker arrives, and on an unbounded channel WriteAsync short-circuits on an already-cancelled
-    /// token without enqueuing anything - which is exactly the case a cancelled message is in.
-    /// </summary>
-    private Task SendTerminalMarkerToClient(string marker) => SendStringToClient(marker, CancellationToken.None);
-
-    /// <summary>
     /// Create chat options with AI tools
     /// </summary>
     public List<AIFunction> GetAIFunctions()
@@ -316,7 +355,6 @@ public partial class AppChatbot
             AIFunctionFactory.Create(SetApplicationTheme),
             AIFunctionFactory.Create(CheckLastError),
             AIFunctionFactory.Create(ClearAppFiles),
-            AIFunctionFactory.Create(SendFollowUpSuggestions),
             //#if (module == "Sales")
             //#if (database == "PostgreSQL" || database == "SqlServer")
             AIFunctionFactory.Create(GetProductRecommendations)
@@ -328,12 +366,27 @@ public partial class AppChatbot
     }
 
     /// <summary>
+    /// Makes the model write one json document (See <see cref="AssistantReply"/>) instead of prose, so the answer and
+    /// its follow-up suggestions arrive together rather than in two round trips. A provider that doesn't enforce the
+    /// schema streams whatever it likes, and both ends read that as the answer itself - minus the suggestions.
+    /// </summary>
+    private static readonly ChatResponseFormat AnswerFormat = ChatResponseFormat.ForJsonSchema(
+        AIJsonUtilities.CreateJsonSchema(typeof(AssistantReply), serializerOptions: AppJsonContext.Default.Options, inferenceOptions: new()
+        {
+            // What OpenAI's strict json schema mode requires of a schema, and what the rest ignore.
+            TransformOptions = new() { DisallowAdditionalProperties = true, RequireAllProperties = true }
+        }),
+        schemaName: "assistant_answer",
+        schemaDescription: "The assistant's reply to the user, and what the user might want to ask next.");
+
+    /// <summary>
     /// Create chat options with AI tools
     /// </summary>
     private ChatOptions CreateChatOptions()
     {
         var chatOptions = new ChatOptions { };
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
+        chatOptions.ResponseFormat = AnswerFormat;
         return chatOptions;
     }
 

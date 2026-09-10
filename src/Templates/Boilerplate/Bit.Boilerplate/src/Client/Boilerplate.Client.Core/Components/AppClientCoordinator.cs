@@ -199,7 +199,15 @@ public partial class AppClientCoordinator : AppComponentBase
             //#if (brouter == true)
             // KeepAlive routes are hidden rather than disposed, so a retained page would otherwise hand the next
             // principal the previous one's search text and grid filters.
-            brouter.ClearKeepAlive();
+            try
+            {
+                brouter.ClearKeepAlive();
+            }
+            catch (InvalidOperationException)
+            {
+                // Not mounted yet on a SOFT_RESTART remount, so nothing to clear - and it must not take the rest of
+                // this method with it. TEMPORARY: ClearKeepAlive should no-op while unmounted.
+            }
             //#endif
 
             TelemetryContext.UserId = userId;

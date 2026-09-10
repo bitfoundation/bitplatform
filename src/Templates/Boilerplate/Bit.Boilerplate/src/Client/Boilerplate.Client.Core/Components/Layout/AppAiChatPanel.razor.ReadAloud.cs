@@ -19,7 +19,7 @@ public partial class AppAiChatPanel
     private bool readAloudPaused;
     private bool isReadAloudLoading;
     private string? readAloudObjectUrl;
-    private AiChatMessageResponse? readAloudMessage;
+    private AiChatMessage? readAloudMessage;
     private ElementReference readAloudAudioRef;
 
 
@@ -28,7 +28,7 @@ public partial class AppAiChatPanel
     /// here the answer to every following prompt is read out as it completes, so a user who is listening instead of
     /// reading does not have to reach for the button again on each turn.
     /// </summary>
-    private async Task ToggleReadAloud(AiChatMessageResponse message)
+    private async Task ToggleReadAloud(AiChatMessage message)
     {
         if (ReferenceEquals(readAloudMessage, message))
         {
@@ -55,7 +55,7 @@ public partial class AppAiChatPanel
     }
 
     /// <summary>Points read aloud at <paramref name="message"/>, with none of it read yet.</summary>
-    private void FollowReadAloud(AiChatMessageResponse message)
+    private void FollowReadAloud(AiChatMessage message)
     {
         readAloudPaused = false;
         readAloudMessage = message;

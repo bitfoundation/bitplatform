@@ -725,6 +725,7 @@
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",
+                        "src/Tests/Features/Culture/SupportedCultureContractTests.cs",
                         "src/Tests/Features/TemplateConfig/BitComponentParameterTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
@@ -779,6 +780,7 @@
                         "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs",
                         "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
                         "src/Tests/Features/Caching/ReplayCountingOutputCacheStore.cs",
+                        "src/Tests/Features/Caching/ResponseCacheAttributeContractTests.cs",
                         "src/Tests/Features/Jobs/RecurringJobPruningTests.cs",
                         "src/Tests/Features/Caching/ProductImageCacheInvalidationTests.cs",
                         "src/Tests/Features/Caching/CultureCookieCacheabilityTests.cs",
@@ -835,6 +837,7 @@
                     "condition": "(advancedTests != true || signalR != true)",
                     "exclude": [
                         "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
+                        "src/Tests/Features/Diagnostics/DiagnosticReportSourcesTests.cs",
                         "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
@@ -844,6 +847,8 @@
                         "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
                         "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelAnswerRoutingTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelHistoryUITests.cs",
+                        "src/Tests/Features/Chatbot/PartialJsonReaderTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs",
                         "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
                     ]

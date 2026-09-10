@@ -35,7 +35,7 @@ public partial class AppHub
     [HubMethodName(SharedAppMessages.StartChat)]
     public async IAsyncEnumerable<string> StartChat(
         StartChatRequest request,
-        IAsyncEnumerable<AiChatMessageRequest> incomingMessages,
+        IAsyncEnumerable<AiChatMessage> incomingMessages,
         [EnumeratorCancellation] CancellationToken cancellationToken,
         [FromServices] AppChatbot chatbotService)
     {

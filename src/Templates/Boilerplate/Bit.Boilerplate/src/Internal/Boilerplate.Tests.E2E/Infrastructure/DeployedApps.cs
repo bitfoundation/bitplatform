@@ -50,6 +50,19 @@ public static class DeployedApps
     /// <summary>Standalone API of every todo sample app (Azure Web App).</summary>
     public const string TodoApi = "https://todo-api.bitplatform.dev/";
 
+    /// <summary>Where an app is served, for a test that reaches it over http rather than through an opener.</summary>
+    public static string AddressOf(App app) => app switch
+    {
+        App.AdminPanel => AdminPanel,
+        App.AdminPanelWasmStandalone => AdminPanelWasmStandalone,
+        App.Todo => Todo,
+        App.TodoAot => TodoAot,
+        App.TodoSmall => TodoSmall,
+        App.TodoOffline => TodoOffline,
+        App.Sales => Sales,
+        _ => throw new ArgumentOutOfRangeException(nameof(app), app, "Unknown app"),
+    };
+
     /// <summary>
     /// The API an app talks to, for the tests that call it directly through <see cref="DeployedApiClientProvider"/>. The
     /// admin and todo apps share one standalone API each, while Sales' API is integrated into the app itself.
@@ -60,6 +73,18 @@ public static class DeployedApps
         App.Todo or App.TodoAot or App.TodoSmall or App.TodoOffline => TodoApi,
         App.Sales => Sales,
         _ => throw new ArgumentOutOfRangeException(nameof(app), app, "Unknown app"),
+    };
+
+    /// <summary>
+    /// Where an API is deployed on this machine - its IIS site folder and the application pool it runs in - taken from
+    /// the deploy inputs in .github/workflows/*.cd.yml. Sales has neither of its own: its API is part of the web app.
+    /// </summary>
+    public static (string SitePath, string AppPool) DeploymentOfApi(string apiAddress) => apiAddress switch
+    {
+        AdminPanelApi => (@"C:\inetpub\AdminPanelApi", "AdminPanelApi"),
+        TodoApi => (@"C:\inetpub\TodoApi", "TodoApi"),
+        Sales => (@"C:\inetpub\SalesModule", "SalesModule"),
+        _ => throw new ArgumentOutOfRangeException(nameof(apiAddress), apiAddress, "Unknown API"),
     };
 
     public const string TodoAndroidAppId = "com.bitplatform.Todo.Template";

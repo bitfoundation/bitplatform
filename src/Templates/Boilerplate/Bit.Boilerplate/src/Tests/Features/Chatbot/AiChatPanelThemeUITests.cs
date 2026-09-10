@@ -105,9 +105,7 @@ public partial class AiChatPanelThemeUITests : AiChatPanelTestBase
         // value was fed back into the conversation. SetApplicationTheme returns "Theme changed to X successfully"
         // only when the client reported an actual change.
         // The tool result lands in the post-tool-call conversation (the second of the turn's two model calls), so all
-        // conversations are searched rather than assuming which one holds it. Follow-up suggestions play no part here:
-        // they are written by the model itself through the SendFollowUpSuggestions tool (see
-        // AiChatPanelAnswerRoutingTests' header), and this scripted model never calls it.
+        // conversations are searched rather than assuming which one holds it.
         var toolResults = chatClient.ReceivedConversations
             .SelectMany(conversation => conversation)
             .SelectMany(message => message.Contents)

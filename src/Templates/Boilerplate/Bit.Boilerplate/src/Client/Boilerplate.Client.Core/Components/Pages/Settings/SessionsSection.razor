@@ -27,7 +27,7 @@
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
-                    <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
+                    <BitPersona PrimaryText="@currentSession.DisplayAddress"
                                 SecondaryText="@currentSession.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
                                 TertiaryText="@currentSession.DeviceInfo"
                                 Class="session-persona"
@@ -36,7 +36,15 @@
                                 Styles="@(new() { Image = "width:50%;height:50%" })"
                                 ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
                                 CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
-                                Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
+                                Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
+                        <PrimaryTextTemplate>
+                            <div class="session-address">@currentSession.DisplayAddress</div>
+                            @if (currentSession.DisplayIP is not null)
+                            {
+                                <div class="session-ip" title="@currentSession.DisplayIP">@currentSession.DisplayIP</div>
+                            }
+                        </PrimaryTextTemplate>
+                    </BitPersona>
                     <BitSpacer />
                     @*#if (signalR == true || notification == true)*@
                     <BitButton IconOnly
@@ -57,7 +65,7 @@
             <br />
             <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadSessions(false))" ScrollerSelector=".sessions-list" Style="width:100%">
                 <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
-                <BitBasicList Items="otherSessions" Virtualize ItemSize="120" Class="sessions-list">
+                <BitBasicList Items="otherSessions" Virtualize ItemSize="135" Class="sessions-list">
                     <RowTemplate Context="session">
                         <BitCard FullWidth Style="margin-bottom:1rem">
                             @if (string.IsNullOrEmpty(session.OAuthClientId) is false)
@@ -87,7 +95,7 @@
                                 </BitStack>
                             }
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
-                                <BitPersona PrimaryText="@($"{session.Address} ({session.IP})")"
+                                <BitPersona PrimaryText="@session.DisplayAddress"
                                             SecondaryText="@session.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
                                             TertiaryText="@session.DeviceInfo"
                                             Size="BitPersonaSize.Size72"
@@ -96,7 +104,15 @@
                                             Styles="@(new() { Image = "width:50%;height:50%" })"
                                             ImageInitials="@(session.Privileged ? "✓" : "✘")"
                                             Presence="@session.GetPresence(TimeProvider.GetUtcNow())"
-                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)" />
+                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)">
+                                    <PrimaryTextTemplate>
+                                        <div class="session-address">@session.DisplayAddress</div>
+                                        @if (session.DisplayIP is not null)
+                                        {
+                                            <div class="session-ip" title="@session.DisplayIP">@session.DisplayIP</div>
+                                        }
+                                    </PrimaryTextTemplate>
+                                </BitPersona>
                                 <BitSpacer />
                                 <BitButton IconOnly
                                            Color="BitColor.Error"

@@ -17,6 +17,12 @@ public static class UserSessionDtoExtensions
                                     ? $"{OsImagesUrl}/{GetOsImage(session.DeviceInfo)}"
                                     : $"{OsImagesUrl}/oauth.png";
 
+        /// <summary>Where the session comes from, falling back to its IP when no address was resolved for it.</summary>
+        public string? DisplayAddress => string.IsNullOrEmpty(session.Address) ? session.IP : session.Address;
+
+        /// <summary>The IP as a detail under <c>DisplayAddress</c>, so it is never shown twice.</summary>
+        public string? DisplayIP => string.IsNullOrEmpty(session.Address) ? null : session.IP;
+
         public string GetLastSeenOn(DateTimeOffset utcNow, IStringLocalizer<AppStrings> localizer, TimeZoneService timeZoneService)
         {
             return utcNow - session.RenewedOnDateTimeOffset < TimeSpan.FromMinutes(5) ? localizer[nameof(AppStrings.Online)]

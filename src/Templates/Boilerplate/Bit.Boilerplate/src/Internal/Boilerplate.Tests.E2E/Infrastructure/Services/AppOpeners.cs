@@ -14,19 +14,7 @@ public sealed class WebAppOpener : IAppOpener
 {
     public async Task<IPage?> TryOpen(AppTestBase test, App app)
     {
-        var url = app switch
-        {
-            App.AdminPanel => DeployedApps.AdminPanel,
-            App.AdminPanelWasmStandalone => DeployedApps.AdminPanelWasmStandalone,
-            App.Todo => DeployedApps.Todo,
-            App.TodoAot => DeployedApps.TodoAot,
-            App.TodoSmall => DeployedApps.TodoSmall,
-            App.TodoOffline => DeployedApps.TodoOffline,
-            App.Sales => DeployedApps.Sales,
-            _ => throw new ArgumentOutOfRangeException(nameof(app), app, "Unknown app"),
-        };
-
-        await test.Page.GotoAsync(url);
+        await test.Page.GotoAsync(DeployedApps.AddressOf(app));
 
         return test.Page;
     }
@@ -47,9 +35,9 @@ public sealed class WindowsAppOpener : IAppOpener
         if (windowsAppId is null)
             return null;
 
-        var (page, onStop) = await test.Playwright.LaunchWindowsApp(windowsAppId);
+        var (page, stop) = await test.Playwright.LaunchWindowsApp(windowsAppId);
 
-        test.RegisterForCleanup(onStop);
+        test.RegisterForCleanup(stop);
 
         return page;
     }
@@ -69,9 +57,9 @@ public sealed class AndroidAppOpener : IAppOpener
         if (applicationId is null)
             return null;
 
-        var (page, onStop) = await test.Playwright.LaunchAndroidApp(applicationId);
+        var (page, stop) = await test.Playwright.LaunchAndroidApp(applicationId);
 
-        test.RegisterForCleanup(onStop);
+        test.RegisterForCleanup(stop);
 
         return page;
     }
