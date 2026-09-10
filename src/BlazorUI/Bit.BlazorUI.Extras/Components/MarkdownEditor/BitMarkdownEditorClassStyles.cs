@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Custom CSS classes/styles for different parts of the <see cref="BitMarkdownEditor"/>.
@@ -9,6 +9,11 @@ public class BitMarkdownEditorClassStyles
     /// Custom CSS classes/styles for the root element of the BitMarkdownEditor.
     /// </summary>
     public string? Root { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the label of the BitMarkdownEditor.
+    /// </summary>
+    public string? Label { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the toolbar of the BitMarkdownEditor.

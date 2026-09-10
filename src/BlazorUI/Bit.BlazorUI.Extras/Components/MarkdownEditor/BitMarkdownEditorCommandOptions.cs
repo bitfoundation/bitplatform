@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The knobs the <see cref="BitMarkdownEditorCommands"/> transformations read: everything a
@@ -20,6 +20,32 @@ public class BitMarkdownEditorCommandOptions
     /// How many body rows the Table command's template has, beside its header row. Defaults to 1.
     /// </summary>
     public int TableRows { get; set; } = 1;
+
+    /// <summary>
+    /// The characters the Bold command wraps a selection in. Defaults to <c>**</c>.
+    /// </summary>
+    public BitMarkdownEditorEmphasisStyle BoldStyle { get; set; }
+
+    /// <summary>
+    /// The character the Italic command wraps a selection in. Defaults to <c>*</c>.
+    /// </summary>
+    public BitMarkdownEditorEmphasisStyle ItalicStyle { get; set; }
+
+    /// <summary>
+    /// The character an unordered or task list item starts with. Defaults to <c>-</c>.
+    /// </summary>
+    public BitMarkdownEditorBulletStyle BulletStyle { get; set; }
+
+    internal string BoldMarker => BoldStyle is BitMarkdownEditorEmphasisStyle.Underscore ? "__" : "**";
+
+    internal string ItalicMarker => ItalicStyle is BitMarkdownEditorEmphasisStyle.Underscore ? "_" : "*";
+
+    internal string Bullet => BulletStyle switch
+    {
+        BitMarkdownEditorBulletStyle.Asterisk => "*",
+        BitMarkdownEditorBulletStyle.Plus => "+",
+        _ => "-"
+    };
 
     internal static readonly BitMarkdownEditorCommandOptions Default = new();
 }

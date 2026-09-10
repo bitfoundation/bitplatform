@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The initialization config passed to the MarkdownEditor JS interop script.
@@ -50,10 +50,20 @@ internal sealed class BitMarkdownEditorConfig
     public bool TabIndents { get; set; } = true;
 
     /// <summary>
+    /// Whether typing a bracket or a quote inserts its closing half as well.
+    /// </summary>
+    public bool AutoClose { get; set; }
+
+    /// <summary>
+    /// Whether Ctrl/Cmd+Enter is captured and reported back as a submit.
+    /// </summary>
+    public bool Submit { get; set; }
+
+    /// <summary>
     /// A signature of every value above, used to detect a config change across renders
     /// without comparing the properties one by one.
     /// </summary>
     public override string ToString() =>
         $"{ImageUpload}|{SyncScroll}|{AutoPair}|{AutoSaveKey}|{ChangeDebounceMs}|{MaxLength}|{AutoFocus}|" +
-        $"{ReportSelection}|{TabIndents}|{MaxImageSize}|{ImageAccept}|{UploadingText}";
+        $"{ReportSelection}|{TabIndents}|{MaxImageSize}|{ImageAccept}|{UploadingText}|{AutoClose}|{Submit}";
 }

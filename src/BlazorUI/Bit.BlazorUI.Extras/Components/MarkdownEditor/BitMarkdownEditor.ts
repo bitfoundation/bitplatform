@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     type MarkdownEditorConfig = {
         imageUpload: boolean;
@@ -13,6 +13,8 @@ namespace BitBlazorUI {
         maxImageSize: number;
         imageAccept?: string | null;
         uploadingText: string;
+        autoClose: boolean;
+        submit: boolean;
     };
 
     type MdeFindResult = {
@@ -36,9 +38,10 @@ namespace BitBlazorUI {
 
             // Restore an autosaved draft only when no explicit value was provided.
             let initial = defaultValue;
+            let restored = false;
             if (!initial && config?.autoSaveKey) {
                 const draft = MarkdownEditor.readDraft(config.autoSaveKey);
-                if (draft) initial = draft;
+                if (draft) { initial = draft; restored = true; }
             }
 
             if (initial) {
@@ -46,6 +49,10 @@ namespace BitBlazorUI {
                 editor.resetBaseline();
                 editor.notifyChangeNow();
             }
+
+            // Told apart from an ordinary change, so an app can say "draft restored" and
+            // offer to drop it rather than guessing where the text came from.
+            if (restored) editor.notifyDraftRestored(initial!);
 
             MarkdownEditor._editors[id] = editor;
 
@@ -160,6 +167,15 @@ namespace BitBlazorUI {
         private static readonly PAIRS: { [key: string]: string } = {
             '*': '*', '_': '_', '`': '`', '~': '~', '(': ')', '[': ']', '{': '}', '"': '"', '<': '>'
         };
+        // Pairs closed automatically as they are typed, when AutoClosePairs is on. Deliberately
+        // narrower than PAIRS: '*', '_' and '~' start a bullet or emphasis far more often than
+        // they open a span, and closing them as they are typed would fight the writer.
+        private static readonly CLOSERS: { [key: string]: string } = {
+            '(': ')', '[': ']', '{': '}', '`': '`', '"': '"'
+        };
+        private static readonly CLOSING_CHARS = [')', ']', '}', '`', '"'];
+        // Auto-closing is skipped in front of anything that is not whitespace or a closer.
+        private static readonly NOT_BEFORE_CLOSE = /[^\s)\]}>]/;
         // Ctrl/Cmd+Alt+<digit> heading shortcuts, keyed by physical code so they survive
         // keyboard layouts where the combination does not produce the digit itself.
         private static readonly HEADING_CODES: { [key: string]: string } = {
@@ -172,6 +188,8 @@ namespace BitBlazorUI {
         // A pause longer than this starts a fresh undo step even mid-word.
         private static readonly TYPING_PAUSE_MS = 600;
         private static readonly SELECTION_DEBOUNCE_MS = 120;
+        // The most text a selection report carries, however much is selected.
+        private static readonly SELECTION_REPORT_LIMIT = 8192;
 
         private _undo: MdeSnapshot[] = [];
         private _redo: MdeSnapshot[] = [];
@@ -208,7 +226,7 @@ namespace BitBlazorUI {
             this.config = config ?? {
                 imageUpload: false, syncScroll: true, autoPair: true, autoSaveKey: null,
                 changeDebounceMs: 0, maxLength: 0, autoFocus: false, reportSelection: true, tabIndents: true,
-                maxImageSize: 0, imageAccept: null, uploadingText: 'uploading'
+                maxImageSize: 0, imageAccept: null, uploadingText: 'uploading', autoClose: false, submit: false
             };
 
             this._baseline = this.snapshot();
@@ -295,9 +313,26 @@ namespace BitBlazorUI {
 
             if (open) {
                 this._openDropdown = dd;
+                this.placeDropdown(dd);
             } else if (this._openDropdown === dd) {
                 this._openDropdown = null;
             }
+        }
+
+        // A menu that would run off the edge of the window hangs off the other side of its
+        // trigger instead, which is what keeps the last buttons of a wide toolbar usable.
+        // The marker is a class the script owns, the way the open state already is.
+        private placeDropdown(dd: HTMLElement) {
+            const menu = dd.querySelector<HTMLElement>('.bit-mde-ddm');
+            if (!menu) return;
+
+            dd.classList.remove('bit-mde-ddf');
+
+            const rect = menu.getBoundingClientRect();
+            const width = document.documentElement.clientWidth;
+            const rtl = getComputedStyle(dd).direction === 'rtl';
+
+            if (rtl ? rect.left < 0 : rect.right > width) dd.classList.add('bit-mde-ddf');
         }
 
         private closeDropdown(focusTrigger: boolean) {
@@ -472,6 +507,10 @@ namespace BitBlazorUI {
             this.endTypingGroup();
             this._baseline = this.snapshot();
 
+            // The draft has to follow the value, or a reload would resurrect the text the
+            // app has just replaced.
+            if (this.config.autoSaveKey) this.saveDraft();
+
             // A value longer than MaxLength was cut down here, so .NET has to hear about it
             // or it would go on holding text the editor does not contain.
             if (truncated) this.flushChange();
@@ -508,6 +547,10 @@ namespace BitBlazorUI {
             this.flushChange();
         }
 
+        public notifyDraftRestored(text: string) {
+            this.invoke('OnDraftRestored', text);
+        }
+
         public clearDraft() {
             if (!this.config.autoSaveKey) return;
             try { window.localStorage.removeItem(this.config.autoSaveKey); } catch { }
@@ -536,10 +579,15 @@ namespace BitBlazorUI {
                     // recomputing against the newest value rather than clobbering it.
                     if (this.textArea.value !== value) continue;
 
-                    // Record the state before the command so it can be undone as one step.
-                    this.endTypingGroup();
-                    this.pushUndo({ text: value, selStart: start, selEnd: end });
-                    this._redo = [];
+                    // A command that only moved the selection (walking a table's cells) is not
+                    // something to undo: a history step that restores the same text would just
+                    // make Ctrl+Z look broken.
+                    if (result.text !== value) {
+                        // Record the state before the command so it can be undone as one step.
+                        this.endTypingGroup();
+                        this.pushUndo({ text: value, selStart: start, selEnd: end });
+                        this._redo = [];
+                    }
 
                     this.applyResult(result);
                     return;
@@ -554,8 +602,15 @@ namespace BitBlazorUI {
         // Inserts text at the current selection as a single undo step.
         public insertText(text: string) {
             if (this.textArea.readOnly) return;
-            const start = this.textArea.selectionStart;
-            const end = this.textArea.selectionEnd;
+
+            // The call can come from a button that took the focus off the textarea, so fall
+            // back to the range last captured while the textarea still had it.
+            const focused = document.activeElement === this.textArea;
+            const from = focused ? this.textArea.selectionStart : this._lastSelection.start;
+            const to = focused ? this.textArea.selectionEnd : this._lastSelection.end;
+            const start = Math.min(from, to);
+            const end = Math.max(from, to);
+
             this.replaceRange(start, end, text, start + text.length, start + text.length);
         }
 
@@ -640,6 +695,7 @@ namespace BitBlazorUI {
             this.textArea.focus();
             this.textArea.setSelectionRange(target, target + search.length);
             this.saveSelection();
+            this.scrollSelectionIntoView();
             this.scheduleSelectionReport();
 
             return { count: found.length, index: found.indexOf(target) + 1 };
@@ -716,11 +772,15 @@ namespace BitBlazorUI {
 
             if (e.key !== 'Tab') this._tabEscape = false;
 
-            const mod = e.ctrlKey || e.metaKey;
+            // AltGr reaches the page as Ctrl+Alt, so on a French, German or Polish layout the
+            // characters typed with it (AltGr+2, AltGr+C, ...) would otherwise fire the
+            // Ctrl+Alt shortcuts and insert a heading instead of the character.
+            const altGraph = typeof e.getModifierState === 'function' && e.getModifierState('AltGraph');
+            const mod = (e.ctrlKey || e.metaKey) && !altGraph;
             const key = e.key.toLowerCase();
 
             // Alt + Up/Down moves the current line(s), the way code editors do.
-            if (e.altKey && !mod && !e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+            if (e.altKey && !altGraph && !mod && !e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
                 e.preventDefault();
                 this.runCommand(e.key === 'ArrowUp' ? 'MoveLineUp' : 'MoveLineDown');
                 return;
@@ -734,6 +794,17 @@ namespace BitBlazorUI {
             }
 
             if (mod) {
+                // Ctrl/Cmd+Enter submits, but only while something is listening: swallowing it
+                // otherwise would break the surrounding form's own submit shortcut.
+                if (e.key === 'Enter' && this.config.submit) {
+                    e.preventDefault();
+                    // The value goes first: a submit handler reading the bound value has to see
+                    // what is on screen, however long the change debounce window is.
+                    this.flushChange();
+                    this.invoke('OnSubmit', this.textArea.value);
+                    return;
+                }
+
                 // Undo / redo. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and Ctrl/Cmd+Y.
                 if (key === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); return; }
                 if ((key === 'z' && e.shiftKey) || (key === 'y' && !e.shiftKey)) { e.preventDefault(); this.redo(); return; }
@@ -763,6 +834,15 @@ namespace BitBlazorUI {
 
             if (e.key === 'F9') { e.preventDefault(); this.invoke('OnShortcut', 'mode'); return; }
             if (e.key === 'F11') { e.preventDefault(); this.invoke('OnShortcut', 'fullscreen'); return; }
+
+            // Close a bracket or a quote as it is typed over an empty selection, step over a
+            // closing character already sitting under the caret, and take both halves of a
+            // pair away together when Backspace lands between them.
+            if (this.config.autoClose && !mod && !e.altKey && !this.textArea.readOnly &&
+                this.textArea.selectionStart === this.textArea.selectionEnd) {
+                if (e.key.length === 1 && this.autoClose(e.key)) { e.preventDefault(); return; }
+                if (e.key === 'Backspace' && this.deletePair()) { e.preventDefault(); return; }
+            }
 
             // Wrap the selection when a pairing character is typed over it.
             if (this.config.autoPair && !e.altKey && !this.textArea.readOnly &&
@@ -877,24 +957,40 @@ namespace BitBlazorUI {
         };
 
         private dragOverHandler = (e: DragEvent) => {
-            if (this.config.imageUpload && e.dataTransfer && Array.from(e.dataTransfer.items || []).some(i => i.kind === 'file')) {
-                e.preventDefault();
-                this.root?.setAttribute('data-bit-mde-drag', '');
-            }
+            if (!e.dataTransfer || Array.from(e.dataTransfer.items || []).some(i => i.kind === 'file') === false) return;
+
+            // Always cancelled, even with uploads off: the browser's own answer to a file
+            // dropped on a page is to navigate to it, which would throw the document away.
+            e.preventDefault();
+
+            if (this.config.imageUpload) this.root?.setAttribute('data-bit-mde-drag', '');
         };
 
-        private dragLeaveHandler = () => {
+        private dragLeaveHandler = (e: Event) => {
+            // dragleave bubbles from every child, so dragging from the toolbar onto the
+            // textarea used to clear the highlight and make it flicker. Only a pointer that
+            // has actually left the editor counts.
+            const to = (e as DragEvent).relatedTarget as Node | null;
+            if (to && this.root?.contains(to)) return;
+
             this.root?.removeAttribute('data-bit-mde-drag');
         };
 
         private dropHandler = (e: DragEvent) => {
             this.root?.removeAttribute('data-bit-mde-drag');
 
-            if (this.textArea.readOnly || !this.config.imageUpload || !e.dataTransfer) return;
+            if (!e.dataTransfer) return;
+
+            // Same reason as dragover: a file dropped anywhere on the editor is swallowed
+            // rather than navigated to, whether or not anything is there to upload it.
+            if (e.dataTransfer.files?.length || Array.from(e.dataTransfer.items || []).some(i => i.kind === 'file')) {
+                e.preventDefault();
+            }
+
+            if (this.textArea.readOnly || !this.config.imageUpload) return;
             const files = this.imageFiles(e.dataTransfer.files, e.dataTransfer.items);
             if (!files.length) return;
 
-            e.preventDefault();
             this.textArea.focus();
             this.uploadFiles(files);
         };
@@ -946,6 +1042,7 @@ namespace BitBlazorUI {
             const max = this.textArea.value.length;
             this.textArea.setSelectionRange(Math.min(selStart, max), Math.min(selEnd, max));
             this.saveSelection();
+            this.scrollSelectionIntoView();
             this.flushChange();
             this._baseline = this.snapshot();
             this.notifyHistory();
@@ -955,7 +1052,14 @@ namespace BitBlazorUI {
         // typing and pasting; this covers everything written programmatically.
         private limit(text: string): string {
             const max = this.config.maxLength;
-            return max > 0 && text.length > max ? text.slice(0, max) : text;
+            if (max <= 0 || text.length <= max) return text;
+
+            // Never cut between the two halves of a surrogate pair: the lone half left behind
+            // is not a character at all, and renders as a replacement glyph.
+            const code = text.charCodeAt(max - 1);
+            const cut = code >= 0xD800 && code <= 0xDBFF ? max - 1 : max;
+
+            return text.slice(0, cut);
         }
 
         // Indices of every occurrence of `search`. Case-insensitive matching folds both
@@ -1075,7 +1179,9 @@ namespace BitBlazorUI {
         }
 
         private escapeAlt(text: string) {
-            return text.replace(/[\[\]]/g, '').trim();
+            // Brackets would close the alt text early and a newline would end the image
+            // markup altogether, so neither survives into the document.
+            return text.replace(/[\[\]]/g, '').replace(/\s+/g, ' ').trim();
         }
 
         private isUrl(text: string) {
@@ -1115,17 +1221,21 @@ namespace BitBlazorUI {
             }
         }
 
-        // Spreadsheet cells arrive as tab separated rows. Only convert when there is more
-        // than one row and every one of them is tabbed, so ordinary text is never mangled.
+        // Spreadsheet cells arrive as tab separated rows. The bar is deliberately high: every
+        // row has to carry the SAME number of cells and none may start with a tab, because
+        // tab-indented source code is also "several lines that all contain a tab" and turning
+        // a pasted function into a table would be the worst thing this editor could do.
         private tsvToMarkdown(text: string): string | null {
             const lines = text.replace(/\r\n?/g, '\n').replace(/\n+$/, '').split('\n');
             if (lines.length < 2) return null;
-            if (lines.every(l => l.indexOf('\t') >= 0) === false) return null;
+            if (lines.some(l => l.length === 0 || l.charCodeAt(0) === 9)) return null;
 
-            const grid = lines.map(l => l.split('\t').map(c => c.trim().replace(/\|/g, '\\|')));
-            if (Math.max(...grid.map(r => r.length)) < 2) return null;
+            const grid = lines.map(l => l.split('\t'));
+            const columns = grid[0].length;
+            if (columns < 2) return null;
+            if (grid.some(r => r.length !== columns)) return null;
 
-            return this.gridToMarkdown(grid);
+            return this.gridToMarkdown(grid.map(r => r.map(c => c.trim().replace(/\|/g, '\\|'))));
         }
 
         private syncScroll(from: HTMLElement | null, to: HTMLElement | null) {
@@ -1141,6 +1251,64 @@ namespace BitBlazorUI {
             to.scrollTop = (from.scrollTop / fromRange) * toRange;
             // Release on the next frame so the mirrored scroll doesn't echo back.
             requestAnimationFrame(() => { this._syncingScroll = false; });
+        }
+
+        // Inserts the other half of a pair, or steps over one already under the caret.
+        // Returns true when the keystroke has been dealt with.
+        private autoClose(key: string): boolean {
+            const caret = this.textArea.selectionStart;
+            const next = this.textArea.value[caret] ?? '';
+
+            // Typing the closing character right in front of one that is already there steps
+            // over it instead of doubling it, the way every code editor behaves.
+            if (next === key && MarkdownEditorCore.CLOSING_CHARS.indexOf(key) >= 0) {
+                this.textArea.setSelectionRange(caret + 1, caret + 1);
+                this.saveSelection();
+                return true;
+            }
+
+            const close = MarkdownEditorCore.CLOSERS[key];
+            if (!close) return false;
+
+            // Only close in front of nothing, whitespace or another closing bracket, so typing
+            // a quote or a paren before a word does not fence the rest of the word off.
+            if (next && MarkdownEditorCore.NOT_BEFORE_CLOSE.test(next)) return false;
+
+            this.replaceRange(caret, caret, key + close, caret + 1, caret + 1);
+            return true;
+        }
+
+        // Backspace between the two halves of an auto-closed pair removes both.
+        private deletePair(): boolean {
+            const caret = this.textArea.selectionStart;
+            if (caret <= 0) return false;
+
+            const close = MarkdownEditorCore.CLOSERS[this.textArea.value[caret - 1]];
+            if (!close || this.textArea.value[caret] !== close) return false;
+
+            this.replaceRange(caret - 1, caret + 1, '', caret - 1, caret - 1);
+            return true;
+        }
+
+        // A textarea does not reliably scroll to a selection set from script, so a match found
+        // below the fold would be selected off screen. Only an off-screen line is scrolled to,
+        // and it is centred, so walking the matches does not jitter the view.
+        private scrollSelectionIntoView() {
+            const ta = this.textArea;
+            const range = ta.scrollHeight - ta.clientHeight;
+            if (range <= 0) return;
+
+            let line = 0;
+            for (let i = 0; i < ta.selectionStart; i++) if (ta.value.charCodeAt(i) === 10) line++;
+
+            const style = window.getComputedStyle(ta);
+            let lineHeight = parseFloat(style.lineHeight);
+            if (!isFinite(lineHeight) || lineHeight <= 0) lineHeight = (parseFloat(style.fontSize) || 14) * 1.6;
+
+            const top = line * lineHeight;
+            if (top >= ta.scrollTop && top + lineHeight <= ta.scrollTop + ta.clientHeight) return;
+
+            ta.scrollTop = Math.min(Math.max(top - (ta.clientHeight - lineHeight) / 2, 0), range);
         }
 
         private snapshot(): MdeSnapshot {
@@ -1223,8 +1391,19 @@ namespace BitBlazorUI {
                 const lineStart = value.lastIndexOf('\n', start - 1) + 1;
                 let lineEnd = value.indexOf('\n', end);
                 if (lineEnd < 0) lineEnd = value.length;
+                // Every format is decided from the first touched line, so a selection spanning
+                // a whole long document does not have to travel with it on every caret move.
+                if (lineEnd - lineStart > MarkdownEditorCore.SELECTION_REPORT_LIMIT) {
+                    lineEnd = lineStart + MarkdownEditorCore.SELECTION_REPORT_LIMIT;
+                }
 
-                this.invoke('OnSelectionChanged', start - lineStart, end - lineStart, value.slice(lineStart, lineEnd));
+                // The caret's absolute position travels alongside, so a status bar can report
+                // it without a second round trip per caret move.
+                let line = 0;
+                for (let i = 0; i < lineStart; i++) if (value.charCodeAt(i) === 10) line++;
+
+                this.invoke('OnSelectionChanged', start - lineStart, end - lineStart, value.slice(lineStart, lineEnd),
+                    line + 1, start - lineStart + 1, end - start);
             }, MarkdownEditorCore.SELECTION_DEBOUNCE_MS);
         }
 
@@ -1298,6 +1477,7 @@ namespace BitBlazorUI {
             const max = snap.text.length;
             this.textArea.setSelectionRange(Math.min(snap.selStart, max), Math.min(snap.selEnd, max));
             this.saveSelection();
+            this.scrollSelectionIntoView();
             this._baseline = this.snapshot();
         }
 
@@ -1308,6 +1488,7 @@ namespace BitBlazorUI {
             const max = this.textArea.value.length;
             this.textArea.setSelectionRange(Math.min(result.selectionStart, max), Math.min(result.selectionEnd, max));
             this.saveSelection();
+            this.scrollSelectionIntoView();
             this.scheduleSelectionReport();
             this._baseline = this.snapshot();
             this.notifyHistory();

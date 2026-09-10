@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The texts of the BitMarkdownEditor UI. All strings default to English;
@@ -35,6 +35,16 @@ public class BitMarkdownEditorTexts
     public string ToolbarCodeBlock { get; set; } = "Code block";
     public string ToolbarTable { get; set; } = "Table";
     public string ToolbarHorizontalRule { get; set; } = "Horizontal rule";
+    public string ToolbarTableTools { get; set; } = "Table tools";
+    public string ToolbarTableInsertRowAbove { get; set; } = "Insert row above";
+    public string ToolbarTableInsertRowBelow { get; set; } = "Insert row below";
+    public string ToolbarTableDeleteRow { get; set; } = "Delete row";
+    public string ToolbarTableInsertColumnBefore { get; set; } = "Insert column before";
+    public string ToolbarTableInsertColumnAfter { get; set; } = "Insert column after";
+    public string ToolbarTableDeleteColumn { get; set; } = "Delete column";
+    public string ToolbarTableAlignLeft { get; set; } = "Align column left";
+    public string ToolbarTableAlignCenter { get; set; } = "Align column center";
+    public string ToolbarTableAlignRight { get; set; } = "Align column right";
     public string ToolbarSuperscript { get; set; } = "Superscript";
     public string ToolbarSubscript { get; set; } = "Subscript";
     public string ToolbarClearFormatting { get; set; } = "Clear formatting";
@@ -62,6 +72,16 @@ public class BitMarkdownEditorTexts
 
     public string ReadingTimeFormat { get; set; } = "{0} min read";
 
+    /// <summary>
+    /// The caret position readout of the status bar ({0} = the line, {1} = the column).
+    /// </summary>
+    public string CursorPositionFormat { get; set; } = "Ln {0}, Col {1}";
+
+    /// <summary>
+    /// The selection size readout of the status bar ({0} = how many characters are selected).
+    /// </summary>
+    public string SelectedFormat { get; set; } = "{0} selected";
+
     public string ModeEdit { get; set; } = "Edit";
     public string ModeSplit { get; set; } = "Split";
     public string ModePreview { get; set; } = "Preview";
@@ -71,6 +91,12 @@ public class BitMarkdownEditorTexts
     public string ReplacePlaceholder { get; set; } = "Replace with";
     public string ReplaceButton { get; set; } = "Replace";
     public string ReplaceAllButton { get; set; } = "All";
+
+    /// <summary>
+    /// The accessible name of the "All" button, which needs to say what it replaces:
+    /// its visible label is too short to stand on its own out of context.
+    /// </summary>
+    public string ReplaceAllAriaLabel { get; set; } = "Replace all";
     public string FindNextAriaLabel { get; set; } = "Next match";
     public string FindPreviousAriaLabel { get; set; } = "Previous match";
     public string MatchCaseAriaLabel { get; set; } = "Match case";
@@ -98,6 +124,7 @@ public class BitMarkdownEditorTexts
     public string ShortcutUndo { get; set; } = "Undo";
     public string ShortcutRedo { get; set; } = "Redo";
     public string ShortcutIndentOutdent { get; set; } = "Indent / Outdent";
+    public string ShortcutTableCells { get; set; } = "Next / previous table cell";
     public string ShortcutContinueList { get; set; } = "Continue list";
     public string ShortcutFind { get; set; } = "Find & replace";
     public string ShortcutMoveLine { get; set; } = "Move line up / down";
@@ -105,6 +132,7 @@ public class BitMarkdownEditorTexts
     public string ShortcutDeleteLine { get; set; } = "Delete line";
     public string ShortcutTogglePreview { get; set; } = "Cycle edit / split / preview";
     public string ShortcutFullScreen { get; set; } = "Toggle full-screen";
+    public string ShortcutSubmit { get; set; } = "Submit";
     public string ShortcutEscapeTab { get; set; } = "Move focus out of the editor";
 
     public string GetToolbarTitle(string name, string fallback) => name switch
@@ -131,6 +159,16 @@ public class BitMarkdownEditorTexts
         "codeblock" => ToolbarCodeBlock,
         "table" => ToolbarTable,
         "hr" => ToolbarHorizontalRule,
+        "tabletools" => ToolbarTableTools,
+        "trowabove" => ToolbarTableInsertRowAbove,
+        "trowbelow" => ToolbarTableInsertRowBelow,
+        "trowdelete" => ToolbarTableDeleteRow,
+        "tcolbefore" => ToolbarTableInsertColumnBefore,
+        "tcolafter" => ToolbarTableInsertColumnAfter,
+        "tcoldelete" => ToolbarTableDeleteColumn,
+        "talignleft" => ToolbarTableAlignLeft,
+        "taligncenter" => ToolbarTableAlignCenter,
+        "talignright" => ToolbarTableAlignRight,
         "sup" => ToolbarSuperscript,
         "sub" => ToolbarSubscript,
         "clear" => ToolbarClearFormatting,

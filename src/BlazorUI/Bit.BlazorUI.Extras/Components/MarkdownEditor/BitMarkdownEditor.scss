@@ -1,4 +1,4 @@
-@import '../../../Bit.BlazorUI/Styles/functions.scss';
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-mde {
     width: 100%;
@@ -123,6 +123,12 @@
     display: block;
 }
 
+// Set by the script on a menu that would otherwise open past the edge of the window.
+.bit-mde-dd.bit-mde-ddf .bit-mde-ddm {
+    inset-inline-end: 0;
+    inset-inline-start: auto;
+}
+
 .bit-mde-mi {
     width: 100%;
     gap: spacing(1);
@@ -131,8 +137,15 @@
     padding: spacing(0.5) spacing(0.75);
 }
 
+.bit-mde-msep {
+    height: $shp-border-width;
+    margin: spacing(0.375) 0;
+    background: $clr-brd-sec;
+}
+
 .bit-mde-mit {
     font-size: $tg-fs-sm;
+    white-space: nowrap;
     letter-spacing: $tg-ctrl-letter-spacing;
 }
 
@@ -214,8 +227,9 @@
 .bit-mde-bdy {
     display: flex;
     overflow: hidden;
-    min-height: spacing(15);
-    height: var(--bit-mde-height, spacing(40));
+    min-height: var(--bit-mde-min-height, #{spacing(15)});
+    max-height: var(--bit-mde-max-height, none);
+    height: var(--bit-mde-height, #{spacing(40)});
 }
 
 // `resize` needs a non-visible overflow, which the body already has; the height it
@@ -228,6 +242,8 @@
     flex: 1;
     height: auto;
     resize: none;
+    max-height: none;
+    min-height: 0;
 }
 
 .bit-mde-pne {
@@ -295,6 +311,16 @@
     color: $clr-fg-sec;
 }
 
+.bit-mde-lbl {
+    display: block;
+    cursor: pointer;
+    color: $clr-fg-pri;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-semibold;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: spacing(0.75) spacing(1) 0;
+}
+
 .bit-mde-sbr {
     display: flex;
     gap: spacing(1.75);
@@ -314,6 +340,13 @@
 
 .bit-mde-spc {
     flex: 1;
+}
+
+// The caret readout changes on every keystroke, so it keeps a fixed slot instead of
+// shoving the rest of the status bar sideways as the numbers grow.
+.bit-mde-pos {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .bit-mde-mod {

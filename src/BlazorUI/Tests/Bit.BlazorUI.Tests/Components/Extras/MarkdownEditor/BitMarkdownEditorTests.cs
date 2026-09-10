@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -486,19 +486,31 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>();
 
-        var trigger = component.Find(".bit-mde-dd > .bit-mde-btn");
-        Assert.AreEqual("true", trigger.GetAttribute("aria-haspopup"));
+        var trigger = component.Find("button[data-cmd=heading]");
+        Assert.AreEqual("menu", trigger.GetAttribute("aria-haspopup"));
         Assert.AreEqual("false", trigger.GetAttribute("aria-expanded"));
 
         var menu = component.Find(".bit-mde-ddm");
         Assert.AreEqual("menu", menu.GetAttribute("role"));
 
-        // Menu items are focused by the script, never by tabbing into them.
-        foreach (var item in component.FindAll(".bit-mde-mi"))
+        // The heading entries exclude one another, so each reports a checked state rather
+        // than being a plain command. All of them are focused by the script, never tabbed to.
+        foreach (var name in new[] { "h1", "h2", "h3", "h4", "h5", "h6" })
         {
-            Assert.AreEqual("menuitem", item.GetAttribute("role"));
+            var item = component.Find($"button[data-cmd={name}]");
+            Assert.AreEqual("menuitemradio", item.GetAttribute("role"));
+            Assert.AreEqual("false", item.GetAttribute("aria-checked"));
             Assert.AreEqual("-1", item.GetAttribute("tabindex"));
         }
+
+        // An entry that inserts something instead of reporting a state is a plain command,
+        // and says nothing about being checked.
+        var insertRow = component.Find("button[data-cmd=trowbelow]");
+        Assert.AreEqual("menuitem", insertRow.GetAttribute("role"));
+        Assert.IsNull(insertRow.GetAttribute("aria-checked"));
+
+        // The table menu groups its rows, columns and alignments behind separators.
+        Assert.AreEqual(2, component.FindAll("[data-cmd=tabletools] + .bit-mde-ddm .bit-mde-msep").Count);
     }
 
     [TestMethod]
@@ -1114,5 +1126,575 @@ public class BitMarkdownEditorTests : BunitTestContext
         var config = Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.init"].Last().Arguments[5];
 
         return config!.GetType().GetProperty(property)!.GetValue(config);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldRenderALabelTiedToTheTextArea()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Release notes");
+        });
+
+        var label = component.Find(".bit-mde-lbl");
+        var textArea = component.Find(".bit-mde-txa");
+
+        Assert.AreEqual("Release notes", label.TextContent.Trim());
+        Assert.AreEqual(textArea.GetAttribute("id"), label.GetAttribute("for"));
+        // The visible label names the field; an aria-label on top of it would hide the label.
+        Assert.IsNull(textArea.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldRenderALabelTemplate()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-label");
+                builder.AddContent(2, "Notes");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.IsNotNull(component.Find(".bit-mde-lbl .custom-label"));
+        Assert.IsNull(component.Find(".bit-mde-txa").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldLetAnExplicitAriaLabelWinOverTheLabel()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Release notes");
+            parameters.Add(p => p.AriaLabel, "the article body");
+        });
+
+        Assert.AreEqual("the article body", component.Find(".bit-mde-txa").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldNotRenderALabelByDefault()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-lbl").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldRespectMinAndMaxHeight()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.MinHeight, "8rem");
+            parameters.Add(p => p.MaxHeight, "30rem");
+        });
+
+        var style = component.Find(".bit-mde").GetAttribute("style");
+
+        Assert.Contains("--bit-mde-min-height:8rem", style);
+        Assert.Contains("--bit-mde-max-height:30rem", style);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldSendTheAutoClosePairsFlagToTheScript()
+    {
+        RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.AutoClosePairs, true);
+        });
+
+        Assert.IsTrue(LastInitConfigFlag("AutoClose"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldOnlyCaptureTheSubmitShortcutWhileSomethingListens()
+    {
+        RenderComponent<BitMarkdownEditor>();
+        Assert.IsFalse(LastInitConfigFlag("Submit"));
+
+        RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnSubmit, EventCallback.Factory.Create<string?>(this, _ => { }));
+        });
+        Assert.IsTrue(LastInitConfigFlag("Submit"));
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldInvokeOnSubmit()
+    {
+        string? submitted = null;
+
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnSubmit, EventCallback.Factory.Create<string?>(this, v => submitted = v));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSubmit("# ship it"));
+
+        Assert.AreEqual("# ship it", submitted);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldReportTheCaretPositionInTheStatusBar()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.ShowCursorPosition, true);
+        });
+
+        // Nothing has moved yet: the caret starts at the very beginning of the document.
+        Assert.AreEqual("Ln 1, Col 1", component.Find(".bit-mde-pos").TextContent);
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(2, 6, "hello", 4, 3, 4));
+
+        var readouts = component.FindAll(".bit-mde-pos");
+        Assert.AreEqual(2, readouts.Count);
+        Assert.AreEqual("Ln 4, Col 3", readouts[0].TextContent);
+        Assert.AreEqual("4 selected", readouts[1].TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldNotReportTheCaretPositionByDefault()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-pos").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldAskForSelectionReportsForTheCaretReadoutAlone()
+    {
+        RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.ShowToolbar, false);
+            parameters.Add(p => p.ShowCursorPosition, true);
+        });
+
+        Assert.IsTrue(LastInitConfigFlag("ReportSelection"));
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldCountTheLimitInTheUnitItEnforces()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.MaxLength, 4);
+        });
+
+        // Two emoji are two characters to a reader but four UTF-16 units to the maxlength
+        // attribute doing the enforcing, so the counter reports what is actually capped.
+        await component.InvokeAsync(() => component.Instance._OnChange("\U0001F600\U0001F680"));
+
+        var counter = component.FindAll(".bit-mde-sbr span").Last();
+        Assert.AreEqual("4 / 4 chars", counter.TextContent);
+        Assert.IsTrue(counter.ClassList.Contains("bit-mde-lim"));
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldReplaceFromTheReplaceFieldOnEnter()
+    {
+        Context.JSInterop.Setup<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.replaceOne", _ => true)
+                         .SetResult(new BitMarkdownEditorFindResult(2, 1));
+
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("button[data-cmd=\'find\']").Click();
+
+        var inputs = component.FindAll(".bit-mde-fni");
+        inputs[0].Input("cat");
+        component.FindAll(".bit-mde-fni")[1].Input("dog");
+
+        await component.FindAll(".bit-mde-fni")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.replaceOne"].Count);
+        Assert.AreEqual("1 of 2", component.Find(".bit-mde-fns").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldReplaceEverythingFromTheReplaceFieldOnCtrlEnter()
+    {
+        Context.JSInterop.Setup<int>("BitBlazorUI.MarkdownEditor.replaceAll", _ => true).SetResult(3);
+        Context.JSInterop.Setup<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.find", _ => true)
+                         .SetResult(BitMarkdownEditorFindResult.None);
+
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("button[data-cmd=\'find\']").Click();
+        component.FindAll(".bit-mde-fni")[0].Input("cat");
+        component.FindAll(".bit-mde-fni")[1].Input("dog");
+
+        await component.FindAll(".bit-mde-fni")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Enter", CtrlKey = true });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.replaceAll"].Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldApplyCommandsInTheConfiguredMarkdownStyle()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.BoldStyle, BitMarkdownEditorEmphasisStyle.Underscore);
+            parameters.Add(p => p.ItalicStyle, BitMarkdownEditorEmphasisStyle.Underscore);
+            parameters.Add(p => p.BulletStyle, BitMarkdownEditorBulletStyle.Plus);
+        });
+
+        Assert.AreEqual("__hello__", component.Instance._ApplyCommand("Bold", 0, 5, "hello").Text);
+        Assert.AreEqual("_hello_", component.Instance._ApplyCommand("Italic", 0, 5, "hello").Text);
+        Assert.AreEqual("+ hello", component.Instance._ApplyCommand("UnorderedList", 0, 5, "hello").Text);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldHighlightTheActiveFormatInTheConfiguredStyle()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.BoldStyle, BitMarkdownEditorEmphasisStyle.Underscore);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(6, 6, "a __strong__ word"));
+
+        Assert.IsTrue(component.Find("button[data-cmd=\'bold\']").ClassList.Contains("bit-mde-act"));
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldReportARestoredDraft()
+    {
+        string? restored = null;
+
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.AutoSaveId, "a-draft");
+            parameters.Add(p => p.OnDraftRestored, EventCallback.Factory.Create<string?>(this, v => restored = v));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnDraftRestored("# back again"));
+
+        Assert.AreEqual("# back again", restored);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldSeedTheFindPanelWithTheSelection()
+    {
+        Context.JSInterop.Setup<BitMarkdownEditorSelection>("BitBlazorUI.MarkdownEditor.getSelection", _ => true)
+                         .SetResult(new BitMarkdownEditorSelection(4, 9, "world"));
+
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("button[data-cmd=\'find\']").Click();
+
+        Assert.AreEqual("world", component.FindAll(".bit-mde-fni")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldNotSeedTheFindPanelFromAMultiLineSelection()
+    {
+        Context.JSInterop.Setup<BitMarkdownEditorSelection>("BitBlazorUI.MarkdownEditor.getSelection", _ => true)
+                         .SetResult(new BitMarkdownEditorSelection(0, 7, "one\ntwo"));
+
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("button[data-cmd=\'find\']").Click();
+
+        Assert.AreEqual(string.Empty, component.FindAll(".bit-mde-fni")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldPointTheToolbarAtTheTextArea()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        var id = component.Find(".bit-mde-txa").GetAttribute("id");
+
+        Assert.AreEqual(id, component.Find(".bit-mde-tlb").GetAttribute("aria-controls"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldDescribeTheTextAreaByTheCounterWhileLimited()
+    {
+        var unlimited = RenderComponent<BitMarkdownEditor>();
+        Assert.IsNull(unlimited.Find(".bit-mde-txa").GetAttribute("aria-describedby"));
+
+        var limited = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.MaxLength, 100);
+        });
+
+        var describedBy = limited.Find(".bit-mde-txa").GetAttribute("aria-describedby");
+        Assert.IsFalse(string.IsNullOrEmpty(describedBy));
+        // An attribute selector, since a generated id may start with a digit and would not
+        // be a legal CSS identifier after a "#".
+        Assert.AreEqual("0 / 100 chars", limited.Find($"[id='{describedBy}']").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldRenderASeparatorInsideADropdownMenu()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar,
+            [
+                new BitMarkdownEditorToolbarItem
+                {
+                    Name = "more",
+                    Title = "More",
+                    Type = BitMarkdownEditorToolbarItemType.Dropdown,
+                    Children =
+                    [
+                        new() { Name = "hr", Title = "Rule", Command = BitMarkdownEditorCommand.HorizontalRule, Text = "Rule" },
+                        BitMarkdownEditorToolbarItem.Separator,
+                        new() { Name = "table", Title = "Table", Command = BitMarkdownEditorCommand.Table, Text = "Table" },
+                    ]
+                }
+            ]);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-mde-ddm .bit-mde-msep").Count);
+        Assert.AreEqual("separator", component.Find(".bit-mde-msep").GetAttribute("role"));
+        // The separator is not one of the items the keyboard walks through.
+        Assert.AreEqual(2, component.FindAll(".bit-mde-ddm .bit-mde-mi").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldOnlyDocumentTheSubmitShortcutWhileItIsCaptured()
+    {
+        var plain = RenderComponent<BitMarkdownEditor>();
+        plain.Find("[data-cmd=help]").Click();
+        Assert.DoesNotContain("Ctrl/Cmd + Enter", plain.Find(".bit-mde-hcr").TextContent);
+
+        var submitting = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnSubmit, EventCallback.Factory.Create<string?>(this, _ => { }));
+        });
+        submitting.Find("[data-cmd=help]").Click();
+        Assert.Contains("Ctrl/Cmd + Enter", submitting.Find(".bit-mde-hcr").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldLightUpADropdownHoldingTheActiveCommand()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        var trigger = component.Find(".bit-mde-dd > .bit-mde-btn");
+        Assert.IsFalse(trigger.ClassList.Contains("bit-mde-act"));
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(4, 4, "## a title"));
+
+        Assert.IsTrue(component.Find(".bit-mde-dd > .bit-mde-btn").ClassList.Contains("bit-mde-act"));
+        Assert.AreEqual("true", component.Find("button[data-cmd=\'h2\']").GetAttribute("aria-checked"));
+        Assert.AreEqual("false", component.Find("button[data-cmd=\'h1\']").GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldRenderTheBuiltInPreview()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.DebounceTime, 0);
+            parameters.Add(p => p.DefaultValue, "# a title");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnChange("# a title"));
+
+        Assert.IsNotNull(component.Find(".bit-mde-ppn h1"));
+        Assert.AreEqual("a title", component.Find(".bit-mde-ppn h1").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldShowTheEmptyPreviewTextWhileThereIsNothingToRender()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts { PreviewEmptyText = "rien" });
+        });
+
+        Assert.AreEqual("rien", component.Find(".bit-mde-emp").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldReplaceThePreviewWithTheTemplate()
+    {
+        RenderFragment<string> template = value => builder =>
+        {
+            builder.OpenElement(0, "pre");
+            builder.AddAttribute(1, "class", "raw-preview");
+            builder.AddContent(2, value);
+            builder.CloseElement();
+        };
+
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "# a title");
+            parameters.Add(p => p.PreviewTemplate, template);
+        });
+
+        Assert.AreEqual("# a title", component.Find(".bit-mde-ppn .raw-preview").TextContent);
+        // The built-in viewer is out of the way entirely, headings and all.
+        Assert.AreEqual(0, component.FindAll(".bit-mde-ppn h1").Count);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldCloseTheHelpDialogOnEscape()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("[data-cmd=help]").Click();
+        Assert.AreEqual(1, component.FindAll(".bit-mde-hcr").Count);
+
+        await component.Find(".bit-mde-hcr").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-hcr").Count);
+        // The dialog held the focus, so it is handed back to the editor.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldCloseTheHelpDialogFromAnEscapeInTheTextArea()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("[data-cmd=help]").Click();
+
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-hcr").Count);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldCloseTheFindPanelOnEscapeFromItsInput()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("button[data-cmd=\'find\']").Click();
+        Assert.AreEqual(1, component.FindAll(".bit-mde-fnd").Count);
+
+        await component.FindAll(".bit-mde-fni")[0].KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldNotDescribeTheTextAreaWithoutAStatusBar()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.MaxLength, 100);
+            parameters.Add(p => p.ShowStatusBar, false);
+        });
+
+        // The counter it would point at is not on the page.
+        Assert.IsNull(component.Find(".bit-mde-txa").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldDisableEveryToolbarButtonWhileDisabled()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        foreach (var button in component.FindAll(".bit-mde-btn"))
+        {
+            Assert.IsTrue(button.HasAttribute("disabled"), button.GetAttribute("data-cmd"));
+        }
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldOfferTheTableToolsInTheDefaultToolbar()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        foreach (var name in new[]
+        {
+            "trowabove", "trowbelow", "trowdelete",
+            "tcolbefore", "tcolafter", "tcoldelete",
+            "talignleft", "taligncenter", "talignright"
+        })
+        {
+            Assert.AreEqual(1, component.FindAll($"[data-cmd={name}]").Count, name);
+        }
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldApplyTheTableCommandsFromTheToolbar()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        var table = "| a | b |\n| - | - |\n| c | d |";
+        var result = component.Instance._ApplyCommand("TableInsertRowBelow", table.IndexOf("c"), table.IndexOf("c"), table);
+
+        Assert.IsTrue(result.Handled);
+        // Every column is padded out to the three characters the delimiter row needs.
+        Assert.AreEqual("| a   | b   |\n| --- | --- |\n| c   | d   |\n|     |     |", result.Text);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldLocalizeTheTableMenu()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts
+            {
+                ToolbarTableTools = "Outils de tableau",
+                ToolbarTableDeleteRow = "Supprimer la ligne"
+            });
+        });
+
+        Assert.AreEqual("Outils de tableau", component.Find("[data-cmd=tabletools]").GetAttribute("aria-label"));
+        Assert.AreEqual("Supprimer la ligne", component.Find("[data-cmd=trowdelete]").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldIgnoreAChangeThatLandsAfterDisposal()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+        var instance = component.Instance;
+
+        await instance.DisposeAsync();
+
+        // A debounced change already in flight when the circuit tore the component down.
+        await instance._OnChange("late");
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldNotHideItsFocusGuardsFromAssistiveTech()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("[data-cmd=help]").Click();
+
+        var guards = component.FindAll(".bit-mde-guard");
+        Assert.AreEqual(2, guards.Count);
+
+        foreach (var guard in guards)
+        {
+            // Focusable and aria-hidden at once is the aria-hidden-focus violation.
+            Assert.AreEqual("0", guard.GetAttribute("tabindex"));
+            Assert.IsNull(guard.GetAttribute("aria-hidden"));
+        }
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldNameTheReplaceAllButtonInFull()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts
+            {
+                ReplaceAllButton = "Tout",
+                ReplaceAllAriaLabel = "Tout remplacer"
+            });
+        });
+
+        component.Find("button[data-cmd=\'find\']").Click();
+
+        var button = component.FindAll(".bit-mde-fnb").Single(b => b.TextContent == "Tout");
+
+        // The visible label is a word; the accessible name says what it does.
+        Assert.AreEqual("Tout remplacer", button.GetAttribute("aria-label"));
+        Assert.AreEqual("Tout remplacer", button.GetAttribute("title"));
     }
 }

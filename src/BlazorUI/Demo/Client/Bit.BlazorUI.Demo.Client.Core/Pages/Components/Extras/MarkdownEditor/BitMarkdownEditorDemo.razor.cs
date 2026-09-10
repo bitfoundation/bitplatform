@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MarkdownEditor;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MarkdownEditor;
 
 public partial class BitMarkdownEditorDemo
 {
@@ -10,6 +10,13 @@ public partial class BitMarkdownEditorDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The image types the paste/drop upload accepts, as a comma separated list of MIME types or extensions (image/png,image/jpeg or .png,.jpg). Null accepts every image type.",
+        },
+        new()
+        {
+            Name = "AutoClosePairs",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Closes a bracket or a quote as it is typed with nothing selected: the closing half is inserted after the caret, typing that closing character steps over it instead of doubling it, and Backspace between the two halves removes both. Only ( [ { ` and \" take part.",
         },
         new()
         {
@@ -31,6 +38,24 @@ public partial class BitMarkdownEditorDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A stable key under which the editor content is autosaved to the browser's localStorage. When set, a draft is written as the user types and restored on initialization if no Value/DefaultValue is supplied.",
+        },
+        new()
+        {
+            Name = "BoldStyle",
+            Type = "BitMarkdownEditorEmphasisStyle",
+            DefaultValue = "BitMarkdownEditorEmphasisStyle.Asterisk",
+            Description = "The characters the Bold command wraps a selection in: ** (the default) or __.",
+            LinkType = LinkType.Link,
+            Href = "#emphasis-style-enum",
+        },
+        new()
+        {
+            Name = "BulletStyle",
+            Type = "BitMarkdownEditorBulletStyle",
+            DefaultValue = "BitMarkdownEditorBulletStyle.Dash",
+            Description = "The character an unordered or task list item starts with: - (the default), * or +.",
+            LinkType = LinkType.Link,
+            Href = "#bullet-style-enum",
         },
         new()
         {
@@ -85,6 +110,36 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
+            Name = "ItalicStyle",
+            Type = "BitMarkdownEditorEmphasisStyle",
+            DefaultValue = "BitMarkdownEditorEmphasisStyle.Asterisk",
+            Description = "The character the Italic command wraps a selection in: * (the default) or _.",
+            LinkType = LinkType.Link,
+            Href = "#emphasis-style-enum",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A visible label rendered above the toolbar and tied to the textarea, so clicking it moves the focus into the editor and assistive tech announces it as the field's name.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template for the label of the editor, replacing Label.",
+        },
+        new()
+        {
+            Name = "MaxHeight",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The largest height the editor may grow to (any CSS length), which is also the ceiling of the Resizable drag handle. Ignored in full-screen mode.",
+        },
+        new()
+        {
             Name = "MaxImageSize",
             Type = "long?",
             DefaultValue = "null",
@@ -96,6 +151,13 @@ public partial class BitMarkdownEditorDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "The maximum number of characters the editor accepts. When set, the status bar counter shows the limit alongside the count.",
+        },
+        new()
+        {
+            Name = "MinHeight",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The smallest height the editor may shrink to (any CSS length), which is also the floor of the Resizable drag handle. Ignored in full-screen mode.",
         },
         new()
         {
@@ -122,6 +184,13 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
+            Name = "OnDraftRestored",
+            Type = "EventCallback<string?>",
+            DefaultValue = "",
+            Description = "Callback for an autosaved draft restored at initialization, carrying the restored text. It only fires when AutoSaveId is set and the draft was actually used.",
+        },
+        new()
+        {
             Name = "OnFocus",
             Type = "EventCallback",
             DefaultValue = "",
@@ -144,6 +213,13 @@ public partial class BitMarkdownEditorDemo
             Description = "A handler that uploads a pasted or dropped image and returns the URL to reference it by. When set, the editor enables clipboard-paste and drag-and-drop image upload; returning null cancels the insertion.",
             LinkType = LinkType.Link,
             Href = "#image-upload-info",
+        },
+        new()
+        {
+            Name = "OnSubmit",
+            Type = "EventCallback<string?>",
+            DefaultValue = "",
+            Description = "Callback for Ctrl/Cmd+Enter pressed inside the editor, carrying the current value. The shortcut is only captured while this callback is set, so a form that binds it elsewhere keeps its own submit key otherwise.",
         },
         new()
         {
@@ -179,6 +255,13 @@ public partial class BitMarkdownEditorDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Lets the user drag the bottom edge of the editor to change its height.",
+        },
+        new()
+        {
+            Name = "ShowCursorPosition",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the status bar reports the caret's line and column, and how much text is selected. Reporting it costs a (debounced) round trip per caret move, so it is off by default.",
         },
         new()
         {
@@ -497,6 +580,13 @@ public partial class BitMarkdownEditorDemo
                 },
                 new()
                 {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the label of the BitMarkdownEditor.",
+                },
+                new()
+                {
                     Name = "Toolbar",
                     Type = "string?",
                     DefaultValue = "null",
@@ -691,10 +781,10 @@ public partial class BitMarkdownEditorDemo
                 },
                 new()
                 {
-                    Name = "WordsFormat, CharsFormat, CharsWithMaxFormat, ReadingTimeFormat",
+                    Name = "WordsFormat, CharsFormat, CharsWithMaxFormat, ReadingTimeFormat, CursorPositionFormat, SelectedFormat",
                     Type = "string",
-                    DefaultValue = "\"{0} words\", \"{0} chars\", \"{0} / {1} chars\", \"{0} min read\"",
-                    Description = "The status bar templates. CharsWithMaxFormat replaces CharsFormat while a MaxLength is set.",
+                    DefaultValue = "\"{0} words\", \"{0} chars\", \"{0} / {1} chars\", \"{0} min read\", \"Ln {0}, Col {1}\", \"{0} selected\"",
+                    Description = "The status bar templates. CharsWithMaxFormat replaces CharsFormat while a MaxLength is set, and the last two are the ShowCursorPosition readouts.",
                 },
                 new()
                 {
@@ -705,10 +795,10 @@ public partial class BitMarkdownEditorDemo
                 },
                 new()
                 {
-                    Name = "FindReplaceTitle, FindPlaceholder, ReplacePlaceholder, ReplaceButton, ReplaceAllButton, FindNextAriaLabel, FindPreviousAriaLabel, MatchCaseAriaLabel, MatchesFormat, NoMatchesText",
+                    Name = "FindReplaceTitle, FindPlaceholder, ReplacePlaceholder, ReplaceButton, ReplaceAllButton, ReplaceAllAriaLabel, FindNextAriaLabel, FindPreviousAriaLabel, MatchCaseAriaLabel, MatchesFormat, NoMatchesText",
                     Type = "string",
                     DefaultValue = "\"Find and replace\" …",
-                    Description = "The find & replace panel. MatchesFormat is a template of the current match and the total ({0} of {1}).",
+                    Description = "The find & replace panel. MatchesFormat is a template of the current match and the total ({0} of {1}), and ReplaceAllAriaLabel is the accessible name of the short \"All\" button.",
                 },
                 new()
                 {
@@ -763,8 +853,8 @@ public partial class BitMarkdownEditorDemo
                 new() { Name = "TaskList", Value = "16", Description = "Toggles a task (checkbox) list on the selected lines." },
                 new() { Name = "Table", Value = "17", Description = "Inserts a table template at the caret position." },
                 new() { Name = "HorizontalRule", Value = "18", Description = "Inserts a horizontal rule at the caret position." },
-                new() { Name = "Indent", Value = "19", Description = "Increases the indentation of the selected lines (Tab)." },
-                new() { Name = "Outdent", Value = "20", Description = "Decreases the indentation of the selected lines (Shift+Tab)." },
+                new() { Name = "Indent", Value = "19", Description = "Increases the indentation of the selected lines (Tab), or walks to the next table cell when the caret is inside a table." },
+                new() { Name = "Outdent", Value = "20", Description = "Decreases the indentation of the selected lines (Shift+Tab), or walks to the previous table cell when the caret is inside a table." },
                 new() { Name = "NewLine", Value = "21", Description = "Smart newline that continues lists and quotes (Enter)." },
                 new() { Name = "Superscript", Value = "22", Description = "Toggles superscript (^text^) on the current selection. None of the BitMarkdownPipelines renders that extension, so the built-in preview shows it verbatim." },
                 new() { Name = "Subscript", Value = "23", Description = "Toggles subscript (~text~) on the current selection. None of the BitMarkdownPipelines renders that extension, so the built-in preview shows it verbatim." },
@@ -773,6 +863,40 @@ public partial class BitMarkdownEditorDemo
                 new() { Name = "MoveLineDown", Value = "26", Description = "Swaps the selected lines with the line below them (Alt+Down)." },
                 new() { Name = "DuplicateLine", Value = "27", Description = "Duplicates the selected lines right below themselves (Ctrl+D)." },
                 new() { Name = "DeleteLine", Value = "28", Description = "Deletes the selected lines entirely (Ctrl+Shift+D)." },
+                new() { Name = "TableInsertRowAbove", Value = "29", Description = "Inserts an empty row above the table row the caret is in (from the header row, the first body row). Does nothing outside a table." },
+                new() { Name = "TableInsertRowBelow", Value = "30", Description = "Inserts an empty row below the table row the caret is in. Does nothing outside a table." },
+                new() { Name = "TableDeleteRow", Value = "31", Description = "Deletes the table row the caret is in, keeping the header row. Does nothing outside a table." },
+                new() { Name = "TableInsertColumnBefore", Value = "32", Description = "Inserts an empty column before the caret's column and moves the caret into its header cell. Does nothing outside a table." },
+                new() { Name = "TableInsertColumnAfter", Value = "33", Description = "Inserts an empty column after the caret's column and moves the caret into its header cell. Does nothing outside a table." },
+                new() { Name = "TableDeleteColumn", Value = "34", Description = "Deletes the caret's table column, keeping the last remaining one. Does nothing outside a table." },
+                new() { Name = "TableAlignLeft", Value = "35", Description = "Left-aligns the caret's table column (:---). Does nothing outside a table." },
+                new() { Name = "TableAlignCenter", Value = "36", Description = "Centers the caret's table column (:---:). Does nothing outside a table." },
+                new() { Name = "TableAlignRight", Value = "37", Description = "Right-aligns the caret's table column (---:). Does nothing outside a table." },
+                new() { Name = "TableNextCell", Value = "38", Description = "Selects the next cell of the caret's table, adding a row past the last one. This is what Indent (Tab) does inside a table. Does nothing outside a table." },
+                new() { Name = "TablePreviousCell", Value = "39", Description = "Selects the previous cell of the caret's table. This is what Outdent (Shift+Tab) does inside a table. Does nothing at the first cell or outside a table." },
+            ]
+        },
+        new()
+        {
+            Id = "emphasis-style-enum",
+            Name = "BitMarkdownEditorEmphasisStyle",
+            Description = "Which characters the emphasis commands wrap a selection in. Both spellings mean the same thing to a markdown parser, so this is purely a house style.",
+            Items =
+            [
+                new() { Name = "Asterisk", Value = "0", Description = "**bold** and *italic*." },
+                new() { Name = "Underscore", Value = "1", Description = "__bold__ and _italic_. A CommonMark parser does not read underscores inside a word as emphasis, so snake_case_name stays intact." },
+            ]
+        },
+        new()
+        {
+            Id = "bullet-style-enum",
+            Name = "BitMarkdownEditorBulletStyle",
+            Description = "Which character an unordered (or task) list item starts with. Every one of them is a valid bullet; which to use is a house style.",
+            Items =
+            [
+                new() { Name = "Dash", Value = "0", Description = "- item" },
+                new() { Name = "Asterisk", Value = "1", Description = "* item" },
+                new() { Name = "Plus", Value = "2", Description = "+ item" },
             ]
         },
         new()
@@ -869,6 +993,9 @@ the eye button of the toolbar, the F9 key, or the `@bind-Mode` parameter.";
 
     private bool fullScreen;
 
+    private string markdownStyleDefaultValue =
+@"Select some text and hit Ctrl+B or Ctrl+I, or use the list buttons.";
+
     private string readOnlyDefaultValue =
 @"# Read-only
 The content of this editor **cannot** be edited, but can still be *selected* and the preview stays live.";
@@ -889,6 +1016,7 @@ Press Ctrl+F to open the built-in panel, or use the buttons above.";
 @"# Image upload
 Paste an image from the clipboard, or drop an image file anywhere on this editor.";
 
+    private string? draftStatus;
     private BitMarkdownEditor autoSaveRef = default!;
 
     private string statusDefaultValue =
@@ -930,6 +1058,16 @@ survolez la barre d'outils, ouvrez la recherche ou lisez la barre d'état.";
         KeyboardShortcutsTitle = "Raccourcis clavier",
         PreviewEmptyText = "Rien à prévisualiser pour l'instant.",
     };
+
+    private string? focusStatus;
+    private string? submittedValue;
+
+    private BitMarkdownEditor tableRef = default!;
+    private string tableDefaultValue =
+@"| Package | Downloads | Notes |
+| ------- | --------- | ----- |
+| Core    | 1.2M      | ships the components |
+| Extras  | 480K      | ships this editor |";
 
     private string rtlDefaultValue =
 @"# ویرایشگر مارک‌داون
@@ -1048,9 +1186,24 @@ survolez la barre d'outils, ouvrez la recherche ou lisez la barre d'état.";
         };
     }
 
+    private void DraftRestored(string? value)
+    {
+        draftStatus = $"{value?.Length ?? 0} characters restored from the last session.";
+    }
+
+    private void EditorFocused() => focusStatus = "The editor has the keyboard focus.";
+
+    private void EditorBlurred() => focusStatus = "The editor lost the keyboard focus.";
+
+    private async Task RunTableCommand(BitMarkdownEditorCommand command)
+    {
+        await tableRef.Run(command);
+    }
+
     private async Task ClearDraft()
     {
         await autoSaveRef.ClearDraft();
+        draftStatus = "Draft cleared.";
     }
 
 
@@ -1220,7 +1373,7 @@ private string previewDefaultValue =
     private readonly string example8RazorCode = @"
 <BitToggleButton @bind-IsChecked=""fullScreen"" OnText=""Exit full-screen"" OffText=""Go full-screen"" />
 
-<BitMarkdownEditor @bind-FullScreen=""fullScreen"" Height=""10rem"" Resizable />";
+<BitMarkdownEditor @bind-FullScreen=""fullScreen"" Height=""10rem"" MinHeight=""6rem"" MaxHeight=""20rem"" Resizable />";
     private readonly string example8CsharpCode = @"
 private bool fullScreen;";
 
@@ -1232,6 +1385,14 @@ private bool fullScreen;";
                    ChangeDebounceTime=""300""
                    TabIndents=""false""
                    IndentUnit=""@(""    "")"" />
+
+<BitMarkdownEditor AutoClosePairs Mode=""BitMarkdownEditorMode.Edit"" Placeholder=""Type a ( or a ` here..."" />
+
+<BitMarkdownEditor BoldStyle=""BitMarkdownEditorEmphasisStyle.Underscore""
+                   ItalicStyle=""BitMarkdownEditorEmphasisStyle.Underscore""
+                   BulletStyle=""BitMarkdownEditorBulletStyle.Asterisk""
+                   Mode=""BitMarkdownEditorMode.Edit""
+                   DefaultValue=""@markdownStyleDefaultValue"" />
 
 <BitMarkdownEditor TableColumns=""4"" TableRows=""3"" Mode=""BitMarkdownEditorMode.Edit"" />
 
@@ -1303,17 +1464,30 @@ private void ImageRejected(BitMarkdownEditorImageRejection rejection)
     private readonly string example12RazorCode = @"
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ClearDraft"">Clear the draft</BitButton>
 
-<BitMarkdownEditor @ref=""autoSaveRef"" AutoSaveId=""bit-mde-demo-draft"" Placeholder=""This draft survives a page reload..."" />";
+<div>@draftStatus</div>
+
+<BitMarkdownEditor @ref=""autoSaveRef""
+                   AutoSaveId=""bit-mde-demo-draft""
+                   OnDraftRestored=""DraftRestored""
+                   Placeholder=""This draft survives a page reload..."" />";
     private readonly string example12CsharpCode = @"
+private string? draftStatus;
 private BitMarkdownEditor autoSaveRef = default!;
+
+private void DraftRestored(string? value)
+{
+    draftStatus = $""{value?.Length ?? 0} characters restored from the last session."";
+}
 
 private async Task ClearDraft()
 {
     await autoSaveRef.ClearDraft();
+    draftStatus = ""Draft cleared."";
 }";
 
     private readonly string example13RazorCode = @"
 <BitMarkdownEditor ShowReadingTime
+                   ShowCursorPosition
                    WordsPerMinute=""120""
                    MaxLength=""280""
                    Mode=""BitMarkdownEditorMode.Edit""
@@ -1357,6 +1531,50 @@ private BitMarkdownEditorTexts frenchTexts = new()
 };";
 
     private readonly string example15RazorCode = @"
+<BitMarkdownEditor Label=""Release notes""
+                   Height=""10rem""
+                   Placeholder=""Describe what changed, then press Ctrl+Enter...""
+                   OnFocus=""EditorFocused""
+                   OnBlur=""EditorBlurred""
+                   OnSubmit=""v => submittedValue = v"" />
+
+<div>@focusStatus</div>
+
+<div>Submitted value:</div>
+<pre>@submittedValue</pre>";
+    private readonly string example15CsharpCode = @"
+private string? focusStatus;
+private string? submittedValue;
+
+private void EditorFocused() => focusStatus = ""The editor has the keyboard focus."";
+
+private void EditorBlurred() => focusStatus = ""The editor lost the keyboard focus."";";
+
+    private readonly string example16RazorCode = @"
+<div class=""commands-bar"">
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunTableCommand(BitMarkdownEditorCommand.TableInsertRowBelow)"">Row below</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunTableCommand(BitMarkdownEditorCommand.TableDeleteRow)"">Delete row</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunTableCommand(BitMarkdownEditorCommand.TableInsertColumnAfter)"">Column after</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunTableCommand(BitMarkdownEditorCommand.TableDeleteColumn)"">Delete column</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunTableCommand(BitMarkdownEditorCommand.TableAlignCenter)"">Center column</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunTableCommand(BitMarkdownEditorCommand.TableAlignRight)"">Right-align column</BitButton>
+</div>
+
+<BitMarkdownEditor @ref=""tableRef"" DefaultValue=""@tableDefaultValue"" />";
+    private readonly string example16CsharpCode = @"
+private BitMarkdownEditor tableRef = default!;
+private string tableDefaultValue =
+@""| Package | Downloads | Notes |
+| ------- | --------- | ----- |
+| Core    | 1.2M      | ships the components |
+| Extras  | 480K      | ships this editor |"";
+
+private async Task RunTableCommand(BitMarkdownEditorCommand command)
+{
+    await tableRef.Run(command);
+}";
+
+    private readonly string example17RazorCode = @"
 <style>
     .custom-class {
         box-shadow: aqua 0 0 1rem 0.5rem;
@@ -1377,6 +1595,6 @@ private BitMarkdownEditorTexts frenchTexts = new()
 <BitMarkdownEditor Classes=""@(new() { Toolbar = ""custom-toolbar"", TextArea = ""custom-textarea"" })""
                    Styles=""@(new() { StatusBar = ""color:tomato;font-weight:bold"" })"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitMarkdownEditor Dir=""BitDir.Rtl"" DefaultValue=""@rtlDefaultValue"" />";
 }
