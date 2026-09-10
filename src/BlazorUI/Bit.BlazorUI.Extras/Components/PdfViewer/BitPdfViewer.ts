@@ -1,6 +1,9 @@
 ﻿namespace BitBlazorUI {
     export class PdfViewer {
         private static _rezoomTimers = new WeakMap<HTMLElement, number>();
+        // The controls that opened the currently trapped dialogs, innermost last, so
+        // closing one hands focus back to whatever the reader was on when it opened.
+        private static readonly _focusReturn: HTMLElement[] = [];
         private static readonly _CAPS: CanvasLineCap[] = ["butt", "round", "square"];
         private static readonly _JOINS: CanvasLineJoin[] = ["miter", "round", "bevel"];
 
@@ -91,6 +94,13 @@
         // .NET to render any that are not rendered yet. Only pages still showing a
         // placeholder are reported, so scrolling across already-rendered pages costs
         // no interop round-trip at all (on WASM every call runs on the UI thread).
+        // The pages element carries the document's direction; the surface around it may
+        // not, so ask the one that actually lays the pages out.
+        private static isRtl(container: HTMLElement) {
+            const pages = container.querySelector(".bit-pdv-pages") as HTMLElement | null;
+            return getComputedStyle(pages || container).direction === "rtl";
+        }
+
         private static renderVisiblePages(container: HTMLElement, dotnetRef: any) {
             const pages = container.querySelectorAll("[data-page]");
             if (!pages.length) {
@@ -102,12 +112,17 @@
             // below stays valid (in every other mode - including wrapped - document
             // order is monotonic in `top`).
             const horizontal = container.getAttribute("data-bit-pdv-axis") === "h";
+            // A right-to-left horizontal layout flows the other way along x: later pages
+            // sit further LEFT, so raw left/right would break out of the loop at the very
+            // first page once it scrolled off. Mirroring x keeps `near` monotonic in
+            // document order, which is what the early break relies on.
+            const rtl = horizontal && PdfViewer.isRtl(container);
             const extent = horizontal ? container.clientWidth : container.clientHeight;
             const buffer = Math.max(extent * 1.5, 800);
-            const near = (r: DOMRect) => horizontal ? r.left : r.top;
-            const far = (r: DOMRect) => horizontal ? r.right : r.bottom;
-            const viewNear = horizontal ? rect.left : rect.top;
-            const viewFar = horizontal ? rect.right : rect.bottom;
+            const near = (r: DOMRect) => horizontal ? (rtl ? -r.right : r.left) : r.top;
+            const far = (r: DOMRect) => horizontal ? (rtl ? -r.left : r.right) : r.bottom;
+            const viewNear = horizontal ? (rtl ? -rect.right : rect.left) : rect.top;
+            const viewFar = horizontal ? (rtl ? -rect.left : rect.right) : rect.bottom;
             const lo = viewNear - buffer;
             const hi = viewFar + buffer;
 
@@ -676,6 +691,15 @@
             if (!dialog) {
                 return;
             }
+            // Remember where focus was, so releaseFocus can put it back: a modal that
+            // closes leaving focus on <body> drops a keyboard reader out of the viewer.
+            const opener = document.activeElement as HTMLElement | null;
+            if (opener && opener !== dialog && !dialog.contains(opener)) {
+                PdfViewer._focusReturn.push(opener);
+            } else {
+                PdfViewer._focusReturn.push(null as any);
+            }
+
             const focusables = () => Array.prototype.filter.call(
                 dialog.querySelectorAll(
                     "a[href],button:not([disabled]),input:not([disabled]),select:not([disabled])," +
@@ -708,6 +732,15 @@
                 }
             };
             dialog.addEventListener("keydown", onKeyDown);
+        }
+
+        // The other half of trapFocus: called once the dialog has left the DOM, it
+        // returns focus to the control that opened it.
+        public static releaseFocus() {
+            const opener = PdfViewer._focusReturn.pop();
+            if (opener && opener.isConnected && opener.focus) {
+                opener.focus();
+            }
         }
 
         // Follows the roving tabindex of the thumbnail listbox: arrowing changes the
@@ -1355,6 +1388,45 @@
             return { text: folded, map };
         }
 
+        // The one form both sides of the search compare over: folded (unless diacritics
+        // are being matched), then every run of whitespace collapsed to a single space,
+        // with a map from each canonical index back to the index it came from in the
+        // DOM text. .NET canonicalizes its extracted page text identically - which is
+        // what stops its '\n'-per-line, space-per-gap heuristics from disagreeing with
+        // the selection layer's positional ones about how many matches a page holds.
+        private static canonical(text: string, matchDiacritics: boolean): { text: string, map: number[] } {
+            const base = matchDiacritics ? null : PdfViewer.fold(text);
+            const src = base ? base.text : text;
+            const at = (i: number) => base ? base.map[i] : i;
+
+            let out = "";
+            const map: number[] = [];
+            let pendingSpace = false;
+            let pendingAt = 0;
+            for (let i = 0; i < src.length; i++) {
+                if (/\s/.test(src[i])) {
+                    if (!pendingSpace) {
+                        pendingSpace = true;
+                        pendingAt = at(i);
+                    }
+                    continue;
+                }
+                if (pendingSpace) {
+                    out += " ";
+                    map.push(pendingAt);
+                    pendingSpace = false;
+                }
+                out += src[i];
+                map.push(at(i));
+            }
+            if (pendingSpace) {
+                out += " ";
+                map.push(pendingAt);
+            }
+            map.push(at(src.length)); // one past the end, so an end offset always maps
+            return { text: out, map };
+        }
+
         // Whether the character at `index` of `text` can be part of a word, used to
         // reject a substring hit that sits inside a longer word in whole-word mode.
         private static isWordChar(text: string, index: number) {
@@ -1382,7 +1454,7 @@
             }
             PdfViewer.ensureSearchStyles();
 
-            let needle = matchDiacritics ? query : PdfViewer.fold(query).text;
+            let needle = PdfViewer.canonical(query, matchDiacritics).text;
             needle = matchCase ? needle : needle.toLowerCase();
             if (!needle) {
                 return;
@@ -1407,15 +1479,21 @@
                 let text = "";
                 let node: Node | null;
                 while ((node = walker.nextNode())) {
+                    // Each selection run is its own visual line, separated in the DOM by
+                    // a <br> the walker never sees. .NET's extracted text marks the same
+                    // break with '\n', so put one here too - the canonical form collapses
+                    // both to the single space that keeps the two counts in step.
+                    if (text.length) {
+                        text += "\n";
+                    }
                     nodes.push({ node, start: text.length });
                     text += node.nodeValue;
                 }
-                // Matching runs over the folded text when diacritics are ignored, and the
-                // map takes each hit's offsets back to the real text the ranges address.
-                const folded = matchDiacritics ? null : PdfViewer.fold(text);
-                const searchable = folded ? folded.text : text;
-                const haystack = matchCase ? searchable : searchable.toLowerCase();
-                const toSource = (pos: number) => folded ? folded.map[Math.min(pos, folded.map.length - 1)] : pos;
+                // Matching runs over the canonical text, and the map takes each hit's
+                // offsets back to the real text the ranges address.
+                const canonical = PdfViewer.canonical(text, matchDiacritics);
+                const haystack = matchCase ? canonical.text : canonical.text.toLowerCase();
+                const toSource = (pos: number) => canonical.map[Math.min(pos, canonical.map.length - 1)];
                 let idx = haystack.indexOf(needle);
                 let ordinal = 0;
                 while (idx !== -1) {

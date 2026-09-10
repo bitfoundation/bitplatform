@@ -1062,7 +1062,7 @@ public partial class BitPdfViewerDemo
                 {
                     Name = "Thumbnails, Bookmarks, Attachments, Layers",
                     Type = "string",
-                    DefaultValue = "\"Page thumbnails\", \"Bookmarks\", \"Attachments\"",
+                    DefaultValue = "\"Page thumbnails\", \"Bookmarks\", \"Attachments\", \"Layers\"",
                     Description = "The labels of the side panel toggles.",
                 },
                 new()

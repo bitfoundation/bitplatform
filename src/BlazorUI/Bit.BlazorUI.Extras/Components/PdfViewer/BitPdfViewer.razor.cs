@@ -143,6 +143,7 @@ public partial class BitPdfViewer : BitComponentBase
     private bool _showProperties; // the document-properties dialog
     private ElementReference _propertiesRef;
     private bool _focusPropertiesPending; // move focus into the dialog once it is in the DOM
+    private bool _propertiesTrapped;      // focus is inside the dialog and owed back to its opener
 
     // Whether the viewer currently fills the screen, mirrored from the browser's own
     // fullscreenchange event so the toolbar button can report its state.
@@ -166,6 +167,7 @@ public partial class BitPdfViewer : BitComponentBase
     private ElementReference _passwordInputRef;
     private ElementReference _passwordDialogRef;
     private bool _focusPasswordPending;
+    private bool _passwordTrapped;        // focus is inside the dialog and owed back to its opener
 
     private DotNetObjectReference<BitPdfViewer>? _dotnetObj;
     private ElementReference _containerRef;
@@ -1422,7 +1424,7 @@ public partial class BitPdfViewer : BitComponentBase
         if (matchDiacritics is bool md && md != _matchDiacritics)
         {
             _matchDiacritics = md;
-            _pageFolded = null; // the folded index belongs to the previous setting
+            _pageSearch = null; // the canonical index belongs to the previous setting
             recount = true;
         }
         bool repaint = highlightAll is bool ha && ha != _highlightAll;
@@ -1483,6 +1485,9 @@ public partial class BitPdfViewer : BitComponentBase
         _passwordInput = "";
         _loading = false;
         _focusPasswordPending = true;
+        // One dialog at a time: an unanswered request would otherwise be dropped on
+        // the floor, leaving whoever awaits it parked forever.
+        CompletePasswordRequest(null);
         _passwordRequest = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
         StateHasChanged();
         return _passwordRequest.Task;
@@ -1498,6 +1503,17 @@ public partial class BitPdfViewer : BitComponentBase
         _passwordRequest = null;
         _passwordInput = "";
         request?.TrySetResult(password);
+    }
+
+    /// <summary>Closes the password dialog on Escape from anywhere inside it - the
+    /// input's own handler only sees the keys typed into the box, and the global
+    /// shortcut listener is off whenever <see cref="EnableKeyboardShortcuts"/> is.</summary>
+    private void OnPasswordDialogKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            CancelPassword();
+        }
     }
 
     /// <summary>Closes the properties dialog on Escape. The global shortcut listener
@@ -2069,6 +2085,18 @@ public partial class BitPdfViewer : BitComponentBase
             try
             {
                 await _js.BitPdfViewerTrapFocus(_propertiesRef);
+                _propertiesTrapped = true;
+            }
+            catch (JSDisconnectedException) { }
+        }
+        // A modal that closes leaving focus on <body> drops a keyboard reader out of
+        // the viewer, so the control that opened it gets focus back.
+        else if (_propertiesTrapped && _showProperties is false)
+        {
+            _propertiesTrapped = false;
+            try
+            {
+                await _js.BitPdfViewerReleaseFocus();
             }
             catch (JSDisconnectedException) { }
         }
@@ -2083,6 +2111,16 @@ public partial class BitPdfViewer : BitComponentBase
                 // The password box first, then the dialog around it keeps Tab inside.
                 await _js.BitPdfViewerFocus(_passwordInputRef);
                 await _js.BitPdfViewerTrapFocus(_passwordDialogRef);
+                _passwordTrapped = true;
+            }
+            catch (JSDisconnectedException) { }
+        }
+        else if (_passwordTrapped && _passwordRequest is null)
+        {
+            _passwordTrapped = false;
+            try
+            {
+                await _js.BitPdfViewerReleaseFocus();
             }
             catch (JSDisconnectedException) { }
         }
@@ -2280,19 +2318,37 @@ public partial class BitPdfViewer : BitComponentBase
         }
 
         using var body = await response.Content.ReadAsStreamAsync();
-        var buffer = new byte[(int)Math.Min(length.Value, int.MaxValue)];
-        int read = 0;
         // 64 KB is small enough that progress moves visibly on a slow link and large
         // enough that the reports don't become the cost of the download.
         const int chunk = 64 * 1024;
-        while (read < buffer.Length)
+        const int initialCap = 1024 * 1024;
+
+        // The declared length is what the progress fraction is reported against, but
+        // NOT what is allocated: a server (or a proxy) is free to declare a gigabyte
+        // it never sends, and taking that at its word would allocate it all before the
+        // first byte arrives - fatal on WebAssembly. Grow with the bytes instead.
+        long declared = Math.Min(length.Value, int.MaxValue);
+        var buffer = new byte[(int)Math.Min(declared, initialCap)];
+        int read = 0;
+        while (true)
         {
+            if (read == buffer.Length)
+            {
+                int grown = buffer.Length >= Array.MaxLength / 2
+                    ? Array.MaxLength
+                    : Math.Max(buffer.Length * 2, chunk);
+                if (grown <= buffer.Length) break; // a PDF that no array can hold
+
+                Array.Resize(ref buffer, grown);
+            }
+
             int got = await body.ReadAsync(buffer.AsMemory(read, Math.Min(chunk, buffer.Length - read)));
-            if (got <= 0) break; // the server sent less than it declared; take what came
+            if (got <= 0) break; // the body ended; take what came
 
             read += got;
             if (IsDisposed || version != _loadVersion) return null;
-            await OnProgress.InvokeAsync((double)read / buffer.Length);
+            // A body longer than it declared must not report past 100%.
+            await OnProgress.InvokeAsync(Math.Min(1d, read / (double)declared));
             if (IsDisposed || version != _loadVersion) return null;
         }
         return read == buffer.Length ? buffer : buffer[..read];
@@ -2301,6 +2357,12 @@ public partial class BitPdfViewer : BitComponentBase
     private async Task LoadAsync()
     {
         int version = ++_loadVersion; // supersedes any load still in flight
+
+        // Release a load parked on the password dialog: its answer belongs to a
+        // document that is no longer the Source. It resumes only to see the bumped
+        // version and bail, and the dialog leaves the DOM instead of asking for a
+        // password nobody is waiting for.
+        CompletePasswordRequest(null);
 
         // Reset the shared state under the render gate so an in-flight background
         // build (which reads _document and lazily (re)creates _fontStore) cannot
@@ -2330,7 +2392,7 @@ public partial class BitPdfViewer : BitComponentBase
             _fontFaceStyle = string.Empty; // its @font-face snapshot belongs to the old document
             _hasPageLabels = null; // the labels belonged to the old document
             _pageText = null;  // invalidate the search text index
-            _pageFolded = null; // and its diacritic-folded companion
+            _pageSearch = null; // and its canonical search companion
             _searchTotal = 0;
             _searchIndex = -1;
             _outline = [];
@@ -3292,9 +3354,9 @@ public partial class BitPdfViewer : BitComponentBase
     private async Task ToggleMatchDiacritics()
     {
         _matchDiacritics = !_matchDiacritics;
-        // The folded index is keyed to the previous setting; drop it so the next
+        // The canonical index is keyed to the previous setting; drop it so the next
         // count folds (or stops folding) the pages it re-reads.
-        _pageFolded = null;
+        _pageSearch = null;
         await RunSearchAsync();
     }
 
@@ -3466,13 +3528,13 @@ public partial class BitPdfViewer : BitComponentBase
         // one page at a time, when the reader actually walks to a match.
         _pageText ??= new string?[_document.PageCount];
         int pageCount = _document.PageCount; // captured so the loop condition never reads a nulled _document
-        if (_pageFolded is null || _pageFolded.Length != pageCount)
+        if (_pageSearch is null || _pageSearch.Length != pageCount)
         {
-            _pageFolded = _matchDiacritics ? null : new string?[pageCount];
+            _pageSearch = new string?[pageCount];
         }
-        // The needle is folded once for the whole sweep, under the same rule the
+        // The needle is canonicalized once for the whole sweep, under the same rule the
         // haystack is, so the counter and the browser-side highlighter agree.
-        string needle = _matchDiacritics ? _searchQuery : FoldDiacritics(_searchQuery);
+        string needle = CanonicalizeSearchText(_searchQuery);
         var counts = new int[pageCount];
         int total = 0;
         for (int i = 0; i < pageCount; i++)
@@ -3511,18 +3573,63 @@ public partial class BitPdfViewer : BitComponentBase
         }
     }
 
-    // The per-page extracted text with its diacritics folded away, built lazily
-    // beside _pageText and dropped whenever the option (or the document) changes.
-    private string?[]? _pageFolded;
+    // The per-page extracted text in the canonical form searches run over, built
+    // lazily beside _pageText and dropped whenever the option (or the document)
+    // changes.
+    private string?[]? _pageSearch;
 
-    /// <summary>The page text the current find options search over: the extracted text
-    /// as it stands, or a diacritic-folded copy of it.</summary>
+    /// <summary>The page text the current find options search over: the extracted
+    /// text canonicalized by <see cref="CanonicalizeSearchText"/>.</summary>
     private string SearchTextOf(int index)
     {
-        string text = _pageText![index] ?? string.Empty;
-        if (_matchDiacritics || _pageFolded is null) return text;
+        if (_pageSearch is null) return CanonicalizeSearchText(_pageText![index] ?? string.Empty);
 
-        return _pageFolded[index] ??= FoldDiacritics(text);
+        return _pageSearch[index] ??= CanonicalizeSearchText(_pageText![index] ?? string.Empty);
+    }
+
+    /// <summary>
+    /// The one form both sides of the search compare over. The counter reads the
+    /// extracted text (a content-stream replay, which marks a line with a newline and a
+    /// word gap with a space) while the highlighter reads the rendered selection
+    /// layer (one run per visual line, joined by a line break, its word gaps inferred
+    /// from glyph positions). Collapsing every run of whitespace to a single space -
+    /// on both sides - is what stops those two heuristics from disagreeing about how
+    /// many matches a page holds, and so about which occurrence is the current one.
+    /// Diacritic folding, when it applies, happens first so both rules compose.
+    /// </summary>
+    private string CanonicalizeSearchText(string text)
+        => CollapseWhitespace(_matchDiacritics ? text : FoldDiacritics(text));
+
+    /// <summary>Replaces every run of whitespace with a single space. The browser-side
+    /// highlighter applies the identical rule (and keeps a map back to the original
+    /// offsets), so a hit found here addresses the same characters there.</summary>
+    private static string CollapseWhitespace(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+
+        var builder = new System.Text.StringBuilder(text.Length);
+        bool pendingSpace = false;
+        foreach (char c in text)
+        {
+            if (char.IsWhiteSpace(c))
+            {
+                pendingSpace = true;
+                continue;
+            }
+            if (pendingSpace)
+            {
+                builder.Append(' ');
+                pendingSpace = false;
+            }
+            builder.Append(c);
+        }
+        // A trailing run counts too: dropping it would make "end " and "end" the same
+        // haystack tail on one side only.
+        if (pendingSpace)
+        {
+            builder.Append(' ');
+        }
+        return builder.ToString();
     }
 
     /// <summary>

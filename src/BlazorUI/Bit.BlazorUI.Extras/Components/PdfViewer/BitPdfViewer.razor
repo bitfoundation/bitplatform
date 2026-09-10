@@ -428,7 +428,7 @@
         {
             <div class="bit-pdv-dialog-overlay">
                 <div class="bit-pdv-dialog bit-pdv-password" role="dialog" aria-modal="true" aria-label="@ActiveTexts.PasswordTitle"
-                     tabindex="-1" @ref="_passwordDialogRef">
+                     tabindex="-1" @ref="_passwordDialogRef" @onkeydown="OnPasswordDialogKeyDown">
                     <div class="bit-pdv-dialog-head">
                         <span>@ActiveTexts.PasswordTitle</span>
                         <button type="button" class="bit-pdv-btn" title="@ActiveTexts.Close" aria-label="@ActiveTexts.Close" @onclick="CancelPassword">

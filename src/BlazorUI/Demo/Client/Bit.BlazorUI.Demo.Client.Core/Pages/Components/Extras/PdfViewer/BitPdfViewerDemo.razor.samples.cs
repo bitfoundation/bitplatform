@@ -218,7 +218,7 @@ private BitPdfViewer? infoViewerRef;
 <BitPdfViewer Source=""passwordSource"" Height=""400px"" RespectPermissions OnError='e => passwordError = e' />
 
 @* A known password can travel on the source instead of being asked for: *@
-@* <BitPdfViewer Source=""passwordSource.WithPassword(""secret"")"" /> *@
+@* <BitPdfViewer Source='passwordSource.WithPassword(""secret"")' /> *@
 
 @* Or replace the built-in dialog with your own UI: *@
 @* <BitPdfViewer Source=""passwordSource"" OnPasswordRequested=""AskForPassword"" /> *@";

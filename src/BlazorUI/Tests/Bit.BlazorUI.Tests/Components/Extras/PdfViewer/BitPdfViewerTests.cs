@@ -1126,6 +1126,31 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPdfViewerShouldHonourViewUsageRulesForLayers()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithViewUsageLayers()));
+        });
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.HasLayers));
+
+        var layers = component.Instance.Layers;
+
+        Assert.AreEqual(2, layers.Count);
+        // Neither group is in /OFF: the /AS /View rule is the only thing that hides
+        // the second one, and both the layer state and what was painted must say so.
+        Assert.IsTrue(layers[0].VisibleByDefault);
+        Assert.IsFalse(layers[1].VisibleByDefault);
+        Assert.IsTrue(component.Instance.IsLayerVisible(layers[0]));
+        Assert.IsFalse(component.Instance.IsLayerVisible(layers[1]));
+
+        component.WaitForAssertion(() =>
+            Assert.IsTrue(component.Find("[data-page='1']").TextContent.Contains("ScreenLayerText")));
+        Assert.IsFalse(component.Find("[data-page='1']").TextContent.Contains("PrintOnlyLayerText"));
+    }
+
+    [TestMethod]
     public async Task BitPdfViewerShouldRepaintPagesWhenALayerIsSwitched()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
@@ -2568,6 +2593,37 @@ internal static class TestPdf
             // 6/7: The optional-content groups
             "<< /Type /OCG /Name (Base drawing) >>",
             "<< /Type /OCG /Name (Annotations) >>",
+        };
+        return Build(bodies, rootObjNum: 1);
+    }
+
+    /// <summary>
+    /// A single-page document whose two optional-content groups are both listed /ON by
+    /// the default configuration, but whose /AS usage-application rule turns the second
+    /// off for the /View event - the way a print-only watermark layer ships.
+    /// </summary>
+    public static byte[] WithViewUsageLayers()
+    {
+        var bodies = new List<string>
+        {
+            // 1: Catalog. /OFF is empty, so only the /AS rule can hide anything.
+            "<< /Type /Catalog /Pages 2 0 R " +
+                "/OCProperties << /OCGs [6 0 R 7 0 R] /D << /OFF [] " +
+                    "/AS [ << /Event /View /Category [/View] /OCGs [7 0 R] >> ] >> >> >>",
+            // 2: Pages
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            // 3: Page, mapping the two groups into its resources
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] " +
+                "/Resources << /Font << /F1 4 0 R >> /Properties << /OC1 6 0 R /OC2 7 0 R >> >> " +
+                "/Contents 5 0 R >>",
+            // 4: Font
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+            // 5: Contents - one marked-content run per group
+            Stream("/OC /OC1 BDC BT /F1 12 Tf 20 150 Td (ScreenLayerText) Tj ET EMC " +
+                   "/OC /OC2 BDC BT /F1 12 Tf 20 100 Td (PrintOnlyLayerText) Tj ET EMC"),
+            // 6/7: the groups - the second declares itself off on screen
+            "<< /Type /OCG /Name (Screen) >>",
+            "<< /Type /OCG /Name (Print only) /Usage << /View << /ViewState /OFF >> >> >>",
         };
         return Build(bodies, rootObjNum: 1);
     }

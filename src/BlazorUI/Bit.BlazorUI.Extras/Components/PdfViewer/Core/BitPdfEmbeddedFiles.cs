@@ -15,7 +15,10 @@ internal static class BitPdfEmbeddedFiles
         if (xref.FetchIfRef(catalog.Get("Names")) is BitPdfDict names
             && xref.FetchIfRef(names.Get("EmbeddedFiles")) is BitPdfDict tree)
         {
-            CollectNameTree(xref, tree, result, seen, pageNumber: null, depth: 0);
+            // A malformed (or hostile) /Kids graph can point back at a node it came
+            // from; the depth guard alone would still walk it 2^32 ways.
+            var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
+            CollectNameTree(xref, tree, result, seen, visited, pageNumber: null, depth: 0);
         }
 
         foreach (var page in pages)
@@ -38,9 +41,9 @@ internal static class BitPdfEmbeddedFiles
     }
 
     private static void CollectNameTree(IBitPdfXRef xref, BitPdfDict node, List<BitPdfAttachment> result,
-        HashSet<object> seen, int? pageNumber, int depth)
+        HashSet<object> seen, HashSet<object> visited, int? pageNumber, int depth)
     {
-        if (depth > 32)
+        if (depth > 32 || visited.Add(node) is false)
         {
             return;
         }
@@ -62,7 +65,7 @@ internal static class BitPdfEmbeddedFiles
             {
                 if (xref.FetchIfRef(kid) is BitPdfDict child)
                 {
-                    CollectNameTree(xref, child, result, seen, pageNumber, depth + 1);
+                    CollectNameTree(xref, child, result, seen, visited, pageNumber, depth + 1);
                 }
             }
         }

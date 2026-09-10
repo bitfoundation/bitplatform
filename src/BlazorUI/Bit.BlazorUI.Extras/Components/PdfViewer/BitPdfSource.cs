@@ -102,7 +102,7 @@ public sealed class BitPdfSource
         // A seekable stream of known length is copied into a right-sized buffer; any
         // other one grows a MemoryStream, which is what a network stream needs.
         using var buffer = stream.CanSeek && stream.Length > 0
-            ? new MemoryStream((int)Math.Min(stream.Length - stream.Position, int.MaxValue))
+            ? new MemoryStream((int)Math.Min(Math.Max(stream.Length - stream.Position, 0), int.MaxValue))
             : new MemoryStream();
         await stream.CopyToAsync(buffer, cancellationToken);
 

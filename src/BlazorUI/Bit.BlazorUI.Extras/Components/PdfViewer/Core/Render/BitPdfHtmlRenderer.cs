@@ -1001,21 +1001,12 @@ public sealed class BitPdfHtmlRenderer
             return raw is BitPdfRef overridden && HiddenLayers.Contains(overridden.ToRefString());
         }
 
-        if (_ocgOff is null)
-        {
-            _ocgOff = new HashSet<string>();
-            if ((_xref as BitPdfXRef)?.Root?.Get("OCProperties") is BitPdfDict ocp && ocp.Get("D") is BitPdfDict cfg
-                && cfg.Get("OFF") is List<object?> off)
-            {
-                foreach (var item in off)
-                {
-                    if (item is BitPdfRef r)
-                    {
-                        _ocgOff.Add(r.ToRefString());
-                    }
-                }
-            }
-        }
+        // The same reading of the default configuration the layer list is built from -
+        // /BaseState, /ON, /OFF and the /AS /View rules - so a page rendered before
+        // that list exists hides exactly what it will report as hidden.
+        _ocgOff ??= (_xref as BitPdfXRef)?.Root is BitPdfDict root
+            ? BitPdfOptionalContent.DefaultHiddenIds(_xref, root)
+            : [];
         return raw is BitPdfRef rf && _ocgOff.Contains(rf.ToRefString());
     }
 
