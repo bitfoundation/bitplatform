@@ -103,11 +103,6 @@ public partial class AppChatbot
     public ChannelReader<string> GetStreamingChannel() => responseChannel.Reader;
 
     /// <summary>
-    /// Stops streaming
-    /// </summary>
-    public void Stop() => responseChannel.Writer.TryComplete();
-
-    /// <summary>
     /// Process an incoming message and stream the AI response
     /// </summary>
     public async Task ProcessNewMessage(

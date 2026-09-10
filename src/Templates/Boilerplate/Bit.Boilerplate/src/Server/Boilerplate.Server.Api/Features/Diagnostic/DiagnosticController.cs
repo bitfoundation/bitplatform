@@ -22,6 +22,8 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     [HttpGet]
     public async Task<string[]> PerformDiagnostic([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
     {
+        Response.Headers.CacheControl = "no-store";
+
         // Only what this endpoint alone does - the test push and the test SignalR message - goes above the report, so
         // it isn't buried under the headers. The report itself comes from the shared service, so /dev-mcp and the hub
         // answer identically.

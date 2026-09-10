@@ -91,16 +91,25 @@ public class IdentityRateLimitTests
     {
         var (sitePath, _) = DeployedApps.DeploymentOfApi(api);
 
-        var refusal = await DeployedSite.TryRestart(sitePath, new Uri(new Uri(api), "health"), CancellationToken.None);
+        var restart = await DeployedSite.TryRestart(sitePath, new Uri(new Uri(api), "health"), CancellationToken.None);
 
-        if (refusal is null)
+        if (restart.Restarted)
         {
             TestContext.WriteLine($"Restarted {api}, so it starts counting again from zero.");
             return;
         }
 
+        // Stopped and never came back: the window went with the process, so there is nothing left to wait out - the
+        // deployment is simply down, and the next test will say so in its own terms. Not thrown, because this runs
+        // from a finally and would replace whatever the test was already failing with.
+        if (restart.Stopped)
+        {
+            TestContext.WriteLine($"Stopped {api} but it did not answer again ({restart.Refusal}). The window is gone with the process; the deployment is not serving.");
+            return;
+        }
+
         // Fixed windows also replenish with time, which is the only way back when the process cannot be stopped.
-        TestContext.WriteLine($"Could not restart {api} ({refusal}), so waiting {window} out for the window to expire on its own.");
+        TestContext.WriteLine($"Could not restart {api} ({restart.Refusal}), so waiting {window} out for the window to expire on its own.");
 
         await Task.Delay(window, CancellationToken.None);
     }

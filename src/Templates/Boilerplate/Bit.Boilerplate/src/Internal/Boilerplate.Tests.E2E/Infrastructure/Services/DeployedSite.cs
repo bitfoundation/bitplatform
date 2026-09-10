@@ -17,11 +17,23 @@ public static class DeployedSite
     private static readonly HttpClient probe = new() { Timeout = TimeSpan.FromSeconds(20) };
 
     /// <summary>
-    /// Stops the app serving <paramref name="healthAddress"/> and returns once a new process answers there again.
-    /// Null when that happened, otherwise why it did not: the site folder belongs to the deployment, so a run that
-    /// cannot write into it has to cope without a restart.
+    /// What became of a restart attempt. The two failures need different things of the caller, so they are told
+    /// apart: an app that was never stopped still holds whatever it held, and waiting is the way back; one that
+    /// stopped and did not answer again is simply down, and no amount of waiting helps.
     /// </summary>
-    public static async Task<string?> TryRestart(string sitePath, Uri healthAddress, CancellationToken cancellationToken)
+    /// <param name="Stopped">Whether the old process actually went away.</param>
+    /// <param name="Refusal">Why the app is not serving from a fresh process, or null when it is.</param>
+    public readonly record struct RestartResult(bool Stopped, string? Refusal)
+    {
+        public bool Restarted => Refusal is null;
+    }
+
+    /// <summary>
+    /// Stops the app serving <paramref name="healthAddress"/> and returns once a new process answers there again.
+    /// A refusal says why that did not happen: the site folder belongs to the deployment, so a run that cannot write
+    /// into it has to cope without a restart.
+    /// </summary>
+    public static async Task<RestartResult> TryRestart(string sitePath, Uri healthAddress, CancellationToken cancellationToken)
     {
         var appOffline = Path.Combine(sitePath, appOfflineFileName);
 
@@ -31,7 +43,7 @@ public static class DeployedSite
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            return $"could not write {appOffline}: {exception.Message}";
+            return new(Stopped: false, $"could not write {appOffline}: {exception.Message}");
         }
 
         bool stopped;
@@ -51,11 +63,11 @@ public static class DeployedSite
         // process is then still answering, so the poll below succeeds at once and would report a restart that never
         // happened, leaving the caller to trust an in-memory state that was never dropped.
         if (stopped is false)
-            return $"{healthAddress} never answered {(int)HttpStatusCode.ServiceUnavailable} within {stopDeadline}, so {appOfflineFileName} did not stop the app and nothing was reset.";
+            return new(Stopped: false, $"{healthAddress} never answered {(int)HttpStatusCode.ServiceUnavailable} within {stopDeadline}, so {appOfflineFileName} did not stop the app and nothing was reset.");
 
         return await PollUntil(healthAddress, status => status is HttpStatusCode.OK, startDeadline, cancellationToken)
-            ? null
-            : $"{healthAddress} never answered again within {startDeadline}.";
+            ? new(Stopped: true, null)
+            : new(Stopped: true, $"{healthAddress} never answered again within {startDeadline}.");
     }
 
     private static async Task<bool> PollUntil(Uri address, Func<HttpStatusCode, bool> isExpected, TimeSpan deadline, CancellationToken cancellationToken)

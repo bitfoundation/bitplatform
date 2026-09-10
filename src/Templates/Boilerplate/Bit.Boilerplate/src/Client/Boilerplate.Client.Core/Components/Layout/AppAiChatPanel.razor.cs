@@ -40,6 +40,12 @@ public partial class AppAiChatPanel
     private bool isMaximized;
 
     private Channel<AiChatMessage>? channel;
+
+    /// <summary>
+    /// Ends the hub call <see cref="channel"/> was opened with. The server streams back until this says otherwise, so
+    /// a conversation the panel has walked away from has to be cancelled rather than merely forgotten.
+    /// </summary>
+    private CancellationTokenSource? channelCancellation;
     private AiChatMessage? lastAssistantMessage;
 
     /// <summary>
@@ -350,17 +356,22 @@ public partial class AppAiChatPanel
     {
         var newChannel = Channel.CreateUnbounded<AiChatMessage>(new() { SingleReader = true, SingleWriter = true });
 
+        // This conversation's own, so abandoning it ends the hub call it opened rather than leaving one behind for
+        // every Clear (See StopChannel). Linked, so leaving the page still ends them all.
+        var newCancellation = CancellationTokenSource.CreateLinkedTokenSource(CurrentCancellationToken);
+
         channel = newChannel;
+        channelCancellation = newCancellation;
 
         // Not awaited: RunChannel lives as long as the conversation does.
-        _ = RunChannel(newChannel);
+        _ = RunChannel(newChannel, newCancellation.Token);
     }
 
     /// <summary>
     /// Streams the user's input messages to the server and processes the streamed responses.
-    /// It keeps the chat ongoing until CurrentCancellationToken is cancelled.
+    /// It keeps the chat ongoing until this conversation's own token is cancelled.
     /// </summary>
-    private async Task RunChannel(Channel<AiChatMessage> ownChannel)
+    private async Task RunChannel(Channel<AiChatMessage> ownChannel, CancellationToken ownCancellationToken)
     {
         try
         {
@@ -374,8 +385,8 @@ public partial class AppAiChatPanel
                                                                                  DeviceInfo = TelemetryContext.Platform,
                                                                                  ChatMessagesHistory = chatMessages
                                                                              },
-                                                                             ownChannel.Reader.ReadAllAsync(CurrentCancellationToken),
-                                                                             cancellationToken: CurrentCancellationToken))
+                                                                             ownChannel.Reader.ReadAllAsync(ownCancellationToken),
+                                                                             cancellationToken: ownCancellationToken))
             {
                 // Frames belonging to a conversation the panel has already replaced (Clear, or a reconnect) are dropped.
                 if (ReferenceEquals(channel, ownChannel) is false) continue;
@@ -397,7 +408,7 @@ public partial class AppAiChatPanel
             // Through StopChannel rather than by hand: a turn that never closed leaves its bubble queued and the
             // reader mid document, and SendMessage starts the next channel without draining either - so the next
             // answer would stream into this one's bubble, onto the end of an abandoned document.
-            if (ReferenceEquals(channel, ownChannel) && CurrentCancellationToken.IsCancellationRequested is false)
+            if (ReferenceEquals(channel, ownChannel) && ownCancellationToken.IsCancellationRequested is false)
             {
                 StopChannel();
                 StateHasChanged();
@@ -472,6 +483,12 @@ public partial class AppAiChatPanel
 
         channel.Writer.Complete();
         channel = null;
+
+        // The hub call goes with it: nothing more is coming back on it, and left running it would hold its
+        // invocation - and the scoped chatbot behind it - for as long as the connection lives.
+        channelCancellation?.Cancel();
+        channelCancellation?.Dispose();
+        channelCancellation = null;
 
         // Keeps a half-written answer out of the history replayed to the model, which would otherwise read its own
         // unfinished sentence as something it completed (see AiChatMessage.Successful).
