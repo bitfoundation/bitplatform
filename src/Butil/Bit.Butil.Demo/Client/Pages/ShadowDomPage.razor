@@ -343,6 +343,8 @@ var all = await root.QueryAll("[part]");
         try
         {
             if (_root is not null) await _root.DisposeAsync();
+            if (_buildRoot is not null) await _buildRoot.DisposeAsync();
+            if (_queryRoot is not null) await _queryRoot.DisposeAsync();
         }
         catch (Exception)
         {

@@ -91,17 +91,21 @@ internal static class Budgets
     internal const double MinEventGateReduction = 5;
 
     /// <summary>
-    /// The same ratio for an observer, which has a far lower ceiling and needs its own floor.
+    /// The same idea for an observer, whose ceiling is set by the browser's frame rate rather than
+    /// by the burst - so it is held as a fraction of that ceiling, not as a fixed ratio.
     /// </summary>
     /// <remarks>
     /// A <c>ResizeObserver</c> already delivers at most once per frame, so an ungated run reports
     /// one batch per frame and the best a gate can do is <c>interval / frameTime</c> - about three
-    /// for a 50 ms gate at 60 Hz, and less on a machine rendering faster. That is not a weakness of
-    /// the gate: three times fewer round trips through a whole window drag is the difference between
-    /// a smooth resize and a Blazor Server circuit falling behind. The floor is set below the
-    /// theoretical figure because frame pacing under a headless browser is not exactly 60 Hz.
+    /// for a 50 ms gate at 60 Hz, more on a machine pacing frames faster, and less on a loaded CI
+    /// runner or a software-rendered headless browser that manages only 30. A fixed floor would fail
+    /// on the slow machine for no fault of the gate, so the runner measures the frame time of the
+    /// same burst and asks for this share of what that frame time allows. Three times fewer round
+    /// trips through a whole window drag is the difference between a smooth resize and a Blazor
+    /// Server circuit falling behind; seven tenths of it leaves room for the leading and trailing
+    /// sends at either end of the burst.
     /// </remarks>
-    internal const double MinObserverGateReduction = 2.5;
+    internal const double MinObserverGateEfficiency = 0.7;
 
     /// <summary>
     /// The gate must not silence a subscription. A gated run that delivers nothing has not

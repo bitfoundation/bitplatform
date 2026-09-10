@@ -70,9 +70,11 @@ drifted from 60 to 90 microseconds is the machine. Re-run before believing it.
 
 The assertions worth trusting on any machine are the **ratios**, because both halves are measured in the
 same run on the same box: the fast path beating the async path, and a gated subscription producing less
-traffic than an ungated one over an identical burst. The two gate ratios have different floors on purpose -
+traffic than an ungated one over an identical burst. The two gate ratios are held differently on purpose -
 a DOM event burst is not frame-bound and the reduction comes out in the hundreds, while a `ResizeObserver`
-already delivers at most once a frame, so the most a gate can do there is `interval / frameTime`.
+already delivers at most once a frame, so the most a gate can do there is `interval / frameTime`. The
+runner measures that frame time on the same burst and asks for a share of what it allows, so a slow CI box
+pacing frames at 30 fps is held to the ceiling it actually had rather than to a 60 Hz one.
 
 ## What it does not cover
 

@@ -77,8 +77,14 @@ internal static class ModuleWeight
         };
 
         process.Start();
+
+        // Both pipes drained at once. Reading them one after the other deadlocks as soon as node
+        // writes more to stderr than the pipe buffers while stdout is still open - a version-mismatch
+        // notice per chunk is enough - because the child then blocks on stderr while this side
+        // blocks on stdout.
+        var errorTask = process.StandardError.ReadToEndAsync();
         var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
+        var error = errorTask.GetAwaiter().GetResult();
         process.WaitForExit();
 
         if (process.ExitCode != 0)

@@ -264,14 +264,18 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     public async ValueTask<StyleSheetHandle?> CreateStyleSheet()
     {
         var id = Guid.NewGuid();
-        var created = await js.Invoke<bool>("BitButil.cssStyleSheet.createSheet", id);
 
         // Teardown is armed here rather than written into DisposeAsync, and the difference is what an
         // app that never creates a stylesheet downloads. An interop identifier is a string literal in a
         // method body, and the set of those the trimmer keeps is the set of JavaScript modules a published
         // app still ships - so naming cssStyleSheet in a Dispose that always runs would put that module in
         // every Css consumer's bundle. In this lambda it goes away with CreateStyleSheet itself.
+        //
+        // Armed before the await, not after: a Css disposed while createSheet is in flight has to find the
+        // delegate in place, or the sheet JavaScript has already adopted outlives the scope that made it.
         _styleSheetTeardown ??= () => js.InvokeVoid("BitButil.cssStyleSheet.disposeAll");
+
+        var created = await js.Invoke<bool>("BitButil.cssStyleSheet.createSheet", id);
 
         return created ? new StyleSheetHandle(js, id) : null;
     }

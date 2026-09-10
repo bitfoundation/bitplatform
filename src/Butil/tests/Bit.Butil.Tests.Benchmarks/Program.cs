@@ -1,3 +1,4 @@
+using Bit.Butil.Tests.E2E.Infrastructure;
 using ButilTests.Benchmarks;
 
 // The Bit.Butil benchmark suite. Two halves, either of which can be run alone:
@@ -34,31 +35,20 @@ Console.WriteLine("====================");
 
 if (runWeight)
 {
-    ModuleWeight.Run(report, ButilProjectDirectory());
+    ModuleWeight.Run(report, RepoLayout.ButilProject());
 }
 
 if (runRuntime)
 {
     // Started only once the weight half has printed, so a failure to boot the app or to find a
-    // browser still leaves you with the half that does not need either.
-    await using var app = new SampleAppFixture();
-    await app.Start();
+    // browser still leaves you with the half that does not need either. Release, because the figure
+    // that matters is the one a published build produces; quiet, because the app's startup chatter
+    // interleaved with the measurements would make the report unreadable. BUTIL_BENCH_BASE_URL
+    // points the run at an already-running deployment instead - which is what you want when the
+    // number you care about is a published, minified build rather than the one dotnet run makes.
+    await using var app = await SampleAppHost.Start(
+        Environment.GetEnvironmentVariable("BUTIL_BENCH_BASE_URL"), configuration: "Release", echoOutput: false);
     await InteropBenchmarks.Run(report, app.BaseUrl);
 }
 
 return report.Conclude();
-
-// The Bit.Butil project folder, found by walking up from the output directory rather than by a
-// relative path, so the run does not depend on the working directory the shell or IDE picked.
-static string ButilProjectDirectory()
-{
-    var directory = AppContext.BaseDirectory;
-    for (var i = 0; i < 10 && directory is not null; i++)
-    {
-        var candidate = Path.Combine(directory, "Bit.Butil");
-        if (File.Exists(Path.Combine(candidate, "build.mjs"))) return candidate;
-        directory = Path.GetDirectoryName(directory.TrimEnd(Path.DirectorySeparatorChar));
-    }
-
-    throw new DirectoryNotFoundException("Could not locate the Bit.Butil project folder by walking up from the output directory.");
-}

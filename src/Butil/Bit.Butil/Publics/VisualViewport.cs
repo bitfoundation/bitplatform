@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -345,7 +344,13 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     }
 
 
-    /// <summary>Removes every resize and scroll handler registered through this instance.</summary>
+    /// <summary>Removes every resize, scroll and scrollend handler registered through this instance.</summary>
+    /// <remarks>
+    /// One call, with every id, and JavaScript detaches each from the event it was registered on. The
+    /// ids are not partitioned here because this side does not know which event an id belongs to - and
+    /// handing the whole set to <c>removeResize</c> and <c>removeScroll</c> in turn used to let the first
+    /// call forget the scroll ids before the second could detach them.
+    /// </remarks>
     public async ValueTask RemoveAllEventHandlers()
     {
         if (_handlers.Count == 0) return;
@@ -354,22 +359,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         _handlers.Clear();
 
-        var toAwait = new List<Task>();
-
-        var resizeValueTask = RemoveResizeFromJs(ids);
-        var scrollValueTask = RemoveScrollFromJs(ids);
-
-        if (resizeValueTask.IsCompleted is false)
-        {
-            toAwait.Add(resizeValueTask.AsTask());
-        }
-
-        if (scrollValueTask.IsCompleted is false)
-        {
-            toAwait.Add(scrollValueTask.AsTask());
-        }
-
-        await Task.WhenAll(toAwait);
+        await js.InvokeVoid("BitButil.visualViewport.removeAll", ids);
     }
 
     /// <summary>Removes every viewport handler this instance registered and releases its interop reference.</summary>

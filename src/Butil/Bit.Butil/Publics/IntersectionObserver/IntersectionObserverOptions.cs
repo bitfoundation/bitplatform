@@ -1,3 +1,6 @@
+using System;
+using System.Text.Json.Serialization;
+
 namespace Bit.Butil;
 
 /// <summary>
@@ -12,8 +15,8 @@ public class IntersectionObserverOptions
     public double[]? Thresholds { get; set; }
 
     /// <summary>
-    /// The shortest time allowed between two calls into the .NET handler, in milliseconds.
-    /// <c>0</c> - the default - forwards every batch of entries.
+    /// The shortest time allowed between two calls into the .NET handler. <c>null</c> or
+    /// <see cref="TimeSpan.Zero"/> - the default - forwards every batch of entries.
     /// <br/>
     /// Worth setting whenever the observed elements are in a scrolling list: a scroll crosses
     /// thresholds on nearly every frame, and each crossing is otherwise an interop round trip.
@@ -23,8 +26,10 @@ public class IntersectionObserverOptions
     /// batch that leaves the element in its settled state is always delivered - a lazy-loading
     /// tracker never misses the "now visible" it is waiting for, it only hears it a little later.
     /// <br/>
-    /// The unit is milliseconds rather than a <see cref="System.TimeSpan"/> because this type is
-    /// serialized to the browser as-is.
+    /// Not part of the object the browser receives: the rest of this type is the observer's
+    /// <c>IntersectionObserverInit</c>, serialized as-is, while the interval is Butil's own and
+    /// travels beside it as milliseconds - the same way every other gated subscription passes it.
     /// </remarks>
-    public double MinInterval { get; set; }
+    [JsonIgnore]
+    public TimeSpan? MinInterval { get; set; }
 }

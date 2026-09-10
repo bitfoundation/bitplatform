@@ -6,7 +6,11 @@
 //   1. wwwroot/bit-butil.js            The classic single bundle: every module, once, in dependency order.
 //   2. wwwroot/modules/<name>.js       One self-contained file per module for lazy loading: the module
 //                                      plus everything it depends on, so a consumer can `import()` just
-//                                      the one file and call into it.
+//                                      the one file and call into it. Self-contained on purpose: a lazy
+//                                      app pays one request per module it touches and never one per
+//                                      dependency (the E2E suite asserts exactly that), at the price
+//                                      that two siblings of a split family each carry the family's
+//                                      base module again. Bytes were chosen over round trips there.
 //   3. obj/butil-js/chunks/<name>.js   The raw building blocks (one module each, no dependencies) plus
 //      obj/butil-js/chunks/manifest.txt the dependency manifest. These ship inside the NuGet package so a
 //                                      consumer's publish can assemble a bundle holding only the modules
@@ -20,9 +24,12 @@
 // happen inside a module. That is what lets one artifact serve both a `<script>` tag and `import()`.
 //
 // Dependencies are discovered from the TypeScript sources rather than declared by hand: any
-// `butil.<name>` / `BitButil.<name>` reference to another module's namespace is a dependency. Only
-// call-time references exist today (a module never touches another during its own initialization), so
-// order inside a file only matters for readability, but the manifest keeps dependency-first order anyway.
+// `butil.<name>` / `BitButil.<name>` reference to another module's namespace is a dependency. The order
+// inside a file is load-bearing: a module may register a hook with the module it depends on while it
+// initializes (webAudioNodes -> webAudio.onDispose, webAudioMedia -> webAudioNodes.onRelease,
+// performanceVitals -> performance.onStopRetained), which throws unless the dependency has already run.
+// Every file written here is dependency-first, and the publish-time bundler concatenates in the
+// manifest's order for the same reason - anything assembling chunks by hand has to keep that order too.
 //
 // Usage: node build.mjs [--minify] [--intermediate <dir>]
 //   --intermediate   the project's intermediate folder (MSBuild's BaseIntermediateOutputPath); default obj/
@@ -31,6 +38,7 @@ import { readFileSync, readdirSync, writeFileSync, renameSync, mkdirSync, rmSync
 import { join, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
+import { MINIFY_OPTIONS } from './minify-options.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const scriptsDir = join(root, 'Scripts');
@@ -99,7 +107,9 @@ const SIZE_EXEMPT = new Set(['userAgentParser']);
 
 const oversized = [];
 for (const name of sources) {
-    const lines = readFileSync(join(scriptsDir, `${name}.ts`), 'utf8').split(/\r?\n/).length;
+    // Counted the way an editor numbers them: a file ending in a newline (which .editorconfig asks
+    // for) has no extra empty line after it, so a split on line breaks over-counts by one there.
+    const lines = readFileSync(join(scriptsDir, `${name}.ts`), 'utf8').replace(/\r?\n$/, '').split(/\r?\n/).length;
     if (SIZE_EXEMPT.has(name)) continue;
     if (lines > SIZE_FAIL_LINES) oversized.push(`${name}.ts (${lines} lines)`);
     else if (lines > SIZE_WARN_LINES) {
@@ -140,7 +150,7 @@ for (const name of sources) {
     // See the header comment for why every chunk is wrapped and guarded.
     let code = `(function(){if(window.BitButil&&window.BitButil.${keys.get(name)})return;\n${readFileSync(compiled, 'utf8').trimEnd()}\n})();\n`;
     if (minify) {
-        code = esbuild.transformSync(code, { minify: true, target: 'es2019', legalComments: 'none' }).code;
+        code = esbuild.transformSync(code, MINIFY_OPTIONS).code;
     }
     chunks.set(name, code);
 }

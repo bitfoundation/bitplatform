@@ -129,7 +129,7 @@
 
 <DemoSection Title="Rate limiting"
              Api="IntersectionObserverOptions.MinInterval"
-             Description="A scroll through a long list crosses thresholds on nearly every frame, and each crossing is an interop round trip. MinInterval - in milliseconds, because this options object is serialized to the browser as-is - caps how often the handler is called. The gate is leading-edge with a trailing send, so the batch that leaves the element in its settled state is always delivered: a lazy-loading tracker never misses the 'now visible' it is waiting for, it only hears it a little later. Observe below and scroll the target in and out."
+             Description="A scroll through a long list crosses thresholds on nearly every frame, and each crossing is an interop round trip. MinInterval caps how often the handler is called. The gate is leading-edge with a trailing send, so the batch that leaves the element in its settled state is always delivered: a lazy-loading tracker never misses the 'now visible' it is waiting for, it only hears it a little later. Observe below and scroll the target in and out."
              Code=@("""
 @inject IJSRuntime js
 
@@ -149,7 +149,7 @@
         }, new IntersectionObserverOptions
         {
             Thresholds = [0, 0.25, 0.5, 0.75, 1],
-            MinInterval = 200,
+            MinInterval = TimeSpan.FromMilliseconds(200),
         });
     }
 }
@@ -244,7 +244,7 @@ public async ValueTask DisposeAsync()
     <ApiMember Name="ObserveIntersection" Signature="Task<ButilSubscription> ObserveIntersection(IJSRuntime js, Action<IntersectionObserverEntry[]> handler, IntersectionObserverOptions? options = null)" Description="Extension method on ElementReference. Starts observing and returns a disposable subscription." />
     <ApiMember Name="IntersectionObserverOptions.RootMargin" Signature="string? RootMargin { get; set; }" Description="CSS-style margin around the root, e.g. &quot;0px 0px -50px 0px&quot;." />
     <ApiMember Name="IntersectionObserverOptions.Thresholds" Signature="double[]? Thresholds { get; set; }" Description="One or more thresholds in [0, 1]. Defaults to a single 0 threshold." />
-    <ApiMember Name="IntersectionObserverOptions.MinInterval" Signature="double MinInterval { get; set; }" Description="Milliseconds between two calls into the handler. 0 (the default) forwards every batch. Applied in JavaScript, leading-edge with a trailing send." />
+    <ApiMember Name="IntersectionObserverOptions.MinInterval" Signature="TimeSpan? MinInterval { get; set; }" Description="The shortest time between two calls into the handler. null or zero (the default) forwards every batch. Applied in JavaScript, leading-edge with a trailing send." />
     <ApiMember Name="IntersectionObserverEntry.IsIntersecting" Signature="bool IsIntersecting { get; set; }" Description="True when the target intersects the root with at least one threshold." />
     <ApiMember Name="IntersectionObserverEntry.IntersectionRatio" Signature="double IntersectionRatio { get; set; }" Description="Fraction of the target's bounding rect that intersects the root, in [0, 1]." />
     <ApiMember Name="IntersectionObserverEntry.Time" Signature="double Time { get; set; }" Description="When the intersection was detected (DOMHighResTimeStamp, ms)." />
@@ -330,7 +330,7 @@ public async ValueTask DisposeAsync()
             }, new IntersectionObserverOptions
             {
                 Thresholds = [0, 0.25, 0.5, 0.75, 1],
-                MinInterval = 200,
+                MinInterval = TimeSpan.FromMilliseconds(200),
             });
 
             await gatedOutput.Log("Observing with the same thresholds, rate-limited to one call every 200 ms");

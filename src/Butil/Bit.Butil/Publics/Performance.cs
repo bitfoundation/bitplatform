@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
@@ -16,8 +15,6 @@ namespace Bit.Butil;
 [ButilService(typeof(Performance))]
 public class Performance(IJSRuntime js) : IAsyncDisposable
 {
-    internal const string InvokeMethodName = PerformanceObserverInterop.InvokeMethodName;
-
     // Whether anything on this instance could have started one of the module's own observers - the
     // observer-fed reads and the Web Vitals accumulator. Disposal only has to reach into JS when one
     // of them did: stopRetained on an instance that never called those would lazily import
@@ -30,24 +27,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     // app that only calls Now() would ship the Web Vitals module it never asked for. Observers are still
     // per-instance, so they stay isolated per circuit / WASM app and are released on disposal.
     private PerformanceObserverInterop? _observers;
-    private PerformanceObserverInterop Observers
-    {
-        get
-        {
-            var existing = Volatile.Read(ref _observers);
-            if (existing is not null) return existing;
-
-            // Published with a CompareExchange for the same reason DotNetObjectReferenceHelper uses one:
-            // a multithreaded WebAssembly runtime can run two subscribers at once, and two relays would
-            // mean JavaScript holding a reference to one that nothing disposes.
-            var created = new PerformanceObserverInterop();
-            var winner = Interlocked.CompareExchange(ref _observers, created, null);
-            if (winner is null) return created;
-
-            created.Dispose();
-            return winner;
-        }
-    }
+    private PerformanceObserverInterop Observers => DotNetObjectReferenceHelper.GetOrCreate(ref _observers, static () => new PerformanceObserverInterop());
 
     /// <summary>
     /// High-resolution timestamp (<c>DOMHighResTimeStamp</c>) since the time origin, in milliseconds.

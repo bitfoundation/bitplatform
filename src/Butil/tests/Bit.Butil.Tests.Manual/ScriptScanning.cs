@@ -207,6 +207,20 @@ internal static class ScriptScanning
             "a name that is neither a module nor a class is reported rather than ignored",
             $"unresolved: [{string.Join(", ", missing)}]");
 
+        // A module name keeps that one module (asserted above), and the publish says so when the class
+        // of the same name calls more - the consumer who wrote `crypto` before the family was split is
+        // the one this message is for. A module its class needs nothing beyond, or a class name, gets none.
+        var hints = ButilScriptBundler.NarrowerThanClass(["crypto", "clipboard", "Crypto", "cryptoKeys"], manifest, map);
+        checks.That(hints.Count == 1
+                && hints[0].Name == "crypto"
+                && hints[0].ClassName == "Crypto"
+                && hints[0].Beyond.SequenceEqual(["cryptoCipher", "cryptoDerive", "cryptoKeys", "cryptoSign"], StringComparer.Ordinal),
+            "naming a split family's root module alone is pointed at the class that keeps the whole family",
+            $"hints: [{string.Join("; ", hints.Select(hint => $"{hint.Name} -> {hint.ClassName} + {string.Join(", ", hint.Beyond)}"))}]");
+
+        checks.That(ButilScriptBundler.NarrowerThanClass(["crypto"], manifest, null).Count == 0,
+            "without the class map there is nothing to compare a module name against, and no hint");
+
         // Without the map only module names can resolve, which is what a publish that never had reason to
         // read Bit.Butil.dll gets. A class named like its module (Clipboard/clipboard) still resolves on the
         // case-insensitive pass; one named unlike it cannot, and is reported rather than dropped.

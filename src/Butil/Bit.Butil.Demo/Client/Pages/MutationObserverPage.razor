@@ -141,7 +141,7 @@
 
 <DemoSection Title="Rate limiting"
              Api="MutationObserverOptions.MinInterval"
-             Description="A subtree observer over a region Blazor re-renders sees a batch of records per render, so without a gate one render becomes one interop round trip. MinInterval - in milliseconds, because this options object is serialized to the browser as-is - caps how often the handler is called, leading-edge with a trailing send so the batch describing the settled tree still arrives. Note what it drops: whole batches, not individual records. A handler that has to see every mutation - a change log, an undo stack - must leave it at 0. Burst-add ten items below and count the callbacks against the ten renders that produced them."
+             Description="A subtree observer over a region Blazor re-renders sees a batch of records per render, so without a gate one render becomes one interop round trip. MinInterval caps how often the handler is called, leading-edge with a trailing send so the batch describing the settled tree still arrives. Note what it drops: whole batches, not individual records. A handler that has to see every mutation - a change log, an undo stack - must leave it unset. Burst-add ten items below and count the callbacks against the ten renders that produced them."
              Code=@("""
 @inject IJSRuntime js
 
@@ -162,7 +162,7 @@
         {
             ChildList = true,
             Subtree = true,
-            MinInterval = 250,
+            MinInterval = TimeSpan.FromMilliseconds(250),
         });
     }
 }
@@ -278,7 +278,7 @@ public async ValueTask DisposeAsync()
     <ApiMember Name="MutationRecord.OldValue" Signature="string? OldValue { get; set; }" Description="Previous value when the matching *OldValue option was enabled." />
     <ApiMember Name="MutationRecord.AddedCount" Signature="int AddedCount { get; set; }" Description="Number of nodes added (childList mutations only)." />
     <ApiMember Name="MutationRecord.RemovedCount" Signature="int RemovedCount { get; set; }" Description="Number of nodes removed (childList mutations only)." />
-    <ApiMember Name="MutationObserverOptions.MinInterval" Signature="double MinInterval { get; set; }" Description="Milliseconds between two calls into the handler. 0 (the default) forwards every batch. Drops whole batches, so leave it at 0 when every record matters." />
+    <ApiMember Name="MutationObserverOptions.MinInterval" Signature="TimeSpan? MinInterval { get; set; }" Description="The shortest time between two calls into the handler. null or zero (the default) forwards every batch. Drops whole batches, so leave it unset when every record matters." />
     <ApiMember Name="ButilSubscription.Id" Signature="Guid Id { get; }" Description="The internal listener id of the subscription." />
     <ApiMember Name="ButilSubscription.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Disconnects the observer and releases the interop reference. Idempotent." />
 </ApiTable>
@@ -486,7 +486,7 @@ public async ValueTask DisposeAsync()
             {
                 ChildList = true,
                 Subtree = true,
-                MinInterval = 250,
+                MinInterval = TimeSpan.FromMilliseconds(250),
             });
 
             await gatedOutput.Log("Observing childList + subtree, rate-limited to one call every 250 ms");

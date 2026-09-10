@@ -10,7 +10,7 @@ Strongly-typed C# wrappers over browser Web APIs for Blazor (WebAssembly, Server
 | `Bit.Butil/Publics/` | The public API: one injectable service class per browser API, plus its DTOs/enums in a same-named subfolder |
 | `Bit.Butil/Internals/` | Interop helpers, JS-callable relay classes, JS-shaped option types |
 | `Bit.Butil/Scripts/*.ts` | One TypeScript file = one JS module = one `BitButil.<module>` namespace |
-| `Bit.Butil/build.mjs` | Assembles `wwwroot/bit-butil.js`, `wwwroot/modules/*.js` and the packed chunks + manifest (run by MSBuild; outputs are generated and git-ignored) |
+| `Bit.Butil/build.mjs` | Assembles `wwwroot/bit-butil.js`, `wwwroot/modules/*.js` and the packed chunks + manifest (run by MSBuild; outputs are generated and git-ignored). `minify-options.mjs` beside it holds the esbuild settings the benchmarks measure with |
 | `Bit.Butil.Build/` | MSBuild task run in a consumer's publish: script scanning, trimming, bundling |
 | `Bit.Butil.Demo/` | The documentation site (Client) and its host (Server), which also hosts the MCP server at `/mcp` |
 | `Samples/` | Minimal hosting samples: `Samples.Core` (shared pages), `Samples.Web` (standalone WebAssembly), `Samples.Maui` (Hybrid) |

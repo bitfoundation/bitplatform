@@ -1,3 +1,6 @@
+using System;
+using System.Text.Json.Serialization;
+
 namespace Bit.Butil;
 
 /// <summary>
@@ -27,8 +30,8 @@ public class MutationObserverOptions
     public string[]? AttributeFilter { get; set; }
 
     /// <summary>
-    /// The shortest time allowed between two calls into the .NET handler, in milliseconds.
-    /// <c>0</c> - the default - forwards every batch of records.
+    /// The shortest time allowed between two calls into the .NET handler. <c>null</c> or
+    /// <see cref="TimeSpan.Zero"/> - the default - forwards every batch of records.
     /// <br/>
     /// A subtree observer over a region Blazor re-renders sees a batch per render, so without an
     /// interval one render becomes one interop round trip.
@@ -38,11 +41,13 @@ public class MutationObserverOptions
     /// batch describing the settled tree always arrives.
     /// <br/>
     /// What the gate drops is whole batches, not individual records: a handler that has to see
-    /// every mutation - a change log, an undo stack - must leave this at <c>0</c>. One that reacts
-    /// to the current state of the tree, which is nearly all of them, does not.
+    /// every mutation - a change log, an undo stack - must leave this unset. One that reacts to
+    /// the current state of the tree, which is nearly all of them, does not.
     /// <br/>
-    /// The unit is milliseconds rather than a <see cref="System.TimeSpan"/> because this type is
-    /// serialized to the browser as-is.
+    /// Not part of the object the browser receives: the rest of this type is the observer's
+    /// <c>MutationObserverInit</c>, serialized as-is, while the interval is Butil's own and travels
+    /// beside it as milliseconds - the same way every other gated subscription passes it.
     /// </remarks>
-    public double MinInterval { get; set; }
+    [JsonIgnore]
+    public TimeSpan? MinInterval { get; set; }
 }

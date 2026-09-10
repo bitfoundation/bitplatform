@@ -104,7 +104,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         // For the modules layered on this one.
         observeVital,
-        supportsEntryType,
         onStopRetained(hook: () => void) { _stopHooks.push(hook); }
     };
 

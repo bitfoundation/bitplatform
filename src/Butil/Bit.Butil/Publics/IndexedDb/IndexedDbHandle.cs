@@ -18,10 +18,6 @@ namespace Bit.Butil;
 /// </remarks>
 public sealed class IndexedDbHandle : IAsyncDisposable
 {
-    internal const string VersionChangeMethodName = IndexedDbCallbacksInterop.VersionChangeMethodName;
-    internal const string CloseMethodName = IndexedDbCallbacksInterop.CloseMethodName;
-    internal const string BlockedMethodName = IndexedDbCallbacksInterop.BlockedMethodName;
-
     private readonly IJSRuntime _js;
     private readonly Guid _id;
 

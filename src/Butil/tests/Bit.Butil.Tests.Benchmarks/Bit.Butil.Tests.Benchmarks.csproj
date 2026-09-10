@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -23,6 +23,17 @@
          would otherwise sit in the shadow of Butil's Console/Window/Screen services. The weight half
          reads the build artifacts off disk, which needs no reference either. -->
     <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The E2E suite's plumbing, compiled from its source rather than restated here: how the sample
+         app is booted and declared ready, how the browser is launched from the BUTIL_E2E_* variables,
+         and how the repository is located from an output folder. Linked because a ProjectReference to
+         a test project would drag its test host in, and because the point is one copy: a variable
+         or a readiness rule added there reaches the benchmarks without anyone remembering to. -->
+    <Compile Include="..\Bit.Butil.Tests.E2E\Infrastructure\SampleAppHost.cs" Link="Infrastructure\SampleAppHost.cs" />
+    <Compile Include="..\Bit.Butil.Tests.E2E\Infrastructure\BrowserLaunch.cs" Link="Infrastructure\BrowserLaunch.cs" />
+    <Compile Include="..\Bit.Butil.Tests.E2E\Infrastructure\RepoLayout.cs" Link="Infrastructure\RepoLayout.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,20 +5,20 @@
 // dependencies its lazy-loaded file inlines, which is what the browser fetches when an app under
 // lazy scripts first calls into that module.
 //
-// Minified with the same esbuild settings build.mjs uses for a Release build, so the figures here and
-// the shipped artifacts agree by construction. Compressed both ways because a static host serves
-// whichever the client accepts, and brotli - what every current browser asks for over HTTPS - is the
-// one the budgets are written against.
-//
-// Reads the chunks (one module each, no dependencies) and the manifest that build.mjs writes into the
-// project's intermediate folder, because those are the same inputs the publish-time bundler assembles
-// a trimmed app's bundle from.
+// Measured off the shipped shapes rather than re-derived from the manifest: wwwroot/modules/<name>.js
+// *is* a module's closure (the Manual harness checks it byte-for-byte against what the publish-time
+// bundler assembles), obj/butil-js/chunks/<name>.js is the module alone, and wwwroot/bit-butil.js is
+// the classic bundle. Minified with the very options build.mjs uses - imported from the project, not
+// restated here - so the figures and the artifacts agree by construction whichever way either changes.
+// Compressed both ways because a static host serves whichever the client accepts, and brotli - what
+// every current browser asks for over HTTPS - is the one the budgets are written against.
 //
 // Usage: node weigh-modules.mjs <path to Bit.Butil project folder>
 // Output: CSV on stdout - module,ownMin,closureMin,gzip,brotli,depCount - then a TOTAL line.
 
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join, basename } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { gzipSync, brotliCompressSync } from 'node:zlib';
 import { createRequire } from 'node:module';
 
@@ -36,52 +36,37 @@ try {
     fail(`esbuild is not installed under ${projectDir}. Build Bit.Butil once (or run npm install there) first.`);
 }
 
+const { MINIFY_OPTIONS } = await import(pathToFileURL(join(projectDir, 'minify-options.mjs')).href);
+
 const chunksDir = join(projectDir, 'obj', 'butil-js', 'chunks');
-const manifestPath = join(chunksDir, 'manifest.txt');
-if (!existsSync(manifestPath)) {
-    fail(`${manifestPath} is missing - build Bit.Butil first so build.mjs writes the chunks.`);
+const modulesDir = join(projectDir, 'wwwroot', 'modules');
+const bundlePath = join(projectDir, 'wwwroot', 'bit-butil.js');
+if (!existsSync(chunksDir) || !existsSync(modulesDir) || !existsSync(bundlePath)) {
+    fail(`${projectDir} has no build outputs - build Bit.Butil first so build.mjs writes the chunks, the lazy module files and the bundle.`);
 }
 
-// `name=dep1,dep2`, already in dependency-first order.
-const dependencies = new Map();
-const order = [];
-for (const line of readFileSync(manifestPath, 'utf8').split('\n')) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    const [name, rest] = trimmed.split('=');
-    dependencies.set(name, rest ? rest.split(',').filter(Boolean) : []);
-    order.push(name);
-}
+// Idempotent on an already-minified Release output, so the figure is the same whichever
+// configuration built the tree last.
+const minified = path => esbuild.transformSync(readFileSync(path, 'utf8'), MINIFY_OPTIONS).code;
 
-const minified = new Map();
-for (const name of order) {
-    const raw = readFileSync(join(chunksDir, `${name}.js`), 'utf8');
-    minified.set(name, esbuild.transformSync(raw, { minify: true, target: 'es2019', legalComments: 'none' }).code);
-}
+// Every chunk opens with a guard naming the namespace it registers, so counting the guards in a
+// lazy file is counting the modules it carries - the dependency count without walking anything.
+// Matched on the `BitButil&&window.BitButil.<key>)` pair the guard tests, which survives minification
+// (esbuild folds the early return into `if(!(...)){`) as well as the unminified `if(...)return;`.
+const guards = code => (code.match(/BitButil&&window\.BitButil\.[A-Za-z0-9_$]+\)/g) ?? []).length;
 
-// The closure laid out in the bundle's own order, which is the order the lazy module file and the
-// publish-time bundler both use - so these bytes are the bytes that ship.
-function closureOf(name) {
-    const reached = new Set();
-    const visit = current => {
-        if (reached.has(current)) return;
-        reached.add(current);
-        for (const dependency of dependencies.get(current) ?? []) visit(dependency);
-    };
-    visit(name);
-    return order.filter(module => reached.has(module));
-}
+const names = readdirSync(chunksDir).filter(file => file.endsWith('.js')).map(file => basename(file, '.js')).sort();
 
-const rows = order.map(name => {
-    const closure = closureOf(name);
-    const code = closure.map(module => minified.get(module)).join('');
+const rows = names.map(name => {
+    const own = minified(join(chunksDir, `${name}.js`));
+    const closure = minified(join(modulesDir, `${name}.js`));
     return {
         name,
-        own: Buffer.byteLength(minified.get(name)),
-        closure: Buffer.byteLength(code),
-        gzip: gzipSync(code, { level: 9 }).length,
-        brotli: brotliCompressSync(Buffer.from(code)).length,
-        deps: closure.length - 1,
+        own: Buffer.byteLength(own),
+        closure: Buffer.byteLength(closure),
+        gzip: gzipSync(closure, { level: 9 }).length,
+        brotli: brotliCompressSync(Buffer.from(closure)).length,
+        deps: Math.max(guards(closure) - 1, 0),
     };
 });
 
@@ -91,7 +76,7 @@ console.log('module,ownMin,closureMin,gzip,brotli,depCount');
 for (const row of rows) console.log(`${row.name},${row.own},${row.closure},${row.gzip},${row.brotli},${row.deps}`);
 
 // The classic single bundle: what an app that has not opted into lazy scripts downloads once.
-const everything = order.map(name => minified.get(name)).join('');
+const everything = minified(bundlePath);
 console.log(`TOTAL,${rows.length},${Buffer.byteLength(everything)},${gzipSync(everything, { level: 9 }).length},${brotliCompressSync(Buffer.from(everything)).length},0`);
 
 function fail(message) {

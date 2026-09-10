@@ -114,9 +114,9 @@
         => Measure("invoke-void", CallIterations, async () => await performance.Mark("butil-bench"));
 
     // The synchronous in-process path, which only exists under WebAssembly. Everywhere else
-    // FastInvoke throws rather than silently measuring the async path, so the runner only holds
-    // this one to a budget on the WebAssembly host.
-    private Task BenchInvokeFast() => Measure("invoke-fast", CallIterations, () =>
+    // FastInvoke throws, and the page says so on the line instead of timing a loop that does
+    // nothing - a number there would let the runner divide by the cost of a no-op and pass.
+    private Task BenchInvokeFast()
     {
         try
         {
@@ -124,10 +124,17 @@
         }
         catch (InvalidOperationException)
         {
-            // Not an in-process runtime; reported as a no-op rather than a failure.
+            Emit("invoke-fast|unsupported=1");
+            _status = "done:invoke-fast";
+            return Task.CompletedTask;
         }
-        return Task.CompletedTask;
-    });
+
+        return Measure("invoke-fast", CallIterations, () =>
+        {
+            js.FastInvoke<double>("BitButil.performance.now");
+            return Task.CompletedTask;
+        });
+    }
 
     private Task BenchElementRead()
         => Measure("element-read", ElementIterations, async () => await _target.GetTitle());

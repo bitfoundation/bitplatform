@@ -10,7 +10,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         unobserve
     };
 
-    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, options: any) {
+    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, options: any, minInterval: number) {
         if (!element || !('MutationObserver' in window)) return;
 
         const init: MutationObserverInit = {
@@ -31,7 +31,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // to see every mutation - a change log, an undo stack - leaves the interval at zero; one
         // that reacts to the current state of the tree (which is nearly all of them) does not.
         const send = (payload: any) => butil.utils.dispatch(dotNetRef, 'InvokeMutation', listenerId, payload);
-        const gated = butil.utils.throttle(options?.minInterval ?? 0, send, true);
+        const gated = butil.utils.throttle(minInterval, send, true);
 
         const observer = new MutationObserver(records => {
             const payload = records.map(r => ({

@@ -46,10 +46,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function dispose(ids?: string[]) {
-        // matchMedia handlers are unsubscribed individually by the C# side (it tracks the ids and
-        // calls unsubscribeMatchMedia before dispose), so we deliberately don't touch
-        // _mediaQueryHandlers here - wiping the shared map would clobber any other live instance.
-        //
         // _refs is shared across every Butil Window instance (i.e. across all Blazor Server
         // circuits and WASM apps in the module). Wiping it wholesale would orphan popups opened
         // by *other* live instances, silently turning their close(id) into a no-op. So we only

@@ -90,7 +90,7 @@ Bit.Butil.WebRtc|J|-|1|InvokeChannelClose,InvokeChannelMessage,InvokeChannelOpen
 Bit.Butil.WebSocket|J|-|1|InvokeWebSocketClose,InvokeWebSocketError,InvokeWebSocketMessage,InvokeWebSocketOpen|
 Bit.Butil.WebTransport|J|-|1|InvokeWebTransportClosed,InvokeWebTransportDatagram,InvokeWebTransportStreamData,InvokeWebTransportStreamEnd,InvokeWebTransportStreamOpened|
 Bit.Butil.WindowControlsOverlay|J|-|1|InvokeGeometryChange|
-Bit.Butil.WindowManagement|J|-|1|InvokeScreensChange|
+Bit.Butil.WindowManagementInterop|J|-|1|InvokeScreensChange|
 Bit.Butil.WindowMediaQueryInterop|J|-|1|InvokeMediaQueryChange|
 Bit.Butil.WindowMessaging|J|-|1|InvokeWindowMessage|
 Bit.Butil.Worker|J|-|1|InvokeWorkerError,InvokeWorkerMessage|

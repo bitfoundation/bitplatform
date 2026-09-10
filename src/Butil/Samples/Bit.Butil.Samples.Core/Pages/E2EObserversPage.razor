@@ -368,6 +368,10 @@
 
     private async Task ObserveResize()
     {
+        // The gated variant below shares this field; a run that clicks both must not leave the first
+        // observer firing into a stale closure, or watching alongside the second.
+        if (_resizeSub is not null) { await _resizeSub.DisposeAsync(); _resizeSub = null; }
+
         var tcs = new TaskCompletionSource<bool>();
         _resizeSub = await _target.ObserveResize(js, entries =>
         {
@@ -400,6 +404,8 @@
 
     private async Task ObserveResizeGated()
     {
+        if (_resizeSub is not null) { await _resizeSub.DisposeAsync(); _resizeSub = null; }
+
         var last = 0d;
         var settled = new TaskCompletionSource<bool>();
 

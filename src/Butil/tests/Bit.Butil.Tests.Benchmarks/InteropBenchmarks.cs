@@ -1,4 +1,5 @@
 using System.Globalization;
+using Bit.Butil.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 
 namespace ButilTests.Benchmarks;
@@ -23,18 +24,9 @@ internal static class InteropBenchmarks
     {
         using var playwright = await Playwright.CreateAsync();
 
-        var launchOptions = new BrowserTypeLaunchOptions
-        {
-            Headless = Environment.GetEnvironmentVariable("BUTIL_E2E_HEADED") != "1"
-        };
-
-        var channel = Environment.GetEnvironmentVariable("BUTIL_E2E_CHANNEL");
-        if (string.IsNullOrWhiteSpace(channel) is false) launchOptions.Channel = channel;
-
-        var executable = Environment.GetEnvironmentVariable("BUTIL_E2E_EXECUTABLE");
-        if (string.IsNullOrWhiteSpace(executable) is false) launchOptions.ExecutablePath = executable;
-
-        await using var browser = await playwright.Chromium.LaunchAsync(launchOptions);
+        // The E2E suite's launch helper, compiled into this project from its source (see the csproj),
+        // so the two suites read the same variables the same way instead of each keeping a copy.
+        await using var browser = await playwright.Chromium.LaunchAsync(BrowserLaunch.OptionsFromEnvironment());
         await using var context = await browser.NewContextAsync(new()
         {
             BaseURL = baseUrl,
@@ -125,13 +117,22 @@ internal static class InteropBenchmarks
         if (results.TryGetValue("dom-handle", out var domHandle))
             Report.Info("Dom query + read (2 round trips)", domHandle.PerOpUs, "us");
 
-        // The in-process fast path only exists under WebAssembly, and the page reports a no-op
-        // everywhere else. Asserted as a ratio rather than a ceiling: what makes it worth having is
-        // that it beats the async path on the same machine in the same run.
+        // The in-process fast path only exists under WebAssembly. Elsewhere the page says so rather
+        // than timing a no-op, and the ratio is not asserted: dividing by the cost of doing nothing
+        // would pass whatever the fast path did. Asserted as a ratio rather than a ceiling where it
+        // exists: what makes it worth having is that it beats the async path on the same machine in
+        // the same run.
         if (results.TryGetValue("invoke-fast", out var fast) && results.TryGetValue("invoke-value", out var value))
         {
-            Report.Info("fast (in-process) call", fast.PerOpUs, "us");
-            report.AtLeast("fast call speed-up over async", value.PerOpUs / Math.Max(fast.PerOpUs, 0.001), 1, "x");
+            if (fast.Extra.ContainsKey("unsupported"))
+            {
+                Report.Line("  fast (in-process) call: not available on this host - the fast path exists under WebAssembly only, so it was not measured");
+            }
+            else
+            {
+                Report.Info("fast (in-process) call", fast.PerOpUs, "us");
+                report.AtLeast("fast call speed-up over async", value.PerOpUs / Math.Max(fast.PerOpUs, 0.001), 1, "x");
+            }
         }
 
         foreach (var (name, measurement) in results.Where(entry => entry.Key.StartsWith("payload-", StringComparison.Ordinal)))
@@ -177,14 +178,23 @@ internal static class InteropBenchmarks
         report.AtLeast("mousemove traffic reduction", ungatedMoves / Math.Max(gatedMoves, 1d), Budgets.MinEventGateReduction, "x");
         report.AtLeast("mousemove deliveries while gated", gatedMoves, Budgets.MinGatedDeliveries, "");
 
-        var ungatedResizes = await BurstResizes(page, "#gate-resize-ungated", burst);
-        var gatedResizes = await BurstResizes(page, "#gate-resize-gated", burst);
+        const double resizeGateMs = 50;
+
+        var (ungatedResizes, ungatedFrameMs) = await BurstResizes(page, "#gate-resize-ungated", burst);
+        var (gatedResizes, _) = await BurstResizes(page, "#gate-resize-gated", burst);
 
         Report.Info("resize, ungated", ungatedResizes, "deliveries");
         Report.Info("resize, 50 ms gate", gatedResizes, "deliveries");
-        // Against the observer floor, not the event one: an ungated ResizeObserver already delivers
-        // at most once a frame, so the ratio here is capped by the gate divided by the frame time.
-        report.AtLeast("resize traffic reduction", ungatedResizes / Math.Max(gatedResizes, 1d), Budgets.MinObserverGateReduction, "x");
+        Report.Info("frame time during the burst", ungatedFrameMs, "ms");
+
+        // Not against a fixed floor: an ungated ResizeObserver already delivers at most once a
+        // frame, so the most a gate can remove is decided by how fast this browser paced its frames
+        // during this burst. The frame time measured on the ungated run says what that ceiling was,
+        // and the budget is a share of it - which holds on a 30 fps CI box and a 144 Hz desktop alike.
+        var ceiling = resizeGateMs / Math.Max(ungatedFrameMs, 1);
+        Report.Info("best reduction this frame rate allows", ceiling, "x");
+        report.AtLeast("resize traffic reduction (share of that ceiling)",
+            ungatedResizes / Math.Max(gatedResizes, 1d) / ceiling, Budgets.MinObserverGateEfficiency, "");
         report.AtLeast("resize deliveries while gated", gatedResizes, Budgets.MinGatedDeliveries, "");
     }
 
@@ -208,26 +218,36 @@ internal static class InteropBenchmarks
         return await Drain(page);
     }
 
-    private static async Task<int> BurstResizes(IPage page, string startButton, int count)
+    /// <summary>
+    /// Fires the burst and returns how many deliveries reached .NET, and the average frame time the
+    /// browser paced the burst at - which is what caps the gate's reduction (see the caller).
+    /// </summary>
+    private static async Task<(int Deliveries, double FrameMs)> BurstResizes(IPage page, string startButton, int count)
     {
         await page.Locator(startButton).ClickAsync();
         await Assertions.Expect(page.Locator("#status")).ToContainTextAsync("ready:", new() { Timeout = 30_000 });
 
+        var frames = Math.Min(count, 120);
+
         // A ResizeObserver delivers at most once a frame no matter how often the box changes within
         // one, so the resizes are spread across frames - otherwise the ungated half would report a
-        // handful of deliveries and there would be nothing for the gate to reduce.
-        await page.EvaluateAsync(@"count => new Promise(resolve => {
+        // handful of deliveries and there would be nothing for the gate to reduce. Bounded by a
+        // timeout as well as by the frame count: a headed window that is occluded or minimized has its
+        // requestAnimationFrame paused, and a promise waiting on it would hang the run instead of
+        // failing it.
+        var elapsedMs = await page.EvaluateAsync<double>(@"count => new Promise(resolve => {
             const target = document.getElementById('gate-target');
+            const started = performance.now();
             let i = 0;
             const step = () => {
                 target.style.width = (100 + (i % 60)) + 'px';
-                if (++i >= count) { target.style.width = '100px'; resolve(); return; }
+                if (++i >= count) { target.style.width = '100px'; resolve(performance.now() - started); return; }
                 requestAnimationFrame(step);
             };
             requestAnimationFrame(step);
-        })", Math.Min(count, 120));
+        })", frames).WaitAsync(TimeSpan.FromSeconds(30));
 
-        return await Drain(page);
+        return (await Drain(page), elapsedMs / frames);
     }
 
     /// <summary>

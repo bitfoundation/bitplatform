@@ -88,9 +88,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // first `minInterval` ms of the page would otherwise lose its leading-edge send, which is
         // the one behaviour a caller setting an interval still expects to get immediately.
         let lastSentAt = -Infinity;
+        // A non-zero timer is the one signal that a trailing send is queued; `pending` is only the
+        // payload it will carry, and may legitimately be undefined for payload-less callers.
         let timer: any = 0;
         let pending: any;
-        let hasPending = false;
 
         const gate: any = (e: any) => {
             const now = performance.now();
@@ -100,7 +101,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 // A leading send makes a queued trailing one redundant - it would deliver an older
                 // payload than the one going out now.
                 if (timer) { clearTimeout(timer); timer = 0; }
-                hasPending = false;
                 pending = undefined;
                 lastSentAt = now;
                 send(e);
@@ -112,14 +112,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // Only the newest suppressed payload is kept: a queue of them would deliver the whole
             // burst late, which is the flooding this exists to prevent.
             pending = e;
-            hasPending = true;
             if (timer) return;
 
             timer = setTimeout(() => {
                 timer = 0;
-                if (!hasPending) return;
                 const last = pending;
-                hasPending = false;
                 pending = undefined;
                 lastSentAt = performance.now();
                 send(last);
@@ -128,7 +125,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         gate.cancel = () => {
             if (timer) { clearTimeout(timer); timer = 0; }
-            hasPending = false;
             pending = undefined;
         };
 

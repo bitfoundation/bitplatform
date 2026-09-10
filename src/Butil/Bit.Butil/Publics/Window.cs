@@ -19,8 +19,6 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     private const string ElementName = "window";
     private const string DocumentElementName = "document";
 
-    internal const string MatchMediaMethodName = WindowMediaQueryInterop.MatchMediaMethodName;
-
     private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Id, string Element, string Event, bool UseCapture), byte> _listenerIds = new();
 
     // Popups opened by *this* instance, tracked so disposal can release only these refs from the
@@ -652,11 +650,14 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </remarks>
     public async Task<string?> Open(string? url = null, string? target = null, string? windowFeatures = null)
     {
-        var id = await js.Invoke<string?>("BitButil.windowRefs.open", Guid.NewGuid(), url, target, windowFeatures);
-        if (id is not null) _popupIds.TryAdd(id, 0);
+        // Armed before the await, so a Window disposed while the open is in flight still finds the
+        // delegate and releases the popup's entry from the module-global _refs map.
         // new object?[] { ids } wraps the array as a single JS argument; passing the string[] straight
         // through would spread each id as its own argument.
         _popupTeardown ??= ids => js.InvokeVoid("BitButil.windowRefs.dispose", new object?[] { ids });
+
+        var id = await js.Invoke<string?>("BitButil.windowRefs.open", Guid.NewGuid(), url, target, windowFeatures);
+        if (id is not null) _popupIds.TryAdd(id, 0);
         return id;
     }
     /// <summary>
@@ -674,13 +675,8 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// on <paramref name="windowFeatures"/>. Without it the opened page can reach back through
     /// <c>window.opener</c> and navigate this window (reverse tab-nabbing).
     /// </remarks>
-    public async Task<string?> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)
-    {
-        var id = await js.Invoke<string?>("BitButil.windowRefs.open", Guid.NewGuid(), url, target, windowFeatures?.ToString());
-        if (id is not null) _popupIds.TryAdd(id, 0);
-        _popupTeardown ??= ids => js.InvokeVoid("BitButil.windowRefs.dispose", new object?[] { ids });
-        return id;
-    }
+    public Task<string?> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)
+        => Open(url, target, windowFeatures?.ToString());
 
     /// <summary>
     /// Opens the Print Dialog to print the current document.
@@ -777,12 +773,13 @@ public class Window(IJSRuntime js) : IAsyncDisposable
             // JS wipe its shared _refs map) keeps popups from other live circuits/apps tracked, so
             // their Close(id) keeps working. Through Open()'s delegate, for the same reason the media
             // queries go through theirs - and it also skips the round-trip when nothing was opened,
-            // which is the common case.
-            if (_popupIds.IsEmpty is false && _popupTeardown is not null)
+            // which is the common case. Open() arms the delegate before it records an id, so a
+            // non-empty set implies the delegate is there.
+            if (_popupIds.IsEmpty is false)
             {
                 var popupIds = _popupIds.Keys.ToArray();
                 _popupIds.Clear();
-                await _popupTeardown(popupIds);
+                await _popupTeardown!(popupIds);
             }
 
             // Detach this instance's beforeunload handlers so they don't outlive the component.

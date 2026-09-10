@@ -346,10 +346,10 @@ await window.SubscribeEvent<ButilMouseEventArgs>(ButilEvents.MouseMove, OnMove,
 await _element.SubscribeEvent<ButilPointerEventArgs>(js, ButilEvents.PointerMove, OnMove,
     new ButilEventListenerOptions { Passive = true, MinInterval = TimeSpan.FromMilliseconds(50) });
 
-// observers - milliseconds on the options objects, which are serialized to the browser as-is
+// observers
 await _element.ObserveResize(js, OnResize, minInterval: TimeSpan.FromMilliseconds(50));
-await _element.ObserveIntersection(js, OnIntersect, new IntersectionObserverOptions { MinInterval = 200 });
-await _element.ObserveMutations(js, OnMutate, new MutationObserverOptions { Subtree = true, MinInterval = 250 });
+await _element.ObserveIntersection(js, OnIntersect, new IntersectionObserverOptions { MinInterval = TimeSpan.FromMilliseconds(200) });
+await _element.ObserveMutations(js, OnMutate, new MutationObserverOptions { Subtree = true, MinInterval = TimeSpan.FromMilliseconds(250) });
 
 // visual viewport
 await visualViewport.SubscribeScroll(OnScroll, minInterval: TimeSpan.FromMilliseconds(100));
@@ -495,6 +495,12 @@ that is neither a module nor a Bit.Butil class fails the build rather than being
 </ItemGroup>
 ```
 
+A module name keeps that one module; a class name keeps every module the class can call, which for a
+class whose JavaScript is split across a family (`Crypto`, `Css`, `Window`, `WebAudio`, `IndexedDb`) is
+several. Naming the family's root module alone - `crypto` - is allowed, since it is the finer control the
+split offers, and the publish says at normal verbosity what the class would have added, so an app that
+meant the class finds out in the build output rather than in a browser.
+
 With none of the three in play - no `PublishTrimmed`, `BitButilScriptScan` set to `None`, no
 `BitButilScriptModule` - there is nothing to trim against, and the full bundle is published.
 
@@ -534,7 +540,9 @@ live check that reads back which modules the app you are looking at actually dow
 **Lazy scripts.** No script tag at all: the first call into an API `import()`s that API's module
 (`_content/Bit.Butil/modules/clipboard.js` for `Clipboard`), so only the JavaScript for the APIs the
 app actually calls is ever downloaded - in every hosting model, trimmed or not. Each module file is
-self-contained and safe to load more than once. Set the property in every project that uses Butil
+self-contained and safe to load more than once: an API costs one request, never one per dependency,
+which is why two modules of the same family (`webAudio` and `webAudioNodes`, say) each carry the shared
+base again rather than fetching it separately. Set the property in every project that uses Butil
 (a Blazor Web App's server and client both) and drop the script tag from the host page:
 
 ```xml

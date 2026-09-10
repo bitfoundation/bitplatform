@@ -15,7 +15,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return { x: r.x, y: r.y, width: r.width, height: r.height };
     }
 
-    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, options: any) {
+    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, options: any, minInterval: number) {
         if (!element || !('IntersectionObserver' in window)) return;
 
         const init: IntersectionObserverInit = {
@@ -28,7 +28,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // that settles the element is always delivered even when it lands inside a suppressed
         // window - a viewport tracker that never hears "now visible" is worse than a slow one.
         const send = (payload: any) => butil.utils.dispatch(dotNetRef, 'InvokeIntersection', listenerId, payload);
-        const gated = butil.utils.throttle(options?.minInterval ?? 0, send, true);
+        const gated = butil.utils.throttle(minInterval, send, true);
 
         const observer = new IntersectionObserver(entries => {
             const payload = entries.map(e => ({
