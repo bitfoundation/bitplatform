@@ -1,0 +1,35 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Values on the bars" RazorCode="@barsRazorCode" CsharpCode="@barsCsharpCode" Id="datalabels-bars">
+    <div class="example-desc">
+        Turning on <code>Plugins.DataLabels</code> prints each value on the chart, which lets a small chart drop
+        its value axis entirely. <code>Anchor</code> picks the point on the element the label hangs off (tip,
+        middle or baseline) and <code>Align</code> decides whether it sits outside, on, or inside that point.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Sales()" Options="_outside" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Inside the bars" RazorCode="@insideRazorCode" CsharpCode="@insideCsharpCode" Id="datalabels-inside">
+    <div class="example-desc">
+        With <code>Anchor = End</code> and <code>Align = Start</code> the label moves inside the bar, and a
+        <code>BackgroundColor</code> turns it into a rounded pill that stays readable over any fill.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Sales()" Options="_inside" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Formatted labels on a line" RazorCode="@lineRazorCode" CsharpCode="@lineCsharpCode" Id="datalabels-line">
+    <div class="example-desc">
+        Line, scatter and radar point markers get labels too. <code>Formatter</code> shapes the text and
+        <code>DisplayFn</code> filters which elements get one &mdash; here only the values above 250, so the
+        chart stays legible.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Traffic()" Options="_line" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Percentages in a doughnut" RazorCode="@doughnutRazorCode" CsharpCode="@doughnutCsharpCode" Id="datalabels-doughnut">
+    <div class="example-desc">
+        On arcs the anchor moves the label between the inner and outer edge of the ring. <code>FormatterCtx</code>
+        receives the dataset and data index as well as the value, which is what makes a share-of-total label possible.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="BitChartSampleData.Traffic()" Options="_doughnut" /></div></div>
+</DemoExample>

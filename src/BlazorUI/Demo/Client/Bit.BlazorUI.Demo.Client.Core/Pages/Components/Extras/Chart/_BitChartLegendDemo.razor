@@ -1,7 +1,12 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Interactive legend controls" RazorCode="@liveRazorCode" CsharpCode="@liveCsharpCode" Id="legend-live">
-    <div class="example-desc">Position, alignment, a legend title, point-style markers and reversed order. Click any item to toggle its dataset &mdash; the chart recomputes instantly.</div>
+    <div class="example-desc">
+        The legend lives on any of the four sides and aligns to either end or the middle of that side;
+        <code>Reverse</code> flips the order to match a stack read top-down. Every entry is a toggle button:
+        clicking one hides its dataset and the axes re-scale around what is left. Change the controls to see each
+        option, and set <code>OnClickToggle</code> to false for a legend that only labels.
+    </div>
     <div class="controls">
         <label>
             Position
@@ -27,11 +32,27 @@
 </DemoExample>
 
 <DemoExample Title="Legend title" RazorCode="@titledRazorCode" CsharpCode="@titledCsharpCode" Id="legend-title">
-    <div class="example-desc">a heading above the items</div>
+    <div class="example-desc">
+        A legend <code>Title</code> names what the entries stand for, which matters once a page carries several
+        charts.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_titled" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Point-style markers" RazorCode="@pointStyleRazorCode" CsharpCode="@pointStyleCsharpCode" Id="legend-point-style" PreventRenderForMcpClient>
-    <div class="example-desc">usePointStyle uses each dataset's marker</div>
+    <div class="example-desc">
+        <code>UsePointStyle</code> draws each entry with its dataset's own marker instead of a color box, so the
+        legend matches what is actually on the plot. Every entry is a real button: reachable by Tab, toggled with
+        Enter or Space, and reporting its state through <code>aria-pressed</code>.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Capping a long legend" RazorCode="@maxHeightRazorCode" CsharpCode="@maxHeightCsharpCode" Id="legend-max-height">
+    <div class="example-desc">
+        With enough series the legend starts eating the plot. <code>MaxHeight</code> caps it in pixels and lets the
+        rest scroll, so the chart keeps its space and no entry is pushed off it. The entries stay real buttons, so
+        Tab still reaches the ones below the fold.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="ManySeries()" Options="_capped" /></div></div>
 </DemoExample>

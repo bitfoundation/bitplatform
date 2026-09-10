@@ -22,4 +22,81 @@
         margin-top: 2rem;
         justify-content: center;
     }
+
+    // The live controls above a sample (selects, checkboxes, sliders) share one row and wrap.
+    .controls {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        > label {
+            gap: 0.35rem;
+            display: inline-flex;
+            align-items: center;
+        }
+    }
+
+    // A row of KPI tiles, each holding one chrome-free sparkline.
+    .sparkline-tiles {
+        gap: 1rem;
+        display: grid;
+        margin-top: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(rem2(160px), 1fr));
+    }
+
+    .sparkline-tile {
+        padding: 0.75rem;
+        border-radius: 6px;
+        background: var(--bit-clr-bg-sec);
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+
+    .sparkline-caption {
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--bit-clr-fg-sec);
+    }
+
+    .sparkline-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .linked-readout {
+        padding: 0.5rem;
+        margin: 1rem 0;
+        text-align: center;
+        border-radius: 4px;
+        background: var(--bit-clr-bg-sec);
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+
+    .brush-readout {
+        margin: 0.5rem 0 0.25rem;
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--bit-clr-fg-sec);
+    }
+
+    .chart-snapshot {
+        max-width: 100%;
+        border-radius: 4px;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+
+    .csv-preview {
+        margin: 1rem 0;
+        padding: 0.75rem;
+        overflow: auto;
+        max-height: rem2(180px);
+        font-size: 0.8rem;
+        border-radius: 4px;
+        background: var(--bit-clr-bg-sec);
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
 }

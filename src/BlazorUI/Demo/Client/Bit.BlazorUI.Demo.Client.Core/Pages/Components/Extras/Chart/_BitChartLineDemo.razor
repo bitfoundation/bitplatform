@@ -6,31 +6,74 @@
 </DemoExample>
 
 <DemoExample Title="Straight lines" RazorCode="@straightRazorCode" CsharpCode="@straightCsharpCode" Id="line-straight" PreventRenderForMcpClient>
-    <div class="example-desc">Two series without smoothing (tension 0).</div>
+    <div class="example-desc">
+        Straight segments between the points (<code>Tension = 0</code>). Without smoothing the line states exactly
+        what was measured, which is the honest default for sparse or irregular data.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Stepped line" RazorCode="@steppedRazorCode" CsharpCode="@steppedCsharpCode" Id="line-stepped" PreventRenderForMcpClient>
-    <div class="example-desc">A stepped line interpolates between points as steps (<code>Stepped = BitChartSteppedLine.Before</code>).</div>
+    <div class="example-desc">
+        <code>Stepped</code> holds each value until the next one instead of sloping between them, which is how a
+        quantity that changes at a moment rather than continuously - a price tier, a headcount, a plan - should be
+        drawn. <code>Before</code> steps at the new point, <code>After</code> at the old one, and
+        <code>Middle</code> halfway between.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Stepped()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Dashed border with custom points" RazorCode="@dashedRazorCode" CsharpCode="@dashedCsharpCode" Id="line-dashed">
-    <div class="example-desc">A dashed border (<code>BorderDash</code>), star point markers and gap handling (<code>SpanGaps</code>) for a <code>null</code> value.</div>
+    <div class="example-desc">
+        <code>BorderDash</code> takes the dash pattern - the conventional way to mark a forecast apart from a
+        measurement - and <code>PointStyle</code> picks the marker from ten shapes. A <code>null</code> value means
+        "not measured": by default the line breaks there, and <code>SpanGaps</code> bridges it instead, as here.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Dashed()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Logarithmic Y axis" RazorCode="@logRazorCode" CsharpCode="@logCsharpCode" Id="line-log">
-    <div class="example-desc">A logarithmic value axis handles data that spans several orders of magnitude.</div>
+    <div class="example-desc">
+        A logarithmic value axis handles data spanning several orders of magnitude: growth that would be a flat
+        line at the bottom of a linear axis becomes a readable slope.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Log()" Options="_logOptions" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Per-segment styling" RazorCode="@segmentedRazorCode" CsharpCode="@segmentedCsharpCode" Id="line-segmented">
-    <div class="example-desc">Each line segment is styled from its own context: up = green, down = red, projection dashed.</div>
+    <div class="example-desc">
+        <code>Segment</code> styles each span between two points from its own endpoints rather than the dataset as a
+        whole, so one line can carry more than one meaning: rising green and falling red here, with the last stretch
+        dashed to mark it as a projection. The callbacks return null to fall back to the dataset's own styling.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Segmented()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Monotone smoothing" RazorCode="@monotoneRazorCode" CsharpCode="@monotoneCsharpCode" Id="line-monotone" PreventRenderForMcpClient>
-    <div class="example-desc">Monotone cubic interpolation smooths the line without overshooting the data points.</div>
+    <div class="example-desc">
+        A cardinal spline (plain <code>Tension</code>) can bulge past the values it connects, inventing a peak that
+        was never measured &mdash; visible in the grey line here. <code>CubicInterpolationMode.Monotone</code> smooths
+        the same points without ever overshooting them, which is the honest choice whenever the curve will be read
+        for its extremes.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Monotone()" Options="_legendBottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Sparkline" RazorCode="@sparklineRazorCode" CsharpCode="@sparklineCsharpCode" Id="line-sparkline">
+    <div class="example-desc">
+        <code>Sparkline</code> drops every piece of chrome &mdash; axes, grid, tick labels, legend, title &mdash;
+        so the series alone fills the box, which is what makes a trend readable at the size of a KPI tile or a table
+        cell. It is a presentation switch only: the data is untouched, so hovering, keyboard navigation and the
+        screen-reader table still describe the whole series. Any chart type honours it, bars included.
+    </div>
+    <div class="sparkline-tiles">
+        @foreach (var tile in _tiles)
+        {
+            <div class="sparkline-tile">
+                <div class="sparkline-caption">@tile.Caption</div>
+                <div class="sparkline-value">@tile.Value</div>
+                <BitChart RespectReducedMotion="false" Type="tile.Type" Data="tile.Data" Options="_sparkline" Height="48px" />
+            </div>
+        }
+    </div>
 </DemoExample>

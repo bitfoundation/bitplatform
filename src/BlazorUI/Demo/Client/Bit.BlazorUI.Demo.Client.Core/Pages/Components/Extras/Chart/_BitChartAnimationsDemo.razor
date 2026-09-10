@@ -1,7 +1,12 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Bars" RazorCode="@barsRazorCode" CsharpCode="@barsCsharpCode" Id="animations-bars">
-    <div class="example-desc">Entry and update animations are driven by CSS in the browser: a staggered rise plus smooth value transitions. Tweak the controls below.</div>
+    <div class="example-desc">
+        Entry animations are pure CSS, so they cost no JavaScript and replay whenever the data changes - the
+        renderer keys the scene on the values, so resizing, zooming and panning stay still. Duration and easing
+        map straight to <code>animation-duration</code> and <code>animation-timing-function</code>, and a positive
+        <code>DelayBetween</code> staggers the bars so they grow out of the axis one after another.
+    </div>
     <div class="controls" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:1rem">
         <label>
             Duration
@@ -28,7 +33,11 @@
 </DemoExample>
 
 <DemoExample Title="Line draw-on" RazorCode="@lineDrawRazorCode" CsharpCode="@lineDrawCsharpCode" Id="animations-line-draw">
-    <div class="example-desc">The line path animates in (draw-on) and the points follow. These controls are independent from the Bars sample above.</div>
+    <div class="example-desc">
+        With <code>Progressive</code> the stroke draws itself on from left to right and each marker pops in as the
+        line reaches it, which reads like the series being gathered over time. Dashed lines fade in instead, since
+        the dash pattern is already using the stroke dash array.
+    </div>
     <div class="controls" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:1rem">
         <label>
             Duration

@@ -1,11 +1,17 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Scatter" RazorCode="@scatterRazorCode" CsharpCode="@scatterCsharpCode" Id="scatter-scatter">
-    <div class="example-desc">two point clouds on a linear x axis</div>
+    <div class="example-desc">
+        A scatter chart places each point at its own <code>(x, y)</code>, so both axes are linear and the data
+        needs no shared labels. It is the shape for showing correlation between two measures.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="@ScatterData()" Options="_bottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Bubble" RazorCode="@bubbleRazorCode" CsharpCode="@bubbleCsharpCode" Id="scatter-bubble">
-    <div class="example-desc">radius = magnitude</div>
+    <div class="example-desc">
+        A bubble chart adds a third dimension: the <code>R</code> of each point becomes its radius, so position
+        carries two measures and size a third.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bubble" Data="@BubbleData()" Options="_bottom" /></div></div>
 </DemoExample>

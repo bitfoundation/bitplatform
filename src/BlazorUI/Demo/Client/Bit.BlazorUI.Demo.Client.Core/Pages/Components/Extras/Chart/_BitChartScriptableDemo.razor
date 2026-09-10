@@ -1,7 +1,12 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Color by sign" RazorCode="@bySignRazorCode" CsharpCode="@bySignCsharpCode" Id="scriptable-by-sign">
-    <div class="example-desc">Colors, point radius and point styles can be computed per data element from a context. Here bars turn red when the value is negative.</div>
+    <div class="example-desc">
+        A scriptable option is a function of a <code>BitChartScriptableContext</code> evaluated per element, so
+        color, radius and marker can follow the data rather than the series &mdash; here bars turn red below zero.
+        The context also carries <code>Active</code>, which is set while the renderer builds each element's hover
+        appearance, so the hovered state can be styled from the same function.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BySign()" Options="_noLegend" /></div></div>
 </DemoExample>
 

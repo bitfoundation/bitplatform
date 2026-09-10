@@ -1,11 +1,18 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
 <DemoExample Title="Daily series (auto unit)" RazorCode="@dailyRazorCode" CsharpCode="@dailyCsharpCode" Id="time-daily">
-    <div class="example-desc">60 days &rarr; weekly ticks</div>
+    <div class="example-desc">
+        A time scale reads each point's x value as a date (an OLE Automation date, from
+        <code>DateTime.ToOADate</code>) and picks the tick unit from the span &mdash; weekly ticks across these two
+        months. Unevenly spaced samples land at their true position, which a category axis cannot do.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_time" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Forced month unit + custom format" RazorCode="@monthRazorCode" CsharpCode="@monthCsharpCode" Id="time-month">
-    <div class="example-desc">BitChartTimeUnit.Month, custom formatter</div>
+    <div class="example-desc">
+        <code>TimeUnit</code> forces a unit when the automatic choice is too fine or too coarse, and
+        <code>TimeFormat</code> takes over the label text entirely.
+    </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_month" /></div></div>
 </DemoExample>

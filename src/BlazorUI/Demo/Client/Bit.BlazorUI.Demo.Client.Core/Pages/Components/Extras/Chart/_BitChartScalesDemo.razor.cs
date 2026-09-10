@@ -130,4 +130,50 @@ private readonly BitChartOptions _grace = new()
     Scales = { [""y""] = new BitChartScaleOptions { Id = ""y"", Type = BitChartScaleType.Linear, Grace = 0.1 } }
 };
 // Series(): Jan..Jul = 35/52/48/70/60/78/66";
+
+    private readonly BitChartOptions _center = new()
+    {
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
+        Scales =
+        {
+            ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center },
+            ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center }
+        }
+    };
+
+    private BitChartData Quadrants()
+    {
+        var rnd = new Random(11);
+        var pts = new List<BitChartDataPoint>();
+        for (int i = 0; i < 40; i++)
+            pts.Add(new BitChartDataPoint(Math.Round(rnd.NextDouble() * 20 - 10, 2), Math.Round(rnd.NextDouble() * 20 - 10, 2)));
+        return new BitChartData
+        {
+            Datasets = { new BitChartDataset { Label = "Samples", Points = pts, BackgroundColor = "#9966ff", PointRadius = 5 } }
+        };
+    }
+
+    private readonly string centerRazorCode = @"<BitChart Type=""BitChartType.Scatter"" Data=""Quadrants()"" Options=""_center"" />";
+    private readonly string centerCsharpCode = @"
+private readonly BitChartOptions _center = new()
+{
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
+    Scales =
+    {
+        [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center },
+        [""y""] = new BitChartScaleOptions { Id = ""y"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center }
+    }
+};
+
+private BitChartData Quadrants()
+{
+    var rnd = new Random(11);
+    var pts = new List<BitChartDataPoint>();
+    for (int i = 0; i < 40; i++)
+        pts.Add(new BitChartDataPoint(Math.Round(rnd.NextDouble() * 20 - 10, 2), Math.Round(rnd.NextDouble() * 20 - 10, 2)));
+    return new BitChartData
+    {
+        Datasets = { new BitChartDataset { Label = ""Samples"", Points = pts, BackgroundColor = ""#9966ff"", PointRadius = 5 } }
+    };
+}";
 }

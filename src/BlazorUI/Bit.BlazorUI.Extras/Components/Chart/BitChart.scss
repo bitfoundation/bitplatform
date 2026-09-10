@@ -1,0 +1,353 @@
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+.bit-cht {
+    --bit-cht-dur: 600ms;
+    --bit-cht-ease: ease-out;
+    --bit-cht-focus: #{$clr-pri};
+
+    display: flex;
+    box-sizing: border-box;
+    flex-direction: column;
+    font-family: #{$tg-font-family};
+}
+
+.bit-cht-ttl,
+.bit-cht-sub {
+    width: 100%;
+    display: flex;
+    text-align: center;
+}
+
+// A title on the left or right runs down the side of the plot instead of across the top.
+.bit-cht-ttl-v {
+    width: auto;
+    align-items: center;
+    writing-mode: vertical-rl;
+
+    &:first-child {
+        rotate: 180deg;
+    }
+}
+
+.bit-cht-mid {
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.bit-cht-plot {
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+}
+
+.bit-cht-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        border-radius: 4px;
+        outline-offset: 2px;
+        outline: 2px solid var(--bit-cht-focus);
+    }
+}
+
+// Only the data elements and the hit bands are interactive. Without this, the line drawn over a
+// band would take the pointer, and the tooltip would blink out exactly where the data is.
+.bit-cht-hover,
+.bit-cht-fg,
+.bit-cht-bg,
+.bit-cht-series {
+    pointer-events: none;
+}
+
+// The cursor is set inline, from whether the chart has a click handler at all.
+.bit-cht-band {
+    outline: none;
+}
+
+// ---- legend ----
+
+.bit-cht-lgd {
+    display: flex;
+    padding: 6px 8px;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+}
+
+.bit-cht-lgd-h {
+    flex-direction: row;
+}
+
+.bit-cht-lgd-v {
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+}
+
+.bit-cht-lgd-itm {
+    gap: 6px;
+    border: none;
+    padding: 2px 4px;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    display: inline-flex;
+    background: none;
+    line-height: 1.4;
+    user-select: none;
+    align-items: center;
+    border-radius: #{$shp-radius-sm};
+
+    &:focus-visible {
+        outline-offset: 1px;
+        outline: 2px solid var(--bit-cht-focus);
+    }
+
+    &.bit-cht-hdn {
+        opacity: 0.45;
+        text-decoration: line-through;
+    }
+}
+
+.bit-cht-lgd-box {
+    flex: 0 0 auto;
+    display: inline-block;
+    border: 2px solid;
+    border-radius: 2px;
+}
+
+.bit-cht-lgd-mrk {
+    flex: 0 0 auto;
+    overflow: visible;
+}
+
+.bit-cht-lgd-ttl {
+    width: 100%;
+    text-align: center;
+    font-weight: #{$tg-fw-bold};
+}
+
+// ---- tooltip ----
+
+.bit-cht-tt {
+    top: 0;
+    left: 0;
+    z-index: 10;
+    position: absolute;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: #{$box-shadow-popup};
+    transition: left .08s linear, top .08s linear;
+}
+
+.bit-cht-tt-ttl {
+    margin-bottom: 3px;
+}
+
+.bit-cht-tt-ftr {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.bit-cht-tt-custom {
+    padding: 8px 10px;
+    color: #{$clr-fg-pri};
+    background: #{$clr-bg-pri};
+    border: 1px solid #{$clr-brd-sec};
+    border-radius: #{$shp-radius-popup};
+    font-size: #{$tg-fs-xs};
+}
+
+.bit-cht-tt-itm {
+    gap: 6px;
+    display: flex;
+    line-height: 1.5;
+    align-items: center;
+}
+
+.bit-cht-tt-swt {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 auto;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+.bit-cht-tt-swt-svg {
+    flex: 0 0 auto;
+    overflow: visible;
+}
+
+// The caret is a rotated square peeking out of the tooltip box.
+.bit-cht-tt-caret {
+    width: 0;
+    height: 0;
+    position: absolute;
+    border: 6px solid transparent;
+}
+
+// ---- no data / overlay ----
+
+.bit-cht-nodata {
+    inset: 0;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    color: #{$clr-fg-sec};
+    font-size: #{$tg-fs-sm};
+}
+
+.bit-cht-sr {
+    top: auto;
+    left: auto;
+    width: 1px;
+    border: 0;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    position: absolute;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0, 0, 0, 0);
+}
+
+// ---- animations ----
+
+@keyframes bit-cht-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scaleY(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes bit-cht-grow {
+    from {
+        opacity: 0;
+        transform: scale(0.82);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes bit-cht-draw {
+    from {
+        stroke-dashoffset: 1;
+    }
+
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes bit-cht-fade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bit-cht-scale-y {
+    from {
+        transform: scaleY(0);
+    }
+
+    to {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes bit-cht-scale-x {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+.bit-cht-anim {
+    animation-fill-mode: both;
+    animation-duration: var(--bit-cht-dur, 600ms);
+    animation-timing-function: var(--bit-cht-ease, ease-out);
+}
+
+.bit-cht-anim-rise {
+    transform-box: view-box;
+    transform-origin: center bottom;
+    animation-name: bit-cht-rise;
+}
+
+.bit-cht-anim-grow {
+    transform-box: view-box;
+    transform-origin: center;
+    animation-name: bit-cht-grow;
+}
+
+.bit-cht-anim-bars-v {
+    transform-box: view-box;
+    transform-origin: center bottom;
+    animation-name: bit-cht-scale-y;
+}
+
+.bit-cht-anim-bars-h {
+    transform-box: view-box;
+    transform-origin: left center;
+    animation-name: bit-cht-scale-x;
+}
+
+.bit-cht-el-anim {
+    transform-box: fill-box;
+    animation-fill-mode: both;
+    animation-duration: var(--bit-cht-dur, 600ms);
+    animation-timing-function: var(--bit-cht-ease, ease-out);
+}
+
+.bit-cht-el-rise {
+    transform-origin: center bottom;
+    animation-name: bit-cht-rise;
+}
+
+.bit-cht-draw {
+    stroke-dasharray: 1;
+    animation: bit-cht-draw var(--bit-cht-dur, 600ms) var(--bit-cht-ease, ease-out) both;
+}
+
+.bit-cht-fade {
+    animation: bit-cht-fade var(--bit-cht-dur, 600ms) var(--bit-cht-ease, ease-out) both;
+}
+
+.bit-cht-focus-ring {
+    stroke-dasharray: 3 2;
+}
+
+// Opt-in (RespectReducedMotion) reduced-motion overrides.
+@media (prefers-reduced-motion: reduce) {
+    .bit-cht-rm {
+        :is(.bit-cht-anim, .bit-cht-el-anim, .bit-cht-draw, .bit-cht-fade) {
+            animation: none;
+        }
+    }
+}

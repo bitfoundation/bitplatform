@@ -2,11 +2,12 @@
 
 <PageOutlet Url="components/chart"
             Title="Chart"
-            Description="Native Blazor charting component rendered entirely with SVG (no JavaScript charting engine, no canvas), supporting line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts." />
+            Description="Native Blazor charting component rendered entirely with SVG - no JavaScript charting engine and no canvas - covering line, bar, area, pie, doughnut, polar area, radar, scatter, bubble, sparkline and mixed charts with scales, legends, tooltips, annotations, trendlines, animations, zoom, live updates, export and full keyboard and screen-reader support." />
 
 <DemoPage Name="Chart"
-          Description="A native Blazor charting component rendered entirely with SVG. The API closely mirrors Chart.js: configure it with a BitChartType plus BitChartData and BitChartOptions (or a single BitChartConfig). It supports line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts, with scales, legends, tooltips, annotations, animations, scriptable options and zoom/pan."
+          Description="A native Blazor charting component: the whole scene - scales, layout, geometry, hit testing - is computed in C# and rendered as plain SVG, so charts work in prerendering and static SSR, need no canvas, and stay crisp at any size. The API mirrors Chart.js: give it a BitChartType plus BitChartData and BitChartOptions (or one BitChartConfig). It draws line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts - or a chrome-free sparkline - with multiple axes, stacking, time and log scales, tooltips, data labels, annotations, trendlines, scriptable per-element styling, entry animations and zoom/pan. Refresh() and the visibility API drive it from code for live feeds. Colors follow the bit theme tokens, so every preset and both schemes re-skin it for free; every chart is navigable by keyboard and by touch and ships a visually hidden data table for screen readers, and can hand itself over as SVG, PNG, a data URL or CSV."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           GitHubExtrasUrl="Chart/BitChart.razor"
           GitHubDemoUrl="Extras/Chart/BitChartDemo.razor">
@@ -22,60 +23,90 @@
             nuget package, as described in the Optional steps of the
             <BitLink Href="/getting-started">Getting started</BitLink> page.
         </BitText>
+        <BitText>
+            The chart's styles ship in the Extras stylesheet
+            (<code>_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css</code>), so make sure it is linked
+            alongside the core stylesheet.
+        </BitText>
     </NotesTemplate>
     <Examples>
-        <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient" ForceAnimation>
-            <BitPivotItem HeaderText="Line" Key="line">
-                <_BitChartLineDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Bar" Key="bar">
-                <_BitChartBarDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Area" Key="area">
-                <_BitChartAreaDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Pie & Doughnut" Key="pie">
-                <_BitChartPieDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Polar area" Key="polar">
-                <_BitChartPolarDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Radar" Key="radar">
-                <_BitChartRadarDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Scatter & Bubble" Key="scatter">
-                <_BitChartScatterDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Mixed" Key="mixed">
-                <_BitChartMixedDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Multi-axis" Key="multiaxis">
-                <_BitChartMultiAxisDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Scales" Key="scales">
-                <_BitChartScalesDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Time" Key="time">
-                <_BitChartTimeDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Legend" Key="legend">
-                <_BitChartLegendDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Tooltips" Key="tooltips">
-                <_BitChartTooltipsDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Annotations" Key="annotations">
-                <_BitChartAnnotationsDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Animations" Key="animations">
-                <_BitChartAnimationsDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Scriptable" Key="scriptable">
-                <_BitChartScriptableDemo />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="Zoom & Pan" Key="zoom">
-                <_BitChartZoomDemo />
-            </BitPivotItem>
-        </BitPivot>
+        @* A plain element the scoped stylesheet can attach to: everything below is components, and a
+           ::deep rule needs an anchor carrying this page's scope attribute. *@
+        <div class="chart-doc">
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient" ForceAnimation>
+                <BitPivotItem HeaderText="Line" Key="line">
+                    <_BitChartLineDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Bar" Key="bar">
+                    <_BitChartBarDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Area" Key="area">
+                    <_BitChartAreaDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Pie & Doughnut" Key="pie">
+                    <_BitChartPieDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Polar area" Key="polar">
+                    <_BitChartPolarDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Radar" Key="radar">
+                    <_BitChartRadarDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Scatter & Bubble" Key="scatter">
+                    <_BitChartScatterDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Mixed" Key="mixed">
+                    <_BitChartMixedDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Multi-axis" Key="multiaxis">
+                    <_BitChartMultiAxisDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Scales" Key="scales">
+                    <_BitChartScalesDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Time" Key="time">
+                    <_BitChartTimeDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Titles" Key="titles">
+                    <_BitChartTitlesDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Legend" Key="legend">
+                    <_BitChartLegendDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Tooltips" Key="tooltips">
+                    <_BitChartTooltipsDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Interaction" Key="interaction">
+                    <_BitChartInteractionDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Data labels" Key="datalabels">
+                    <_BitChartDataLabelsDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Annotations" Key="annotations">
+                    <_BitChartAnnotationsDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Trendlines" Key="trendlines">
+                    <_BitChartTrendlinesDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Animations" Key="animations">
+                    <_BitChartAnimationsDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Scriptable" Key="scriptable">
+                    <_BitChartScriptableDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Zoom & Pan" Key="zoom">
+                    <_BitChartZoomDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Live data" Key="live">
+                    <_BitChartLiveDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Localization" Key="localization">
+                    <_BitChartLocalizationDemo />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Export" Key="export">
+                    <_BitChartExportDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </div>
     </Examples>
 </DemoPage>

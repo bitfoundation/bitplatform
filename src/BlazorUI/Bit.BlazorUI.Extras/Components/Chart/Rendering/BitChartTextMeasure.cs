@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -39,12 +41,44 @@ public static class BitChartTextMeasure
         if (string.IsNullOrEmpty(text)) return 0;
         double em = 0;
         foreach (char c in text)
-            em += Widths.TryGetValue(c, out var w) ? w : Default;
+            em += Advance(c);
         // Bold text is a touch wider.
         bool bold = weight is "bold" or "600" or "700" or "800" or "900";
         if (bold) em *= 1.06;
         return em * fontSize;
     }
+
+    /// <summary>
+    /// How wide one character is, as a fraction of the font size. The table above covers Latin; beyond
+    /// it, a CJK, Kana or Hangul glyph is a full em rather than the Latin average - assuming otherwise
+    /// under-measures a Japanese axis label by nearly half, and the axis then reserves too little space
+    /// and the labels collide. A combining mark sits on the glyph before it and adds nothing.
+    /// </summary>
+    private static double Advance(char c)
+    {
+        if (Widths.TryGetValue(c, out var w)) return w;
+        if (IsFullWidth(c)) return 1;
+        return CharUnicodeInfo.GetUnicodeCategory(c) switch
+        {
+            UnicodeCategory.NonSpacingMark or UnicodeCategory.EnclosingMark => 0,
+            UnicodeCategory.Format or UnicodeCategory.Control => 0,
+            _ => Default
+        };
+    }
+
+    /// <summary>The blocks whose glyphs are drawn on a full-width em square.</summary>
+    private static bool IsFullWidth(char c) =>
+        c is >= 'ᄀ' and <= 'ᅟ'      // Hangul Jamo
+          or >= '⺀' and <= '〾'      // CJK radicals, Kangxi, CJK symbols and punctuation
+          or >= 'ぁ' and <= '㏿'      // Kana, Bopomofo, Hangul compatibility Jamo, CJK compatibility
+          or >= '㐀' and <= '䶿'      // CJK extension A
+          or >= '一' and <= '鿿'      // CJK unified ideographs
+          or >= 'ꀀ' and <= '꓏'      // Yi
+          or >= '가' and <= '힣'      // Hangul syllables
+          or >= '豈' and <= '﫿'      // CJK compatibility ideographs
+          or >= '︰' and <= '﹯'      // CJK compatibility forms, small form variants
+          or >= '＀' and <= '｠'      // Full-width forms
+          or >= '￠' and <= '￦';     // Full-width signs
 
     /// <summary>Width of the widest line in a multi-line string.</summary>
     public static double MultilineWidth(string? text, double fontSize, string weight = "normal")

@@ -124,4 +124,87 @@ private readonly BitChartOptions _centerText = new()
     }
 };
 // Traffic(): Direct/Organic/Referral/Social/Email = 300/500/180/240/120";
+
+    private readonly BitChartOptions _exploded = new()
+    {
+        CutoutPercentage = 45,
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+    };
+
+    private BitChartData Exploded() => new()
+    {
+        Labels = { "Direct", "Organic", "Referral", "Social", "Email" },
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Label = "Sessions",
+                Data = BitChartSampleData.V(300, 500, 180, 240, 120),
+                SpacingArc = 6,
+                Offset = 4,
+                HoverOffset = 14,
+                HoverBackgroundColor = "#1f2733"
+            }
+        }
+    };
+
+    private readonly string spacingRazorCode = @"<BitChart Type=""BitChartType.Doughnut"" Data=""Exploded()"" Options=""_exploded"" />";
+    private readonly string spacingCsharpCode = @"
+private readonly BitChartOptions _exploded = new()
+{
+    CutoutPercentage = 45,
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+};
+
+private BitChartData Exploded() => new()
+{
+    Labels = { ""Direct"", ""Organic"", ""Referral"", ""Social"", ""Email"" },
+    Datasets =
+    {
+        new BitChartDataset
+        {
+            Label = ""Sessions"",
+            Data = new() { 300, 500, 180, 240, 120 },
+            SpacingArc = 6,       // gap between neighbouring slices
+            Offset = 4,           // every slice sits slightly off center
+            HoverOffset = 14,     // the hovered one pops out further
+            HoverBackgroundColor = ""#1f2733""
+        }
+    }
+};";
+
+    private readonly BitChartOptions _rounded = new()
+    {
+        CutoutPercentage = 35,
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+    };
+
+    private BitChartData Weighted() => new()
+    {
+        Labels = { "Mobile", "Desktop", "Tablet" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "2026", Data = BitChartSampleData.V(62, 28, 10), BorderRadius = 8, SpacingArc = 4, Weight = 2 },
+            new BitChartDataset { Label = "2025", Data = BitChartSampleData.V(55, 35, 10), BorderRadius = 8, SpacingArc = 4, Weight = 1 }
+        }
+    };
+
+    private readonly string roundedRingsRazorCode = @"<BitChart Type=""BitChartType.Doughnut"" Data=""Weighted()"" Options=""_rounded"" />";
+    private readonly string roundedRingsCsharpCode = @"
+private readonly BitChartOptions _rounded = new()
+{
+    CutoutPercentage = 35,
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Right } }
+};
+
+private BitChartData Weighted() => new()
+{
+    Labels = { ""Mobile"", ""Desktop"", ""Tablet"" },
+    Datasets =
+    {
+        // Weight 2 vs 1: the outer ring gets two thirds of the available radius.
+        new BitChartDataset { Label = ""2026"", Data = new() { 62, 28, 10 }, BorderRadius = 8, SpacingArc = 4, Weight = 2 },
+        new BitChartDataset { Label = ""2025"", Data = new() { 55, 35, 10 }, BorderRadius = 8, SpacingArc = 4, Weight = 1 }
+    }
+};";
 }

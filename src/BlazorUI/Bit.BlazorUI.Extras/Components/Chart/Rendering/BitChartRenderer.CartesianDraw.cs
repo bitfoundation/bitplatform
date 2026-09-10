@@ -4,27 +4,53 @@ namespace Bit.BlazorUI;
 public sealed partial class BitChartRenderer
 {
     private void DrawGrid(BitChartScene scene, BitChartArea plot, BitChartAxisScale indexScale,
-        Dictionary<string, BitChartAxisScale> valueScales, List<BitChartAxisScale> leftAxes, List<BitChartAxisScale> rightAxes)
+        List<BitChartAxisScale> leftAxes, List<BitChartAxisScale> rightAxes, List<BitChartAxisScale> centerAxes)
     {
         bool firstValueGridDrawn = false;
 
-        // Value axes.
-        double leftX = plot.Left;
+        // Value axes. In a vertical chart they run down the sides and stack outwards by their width;
+        // with a vertical index axis (horizontal bars) they run along the bottom/top and stack by height.
+        double near = IsVertical ? plot.Left : plot.Bottom;
         foreach (var axis in leftAxes)
         {
-            DrawValueAxis(scene, plot, axis, leftX, isRight: false, drawArea: !firstValueGridDrawn);
+            DrawValueAxis(scene, plot, axis, near, isRight: false, drawArea: !firstValueGridDrawn);
             firstValueGridDrawn = true;
-            leftX -= ReserveValueAxis(axis);
+            near += IsVertical ? -ReserveAxisWidth(axis) : ReserveAxisHeight(axis);
         }
-        double rightX = plot.Right;
+        double far = IsVertical ? plot.Right : plot.Top;
         foreach (var axis in rightAxes)
         {
-            DrawValueAxis(scene, plot, axis, rightX, isRight: true, drawArea: false);
-            rightX += ReserveValueAxis(axis);
+            DrawValueAxis(scene, plot, axis, far, isRight: true, drawArea: false);
+            far += IsVertical ? ReserveAxisWidth(axis) : -ReserveAxisHeight(axis);
         }
 
-        // Index axis.
-        DrawIndexAxis(scene, plot, indexScale);
+        // Axes pinned to the other axis' zero line, drawn inside the plot.
+        foreach (var axis in centerAxes)
+            DrawValueAxis(scene, plot, axis, ZeroLineAlong(indexScale, plot), isRight: false, drawArea: false);
+
+        // Index axis. It too can sit on the value axis' zero line rather than along the edge.
+        double indexBaseline = PositionOf(indexScale.Options, IsVertical ? BitChartPosition.Bottom : BitChartPosition.Left) == BitChartPosition.Center
+            ? ZeroLineAcross(leftAxes.Concat(rightAxes).Concat(centerAxes).FirstOrDefault(), plot)
+            : IsVertical ? plot.Bottom : plot.Left;
+        DrawIndexAxis(scene, plot, indexScale, indexBaseline);
+    }
+
+    /// <summary>The pixel along the index axis where its value is zero, clamped into the plot.</summary>
+    private double ZeroLineAlong(BitChartAxisScale indexScale, BitChartArea plot)
+    {
+        double p = indexScale.Type == BitChartScaleType.Category
+            ? indexScale.PixelForIndex(0, HasBars())
+            : indexScale.PixelFor(0);
+        return IsVertical ? Math.Clamp(p, plot.Left, plot.Right) : Math.Clamp(p, plot.Top, plot.Bottom);
+    }
+
+    /// <summary>The pixel across the plot where the given value axis reads zero, clamped into the plot.</summary>
+    private double ZeroLineAcross(BitChartAxisScale? valueScale, BitChartArea plot)
+    {
+        double fallback = IsVertical ? plot.Bottom : plot.Left;
+        if (valueScale is null) return fallback;
+        double p = valueScale.PixelFor(0);
+        return IsVertical ? Math.Clamp(p, plot.Top, plot.Bottom) : Math.Clamp(p, plot.Left, plot.Right);
     }
 
     private void DrawValueAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double axisPos, bool isRight, bool drawArea)
@@ -55,18 +81,24 @@ public sealed partial class BitChartRenderer
                 if (g.DrawTicks)
                     scene.Background.Add(new BitChartSvgLine
                     {
-                        X1 = isRight ? axisPos : axisPos, Y1 = y,
+                        X1 = axisPos, Y1 = y,
                         X2 = isRight ? axisPos + g.TickLength : axisPos - g.TickLength, Y2 = y,
                         Stroke = g.TickColor, StrokeWidth = g.LineWidth
                     });
                 if (tk.Display)
+                {
+                    // Mirrored labels sit inside the plot area, on the other side of the axis line.
+                    double lx = tk.Mirror
+                        ? isRight ? axisPos - g.TickLength - tk.Padding : axisPos + g.TickLength + tk.Padding
+                        : isRight ? axisPos + g.TickLength + tk.Padding : axisPos - g.TickLength - tk.Padding;
+                    bool anchorStart = tk.Mirror ? !isRight : isRight;
                     scene.Background.Add(new BitChartSvgText
                     {
-                        X = isRight ? axisPos + g.TickLength + tk.Padding : axisPos - g.TickLength - tk.Padding,
-                        Y = y, Text = tick.Label, Fill = tk.Color,
+                        X = lx, Y = y + TickLabelOffset(tk), Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = isRight ? "start" : "end", Baseline = "central"
+                        Anchor = anchorStart ? "start" : "end", Baseline = "central"
                     });
+                }
             }
             else
             {
@@ -85,19 +117,20 @@ public sealed partial class BitChartRenderer
                         Stroke = Math.Abs(tick.Value) < 1e-9 ? (g.ZeroLineColor ?? g.Color) : g.Color,
                         StrokeWidth = g.LineWidth, Dash = BitChartSvg.Dash(g.BorderDash)
                     });
+                int dir = isRight ? -1 : 1;   // "right" means the far edge, which is the top here
                 if (g.DrawTicks)
                     scene.Background.Add(new BitChartSvgLine
                     {
-                        X1 = x, Y1 = plot.Bottom, X2 = x, Y2 = plot.Bottom + g.TickLength,
+                        X1 = x, Y1 = axisPos, X2 = x, Y2 = axisPos + dir * g.TickLength,
                         Stroke = g.TickColor, StrokeWidth = g.LineWidth
                     });
                 if (tk.Display)
                     scene.Background.Add(new BitChartSvgText
                     {
-                        X = x, Y = plot.Bottom + g.TickLength + tk.Padding + tk.Font.Size * 0.5,
+                        X = x + TickLabelOffset(tk), Y = axisPos + dir * (g.TickLength + tk.Padding + tk.Font.Size * 0.5),
                         Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = "middle", Baseline = "central"
+                        Anchor = TickAnchor(tk), Baseline = "central"
                     });
             }
         }
@@ -107,7 +140,7 @@ public sealed partial class BitChartRenderer
             if (IsVertical)
                 scene.Background.Add(new BitChartSvgText
                 {
-                    X = isRight ? axisPos + ReserveValueAxis(axis) - o.Title.Font.Size : axisPos - ReserveValueAxis(axis) + o.Title.Font.Size,
+                    X = isRight ? axisPos + ReserveAxisWidth(axis) - o.Title.Font.Size : axisPos - ReserveAxisWidth(axis) + o.Title.Font.Size,
                     Y = plot.CenterY, Text = o.Title.Text, Fill = o.Title.Color,
                     FontFamily = o.Title.Font.Family, FontSize = o.Title.Font.Size, FontWeight = o.Title.Font.Weight,
                     Anchor = "middle", Baseline = "central", Rotation = isRight ? 90 : -90
@@ -115,7 +148,11 @@ public sealed partial class BitChartRenderer
             else
                 scene.Background.Add(new BitChartSvgText
                 {
-                    X = plot.CenterX, Y = plot.Bottom + ReserveValueAxis(axis) - o.Title.Font.Size * 0.3,
+                    // A value axis under a horizontal-bar chart reserves height, not width - and along
+                    // the far (top) edge it reserves that height upwards, the same direction its ticks
+                    // are drawn in.
+                    X = plot.CenterX,
+                    Y = axisPos + (isRight ? -1 : 1) * (ReserveAxisHeight(axis) - o.Title.Font.Size * 0.3),
                     Text = o.Title.Text, Fill = o.Title.Color,
                     FontFamily = o.Title.Font.Family, FontSize = o.Title.Font.Size, FontWeight = o.Title.Font.Weight,
                     Anchor = "middle", Baseline = "central"
@@ -129,14 +166,14 @@ public sealed partial class BitChartRenderer
             if (IsVertical)
                 scene.Background.Add(new BitChartSvgLine { X1 = axisPos, Y1 = plot.Top, X2 = axisPos, Y2 = plot.Bottom, Stroke = b.Color, StrokeWidth = b.Width, Dash = BitChartSvg.Dash(b.Dash) });
             else
-                scene.Background.Add(new BitChartSvgLine { X1 = plot.Left, Y1 = plot.Bottom, X2 = plot.Right, Y2 = plot.Bottom, Stroke = b.Color, StrokeWidth = b.Width, Dash = BitChartSvg.Dash(b.Dash) });
+                scene.Background.Add(new BitChartSvgLine { X1 = plot.Left, Y1 = axisPos, X2 = plot.Right, Y2 = axisPos, Stroke = b.Color, StrokeWidth = b.Width, Dash = BitChartSvg.Dash(b.Dash) });
         }
     }
 
-    private void DrawIndexAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis)
+    private void DrawIndexAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double baseline)
     {
         var o = axis.Options;
-        if (!o.Display) return;
+        if (!ScaleVisible(o)) return;
         var g = o.Grid;
         var tk = o.Ticks;
         bool centered = HasBars();
@@ -158,7 +195,7 @@ public sealed partial class BitChartRenderer
                 if (g.DrawTicks)
                     scene.Background.Add(new BitChartSvgLine
                     {
-                        X1 = px, Y1 = plot.Bottom, X2 = px, Y2 = plot.Bottom + g.TickLength,
+                        X1 = px, Y1 = baseline, X2 = px, Y2 = baseline + g.TickLength,
                         Stroke = g.TickColor, StrokeWidth = g.LineWidth
                     });
                 if (tk.Display)
@@ -166,10 +203,10 @@ public sealed partial class BitChartRenderer
                     double rot = axis.LabelRotation;
                     scene.Background.Add(new BitChartSvgText
                     {
-                        X = px, Y = plot.Bottom + g.TickLength + tk.Padding + (Math.Abs(rot) > 1e-3 ? tk.Font.Size * 0.35 : tk.Font.Size * 0.7),
+                        X = px + TickLabelOffset(tk), Y = baseline + g.TickLength + tk.Padding + (Math.Abs(rot) > 1e-3 ? tk.Font.Size * 0.35 : tk.Font.Size * 0.7),
                         Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = Math.Abs(rot) > 1e-3 ? "end" : "middle", Baseline = "auto", Rotation = rot
+                        Anchor = Math.Abs(rot) > 1e-3 ? "end" : TickAnchor(tk), Baseline = "auto", Rotation = rot
                     });
                 }
             }
@@ -184,15 +221,16 @@ public sealed partial class BitChartRenderer
                 if (g.DrawTicks)
                     scene.Background.Add(new BitChartSvgLine
                     {
-                        X1 = plot.Left, Y1 = px, X2 = plot.Left - g.TickLength, Y2 = px,
+                        X1 = baseline, Y1 = px, X2 = baseline - g.TickLength, Y2 = px,
                         Stroke = g.TickColor, StrokeWidth = g.LineWidth
                     });
                 if (tk.Display)
                     scene.Background.Add(new BitChartSvgText
                     {
-                        X = plot.Left - g.TickLength - tk.Padding, Y = px, Text = tick.Label, Fill = tk.Color,
+                        X = tk.Mirror ? baseline + g.TickLength + tk.Padding : baseline - g.TickLength - tk.Padding,
+                        Y = px + TickLabelOffset(tk), Text = tick.Label, Fill = tk.Color,
                         FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                        Anchor = "end", Baseline = "central"
+                        Anchor = tk.Mirror ? "start" : "end", Baseline = "central"
                     });
             }
         }
@@ -222,19 +260,30 @@ public sealed partial class BitChartRenderer
         {
             var b = o.Border;
             if (IsVertical)
-                scene.Background.Add(new BitChartSvgLine { X1 = plot.Left, Y1 = plot.Bottom, X2 = plot.Right, Y2 = plot.Bottom, Stroke = b.Color, StrokeWidth = b.Width, Dash = BitChartSvg.Dash(b.Dash) });
+                scene.Background.Add(new BitChartSvgLine { X1 = plot.Left, Y1 = baseline, X2 = plot.Right, Y2 = baseline, Stroke = b.Color, StrokeWidth = b.Width, Dash = BitChartSvg.Dash(b.Dash) });
             else
-                scene.Background.Add(new BitChartSvgLine { X1 = plot.Left, Y1 = plot.Top, X2 = plot.Left, Y2 = plot.Bottom, Stroke = b.Color, StrokeWidth = b.Width, Dash = BitChartSvg.Dash(b.Dash) });
+                scene.Background.Add(new BitChartSvgLine { X1 = baseline, Y1 = plot.Top, X2 = baseline, Y2 = plot.Bottom, Stroke = b.Color, StrokeWidth = b.Width, Dash = BitChartSvg.Dash(b.Dash) });
         }
     }
 
     private bool HasBars() => _data.Datasets.Where((d, i) => !IsHidden(i, d)).Any(d => EffectiveType(d) == BitChartType.Bar);
 
+    /// <summary>Text anchor for a tick label honoring <see cref="BitChartTickOptions.Align"/>.</summary>
+    private static string TickAnchor(BitChartTickOptions tk) => tk.Align switch
+    {
+        BitChartAlign.Start => "start",
+        BitChartAlign.End => "end",
+        _ => "middle"
+    };
+
+    /// <summary>Extra pixel shift applied to a tick label along the axis.</summary>
+    private static double TickLabelOffset(BitChartTickOptions tk) => tk.LabelOffset;
+
     /// <summary>Draws a secondary x-axis (ticks/labels/border/title) at a baseline outside the plot.</summary>
     private void DrawSecondaryXAxis(BitChartScene scene, BitChartArea plot, BitChartAxisScale axis, double baselineY, bool atBottom)
     {
         var o = axis.Options;
-        if (!o.Display) return;
+        if (!ScaleVisible(o)) return;
         var g = o.Grid;
         var tk = o.Ticks;
         int dir = atBottom ? 1 : -1;
@@ -254,7 +303,7 @@ public sealed partial class BitChartRenderer
                     X = px, Y = baselineY + dir * (g.TickLength + tk.Padding + tk.Font.Size * (atBottom ? 0.7 : 0.1)),
                     Text = tick.Label, Fill = tk.Color,
                     FontFamily = tk.Font.Family, FontSize = tk.Font.Size, FontWeight = tk.Font.Weight,
-                    Anchor = "middle", Baseline = atBottom ? "auto" : "auto"
+                    Anchor = "middle", Baseline = "auto"
                 });
         }
 

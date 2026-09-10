@@ -1,0 +1,30 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Linear regression" RazorCode="@linearRazorCode" CsharpCode="@linearCsharpCode" Id="trendlines-linear">
+    <div class="example-desc">
+        <code>BitChartTrendlinePlugin</code> fits a line through a dataset and draws it over the chart. The default
+        <code>Linear</code> kind is an ordinary least-squares regression, which is the shortest answer to "is this
+        going up or down" when the series itself is too noisy to say. It is dashed by default so it never reads as
+        another measured series, and it takes the dataset's own color unless you give it one.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Noisy()" Options="_linear" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Projected across the plot" RazorCode="@extendRazorCode" CsharpCode="@extendCsharpCode" Id="trendlines-extend">
+    <div class="example-desc">
+        <code>Extend</code> continues the fitted line to both edges of the plot instead of stopping at the first and
+        last point, which is how a regression is read as a projection. A <code>Label</code> puts a pill at the end of
+        the line naming what it is.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Noisy()" Options="_extended" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Moving average and the mean" RazorCode="@averagesRazorCode" CsharpCode="@averagesCsharpCode" Id="trendlines-averages">
+    <div class="example-desc">
+        <code>MovingAverage</code> smooths the series over a trailing <code>Period</code> window &mdash; it follows the
+        shape rather than straightening it, which is what makes a seasonal series readable. <code>Average</code> is a
+        flat line at the series mean, for reading each point against the norm. Several trend lines can sit on one
+        chart, each bound to its own dataset by <code>DatasetIndex</code>.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Seasonal()" Options="_averages" /></div></div>
+</DemoExample>

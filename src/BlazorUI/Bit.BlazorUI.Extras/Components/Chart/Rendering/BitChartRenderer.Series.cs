@@ -9,22 +9,43 @@ public sealed partial class BitChartRenderer
     {
         if (barItems.Count == 0) return;
 
-        // Build slots: stacked datasets share a slot, others get their own.
+        // Build slots: stacked datasets share a slot, others get their own. A dataset with
+        // Grouped = false opts out of the layout entirely and spans the whole category band.
         var slotKeys = new List<string>();
         var dsSlot = new Dictionary<int, int>();
         foreach (var (ds, i) in barItems)
         {
+            if (!ds.Grouped) { dsSlot[i] = -1; continue; }
             bool stacked = valueScales[ds.YAxisID].Options.Stacked;
             string key = stacked ? $"stack:{ds.Stack ?? "default"}:{ds.YAxisID}" : $"ds:{i}";
-            if (!slotKeys.Contains(key)) slotKeys.Add(key);
-            dsSlot[i] = slotKeys.IndexOf(key);
+            int at = slotKeys.IndexOf(key);
+            if (at < 0) { slotKeys.Add(key); at = slotKeys.Count - 1; }
+            dsSlot[i] = at;
         }
         int slotCount = Math.Max(1, slotKeys.Count);
 
         double band = indexScale.BandWidth();
         var first = barItems[0].d;
         double categorySize = band * first.CategoryPercentage;
-        double slotSize = categorySize / slotCount;
+
+        // Per-index slot layout. With SkipNull the slots whose datasets have no value at an index are
+        // dropped, so the remaining bars widen to fill the category instead of leaving a hole.
+        bool skipNull = barItems.Any(t => t.d.SkipNull);
+        var allSlots = Enumerable.Range(0, slotKeys.Count).ToList();
+        var perIndexSlots = new Dictionary<int, List<int>>();
+        List<int> SlotsAt(int di)
+        {
+            if (!skipNull) return allSlots;
+            if (perIndexSlots.TryGetValue(di, out var cached)) return cached;
+            var live = new List<int>();
+            for (int k = 0; k < slotKeys.Count; k++)
+            {
+                bool any = barItems.Any(t => dsSlot[t.i] == k && HasValueAt(t.d, di));
+                if (any) live.Add(k);
+            }
+            perIndexSlots[di] = live;
+            return live;
+        }
 
         var stackOffset = new Dictionary<(int slot, int di, int sign), double>();
 
@@ -40,18 +61,25 @@ public sealed partial class BitChartRenderer
                     stack100Totals[(slot, di)] = stack100Totals.GetValueOrDefault((slot, di), 0) + Math.Abs(v);
         }
 
+        // The value-axis baseline every bar grows out of. Taken from the first bar dataset (they share
+        // the axis) so the group entry animation always scales out of the axis line - not out of
+        // whatever the last drawn bar happened to sit on.
+        var firstScale = valueScales[first.YAxisID];
+        double axisBaseValue = first.Base ?? Math.Clamp(0, Math.Min(firstScale.Min, firstScale.Max), Math.Max(firstScale.Min, firstScale.Max));
+        scene.BarBaseline = firstScale.PixelFor(axisBaseValue);
+
         foreach (var (ds, i) in barItems)
         {
             var vScale = valueScales[ds.YAxisID];
             bool stacked = vScale.Options.Stacked;
             bool stacked100 = stacked && vScale.Options.Stacked100;
             int slot = dsSlot[i];
-            double barSize = slotSize * ds.BarPercentage;
-            if (ds.BarThickness is { } bt) barSize = bt;
-            if (ds.MaxBarThickness is { } mbt) barSize = Math.Min(barSize, mbt);
+            var barType = EffectiveType(ds);
 
             int count = ds.Count;
             string? patternFill = ds.BackgroundPattern is { } pat ? RegisterPattern(scene, pat) : null;
+            double borderWidth = ResolveBorderWidth(ds, BitChartType.Bar, i);
+
             for (int di = 0; di < count; di++)
             {
                 double baseVal, topVal, tooltipVal;
@@ -81,138 +109,253 @@ public sealed partial class BitChartRenderer
                     }
                     else
                     {
-                        baseVal = Math.Clamp(0, Math.Min(vScale.Min, vScale.Max), Math.Max(vScale.Min, vScale.Max));
+                        baseVal = ds.Base ?? Math.Clamp(0, Math.Min(vScale.Min, vScale.Max), Math.Max(vScale.Min, vScale.Max));
                         topVal = value;
                     }
                 }
 
+                // Slot geometry for this index.
+                double slotSize, slotCenter;
                 double centerAlong = indexIsCategory ? indexScale.PixelForIndex(di, true) : indexScale.PixelFor(di);
-                double slotCenter = centerAlong - categorySize / 2 + slot * slotSize + slotSize / 2;
+                if (slot < 0)
+                {
+                    slotSize = categorySize;
+                    slotCenter = centerAlong;
+                }
+                else
+                {
+                    var live = SlotsAt(di);
+                    int ordinal = live.IndexOf(slot);
+                    int liveCount = Math.Max(1, live.Count);
+                    if (ordinal < 0) { ordinal = slot; liveCount = slotCount; }
+                    slotSize = categorySize / liveCount;
+                    slotCenter = centerAlong - categorySize / 2 + ordinal * slotSize + slotSize / 2;
+                }
+
+                double barSize = slotSize * ds.BarPercentage;
+                if (ds.BarThickness is { } bt) barSize = bt;
+                if (ds.MaxBarThickness is { } mbt) barSize = Math.Min(barSize, mbt);
 
                 string bg = ResolveBackground(ds, i, di, false, tooltipVal);
-                string border = ResolveBorder(ds, i, di, false, tooltipVal);
+                string border = ResolveBorder(ds, i, di, false, tooltipVal, fallbackToBackground: true);
                 if (patternFill is not null) bg = patternFill;
-                int signFinal = topVal >= baseVal ? 1 : -1;
                 double inflate = ds.InflateAmount ?? 0;
+                double minLen = ds.MinBarLength ?? 1;
                 BitChartSvgRect rect;
-                double cx, cy, originX, originY;
+                double cx, cy;
+
+                // Which way the bar grows is a question about pixels, not about the sign of the value: a
+                // reversed axis puts a positive bar below its baseline. Everything downstream - the
+                // skipped edge, the rounded corners, the data label - follows this, not the raw sign.
+                int signFinal;
 
                 if (IsVertical)
                 {
                     double yBase = vScale.PixelFor(baseVal);
                     double yTop = vScale.PixelFor(topVal);
+                    signFinal = yTop <= yBase ? 1 : -1;
+                    // A minimum length still grows away from the baseline rather than straddling it.
+                    double height = Math.Max(minLen, Math.Abs(yBase - yTop));
+                    double y = signFinal >= 0 ? yBase - height : yBase;
                     rect = new BitChartSvgRect
                     {
                         X = slotCenter - barSize / 2 - inflate,
-                        Y = Math.Min(yBase, yTop) - inflate,
+                        Y = y - inflate,
                         Width = barSize + inflate * 2,
-                        Height = Math.Max(1, Math.Abs(yBase - yTop)) + inflate * 2,
-                        Fill = bg,
-                        Rx = ds.BorderRadius
+                        Height = height + inflate * 2,
+                        Fill = bg
                     };
-                    cx = slotCenter; cy = yTop;
-                    originX = slotCenter; originY = yBase;   // grow from the baseline
-                    scene.BarBaseline = yBase;
+                    cx = slotCenter; cy = signFinal >= 0 ? rect.Y : rect.Y + rect.Height;
                 }
                 else
                 {
                     double xBase = vScale.PixelFor(baseVal);
                     double xTop = vScale.PixelFor(topVal);
+                    signFinal = xTop >= xBase ? 1 : -1;
+                    double width = Math.Max(minLen, Math.Abs(xBase - xTop));
+                    double x = signFinal >= 0 ? xBase : xBase - width;
                     rect = new BitChartSvgRect
                     {
-                        X = Math.Min(xBase, xTop) - inflate,
+                        X = x - inflate,
                         Y = slotCenter - barSize / 2 - inflate,
-                        Width = Math.Max(1, Math.Abs(xBase - xTop)) + inflate * 2,
+                        Width = width + inflate * 2,
                         Height = barSize + inflate * 2,
-                        Fill = bg,
-                        Rx = ds.BorderRadius
+                        Fill = bg
                     };
-                    cx = xTop; cy = slotCenter;
-                    originX = xBase; originY = slotCenter;   // grow from the baseline
-                    scene.BarBaseline = xBase;
+                    cx = signFinal >= 0 ? rect.X + rect.Width : rect.X; cy = slotCenter;
                 }
-
-                // Per-corner radius emits a rounded path instead of a plain rect.
-                BitChartSvgNode shapeNode = rect;
-                bool perCorner = ds.BorderRadiusCorners is { } c0 &&
-                    (c0.TopLeft > 0 || c0.TopRight > 0 || c0.BottomRight > 0 || c0.BottomLeft > 0);
-
-                // Effective corner radii (explicit per-corner, else uniform BorderRadius) used so the
-                // border follows the same rounded outline as the fill.
-                BitChartBorderRadiusCorners? roundedCorners = null;
-                if (perCorner) roundedCorners = ds.BorderRadiusCorners!.Value;
-                else if (ds.BorderRadius > 0) roundedCorners = ds.BorderRadius; // implicit double -> all corners
 
                 var skip = ResolveSkip(isRange ? BitChartBorderSkipped.None : ds.BorderSkipped, IsVertical, signFinal);
 
-                if (perCorner)
+                // Effective corner radii. Chart.js only rounds the corners that are not adjacent to the
+                // skipped (baseline) edge, so a bar with a uniform BorderRadius rounds its tip and keeps
+                // a flat foot on the axis. BorderSkipped.None opts back into rounding all four corners.
+                BitChartBorderRadiusCorners? roundedCorners = ds.BorderRadiusCorners
+                    ?? (ds.BorderRadius > 0 ? CornersForSkip(ds.BorderRadius, skip) : null);
+                bool rounded = roundedCorners is { } rc0 &&
+                    (rc0.TopLeft > 0 || rc0.TopRight > 0 || rc0.BottomRight > 0 || rc0.BottomLeft > 0);
+
+                BitChartSvgNode shapeNode = rect;
+                if (rounded)
                     shapeNode = new BitChartSvgPath
                     {
-                        D = RoundedRectPath(rect.X, rect.Y, rect.Width, rect.Height, ds.BorderRadiusCorners!.Value),
+                        D = RoundedRectPath(rect.X, rect.Y, rect.Width, rect.Height, roundedCorners!.Value),
                         Fill = bg
                     };
 
                 // Border honoring borderSkipped. Rounded bars get a matching rounded border path so the
                 // stroke follows the corner radius instead of cutting square corners.
                 BitChartSvgNode? borderNode = null;
-                if (ds.BorderWidth > 0)
+                if (borderWidth > 0)
                 {
-                    if (roundedCorners is { } rc)
+                    if (rounded)
                     {
                         borderNode = new BitChartSvgPath
                         {
-                            D = RoundedBarBorderPath(rect.X, rect.Y, rect.Width, rect.Height, rc, skip),
-                            Fill = "none", Stroke = border, StrokeWidth = ds.BorderWidth
+                            D = RoundedBarBorderPath(rect.X, rect.Y, rect.Width, rect.Height, roundedCorners!.Value, skip),
+                            Fill = "none", Stroke = border, StrokeWidth = borderWidth
                         };
                     }
                     else if (skip == BitChartBorderSkipped.None)
                     {
                         rect.Stroke = border;
-                        rect.StrokeWidth = ds.BorderWidth;
+                        rect.StrokeWidth = borderWidth;
                     }
                     else
                     {
                         // Drawn as part of the element so it animates together with the fill.
                         borderNode = new BitChartSvgPath
                         {
-                            D = BarBorderPath(rect, skip), Fill = "none", Stroke = border, StrokeWidth = ds.BorderWidth
+                            D = BarBorderPath(rect, skip), Fill = "none", Stroke = border, StrokeWidth = borderWidth
                         };
                     }
                 }
 
-                string text = isRange
-                    ? $"{(ds.Label is null ? "" : ds.Label + ": ")}[{baseVal.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}, {topVal.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}]"
-                    : BuildItemText(ds, i, di, tooltipVal, bg);
+                // Hover appearance, precomputed so hovering never triggers a re-layout.
+                string hoverBg = ds.HoverBackgroundColor
+                    ?? (ds.BackgroundColorFn is not null ? ResolveBackground(ds, i, di, false, tooltipVal, active: true) : BitChartColorUtil.Adjust(bg, -0.08));
+                if (patternFill is not null) hoverBg = bg;
+                string hoverBorder = ds.HoverBorderColor ?? border;
+                double hoverBorderWidth = ds.HoverBorderWidth ?? borderWidth;
+                BitChartSvgNode hoverNode = rounded
+                    ? new BitChartSvgPath
+                    {
+                        D = RoundedRectPath(rect.X, rect.Y, rect.Width, rect.Height, roundedCorners!.Value),
+                        Fill = hoverBg, Stroke = hoverBorderWidth > 0 ? hoverBorder : null, StrokeWidth = hoverBorderWidth
+                    }
+                    : new BitChartSvgRect
+                    {
+                        X = rect.X, Y = rect.Y, Width = rect.Width, Height = rect.Height,
+                        Fill = hoverBg, Stroke = hoverBorderWidth > 0 ? hoverBorder : null, StrokeWidth = hoverBorderWidth
+                    };
 
-                // Each bar grows from its own baseline in the correct direction (size change, not a slide).
-                string enterAnim = IsVertical ? "bc-scale-y" : "bc-scale-x";
+                string text = isRange
+                    ? $"{(ds.Label is null ? "" : ds.Label + ": ")}[{FormatNumber(baseVal, "0.##")}, {FormatNumber(topVal, "0.##")}]"
+                    : BuildItemText(ds, i, di, tooltipVal, bg) + ErrorSuffix(ds, di);
 
                 scene.Elements.Add(new BitChartDataElement
                 {
                     Shape = shapeNode,
                     BorderShape = borderNode,
-                    EnterAnim = enterAnim,
-                    AnimOriginX = originX,
-                    AnimOriginY = originY,
+                    HoverShape = hoverNode,
                     DatasetIndex = i,
                     DataIndex = di,
-                    CenterX = cx,
-                    CenterY = cy,
+                    CenterX = IsVertical ? cx : (rect.X + rect.Width / 2),
+                    CenterY = IsVertical ? (rect.Y + rect.Height / 2) : cy,
                     Value = tooltipVal,
                     SeriesLabel = ds.Label,
                     Tooltip = new BitChartTooltipInfo
                     {
                         Title = di < _data.Labels.Count ? _data.Labels[di] : null,
+                        // Anchored at the bar's tip, so a negative bar points at its own end and the
+                        // tooltip flips below it rather than hovering over the baseline.
                         AnchorX = cx,
-                        AnchorY = IsVertical ? Math.Min(rect.Y, cy) : cy,
+                        AnchorY = cy,
                         Items = { new BitChartTooltipItem { Color = bg, Text = text } }
                     }
                 });
 
-                if (!isRange) AddDataLabel(scene, tooltipVal, cx, IsVertical ? rect.Y - 4 : cx, i, di);
+                if (!isRange)
+                {
+                    // Centered on the bar's own tip, so a grouped bar keeps its whisker over itself.
+                    // A percentage stack rescales every value, which would leave the interval - still in
+                    // the original units - pointing at the wrong place, so it is left out there.
+                    if (!stacked100) AddErrorBar(scene, ds, di, topVal, slotCenter, vScale);
+                    AddBarDataLabel(scene, tooltipVal, rect, signFinal, i, di);
+                }
             }
         }
     }
+
+    /// <summary>The error bar attached to one index, if the dataset has one there.</summary>
+    private static BitChartErrorBar? ErrorAt(BitChartDataset ds, int dataIndex)
+        => ds.ErrorData is { } errors && dataIndex >= 0 && dataIndex < errors.Count ? errors[dataIndex] : null;
+
+    /// <summary>
+    /// The interval a tooltip names after the value, so the uncertainty is readable and not only
+    /// visible. A symmetric interval reads as a single plus-minus; an asymmetric one names both arms.
+    /// </summary>
+    private string ErrorSuffix(BitChartDataset ds, int dataIndex)
+    {
+        if (ErrorAt(ds, dataIndex) is not { } e) return "";
+        double minus = Math.Abs(e.Minus), plus = Math.Abs(e.Plus);
+        if (minus <= 0 && plus <= 0) return "";
+        return e.IsSymmetric
+            ? $" ±{FormatNumber(plus, "0.##")}"
+            : $" +{FormatNumber(plus, "0.##")}/-{FormatNumber(minus, "0.##")}";
+    }
+
+    /// <summary>
+    /// Draws the whisker for one value: a line spanning the interval along the value axis, with a cap at
+    /// each end. It goes in the foreground so it stays legible over the bar or point it belongs to.
+    /// </summary>
+    private void AddErrorBar(BitChartScene scene, BitChartDataset ds, int dataIndex, double value,
+        double centerAlongIndexAxis, BitChartAxisScale valueScale)
+    {
+        if (ErrorAt(ds, dataIndex) is not { } e) return;
+        double minus = Math.Abs(e.Minus), plus = Math.Abs(e.Plus);
+        if (minus <= 0 && plus <= 0) return;
+
+        double low = valueScale.PixelFor(value - minus);
+        double high = valueScale.PixelFor(value + plus);
+        string color = ds.ErrorBarColor ?? "var(--bit-clr-fg-pri, #1A1A1A)";
+        double width = ds.ErrorBarWidth;
+        double cap = Math.Max(0, ds.ErrorBarCapWidth) / 2;
+        double c = centerAlongIndexAxis;
+
+        if (IsVertical)
+        {
+            scene.Foreground.Add(new BitChartSvgLine { X1 = c, Y1 = low, X2 = c, Y2 = high, Stroke = color, StrokeWidth = width });
+            if (cap <= 0) return;
+            scene.Foreground.Add(new BitChartSvgLine { X1 = c - cap, Y1 = low, X2 = c + cap, Y2 = low, Stroke = color, StrokeWidth = width });
+            scene.Foreground.Add(new BitChartSvgLine { X1 = c - cap, Y1 = high, X2 = c + cap, Y2 = high, Stroke = color, StrokeWidth = width });
+        }
+        else
+        {
+            scene.Foreground.Add(new BitChartSvgLine { X1 = low, Y1 = c, X2 = high, Y2 = c, Stroke = color, StrokeWidth = width });
+            if (cap <= 0) return;
+            scene.Foreground.Add(new BitChartSvgLine { X1 = low, Y1 = c - cap, X2 = low, Y2 = c + cap, Stroke = color, StrokeWidth = width });
+            scene.Foreground.Add(new BitChartSvgLine { X1 = high, Y1 = c - cap, X2 = high, Y2 = c + cap, Stroke = color, StrokeWidth = width });
+        }
+    }
+
+    private static bool HasValueAt(BitChartDataset ds, int di)
+    {
+        // A dataset carrying ranges still falls back to its plain values where a range is missing,
+        // which is exactly how DrawBars picks the value it draws.
+        if (ds.RangeData is { } rd && di < rd.Count && rd[di].HasValue) return true;
+        return di < ds.Data.Count && ds.Data[di].HasValue;
+    }
+
+    /// <summary>Rounds only the corners that are not adjacent to the skipped edge (Chart.js semantics).</summary>
+    private static BitChartBorderRadiusCorners CornersForSkip(double r, BitChartBorderSkipped skip) => skip switch
+    {
+        BitChartBorderSkipped.Bottom => new(r, r, 0, 0),
+        BitChartBorderSkipped.Top => new(0, 0, r, r),
+        BitChartBorderSkipped.Left => new(0, r, r, 0),
+        BitChartBorderSkipped.Right => new(r, 0, 0, r),
+        _ => new(r, r, r, r)
+    };
 
     /// <summary>Resolves Start/End border-skip to a concrete edge based on orientation and sign.</summary>
     private static BitChartBorderSkipped ResolveSkip(BitChartBorderSkipped s, bool vertical, int sign) => s switch
@@ -317,39 +460,49 @@ public sealed partial class BitChartRenderer
             return;
         }
 
+        // A single fill paint is registered per dataset so a series broken by nulls does not add a
+        // duplicate gradient/pattern definition for every segment.
+        string? fillPaint = null;
         for (int di = 0; di < ds.Data.Count; di++)
         {
             if (ds.Data[di] is not { } v)
             {
-                if (!ds.SpanGaps) { FlushLine(scene, plot, vScale, ds, dsIndex, pts, indexScale, indexIsCategory, centered); pts.Clear(); }
+                if (!ds.SpanGaps)
+                {
+                    fillPaint = FlushLine(scene, plot, vScale, ds, dsIndex, pts, indexScale, indexIsCategory, centered, fillPaint);
+                    pts.Clear();
+                }
                 continue;
             }
             double x = indexIsCategory ? indexScale.PixelForIndex(di, centered) : indexScale.PixelFor(di);
             double y = vScale.PixelFor(v);
             pts.Add((x, y, di, v));
         }
-        FlushLine(scene, plot, vScale, ds, dsIndex, pts, indexScale, indexIsCategory, centered);
+        FlushLine(scene, plot, vScale, ds, dsIndex, pts, indexScale, indexIsCategory, centered, fillPaint);
     }
 
-    private void FlushLine(BitChartScene scene, BitChartArea plot, BitChartAxisScale vScale, BitChartDataset ds, int dsIndex,
+    private string? FlushLine(BitChartScene scene, BitChartArea plot, BitChartAxisScale vScale, BitChartDataset ds, int dsIndex,
         List<(double x, double y, int di, double v)> pts,
-        BitChartAxisScale? indexScale = null, bool indexIsCategory = false, bool centered = false)
+        BitChartAxisScale? indexScale = null, bool indexIsCategory = false, bool centered = false, string? fillPaint = null)
     {
-        if (pts.Count == 0) return;
+        if (pts.Count == 0) return fillPaint;
 
         var dec = _options.Plugins.Decimation;
         if (dec.Enabled && pts.Count > dec.Threshold && dec.Samples >= 2 && dec.Samples < pts.Count)
             pts = BitChartDecimation.Lttb(pts, dec.Samples);
 
         string border = ResolveBorder(ds, dsIndex, 0, false);
+        double lineWidth = ResolveBorderWidth(ds, BitChartType.Line, dsIndex);
+        double tension = ResolveTension(ds);
         var xy = pts.Select(p => (p.x, p.y)).ToList();
-        string d = BuildPath(xy, ds.Tension, ds.Stepped, ds.CubicInterpolationMode);
+        string d = BuildPath(xy, tension, ds.Stepped, ds.CubicInterpolationMode);
 
         bool progressive = _options.Animation.Animate && _options.Animation.Progressive;
         if (progressive) scene.ProgressiveDraw = true;
 
         if (ds.Fill != BitChartFillMode.None && ds.ShowLine)
         {
+            fillPaint ??= ResolveFill(scene, ds, border);
             string? fillD = null;
 
             // Fill to another dataset's line (range area).
@@ -358,7 +511,7 @@ public sealed partial class BitChartRenderer
             {
                 var target = ComputeLinePoints(_data.Datasets[ti], indexScale, vScale, indexIsCategory, centered);
                 if (target.Count > 0)
-                    fillD = AreaBetween(xy, ds.Tension, ds.Stepped, target.Select(p => (p.x, p.y)).ToList());
+                    fillD = AreaBetween(xy, tension, ds.Stepped, target.Select(p => (p.x, p.y)).ToList());
             }
 
             if (fillD is null)
@@ -374,7 +527,7 @@ public sealed partial class BitChartRenderer
                 fillD = d + $" L {BitChartSvg.N(xy[^1].x)} {BitChartSvg.N(baseY)} L {BitChartSvg.N(xy[0].x)} {BitChartSvg.N(baseY)} Z";
             }
 
-            scene.Series.Add(new BitChartSvgPath { D = fillD, Fill = ResolveFill(scene, ds, border, plot), Stroke = null, AnimateFade = progressive });
+            scene.Series.Add(new BitChartSvgPath { D = fillD, Fill = fillPaint, Stroke = null, AnimateFade = progressive });
         }
 
         if (ds.ShowLine)
@@ -382,20 +535,20 @@ public sealed partial class BitChartRenderer
             if (ds.Segment is { } seg)
             {
                 // Draw each consecutive segment with its own resolved style.
-                double defWidth = ds.BorderWidth <= 1 ? _options.Elements.LineBorderWidth : ds.BorderWidth;
                 for (int k = 0; k < pts.Count - 1; k++)
                 {
                     var a = pts[k];
                     var b = pts[k + 1];
                     var sctx = new BitChartSegmentContext(a.di, b.di, a.v, b.v);
                     string color = seg.BorderColor?.Invoke(sctx) ?? border;
-                    double width = seg.BorderWidth?.Invoke(sctx) ?? defWidth;
+                    double width = seg.BorderWidth?.Invoke(sctx) ?? lineWidth;
                     var dash = seg.BorderDash?.Invoke(sctx);
                     scene.Series.Add(new BitChartSvgPath
                     {
                         D = $"M {BitChartSvg.N(a.x)} {BitChartSvg.N(a.y)} L {BitChartSvg.N(b.x)} {BitChartSvg.N(b.y)}",
                         Fill = "none", Stroke = color, StrokeWidth = width,
                         Dash = dash is null ? "" : BitChartSvg.Dash(dash),
+                        DashOffset = ds.BorderDashOffset,
                         LineCap = ds.BorderCapStyle, LineJoin = ds.BorderJoinStyle,
                         AnimateFade = progressive
                     });
@@ -406,9 +559,9 @@ public sealed partial class BitChartRenderer
                 bool dashed = ds.BorderDash is { Count: > 0 };
                 scene.Series.Add(new BitChartSvgPath
                 {
-                    D = d, Fill = "none", Stroke = border,
-                    StrokeWidth = ds.BorderWidth <= 1 ? _options.Elements.LineBorderWidth : ds.BorderWidth,
-                    Dash = BitChartSvg.Dash(ds.BorderDash), LineCap = ds.BorderCapStyle, LineJoin = ds.BorderJoinStyle,
+                    D = d, Fill = "none", Stroke = border, StrokeWidth = lineWidth,
+                    Dash = BitChartSvg.Dash(ds.BorderDash), DashOffset = ds.BorderDashOffset,
+                    LineCap = ds.BorderCapStyle, LineJoin = ds.BorderJoinStyle,
                     // Draw-on reveals the stroke left to right; dashed strokes can't (dasharray is in use), so they fade.
                     AnimateDraw = progressive && !dashed,
                     AnimateFade = progressive && dashed
@@ -416,17 +569,25 @@ public sealed partial class BitChartRenderer
             }
         }
 
-        if (ds.PointRadius > 0 || ds.PointStyle != BitChartPointStyle.None)
+        if (ds.PointStyle != BitChartPointStyle.None)
             foreach (var p in pts)
-                AddPoint(scene, ds, dsIndex, p.di, p.x, p.y, p.v, ds.PointRadius, border);
+                AddPoint(scene, ds, dsIndex, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border, valueScale: vScale);
+
+        return fillPaint;
     }
 
-    /// <summary>Resolves an area fill paint (pattern, gradient, explicit color, or translucent border).</summary>
-    private string ResolveFill(BitChartScene scene, BitChartDataset ds, string border, BitChartArea plot)
+    /// <summary>
+    /// Resolves an area fill paint. A pattern or gradient wins; then the dataset's explicit
+    /// <see cref="BitChartDataset.FillColor"/>, then its <see cref="BitChartDataset.BackgroundColor"/>
+    /// (which is what Chart.js paints an area with), and finally a translucent tint of the line color.
+    /// </summary>
+    private string ResolveFill(BitChartScene scene, BitChartDataset ds, string border)
     {
         if (ds.BackgroundPattern is { } pat) return RegisterPattern(scene, pat);
         if (ds.FillGradient is { Stops.Count: > 0 } g) return RegisterGradient(scene, g);
-        return ds.FillColor ?? BitChartColorUtil.WithAlpha(border, 0.2);
+        if (!string.IsNullOrEmpty(ds.FillColor)) return ds.FillColor!;
+        if (!string.IsNullOrEmpty(ds.BackgroundColor)) return ds.BackgroundColor!;
+        return BitChartColorUtil.WithAlpha(border, 0.2);
     }
 
     /// <summary>Computes the pixel polyline for a dataset's line (nulls skipped).</summary>
@@ -453,6 +614,7 @@ public sealed partial class BitChartRenderer
     private static string AreaBetween(List<(double x, double y)> top, double tension, BitChartSteppedLine stepped,
         List<(double x, double y)> bottom)
     {
+        if (bottom.Count == 0) return BuildPath(top, tension, stepped);
         var sb = new StringBuilder(BuildPath(top, tension, stepped));
         var rev = new List<(double x, double y)>(bottom);
         rev.Reverse();
@@ -473,25 +635,42 @@ public sealed partial class BitChartRenderer
         foreach (var group in items.GroupBy(t => (t.d.YAxisID, t.d.Stack ?? "default")))
         {
             var vScale = valueScales[group.Key.YAxisID];
+            bool stacked100 = vScale.Options.Stacked100;
             var cumulative = new Dictionary<int, double>();
+
+            // 100% stacking normalizes every index against the group's absolute total.
+            var totals = new Dictionary<int, double>();
+            if (stacked100)
+                foreach (var (ds, _) in group)
+                    for (int di = 0; di < ds.Data.Count; di++)
+                        if (ds.Data[di] is { } v)
+                            totals[di] = totals.GetValueOrDefault(di, 0) + Math.Abs(v);
 
             foreach (var (ds, i) in group)
             {
-                var topPts = new List<(double x, double y, int di, double v)>();
+                var topPts = new List<(double x, double y, int di, double v, double top)>();
                 var basePts = new List<(double x, double y)>();
                 for (int di = 0; di < ds.Data.Count; di++)
                 {
-                    if (ds.Data[di] is not { } v) continue;
+                    if (ds.Data[di] is not { } raw) continue;
+                    double v = raw;
+                    if (stacked100)
+                    {
+                        double total = totals.GetValueOrDefault(di, 0);
+                        if (total > 0) v = v / total * 100;
+                    }
                     double baseVal = cumulative.GetValueOrDefault(di, 0);
                     double topVal = baseVal + v;
                     cumulative[di] = topVal;
                     double x = indexIsCategory ? indexScale.PixelForIndex(di, centered) : indexScale.PixelFor(di);
-                    topPts.Add((x, vScale.PixelFor(topVal), di, topVal));
+                    topPts.Add((x, vScale.PixelFor(topVal), di, raw, topVal));
                     basePts.Add((x, vScale.PixelFor(baseVal)));
                 }
                 if (topPts.Count == 0) continue;
 
                 string border = ResolveBorder(ds, i, 0, false);
+                double lineWidth = ResolveBorderWidth(ds, BitChartType.Line, i);
+                double tension = ResolveTension(ds);
                 var topXy = topPts.Select(p => (p.x, p.y)).ToList();
 
                 bool progressive = _options.Animation.Animate && _options.Animation.Progressive;
@@ -500,22 +679,28 @@ public sealed partial class BitChartRenderer
 
                 if (ds.Fill != BitChartFillMode.None)
                 {
-                    string fillD = AreaBetween(topXy, ds.Tension, ds.Stepped, basePts);
-                    scene.Series.Add(new BitChartSvgPath { D = fillD, Fill = ResolveFill(scene, ds, border, plot), Stroke = null, AnimateFade = progressive });
+                    string fillD = AreaBetween(topXy, tension, ds.Stepped, basePts);
+                    scene.Series.Add(new BitChartSvgPath { D = fillD, Fill = ResolveFill(scene, ds, border), Stroke = null, AnimateFade = progressive });
                 }
 
                 scene.Series.Add(new BitChartSvgPath
                 {
-                    D = BuildPath(topXy, ds.Tension, ds.Stepped), Fill = "none", Stroke = border,
-                    StrokeWidth = ds.BorderWidth <= 1 ? _options.Elements.LineBorderWidth : ds.BorderWidth,
-                    Dash = BitChartSvg.Dash(ds.BorderDash), LineCap = ds.BorderCapStyle, LineJoin = ds.BorderJoinStyle,
+                    D = BuildPath(topXy, tension, ds.Stepped, ds.CubicInterpolationMode), Fill = "none", Stroke = border,
+                    StrokeWidth = lineWidth,
+                    Dash = BitChartSvg.Dash(ds.BorderDash), DashOffset = ds.BorderDashOffset,
+                    LineCap = ds.BorderCapStyle, LineJoin = ds.BorderJoinStyle,
                     AnimateDraw = progressive && !dashed,
                     AnimateFade = progressive && dashed
                 });
 
-                if (ds.PointRadius > 0)
+                if (ds.PointStyle != BitChartPointStyle.None)
                     foreach (var p in topPts)
-                        AddPoint(scene, ds, i, p.di, p.x, p.y, ds.Data[p.di] ?? 0, ds.PointRadius, border);
+                        // The marker sits at the cumulative top, so the whisker is centered there too
+                        // rather than at the raw value it is drawn from. A percentage stack rescales
+                        // every value, which would leave the interval - still in the original units -
+                        // pointing at the wrong place, so it is left out there.
+                        AddPoint(scene, ds, i, p.di, p.x, p.y, p.v, ResolvePointRadius(ds), border,
+                            valueScale: stacked100 ? null : vScale, errorValue: p.top);
             }
         }
     }
@@ -530,46 +715,50 @@ public sealed partial class BitChartRenderer
             var p = points[di];
             double x = indexScale.PixelFor(p.X);
             double y = vScale.PixelFor(p.Y);
-            double r = bubble ? (p.R ?? 5) : ds.PointRadius <= 3 ? 4 : ds.PointRadius;
-            AddPoint(scene, ds, dsIndex, di, x, y, p.Y, r, border, p.X);
+            double r = bubble ? (p.R ?? 5) : Math.Max(4, ResolvePointRadius(ds));
+            AddPoint(scene, ds, dsIndex, di, x, y, p.Y, r, border, p.X, vScale);
         }
     }
 
     private void AddPoint(BitChartScene scene, BitChartDataset ds, int dsIndex, int di,
-        double x, double y, double value, double radius, string border, double? xValue = null)
+        double x, double y, double value, double radius, string border, double? xValue = null,
+        BitChartAxisScale? valueScale = null, double? errorValue = null)
     {
         var ctx = Ctx(ds, dsIndex, di, value);
-        bool active = _state.Active == (dsIndex, di);
-
         double r = ds.PointRadiusFn?.Invoke(ctx) ?? radius;
         var style = ds.PointStyleFn?.Invoke(ctx) ?? ds.PointStyle;
         string fill = ds.PointBackgroundColorFn?.Invoke(ctx) ?? ds.PointBackgroundColor ?? ResolveBackground(ds, dsIndex, di, false, value);
         string stroke = ds.PointBorderColorFn?.Invoke(ctx) ?? ds.PointBorderColor ?? border;
         double bw = ds.PointBorderWidth;
 
-        if (active)
-        {
-            r = Math.Max(r, ds.PointHoverRadius);
-            if (ds.PointHoverBackgroundColor is { } hb) fill = hb;
-            if (ds.PointHoverBorderColor is { } hbc) stroke = hbc;
-            if (ds.PointHoverBorderWidth is { } hbw) bw = hbw;
-        }
+        // A marker that is hidden or has no radius still needs something to hover: an invisible hit disc
+        // keeps the data point reachable (this is what Chart.js's pointHitRadius does).
+        BitChartSvgNode? shape = r > 0 ? BitChartPointShapes.Build(style, x, y, r, fill, stroke, bw, ds.PointRotation) : null;
+        double hitR = Math.Max(ds.HitRadius, 4);
+        shape ??= new BitChartSvgCircle { Cx = x, Cy = y, R = hitR, Fill = "transparent" };
 
-        var shape = BitChartPointShapes.Build(style, x, y, r, fill, stroke, bw);
-        if (shape is null) return;
+        // The hover appearance is precomputed with Active = true so scriptable options can react to it.
+        var hctx = Ctx(ds, dsIndex, di, value, active: true);
+        double hr = Math.Max(ds.PointRadiusFn?.Invoke(hctx) ?? r, ds.PointHoverRadius);
+        string hFill = ds.PointHoverBackgroundColor ?? ds.PointBackgroundColorFn?.Invoke(hctx) ?? fill;
+        string hStroke = ds.PointHoverBorderColor ?? ds.PointBorderColorFn?.Invoke(hctx) ?? stroke;
+        double hbw = ds.PointHoverBorderWidth ?? Math.Max(bw, 2);
+        var hoverShape = BitChartPointShapes.Build(style == BitChartPointStyle.None ? BitChartPointStyle.Circle : style,
+            x, y, Math.Max(hr, 3), hFill, hStroke, hbw, ds.PointRotation);
 
-        bool cartesian = _config.Type is not (BitChartType.Pie or BitChartType.Doughnut or BitChartType.PolarArea or BitChartType.Radar);
+        string text = (xValue is { } xv
+            ? $"({FormatNumber(xv, "0.##")}, {FormatNumber(value, "0.##")})"
+            : BuildItemText(ds, dsIndex, di, value, fill)) + ErrorSuffix(ds, di);
 
-        string text = xValue is { } xv
-            ? $"({xv.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}, {value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)})"
-            : BuildItemText(ds, dsIndex, di, value, fill);
+        // A whisker needs the value axis to convert its interval, so it is only drawn where the caller
+        // could hand one over - which is every cartesian call site, but not the radar's.
+        if (valueScale is not null)
+            AddErrorBar(scene, ds, di, errorValue ?? value, IsVertical ? x : y, valueScale);
 
         scene.Elements.Add(new BitChartDataElement
         {
             Shape = shape,
-            EnterAnim = cartesian ? "bc-pop" : null,
-            AnimOriginX = x,
-            AnimOriginY = y,
+            HoverShape = hoverShape,
             DatasetIndex = dsIndex,
             DataIndex = di,
             CenterX = x,
@@ -584,6 +773,75 @@ public sealed partial class BitChartRenderer
                 Items = { new BitChartTooltipItem { Color = fill, Text = text, PointStyle = style } }
             }
         });
+
+        if (_options.Plugins.DataLabels is { Display: true, ShowOnPoints: true })
+            AddPointDataLabel(scene, value, x, y, r, dsIndex, di);
+    }
+
+    /// <summary>Places a bar's data label from the anchor/align/offset options.</summary>
+    private void AddBarDataLabel(BitChartScene scene, double value, BitChartSvgRect rect, int sign, int dsIndex, int dataIndex)
+    {
+        var dl = _options.Plugins.DataLabels;
+        if (!dl.Display) return;
+
+        // Outward is the direction away from the baseline: up for positive vertical bars, right for
+        // positive horizontal ones.
+        double x, y;
+        if (IsVertical)
+        {
+            double tip = sign >= 0 ? rect.Y : rect.Y + rect.Height;
+            double baseline = sign >= 0 ? rect.Y + rect.Height : rect.Y;
+            double outward = sign >= 0 ? -1 : 1;
+            y = dl.Anchor switch
+            {
+                BitChartAlign.Start => baseline,
+                BitChartAlign.Center => rect.Y + rect.Height / 2,
+                _ => tip
+            };
+            y += AlignShift(dl, outward);
+            x = rect.X + rect.Width / 2;
+        }
+        else
+        {
+            double tip = sign >= 0 ? rect.X + rect.Width : rect.X;
+            double baseline = sign >= 0 ? rect.X : rect.X + rect.Width;
+            double outward = sign >= 0 ? 1 : -1;
+            x = dl.Anchor switch
+            {
+                BitChartAlign.Start => baseline,
+                BitChartAlign.Center => rect.X + rect.Width / 2,
+                _ => tip
+            };
+            x += AlignShift(dl, outward);
+            y = rect.Y + rect.Height / 2;
+        }
+        AddDataLabel(scene, value, x, y, dsIndex, dataIndex);
+    }
+
+    /// <summary>Places a point's data label from the anchor/align/offset options (default: above the marker).</summary>
+    private void AddPointDataLabel(BitChartScene scene, double value, double x, double y, double radius, int dsIndex, int dataIndex)
+    {
+        var dl = _options.Plugins.DataLabels;
+        double anchorY = dl.Anchor switch
+        {
+            BitChartAlign.Start => y + radius,
+            BitChartAlign.Center => y,
+            _ => y - radius
+        };
+        double outward = dl.Anchor == BitChartAlign.Start ? 1 : -1;
+        AddDataLabel(scene, value, x, anchorY + AlignShift(dl, outward), dsIndex, dataIndex);
+    }
+
+    /// <summary>How far (and in which direction) the label sits from its anchor.</summary>
+    private static double AlignShift(BitChartDataLabelOptions dl, double outward)
+    {
+        double dist = dl.Offset + dl.Font.Size * 0.5 + dl.Padding;
+        return dl.Align switch
+        {
+            BitChartAlign.End => outward * dist,
+            BitChartAlign.Start => -outward * dist,
+            _ => 0
+        };
     }
 
     private void AddDataLabel(BitChartScene scene, double value, double x, double y, int dsIndex = 0, int dataIndex = 0)
@@ -594,15 +852,21 @@ public sealed partial class BitChartRenderer
 
         string text = dl.FormatterCtx?.Invoke(value, dsIndex, dataIndex)
             ?? dl.Formatter?.Invoke(value)
-            ?? value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            ?? FormatNumber(value, "0.##");
+
+        // Kept inside the content box: a label pushed past the tip of a bar at the top of the axis
+        // would otherwise be clipped by the edge of the chart.
+        double halfW = BitChartTextMeasure.Width(text, dl.Font.Size, dl.Font.Weight) / 2 + dl.Padding;
+        double halfH = dl.Font.Size / 2 + dl.Padding;
+        var box = ContentArea();
+        if (box.Width > halfW * 2) x = Math.Clamp(x, box.Left + halfW, box.Right - halfW);
+        if (box.Height > halfH * 2) y = Math.Clamp(y, box.Top + halfH, box.Bottom - halfH);
 
         if (dl.BackgroundColor is { } bgc)
         {
-            double w = BitChartTextMeasure.Width(text, dl.Font.Size, dl.Font.Weight) + dl.Padding * 2;
-            double h = dl.Font.Size + dl.Padding * 2;
             scene.Foreground.Add(new BitChartSvgRect
             {
-                X = x - w / 2, Y = y - h / 2, Width = w, Height = h, Rx = dl.BorderRadius, Fill = bgc
+                X = x - halfW, Y = y - halfH, Width = halfW * 2, Height = halfH * 2, Rx = dl.BorderRadius, Fill = bgc
             });
         }
 
@@ -611,7 +875,7 @@ public sealed partial class BitChartRenderer
             X = x, Y = y,
             Text = text,
             Fill = dl.Color, FontFamily = dl.Font.Family, FontSize = dl.Font.Size, FontWeight = dl.Font.Weight,
-            Anchor = "middle", Baseline = dl.BackgroundColor is null ? "auto" : "central", Rotation = dl.Rotation
+            Anchor = "middle", Baseline = "central", Rotation = dl.Rotation
         });
     }
 

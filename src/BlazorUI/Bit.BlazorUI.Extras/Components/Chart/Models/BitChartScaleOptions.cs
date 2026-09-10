@@ -22,8 +22,14 @@ public sealed class BitChartScaleOptions
     /// <summary>When stacked, normalize each category to 100% (percentage stack).</summary>
     public bool Stacked100 { get; set; }
 
-    /// <summary>BitChartPadding (fraction of a step) applied at the ends of a category axis.</summary>
+    /// <summary>Padding (half a step) applied at the ends of a category axis.</summary>
     public bool Offset { get; set; }
+
+    /// <summary>
+    /// When true (the default) the tick count is additionally capped by how many labels actually fit
+    /// along the axis, so short charts do not end up with overlapping tick labels.
+    /// </summary>
+    public bool AutoSkipTicks { get; set; } = true;
 
     public BitChartGridOptions Grid { get; set; } = new();
     public BitChartTickOptions Ticks { get; set; } = new();
@@ -43,7 +49,7 @@ public sealed class BitChartScaleOptions
     /// <summary>Show a filled backdrop behind radial tick labels.</summary>
     public bool ShowLabelBackdrop { get; set; } = true;
     /// <summary>Backdrop color for radial tick labels.</summary>
-    public string BackdropColor { get; set; } = "rgba(255,255,255,0.75)";
+    public string BackdropColor { get; set; } = "var(--bit-clr-bg-pri, #fff)";
 
     // ---- Time scale ----
     /// <summary>The unit for a time axis. Auto picks a sensible unit from the data range.</summary>

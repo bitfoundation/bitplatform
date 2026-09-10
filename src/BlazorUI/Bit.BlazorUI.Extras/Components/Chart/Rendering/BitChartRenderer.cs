@@ -1,3 +1,4 @@
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -14,8 +15,16 @@ public sealed partial class BitChartRenderer
     private readonly BitChartRenderState _state;
     private readonly double _w;
     private readonly double _h;
+    private readonly string _uid;
 
-    public BitChartRenderer(BitChartConfig config, BitChartRenderState state, double width, double height)
+    /// <summary>
+    /// The scales actually used for this render. Seeded from <see cref="BitChartOptions.Scales"/> and
+    /// completed with defaults here, so the caller's options object is never mutated and can safely be
+    /// shared between charts of different types.
+    /// </summary>
+    private readonly Dictionary<string, BitChartScaleOptions> _scales = new();
+
+    public BitChartRenderer(BitChartConfig config, BitChartRenderState state, double width, double height, string? uid = null)
     {
         _config = config;
         _data = config.Data;
@@ -23,6 +32,7 @@ public sealed partial class BitChartRenderer
         _state = state;
         _w = width;
         _h = height;
+        _uid = uid ?? "bc";
     }
 
     public BitChartScene Render()
@@ -50,25 +60,34 @@ public sealed partial class BitChartRenderer
         }
 
         BuildLegend(scene);
+        scene.IsEmpty = scene.Elements.Count == 0 && scene.Series.Count == 0;
         return scene;
     }
 
     // ---- shared helpers ----
 
-    private int _gradSeq;
+    private int _defSeq;
 
-    /// <summary>Registers a gradient on the scene and returns a <c>url(#id)</c> fill reference.</summary>
+    /// <summary>The culture every number/date is formatted with (invariant unless the caller opts in).</summary>
+    private CultureInfo Culture => _options.Culture ?? CultureInfo.InvariantCulture;
+
+    /// <summary>Formats a data value the way tooltips and data labels present it.</summary>
+    private string FormatNumber(double value, string format = "0.###") => value.ToString(format, Culture);
+
+    /// <summary>Registers a gradient on the scene and returns a <c>url(#id)</c> fill reference.
+    /// Ids are namespaced per chart instance so several charts can share a page.</summary>
     private string RegisterGradient(BitChartScene scene, BitChartGradientBase grad)
     {
-        string id = $"bcgrad{_gradSeq++}";
+        string id = $"{_uid}-g{_defSeq++}";
         scene.Defs.Add(new BitChartGradientDef(id, grad));
         return $"url(#{id})";
     }
 
-    /// <summary>Registers a pattern on the scene and returns a <c>url(#id)</c> fill reference.</summary>
+    /// <summary>Registers a pattern on the scene and returns a <c>url(#id)</c> fill reference.
+    /// Ids are namespaced per chart instance so several charts can share a page.</summary>
     private string RegisterPattern(BitChartScene scene, BitChartFillPattern pattern)
     {
-        string id = $"bcpat{_gradSeq++}";
+        string id = $"{_uid}-p{_defSeq++}";
         scene.Patterns.Add(new BitChartPatternDef(id, pattern));
         return $"url(#{id})";
     }
@@ -83,21 +102,19 @@ public sealed partial class BitChartRenderer
     }
 
     /// <summary>Builds a scriptable-options context for a data element.</summary>
-    private BitChartScriptableContext Ctx(BitChartDataset ds, int dsIndex, int dataIndex, double? value = null)
+    private BitChartScriptableContext Ctx(BitChartDataset ds, int dsIndex, int dataIndex, double? value = null, bool active = false)
     {
-        bool active = _state.Active == (dsIndex, dataIndex);
         double? v = value;
         double? vx = null, vr = null;
-        if (v is null)
+        if (ds.Points is { } pts && dataIndex < pts.Count)
         {
-            if (ds.Points is { } pts && dataIndex < pts.Count)
-            {
-                v = pts[dataIndex].Y; vx = pts[dataIndex].X; vr = pts[dataIndex].R;
-            }
-            else if (dataIndex < ds.Data.Count)
-            {
-                v = ds.Data[dataIndex];
-            }
+            vx = pts[dataIndex].X;
+            vr = pts[dataIndex].R;
+            v ??= pts[dataIndex].Y;
+        }
+        else if (v is null && dataIndex < ds.Data.Count)
+        {
+            v = ds.Data[dataIndex];
         }
         return new BitChartScriptableContext
         {
@@ -114,32 +131,68 @@ public sealed partial class BitChartRenderer
     }
 
     /// <summary>Resolves the effective color for a data element, honoring dataset palettes.</summary>
-    private string ResolveBackground(BitChartDataset ds, int dsIndex, int dataIndex, bool perIndexPalette, double? value = null)
+    private string ResolveBackground(BitChartDataset ds, int dsIndex, int dataIndex, bool perIndexPalette, double? value = null, bool active = false)
     {
-        if (ds.BackgroundColorFn is { } fn && fn(Ctx(ds, dsIndex, dataIndex, value)) is { } c) return c;
+        if (ds.BackgroundColorFn is { } fn && fn(Ctx(ds, dsIndex, dataIndex, value, active)) is { } c) return c;
         if (ds.BackgroundColors is { Count: > 0 } list)
-            return list[dataIndex % list.Count];
+            return list[((dataIndex % list.Count) + list.Count) % list.Count];
         if (!string.IsNullOrEmpty(ds.BackgroundColor))
             return ds.BackgroundColor!;
         return perIndexPalette ? BitChartColorUtil.Palette(dataIndex) : BitChartColorUtil.Palette(dsIndex);
     }
 
-    private string ResolveBorder(BitChartDataset ds, int dsIndex, int dataIndex, bool perIndexPalette, double? value = null)
+    /// <summary>
+    /// Resolves the border color of an element. <paramref name="fallbackToBackground"/> is used by the
+    /// filled element types (bars, arcs): with no explicit border color they take the fill color rather
+    /// than an unrelated palette entry, which would otherwise outline them in a different hue.
+    /// </summary>
+    private string ResolveBorder(BitChartDataset ds, int dsIndex, int dataIndex, bool perIndexPalette,
+        double? value = null, bool fallbackToBackground = false, bool active = false)
     {
-        if (ds.BorderColorFn is { } fn && fn(Ctx(ds, dsIndex, dataIndex, value)) is { } c) return c;
+        if (ds.BorderColorFn is { } fn && fn(Ctx(ds, dsIndex, dataIndex, value, active)) is { } c) return c;
         if (ds.BorderColors is { Count: > 0 } list)
-            return list[dataIndex % list.Count];
+            return list[((dataIndex % list.Count) + list.Count) % list.Count];
         if (!string.IsNullOrEmpty(ds.BorderColor))
             return ds.BorderColor!;
+        if (fallbackToBackground)
+            return ResolveBackground(ds, dsIndex, dataIndex, perIndexPalette, value, active);
         return perIndexPalette ? BitChartColorUtil.Palette(dataIndex) : BitChartColorUtil.Palette(dsIndex);
     }
+
+    /// <summary>True when the dataset asks for a border color in any form.</summary>
+    private static bool HasExplicitBorder(BitChartDataset ds)
+        => ds.BorderColorFn is not null || ds.BorderColors is { Count: > 0 } || !string.IsNullOrEmpty(ds.BorderColor);
+
+    /// <summary>
+    /// Resolves the border/line width for a dataset, falling back to the per-type defaults on
+    /// <see cref="BitChartElementOptions"/> when the dataset leaves <see cref="BitChartDataset.BorderWidth"/> unset.
+    /// </summary>
+    private double ResolveBorderWidth(BitChartDataset ds, BitChartType type, int dsIndex = 0, int dataIndex = 0, double? value = null, bool active = false)
+    {
+        if (active && ds.HoverBorderWidth is { } hbw) return hbw;
+        if (ds.BorderWidthFn is { } fn && fn(Ctx(ds, dsIndex, dataIndex, value, active)) is { } w) return w;
+        if (ds.BorderWidth is { } bw) return bw;
+        var e = _options.Elements;
+        return type switch
+        {
+            BitChartType.Bar => HasExplicitBorder(ds) ? Math.Max(e.BarBorderWidth, 1) : e.BarBorderWidth,
+            BitChartType.Pie or BitChartType.Doughnut or BitChartType.PolarArea => e.ArcBorderWidth,
+            _ => e.LineBorderWidth
+        };
+    }
+
+    /// <summary>Marker radius for a dataset, falling back to the element default.</summary>
+    private double ResolvePointRadius(BitChartDataset ds) => ds.PointRadius ?? _options.Elements.PointRadius;
+
+    /// <summary>Line smoothing for a dataset, falling back to the element default.</summary>
+    private double ResolveTension(BitChartDataset ds) => ds.Tension ?? _options.Elements.LineTension;
 
     private string FormatTooltipValue(BitChartDataset ds, double value)
     {
         var t = _options.Plugins.Tooltip;
         if (t.LabelFormatter is { } f) return f(ds.Label ?? "", value);
         string label = string.IsNullOrEmpty(ds.Label) ? "" : ds.Label + ": ";
-        return label + value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+        return label + FormatNumber(value);
     }
 
     /// <summary>Builds a tooltip item context for callbacks.</summary>
@@ -155,7 +208,7 @@ public sealed partial class BitChartRenderer
             Value = value,
             ValueX = vx,
             Color = color,
-            FormattedValue = value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)
+            FormattedValue = FormatNumber(value)
         };
     }
 
@@ -168,56 +221,99 @@ public sealed partial class BitChartRenderer
         return FormatTooltipValue(ds, value);
     }
 
+    // ---- scales ----
+
+    /// <summary>The scale options for an id within this render (never null once EnsureScales has run).</summary>
+    private BitChartScaleOptions Scale(string id) => _scales[id];
+
+    /// <summary>
+    /// The radial scale a radar or polar-area chart reads. One radial scale serves the whole chart, so
+    /// it is the first dataset's <see cref="BitChartDataset.RAxisID"/> that names it.
+    /// </summary>
+    private string RadialScaleId
+    {
+        get
+        {
+            var ds = _data.Datasets.FirstOrDefault(d => !string.IsNullOrEmpty(d.RAxisID));
+            return ds?.RAxisID ?? "r";
+        }
+    }
+
+    /// <summary>
+    /// Whether a scale draws itself. A sparkline is defined by having no chrome at all, so it silences
+    /// every axis here rather than asking each caller to remember the option.
+    /// </summary>
+    private bool ScaleVisible(BitChartScaleOptions o) => o.Display && !_options.Sparkline;
+
+    /// <summary>Whether a radial scale draws the category labels around its perimeter.</summary>
+    private bool PointLabelsVisible(BitChartScaleOptions o) => o.PointLabels.Display && !_options.Sparkline;
+
+    /// <summary>Effective position of a scale, without writing the default back onto the caller's object.</summary>
+    private static BitChartPosition PositionOf(BitChartScaleOptions o, BitChartPosition fallback) => o.Position ?? fallback;
+
+    /// <summary>Returns the caller's scale for an id, or a fresh default one - added to the local map only.</summary>
+    private BitChartScaleOptions GetOrAddScale(string id, BitChartScaleType type)
+    {
+        if (_scales.TryGetValue(id, out var s)) return s;
+        if (_options.Scales.TryGetValue(id, out var user))
+        {
+            _scales[id] = user;
+            return user;
+        }
+        s = new BitChartScaleOptions { Id = id, Type = type };
+        _scales[id] = s;
+        return s;
+    }
+
     private void EnsureScales()
     {
+        _scales.Clear();
+        foreach (var (id, so) in _options.Scales) _scales[id] = so;
+
         if (_config.Type is BitChartType.Pie or BitChartType.Doughnut)
             return;
 
         if (_config.Type is BitChartType.PolarArea or BitChartType.Radar)
         {
-            _options.GetOrAddScale("r", BitChartScaleType.RadialLinear);
+            GetOrAddScale(RadialScaleId, BitChartScaleType.RadialLinear);
             return;
         }
 
         // Cartesian: ensure x and y exist with sensible defaults.
-        var x = _options.GetOrAddScale("x", _config.Type is BitChartType.Scatter or BitChartType.Bubble
+        GetOrAddScale("x", _config.Type is BitChartType.Scatter or BitChartType.Bubble
             ? BitChartScaleType.Linear : BitChartScaleType.Category);
-        x.Position ??= BitChartPosition.Bottom;
 
-        // Additional x axes referenced by datasets (default linear, bottom).
+        // Additional x axes referenced by datasets (default linear).
         foreach (var id in _data.Datasets.Select(d => d.XAxisID).Distinct())
         {
             if (id == "x" || string.IsNullOrEmpty(id)) continue;
-            var x2 = _options.GetOrAddScale(id, BitChartScaleType.Linear);
-            x2.Position ??= BitChartPosition.Bottom;
+            GetOrAddScale(id, BitChartScaleType.Linear);
         }
 
         // Gather y axis ids referenced by datasets.
-        var yIds = _data.Datasets.Select(d => d.YAxisID).Distinct().ToList();
-        foreach (var id in yIds)
+        foreach (var id in _data.Datasets.Select(d => d.YAxisID).Distinct())
         {
-            var y = _options.GetOrAddScale(id, BitChartScaleType.Linear);
-            y.Position ??= BitChartPosition.Left;
+            if (string.IsNullOrEmpty(id)) continue;
+            GetOrAddScale(id, BitChartScaleType.Linear);
         }
-        if (!_options.Scales.ContainsKey("y"))
-        {
-            var y = _options.GetOrAddScale("y", BitChartScaleType.Linear);
-            y.Position ??= BitChartPosition.Left;
-        }
+        GetOrAddScale("y", BitChartScaleType.Linear);
     }
 
     private void BuildLegend(BitChartScene scene)
     {
         var lo = _options.Plugins.Legend;
-        if (!lo.Display) return;
+        if (!lo.Display || _options.Sparkline) return;
 
         var legend = new BitChartLegendModel
         {
-            Position = lo.Position,
+            // The legend only has four sides to live on; anything else would silently render nowhere.
+            Position = lo.Position is BitChartPosition.Bottom or BitChartPosition.Left or BitChartPosition.Right
+                ? lo.Position : BitChartPosition.Top,
             Align = lo.Align,
             Labels = lo.Labels,
             Title = lo.Title,
-            OnClickToggle = lo.OnClickToggle
+            OnClickToggle = lo.OnClickToggle,
+            MaxHeight = lo.MaxHeight
         };
 
         if (_config.Type is BitChartType.Pie or BitChartType.Doughnut or BitChartType.PolarArea)
@@ -257,20 +353,23 @@ public sealed partial class BitChartRenderer
             }
         }
 
+        if (lo.Filter is { } filter)
+            legend.Items.RemoveAll(it => !filter(it));
         if (lo.Reverse) legend.Items.Reverse();
         scene.Legend = legend;
     }
 
     private BitChartTitleModel? BuildTitle(BitChartTitleOptions o)
     {
-        if (!o.Display || string.IsNullOrEmpty(o.Text)) return null;
+        if (!o.Display || _options.Sparkline || string.IsNullOrEmpty(o.Text)) return null;
         return new BitChartTitleModel
         {
             Text = o.Text,
             Color = o.Color,
             Position = o.Position,
             Align = o.Align,
-            Font = o.Font
+            Font = o.Font,
+            Padding = o.Padding
         };
     }
 }
