@@ -63,6 +63,15 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     // call, leaving the JS side either double-initialized or unable to find its map id.
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
 
+    // Set at the top of DisposeAsync. IsDisposed only flips once the base class has finished
+    // tearing down, so everything that can resume after an await - the visibility wait, the
+    // asset load, the init interop - would otherwise see a live component while teardown is
+    // already disposing the gate underneath it.
+    private bool _disposing;
+
+    // True once teardown has begun, whether or not the base class has finished it.
+    private bool Gone => IsDisposed || _disposing;
+
     // Snapshot of imperatively-added state. We replay it after a destructive provider swap when
     // ReplayStateOnProviderSwap is true. Plain dictionaries - all access is serialised by
     // _lifecycleGate or by the calling thread (the Blazor renderer is single-threaded per circuit).
@@ -940,6 +949,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         var list = markers as ICollection<BitMapMarker> ?? [.. markers];
 
+        // A wholesale replace can drop or move the marker an open popup belongs to, so the id is
+        // taken before the snapshot is rewritten and the popup reconciled against it afterwards -
+        // the same contract RemoveMarker and ClearMarkers already honour.
+        var openId = _openPopupMarker?.Id;
+
         if (IsClustering)
         {
             // The clustering layer builds its own payloads from the snapshot, so the per-marker
@@ -954,6 +968,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             foreach (var m in list) _markerState[m.Id] = m;
             await PushClusteredMarkersAsync(nameof(SyncMarkers));
             await NotifyMarkerListChanged();
+            await ReconcileOpenPopupAsync(openId);
             return;
         }
 
@@ -980,6 +995,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 _markerState[m.Id] = m;
             }
             await NotifyMarkerListChanged();
+            await ReconcileOpenPopupAsync(openId);
         }
     }
 
@@ -1518,15 +1534,20 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 // A failed observer must not mean "no map ever" - fall through and initialize now.
                 await RaiseInteropError(BitMapInteropErrorSource.Init, ex, nameof(LazyLoad));
             }
-            if (IsDisposed) return;
+            if (Gone) return;
         }
 
         await SetLoadState(BitMapLoadState.Loading);
 
-        await _lifecycleGate.WaitAsync();
+        // Teardown disposes the gate, and cancelling the visibility wait above resumes this
+        // method inside DisposeAsync - so both the wait and the release have to tolerate a
+        // gate that is already gone.
+        try { await _lifecycleGate.WaitAsync(); }
+        catch (ObjectDisposedException) { return; /* disposed mid-flight */ }
+
         try
         {
-            if (IsDisposed) return;
+            if (Gone) return;
 
             var initial = Provider ?? new TMapProvider();
             BitMapValidation.ValidateJsObjectName(initial.JsObjectName);
@@ -1544,7 +1565,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             // unhandled exception - on Blazor Server that tears down the circuit, so a CDN
             // outage would take the whole page with it instead of showing the error state.
             if (await LoadAssetsAsync(initial) is false) return;
-            if (IsDisposed) return;
+            if (Gone) return;
 
             // Build the options payload outside the interop try/catch so that provider
             // configuration errors (missing tokens, invalid URLs, etc.) surface to the
@@ -1584,10 +1605,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         finally
         {
-            _lifecycleGate.Release();
+            try { _lifecycleGate.Release(); } catch (ObjectDisposedException) { }
         }
 
-        if (_initialized)
+        if (_initialized && Gone is false)
         {
             await SetLoadState(BitMapLoadState.Ready);
 
@@ -1677,7 +1698,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             return;
         }
 
-        await SetView(center.Value, Zoom, animate: false);
+        // Same reasoning as the SetZoom branch above: this runs inside OnParametersSetAsync, so
+        // a bound Zoom outside the provider's min/max - or a provider whose setView fails - must
+        // surface through OnInteropError instead of escaping a render as an unhandled exception.
+        try { await SetView(center.Value, Zoom, animate: false); }
+        catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(Center)); }
     }
 
     /// <summary>
@@ -1862,7 +1887,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             // A failed asset load leaves the current map alone rather than propagating out of
             // SetParametersAsync, where it would surface as an unhandled exception.
             if (await LoadAssetsAsync(effective) is false) return;
-            if (IsDisposed) return;
+            if (Gone) return;
 
             if (jsObjectChanged)
             {
@@ -1906,7 +1931,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         // reports IsReady=true.
         var swapInitOptions = effective.BuildOptionsPayload();
 
-        if (IsDisposed) return;
+        if (Gone) return;
 
         // The new backend may need WebGL - or a newer WebGL - than the old one did. Check before
         // tearing the working map down, so an unsupported swap leaves the existing map alone.
@@ -1940,7 +1965,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         _activeProvider = null;
         await SetLoadState(BitMapLoadState.Loading);
 
-        if (IsDisposed) return;
+        if (Gone) return;
 
         // The old DotNetObjectReference is still bound to the disposed JS instance. Recycle it
         // for the new init: dispose it so we don't leak the GC handle and create a fresh one.
@@ -2031,7 +2056,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             }
         }
 
-        if (IsDisposed) return false;
+        if (Gone) return false;
 
         var pendingScripts = BitMapAssetCache.FilterUnloadedScripts(provider.Scripts);
         if (pendingScripts.Count > 0)
@@ -2199,8 +2224,20 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     private async Task PublishAnnouncement(BitMapViewState view)
     {
-        var text = ViewAnnouncementFormatter?.Invoke(view)
-            ?? $"Map centred at {view.Center.Latitude:F4}, {view.Center.Longitude:F4}, zoom level {view.Zoom:F0}.";
+        var text = DefaultAnnouncement(view);
+
+        if (ViewAnnouncementFormatter is not null)
+        {
+            // Reached from a [JSInvokable] callback and from the trailing-announcement timer.
+            // A throwing formatter would escape the first as an unhandled interop exception and
+            // the second as an unobserved task exception, so it is treated like any other
+            // consumer callback: reported, and the built-in wording used instead.
+            try { text = ViewAnnouncementFormatter(view) ?? text; }
+            catch (Exception ex)
+            {
+                await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(ViewAnnouncementFormatter));
+            }
+        }
 
         _announcement = string.Equals(_announcement, text, StringComparison.Ordinal)
             ? text + AnnouncementNudge
@@ -2217,6 +2254,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// changing a single spoken character.
     /// </summary>
     private const string AnnouncementNudge = "\u200b";
+
+    private static string DefaultAnnouncement(BitMapViewState view)
+        => $"Map centred at {view.Center.Latitude:F4}, {view.Center.Longitude:F4}, zoom level {view.Zoom:F0}.";
 
     private BitMapViewState? _pendingAnnouncementView;
     private CancellationTokenSource? _announcementCts;
@@ -2241,7 +2281,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             try
             {
                 await Task.Delay(due, cts.Token);
-                if (cts.IsCancellationRequested || IsDisposed) return;
+                if (cts.IsCancellationRequested || Gone) return;
 
                 var view = _pendingAnnouncementView;
                 if (view is null || AnnounceViewChanges is false) return;
@@ -2252,6 +2292,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             }
             catch (OperationCanceledException) { /* superseded by a newer view */ }
             catch (ObjectDisposedException) { /* the component went away mid-wait */ }
+            catch (Exception ex)
+            {
+                // Nothing awaits this task, so anything escaping it would surface as an
+                // unobserved exception on the finalizer thread rather than at the consumer.
+                await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(AnnounceViewChanges));
+            }
         }, cts.Token);
     }
 
@@ -2463,6 +2509,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        // Flag teardown before the first await: IsDisposed is only set once the base class has
+        // run, so without this every continuation resuming below still sees a live component.
+        _disposing = true;
+
         // Acquire the lifecycle gate so we don't race with an in-flight provider swap.
         try { await _lifecycleGate.WaitAsync(); }
         catch (ObjectDisposedException) { /* already gone */ }
@@ -2486,7 +2536,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 // provider's dispose is free to remove the container out from under them.
                 await _js.BitMapChromeDetach(_Id);
                 // The clustering layer keeps the whole marker set alive; drop it with the map.
-                await _js.BitMapClusterDisable(_Id);
+                // Discard rather than disable: disabling hands the full unclustered set back to
+                // the provider, and the provider is being destroyed on the next line.
+                await _js.BitMapClusterDiscard(_Id);
             }
             catch (JSDisconnectedException) { }
             catch (JSException) { }

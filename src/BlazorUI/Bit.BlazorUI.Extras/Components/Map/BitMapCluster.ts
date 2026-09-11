@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     type ClusterOptions = {
         /** Grid size in screen pixels. Points that land in the same cell become one cluster. */
@@ -70,6 +70,15 @@ namespace BitBlazorUI {
             if (!s) return;
             delete BitMapCluster._maps[id];
             BitMapCluster._syncToProvider(s.jsObjectName, id, s.markers);
+        }
+
+        /**
+         * Drops the clustering state without handing anything back to the provider. Teardown
+         * only: the map itself is destroyed straight afterwards, so re-syncing the whole
+         * unclustered set into it first would draw every marker for nothing.
+         */
+        public static discard(id: string) {
+            delete BitMapCluster._maps[id];
         }
 
         /** Replaces the source set. The component owns it; this layer only decides what is drawn. */

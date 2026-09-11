@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -27,6 +27,7 @@ public class BitMapTests : BunitTestContext
     private const string SYNC_MARKERS = "BitBlazorUI.BitMapLeaflet.syncMarkers";
     private const string CLUSTER_CONFIGURE = "BitBlazorUI.BitMapCluster.configure";
     private const string CLUSTER_DISABLE = "BitBlazorUI.BitMapCluster.disable";
+    private const string CLUSTER_DISCARD = "BitBlazorUI.BitMapCluster.discard";
     private const string CLUSTER_SET_MARKERS = "BitBlazorUI.BitMapCluster.setMarkers";
     private const string CLUSTER_RENDER = "BitBlazorUI.BitMapCluster.render";
     private const string CLUSTER_EXPAND = "BitBlazorUI.BitMapCluster.expand";
@@ -1550,7 +1551,8 @@ public class BitMapTests : BunitTestContext
     public async Task BitMapShouldReleaseTheClusteringLayerOnDisposal()
     {
         // The layer holds the whole marker set, so leaving it behind leaks it for the lifetime of
-        // the page.
+        // the page. Teardown discards it rather than disabling it: disable hands the full
+        // unclustered set back to a provider that is about to be destroyed.
         SetupSuccessfulMount();
 
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
@@ -1560,7 +1562,8 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_DISABLE));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_DISCARD));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_DISABLE));
     }
 
     [TestMethod]
@@ -2063,6 +2066,32 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMapShouldSurviveAThrowingViewAnnouncementFormatter()
+    {
+        // The formatter runs inside a [JSInvokable] callback, so letting it throw would come back
+        // as an unhandled interop exception - on Blazor Server, a torn-down circuit.
+        SetupSuccessfulMount();
+
+        var errors = new List<BitMapInteropErrorArgs>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter,
+                _ => throw new InvalidOperationException("boom"));
+            parameters.Add(p => p.OnInteropError,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapInteropErrorArgs>(this, e => errors.Add(e)));
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+
+        Assert.IsTrue(errors.Any(e => e.Source == BitMapInteropErrorSource.Callback
+                                   && e.Context == nameof(BitMap<BitLeafletMapProvider>.ViewAnnouncementFormatter)));
+        // The built-in wording stands in, so the move is still announced.
+        StringAssert.Contains(component.Find(".bit-map-live").TextContent, "zoom level 5");
+    }
+
+    [TestMethod]
     public async Task BitMapShouldReportARightClickWithItsCoordinate()
     {
         SetupSuccessfulMount();
@@ -2257,6 +2286,50 @@ public class BitMapTests : BunitTestContext
 
         Assert.IsNull(component.Instance.OpenPopupMarker);
         Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldCloseThePopupWhenSyncMarkersDropsItsMarker()
+    {
+        // SyncMarkers replaces the whole set in one call, which is exactly the case where the
+        // marker a popup belongs to is most likely to disappear.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+        Assert.IsNotNull(component.Instance.OpenPopupMarker);
+
+        await component.Instance.SyncMarkers([new BitMapMarker { Id = "b", Position = new(1, 1) }]);
+
+        Assert.IsNull(component.Instance.OpenPopupMarker);
+        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldReAnchorAnOpenPopupWhenSyncMarkersMovesItsMarker()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+        var anchorsBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == TRACK_ANCHOR);
+
+        await component.Instance.SyncMarkers([new BitMapMarker { Id = "a", Position = new(10, 20) }]);
+
+        var anchors = Context.JSInterop.Invocations.Where(i => i.Identifier == TRACK_ANCHOR).ToList();
+        Assert.AreEqual(anchorsBefore + 1, anchors.Count);
+        Assert.AreEqual(10d, anchors[^1].Arguments[2]);
+        Assert.AreEqual(20d, anchors[^1].Arguments[3]);
     }
 
     [TestMethod]
@@ -2512,6 +2585,14 @@ public class BitMapTests : BunitTestContext
         // The complement - almost the whole globe - is outside, which is the whole point of
         // treating an inverted longitude pair as a crossing rather than an error.
         Assert.IsFalse(bounds.Contains(new BitMapLatLng(5, 0)));
+
+        Assert.IsTrue(bounds.Contains(new BitMapLatLngBounds(new(1, 175), new(9, -175))));
+        // Both corners of this one land in the narrow box, but the box between them wraps the
+        // long way round the globe - so testing the corners alone would call it contained.
+        Assert.IsFalse(bounds.Contains(new BitMapLatLngBounds(new(1, -179), new(9, 179))));
+        // A run that starts inside and leaves through the east edge is not contained either.
+        Assert.IsFalse(bounds.Contains(new BitMapLatLngBounds(new(1, 175), new(9, -160))));
+        Assert.IsTrue(BitMapLatLngBounds.World.Contains(bounds), "everything is inside the world");
     }
 
     [TestMethod]

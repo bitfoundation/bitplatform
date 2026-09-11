@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Bounding box defined by a south-west and a north-east corner.
@@ -111,8 +111,28 @@ public readonly record struct BitMapLatLngBounds
 
     /// <summary>Whether another box falls entirely inside this one (edges included).</summary>
     public bool Contains(BitMapLatLngBounds other)
-        => Contains(other.SouthWest) && Contains(other.NorthEast)
-        && (CrossesAntimeridian || other.CrossesAntimeridian is false);
+    {
+        if (other.SouthWest.Latitude < SouthWest.Latitude || other.NorthEast.Latitude > NorthEast.Latitude)
+        {
+            return false;
+        }
+
+        var span = LongitudeSpan;
+
+        // A box spanning the full range of longitudes contains every other box's longitude run,
+        // crossing or not - there is nowhere else for one to be.
+        if (span >= 360) return true;
+
+        // Longitudes are compared as a run measured eastward from this box's west edge, which
+        // makes a crossing box and a plain one the same arithmetic. Testing the other box's two
+        // corners on their own is not enough: both edges of a near-global box sit inside a narrow
+        // box straddling the antimeridian while the box itself wraps right past it.
+        var offset = AngularGap(SouthWest.Longitude, other.SouthWest.Longitude);
+        // -180 and +180 are the same meridian, so a full turn is the west edge itself.
+        if (offset >= 360) offset -= 360;
+
+        return offset + other.LongitudeSpan <= span;
+    }
 
     /// <summary>Whether the two boxes overlap at all (touching edges count).</summary>
     public bool Intersects(BitMapLatLngBounds other)

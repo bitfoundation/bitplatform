@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Provider-agnostic JS runtime helpers for <see cref="BitMap{TMapProvider}"/>.
@@ -237,6 +237,11 @@ internal static class BitMapJsRuntimeExtensions
     public static ValueTask BitMapClusterDisable(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.BitMapCluster.disable", id);
+    }
+
+    public static ValueTask BitMapClusterDiscard(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.BitMapCluster.discard", id);
     }
 
     public static ValueTask BitMapClusterSetMarkers(this IJSRuntime jsRuntime, string id, string[] markerIds, object[] markers)

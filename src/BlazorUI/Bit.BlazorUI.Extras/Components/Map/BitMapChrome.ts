@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     type ChromeOptions = {
         /** BitBlazorUI.<jsObjectName> of the active provider, used to call back into invalidateSize. */
@@ -398,6 +398,13 @@ namespace BitBlazorUI {
             if (!s.options.escapeToExit) return;
             const keydown = (e: KeyboardEvent) => {
                 if (e.key !== 'Escape') return;
+                // Stopping propagation during the CAPTURE phase keeps the event from reaching the
+                // target at all, so anything inside the map that handles Escape itself - the
+                // marker popup dialog, whatever the consumer rendered into the overlay - would
+                // never see it, and Blazor's delegated listener never fires. Those parts are not
+                // the keyboard trap this exists for: focus there is already out of the canvas.
+                const target = e.target;
+                if (target instanceof Element && target.closest('.bit-map-popup, .bit-map-overlay')) return;
                 e.stopPropagation();
                 try {
                     // Focus may be on any focusable descendant - a marker button, a provider's own

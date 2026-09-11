@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     /**
      * CesiumJS provider - 3D globe. Loads CesiumJS from the official CDN and drives a Viewer.
@@ -24,6 +24,10 @@ namespace BitBlazorUI {
             terrainEnabled: boolean,
             sceneMode: string | undefined,
             shadowsEnabled: boolean,
+            /** The camera the options payload last asked for, so a sync can tell a real change from a repeat. */
+            cameraLat: number,
+            cameraLng: number,
+            cameraAltitude: number,
         } } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -140,6 +144,9 @@ namespace BitBlazorUI {
                 terrainEnabled: !!o.terrainEnabled,
                 sceneMode: o.sceneMode,
                 shadowsEnabled: !!o.shadowsEnabled,
+                cameraLat: lat,
+                cameraLng: lng,
+                cameraAltitude: altitude,
             };
             // Capture the base imagery layer (when present) so subsequent
             // _applyImagery() calls remove/replace exactly this layer instead of
@@ -231,38 +238,23 @@ namespace BitBlazorUI {
             }
 
             // ---- camera ----
-            // Only touch the camera when the caller actually supplied a camera option.
-            // Otherwise every unrelated sync (a style toggle, a widget flag) would yank
-            // the view back to the provider's configured centre, discarding wherever the
-            // user had navigated to.
-            const hasCameraOption = ['center', 'zoom', 'altitude']
-                .some(k => Object.prototype.hasOwnProperty.call(o, k) && o[k] !== undefined && o[k] !== null);
-            if (!hasCameraOption) return;
+            // Move the camera only when the CONFIGURED camera actually changed. Testing for the
+            // presence of a camera key is not enough: the options payload always carries center
+            // and zoom, so every unrelated sync (a style toggle, a widget flag) would yank the
+            // view back to the provider's configured centre, discarding wherever the user had
+            // navigated to. Missing keys fall back to the last configured value rather than to
+            // where the camera happens to be, so panning the globe never counts as a change.
+            const lat: number = (o.center !== undefined && o.center !== null) ? o.center.lat : s.cameraLat;
+            const lng: number = (o.center !== undefined && o.center !== null) ? o.center.lng : s.cameraLng;
+            const altitude: number = (o.altitude !== undefined && o.altitude !== null)
+                ? o.altitude
+                : ((o.zoom !== undefined && o.zoom !== null) ? BitMapCesium._zoomToAltitude(o.zoom) : s.cameraAltitude);
 
-            let lat: number, lng: number, altitude: number;
+            if (lat === s.cameraLat && lng === s.cameraLng && altitude === s.cameraAltitude) return;
 
-            const currentCartographic = Cesium.Cartographic.fromCartesian(s.viewer.camera.position);
-
-            if (o.center !== undefined && o.center !== null) {
-                lat = o.center.lat;
-                lng = o.center.lng;
-            } else if (currentCartographic) {
-                lat = Cesium.Math.toDegrees(currentCartographic.latitude);
-                lng = Cesium.Math.toDegrees(currentCartographic.longitude);
-            } else {
-                lat = 51.505;
-                lng = -0.09;
-            }
-
-            if (o.altitude !== undefined && o.altitude !== null) {
-                altitude = o.altitude;
-            } else if (o.zoom !== undefined && o.zoom !== null) {
-                altitude = BitMapCesium._zoomToAltitude(o.zoom);
-            } else if (currentCartographic) {
-                altitude = currentCartographic.height;
-            } else {
-                altitude = BitMapCesium._zoomToAltitude(4);
-            }
+            s.cameraLat = lat;
+            s.cameraLng = lng;
+            s.cameraAltitude = altitude;
 
             s.viewer.camera.flyTo({
                 destination: Cesium.Cartesian3.fromDegrees(lng, lat, altitude),
