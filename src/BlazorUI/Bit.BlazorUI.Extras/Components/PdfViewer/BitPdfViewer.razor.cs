@@ -918,14 +918,33 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     public async Task SetRotation(int degrees)
     {
-        // Nearest quarter turn, so an off-axis angle lands on the turn it is closest
-        // to rather than being truncated toward zero.
-        int normalized = (((int)Math.Round(degrees / 90.0) * 90) % 360 + 360) % 360;
+        int normalized = NormalizeRotation(degrees);
         if (normalized == Rotation) return;
 
         if (await AssignRotation(normalized) is false) return;
-        _appliedRotation = Rotation;
         await OnRotationChanged.InvokeAsync(Rotation);
+        if (IsDisposed) return;
+
+        await ApplyRotationAsync();
+    }
+
+    // Nearest quarter turn, so an off-axis angle lands on the turn it is closest to
+    // rather than being truncated toward zero.
+    private static int NormalizeRotation(int degrees) => (((int)Math.Round(degrees / 90.0) * 90) % 360 + 360) % 360;
+
+    /// <summary>Re-prepares and re-renders the pages for the angle <see cref="Rotation"/>
+    /// ALREADY holds. This is the host-driven half of <see cref="SetRotation"/>, which has
+    /// nothing to assign when the parameter arrived carrying the new angle itself.</summary>
+    private async Task ApplyRotationAsync()
+    {
+        // Taken before the await below, so a re-render caused by the assignment does not
+        // come back through here for the same angle.
+        _appliedRotation = Rotation;
+
+        // Best effort: an off-axis angle from the host is normalized in place when the
+        // parameter is two-way bound, and rendered as given when the host owns it.
+        int normalized = NormalizeRotation(Rotation);
+        if (normalized != Rotation && await AssignRotation(normalized)) _appliedRotation = Rotation;
         if (IsDisposed) return;
 
         PreparePages();
@@ -2012,8 +2031,9 @@ public partial class BitPdfViewer : BitComponentBase
         }
         if (Rotation != _appliedRotation)
         {
-            _appliedRotation = Rotation;
-            await SetRotation(Rotation);
+            // Not SetRotation: the parameter already holds the new angle, so it would
+            // see the value it was asked to set in place and return without re-rendering.
+            await ApplyRotationAsync();
         }
 
         // Same document but a rendering mode changed: invalidate and re-render
@@ -3198,7 +3218,7 @@ public partial class BitPdfViewer : BitComponentBase
 
     // The zoom bounds and step, sanitized: a host can pass anything, and an
     // inverted or degenerate range would otherwise clamp every zoom to nonsense.
-    private double EffectiveMinZoom => MinZoom > 0 ? Math.Min(MinZoom, EffectiveMaxZoom) : 0.1;
+    private double EffectiveMinZoom => Math.Min(MinZoom > 0 ? MinZoom : 0.1, EffectiveMaxZoom);
 
     private double EffectiveMaxZoom => MaxZoom > 0 ? MaxZoom : 8.0;
 

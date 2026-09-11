@@ -296,6 +296,28 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPdfViewerShouldSurviveZoomBoundsThatExcludeTheDefaultMinimum()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
+            // MinZoom switched off, and a maximum below the 0.1 the viewer falls back
+            // to: the fallback has to be bounded by it rather than inverting the range.
+            parameters.Add(p => p.MinZoom, 0);
+            parameters.Add(p => p.MaxZoom, 0.05);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.SetZoom(1));
+        Assert.AreEqual(0.05, component.Instance.Zoom, 0.0001);
+
+        await component.InvokeAsync(() => component.Instance.ZoomOut());
+        Assert.AreEqual(0.05, component.Instance.Zoom, 0.0001);
+    }
+
+    [TestMethod]
     public async Task BitPdfViewerShouldClampZoomToTheConfiguredBounds()
     {
         var zooms = new List<double>();
@@ -1349,6 +1371,29 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPdfViewerShouldRotateThePagesWhenTheHostSetsRotation()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            // 300x200 pages: a quarter turn is visible in the page box.
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithLayers()));
+            parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        StringAssert.StartsWith(component.Find(".bit-pdv-page[data-page='1']").GetAttribute("style"),
+                                "width:300px;height:200px");
+
+        // The angle arriving on the parameter is a rotation like any other: the pages
+        // have to be re-prepared for it, even though there is nothing left to assign.
+        component.Render(parameters => parameters.Add(p => p.Rotation, 90));
+
+        Assert.AreEqual(90, component.Instance.Rotation);
+        component.WaitForAssertion(() => StringAssert.StartsWith(
+            component.Find(".bit-pdv-page[data-page='1']").GetAttribute("style"), "width:200px;height:300px"));
+    }
+
+    [TestMethod]
     public async Task BitPdfViewerShouldLeaveAOneWayBoundPageToTheHost()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
@@ -2254,6 +2299,25 @@ public class BitPdfViewerTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.AllowDropFile, true));
 
         // Accepting drops renders a hidden one, which is what the drop handler fills.
+        var input = component.Find("input.bit-pdv-file");
+        Assert.AreEqual("-1", input.GetAttribute("tabindex"));
+        Assert.AreEqual("true", input.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldRenderADropTargetInputWhenTheToolbarIsHidden()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            // The open-file item is on by default, but a hidden toolbar renders none of
+            // it: without an input of its own a drop would have nowhere to land.
+            parameters.Add(p => p.ShowToolbar, false);
+            parameters.Add(p => p.AllowDropFile, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
         var input = component.Find("input.bit-pdv-file");
         Assert.AreEqual("-1", input.GetAttribute("tabindex"));
         Assert.AreEqual("true", input.GetAttribute("aria-hidden"));

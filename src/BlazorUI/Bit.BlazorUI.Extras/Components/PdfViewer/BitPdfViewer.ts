@@ -135,6 +135,13 @@
             for (let i = 0; i < pages.length; i++) {
                 const page = pages[i];
                 const r = page.getBoundingClientRect();
+                // Page mode (and presentation) hides every page but the current one, and a
+                // display:none element measures as all zeros: it is neither visible nor a
+                // meaningful distance away, so measuring it would queue the WHOLE document
+                // and defeat both the ordered early exit below and eviction.
+                if (r.width === 0 && r.height === 0) {
+                    continue;
+                }
                 if (near(r) > hi) {
                     break; // pages are laid out in order; everything after is further along
                 }

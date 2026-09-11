@@ -288,7 +288,9 @@
        another page announces nothing on its own. *@
     <div class="bit-pdv-sr" role="status" aria-live="polite">@_announcement</div>
 
-    @if (AllowDropFile && HasToolbarItem(BitPdfToolbarItems.OpenFile) is false)
+    @* The toolbar's own picker is reused when it is on screen; a hidden toolbar, or one
+       without the open-file button, still needs one for a drop to land in. *@
+    @if (AllowDropFile && (ShowToolbar is false || HasToolbarItem(BitPdfToolbarItems.OpenFile) is false))
     {
         @* Dropping hands the file to this input and lets Blazor read it exactly as it
            reads a picked one, so a drop needs no second path through interop. Hidden,
