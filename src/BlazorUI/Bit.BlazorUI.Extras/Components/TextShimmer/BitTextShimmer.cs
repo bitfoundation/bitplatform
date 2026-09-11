@@ -18,7 +18,11 @@ namespace Bit.BlazorUI;
 /// The characters are still in the document: a copy, a find-in-page and a screen reader all get the text whatever is
 /// painted into it. Where the shimmer cannot be painted - a forced-colors palette, a printout, a browser without the
 /// text clip - or where it is not wanted - a reduced motion preference, a disabled component - the text is drawn in a
-/// flat color instead, so it is never left invisible.
+/// flat color instead, so it is never left invisible. A selected glyph is given a fill of its own as well.
+/// <br />
+/// The band is painted within the box of the element only, so the part of a glyph that reaches outside it - an
+/// accent or a descender under a line height tighter than the font - is not painted; give the element the line
+/// height, or the padding, its glyphs need.
 /// <br />
 /// Anything that is not a parameter is splatted onto the rendered tag, and the attributes the component builds itself
 /// are merged with the splatted ones rather than replacing them - which is how a "role" of "status" or an "aria-live"
@@ -49,8 +53,9 @@ public partial class BitTextShimmer : BitComponentBase
     /// The tilt of the band in degrees, measured from upright. When null, the band is upright.
     /// </summary>
     /// <remarks>
-    /// A positive angle leans the top of the band towards the end the sweep is heading for on a left-to-right page,
-    /// a negative one the other way. A tilted band is wider on the page than an upright one, and it stops reading as
+    /// A positive angle leans the top of the band towards the end of the text in its reading direction - to the right
+    /// in left-to-right text and to the left in right-to-left text, where the whole shimmer is mirrored - and a
+    /// negative one towards its start. A tilted band is wider on the page than an upright one, and it stops reading as
     /// a sweep altogether as it approaches a quarter turn, so keep it within about 45 degrees either way. A value that
     /// is not a finite number is ignored.
     /// </remarks>
@@ -74,6 +79,11 @@ public partial class BitTextShimmer : BitComponentBase
     /// The length of the content cannot be measured, so the width of the band is scaled by <see cref="ContentLength"/>
     /// instead. A void element (such as "img" or "br") is defined to hold no content, so nothing is rendered into one
     /// where <see cref="Element"/> names it.
+    /// <br />
+    /// Every glyph of the content is painted by the shimmer, so a part of it that is painted on a layer of its own -
+    /// one that is transformed, such as a spinning icon - is left out of the clip and its glyphs are not painted at
+    /// all. Give such a part a fill of its own ("-webkit-text-fill-color: currentcolor"), which also keeps an emoji
+    /// in its own colors rather than as a silhouette of the band.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public RenderFragment? ChildContent { get; set; }
@@ -187,8 +197,9 @@ public partial class BitTextShimmer : BitComponentBase
     /// <remarks>
     /// Each sweep already ends with the band leaving the text and entering it again, which takes about half of the
     /// <see cref="Duration"/>; this adds to that rest without changing the speed of the band. A calm pause between the
-    /// sweeps is what keeps a long-running "thinking" label from reading as a blinking one. A negative value is
-    /// treated as zero.
+    /// sweeps is what keeps a long-running "thinking" label from reading as a blinking one. Without a
+    /// <see cref="Duration"/> the pause is retuned by the looping motion factor of the theme along with the sweep it
+    /// follows. A negative value is treated as zero.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int? RepeatDelay { get; set; }
@@ -207,7 +218,7 @@ public partial class BitTextShimmer : BitComponentBase
     public bool Reversed { get; set; }
 
     /// <summary>
-    /// The shimmer band width multiplier. The effective band width (px) is Spread times the character count,
+    /// The shimmer band width multiplier. The effective spread of the band (px) is Spread times the character count,
     /// so longer text gets a proportionally wider shine.
     /// <br />
     /// The default value is <strong>2</strong>.
@@ -306,9 +317,11 @@ public partial class BitTextShimmer : BitComponentBase
         StyleBuilder.Register(() => Duration.HasValue ? $"--bit-tsh-duration:{Ms(Duration.Value)}" : string.Empty);
         StyleBuilder.Register(() => Delay.HasValue ? $"--bit-tsh-delay:{Ms(Delay.Value)}" : string.Empty);
 
-        // The background the band is painted in is widened by the distance the band would travel during the pause,
-        // and the sweep is lengthened by the pause itself, so the band crosses the text at the same speed and simply
-        // spends longer outside it. The default duration is the one the ratio is taken of when none is given.
+        // The pause is written as the length of the whole cycle over the length of the sweep, which the stylesheet
+        // lengthens the animation and the distance the band travels by alike, so the band crosses the text at the
+        // same speed and simply spends longer outside it. The default duration is the one the ratio is taken of when
+        // none is given, and since the stylesheet multiplies the duration by the ratio rather than adding the pause
+        // to it, the loop factor of the theme retunes the pause along with the sweep it belongs to.
         StyleBuilder.Register(() =>
         {
             if (RepeatDelay is not > 0) return string.Empty;
@@ -316,8 +329,8 @@ public partial class BitTextShimmer : BitComponentBase
             var duration = Math.Max(0, Duration ?? DefaultDuration);
             if (duration == 0) return string.Empty;
 
-            var size = (2 + (double)RepeatDelay.Value / duration) * 100;
-            return $"--bit-tsh-repeat-delay:{Ms(RepeatDelay.Value)};--bit-tsh-size:{Format(size)}%";
+            var cycle = 1 + (double)RepeatDelay.Value / duration;
+            return $"--bit-tsh-cycle:{cycle.ToString("0.######", CultureInfo.InvariantCulture)}";
         });
 
         StyleBuilder.Register(() => Iterations >= 1 ? $"--bit-tsh-iterations:{Iterations.Value.ToString(CultureInfo.InvariantCulture)}" : string.Empty);

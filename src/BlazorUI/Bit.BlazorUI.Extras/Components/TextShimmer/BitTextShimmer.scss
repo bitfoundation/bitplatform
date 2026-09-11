@@ -18,10 +18,14 @@
     // the pace. Reduced motion stops the shimmer outright rather than slowing it (see below).
     --bit-tsh-duration: calc(2000ms * #{$mot-loop-factor});
     --bit-tsh-delay: 0ms;
-    --bit-tsh-repeat-delay: 0ms;
+    // The length of a whole cycle - a sweep and the extra rest RepeatDelay adds after it - as a multiple of the
+    // sweep. It lengthens the animation and the distance the band travels by the same factor, so the band crosses
+    // the text at the same speed with or without the rest.
+    --bit-tsh-cycle: 1;
     --bit-tsh-iterations: infinite;
-    --bit-tsh-size: 200%;
     --bit-tsh-angle: 0deg;
+    // A right-to-left shimmer is the mirror image of a left-to-right one, so its tilt is turned around with it.
+    --bit-tsh-mirror: 1;
     --bit-tsh-base-clr: #{$clr-fg-ter};
     --bit-tsh-gradient-clr: #{$clr-fg-pri};
 
@@ -37,8 +41,8 @@
     // does not reach - and even where a custom color or spread the browser refuses leaves no gradient at all.
     background-color: var(--bit-tsh-base-clr);
     background-repeat: no-repeat;
-    background-size: var(--bit-tsh-size) 100%;
-    background-image: linear-gradient(calc(90deg + var(--bit-tsh-angle)),
+    background-size: calc(100% + 100% * var(--bit-tsh-cycle)) 100%;
+    background-image: linear-gradient(calc(90deg + var(--bit-tsh-angle) * var(--bit-tsh-mirror)),
             var(--bit-tsh-base-clr) 0%,
             var(--bit-tsh-base-clr) calc(50% - var(--bit-tsh-spread)),
             var(--bit-tsh-gradient-clr) 50%,
@@ -46,30 +50,39 @@
             var(--bit-tsh-base-clr) 100%);
     // The resting place of the band, which is also where a shimmer that has not started yet - or has finished -
     // leaves it: outside the text, so the text is all in its base color.
-    background-position: 150% 50%;
+    background-position: calc(150% - var(--bit-tsh-spread) * var(--bit-tsh-cycle)) 50%;
     // Written as longhands so that the classes below can each change one of them without resetting the others.
     animation-name: bit-tsh-anim;
     animation-timing-function: linear;
     animation-fill-mode: both;
     animation-delay: var(--bit-tsh-delay);
-    animation-duration: calc(var(--bit-tsh-duration) + var(--bit-tsh-repeat-delay));
+    animation-duration: calc(var(--bit-tsh-duration) * var(--bit-tsh-cycle));
     animation-iteration-count: var(--bit-tsh-iterations);
 
     // A percentage of background-position is taken of the room the background has to move in, which is its own
     // size less the size of the text, so the same two keyframes move the band from as far before the text to as
     // far after it whatever the size is. At the default size of twice the text the band travels from half a width
-    // before the text to half a width after it: it crosses the text in the middle of each sweep, and both ends of
-    // a sweep leave the text in its base color, which is what keeps a shimmer that starts, pauses or stops from
-    // ever showing a band stuck on its first letters. A wider background - which is what RepeatDelay asks for -
-    // only adds to the distance travelled outside the text, and so to the rest between two sweeps.
+    // before the text to half a width after it, and the spread it reaches out by on either side is added to both
+    // ends - a wide band would otherwise still hang over the first or the last letters. So the band crosses the
+    // text in the middle of each sweep, and both ends of a sweep leave the text in its base color, which is what
+    // keeps a shimmer that starts, pauses or stops from ever showing a band stuck on its first letters. A longer
+    // cycle - which is what RepeatDelay asks for - widens the background and the ends alike, which only adds to
+    // the distance travelled outside the text, and so to the rest between two sweeps.
     @keyframes bit-tsh-anim {
         from {
-            background-position: 150% 50%;
+            background-position: calc(150% - var(--bit-tsh-spread) * var(--bit-tsh-cycle)) 50%;
         }
 
         to {
-            background-position: -50% 50%;
+            background-position: calc(-50% + var(--bit-tsh-spread) * var(--bit-tsh-cycle)) 50%;
         }
+    }
+
+    // A selected glyph is painted over the highlight of the selection, which covers the background the shimmer
+    // is painted in, so it is given a fill of its own instead of being left transparent.
+    &::selection,
+    & ::selection {
+        -webkit-text-fill-color: currentcolor;
     }
 }
 
@@ -77,6 +90,10 @@
 // a "dir" set anywhere above it counts, with the class of an explicit Dir kept for the engines without :dir() - and
 // .bit-tsh-rev turns it against that direction. The four combinations are spelled out at rising specificity, so the
 // more specific of two that match is always the one that was meant.
+.bit-tsh:is(.bit-rtl, :dir(rtl)) {
+    --bit-tsh-mirror: -1;
+}
+
 .bit-tsh:is(.bit-rtl, :dir(rtl)),
 .bit-tsh.bit-tsh-rev {
     animation-direction: reverse;

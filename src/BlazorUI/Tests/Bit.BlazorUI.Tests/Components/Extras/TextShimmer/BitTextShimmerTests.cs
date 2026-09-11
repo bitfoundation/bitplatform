@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -342,9 +343,9 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.IsFalse(style.Contains("--bit-tsh-duration"));
         Assert.IsFalse(style.Contains("--bit-tsh-delay"));
         Assert.IsFalse(style.Contains("--bit-tsh-iterations"));
-        Assert.IsFalse(style.Contains("--bit-tsh-repeat-delay"));
-        Assert.IsFalse(style.Contains("--bit-tsh-size"));
+        Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
         Assert.IsFalse(style.Contains("--bit-tsh-angle"));
+        Assert.IsFalse(style.Contains("--bit-tsh-mirror"));
         Assert.IsFalse(style.Contains("--bit-tsh-base-clr"));
         Assert.IsFalse(style.Contains("--bit-tsh-gradient-clr"));
     }
@@ -717,13 +718,15 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.AreEqual("Done", root.TextContent);
     }
 
-    // The pause widens the background by the distance the band would travel during it (2 + pause / duration widths
-    // of the text) and lengthens the sweep by the pause itself, so the band keeps the speed it had without it.
+    // The pause is written as the length of the whole cycle over the length of the sweep ((duration + pause) /
+    // duration), which the stylesheet lengthens the animation and the distance the band travels by alike, so the
+    // band keeps the speed it had without it.
     [TestMethod,
-        DataRow(1000, 2000, "250%"),
-        DataRow(2000, 2000, "300%"),
-        DataRow(500, 1500, "233.333%")]
-    public void BitTextShimmerShouldRespectRepeatDelay(int repeatDelay, int duration, string expectedSize)
+        DataRow(1000, 2000, "1.5"),
+        DataRow(2000, 2000, "2"),
+        DataRow(500, 1500, "1.333333"),
+        DataRow(1, 3000, "1.000333")]
+    public void BitTextShimmerShouldRespectRepeatDelay(int repeatDelay, int duration, string expectedCycle)
     {
         var component = RenderComponent<BitTextShimmer>(parameters =>
         {
@@ -731,10 +734,33 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Duration, duration);
         });
 
-        var style = component.Find(".bit-tsh").GetAttribute("style");
+        var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        StringAssert.Contains(style, $"--bit-tsh-repeat-delay:{repeatDelay}ms");
-        StringAssert.Contains(style, $"--bit-tsh-size:{expectedSize}");
+        CollectionAssert.Contains(style.Split(';'), $"--bit-tsh-cycle:{expectedCycle}");
+        // The duration is left as it was given: the stylesheet multiplies it by the cycle rather than adding to it.
+        StringAssert.Contains(style, $"--bit-tsh-duration:{duration}ms");
+    }
+
+    [TestMethod]
+    public void BitTextShimmerShouldWriteTheCycleInTheInvariantCulture()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            var component = RenderComponent<BitTextShimmer>(parameters =>
+            {
+                parameters.Add(p => p.RepeatDelay, 1000);
+                parameters.Add(p => p.Duration, 2000);
+            });
+
+            StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-cycle:1.5");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
     }
 
     // Without a Duration the ratio is taken of the default two-second sweep.
@@ -748,8 +774,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-tsh-repeat-delay:1000ms");
-        StringAssert.Contains(style, "--bit-tsh-size:250%");
+        StringAssert.Contains(style, "--bit-tsh-cycle:1.5");
         Assert.IsFalse(style!.Contains("--bit-tsh-duration"));
     }
 
@@ -769,8 +794,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        Assert.IsFalse(style.Contains("--bit-tsh-repeat-delay"));
-        Assert.IsFalse(style.Contains("--bit-tsh-size"));
+        Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
     }
 
     [TestMethod]
@@ -786,15 +810,15 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Duration, 4000);
         });
 
-        // The size is a ratio of the pause to the sweep, so a new duration is a new size too.
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-size:225%");
+        // The cycle is a ratio of the pause to the sweep, so a new duration is a new cycle too.
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-cycle:1.25");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.RepeatDelay, (int?)null);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-size"));
+        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-cycle"));
     }
 
     [TestMethod,
@@ -1088,5 +1112,248 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.AreEqual("ltr", element.GetAttribute("dir"));
         Assert.AreEqual("own label", element.GetAttribute("aria-label"));
         Assert.AreEqual("0", element.GetAttribute("tabindex"));
+    }
+
+    // Every parameter that feeds the style is marked to rebuild it, so a new value after the first render reaches the
+    // element - and a value taken away leaves the stylesheet's default behind rather than the old value.
+    [TestMethod]
+    public void BitTextShimmerShouldRespectDelayChangingAfterRender()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Delay, 100);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Delay, 300);
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-delay:300ms");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Delay, (int?)null);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-delay"));
+    }
+
+    [TestMethod]
+    public void BitTextShimmerShouldRespectDurationChangingAfterRender()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 1000);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Duration, 3000);
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-duration:3000ms");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Duration, (int?)null);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-duration"));
+    }
+
+    [TestMethod]
+    public void BitTextShimmerShouldRespectAngleChangingAfterRender()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Angle, 10);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Angle, -30);
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-angle:-30deg");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Angle, (double?)null);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-angle"));
+    }
+
+    [TestMethod]
+    public void BitTextShimmerShouldRespectBaseColorChangingAfterRender()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.BaseColor, "gray");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.BaseColor, "silver");
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-base-clr:silver");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.BaseColor, (string?)null);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-base-clr"));
+    }
+
+    [TestMethod]
+    public void BitTextShimmerShouldRespectSpreadLengthChangingAfterRender()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Text, "12345");
+            parameters.Add(p => p.SpreadLength, "3em");
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:3em");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.SpreadLength, (string?)null);
+        });
+
+        // Without an explicit length the spread is computed from the text again.
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+    }
+
+    [TestMethod]
+    public void BitTextShimmerShouldRespectContentLengthChangingAfterRender()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.ContentLength, 5);
+            parameters.AddChildContent("content");
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ContentLength, 15);
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:30px");
+    }
+
+    // The content takes over from the text, and so does the length the band is scaled by.
+    [TestMethod]
+    public void BitTextShimmerShouldSwitchFromTextToChildContentAfterRender()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Text, "12345678");
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:16px");
+
+        component.Render(parameters =>
+        {
+            parameters.AddChildContent("<em>content</em>");
+        });
+
+        var root = component.Find(".bit-tsh");
+
+        Assert.AreEqual("content", root.TextContent);
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-spread:20px");
+    }
+
+    [TestMethod,
+        DataRow(nameof(BitTextShimmer.Alternate), "bit-tsh-alt"),
+        DataRow(nameof(BitTextShimmer.PauseOnHover), "bit-tsh-poh"),
+        DataRow(nameof(BitTextShimmer.ForceAnimation), "bit-fam")]
+    public void BitTextShimmerShouldRespectFlagsChangingAfterRender(string parameter, string expectedClass)
+    {
+        var component = RenderComponent<BitTextShimmer>();
+
+        Assert.IsFalse(component.Find(".bit-tsh").ClassList.Contains(expectedClass));
+
+        component.Render(parameters => SetFlag(parameters, parameter, true));
+
+        Assert.IsTrue(component.Find(".bit-tsh").ClassList.Contains(expectedClass));
+
+        component.Render(parameters => SetFlag(parameters, parameter, false));
+
+        Assert.IsFalse(component.Find(".bit-tsh").ClassList.Contains(expectedClass));
+    }
+
+    private static void SetFlag(ComponentParameterCollectionBuilder<BitTextShimmer> parameters, string parameter, bool value)
+    {
+        switch (parameter)
+        {
+            case nameof(BitTextShimmer.Alternate): parameters.Add(p => p.Alternate, value); break;
+            case nameof(BitTextShimmer.PauseOnHover): parameters.Add(p => p.PauseOnHover, value); break;
+            case nameof(BitTextShimmer.ForceAnimation): parameters.Add(p => p.ForceAnimation, value); break;
+            default: throw new ArgumentOutOfRangeException(nameof(parameter), parameter, null);
+        }
+    }
+
+    // Each state keeps its own class, so a static, disabled, paused shimmer is all three at once and the stylesheet
+    // decides which of them shows.
+    [TestMethod]
+    public void BitTextShimmerShouldCombineItsStates()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Static, true);
+            parameters.Add(p => p.Paused, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Color, BitColor.Success);
+        });
+
+        var classList = component.Find(".bit-tsh").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-tsh-sta"));
+        Assert.IsTrue(classList.Contains("bit-tsh-pau"));
+        Assert.IsTrue(classList.Contains("bit-dis"));
+        Assert.IsTrue(classList.Contains("bit-tsh-suc"));
+    }
+
+    [TestMethod]
+    public void BitTextShimmerShouldRespectVisibilityChangingAfterRender()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Text, "12345");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        var style = component.Find(".bit-tsh").GetAttribute("style")!;
+
+        StringAssert.Contains(style, "display:none");
+        // The variables of the shimmer are kept beside it, so it shows again as it was.
+        StringAssert.Contains(style, "--bit-tsh-spread:10px");
+    }
+
+    // A custom element - a name with a hyphen - is a valid name as well, which is how a shimmer is rendered as a web
+    // component of the page itself.
+    [TestMethod]
+    public void BitTextShimmerShouldRenderACustomElement()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Element, "status-line");
+            parameters.Add(p => p.Text, "custom");
+        });
+
+        var root = component.Find(".bit-tsh");
+
+        Assert.AreEqual("STATUS-LINE", root.TagName);
+        Assert.AreEqual("custom", root.TextContent);
     }
 }

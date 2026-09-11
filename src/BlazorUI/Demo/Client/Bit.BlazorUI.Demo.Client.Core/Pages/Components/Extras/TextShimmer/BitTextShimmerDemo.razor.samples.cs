@@ -28,6 +28,10 @@ public partial class BitTextShimmerDemo
 
 <BitTextShimmer SpreadLength=""3em"">
     <BitIcon IconName=""@BitIconName.Robot"" /> Searching <em>the docs</em> for an answer...
+</BitTextShimmer>
+
+<BitTextShimmer SpreadLength=""3em"">
+    <span style=""-webkit-text-fill-color:currentcolor"">✨</span> Generating a summary...
 </BitTextShimmer>";
 
     private readonly string example5RazorCode = @"
@@ -131,5 +135,7 @@ private async Task AskAsync()
 
 <div dir=""rtl"">
     <BitTextShimmer Text=""در حال جستجو در مستندات..."" />
-</div>";
+</div>
+
+<BitTextShimmer Dir=""BitDir.Rtl"" Angle=""25"" Element=""h2"" Text=""نواری که ۲۵ درجه کج شده است"" />";
 }

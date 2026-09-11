@@ -16,7 +16,7 @@ public partial class BitTextShimmerDemo
             Name = "Angle",
             Type = "double?",
             DefaultValue = "null",
-            Description = "The tilt of the band in degrees, measured from upright. A positive angle leans the top of the band towards the end the sweep is heading for. Keep it within about 45 degrees either way; a value that is not a finite number is ignored.",
+            Description = "The tilt of the band in degrees, measured from upright. A positive angle leans the top of the band towards the end of the text in its reading direction, so a right-to-left shimmer is mirrored. Keep it within about 45 degrees either way; a value that is not a finite number is ignored.",
         },
         new()
         {
@@ -30,7 +30,7 @@ public partial class BitTextShimmerDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content to shimmer, which takes precedence over the Text parameter. Its length cannot be measured, so the band is scaled by ContentLength (or sized by SpreadLength) instead.",
+            Description = "The content to shimmer, which takes precedence over the Text parameter. Its length cannot be measured, so the band is scaled by ContentLength (or sized by SpreadLength) instead. A part that should keep its own colors (an emoji), or that is transformed (a spinning icon), needs a fill of its own.",
         },
         new()
         {
@@ -102,7 +102,7 @@ public partial class BitTextShimmerDemo
             Name = "RepeatDelay",
             Type = "int?",
             DefaultValue = "null",
-            Description = "An extra pause between two shimmer sweeps in ms, which adds to the rest between them without changing the speed of the band. A negative value is treated as zero.",
+            Description = "An extra pause between two shimmer sweeps in ms, which adds to the rest between them without changing the speed of the band. Without a Duration it is retuned by the theme along with the sweep. A negative value is treated as zero.",
         },
         new()
         {
@@ -116,7 +116,7 @@ public partial class BitTextShimmerDemo
             Name = "Spread",
             Type = "double",
             DefaultValue = "2",
-            Description = "The shimmer band width multiplier. The effective band width (px) is Spread times the character count, so longer text gets a proportionally wider shine. SpreadLength wins over it.",
+            Description = "The shimmer band width multiplier. The effective spread of the band (px) - from its brightest point to each of its edges - is Spread times the character count, so longer text gets a proportionally wider shine. SpreadLength wins over it.",
         },
         new()
         {
@@ -150,7 +150,7 @@ public partial class BitTextShimmerDemo
             Description = "Defines the general colors available in the bit BlazorUI.",
             Items =
             [
-                new() { Name = "Primary", Description = "Info Primary general color.", Value = "0" },
+                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
                 new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
                 new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
                 new() { Name = "Info", Description = "Info general color.", Value = "3" },

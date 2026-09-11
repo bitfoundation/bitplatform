@@ -5,8 +5,8 @@
             Description="BitTextShimmer sweeps a bright band across a run of text, the signal an AI thinking label, a loading message or a progressive reveal needs - in pure CSS, in every render mode." />
 
 <DemoPage Name="TextShimmer"
-          SecondaryNames="@(["Skeleton", "Loading", "AI"])"
-          Description="BitTextShimmer sweeps a bright gradient band across a run of text, which is the signal an AI thinking label, a loading message or a progressive reveal needs. The band is scaled to the length of the text and follows its reading direction; it can be retimed, delayed, paused between sweeps, played a set number of times, tilted, reversed, held, colored from the theme and stopped for good once the work is over. The effect is pure CSS with no JavaScript interop, so it works in every Blazor render mode including static server-side rendering, and the text stays real text - copied, found and read out as it is - and falls back to a flat color wherever the shimmer cannot or should not be painted."
+          SecondaryNames="@(["ShinyText", "Skeleton", "Loading", "AI"])"
+          Description="BitTextShimmer sweeps a bright gradient band across a run of text - the signal an AI thinking label, a loading message or a progressive reveal needs. The band is scaled to the text and follows its reading direction, and it can be retimed, delayed, rested between sweeps, played a set number of times, tilted, reversed, paused, colored from the theme and stopped once the work is over. It is pure CSS with no JavaScript interop, so it works in every render mode including static SSR; the text stays real text for copying, find-in-page and screen readers, and falls back to a flat color wherever the shimmer cannot or should not be painted."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="TextShimmer/BitTextShimmer.cs"
@@ -92,6 +92,10 @@
                 <br /><br />
                 The length of the content cannot be measured, so supply <b>ContentLength</b> - the character count to scale the band by, 10 by
                 default - or give the band a font-relative <BitLink Href="#example3">SpreadLength</BitLink> that needs no count at all.
+                <br /><br />
+                An emoji is painted by the band too, as a silhouette of it. Give it a fill of its own
+                (<b>-webkit-text-fill-color: currentcolor</b>) to keep its colors - which is also what a transformed part of the content, such
+                as a spinning icon, needs to be painted at all.
             </div>
             <br />
             <BitTextShimmer ContentLength="30">
@@ -100,6 +104,10 @@
             <br />
             <BitTextShimmer SpreadLength="3em">
                 <BitIcon IconName="@BitIconName.Robot" /> Searching <em>the docs</em> for an answer...
+            </BitTextShimmer>
+            <br />
+            <BitTextShimmer SpreadLength="3em">
+                <span style="-webkit-text-fill-color:currentcolor">✨</span> Generating a summary...
             </BitTextShimmer>
         </DemoExample>
 
@@ -146,9 +154,10 @@
 
         <DemoExample Title="Angle" RazorCode="@example7RazorCode" Id="example7">
             <div>
-                <b>Angle</b> tilts the band, in degrees from upright. A positive angle leans its top towards the end the band is heading for, a
-                negative one the other way. A tilted band reads as a light catching the text rather than a scan passing over it; keep it within
-                about 45 degrees either way, since the sweep stops reading as one as the band approaches a quarter turn.
+                <b>Angle</b> tilts the band, in degrees from upright. A positive angle leans its top towards the end of the text in its reading
+                direction, a negative one towards its start - so a right-to-left shimmer is tilted as the mirror image of a left-to-right one. A
+                tilted band reads as a light catching the text rather than a scan passing over it; keep it within about 45 degrees either way,
+                since the sweep stops reading as one as the band approaches a quarter turn.
             </div>
             <br />
             <BitTextShimmer Angle="25" Element="h2" Text="A band tilted by 25 degrees" />
@@ -246,8 +255,11 @@
         <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
             <div>
                 Use <b>Style</b> and <b>Class</b> to customize the root element of the shimmer - its font, its size, its weight. The shimmer
-                also reads a set of custom properties that a class or a style can set directly, such as <b>--bit-tsh-base-clr</b> and
-                <b>--bit-tsh-gradient-clr</b> for its colors.
+                also reads a set of custom properties that a class or a style can set directly, which is how one class restyles every shimmer
+                of an app: <b>--bit-tsh-base-clr</b> and <b>--bit-tsh-gradient-clr</b> for its colors, <b>--bit-tsh-duration</b>,
+                <b>--bit-tsh-delay</b> and <b>--bit-tsh-iterations</b> for its timing, and <b>--bit-tsh-angle</b> for its tilt. A value set by a
+                parameter is written inline and wins over the one a class sets - and so does the spread of the band, which is always written
+                inline, so it is set with <BitLink Href="#example3">SpreadLength</BitLink> or <b>Style</b> instead.
             </div>
             <br />
             <BitTextShimmer Style="font-size:2rem;font-weight:bold" Text="A styled text shimmer" />
@@ -260,7 +272,8 @@
         <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
             <div>
                 Use BitTextShimmer in right-to-left (RTL). The band follows the reading direction, so it sweeps from right to left - whether the
-                direction comes from the <b>Dir</b> parameter or from a <b>dir</b> attribute on the page around it.
+                direction comes from the <b>Dir</b> parameter or from a <b>dir</b> attribute on the page around it - and a tilted band is
+                mirrored along with it.
             </div>
             <br />
             <BitTextShimmer Dir="BitDir.Rtl" Text="در حال فکر کردن به سوال شما..." />
@@ -268,6 +281,8 @@
             <div dir="rtl">
                 <BitTextShimmer Text="در حال جستجو در مستندات..." />
             </div>
+            <br />
+            <BitTextShimmer Dir="BitDir.Rtl" Angle="25" Element="h2" Text="نواری که ۲۵ درجه کج شده است" />
         </DemoExample>
     </Examples>
 </DemoPage>
