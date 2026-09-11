@@ -137,7 +137,7 @@ code can be exercised in each render mode.
 - **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
 - **Auto-binding** to plain `[Parameter]` properties by name (Blazor-style) and `[SupplyParameterFromQuery]` for query values, plus two opt-in Brouter attributes that extend the built-in tools: `[BrouterParameter(Name = ...)]` remaps a route parameter to a differently-named property, and `[BrouterQuery]` binds query values of types the framework supplier can't parse (e.g. enums)
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
-- **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
+- **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl` - plus `IsMounted` and non-throwing `Try...` counterparts (`TryNavigate`, `TryBackAsync`, `TryResolveUrl`, ...) for call sites that can't be sure a router is mounted
 - **Relative navigation**: `./edit` and `../sibling` resolve against the current location (segment math, React Router style) in `Navigate`, guard redirects and `<BrouterLink>`
 - **Global hooks**: `OnNavigating`, `OnNavigated`, `OnError` (Vue Router style)
 - **Navigation type** on `BrouterNavigationContext.NavigationType`: distinguishes `Push` / `Replace` / `Pop` (Back/Forward) for scroll-restoration and analytics logic
@@ -549,6 +549,37 @@ re-resolves after every (matched) navigation.
 
 Bare paths without a leading `.` (e.g. `Navigate("sibling")`) are untouched and keep their usual
 base-relative meaning through `NavigationManager`.
+
+### Safe calls when the router may not be mounted
+
+The members that act on the router - `Navigate`, `NavigateAsync`, `Back`/`Forward` (and their
+async forms), `NavigateToName`, `ResolveUrl`, `NavigateWithQuery`, `RevalidateAsync`,
+`ReloadAsync`, `PreloadAsync` and `ClearKeepAlive` - throw `InvalidOperationException` while no
+`<Brouter>` is mounted in the scope: before it initializes, after it is disposed, or in a scope that
+never renders one. When a call site can't be sure (a scoped service reacting to an event, a
+component that may run ahead of or outlive the router, a teardown path), check `IsMounted` or use
+the `Try...` counterpart, which does nothing and returns `false` instead (`TryNavigateAsync` returns
+`null`, and `TryResolveUrl` sets its `url` to `null`):
+
+```csharp
+brouter.TryNavigate("/login");                           // false: skipped, nothing mounted
+await brouter.TryRevalidateAsync();                      // ValueTask<bool>
+var outcome = await brouter.TryNavigateAsync("/admin");  // null when nothing is mounted
+
+if (brouter.TryResolveUrl("user", out var url, new Dictionary<string, object?> { ["id"] = 42 }))
+    Console.WriteLine(url);                              // "/users/42"
+```
+
+Only the mount state is tolerated: once a router is mounted a `Try...` member behaves exactly like
+its counterpart, so an unknown route name, a missing route parameter or a `delta` below 1 still
+throws. `ClearLoaderCache` and `SetConfirmExternalNavigationAsync` never need a mounted router and
+have no `Try...` form.
+
+The `Try...` members are default interface members built on `IsMounted`, so a custom `IBrouter`
+gets them for free. `IsMounted` itself defaults to `true` (an implementation without a notion of
+mounting is assumed to always serve calls), which means a decorator wrapping another `IBrouter` must
+forward it - `public bool IsMounted => _inner.IsMounted;` - or its `Try...` calls will throw while
+the wrapped router isn't mounted.
 
 ## Navigation type (push / replace / pop)
 
