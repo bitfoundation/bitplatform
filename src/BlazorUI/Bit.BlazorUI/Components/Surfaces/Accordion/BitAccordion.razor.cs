@@ -108,7 +108,7 @@ public partial class BitAccordion : BitComponentBase
     /// <remarks>
     /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
     /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
-    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// in an RTL one. Every other placement leaves the icon at the end, where an unset one puts it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement? ExpanderIconPlacement { get; set; }

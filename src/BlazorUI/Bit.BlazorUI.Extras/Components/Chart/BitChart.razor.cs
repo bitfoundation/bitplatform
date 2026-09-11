@@ -751,15 +751,15 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private static string AlignToFlex(BitPlacement a) => a switch
     {
-        BitPlacement.Start => "flex-start",
-        BitPlacement.End => "flex-end",
+        BitPlacement.Start or BitPlacement.Left => "flex-start",
+        BitPlacement.End or BitPlacement.Right => "flex-end",
         _ => "center"
     };
 
     private static string TextAlign(BitPlacement a) => a switch
     {
-        BitPlacement.Start => "left",
-        BitPlacement.End => "right",
+        BitPlacement.Start or BitPlacement.Left => "left",
+        BitPlacement.End or BitPlacement.Right => "right",
         _ => "center"
     };
 

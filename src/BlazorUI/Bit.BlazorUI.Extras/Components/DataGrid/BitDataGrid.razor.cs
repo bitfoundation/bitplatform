@@ -151,9 +151,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// How many rows can be selected at the same time (default is none, which leaves the grid unselectable).
     /// </summary>
     /// <remarks>
-    /// A grid renders its select column only while this is <see cref="BitSelectionMode.Single"/> or
-    /// <see cref="BitSelectionMode.Multiple"/>, and the column carries radio buttons for the first and
-    /// checkboxes for the second.
+    /// <see cref="BitSelectionMode.Single"/> selects the row that is clicked and needs no column of its own;
+    /// <see cref="BitSelectionMode.Multiple"/> adds a select column of checkboxes, with a select-all one in its
+    /// header.
     /// </remarks>
     [Parameter] public BitSelectionMode SelectionMode { get; set; } = BitSelectionMode.None;
     [Parameter] public IReadOnlyList<TItem>? SelectedItems { get; set; }

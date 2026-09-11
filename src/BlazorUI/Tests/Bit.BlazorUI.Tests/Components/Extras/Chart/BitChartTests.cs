@@ -55,4 +55,39 @@ public class BitChartTests : BunitTestContext
             Assert.IsTrue(RenderChart(position).Find(".bc-legend").ClassList.Contains("bc-legend-h"));
         }
     }
+
+    [TestMethod]
+    [DataRow(BitPlacement.Start, "flex-start", "left")]
+    [DataRow(BitPlacement.Left, "flex-start", "left")]
+    [DataRow(BitPlacement.End, "flex-end", "right")]
+    [DataRow(BitPlacement.Right, "flex-end", "right")]
+    [DataRow(BitPlacement.Center, "center", "center")]
+    [DataRow(BitPlacement.Top, "center", "center")]
+    // A chart is laid out physically, so Start and Left are the same edge, as are End and Right.
+    public void TitleAndLegendAlignAlongTheirEdge(BitPlacement align, string justify, string textAlign)
+    {
+        var config = new BitChartConfig(
+            BitChartType.Bar,
+            new BitChartData
+            {
+                Labels = ["A", "B"],
+                Datasets = [new BitChartDataset { Label = "Series", Data = [1, 2] }]
+            },
+            new BitChartOptions
+            {
+                Plugins =
+                {
+                    Title = { Display = true, Text = "Title", Align = align },
+                    Legend = { Align = align }
+                }
+            });
+
+        var component = RenderComponent<BitChart>(parameters => parameters.Add(p => p.Config, config));
+
+        var title = component.Find(".bc-title");
+
+        Assert.Contains($"justify-content:{justify}", title.GetAttribute("style")!);
+        Assert.Contains($"text-align:{textAlign}", title.FirstElementChild!.GetAttribute("style")!);
+        Assert.Contains($"justify-content:{justify}", component.Find(".bc-legend").GetAttribute("style")!);
+    }
 }

@@ -9,7 +9,7 @@ public partial class BitTooltipDemo
             Name = "Alignment",
             Type = "BitPlacement",
             DefaultValue = "BitPlacement.Center",
-            Description = "Where along Placement the tooltip lines up with its anchor. The axis is the one the side leaves free: a tooltip above or below its anchor is aligned horizontally, one beside it vertically. Start and End are logical, so an alignment on the horizontal axis follows the reading direction while one on the vertical axis reads top to bottom in either. Left and Right are physical and keep a tooltip above or below its anchor on the same side of the screen in both reading directions; beside the anchor they center it.",
+            Description = "Where along Placement the tooltip lines up with its anchor. The axis is the one the side leaves free: a tooltip above or below its anchor is aligned horizontally, one beside it vertically. Start and End are logical, so an alignment on the horizontal axis follows the reading direction while one on the vertical axis reads top to bottom in either. Left and Right are physical and keep a tooltip above or below its anchor on the same side of the screen in both reading directions; Top and Bottom are the vertical axis's physical pair and line a tooltip beside its anchor up with its top or its bottom. A pair used off its own axis centers the tooltip.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },

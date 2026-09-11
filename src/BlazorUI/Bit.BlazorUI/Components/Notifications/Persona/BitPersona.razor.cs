@@ -650,7 +650,7 @@ public partial class BitPersona : BitComponentBase
         string? inset = null;
         // The dot keeps the same share of the coin a size class gives it, so a custom coin size stays in proportion.
         var presentationSize = CoinSize.Value / 4D;
-        if (GetShape() is not BitShape.Pill)
+        if (GetShape() is BitShape.Rounded or BitShape.Square)
         {
             // Retuned as the knob the stylesheet reads rather than as a side of its own, so the nudge follows
             // the dot to whichever corner the writing direction and Reversed between them put it in.

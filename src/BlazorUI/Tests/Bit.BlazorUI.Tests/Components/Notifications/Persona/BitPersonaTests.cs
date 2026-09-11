@@ -2135,6 +2135,26 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(BitShape.Pill),
+        DataRow(BitShape.Circle)
+    ]
+    public void BitPersonaShapeShouldNotNudgeThePresenceOfARoundCoin(BitShape shape)
+    {
+        // The coin draws Circle as round as Pill, so the presence dot keeps the round coin's own inset rather than
+        // the one tuned for square corners.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Shape, shape);
+            parameters.Add(p => p.CoinSize, 120);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        var style = component.Find(".bit-prs-pre").GetAttribute("style");
+
+        Assert.DoesNotContain("--bit-prs-presence-inset", style);
+    }
+
+    [TestMethod,
         DataRow("+1 (555) 016 7788", "17"),
         DataRow("1234567890", "1"),
         DataRow("42 Tower", "4T")

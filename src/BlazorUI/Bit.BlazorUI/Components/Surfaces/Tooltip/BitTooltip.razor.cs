@@ -107,8 +107,10 @@ public partial class BitTooltip : BitComponentBase
     /// one beside it vertically. Start and End are logical, so an alignment on the horizontal axis follows the
     /// reading direction while one on the vertical axis reads top to bottom in either. Left and Right are
     /// physical and keep a tooltip above or below its anchor on the same side of the screen in both reading
-    /// directions, the way <see cref="Placement"/>'s own physical pair does; beside the anchor the free axis has no
-    /// left or right, so they center the tooltip along it.
+    /// directions, the way <see cref="Placement"/>'s own physical pair does; Top and Bottom are the vertical axis's
+    /// physical pair and line a tooltip beside its anchor up with its top or its bottom, which Start and End do too.
+    /// A pair used off its own axis - Left or Right beside the anchor, Top or Bottom above or below it - centers the
+    /// tooltip along the axis it has.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement Alignment { get; set; } = BitPlacement.Center;
@@ -940,10 +942,10 @@ public partial class BitTooltip : BitComponentBase
     };
 
     // The logical pair turns around with the direction, but only on the horizontal axis: a tooltip beside its
-    // anchor is aligned top to bottom in both. The physical pair is the escape hatch for a placement that must
-    // not turn around - it already names a side of the screen, so it is returned as the class map's own Start
-    // and End, which the map draws as the left and the right - and it only means anything where that axis has
-    // a left and a right, so beside the anchor it falls back to the default.
+    // anchor is aligned top to bottom in both. Each axis's physical pair already names a side of the screen, so
+    // it is returned as the class map's own Start and End - which the map draws as the left and the right on the
+    // horizontal axis and as the top and the bottom on the vertical one - and it only means anything on its own
+    // axis: Left and Right beside the anchor, or Top and Bottom above or below it, fall back to the default.
     private BitPlacement PhysicalAlignment
     {
         get
@@ -958,6 +960,16 @@ public partial class BitTooltip : BitComponentBase
             if (Alignment is BitPlacement.Right)
             {
                 return horizontal ? BitPlacement.End : BitPlacement.Center;
+            }
+
+            if (Alignment is BitPlacement.Top)
+            {
+                return horizontal ? BitPlacement.Center : BitPlacement.Start;
+            }
+
+            if (Alignment is BitPlacement.Bottom)
+            {
+                return horizontal ? BitPlacement.Center : BitPlacement.End;
             }
 
             if (Dir != BitDir.Rtl || horizontal is false) return Alignment;

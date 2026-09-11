@@ -200,7 +200,7 @@
     {
         var lines = title.Text.Split('\n');
         <div class="@cls" style="color:@title.Color;font-family:@title.Font.Family;font-size:@(BitChartSvg.N(title.Font.Size))px;font-weight:@title.Font.Weight;justify-content:@AlignToFlex(title.Align)">
-            <div style="text-align:@(title.Align == BitPlacement.Start ? "left" : title.Align == BitPlacement.End ? "right" : "center")">
+            <div style="text-align:@TextAlign(title.Align)">
                 @for (int i = 0; i < lines.Length; i++)
                 {
                     @lines[i]

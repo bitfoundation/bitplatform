@@ -1617,6 +1617,41 @@ public class BitTooltipTests : BunitTestContext
         Assert.IsTrue(rtl.Find(".bit-ttp-wrp").ClassList.Contains(rtlClass));
     }
 
+    // Top and Bottom are the vertical axis's physical pair: beside its anchor they line the tooltip up with the
+    // anchor's top or bottom in either direction, and above or below it - an axis with no top or bottom - they
+    // centre it the way an unset alignment does.
+    [TestMethod]
+    [DataRow(BitPlacement.Left, BitPlacement.Top, "bit-ttp-ltp", "bit-ttp-ltp")]
+    [DataRow(BitPlacement.Left, BitPlacement.Bottom, "bit-ttp-lbm", "bit-ttp-lbm")]
+    [DataRow(BitPlacement.Right, BitPlacement.Top, "bit-ttp-rtp", "bit-ttp-rtp")]
+    [DataRow(BitPlacement.Right, BitPlacement.Bottom, "bit-ttp-rbm", "bit-ttp-rbm")]
+    [DataRow(BitPlacement.Start, BitPlacement.Top, "bit-ttp-ltp", "bit-ttp-rtp")]
+    [DataRow(BitPlacement.End, BitPlacement.Bottom, "bit-ttp-rbm", "bit-ttp-lbm")]
+    [DataRow(BitPlacement.Top, BitPlacement.Top, "bit-ttp-top", "bit-ttp-top")]
+    [DataRow(BitPlacement.Top, BitPlacement.Bottom, "bit-ttp-top", "bit-ttp-top")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Top, "bit-ttp-btm", "bit-ttp-btm")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Bottom, "bit-ttp-btm", "bit-ttp-btm")]
+    public void BitTooltipShouldAlignToAVerticalPhysicalAlignmentOnlyBesideItsAnchor(BitPlacement side, BitPlacement alignment, string ltrClass, string rtlClass)
+    {
+        var ltr = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Placement, side);
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        var rtl = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Placement, side);
+            parameters.Add(p => p.Alignment, alignment);
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        Assert.IsTrue(ltr.Find(".bit-ttp-wrp").ClassList.Contains(ltrClass));
+        Assert.IsTrue(rtl.Find(".bit-ttp-wrp").ClassList.Contains(rtlClass));
+    }
+
 
 
     [TestMethod]
