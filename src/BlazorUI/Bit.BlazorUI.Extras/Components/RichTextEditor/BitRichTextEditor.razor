@@ -278,6 +278,7 @@
                   aria-label="@Label("source-view", "HTML source")"
                   spellcheck="false"
                   readonly="@EffectiveReadOnly"
+                  disabled="@(IsEnabled is false)"
                   value="@_sourceText" @oninput="OnSourceTextChanged"></textarea>
     }
 
@@ -508,7 +509,7 @@
     </div>;
 
     private RenderFragment SourceGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("source", "HTML source")" aria-label="@Label("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@(EffectiveReadOnly && _inSourceView is false)"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("source", "HTML source")" aria-label="@Label("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@(IsEnabled is false || (EffectiveReadOnly && _inSourceView is false))"
                 @onmousedown:preventDefault="true" @onclick="ToggleSourceViewAsync">&lt;/&gt;</button>
     </div>;
 

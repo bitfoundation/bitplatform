@@ -1044,7 +1044,7 @@ public class SpanishEditorLocalizer : IBitRichTextEditorLocalizer
 <BitButton OnClick='@(() => apiEditor.ExecuteCommandAsync(""bold""))'>ExecuteCommand(""bold"")</BitButton>
 <BitButton OnClick='@(() => apiEditor.InsertTextAsync("" inserted""))'>InsertTextAsync</BitButton>
 <BitButton OnClick='@(() => apiEditor.InsertHtmlAsync(""<b>bold</b>""))'>InsertHtmlAsync</BitButton>
-<BitButton OnClick=""@(() => apiEditor.SelectAllAsync())"">SelectAllAsync</BitButton>
+<BitButton OnClick=""@(async () => await apiEditor.SelectAllAsync())"">SelectAllAsync</BitButton>
 <BitButton OnClick=""@(() => apiEditor.UndoAsync())"">UndoAsync</BitButton>
 <BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
 <BitButton OnClick=""GetEditorText"">GetTextAsync</BitButton>

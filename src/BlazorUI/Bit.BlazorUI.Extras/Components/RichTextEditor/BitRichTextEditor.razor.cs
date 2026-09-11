@@ -240,9 +240,11 @@ public partial class BitRichTextEditor : BitComponentBase
         {
             next = await _js.BitRichTextEditorSanitizeHtml(_editorRef, next);
         }
-        if (next == _currentHtml) return;
-
+        // Always replace the DOM: _currentHtml lags an edit whose debounced OnContentChanged has
+        // not run yet, so a reset to that stale value must still overwrite what the user typed.
+        // Only a real change to the cached value is published.
         await _js.BitRichTextEditorSetHtml(_editorRef, next);
+        if (next == _currentHtml) return;
         _currentHtml = next;
         await AssignValue(next);
         NotifyEditContextChanged();

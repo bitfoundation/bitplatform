@@ -94,12 +94,19 @@ public partial class BitRichTextEditor
         if (url.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
             || url.StartsWith("tel:", StringComparison.OrdinalIgnoreCase)) return url;
         // A colon before the first slash means some other scheme was typed; leave it alone so the
-        // validation below can reject it rather than silently rewriting it.
+        // validation below can reject it rather than silently rewriting it. The exception is a
+        // colon followed only by digits up to the path, which is a port ("example.com:8443/docs").
         var slash = url.IndexOf('/');
         var colon = url.IndexOf(':');
-        if (colon >= 0 && (slash < 0 || colon < slash)) return url;
+        var hostEnd = slash < 0 ? url.Length : slash;
+        if (colon >= 0 && colon < hostEnd)
+        {
+            var port = url[(colon + 1)..hostEnd];
+            if (port.Length == 0 || port.Any(c => c is < '0' or > '9')) return url;
+            hostEnd = colon;
+        }
 
-        var host = slash < 0 ? url : url[..slash];
+        var host = url[..hostEnd];
         // Require something that looks like a host (a dot inside a label run) before assuming a
         // scheme is missing, so a single word stays the (invalid) input the user typed.
         var dot = host.IndexOf('.');

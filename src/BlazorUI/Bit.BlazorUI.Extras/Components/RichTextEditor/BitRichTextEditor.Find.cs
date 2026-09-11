@@ -55,6 +55,8 @@ public partial class BitRichTextEditor
     {
         if (_findTerm.Length <= MaxFindTermLength) return true;
         ResetFindCount();
+        // Drop the previous valid search's highlights, which the refused term no longer describes.
+        await ClearFindAsync();
         await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
         return false;
     }

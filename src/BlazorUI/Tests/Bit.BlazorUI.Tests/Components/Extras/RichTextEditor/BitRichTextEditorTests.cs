@@ -705,6 +705,8 @@ public class BitRichTextEditorTests : BunitTestContext
     [DataTestMethod]
     [DataRow("example.com", "https://example.com")]
     [DataRow("example.com/docs", "https://example.com/docs")]
+    [DataRow("example.com:8443", "https://example.com:8443")]
+    [DataRow("example.com:8443/docs", "https://example.com:8443/docs")]
     [DataRow("https://example.com", "https://example.com")]
     [DataRow("/relative/path", "/relative/path")]
     [DataRow("#anchor", "#anchor")]

@@ -72,6 +72,13 @@ public sealed class BitRichTextEditorBridgeContractTests
 
     private static string CamelCase(string name) => char.ToLowerInvariant(name[0]) + name[1..];
 
+    // A [JSInvokable] without an identifier is invoked by the method's own name.
+    private static string? JsInvokableIdentifier(MethodInfo method)
+    {
+        var attribute = method.GetCustomAttribute<JSInvokableAttribute>();
+        return attribute is null ? null : attribute.Identifier ?? method.Name;
+    }
+
 
 
     [TestMethod]
@@ -140,7 +147,7 @@ public sealed class BitRichTextEditorBridgeContractTests
 
         var declared = typeof(BitRichTextEditor)
             .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Select(m => m.GetCustomAttribute<JSInvokableAttribute>()?.Identifier)
+            .Select(JsInvokableIdentifier)
             .Where(id => string.IsNullOrEmpty(id) is false)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
@@ -159,7 +166,7 @@ public sealed class BitRichTextEditorBridgeContractTests
     {
         var declared = typeof(BitRichTextEditor)
             .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Select(m => m.GetCustomAttribute<JSInvokableAttribute>()?.Identifier)
+            .Select(JsInvokableIdentifier)
             .Where(id => string.IsNullOrEmpty(id) is false)
             .ToHashSet(StringComparer.Ordinal)!;
 

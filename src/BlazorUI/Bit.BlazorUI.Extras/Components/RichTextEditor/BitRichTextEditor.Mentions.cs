@@ -62,6 +62,8 @@ public partial class BitRichTextEditor
             // Keep the host lookup's internals out of the user-facing message; log for diagnostics.
             // Trace (not Debug) so the failure is still recorded in Release builds.
             Trace.TraceError($"BitRichTextEditor mention search for \"{term}\" failed: {ex}");
+            // A search superseded by a later keystroke, or by the menu closing, reports nothing.
+            if (token != _mentionQueryToken) return;
             await RaiseErrorAsync(new BitRichTextEditorError("mention-search-failed",
                 Label("mention-search-failed", "Could not load mention suggestions.")));
             return;
@@ -110,6 +112,8 @@ public partial class BitRichTextEditor
 
     private void CloseMention()
     {
+        // Invalidate any search still in flight, so it cannot repopulate the closed menu.
+        _mentionQueryToken++;
         _showMention = false;
         _mentionFilter = "";
         _mentionIndex = 0;
