@@ -13,11 +13,6 @@ public partial class SessionsSection
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
-    //#if (notification == true)
-    [AutoInject] private IPushNotificationService pushNotificationService = default!;
-    //#elseif (signalR == true)
-    [AutoInject] private Notification notification = default!;
-    //#endif
 
 
     protected override async Task OnInitAsync()
@@ -92,32 +87,4 @@ public partial class SessionsSection
             revokingSessionIds.Remove(session.Id);
         }
     }
-
-    //#if (signalR == true || notification == true)
-    private async Task ToggleNotification(UserSessionDto userSession)
-    {
-        var enabled = userSession.NotificationStatus is not UserSessionNotificationStatus.Allowed;
-
-        if (enabled)
-        {
-            // User is going to allow notifications so it's an opportune time to request permission.
-            // The permission might have already been requested (if userSession.NotificationStatus is UserSessionNotificationStatus.Muted), but there's no harm in asking for permission again.
-
-            //#if (notification == true)
-            if (AppPlatform.IsWindows is false)
-            {
-                await pushNotificationService.RequestPermission(CurrentCancellationToken);
-                await pushNotificationService.Subscribe(CurrentCancellationToken);
-            }
-            //#else
-            if (await notification.IsSupported())
-            {
-                await notification.RequestPermission();
-            }
-            //#endif
-        }
-
-        userSession.NotificationStatus = await userController.SetNotificationEnabled(userSession.Id, enabled, CurrentCancellationToken);
-    }
-    //#endif
 }

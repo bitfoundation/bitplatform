@@ -1493,20 +1493,20 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Melding verzenden</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Meldingen inschakelen</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Meldingen uitschakelen</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>Pushmeldingen zijn ingeschakeld voor deze sessie.</value>
+    <value>Meldingen zijn ingeschakeld voor deze sessie.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>Pushmeldingen zijn gedempt voor deze sessie.</value>
+    <value>Meldingen zijn gedempt voor deze sessie.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>Pushmeldingen zijn niet geconfigureerd voor deze sessie.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Meldingen</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Meldingen inschakelen</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Meldingen uitschakelen</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Meldingen staan aan</value>
@@ -1829,15 +1829,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Geen enkele tijdzone komt overeen met uw zoekopdracht.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Pushmeldingen</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Pushmeldingen inschakelen</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Pushmeldingen uitschakelen</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Pushmeldingen zijn geblokkeerd voor deze app. Sta meldingen toe in de instellingen van je browser of besturingssysteem en probeer het opnieuw.</value>
   </data>

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
 using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
+using Boilerplate.Server.Api.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Api.Features.PersonalData;
 //#if (notification == true)
@@ -99,6 +100,7 @@ public static partial class Program
         services.AddScoped<UserErasureService>();
         services.AddScoped<UserSessionsRetentionJobRunner>();
         services.AddScoped<UnconfirmedUsersRetentionJobRunner>();
+        services.AddScoped<ServerDiagnosticService>();
 
         services.AddPersonalDataServices();
         //#if (signalR == true)

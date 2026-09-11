@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Playwright;
 
@@ -25,10 +24,9 @@ public static class IPlaywrightExtensions
         /// (e.g. <see cref="DeployedApps.TodoWindowsAppId"/>) and attaches to it. Every Client.Windows app hard-codes
         /// <c>--remote-debugging-port=9222</c>, so a leftover instance of any of them would be the one answering on
         /// the port - hence every running Client.Windows process is killed first, then its data cleared (see
-        /// <see cref="ClearWindowsAppData"/>). The app is started minimized and then parked off-screen, so a run leaves
-        /// the machine's screen alone (see <see cref="HideWindowsAppWindow"/>).
+        /// <see cref="WindowsAppData"/>). Started minimized, so a run leaves the machine's screen alone.
         /// </summary>
-        public async Task<(IPage Page, Func<Task> OnStop)> LaunchWindowsApp(string windowsAppId, int port = 9222)
+        public async Task<(IPage Page, Func<Task> Stop)> LaunchWindowsApp(string windowsAppId, int port = 9222)
         {
             var exePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), windowsAppId, "current", $"{windowsAppId}.exe");
 
@@ -38,11 +36,10 @@ public static class IPlaywrightExtensions
             StopWindowsApps();
 
             // After the kill, so nothing still holds the files open.
-            ClearWindowsAppData(windowsAppId);
+            WindowsAppData.BackUpOnce();
+            WindowsAppData.Clear(windowsAppId);
 
             Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true, WindowStyle = ProcessWindowStyle.Minimized });
-
-            await HideWindowsAppWindow();
 
             var browser = await playwright.ConnectWithRetry($"http://localhost:{port}");
 
@@ -64,7 +61,8 @@ public static class IPlaywrightExtensions
         /// The WebView's CDP endpoint is an abstract socket on the device, so it is forwarded to
         /// <paramref name="localPort"/> first - not 9222, so an Android session can coexist with a Windows one.
         /// </summary>
-        public async Task<(IPage Page, Func<Task> OnStop)> LaunchAndroidApp(string applicationId, int localPort = 9223)
+        public async Task<(IPage Page, Func<Task> Stop)> LaunchAndroidApp(string applicationId, int localPort = 9223,
+            string? startedByLink = null, bool clearAppData = true)
         {
             await EnsureAndroidDeviceOnline();
 
@@ -72,8 +70,14 @@ public static class IPlaywrightExtensions
             // both. A session inherited from an earlier run belongs to a user that run's cleanup has since deleted, so
             // the app would boot straight into UpdateSession's ResourceNotFoundException. App link verification lives
             // in the package manager rather than in app data, so OpenAndroidAppLink still routes into the app.
-            await RunAdb($"shell pm clear {applicationId}");
-            await RunAdb($"shell monkey -p {applicationId} -c android.intent.category.LAUNCHER 1");
+            // Keeping app data is for the caller that is testing what the app does with what it remembers.
+            await RunAdb(clearAppData ? $"shell pm clear {applicationId}" : $"shell am force-stop {applicationId}");
+
+            // Started BY the link, so what the app does on a cold start is observable.
+            if (startedByLink is null)
+                await RunAdb($"shell monkey -p {applicationId} -c android.intent.category.LAUNCHER 1");
+            else
+                await playwright.OpenAndroidAppLink(startedByLink);
 
             var deadline = DateTimeOffset.UtcNow + connectDeadline;
             string pid;
@@ -100,7 +104,9 @@ public static class IPlaywrightExtensions
 
             var page = browser.SinglePage();
 
-            await AnswerConsentBanner(page);
+            // The answer lives in app storage, so a launch that kept it has no banner to answer.
+            if (clearAppData)
+                await AnswerConsentBanner(page);
 
             return (page, async () =>
             {
@@ -181,7 +187,7 @@ public static class IPlaywrightExtensions
         {
             await reject.ClickAsync(new() { Timeout = (float)consentBannerDeadline.TotalMilliseconds });
         }
-        catch (PlaywrightException)
+        catch (Exception exp) when (exp is PlaywrightException or System.TimeoutException)
         {
             // A build with nothing consent-worthy wired up never renders the banner at all.
         }
@@ -195,35 +201,7 @@ public static class IPlaywrightExtensions
         => browser.Contexts.SelectMany(context => context.Pages).FirstOrDefault()
            ?? throw new InvalidOperationException("The attached app exposes no page.");
 
-    /// <summary>
-    /// Gets the launched app's window out of the way, so a run does not take over the machine's screen. It is moved
-    /// off-screen rather than hidden or minimized: WebView2 stops producing frames for a window Windows considers
-    /// invisible, and those frames are exactly what Playwright's actionability checks wait for. Best effort - a
-    /// window that never shows up is the CDP connect's problem to report.
-    /// </summary>
-    private static async Task HideWindowsAppWindow()
-    {
-        var deadline = DateTimeOffset.UtcNow + connectDeadline;
-
-        while (DateTimeOffset.UtcNow < deadline)
-        {
-            var window = Process.GetProcesses().Where(IsWindowsApp)
-                .Select(process => process.MainWindowHandle)
-                .FirstOrDefault(handle => handle != IntPtr.Zero);
-
-            if (window != IntPtr.Zero)
-            {
-                // Restored first (without activating), because a maximized window ignores a move.
-                ShowWindow(window, SW_SHOWNOACTIVATE);
-                SetWindowPos(window, IntPtr.Zero, offScreenPosition, offScreenPosition, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-                return;
-            }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(200));
-        }
-    }
-
-    private static void StopWindowsApps()
+    internal static void StopWindowsApps()
     {
         foreach (var process in Process.GetProcesses().Where(IsWindowsApp))
         {
@@ -233,55 +211,6 @@ public static class IPlaywrightExtensions
     }
 
     private static bool IsWindowsApp(Process process) => process.ProcessName.EndsWith(".Client.Windows", StringComparison.Ordinal);
-
-    /// <summary>
-    /// The Windows counterpart of the Android launch's <c>pm clear</c>: drops WindowsStorageService's isolated storage
-    /// file (access token, culture, consent answer) and the WebView2 profile, so a run inherits no earlier session.
-    /// Best effort - what it cannot delete, the app recreates.
-    /// </summary>
-    private static void ClearWindowsAppData(string windowsAppId)
-    {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        // Named after the app by WebView2 itself, since Client.Windows sets no user data folder of its own.
-        TryDelete(() => Directory.Delete(Path.Combine(localAppData, $"{windowsAppId}.WebView2"), recursive: true));
-
-        // The store's path is hashed out of the assembly's evidence, so it is searched for by the file name
-        // WindowsStorageService writes - the assembly name, which is windowsAppId - rather than derived from a path.
-        var isolatedStorage = Path.Combine(localAppData, "IsolatedStorage");
-
-        if (Directory.Exists(isolatedStorage) is false)
-            return;
-
-        TryDelete(() =>
-        {
-            foreach (var store in Directory.EnumerateFiles(isolatedStorage, $"{windowsAppId}.storage.json", SearchOption.AllDirectories))
-                TryDelete(() => File.Delete(store));
-        });
-    }
-
-    private static void TryDelete(Action delete)
-    {
-        try
-        {
-            delete();
-        }
-        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-        {
-        }
-    }
-
-    /// <summary>Far outside every monitor - where Windows itself parks a minimized window.</summary>
-    private const int offScreenPosition = -32000;
-
-    private const int SW_SHOWNOACTIVATE = 4;
-    private const uint SWP_NOSIZE = 0x0001, SWP_NOZORDER = 0x0004, SWP_NOACTIVATE = 0x0010;
-
-    [DllImport("user32.dll")]
-    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-    [DllImport("user32.dll")]
-    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
 
     /// <summary>
     /// When adb sees no device, boots the first local AVD - and leaves it running, since the next session reuses it.

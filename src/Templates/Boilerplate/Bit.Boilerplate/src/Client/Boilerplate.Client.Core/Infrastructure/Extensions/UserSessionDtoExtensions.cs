@@ -17,6 +17,12 @@ public static class UserSessionDtoExtensions
                                     ? $"{OsImagesUrl}/{GetOsImage(session.DeviceInfo)}"
                                     : $"{OsImagesUrl}/oauth.png";
 
+        /// <summary>Where the session comes from, falling back to its IP when no address was resolved for it.</summary>
+        public string? DisplayAddress => string.IsNullOrEmpty(session.Address) ? session.IP : session.Address;
+
+        /// <summary>The IP as a detail under <c>DisplayAddress</c>, so it is never shown twice.</summary>
+        public string? DisplayIP => string.IsNullOrEmpty(session.Address) ? null : session.IP;
+
         public string GetLastSeenOn(DateTimeOffset utcNow, IStringLocalizer<AppStrings> localizer, TimeZoneService timeZoneService)
         {
             return utcNow - session.RenewedOnDateTimeOffset < TimeSpan.FromMinutes(5) ? localizer[nameof(AppStrings.Online)]
@@ -30,6 +36,16 @@ public static class UserSessionDtoExtensions
                         : utcNow - session.RenewedOnDateTimeOffset < TimeSpan.FromMinutes(15) ? BitPersonaPresence.Away
                         : BitPersonaPresence.Offline;
         }
+
+        //#if (signalR == true || notification == true)
+        /// <summary>Shown read-only: only the device itself changes it, through AppMenu's switch.</summary>
+        public string GetNotificationStatusTitle(IStringLocalizer<AppStrings> localizer)
+        {
+            return session.NotificationStatus is UserSessionNotificationStatus.Allowed
+                ? localizer[nameof(AppStrings.SessionNotificationsAllowedTitle)]
+                : localizer[nameof(AppStrings.SessionNotificationsMutedTitle)];
+        }
+        //#endif
 
         /// <summary>What the authorized application may do, from the scopes it was granted.</summary>
         public IEnumerable<string> ScopeDescriptions(IStringLocalizer<AppStrings> localizer)

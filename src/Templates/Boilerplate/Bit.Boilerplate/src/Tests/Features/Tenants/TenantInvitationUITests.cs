@@ -51,33 +51,33 @@ public partial class TenantInvitationUITests : AppPageTest
         //#if (module == "Admin")
         // Her invitation is still pending (she hasn't switched into the tenant), so no tenant is selected for her (See
         // IdentityController.GetTenantId, which only returns accepted memberships) and she can't reach the Dashboard yet.
-        await AssertDashboardAccessible(invitedPage, serverAddress, accessible: false);
+        await AssertDashboardAccessible(invitedPage, accessible: false);
         //#endif
 
         // ---- Browser 1: signing in accepted nothing, so she still must not appear in the tenant's users list ----
-        await AssertUserInTenantUsersList(Page, serverAddress, invitedEmail, shouldExist: false);
+        await AssertUserInTenantUsersList(Page, invitedEmail, shouldExist: false);
 
         // ---- Browser 2: she accepts the invitation from the "manage my tenants" page ----
-        await AcceptTenantInvitation(invitedPage, serverAddress, tenantName);
+        await AcceptTenantInvitation(invitedPage, tenantName);
 
         //#if (module == "Admin")
         // Now she can reach the Dashboard (Demo role + a selected tenant).
-        await AssertDashboardAccessible(invitedPage, serverAddress, accessible: true);
+        await AssertDashboardAccessible(invitedPage, accessible: true);
         //#endif
 
         // ---- Browser 1: she now shows up in the tenant's users list ----
-        await AssertUserInTenantUsersList(Page, serverAddress, invitedEmail, shouldExist: true);
+        await AssertUserInTenantUsersList(Page, invitedEmail, shouldExist: true);
 
         // ---- Browser 2: she leaves the tenant ----
         await LeaveTenant(invitedPage, server, tenantName, invitedEmail);
 
         //#if (module == "Admin")
         // The Dashboard is off-limits for her again (hidden from the menu / not authorized).
-        await AssertDashboardAccessible(invitedPage, serverAddress, accessible: false);
+        await AssertDashboardAccessible(invitedPage, accessible: false);
         //#endif
 
         // ---- Browser 1: she disappears from the tenant's users list again ----
-        await AssertUserInTenantUsersList(Page, serverAddress, invitedEmail, shouldExist: false);
+        await AssertUserInTenantUsersList(Page, invitedEmail, shouldExist: false);
     }
 
     private async Task SignInWithPassword(IPage page, Uri serverAddress, string email, string password)
@@ -94,8 +94,7 @@ public partial class TenantInvitationUITests : AppPageTest
 
     private async Task CreateTenant(IPage page, AppTestServer server, string tenantName)
     {
-        await page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.ManageMyTenants).ToString(),
-            new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.GoToInApp(PageUrls.ManageMyTenants);
 
         // She already belongs to the seeded store tenant, so the "create" section starts collapsed; expand it.
         await page.GetByText(AppStrings.CreateNewTenant).First.ClickAsync();
@@ -119,8 +118,7 @@ public partial class TenantInvitationUITests : AppPageTest
 
     private async Task InviteUserToCurrentTenant(IPage page, AppTestServer server, string email)
     {
-        await page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.ManageMyTenants).ToString(),
-            new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.GoToInApp(PageUrls.ManageMyTenants);
 
         // Expand the "Invite user to <tenant>" section (only the current tenant's admin sees it). Its title carries the
         // tenant name, so match it by its stable prefix.
@@ -137,14 +135,16 @@ public partial class TenantInvitationUITests : AppPageTest
         await server.WaitForBackgroundJobsToComplete(TestContext.CancellationToken);
     }
 
-    private async Task AssertUserInTenantUsersList(IPage page, Uri serverAddress, string email, bool shouldExist)
+    private async Task AssertUserInTenantUsersList(IPage page, string email, bool shouldExist)
     {
-        // Reload the Users page so it re-fetches the current tenant's users afresh.
-        await page.GotoAsync(new Uri(serverAddress, PageUrls.Users).ToString(),
-            new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.GoToInApp(PageUrls.Users);
 
         // The list only holds users of the current tenant that have accepted their invitation (See UserManagementController.GetAllUsers).
         await page.GetByPlaceholder(AppStrings.SearchUsersPlaceholder).FillAsync(email);
+
+        // A repeat visit changes neither the route nor the search text, so nothing would re-query on its own.
+        // Exact, or it also matches the grid's "Refresh the selected user".
+        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Refresh, Exact = true }).ClickAsync();
 
         var userItem = page.GetByText(email);
 
@@ -160,10 +160,9 @@ public partial class TenantInvitationUITests : AppPageTest
         }
     }
 
-    private async Task AcceptTenantInvitation(IPage page, Uri serverAddress, string tenantName)
+    private async Task AcceptTenantInvitation(IPage page, string tenantName)
     {
-        await page.GotoAsync(new Uri(serverAddress, PageUrls.ManageMyTenants).ToString(),
-            new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.GoToInApp(PageUrls.ManageMyTenants);
 
         // Her pending invitation shows up as a tenant card with an "Accept" action. The button carries an icon whose
         // glyph leaks into its accessible name, so match the name by substring (the default) rather than exactly.
@@ -178,8 +177,7 @@ public partial class TenantInvitationUITests : AppPageTest
 
     private async Task LeaveTenant(IPage page, AppTestServer server, string tenantName, string email)
     {
-        await page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.ManageMyTenants).ToString(),
-            new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.GoToInApp(PageUrls.ManageMyTenants);
 
         // The Leave/Accept buttons carry icons whose glyphs leak into their accessible names, so match by substring.
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.LeaveTenant }).ClickAsync();
@@ -202,10 +200,9 @@ public partial class TenantInvitationUITests : AppPageTest
     }
 
     //#if (module == "Admin")
-    private async Task AssertDashboardAccessible(IPage page, Uri serverAddress, bool accessible)
+    private async Task AssertDashboardAccessible(IPage page, bool accessible)
     {
-        await page.GotoAsync(new Uri(serverAddress, PageUrls.Dashboard).ToString(),
-            new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.GoToInApp(PageUrls.Dashboard);
 
         // DashboardPage passes PageTitle="DashboardPageTitle" and Title="Dashboard" separately, and AppPageData renders
         // `PageTitle ?? Title`, so the document title is the former. They happen to carry the same text in every shipped

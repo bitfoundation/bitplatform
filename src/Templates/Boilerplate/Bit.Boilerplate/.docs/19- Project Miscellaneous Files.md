@@ -65,7 +65,7 @@ csharp_new_line_before_open_brace = all
 
 **Key Properties**:
 
-- **`version`**: The specific .NET SDK version (currently .NET 10 RC)
+- **`version`**: The specific .NET SDK version (currently .NET 10)
 - **`rollForward`**: Set to `"latestFeature"` - allows using newer feature releases automatically
 
 **Why it matters**: This ensures all team members and CI/CD pipelines use the same SDK version, preventing "works on my machine" issues.

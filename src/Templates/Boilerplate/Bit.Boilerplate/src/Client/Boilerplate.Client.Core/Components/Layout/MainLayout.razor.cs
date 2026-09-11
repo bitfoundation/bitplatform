@@ -13,6 +13,7 @@ public partial class MainLayout : IAsyncDisposable
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
 
+    [AutoInject] private Dom dom = default!;
     [AutoInject] private Document document = default!;
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private AuthManager authManager = default!;
@@ -209,7 +210,13 @@ public partial class MainLayout : IAsyncDisposable
         if (CultureInfoManager.InvariantGlobalization || RendererInfo.IsInteractive is false) return;
 
         var culture = CultureInfo.CurrentUICulture;
-        await document.SetLang(culture.Name);
+
+        await using var html = await dom.DocumentElement();
+        if (html is not null)
+        {
+            await html.SetAttribute("lang", culture.Name);
+        }
+
         await document.SetDir(culture.TextInfo.IsRightToLeft ? DocumentDir.Rtl : DocumentDir.Ltr);
     }
 

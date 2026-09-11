@@ -1,25 +1,19 @@
 namespace Boilerplate.Tests.Features.PushNotification;
 
 /// <summary>
-/// The app menu's push notifications switch - the device-level opt-in every other push path respects (See
-/// <c>PushNotificationServiceBase.IsEnabled</c>). Two things about it have to hold, and neither did:
-/// <list type="number">
-/// <item>It must report what is true of this device, not just the stored preference, which defaults to enabled for
-/// a device that was never asked - so it read ON in a browser whose notification permission was denied.</item>
-/// <item>Turning it on must RECORD that intent even when the platform then refuses. The enable path used to bail
-/// out before <c>SetEnabled</c>, leaving anyone who had opted out stuck that way and the automatic re-subscribe
-/// short circuited - while the same thing from the settings page, which has no such pre-flight check, worked.</item>
-/// </list>
-/// The permission has to be denied for either point to be observable, which is what chromium reports on its own and
-/// what firefox is launched to report (See AppPageTest.LaunchOptionsAsync).
+/// The app menu's notifications switch - the device's opt-in for push and SignalR's in-app messages alike (See
+/// <c>NotificationPreferenceService</c>). It starts off, and turning it on must RECORD the choice and show it even
+/// when the platform refuses the push: in-app messages need no permission, so only the push is called out as blocked.
+/// The permission has to be denied for that to be observable, which is what chromium reports on its own and what
+/// firefox is launched to report (See AppPageTest.LaunchOptionsAsync).
 /// </summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
 public partial class PushNotificationsToggleUITests : AppPageTest
 {
-    private const string OptOutStoreKey = "PushNotificationsDisabled"; // PushNotificationServiceBase.PushNotificationsDisabledStoreKey
+    private const string NotificationsEnabledStoreKey = "NotificationsEnabled"; // NotificationPreferenceService.NotificationsEnabledStoreKey
 
     [TestMethod]
-    public async Task PushNotificationsSwitch_Should_FollowThePlatform_AndStillRecordTheIntentWhenItRefuses()
+    public async Task NotificationsSwitch_Should_RecordTheChoice_AndCallOutThePushThePlatformRefuses()
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
@@ -35,39 +29,36 @@ public partial class PushNotificationsToggleUITests : AppPageTest
             return;
         }
 
-        // The state the old enable path could never get out of: opted out on a device that also cannot be asked.
-        await Page.EvaluateAsync($"() => localStorage.setItem('{OptOutStoreKey}', 'true')");
-        await Page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
-
         var callout = Page.Locator(".app-menu-callout");
 
         await OpenAppMenu(callout);
 
-        var pushSwitch = callout.GetByRole(AriaRole.Switch,
-            new() { NameRegex = new("push notifications", System.Text.RegularExpressions.RegexOptions.IgnoreCase) });
+        var notificationsSwitch = NotificationsSwitch(callout);
 
-        await Expect(pushSwitch).ToHaveAttributeAsync("aria-checked", "false");
+        // Off until the user turns it on.
+        await Expect(notificationsSwitch).ToHaveAttributeAsync("aria-checked", "false");
 
-        await pushSwitch.ClickAsync();
+        await notificationsSwitch.ClickAsync();
 
-        // The platform still refuses, so the switch stays off and says so...
-        await Expect(Page.Locator(".snackbar")).ToContainTextAsync(AppStrings.PushNotificationsBlockedMessage);
-        await Expect(pushSwitch).ToHaveAttributeAsync("aria-checked", "false");
+        // The choice is stored and shown even though the browser refuses the push...
+        await Expect(notificationsSwitch).ToHaveAttributeAsync("aria-checked", "true");
+        await Page.WaitForFunctionAsync($"() => localStorage.getItem('{NotificationsEnabledStoreKey}') === 'true'");
 
-        // ...but the opt-out is gone, which is the whole difference: a later subscribe, once the permission has
-        // been granted, now goes through.
-        await Page.WaitForFunctionAsync($"() => localStorage.getItem('{OptOutStoreKey}') === null");
+        // ...which is called out under the switch instead.
+        await Expect(callout).ToContainTextAsync(AppStrings.PushNotificationsBlockedMessage);
     }
 
+    private static ILocator NotificationsSwitch(ILocator callout) => callout.GetByRole(AriaRole.Switch,
+        new() { NameRegex = new("notifications", System.Text.RegularExpressions.RegexOptions.IgnoreCase) });
+
     /// <summary>
-    /// Opens the header app menu by its chevron opener and waits for the push notifications row, whose state is read
+    /// Opens the header app menu by its chevron opener and waits for the notifications row, whose state is read
     /// asynchronously as the menu opens (See <c>AppMenu.OnDropMenuOpen</c>).
     /// </summary>
     private async Task OpenAppMenu(ILocator callout)
     {
         await Page.Locator(".menu-chevron").ClickAsync();
         await Expect(callout).ToBeVisibleAsync();
-        await Expect(callout.GetByRole(AriaRole.Switch,
-            new() { NameRegex = new("push notifications", System.Text.RegularExpressions.RegexOptions.IgnoreCase) })).ToBeVisibleAsync();
+        await Expect(NotificationsSwitch(callout)).ToBeVisibleAsync();
     }
 }

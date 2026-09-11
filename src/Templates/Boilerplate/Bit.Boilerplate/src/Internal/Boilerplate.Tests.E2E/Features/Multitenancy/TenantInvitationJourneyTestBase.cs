@@ -23,14 +23,14 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
     [TestMethod]
     public async Task InvitedUser_Should_JoinE2ETenantFromPersianInvitation_ThenLeave()
     {
-        var configuration = DeployedApiClientProvider.Services.GetRequiredService<IConfiguration>();
-        var tenantAdminEmail = configuration["TenantAdminEmail"]!;
-        var tenantAdminPassword = configuration["TenantAdminPassword"]!;
-        var e2eTenantName = configuration["E2ETenantName"] ?? e2eTenantFallback;
-
         var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(TestContext.CancellationToken);
         var mcp = globalApiClient.McpClient!;
         await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(TestContext.CancellationToken);
+
+        var configuration = globalApiClient.Services.GetRequiredService<IConfiguration>();
+        var tenantAdminEmail = configuration["TenantAdminEmail"]!;
+        var tenantAdminPassword = configuration["TenantAdminPassword"]!;
+        var e2eTenantName = configuration["E2ETenantName"] ?? e2eTenantFallback;
 
         var tenant = await dbContext.Tenants.IgnoreQueryFilters()
             .SingleAsync(t => t.Name == e2eTenantName, TestContext.CancellationToken);
@@ -45,7 +45,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
             await SignInNewUser(adminPanelAppForToBeInvitedUser, aUserToBeInvitedEmail, mcp);
 
             await ChangeCultureToPersian(adminPanelAppForToBeInvitedUser);
-            await GoTo(adminPanelAppForToBeInvitedUser, PageUrls.Home, "fa-IR");
+            await adminPanelAppForToBeInvitedUser.GoToInApp(PageUrls.Home);
             await WaitUntilInteractive(adminPanelAppForToBeInvitedUser);
 
             await using var tenantAdminBrowserContext = await NewBrowserContext(adminPanelAppUrl);
@@ -70,7 +70,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
             var invitationLink = invitation.HttpLinksInArguments().First();
 
             // Parked off the route the link opens, so that the link being what opened the app stays observable.
-            await GoTo(adminPanelAppForToBeInvitedUser, PageUrls.Settings, "fa-IR");
+            await adminPanelAppForToBeInvitedUser.GoToInApp(PageUrls.Settings);
 
             await OpenInvitationLink(adminPanelAppForToBeInvitedUser, invitationLink);
             await AcceptInvitation(adminPanelAppForToBeInvitedUser, e2eTenantName, tenantDisplayName, faCulture);
@@ -93,7 +93,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task SignInNewUser(IPage page, string email, McpClient mcp)
     {
-        await GoTo(page, PageUrls.SignIn);
+        await page.GoToInApp(PageUrls.SignIn);
         await WaitUntilInteractive(page);
 
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
@@ -111,7 +111,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task SignInExistingUser(IPage page, string email, string userPassword, McpClient mcp)
     {
-        await Navigate(page, AppUrl(PageUrls.SignIn));
+        await page.GoToInApp(PageUrls.SignIn);
         await WaitUntilInteractive(page);
 
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
@@ -124,23 +124,12 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
     }
 
-    private async Task ChangeCultureToPersian(IPage page)
-    {
-        var faDisplayName = CultureInfoManager.SupportedCultures.First(sc => sc.Culture.Name == "fa-IR").DisplayName;
-
-        // The drop menu itself, not its chevron: AppMenu hides the chevron under 600px, which is every phone-sized
-        // hybrid WebView.
-        await page.Locator("header .bit-drm").First.ClickAsync();
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Language }).ClickAsync();
-        await Expect(page.GetByText(AppStrings.SelectLanguage)).ToBeVisibleAsync();
-        await page.GetByText(faDisplayName, new() { Exact = true }).ClickAsync();
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-    }
+    private Task ChangeCultureToPersian(IPage page) => ChangeCulture(page, "fa-IR");
 
     /// <summary>No Switch button on the card means this tenant is already the selected one.</summary>
     private async Task SwitchToTenant(IPage page, string tenantName)
     {
-        await Navigate(page, AppUrl(PageUrls.ManageMyTenants));
+        await page.GoToInApp(PageUrls.ManageMyTenants);
         await Expect(page.GetByText(tenantName).First).ToBeVisibleAsync();
 
         var cardSwitch = page.Locator(".tenant-card", new() { HasText = tenantName })
@@ -155,7 +144,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task InviteUser(IPage page, string email, string tenantAdminEmail, McpClient mcp)
     {
-        await Navigate(page, AppUrl(PageUrls.ManageMyTenants));
+        await page.GoToInApp(PageUrls.ManageMyTenants);
 
         var inviteHeaderPrefix = AppStrings.InviteUserToTenant.Replace("{0}", "").Trim();
         await page.GetByText(inviteHeaderPrefix).First.ClickAsync();
@@ -170,7 +159,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task AcceptInvitation(IPage page, string tenantName, string tenantTitle, CultureInfo faCulture)
     {
-        await GoTo(page, PageUrls.ManageMyTenants, "fa-IR");
+        await page.GoToInApp(PageUrls.ManageMyTenants, "fa-IR");
         await WaitUntilInteractive(page);
 
         var accept = Localized(nameof(AppStrings.AcceptInvitation), faCulture);
@@ -183,7 +172,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task LeaveTenant(IPage page, string email, CultureInfo faCulture, McpClient mcp)
     {
-        await GoTo(page, PageUrls.ManageMyTenants, "fa-IR");
+        await page.GoToInApp(PageUrls.ManageMyTenants, "fa-IR");
 
         var leave = Localized(nameof(AppStrings.LeaveTenant), faCulture);
         var yes = Localized(nameof(AppStrings.Yes), faCulture);
@@ -225,8 +214,10 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task AssertUserInTenantUsersList(IPage page, string email, bool shouldExist)
     {
-        await Navigate(page, AppUrl(PageUrls.Users));
+        await page.GoToInApp(PageUrls.Users);
         await page.GetByPlaceholder(AppStrings.SearchUsersPlaceholder).FillAsync(email);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Refresh, Exact = true }).ClickAsync();
 
         var userItem = page.GetByText(email);
         if (shouldExist)
@@ -242,7 +233,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
 
     private async Task AssertDashboardAccessible(IPage page, bool accessible, CultureInfo faCulture)
     {
-        await GoTo(page, PageUrls.Dashboard, "fa-IR");
+        await page.GoToInApp(PageUrls.Dashboard, "fa-IR");
 
         var expected = Localized(accessible ? nameof(AppStrings.DashboardPageTitle) : nameof(AppStrings.NotAuthorizedPageTitle), faCulture);
         var english = accessible ? AppStrings.DashboardPageTitle : AppStrings.NotAuthorizedPageTitle;
@@ -250,16 +241,12 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
     }
 
     /// <summary>
-    /// Moves the invitee's app to <paramref name="path"/> on whichever origin that app already lives at: the
-    /// deployment in a browser, the WebView's own one in a hybrid app - where the deployment's url would leave the
-    /// app for the website. The tenant admin's browser is always on the deployment, so it uses <see cref="AppUrl"/>.
-    /// </summary>
-    private static Task GoTo(IPage page, string path, string? culture = null)
-        => Navigate(page, new Uri(new Uri(page.Url), RouteOf(path, culture)).ToString());
-
-    /// <summary>
+    /// A real document load, for the two moments that need one: arriving at the app, and the mailed link opening it.
+    /// Every hop inside a running app goes through <see cref="PlaywrightPageExtensions.GoToInApp"/> instead.
+    /// <para>
     /// The app navigates on its own here - the culture switch redirects the url it was applied on - and where chromium
     /// lets the later navigation win, firefox and webkit raise the interrupted one; so ask again once it settles.
+    /// </para>
     /// </summary>
     private static async Task Navigate(IPage page, string url)
     {
@@ -275,12 +262,6 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
             await page.GotoAsync(url, new() { WaitUntil = WaitUntilState.NetworkIdle });
         }
     }
-
-    /// <summary>The app relative route, culture prefixed the way the pages' own route templates are.</summary>
-    private static string RouteOf(string path, string? culture = null) => culture is null ? path : $"/{culture}{path}";
-
-    /// <summary>The same route on the deployed web app.</summary>
-    private static string AppUrl(string path, string? culture = null) => new Uri(adminPanelAppUrl, RouteOf(path, culture)).ToString();
 
     private static string Localized(string key, CultureInfo culture)
         => AppStrings.ResourceManager.GetString(key, culture) ?? key;

@@ -94,8 +94,9 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 //#if (signalR == true)
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]
-[JsonSerializable(typeof(AiChatMessageRequest))]
-[JsonSerializable(typeof(AiChatFollowUpList))]
+[JsonSerializable(typeof(AiChatMessage))]
+[JsonSerializable(typeof(AssistantReply))]
+[JsonSerializable(typeof(AssistantTurn))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
 [JsonSerializable(typeof(BackgroundJobProgressDto))]
 [JsonSerializable(typeof(SynthesizeSpeechRequestDto))]
