@@ -48,6 +48,10 @@ await console.Dirxml(elementReference);
             <button @onclick="DirAsync">Dir</button>
             <button @onclick="DirxmlAsync">Dirxml</button>
         </div>
+        <div class="field">
+            <span class="field-label">The node Dir and Dirxml are pointed at</span>
+            <input @ref="inspectRef" value="inspect me" readonly />
+        </div>
         <DemoConsole @ref="assertionsOutput" Title="assertions output" MirrorToDevTools="false" />
     </DemoSection>
 
@@ -201,6 +205,7 @@ await console.Clear();
     private DemoConsole clearOutput = default!;
     private string message = "Hello from Bit.Butil";
     private ElementReference inputRef;
+    private ElementReference inspectRef;
 
     private async Task LogAsync()
     {
@@ -284,7 +289,7 @@ await console.Clear();
     {
         try
         {
-            await console.Dir(inputRef);
+            await console.Dir(inspectRef);
             await assertionsOutput.Success("console.dir sent - expand the object in DevTools.");
         }
         catch (Exception ex)
@@ -297,8 +302,8 @@ await console.Clear();
     {
         try
         {
-            await console.Dirxml(inputRef);
-            await assertionsOutput.Success("console.dirxml sent - the message input is shown as a DOM tree.");
+            await console.Dirxml(inspectRef);
+            await assertionsOutput.Success("console.dirxml sent - the input above is shown as a DOM tree.");
         }
         catch (Exception ex)
         {

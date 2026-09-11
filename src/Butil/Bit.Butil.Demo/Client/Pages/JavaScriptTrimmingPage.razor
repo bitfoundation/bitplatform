@@ -6,7 +6,7 @@
 
 <PageHeader Category="Overview"
             Title="JavaScript trimming"
-            Lead="Butil's bridge script carries 140 JavaScript modules - every browser API on this site - and almost no app calls all of them. A published app can rebuild that bundle from only the modules it can still reach - tree-shaking the JavaScript, the same way the IL trimming the C# side already gets shakes out the wrappers you never inject. This page is the whole feature: the one switch that turns it on, the three signals it works from, where the properties go, and what it cannot see." />
+            Lead="Butil's bridge script carries over 170 JavaScript modules - every browser API on this site - and almost no app calls all of them. A published app can rebuild that bundle from only the modules it can still reach - tree-shaking the JavaScript, the same way the IL trimming the C# side already gets shakes out the wrappers you never inject. This page is the whole feature: the one switch that turns it on, the three signals it works from, where the properties go, and what it cannot see." />
 
 <Callout Type="success" Title="One property, and the rest is defaults">
     <code>&lt;BitButilTrimScripts&gt;true&lt;/BitButilTrimScripts&gt;</code> is all an app writes, and a
@@ -37,7 +37,7 @@
 
     <DemoSection Title="What this app actually downloaded"
                  Api="Fetch"
-                 Description="Every chunk in the bundle opens with a guard naming the module it registers, so the bundle is self-describing: fetch it, count the guards, and you have the exact list the browser sees - which is the check to run against your own published app when you want to know whether the trimming did anything. Run it here and it reports on this documentation site, which has a page for every API in the library and does not turn the trimming on, so it is the full 140 and a baseline rather than a success story. The second button asks the app for one per-module file, which is the other half of the same question: a 200 means this app publishes the per-module files as well as the bundle, and a 404 means it is in plain bundle mode, where the modules/ folder is dropped from its static web assets entirely - a file that cannot be requested is one more thing that cannot 404 in production."
+                 Description="Every chunk in the bundle opens with a guard naming the module it registers, so the bundle is self-describing: fetch it, count the guards, and you have the exact list the browser sees - which is the check to run against your own published app when you want to know whether the trimming did anything. Run it here and it reports on this documentation site, which has a page for every API in the library and does not turn the trimming on, so it is the full set and a baseline rather than a success story. The second button asks the app for one per-module file, which is the other half of the same question: a 200 means this app publishes the per-module files as well as the bundle, and a 404 means it is in plain bundle mode, where the modules/ folder is dropped from its static web assets entirely - a file that cannot be requested is one more thing that cannot 404 in production."
                  Code=@("""
 var url = navManager.ToAbsoluteUri("_content/Bit.Butil/bit-butil.js");
 var response = await fetch.Send(new FetchRequest { Url = url.ToString(), Cache = "no-store" });
@@ -113,13 +113,24 @@ for (var at = script.IndexOf(anchor); at >= 0; at = script.IndexOf(anchor, at + 
     <DemoSection Title="Signal 3 - the modules you name yourself"
                  Api="BitButilScriptModule"
                  Description="An item rather than a property, and always ADDED to what the other two concluded - never used instead of them. It takes JavaScript module names, Bit.Butil class names, or full type names interchangeably, and it is the way to keep a module reached from somewhere nothing static can follow: an API resolved by reflection, or one your own JavaScript calls through window.BitButil directly. It is also a signal in its own right rather than only a supplement to one: with no ILLink and the scan turned off, a csproj that names modules trims to exactly those and nothing else. A name that is neither a module nor a Bit.Butil class fails the build rather than being quietly ignored, because MSBuild accepts a misspelled item without a word and a silently dropped name is a module missing from a published bundle."
-                 Code=@("""
+                 Files=@([
+new("MyApp.csproj", """
 <ItemGroup>
   <!-- class names, module names and full type names all resolve -->
   <BitButilScriptModule Include="Clipboard;geolocation;Bit.Butil.WebAuthn" />
 </ItemGroup>
-""")
-                 Language="xml" />
+"""),
+new("wwwroot/js/app.js", """
+// The case this item exists for: nothing static leads from the app's C# to this call, so neither
+// ILLink nor the scan can see that the geolocation module is still needed. Without naming it in the
+// csproj above, a published app would 404 on the line below - or, in a lazy-scripts app, import a
+// module file the publish dropped.
+window.showMyLocation = async () => {
+    const result = await BitButil.geolocation.getCurrentPosition({});
+    if (result.position) console.log(result.position.coords.latitude, result.position.coords.longitude);
+};
+"""),
+]) />
 
     <DemoSection Title="Both shapes of the JavaScript are narrowed"
                  Api="BitButilIncludeScriptModules"
@@ -136,25 +147,38 @@ for (var at = script.IndexOf(anchor); at >= 0; at = script.IndexOf(anchor, at + 
     <DemoSection Title="Which shape of app writes what"
                  Api="csproj by hosting model"
                  Description="Four shapes, and none of them writes more than a single line. A standalone WebAssembly app or PWA publishes trimmed and writes nothing at all. A Blazor Server app, or a Web App's server project, turns the switch on and gets the scan with it. A server host that references a WebAssembly client is the case worth thinking about: the scan covers the host and the client alike, because the client's assembly is one of the host's references, whereas ILLink's answer for such a host is about the host's own code only - which is why trimming there wants the scan rather than PublishTrimmed, and why the switch goes in the host project that serves bit-butil.js. A Blazor Hybrid head is the one shape where none of it applies: it packages its wwwroot at build time rather than through a publish of a web app's static web assets, so it ships the full bundle and reaches for lazy scripts instead."
-                 Code=@("""
-<!-- MyApp.Client.csproj - standalone Blazor WebAssembly: nothing at all -->
-
-<!-- MyApp.csproj - Blazor Server -->
+                 Files=@([
+new("MyApp.Client.csproj", """
+<!-- Standalone Blazor WebAssembly or PWA: nothing at all. A Release publish is trimmed, so the
+     switch is already on and ILLink's own answer is the signal. -->
+<PropertyGroup>
+  <TargetFramework>net10.0</TargetFramework>
+</PropertyGroup>
+"""),
+new("MyApp.csproj", """
+<!-- Blazor Server. There is no trimmed assembly to read, so the switch turns on the scan instead. -->
 <PropertyGroup>
   <BitButilTrimScripts>true</BitButilTrimScripts>
 </PropertyGroup>
-
-<!-- MyApp.Server.csproj - the HOST of a Blazor Web App, which is what serves the script -->
+"""),
+new("MyApp.Server.csproj", """
+<!-- The HOST of a Blazor Web App - the project that serves bit-butil.js, which is what makes it the
+     one that has to write this. The scan covers the host and the client alike, because the client's
+     assembly is one of the host's references; ILLink's answer here would be about the host's own
+     code only, which is why this shape wants the scan rather than PublishTrimmed. -->
 <PropertyGroup>
   <BitButilTrimScripts>true</BitButilTrimScripts>
 </PropertyGroup>
-
-<!-- MyApp.Maui.csproj - Blazor Hybrid: the trimming does not apply, lazy scripts do -->
+"""),
+new("MyApp.Maui.csproj", """
+<!-- Blazor Hybrid: the trimming does not apply at all. A hybrid head packages its wwwroot at build
+     time rather than through a publish of a web app's static web assets, so it ships the full bundle
+     and reaches for lazy scripts instead. -->
 <PropertyGroup>
   <BitButilLazyScripts>true</BitButilLazyScripts>
 </PropertyGroup>
-""")
-                 Language="xml" />
+"""),
+]) />
 </div>
 
 <Callout Type="warning" Title="These go in the project you publish, not in Directory.Build.props">
@@ -194,8 +218,8 @@ for (var at = script.IndexOf(anchor); at >= 0; at = script.IndexOf(anchor, at + 
                  Code=@("""
 dotnet publish -c Release -v:n
 
-# Bit.Butil: scanned 2 assembly(s) referencing Bit.Butil and found 48 Bit.Butil type(s): ...
-# Bit.Butil: bit-butil.js trimmed to 44 of 140 modules (92,626 bytes): butil, utils, battery, ...
+# Bit.Butil: scanned 1 assembly(s) referencing Bit.Butil and found 2 Bit.Butil type(s): Bit.Butil.Clipboard, Bit.Butil.Geolocation.
+# Bit.Butil: bit-butil.js trimmed to 4 of 171 modules (4,395 bytes): butil, utils, clipboard, geolocation
 """)
                  Language="shell" />
 
@@ -224,6 +248,27 @@ public class MyPayload
 </PropertyGroup>
 """)
                  Language="xml" />
+
+    <DemoSection Title="The same switches from C#"
+                 Api="AddBitButilServices"
+                 Description="Publish-time tree-shaking has no C# counterpart at all, since it happens inside dotnet publish - but the loading half of it does. The registration call takes an options callback carrying the library's runtime toggles: LazyScripts, ScriptModulesPath for when the package's static web assets are served from somewhere else such as a CDN, and FastInvoke. It is the escape hatch for hosts where the csproj is not yours to edit, and it decides only how the scripts load, not what a publish contains. A default publish keeps the bundle and drops the per-module files, so this switch on its own leaves the imports with nothing to fetch - keep the modules with BitButilIncludeScriptModules, which is also the one way of asking for them that outranks the trimming."
+                 Files=@([
+new("Program.cs", """
+builder.Services.AddBitButilServices(options =>
+{
+    options.LazyScripts = true;                  // or false to insist on the bundle
+    options.ScriptModulesPath = "/cdn/butil/";   // optional, when served elsewhere
+});
+"""),
+new("App.csproj", """
+<!-- The C# switch decides only how the scripts load, not what a publish contains. A default publish
+     keeps the bundle and drops the per-module files, so LazyScripts on its own leaves the imports
+     with nothing to fetch. -->
+<PropertyGroup>
+  <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+</PropertyGroup>
+"""),
+]) />
 </div>
 
 <Callout Type="warning" Title="What no signal can follow">

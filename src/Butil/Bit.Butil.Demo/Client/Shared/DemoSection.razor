@@ -25,7 +25,11 @@
         <p class="section-desc">@Description</p>
     }
 
-    @if (string.IsNullOrWhiteSpace(Code) is false)
+    @if (Files is { Length: > 0 })
+    {
+        <CodeBlock Files="@Files" />
+    }
+    else if (string.IsNullOrWhiteSpace(Code) is false)
     {
         <CodeBlock Code="@Code" Language="@Language" />
     }
@@ -56,6 +60,12 @@
     [Parameter] public string? Code { get; set; }
 
     [Parameter] public string Language { get; set; } = "csharp";
+
+    /// <summary>
+    /// The snippet, when it only runs as more than one file - a page plus the worker script it
+    /// spawns, C# plus the JS module it imports. Takes precedence over <see cref="Code"/>.
+    /// </summary>
+    [Parameter] public CodeFile[]? Files { get; set; }
 
     /// <summary>The live, interactive part of the section.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }

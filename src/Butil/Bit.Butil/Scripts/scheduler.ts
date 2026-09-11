@@ -97,7 +97,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             // and on the fallback path it would skip finish() entirely and strand the promise, so
             // the caller would wait for a result that never comes. dispatch has already logged it.
             const run = async () => { try { await butil.utils.dispatch(dotNetRef, 'InvokeScheduledTask', id); } catch { /* logged by dispatch */ } };
-            const signal = signalId ? butil.abortController.signalOf(signalId) : undefined;
+            const signal = signalId ? butil.abortSignals.signalOf(signalId) : undefined;
             const scheduler = (window as any).scheduler;
 
             if (typeof scheduler?.postTask === 'function') {

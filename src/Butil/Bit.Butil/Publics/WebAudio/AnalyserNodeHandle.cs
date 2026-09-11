@@ -38,7 +38,7 @@ public sealed class AnalyserNodeHandle : AudioNodeHandle
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
-    public ValueTask<byte[]?> GetByteFrequencyData() => Js.Invoke<byte[]?>("BitButil.webAudio.byteFrequencyData", NodeId);
+    public ValueTask<byte[]?> GetByteFrequencyData() => Js.Invoke<byte[]?>("BitButil.webAudioAnalyser.byteFrequencyData", NodeId);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData">getByteTimeDomainData()</see>:
@@ -53,7 +53,7 @@ public sealed class AnalyserNodeHandle : AudioNodeHandle
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
-    public ValueTask<byte[]?> GetByteTimeDomainData() => Js.Invoke<byte[]?>("BitButil.webAudio.byteTimeDomainData", NodeId);
+    public ValueTask<byte[]?> GetByteTimeDomainData() => Js.Invoke<byte[]?>("BitButil.webAudioAnalyser.byteTimeDomainData", NodeId);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getFloatFrequencyData">getFloatFrequencyData()</see>:
@@ -68,7 +68,7 @@ public sealed class AnalyserNodeHandle : AudioNodeHandle
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
-    public ValueTask<double[]?> GetFloatFrequencyData() => Js.Invoke<double[]?>("BitButil.webAudio.floatFrequencyData", NodeId);
+    public ValueTask<double[]?> GetFloatFrequencyData() => Js.Invoke<double[]?>("BitButil.webAudioAnalyser.floatFrequencyData", NodeId);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/fftSize">fftSize</see>:

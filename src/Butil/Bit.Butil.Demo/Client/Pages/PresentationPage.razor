@@ -57,15 +57,57 @@ await subscription!.DisposeAsync();   // monitoring costs battery
     <DemoSection Title="Start a presentation and talk to it"
                  Api="Start / Send / GetState"
                  Description="Start opens the browser's device picker and loads the URL on the display the user chooses - it needs a user gesture. From then on the connection is an ordinary two-way channel: text or bytes in either direction. Keep the connection id, because it is the only way back in after the page navigates away."
-                 Code=@("""
-var connection = await presentation.Start(["/present"],
-    onMessage: message => Console.WriteLine(message.Text),
-    onStateChange: state => Console.WriteLine(state));
+                 Files=@([
+new("Controller.razor", """
+@inject Bit.Butil.Presentation presentation
 
-await connection!.Send("{\"slide\":3}");
+@* Start opens the browser's device picker, so it needs a real user gesture. *@
+<button @onclick="Start">Present</button>
 
-var savedId = connection.ConnectionId;   // what Reconnect needs later
-""")>
+@code {
+    private PresentationConnectionHandle? _connection;
+
+    private async Task Start()
+    {
+        _connection = await presentation.Start(["/present"],
+            onMessage: message => Console.WriteLine(message.Text),
+            onStateChange: state => Console.WriteLine(state));
+
+        await _connection!.Send("{\"slide\":3}");
+
+        // Keep it: this is the only way back in after this page navigates away or reloads.
+        var savedId = _connection.ConnectionId;
+    }
+}
+"""),
+new("Present.razor", """
+@page "/present"
+@inject Bit.Butil.Presentation presentation
+
+@* The page the second screen loads. It is an ordinary page of the same app on the same origin -
+   the URL passed to Start is what the display navigates to. *@
+
+<h1>Slide @_slide</h1>
+
+@code {
+    private int _slide;
+
+    // A receiver page does not create connections; it finds the controllers that opened it.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await presentation.WatchReceiverConnections(
+            onConnection: connection => Console.WriteLine($"controller {connection.ConnectionId} attached"),
+            onMessage: message => InvokeAsync(() =>
+            {
+                _slide = JsonDocument.Parse(message.Text!).RootElement.GetProperty("slide").GetInt32();
+                StateHasChanged();
+            }));
+    }
+}
+"""),
+])>
         <div class="field">
             <span class="field-label">Presentation URL</span>
             <input @bind="presentationUrl" />
@@ -89,13 +131,34 @@ var savedId = connection.ConnectionId;   // what Reconnect needs later
                  Api="Reconnect / Close / Terminate"
                  Description="Closing lets go of the connection while the presentation keeps running on the other screen, which is what makes Reconnect possible - no picker, no gesture, so it works on page load. Terminate is the one that actually closes the page on the second screen."
                  Code=@("""
-await connection.Close();       // the second screen keeps running
+@inject Bit.Butil.Presentation presentation
 
-var again = await presentation.Reconnect(["/present"], savedId,
-    onMessage: message => { /* ... */ });
+@code {
+    private string? savedId;   // connection.ConnectionId, kept from Start
+    private PresentationConnectionHandle? connection;
 
-await again!.Terminate();       // now the presentation is over
-""")>
+    private async Task LetGo()
+    {
+        savedId = connection!.ConnectionId;
+
+        // The second screen keeps running - which is what makes Reconnect possible.
+        await connection.Close();
+        connection = null;
+    }
+
+    // No picker and no gesture, so this works on page load - a controller that reloaded finds its
+    // own presentation again by id.
+    private async Task ComeBack()
+    {
+        connection = await presentation.Reconnect(["/present"], savedId!,
+            onMessage: message => { /* ... */ });
+    }
+
+    // The one that actually closes the page on the second screen.
+    private async Task EndIt() => await connection!.Terminate();
+}
+""")
+                 Language="razor">
         <div class="field">
             <span class="field-label">Connection id to reconnect to</span>
             <input @bind="savedConnectionId" />
@@ -111,15 +174,37 @@ await again!.Terminate();       // now the presentation is over
     <DemoSection Title="The receiving half"
                  Api="WatchReceiverConnections / SetDefaultRequest"
                  Description="A page opened on the second screen does not create connections - it finds the controllers that opened it, and can talk back over the same handles. SetDefaultRequest is what makes the browser's own 'cast this page' menu item do something for your app."
-                 Code=@("""
-// on the page that runs on the second screen:
-await presentation.WatchReceiverConnections(
-    onConnection: connection => Console.WriteLine($"controller {connection.ConnectionId} attached"),
-    onMessage: message => ApplyCommand(message.Text));
+                 Files=@([
+new("Present.razor", """
+@page "/present"
+@inject Bit.Butil.Presentation presentation
 
-// on the controlling page, so the browser's own casting menu starts this:
-await presentation.SetDefaultRequest(["/present"]);
-""")>
+@code {
+    // The page that runs on the second screen. Nothing here starts anything: it collects the
+    // controllers that opened it, and can talk back over the same handles.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await presentation.WatchReceiverConnections(
+            onConnection: connection => Console.WriteLine($"controller {connection.ConnectionId} attached"),
+            onMessage: message => ApplyCommand(message.Text));
+    }
+}
+"""),
+new("Controller.razor", """
+@inject Bit.Butil.Presentation presentation
+
+@code {
+    // On the controlling page, so the browser's own "cast this page" menu item does something for
+    // this app rather than being greyed out. It is a standing offer, not a request: no picker opens.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await presentation.SetDefaultRequest(["/present"]);
+    }
+}
+"""),
+])>
         <div class="controls">
             <button @onclick="WatchReceiver">WatchReceiverConnections</button>
             <button class="secondary" @onclick="SetDefault">SetDefaultRequest</button>

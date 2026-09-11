@@ -29,13 +29,56 @@
     <DemoSection Title="Prerequisite: register the demo worker"
                  Api="ServiceWorker.Register"
                  Description="The same minimal /sw.js the rest of this category uses. Its backgroundfetchsuccess handler logs what arrived to the DevTools console."
-                 Code=@("""
+                 Files=@([
+new("BackgroundFetch.razor", """
 @inject Bit.Butil.ServiceWorker serviceWorker
 
-await serviceWorker.Register("/sw.js");
-await serviceWorker.Ready();
-""")
-                 Language="razor">
+<button @onclick="RegisterWorker">Register /sw.js</button>
+
+@code {
+    private async Task RegisterWorker()
+    {
+        await serviceWorker.Register("/sw.js");
+
+        // Background fetch hangs off the *active* registration, so a Fetch issued before the worker
+        // has activated finds nothing to hang off.
+        await serviceWorker.Ready();
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// A background fetch outlives the page that started it, so its results are delivered here rather
+// than to a tab. By the time a page could ask, the browser has usually released the records - so
+// this handler is the only place they can be kept.
+self.addEventListener('backgroundfetchsuccess', event => {
+    event.waitUntil((async () => {
+        const cache = await caches.open('downloads-v1');
+        const records = await event.registration.matchAll();
+
+        await Promise.all(records.map(async record => {
+            const response = await record.responseReady;
+            await cache.put(record.request, response);
+        }));
+
+        // Turns the browser's download UI into a link back into the app.
+        await event.updateUI({ title: 'Downloaded' });
+    })());
+});
+
+self.addEventListener('backgroundfetchfail', event => {
+    console.log('[sw] background fetch failed:', event.registration.failureReason);
+});
+
+self.addEventListener('backgroundfetchabort', event => {
+    console.log('[sw] background fetch aborted:', event.registration.id);
+});
+
+// Fired when the user taps the entry in the browser's download UI.
+self.addEventListener('backgroundfetchclick', event => {
+    event.waitUntil(self.clients.openWindow('/downloads'));
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="RegisterWorker">Register /sw.js</button>
             <button class="secondary" @onclick="CheckSupport">IsSupported</button>
@@ -71,7 +114,7 @@ var registration = await backgroundFetch.Fetch(
             <textarea rows="3" @bind="urls"></textarea>
         </div>
         <div class="controls">
-            <button @onclick="StartFetch">Fetch</button>
+            <button @onclick="() => StartFetch(fetchOutput)">Fetch</button>
         </div>
         <DemoConsole @ref="fetchOutput" Title="fetch output" />
     </DemoSection>
@@ -130,6 +173,7 @@ string[] recordUrls = await backgroundFetch.GetRecordUrls("manual-2024");
 string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0], timeoutMs: 5000);
 """)>
         <div class="controls">
+            <button @onclick="() => StartFetch(recordOutput)">Fetch</button>
             <button class="secondary" @onclick="ListRecords">GetRecordUrls</button>
             <button class="secondary" @onclick="ReadRecord">ReadRecordText</button>
         </div>
@@ -207,23 +251,25 @@ string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0]
         }
     }
 
-    private async Task StartFetch()
+    // Records only exist while a fetch is live, so the reading section starts one itself rather than
+    // depending on the reader having pressed Fetch two sections above.
+    private async Task StartFetch(DemoConsole output)
     {
         try
         {
             var registration = await backgroundFetch.Fetch(fetchId, Urls, fetchTitle);
             if (registration is null)
             {
-                await fetchOutput.Warn($"Fetch(\"{fetchId}\") → null - unsupported, or a fetch with that id is already running.");
+                await output.Warn($"Fetch(\"{fetchId}\") → null - unsupported, or a fetch with that id is already running.");
                 return;
             }
 
-            await fetchOutput.Success($"Fetch(\"{registration.Id}\") → started, {Urls.Length} request(s), " +
+            await output.Success($"Fetch(\"{registration.Id}\") → started, {Urls.Length} request(s), " +
                 $"downloaded {registration.Downloaded} of {registration.DownloadTotal} bytes.");
         }
         catch (Exception ex)
         {
-            await fetchOutput.Error(ex.Message);
+            await output.Error(ex.Message);
         }
     }
 
@@ -334,7 +380,7 @@ string? body = await backgroundFetch.ReadRecordText("manual-2024", recordUrls[0]
             var records = await backgroundFetch.GetRecordUrls(fetchId);
             if (records.Length == 0)
             {
-                await recordOutput.Warn("No records to read - start a fetch first.");
+                await recordOutput.Warn("No records to read - start a fetch with the button in this section.");
                 return;
             }
 

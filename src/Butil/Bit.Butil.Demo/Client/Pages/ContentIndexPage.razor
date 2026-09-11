@@ -29,15 +29,54 @@
     <DemoSection Title="Prerequisite: register the demo worker"
                  Api="ServiceWorker.Register / IsSupported"
                  Description="The same minimal /sw.js the rest of this category uses. Registering it is what makes registration.index exist."
-                 Code=@("""
+                 Files=@([
+new("ContentIndex.razor", """
 @inject Bit.Butil.ServiceWorker serviceWorker
+@inject Bit.Butil.ContentIndex contentIndex
 
-await serviceWorker.Register("/sw.js");
-await serviceWorker.Ready();
+<button @onclick="RegisterWorker">Register /sw.js</button>
 
-var supported = await contentIndex.IsSupported();
-""")
-                 Language="razor">
+@code {
+    private async Task RegisterWorker()
+    {
+        await serviceWorker.Register("/sw.js");
+        await serviceWorker.Ready();
+
+        // registration.index only exists once there is an active registration to hang it off.
+        var supported = await contentIndex.IsSupported();
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+
+// Indexing an entry is a claim that its URL is available offline, and nothing but a fetch handler
+// can make that true: the browser navigating to an indexed entry with no network reaches this, and
+// only this. An index with no fetch handler behind it advertises pages that will not load.
+self.addEventListener('fetch', event => {
+    // Navigations only - that is the request an indexed entry produces, and leaving everything else
+    // unhandled keeps the rest of the site on the network path it has without a worker.
+    if (event.request.mode !== 'navigate' || event.request.method !== 'GET') return;
+
+    event.respondWith(caches.open('butil-content-index')
+        // ignoreSearch so a query string the browser appends on its way to an indexed page does not
+        // turn a hit into a miss.
+        .then(cache => cache.match(event.request, { ignoreSearch: true }))
+        // A cache that cannot be opened must not take the navigation down with it.
+        .catch(() => undefined)
+        .then(cached => cached || fetch(event.request)));
+});
+
+// Fired when the user removes an entry from the browser's own UI. The cached response has to go
+// with it, or the fetch handler above serves a page nothing advertises any more.
+self.addEventListener('contentdelete', event => {
+    event.waitUntil(caches.open('butil-content-index')
+        .then(cache => cache.keys().then(keys => Promise.all(keys
+            .filter(request => request.url.includes(event.id))
+            .map(request => cache.delete(request))))));
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="RegisterWorker">Register /sw.js</button>
             <button class="secondary" @onclick="CheckSupport">IsSupported</button>
@@ -48,17 +87,44 @@ var supported = await contentIndex.IsSupported();
     <DemoSection Title="Register offline content"
                  Api="Add"
                  Description="The URL has to be inside the worker's scope, and Chromium requires at least one icon it can fetch. Adding the same id twice replaces the earlier entry rather than adding a second one. The button below caches the page first, so the entry is honest."
-                 Code=@("""
-var added = await contentIndex.Add(new ContentIndexEntry
-{
-    Id = "article-42",
-    Title = "The article's title",
-    Description = "One line about it, shown under the title.",
-    Url = "/articles/42",
-    Category = "article",
-    Icons = [new ContentIndexIcon { Src = "/icon-512.png", Sizes = "512x512", Type = "image/png" }]
+                 Files=@([
+new("ContentIndex.razor", """
+@inject Bit.Butil.ContentIndex contentIndex
+@inject Bit.Butil.CacheStorage cacheStorage
+
+@code {
+    private async Task AddEntry()
+    {
+        // The entry is only honest if the URL really is available offline, so the page goes into the
+        // cache the worker's fetch handler reads before it is advertised.
+        await cacheStorage.Add("butil-content-index", "/articles/42");
+
+        var added = await contentIndex.Add(new ContentIndexEntry
+        {
+            Id = "article-42",
+            Title = "The article's title",
+            Description = "One line about it, shown under the title.",
+            Url = "/articles/42",
+            Category = "article",
+            Icons = [new ContentIndexIcon { Src = "/icon-512.png", Sizes = "512x512", Type = "image/png" }]
+        });
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// The cache the page just wrote to is the one this handler reads, which is what makes the entry
+// true. Nothing else in the browser connects the two - the index is a list of promises, and this is
+// what keeps them.
+self.addEventListener('fetch', event => {
+    if (event.request.mode !== 'navigate' || event.request.method !== 'GET') return;
+
+    event.respondWith(caches.open('butil-content-index')
+        .then(cache => cache.match(event.request, { ignoreSearch: true }))
+        .catch(() => undefined)
+        .then(cached => cached || fetch(event.request)));
 });
-""")>
+"""),
+])>
         <div class="field-row">
             <div class="field">
                 <label class="field-label">Entry id</label>

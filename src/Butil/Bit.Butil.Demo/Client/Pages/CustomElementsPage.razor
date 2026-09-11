@@ -41,16 +41,46 @@ var defined = await customElements.IsDefined("butil-panel");
 
     <DemoSection Title="Define the element and set its state"
                  Api="Define / AddState / DeleteState / HasState"
-                 Description="Define the tag, render it, then toggle states on it. The CSS below is already on this page, so a state you add turns the panel's border - with no class involved and nothing a page stylesheet could set by accident."
-                 Code=@("""
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-    if (firstRender) await customElements.Define("butil-panel");
+                 Description="Define the tag, render it, then toggle states on it. The CSS is the other half of the sample: a state you add turns the panel's border, with no class involved and nothing a page stylesheet could set by accident."
+                 Files=@([
+new("Panel.razor", """
+@inject Bit.Butil.CustomElements customElements
+
+<butil-panel @ref="_panel">Its border colour comes from :state(...).</butil-panel>
+
+<button @onclick='() => AddState("loading")'>Loading</button>
+<button @onclick='() => DeleteState("loading")'>Done</button>
+
+@code {
+    private ElementReference _panel;
+
+    // Internals can only be attached from a custom element's constructor, so the tag has to be
+    // defined before it is upgraded. An element already in the DOM is upgraded when the definition
+    // arrives, but any state set before that upgrade is lost.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await customElements.Define("butil-panel");
+    }
+
+    private async Task AddState(string state) => await customElements.AddState(_panel, state);
+
+    private async Task DeleteState(string state) => await customElements.DeleteState(_panel, state);
+}
+"""),
+new("wwwroot/css/app.css", """
+butil-panel {
+    display: block;
+    padding: 1rem;
+    border: 2px solid var(--border, #ccc);
+    border-radius: 6px;
 }
 
-await customElements.AddState(_panel, "loading");
-await customElements.DeleteState(_panel, "loading");
-""")>
+/* The point of a state over a class: :state() belongs to the element and cannot be set from
+   outside it, so no page stylesheet can put the panel into a state it is not in. */
+butil-panel:state(loading) { border-color: #c98a00; }
+butil-panel:state(ready) { border-color: #2e9e4f; }
+"""),
+])>
         <style>
             butil-panel {
                 display: block;
@@ -86,6 +116,11 @@ await customElements.SetAria(_panel, "role", "region");
 await customElements.SetAria(_panel, "ariaLabel", "Results");
 await customElements.SetAria(_panel, "ariaBusy", "true");
 """)>
+        <butil-panel @ref="_ariaPanel">
+            A second <code>&lt;butil-panel&gt;</code>, this one for the ARIA calls. Inspect it in the
+            accessibility tree to see the defaults arrive.
+        </butil-panel>
+
         <div class="controls">
             <button @onclick="SetAria">SetAria(role, ariaLabel)</button>
             <button @onclick="CheckInternals">HasInternals</button>
@@ -133,6 +168,7 @@ await customElements.SetAria(_panel, "ariaBusy", "true");
     private DemoConsole ariaOutput = default!;
 
     private ElementReference _panel;
+    private ElementReference _ariaPanel;
 
     private async Task CheckSupported()
     {
@@ -229,8 +265,12 @@ await customElements.SetAria(_panel, "ariaBusy", "true");
     {
         try
         {
-            var role = await customElements.SetAria(_panel, "role", "region");
-            var label = await customElements.SetAria(_panel, "ariaLabel", "Butil demo panel");
+            // Define is a no-op once the tag is registered, so this section works whether or not the
+            // previous one has been touched.
+            await customElements.Define("butil-panel");
+
+            var role = await customElements.SetAria(_ariaPanel, "role", "region");
+            var label = await customElements.SetAria(_ariaPanel, "ariaLabel", "Butil demo panel");
 
             if (role && label) await ariaOutput.Success("SetAria →", "role=region, ariaLabel=\"Butil demo panel\" - as defaults.");
             else await ariaOutput.Warn("SetAria →", "false - the element has no internals. Call Define first.");
@@ -245,7 +285,8 @@ await customElements.SetAria(_panel, "ariaBusy", "true");
     {
         try
         {
-            await ariaOutput.Success("HasInternals →", await customElements.HasInternals(_panel));
+            await customElements.Define("butil-panel");
+            await ariaOutput.Success("HasInternals →", await customElements.HasInternals(_ariaPanel));
         }
         catch (Exception ex)
         {

@@ -37,29 +37,80 @@ var supported = await webSocket.IsSupported();
     <DemoSection Title="Open, send, receive"
                  Api="Open / SendText / WebSocketHandle"
                  Description="A page served over HTTPS may only open wss:// - a ws:// URL is blocked as mixed content before the connection is attempted, which is why Open returns null rather than reporting an error. Sending before the connection is established fails rather than queueing, so SendText returns false until onOpen has run."
-                 Code=@("""
-private WebSocketHandle? _socket;
+                 Files=@([
+new("Echo.razor", """
+@implements IAsyncDisposable
+@inject Bit.Butil.WebSocket webSocket
 
-_socket = await webSocket.Open(
-    "wss://example.com/ws/echo",
-    onMessage: m => InvokeAsync(() =>
+@code {
+    private WebSocketHandle? _socket;
+    private readonly List<string> _messages = [];
+
+    private async Task Open()
     {
-        // m.IsBinary says which payload carries this frame
-        _messages.Insert(0, m.IsBinary ? $"{m.Data!.Length} bytes" : m.Text!);
-        StateHasChanged();
-    }),
-    protocols: ["butil-echo"],
-    onOpen: (protocol, extensions) => InvokeAsync(StateHasChanged),
-    onClose: c => InvokeAsync(StateHasChanged),
-    onError: () => InvokeAsync(StateHasChanged));
+        _socket = await webSocket.Open(
+            "wss://example.com/ws/echo",
+            onMessage: m => InvokeAsync(() =>
+            {
+                // m.IsBinary says which payload carries this frame
+                _messages.Insert(0, m.IsBinary ? $"{m.Data!.Length} bytes" : m.Text!);
+                StateHasChanged();
+            }),
+            protocols: ["butil-echo"],
+            onOpen: (protocol, extensions) => InvokeAsync(StateHasChanged),
+            onClose: c => InvokeAsync(StateHasChanged),
+            onError: () => InvokeAsync(StateHasChanged));
+    }
 
-await _socket!.SendText("hello");
-""")>
+    // False until onOpen has run: sending before the connection is established fails rather than
+    // queueing.
+    private async Task Send() => await _socket!.SendText("hello");
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_socket is not null) await _socket.DisposeAsync();
+    }
+}
+"""),
+new("Program.cs", """
+// A browser will not open a socket against an endpoint that does not answer the upgrade, so this is
+// the other half of the sample rather than an aside.
+app.UseWebSockets();
+
+app.MapGet("/ws/echo", async (HttpContext context, CancellationToken cancellationToken) =>
+{
+    if (context.WebSockets.IsWebSocketRequest is false)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        return;
+    }
+
+    // Accept the client's protocol only when it actually offered it; accepting one that was not
+    // offered fails the handshake in the browser rather than degrading to none.
+    var requested = context.WebSockets.WebSocketRequestedProtocols;
+    var protocol = requested.Contains("butil-echo") ? "butil-echo" : null;
+
+    using var socket = protocol is null
+        ? await context.WebSockets.AcceptWebSocketAsync()
+        : await context.WebSockets.AcceptWebSocketAsync(protocol);
+
+    var buffer = new byte[8 * 1024];
+
+    while (socket.State == System.Net.WebSockets.WebSocketState.Open)
+    {
+        var result = await socket.ReceiveAsync(buffer, cancellationToken);
+        if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close) break;
+
+        await socket.SendAsync(buffer.AsMemory(0, result.Count),
+            result.MessageType, result.EndOfMessage, cancellationToken);
+    }
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="OpenSocket">Open</button>
             <input @bind="_outgoing" placeholder="message" aria-label="message to send" />
             <button @onclick="SendText">SendText</button>
-            <button class="secondary" @onclick="SendBytes">SendBytes</button>
             <button class="danger" @onclick="CloseSocket">Close</button>
         </div>
         <div class="field">
@@ -84,12 +135,25 @@ await _socket!.SendText("hello");
                  Api="SendBytes / WebSocketMessage.Data"
                  Description="The socket is opened in arraybuffer mode, so an incoming binary frame arrives as bytes rather than a Blob that would need an extra asynchronous read per frame. The echo endpoint increments every byte it sends back, so a round trip is visible in the values rather than only in the length."
                  Code=@("""
-await _socket!.SendBytes([1, 2, 3, 4]);
+@code {
+    private WebSocketHandle? _socket;   // from webSocket.Open
 
-// arrives as: m.IsBinary == true, m.Data == [2, 3, 4, 5]
-""")>
+    // The socket is opened in arraybuffer mode, so a binary frame arrives as bytes rather than as a
+    // Blob that would need an extra asynchronous read per frame.
+    private async Task Send() => await _socket!.SendBytes([1, 2, 3, 4]);
+
+    // ... and arrives in the onMessage callback as:
+    //     m.IsBinary == true, m.Data == [2, 3, 4, 5]
+}
+""")
+                 Language="razor">
         <div class="controls">
+            <button @onclick="OpenForBinary">Open</button>
             <button @onclick="SendBytes">Send 4 bytes</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
         </div>
         <DemoConsole @ref="binaryOutput" Title="binary output" />
     </DemoSection>
@@ -98,13 +162,26 @@ await _socket!.SendBytes([1, 2, 3, 4]);
                  Api="GetProtocol / GetExtensions / GetUrl / GetState"
                  Description="Sub-protocols are offered most-preferred first and the server picks one; offering a protocol the server does not know fails the connection outright rather than falling back to none. Extensions are what the server agreed to - permessage-deflate, usually - and are not something a page chooses."
                  Code=@("""
-var protocol = await _socket!.GetProtocol();     // "butil-echo"
-var extensions = await _socket.GetExtensions();  // e.g. "permessage-deflate"
-var url = await _socket.GetUrl();
-var state = await _socket.GetState();            // Connecting / Open / Closing / Closed
-""")>
+@code {
+    private WebSocketHandle? _socket;   // from webSocket.Open
+
+    private async Task Identify()
+    {
+        var protocol = await _socket!.GetProtocol();     // "butil-echo"
+        var extensions = await _socket.GetExtensions();  // e.g. "permessage-deflate"
+        var url = await _socket.GetUrl();
+        var state = await _socket.GetState();            // Connecting / Open / Closing / Closed
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
+            <button @onclick="OpenForNegotiation">Open</button>
             <button @onclick="ReadNegotiation">Read</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
         </div>
         <DemoConsole @ref="negotiationOutput" Title="negotiation output" />
     </DemoSection>
@@ -113,14 +190,29 @@ var state = await _socket.GetState();            // Connecting / Open / Closing 
                  Api="GetBufferedAmount"
                  Description="Sending never blocks and never fails for being too fast, so a producer that outruns the connection just grows this number until the tab runs out of memory. It is the only back-pressure signal a browser socket has. Press Burst to make the server flood the connection, then read it while the frames are still arriving."
                  Code=@("""
-await _socket!.SendText("burst");
+@code {
+    private WebSocketHandle? _socket;   // from webSocket.Open
 
-var queued = await _socket.GetBufferedAmount();
-if (queued > 1_000_000) { /* stop producing until it drains */ }
-""")>
+    private async Task Pressure()
+    {
+        await _socket!.SendText("burst");
+
+        // The only back-pressure signal a browser socket has: sending never blocks and never fails
+        // for being too fast, so a producer that outruns the connection just grows this number.
+        var queued = await _socket.GetBufferedAmount();
+        if (queued > 1_000_000) { /* stop producing until it drains */ }
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
+            <button @onclick="OpenForPressure">Open</button>
             <button @onclick="Burst">Burst (2 MB back)</button>
             <button class="secondary" @onclick="ReadBuffered">GetBufferedAmount</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
         </div>
         <DemoConsole @ref="pressureOutput" Title="back-pressure output" />
     </DemoSection>
@@ -129,18 +221,29 @@ if (queued > 1_000_000) { /* stop producing until it drains */ }
                  Api="Close / onClose / WebSocketClose"
                  Description="Only 1000 and 3000-4999 may be sent from script; anything else is refused and the socket closes without a code instead. Code 1006 with WasClean false is the browser's stand-in for 'the connection dropped' - no close frame ever arrived, so there is nothing more specific to report. Nothing here reconnects: unlike EventSource, a WebSocket that drops stays dropped until you open another."
                  Code=@("""
-// close from this side, with an application-defined code
-await _socket!.Close(4000, "done for now");
+@code {
+    private WebSocketHandle? _socket;   // from webSocket.Open
 
-// ... or let the server close: it answers "close" with code 4001
-await _socket.SendText("close");
+    // Only 1000 and 3000-4999 may be sent from script; anything else is refused and the socket
+    // closes without a code instead.
+    private async Task CloseFromHere() => await _socket!.Close(4000, "done for now");
 
-// either way the same callback runs
-onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
-""")>
+    // ... or let the server close: this demo endpoint answers "close" with code 4001.
+    private async Task AskServerToClose() => await _socket!.SendText("close");
+
+    // Either way the same callback runs - the one given to Open:
+    //     onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
+}
+""")
+                 Language="razor">
         <div class="controls">
+            <button @onclick="OpenForClose">Open</button>
             <button class="danger" @onclick="CloseWithCode">Close(4000)</button>
             <button class="secondary" @onclick="AskServerToClose">Ask the server to close</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
         </div>
         <DemoConsole @ref="closeOutput" Title="close output" />
     </DemoSection>
@@ -229,7 +332,19 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
         }
     }
 
-    private async Task OpenSocket()
+    // One socket, but the section that opened it is the one that hears about it: connection,
+    // close code and error all report to the console the reader is looking at.
+    private Task OpenSocket() => OpenSocket(socketOutput);
+
+    private Task OpenForBinary() => OpenSocket(binaryOutput);
+
+    private Task OpenForNegotiation() => OpenSocket(negotiationOutput);
+
+    private Task OpenForPressure() => OpenSocket(pressureOutput);
+
+    private Task OpenForClose() => OpenSocket(closeOutput);
+
+    private async Task OpenSocket(DemoConsole output)
     {
         await CloseSocket();
 
@@ -256,7 +371,7 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
                 onOpen: (protocol, extensions) => InvokeAsync(async () =>
                 {
                     _connectionState = "Open.";
-                    await socketOutput.Success("Connected. Protocol →", string.IsNullOrEmpty(protocol) ? "(none negotiated)" : protocol);
+                    await output.Success("Connected. Protocol →", string.IsNullOrEmpty(protocol) ? "(none negotiated)" : protocol);
                     StateHasChanged();
                 }),
                 onClose: close => InvokeAsync(async () =>
@@ -266,30 +381,30 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
 
                     _connectionState = $"Closed ({close.Code}).";
                     _socket = null;
-                    await closeOutput.Warn($"Closed → code {close.Code}, clean {close.WasClean}, reason",
+                    await output.Warn($"Closed → code {close.Code}, clean {close.WasClean}, reason",
                         string.IsNullOrEmpty(close.Reason) ? "(none)" : close.Reason);
                     StateHasChanged();
                 }),
                 onError: () => InvokeAsync(async () =>
                 {
                     // The error event carries nothing by design - the close that follows has the detail.
-                    await socketOutput.Error("Socket error. The close callback that follows carries the code.");
+                    await output.Error("Socket error. The close callback that follows carries the code.");
                 }));
 
             if (opening is null)
             {
                 _connectionState = "Could not open.";
-                await socketOutput.Warn("Open returned null - WebSocket is unavailable, the URL is malformed, or mixed content blocked it.");
+                await output.Warn("Open returned null - WebSocket is unavailable, the URL is malformed, or mixed content blocked it.");
                 return;
             }
 
             _socket = opening;
             _connectionState = "Connecting...";
-            await socketOutput.Success("Open → connecting to", EchoUrl);
+            await output.Success("Open → connecting to", EchoUrl);
         }
         catch (Exception ex)
         {
-            await socketOutput.Error("Open failed →", ex.Message);
+            await output.Error("Open failed →", ex.Message);
         }
     }
 
@@ -405,7 +520,7 @@ onClose: c => { /* c.Code, c.Reason, c.WasClean */ }
     private async Task<bool> RequireSocket(DemoConsole console)
     {
         if (_socket is not null) return true;
-        await console.Warn("Open a socket first.");
+        await console.Warn("Open a socket first - the Open button in this section will do it.");
         return false;
     }
 

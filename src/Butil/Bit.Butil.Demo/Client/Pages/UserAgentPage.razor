@@ -20,7 +20,7 @@ Console.WriteLine(props.Name);      // "Chrome"
 Console.WriteLine(props.Version);   // "126.0.0.0"
 Console.WriteLine(props.Layout);    // "Blink"
 Console.WriteLine(props.OsName);    // "Windows"
-Console.WriteLine(props.OsVersion); // "11"
+Console.WriteLine(props.OsVersion); // "10" - Windows 11 still says NT 10.0
 
 // or analyze any string, e.g. one captured from a server log:
 var other = await userAgent.Extract("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 ...)");
@@ -28,6 +28,13 @@ var other = await userAgent.Extract("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 ...
         <div class="field">
             <span class="field-label">Custom user-agent string (optional)</span>
             <input @bind="customUserAgent" placeholder="Leave empty to analyze the current browser" />
+        </div>
+        <div class="controls">
+            @foreach (var sample in samples)
+            {
+                <button @onclick="() => customUserAgent = sample.Value">@sample.Key</button>
+            }
+            <button @onclick="() => customUserAgent = string.Empty">This browser</button>
         </div>
         <div class="controls">
             <button @onclick="ExtractProperties">Extract</button>
@@ -112,6 +119,17 @@ Console.WriteLine(values.PlatformVersion); // "15.0.0"
     private DemoConsole highEntropyOutput = default!;
 
     private string customUserAgent = "";
+
+    // Strings you cannot produce by opening this page in another browser - a phone, a console, a
+    // crawler, an in-app web view - so the parser can be seen doing the part it exists for.
+    private readonly Dictionary<string, string> samples = new()
+    {
+        ["iPhone"] = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1",
+        ["Samsung Internet"] = "Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/27.0 Chrome/125.0.0.0 Mobile Safari/537.36",
+        ["In-app web view"] = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 [FBAN/FBIOS;FBDV/iPhone16,2;FBMD/iPhone;FBSN/iOS;FBSV/18.1;FBSS/3;FBID/phone;FBLC/en_US;FBOP/5]",
+        ["PlayStation 5"] = "Mozilla/5.0 (PlayStation; PlayStation 5/9.60) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
+        ["Googlebot"] = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/131.0.0.0 Safari/537.36"
+    };
 
     private async Task ExtractProperties()
     {

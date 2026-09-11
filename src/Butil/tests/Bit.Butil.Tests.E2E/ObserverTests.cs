@@ -26,6 +26,25 @@ public class ObserverTests : ButilObserversPageTest
         await ClickAndExpectAsync("resize-trigger", "resize:triggered:");
     }
 
+    /// <summary>
+    /// A rate-limited observer still reports the size the element settled at.
+    /// </summary>
+    /// <remarks>
+    /// The harness makes five resizes inside one interval, so every one of them is suppressed by the
+    /// gate. What has to arrive anyway is the last: the status carries both whether it did and the
+    /// width the handler ended up holding, so a regression that silently pinned the handler to a
+    /// stale size fails here with the stale number in the message rather than as a bare False.
+    /// <br/>
+    /// How much traffic the gate removes is measured in Bit.Butil.Tests.Benchmarks; this is the half
+    /// of the claim that has to hold on every run.
+    /// </remarks>
+    [TestMethod]
+    public async Task ResizeObserver_RateLimited_Still_Delivers_The_Settled_Size()
+    {
+        // 228 rather than 230: the reported size is the content box, and the target has a 1px border.
+        await ClickAndExpectAsync("resize-observe-gated", "resize:gated:True:228");
+    }
+
     [TestMethod]
     public async Task MutationObserver_Fires_On_Attribute_Change()
     {

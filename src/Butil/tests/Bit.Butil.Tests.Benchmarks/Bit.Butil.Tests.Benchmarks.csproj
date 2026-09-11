@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <IsPackable>false</IsPackable>
+    <!-- The project's own name minus the Bit.Butil prefix, for the same reason Tests.Manual does it:
+         a namespace nested under Bit.Butil would let the library's Bit.Butil.Console type shadow
+         System.Console throughout this project - and everything here reports through System.Console. -->
+    <RootNamespace>ButilTests.Benchmarks</RootNamespace>
+  </PropertyGroup>
+
+  <!-- A console app rather than a test project, and for the same reason as Tests.Manual: what it
+       measures is an artifact and a deployed app, not a method. It prints a report a human reads and
+       exits non-zero when a measurement is outside its budget, so one executable serves as both. -->
+
+  <ItemGroup>
+    <!-- Playwright only. Deliberately no ProjectReference to Bit.Butil: every runtime measurement is
+         taken inside a real browser against a deployed sample app, and this project's own namespace
+         would otherwise sit in the shadow of Butil's Console/Window/Screen services. The weight half
+         reads the build artifacts off disk, which needs no reference either. -->
+    <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The E2E suite's plumbing, compiled from its source rather than restated here: how the sample
+         app is booted and declared ready, how the browser is launched from the BUTIL_E2E_* variables,
+         and how the repository is located from an output folder. Linked because a ProjectReference to
+         a test project would drag its test host in, and because the point is one copy: a variable
+         or a readiness rule added there reaches the benchmarks without anyone remembering to. -->
+    <Compile Include="..\Bit.Butil.Tests.E2E\Infrastructure\SampleAppHost.cs" Link="Infrastructure\SampleAppHost.cs" />
+    <Compile Include="..\Bit.Butil.Tests.E2E\Infrastructure\BrowserLaunch.cs" Link="Infrastructure\BrowserLaunch.cs" />
+    <Compile Include="..\Bit.Butil.Tests.E2E\Infrastructure\RepoLayout.cs" Link="Infrastructure\RepoLayout.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The module-weight measurement. Node rather than C# because minification is what makes the
+         number mean anything - a Debug wwwroot is unminified, and the figure a consumer downloads is
+         the Release one - and esbuild is already the minifier build.mjs uses, so the two agree by
+         construction instead of by approximation. -->
+    <None Update="weigh-modules.mjs" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

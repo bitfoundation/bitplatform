@@ -39,15 +39,36 @@ if (await textDetector.IsSupported() is false)
                  Api="Detect"
                  Description="Reads one frame of a video, image or canvas element. What counts as one block is the platform's decision - usually a line, sometimes a paragraph - and each block comes with the box it occupies, which is what you would draw a highlight over before asking the user to confirm."
                  Code=@("""
-_stream = await mediaDevices.GetUserMedia(
-    audio: false,
-    video: true,
-    videoConstraints: new { facingMode = "environment" });   // rear camera on a phone
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaDevices mediaDevices
+@inject Bit.Butil.TextDetector textDetector
 
-await _stream!.AttachTo(_video);
+<video @ref="_video" autoplay playsinline muted></video>
 
-var blocks = await textDetector.Detect(_video);
-""")>
+@code {
+    private ElementReference _video;
+    private MediaStreamHandle? _stream;
+
+    private async Task Read()
+    {
+        _stream = await mediaDevices.GetUserMedia(
+            audio: false,
+            video: true,
+            videoConstraints: new { facingMode = "environment" });   // rear camera on a phone
+
+        await _stream!.AttachTo(_video);
+
+        var blocks = await textDetector.Detect(_video);
+    }
+
+    // The camera light stays on until the stream is disposed, whatever the page does.
+    public async ValueTask DisposeAsync()
+    {
+        if (_stream is not null) await _stream.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <video @ref="_video" autoplay playsinline muted
                class="demo-video" style="min-height:160px"></video>
         <div class="controls">

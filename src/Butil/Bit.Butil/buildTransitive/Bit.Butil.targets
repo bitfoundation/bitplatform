@@ -80,7 +80,10 @@
                                          them, and it is the way to keep a module reached from somewhere
                                          none of them can see - by reflection, or from an app's own
                                          JavaScript. A name that is neither a module nor a Bit.Butil class
-                                         fails the build rather than being ignored.
+                                         fails the build rather than being ignored. A module name keeps
+                                         that module alone; a class name keeps every module the class
+                                         calls, and the publish says so when a module is named whose
+                                         class needs more (crypto against Crypto, say).
 
       BitButilScriptScanAssembly         An item: which assemblies BitButilScriptScan reads. Defaults to
                                          this project's own assembly and its copy-local references, which

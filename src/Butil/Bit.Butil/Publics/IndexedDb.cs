@@ -59,9 +59,9 @@ public class IndexedDb(IJSRuntime js)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbStoreSchema))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbIndexSchema))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbOpenInfo))]
-    [DynamicDependency(nameof(IndexedDbHandle.InvokeIndexedDbVersionChange), typeof(IndexedDbHandle))]
-    [DynamicDependency(nameof(IndexedDbHandle.InvokeIndexedDbClose), typeof(IndexedDbHandle))]
-    [DynamicDependency(nameof(IndexedDbHandle.InvokeIndexedDbBlocked), typeof(IndexedDbHandle))]
+    [DynamicDependency(IndexedDbCallbacksInterop.VersionChangeMethodName, typeof(IndexedDbCallbacksInterop))]
+    [DynamicDependency(IndexedDbCallbacksInterop.CloseMethodName, typeof(IndexedDbCallbacksInterop))]
+    [DynamicDependency(IndexedDbCallbacksInterop.BlockedMethodName, typeof(IndexedDbCallbacksInterop))]
     public async ValueTask<IndexedDbHandle> Open(string name,
         int? version = 1,
         IndexedDbStoreSchema[]? stores = null,

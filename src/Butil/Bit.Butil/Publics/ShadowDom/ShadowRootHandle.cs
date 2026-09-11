@@ -107,7 +107,7 @@ public sealed class ShadowRootHandle : IAsyncDisposable
         if (_released) return;
         _released = true;
 
-        try { await _js.InvokeVoid("BitButil.dom.release", Id); }
+        try { await _js.InvokeVoid("BitButil.domHandles.release", Id); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

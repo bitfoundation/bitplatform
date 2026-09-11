@@ -74,7 +74,7 @@ await session!.AttachCanvas(canvasElement);   // an immersive session with no la
         </div>
         <canvas @ref="canvasElement" width="320" height="200" style="width:100%;max-width:320px;background:#111;border-radius:8px"></canvas>
         <div class="controls">
-            <button @onclick="StartSession" disabled="@(session is not null)">RequestSession</button>
+            <button @onclick="() => StartSession(sessionOutput)" disabled="@(session is not null)">RequestSession</button>
             <button class="secondary" @onclick="Attach" disabled="@(session is null)">AttachCanvas</button>
             <button class="danger" @onclick="EndSession" disabled="@(session is null)">End session</button>
         </div>
@@ -85,15 +85,26 @@ await session!.AttachCanvas(canvasElement);   // an immersive session with no la
                  Api="GetViewerPose"
                  Description="Butil runs the session's frame loop, so a pose is always available to read - a pose otherwise exists only inside an XR frame callback. This is a snapshot for logic that runs at UI speed; drawing at headset frame rates is not what an interop boundary is for."
                  Code=@("""
-var pose = await session.GetViewerPose();
-if (pose is not null)
-{
-    var head = pose.Transform;                 // metres, and a quaternion
-    var eyes = pose.Views.Length;              // 2 on a headset, 1 inline
-    var projection = pose.Views[0].ProjectionMatrix;   // 16 numbers, column-major
+@code {
+    private XrSessionHandle? session;   // from RequestSession
+
+    private async Task ReadPose()
+    {
+        // Null between frames, and while tracking is lost - a headset that cannot see the room has
+        // no pose to report rather than a stale one.
+        var pose = await session!.GetViewerPose();
+        if (pose is not null)
+        {
+            var head = pose.Transform;                 // metres, and a quaternion
+            var eyes = pose.Views.Length;              // 2 on a headset, 1 inline
+            var projection = pose.Views[0].ProjectionMatrix;   // 16 numbers, column-major
+        }
+    }
 }
-""")>
+""")
+                 Language="razor">
         <div class="controls">
+            <button @onclick="() => StartSession(poseOutput)" disabled="@(session is not null)">RequestSession</button>
             <button @onclick="ReadPose" disabled="@(session is null)">GetViewerPose</button>
         </div>
         @if (lastPose is not null)
@@ -112,14 +123,23 @@ if (pose is not null)
                  Api="GetInputSources / onInput"
                  Description="The input list changes as the user picks controllers up and puts them down, so read it when it matters rather than caching it. Select is 'the main button' and every device has one; squeeze is grabbing, and many devices never report it."
                  Code=@("""
-foreach (var source in await session.GetInputSources())
-{
-    // "left"/"right"/"none", "gaze"/"tracked-pointer"/"screen", and the profile names
-    // a renderer looks up to draw the right controller model
-    Console.WriteLine($"{source.Handedness} {source.TargetRayMode} {string.Join(",", source.Profiles)}");
+@code {
+    private XrSessionHandle? session;   // from RequestSession
+
+    private async Task ReadInputs()
+    {
+        foreach (var source in await session!.GetInputSources())
+        {
+            // "left"/"right"/"none", "gaze"/"tracked-pointer"/"screen", and the profile names
+            // a renderer looks up to draw the right controller model
+            Console.WriteLine($"{source.Handedness} {source.TargetRayMode} {string.Join(",", source.Profiles)}");
+        }
+    }
 }
-""")>
+""")
+                 Language="razor">
         <div class="controls">
+            <button @onclick="() => StartSession(inputOutput)" disabled="@(session is not null)">RequestSession</button>
             <button @onclick="ReadInputs" disabled="@(session is null)">GetInputSources</button>
         </div>
         <DemoConsole @ref="inputOutput" Title="input output" />
@@ -195,7 +215,9 @@ foreach (var source in await session.GetInputSources())
         }
     }
 
-    private async Task StartSession()
+    // A session is one per page, but the sections that read from it can start it and hear about it
+    // where they are rather than sending the reader back to the section that owns the button.
+    private async Task StartSession(DemoConsole output)
     {
         try
         {
@@ -214,7 +236,7 @@ foreach (var source in await session.GetInputSources())
                     session = null;
                     lastPose = null;
                     if (ended is not null) await ended.DisposeAsync();
-                    await sessionOutput.Log("the session ended (the user took the headset off, or the runtime closed it)");
+                    await output.Log("the session ended (the user took the headset off, or the runtime closed it)");
                     await InvokeAsync(StateHasChanged);
                 },
                 onInput: async e =>
@@ -230,15 +252,15 @@ foreach (var source in await session.GetInputSources())
 
             if (session is null)
             {
-                await sessionOutput.Warn("RequestSession → null (no device, no gesture, or no usable reference space)");
+                await output.Warn("RequestSession → null (no device, no gesture, or no usable reference space)");
                 return;
             }
 
-            await sessionOutput.Success($"RequestSession → session {session.Id} in {session.ReferenceSpaceType} space");
+            await output.Success($"RequestSession → session {session.Id} in {session.ReferenceSpaceType} space");
         }
         catch (Exception ex)
         {
-            await sessionOutput.Error("RequestSession failed →", ex.Message);
+            await output.Error("RequestSession failed →", ex.Message);
         }
     }
 

@@ -45,7 +45,7 @@ public sealed class AudioWorkletNodeHandle : AudioNodeHandle
     /// sample-accurate, while messages arrive whenever the thread gets to them.
     /// </remarks>
     public ValueTask<bool> PostMessage(string message)
-        => Js.Invoke<bool>("BitButil.webAudio.postWorkletMessage", NodeId, message);
+        => Js.Invoke<bool>("BitButil.webAudioWorklet.postWorkletMessage", NodeId, message);
 
     /// <summary>
     /// Invoked from JS for each message the processor posts. Public +

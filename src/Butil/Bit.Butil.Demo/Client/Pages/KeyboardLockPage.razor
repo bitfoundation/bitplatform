@@ -45,13 +45,27 @@ var canReadLayout = await keyboardLayout.IsSupported();
                  Api="Lock / Unlock"
                  Description="Enter fullscreen first, then lock. Passing no codes captures everything the platform allows; passing codes captures only those. Calling Lock again replaces the previous set rather than adding to it. Leaving fullscreen unlocks on its own, so Unlock is for the case where the page stays fullscreen and simply stops needing the keys."
                  Code=@("""
-await _stage.RequestFullScreen(null);
+@inject Bit.Butil.KeyboardLock keyboardLock
 
-var locked = await keyboardLock.Lock("Escape", "KeyW", "F11");
+<div @ref="_stage">...</div>
+<button @onclick="Enter">Go fullscreen</button>
 
-// later
-await keyboardLock.Unlock();
-""")>
+@code {
+    private ElementReference _stage;
+
+    // The lock only holds while the document is fullscreen, so the two go together: leaving
+    // fullscreen releases it, and asking for it outside fullscreen does nothing.
+    private async Task Enter()
+    {
+        await _stage.RequestFullScreen(null);
+
+        var locked = await keyboardLock.Lock("Escape", "KeyW", "F11");
+    }
+
+    private async Task Leave() => await keyboardLock.Unlock();
+}
+""")
+                 Language="razor">
         <div @ref="_stage" style="padding:1rem;border:1px dashed var(--border,#ccc);border-radius:6px">
             This box goes fullscreen. Lock only works while it is.
         </div>

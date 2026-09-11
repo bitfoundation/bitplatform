@@ -155,16 +155,32 @@ public record ViewState(string Filter, int Scroll);
                  Api="SubscribeCurrentEntryChange / SubscribeNavigateSuccess / SubscribeNavigateError"
                  Description="currententrychange is the one to use instead of popstate: it fires for every kind of change - a traversal, a push, a replace, an in-place state update - rather than only for traversals, and NavigationType says which it was. Navigating around this site with the buttons above, or with the browser's own back button, will drive it."
                  Code=@("""
-_subscription = await navigation.SubscribeCurrentEntryChange(info =>
-    InvokeAsync(() =>
-    {
-        _lastChange = info.NavigationType;
-        StateHasChanged();
-    }));
+@implements IAsyncDisposable
+@inject Bit.Butil.Navigation navigation
 
-// later
-await _subscription.DisposeAsync();
-""")>
+@code {
+    private string? _lastChange;
+    private ButilSubscription? _subscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _subscription = await navigation.SubscribeCurrentEntryChange(info =>
+            InvokeAsync(() =>
+            {
+                _lastChange = info.NavigationType;
+                StateHasChanged();
+            }));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="Subscribe" disabled="@(_subscription is not null)">Subscribe</button>
             <button class="secondary" @onclick="Unsubscribe" disabled="@(_subscription is null)">Unsubscribe</button>

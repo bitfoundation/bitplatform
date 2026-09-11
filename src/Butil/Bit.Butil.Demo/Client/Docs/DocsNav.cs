@@ -28,7 +28,7 @@ public static class DocsNav
             new("Navigation", "navigation", "The modern successor to History - read the entry list, and finally know whether you can go back.", typeof(NavigationPage)),
             new("Location", "location", "Read and mutate the current URL, reload or navigate.", typeof(LocationPage)),
             new("Navigator", "navigator", "Browser identity, languages, share, vibrate, badges, protocol handlers and more.", typeof(NavigatorPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
-            new("UserAgent", "user-agent", "Parsed user-agent brands, platform and mobile-ness.", typeof(UserAgentPage), ApiSupport.Partial),
+            new("UserAgent", "user-agent", "Parse any user-agent string - browser, engine, OS, device - plus the Client Hints brands and mobile-ness.", typeof(UserAgentPage), ApiSupport.Partial),
             new("TextFragment", "text-fragment", "Scroll-to-text URLs: deep-link to a phrase rather than to an anchor.", typeof(TextFragmentPage), ApiSupport.Partial),
             new("Url", "url", "Parse and edit URLs the way the browser does - and match routes with URLPattern.", typeof(UrlPage), ApiSupport.Partial),
             new("Speculation", "speculation", "Prefetch and prerender rules, and knowing whether anyone is looking at this page yet.", typeof(SpeculationPage), ApiSupport.Chromium),

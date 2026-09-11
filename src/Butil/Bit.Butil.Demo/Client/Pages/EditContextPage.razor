@@ -82,14 +82,40 @@ _handle = await editContext.Attach(
                  Api="UpdateText / UpdateSelection"
                  Description="A programmatic edit - a paste, an undo, a completion accepted - has to be reported back, or the IME keeps composing against a buffer that no longer matches what the user sees. This is the classic edit-context bug."
                  Code=@("""
-// insert at the caret from your own code
-_text = _text.Insert(_caret, inserted);
-await _handle!.UpdateText(_caret, _caret, inserted);
-await _handle.UpdateSelection(_caret + inserted.Length, _caret + inserted.Length);
-""")>
+@code {
+    // The editor's own model, and the handle from Attach above. The two have to be kept in step:
+    // the input method builds its candidates from what it was last told, not from the DOM.
+    private string _text = "";
+    private int _caret;
+    private TextEditContextHandle? _handle;
+
+    private async Task Insert(string inserted)
+    {
+        // insert at the caret from your own code
+        _text = _text.Insert(_caret, inserted);
+        await _handle!.UpdateText(_caret, _caret, inserted);
+        await _handle.UpdateSelection(_caret + inserted.Length, _caret + inserted.Length);
+
+        _caret += inserted.Length;
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
-            <button @onclick="InsertFromCode" disabled="@(_handle is null)">Insert "[from C#]"</button>
-            <button @onclick="ReadState" disabled="@(_handle is null)">GetText / GetSelection</button>
+            <button @onclick="AttachUpdate" disabled="@(_updateHandle is not null)">Attach</button>
+            <button @onclick="InsertFromCode" disabled="@(_updateHandle is null)">Insert "[from C#]"</button>
+            <button @onclick="ReadState" disabled="@(_updateHandle is null)">GetText / GetSelection</button>
+        </div>
+        <div @ref="_updateSurface" tabindex="0"
+             style="min-height:3rem;padding:0.75rem;border:1px solid var(--border, #ccc);border-radius:6px;white-space:pre-wrap;outline-offset:2px">
+            @if (string.IsNullOrEmpty(_updateText))
+            {
+                <span style="opacity:0.6">Attach, click here and type - then insert from C# and watch the buffer stay in step.</span>
+            }
+            else
+            {
+                @_updateText
+            }
         </div>
         <DemoConsole @ref="updateOutput" Title="update output" />
     </DemoSection>
@@ -98,11 +124,29 @@ await _handle.UpdateSelection(_caret + inserted.Length, _caret + inserted.Length
                  Api="UpdateControlBounds / UpdateSelectionBounds"
                  Description="The platform needs to know where the editing surface is on screen to place the IME's candidate list next to the text being typed. Without it the list can land nowhere near the caret. Report the bounds after every layout change - a resize, a scroll."
                  Code=@("""
-var rect = await _surface.GetBoundingClientRect();
-await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
-""")>
+<div @ref="_surface" contenteditable="true">...</div>
+
+@code {
+    private ElementReference _surface;
+    private TextEditContextHandle? _handle;   // from Attach
+
+    // Where the IME draws its candidate window. Without this it guesses, and on a custom editor it
+    // guesses wrong - usually the top-left corner of the page.
+    private async Task PlaceCandidates()
+    {
+        var rect = await _surface.GetBoundingClientRect();
+        await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
-            <button @onclick="ReportBounds" disabled="@(_handle is null)">UpdateControlBounds</button>
+            <button @onclick="AttachBounds" disabled="@(_boundsHandle is not null)">Attach</button>
+            <button @onclick="ReportBounds" disabled="@(_boundsHandle is null)">UpdateControlBounds</button>
+        </div>
+        <div @ref="_boundsSurface" tabindex="0"
+             style="min-height:3rem;padding:0.75rem;border:1px solid var(--border, #ccc);border-radius:6px;white-space:pre-wrap;outline-offset:2px">
+            <span style="opacity:0.6">The surface whose bounds are reported. Attach, then report - the numbers below are this box.</span>
         </div>
         <DemoConsole @ref="boundsOutput" Title="bounds output" />
     </DemoSection>
@@ -153,6 +197,16 @@ await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
     private int _caret;
     private bool _composing;
     private TextEditFormat[] _formats = [];
+
+    // An EditContext belongs to one element, and the point of both sections below is what happens to
+    // the surface - so each attaches to a surface of its own rather than driving the one above.
+    private ElementReference _updateSurface;
+    private TextEditContextHandle? _updateHandle;
+    private string _updateText = "";
+    private int _updateCaret;
+
+    private ElementReference _boundsSurface;
+    private TextEditContextHandle? _boundsHandle;
 
     private async Task CheckSupported()
     {
@@ -208,18 +262,41 @@ await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
         await editOutput.Info("Detached; the element is back under the DOM's own editing.");
     }
 
+    private async Task AttachUpdate()
+    {
+        try
+        {
+            _updateHandle = await editContext.Attach(
+                _updateSurface,
+                onTextUpdate: async update => await InvokeAsync(() =>
+                {
+                    _updateText = update.Value;
+                    _updateCaret = update.SelectionStart;
+                    StateHasChanged();
+                }),
+                options: new TextEditContextOptions { Text = _updateText, SelectionStart = _updateCaret, SelectionEnd = _updateCaret });
+
+            if (_updateHandle is null) await updateOutput.Warn("Attach →", "null - this engine has no EditContext.");
+            else await updateOutput.Success("Attach →", "attached. Click the surface and type, then insert from C#.");
+        }
+        catch (Exception ex)
+        {
+            await updateOutput.Error("Attach failed →", ex.Message);
+        }
+    }
+
     private async Task InsertFromCode()
     {
         try
         {
             const string inserted = "[from C#]";
-            var at = Math.Clamp(_caret, 0, _text.Length);
+            var at = Math.Clamp(_updateCaret, 0, _updateText.Length);
 
-            _text = _text.Insert(at, inserted);
-            _caret = at + inserted.Length;
+            _updateText = _updateText.Insert(at, inserted);
+            _updateCaret = at + inserted.Length;
 
-            await _handle!.UpdateText(at, at, inserted);
-            await _handle.UpdateSelection(_caret, _caret);
+            await _updateHandle!.UpdateText(at, at, inserted);
+            await _updateHandle.UpdateSelection(_updateCaret, _updateCaret);
 
             await updateOutput.Success("UpdateText →", $"inserted at {at}; the IME now agrees with the buffer.");
         }
@@ -233,8 +310,8 @@ await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
     {
         try
         {
-            await updateOutput.Success("GetText →", await _handle!.GetText() ?? "(null)");
-            await updateOutput.Success("GetSelection →", await _handle.GetSelection());
+            await updateOutput.Success("GetText →", await _updateHandle!.GetText() ?? "(null)");
+            await updateOutput.Success("GetSelection →", await _updateHandle.GetSelection());
         }
         catch (Exception ex)
         {
@@ -242,12 +319,27 @@ await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
         }
     }
 
+    private async Task AttachBounds()
+    {
+        try
+        {
+            _boundsHandle = await editContext.Attach(_boundsSurface, onTextUpdate: _ => { });
+
+            if (_boundsHandle is null) await boundsOutput.Warn("Attach →", "null - this engine has no EditContext.");
+            else await boundsOutput.Success("Attach →", "attached to this section's own surface.");
+        }
+        catch (Exception ex)
+        {
+            await boundsOutput.Error("Attach failed →", ex.Message);
+        }
+    }
+
     private async Task ReportBounds()
     {
         try
         {
-            var rect = await _surface.GetBoundingClientRect();
-            await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
+            var rect = await _boundsSurface.GetBoundingClientRect();
+            await _boundsHandle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
             await boundsOutput.Success("UpdateControlBounds →", rect);
         }
         catch (Exception ex)
@@ -259,5 +351,7 @@ await _handle!.UpdateControlBounds(rect.X, rect.Y, rect.Width, rect.Height);
     public async ValueTask DisposeAsync()
     {
         if (_handle is not null) await _handle.DisposeAsync();
+        if (_updateHandle is not null) await _updateHandle.DisposeAsync();
+        if (_boundsHandle is not null) await _boundsHandle.DisposeAsync();
     }
 }

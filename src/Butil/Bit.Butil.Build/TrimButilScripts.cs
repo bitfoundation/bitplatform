@@ -164,11 +164,22 @@ public sealed class TrimButilScripts : Task
             // way none of the above can see - through reflection, or from JavaScript of its own.
             if (explicitNames.Length > 0)
             {
-                var chosen = ButilScriptBundler.ResolveNames(explicitNames, manifest, Types(), out var unresolved);
+                var typeMap = Types();
+                var chosen = ButilScriptBundler.ResolveNames(explicitNames, manifest, typeMap, out var unresolved);
                 if (unresolved.Count > 0)
                 {
                     Log.LogError($"Bit.Butil: <BitButilScriptModule> names {string.Join(", ", unresolved.Select(name => $"'{name}'"))}, which is neither a JavaScript module nor a Bit.Butil class. The modules are: {string.Join(", ", manifest.Order)}.");
                     return false;
+                }
+
+                // A module name keeps that module alone, by design - but a name that used to cover a whole
+                // family before it was split (crypto, css, window) now quietly keeps a fraction of what the
+                // class of the same name calls. Said at normal verbosity, so the consumer who meant the
+                // class learns it from the build rather than from a "BitButil.cryptoSign is undefined".
+                foreach (var (name, className, beyond) in ButilScriptBundler.NarrowerThanClass(explicitNames, manifest, typeMap))
+                {
+                    Log.LogMessage(MessageImportance.High,
+                        $"Bit.Butil: <BitButilScriptModule Include=\"{name}\" /> keeps only that module; the {className} class also calls {string.Join(", ", beyond)}. Name the class instead if the app reaches those too.");
                 }
 
                 referenced.UnionWith(chosen);

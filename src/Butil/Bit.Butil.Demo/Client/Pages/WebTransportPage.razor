@@ -89,15 +89,29 @@ await using var session = result.Session;
                  Api="SendDatagram"
                  Description="Unreliable and unordered, like a UDP packet: nothing is retransmitted, nothing is acknowledged, and one larger than the path MTU (about 1200 bytes) is dropped rather than fragmented. Use it for data that is worthless late - position updates, telemetry, media frames."
                  Code=@("""
-var sent = await session.SendDatagram(Encoding.UTF8.GetBytes("ping"));
-// true means it was handed to the network, not that it arrived
-""")>
+@code {
+    private WebTransportHandle? session;   // from webTransport.Connect
+
+    private async Task Ping()
+    {
+        // Unreliable and unordered by design: true means it was handed to the network, not that it
+        // arrived. Anything that has to arrive belongs on a stream.
+        var sent = await session!.SendDatagram(Encoding.UTF8.GetBytes("ping"));
+    }
+}
+""")
+                 Language="razor">
         <div class="field">
             <label class="field-label">Datagram text</label>
             <input @bind="datagramText" />
         </div>
         <div class="controls">
+            <button @onclick="ConnectForDatagrams" disabled="@(session is not null)">Connect</button>
             <button @onclick="SendDatagram" disabled="@(session is null)">SendDatagram</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Session</span>
+            <span>@(session is null ? "not connected" : "connected")</span>
         </div>
         <DemoConsole @ref="datagramOutput" Title="datagram output" />
     </DemoSection>
@@ -106,14 +120,22 @@ var sent = await session.SendDatagram(Encoding.UTF8.GetBytes("ping"));
                  Api="OpenStream / WebTransportStream.Write"
                  Description="A stream is ordered and reliable. Streams are independent of each other, so a stall on one does not hold up the rest - which is the reason to open several rather than multiplex your own framing over one. Disposing a stream closes its writable half, which is what tells the peer the message is complete."
                  Code=@("""
-await using var stream = await session.OpenStream(bidirectional: true);
+@code {
+    private WebTransportHandle? session;   // from webTransport.Connect
 
-if (stream is not null)
-{
-    await stream.Write(Encoding.UTF8.GetBytes("hello"));
-    // what comes back arrives through the session's onStreamData callback
+    private async Task Send()
+    {
+        await using var stream = await session!.OpenStream(bidirectional: true);
+
+        if (stream is not null)
+        {
+            await stream.Write(Encoding.UTF8.GetBytes("hello"));
+            // what comes back arrives through the session's onStreamData callback
+        }
+    }
 }
-""")>
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <label class="field-label">Stream text</label>
@@ -125,9 +147,14 @@ if (stream is not null)
             </div>
         </div>
         <div class="controls">
+            <button @onclick="ConnectForStreams" disabled="@(session is not null)">Connect</button>
             <button @onclick="OpenStream" disabled="@(session is null)">OpenStream</button>
             <button class="secondary" @onclick="WriteStream" disabled="@(stream is null)">Write</button>
             <button class="secondary" @onclick="CloseStream" disabled="@(stream is null)">Close stream</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Session</span>
+            <span>@(session is null ? "not connected" : "connected")</span>
         </div>
         <DemoConsole @ref="streamOutput" Title="stream output" />
     </DemoSection>
@@ -188,7 +215,15 @@ if (stream is not null)
         }
     }
 
-    private async Task Connect()
+    // One session, connected from wherever the reader is: the datagram and stream sections need one
+    // too, and sending them back to the first section to get it is the whole problem.
+    private Task Connect() => Connect(sessionOutput);
+
+    private Task ConnectForDatagrams() => Connect(datagramOutput);
+
+    private Task ConnectForStreams() => Connect(streamOutput);
+
+    private async Task Connect(DemoConsole output)
     {
         try
         {
@@ -200,22 +235,22 @@ if (stream is not null)
                     ? $"stream {chunk.StreamId} ended."
                     : $"stream {chunk.StreamId} → {chunk.Data.Length} bytes: \"{Text(chunk.Data)}\"")),
                 onStreamOpened: opened => _ = InvokeAsync(() => streamOutput.Info($"the server opened stream {opened.Id} (bidirectional: {opened.IsBidirectional}).")),
-                onClosed: info => _ = InvokeAsync(() => sessionOutput.Warn($"closed → code {info.CloseCode}, reason \"{info.Reason}\", error \"{info.Error}\"")),
+                onClosed: info => _ = InvokeAsync(() => output.Warn($"closed → code {info.CloseCode}, reason \"{info.Reason}\", error \"{info.Error}\"")),
                 allowPooling: allowPooling,
                 congestionControl: congestionControl);
 
             if (result.Session is null)
             {
-                await sessionOutput.Error($"Connect(\"{url}\") → {result.Error}");
+                await output.Error($"Connect(\"{url}\") → {result.Error}");
                 return;
             }
 
             session = result.Session;
-            await sessionOutput.Success($"Connect(\"{url}\") → connected.");
+            await output.Success($"Connect(\"{url}\") → connected.");
         }
         catch (Exception ex)
         {
-            await sessionOutput.Error(ex.Message);
+            await output.Error(ex.Message);
         }
     }
 

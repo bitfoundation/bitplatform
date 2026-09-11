@@ -35,7 +35,9 @@ var thumbnail = await canvas.Capture(_image, width: 120, type: "image/jpeg", qua
 
     <DemoCard Title="A thumbnail with no canvas of your own" Api="Capture / CaptureToDataUrl"
               Description="Give one dimension and leave the other at 0 to keep the aspect ratio. The source's intrinsic size is what gets captured, not the size CSS shows it at.">
-        <div class="controls">
+        <img @ref="_thumbnailSource" src="@SampleImage" alt="sample" width="200" height="100"
+             style="border:1px solid #cbd5e1;border-radius:.4rem" />
+        <div class="controls" style="margin-top:.75rem">
             <button @onclick="() => Thumbnail(120)">120px wide</button>
             <button @onclick="() => Thumbnail(48)">48px wide</button>
         </div>
@@ -53,6 +55,9 @@ var thumbnail = await canvas.Capture(_image, width: 120, type: "image/jpeg", qua
 
     private ElementReference _canvas;
     private ElementReference _image;
+
+    // The thumbnail card carries its own source, so what it captured is beside the result.
+    private ElementReference _thumbnailSource;
     private string? _thumbnail;
 
     /// <summary>Inline so the sample needs no asset. A data: URL does not taint the canvas.</summary>
@@ -91,8 +96,8 @@ var thumbnail = await canvas.Capture(_image, width: 120, type: "image/jpeg", qua
 
     private async Task Thumbnail(int width)
     {
-        _thumbnail = await canvas.CaptureToDataUrl(_image, width, type: "image/jpeg", quality: 0.7);
-        var bytes = await canvas.Capture(_image, width, type: "image/jpeg", quality: 0.7);
+        _thumbnail = await canvas.CaptureToDataUrl(_thumbnailSource, width, type: "image/jpeg", quality: 0.7);
+        var bytes = await canvas.Capture(_thumbnailSource, width, type: "image/jpeg", quality: 0.7);
 
         if (bytes is null) await output.Warn("Capture returned null - the source has nothing to show, or is cross-origin.");
         else await output.Success($"Captured at {width}px wide →", $"{bytes.Length} bytes");

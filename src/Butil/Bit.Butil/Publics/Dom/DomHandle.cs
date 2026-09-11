@@ -57,7 +57,7 @@ public sealed class DomHandle : IAsyncDisposable
     /// </remarks>
     public async ValueTask<ElementReference?> AsElementReference()
     {
-        var referenceId = await _js.Invoke<string?>("BitButil.dom.elementReferenceId", Id);
+        var referenceId = await _js.Invoke<string?>("BitButil.domHandles.elementReferenceId", Id);
         if (referenceId is null) return null;
 
         // The context is not decoration: the element extensions reach the JS runtime through it, so
@@ -221,7 +221,7 @@ public sealed class DomHandle : IAsyncDisposable
     /// Whether the element is still in the document. False for one that was created and never
     /// appended, and for one that has since been removed.
     /// </summary>
-    public ValueTask<bool> IsConnected() => _js.Invoke<bool>("BitButil.dom.isConnected", Id);
+    public ValueTask<bool> IsConnected() => _js.Invoke<bool>("BitButil.domHandles.isConnected", Id);
 
     /// <summary>
     /// Releases the handle. Idempotent, and safe during teardown.
@@ -235,7 +235,7 @@ public sealed class DomHandle : IAsyncDisposable
         if (_released) return;
         _released = true;
 
-        try { await _js.InvokeVoid("BitButil.dom.release", Id); }
+        try { await _js.InvokeVoid("BitButil.domHandles.release", Id); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

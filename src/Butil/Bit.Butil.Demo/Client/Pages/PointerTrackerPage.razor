@@ -44,15 +44,39 @@ var predicted = await pointerTracker.SupportsPrediction();
                  Api="Track"
                  Description="Drag across the pad below. 'Samples this frame' is how many positions the browser had merged into the one event it delivered - draw through all of them and a fast stroke stays a curve instead of becoming a polyline. Dispose the returned subscription when the gesture is over."
                  Code=@("""
-_sub = await pointerTracker.Track(_surface, frame =>
-{
-    foreach (var sample in frame.Coalesced)
+@implements IAsyncDisposable
+@inject Bit.Butil.PointerTracker pointerTracker
+
+<div @ref="_surface" style="touch-action:none">...</div>
+
+@code {
+    private ElementReference _surface;
+    private ButilSubscription? _sub;
+    private readonly List<(double X, double Y)> _path = [];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _path.Add((sample.X, sample.Y));
+        if (firstRender is false) return;
+
+        _sub = await pointerTracker.Track(_surface, frame =>
+        {
+            // Coalesced carries every sample the device produced between frames, not only the one
+            // the browser dispatched - which is the difference between a smooth line and a polygon.
+            foreach (var sample in frame.Coalesced)
+            {
+                _path.Add((sample.X, sample.Y));
+            }
+            InvokeAsync(StateHasChanged);
+        });
     }
-    InvokeAsync(StateHasChanged);
-});
-""")>
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="StartTracking" disabled="@(_sub is not null || _tracking)">Track</button>
             <button class="danger" @onclick="StopTracking" disabled="@(_sub is null)">Stop</button>

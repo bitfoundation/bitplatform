@@ -80,7 +80,7 @@ registering everything.
 | `Navigation` | The Navigation API: read the history entry list, traverse to a key, and know whether you can go back |
 | `Location` | Read and mutate the current URL, reload, navigate |
 | `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory, `isInputPending`, protocol handlers, installed related apps |
-| `UserAgent` | Parsed user-agent brands, platform and mobile-ness (UA Client Hints) |
+| `UserAgent` | Parse any user-agent string into browser, engine, OS and device - plus the UA Client Hints brands, platform and mobile-ness |
 | `TextFragment` | Scroll-to-text URLs (`#:~:text=`): deep-link to a phrase rather than an anchor |
 | `Url` | `URL`, `URLSearchParams` and `URLPattern`: parse and edit URLs as the browser does, and match routes |
 | `Speculation` | Speculation rules (prefetch/prerender), `document.prerendering` and the activation event |
@@ -331,6 +331,40 @@ await _subscription.DisposeAsync();
 If you forget, the owning service detaches everything it registered when its scope is torn down.
 That's a safety net, not a plan.
 
+### Rate-limit the high-frequency ones
+
+`mousemove`, `pointermove`, `scroll`, `resize`, `wheel` and `touchmove` fire about once a frame, and
+a `ResizeObserver` on a dragged element does the same. Every one of those is an interop round trip -
+a JSON serialization plus, on Blazor Server, a SignalR message and a network hop. Cap it:
+
+```csharp
+// window and document events
+await window.SubscribeEvent<ButilMouseEventArgs>(ButilEvents.MouseMove, OnMove,
+    new ButilEventListenerOptions { Passive = true, MinInterval = TimeSpan.FromMilliseconds(50) });
+
+// element events
+await _element.SubscribeEvent<ButilPointerEventArgs>(js, ButilEvents.PointerMove, OnMove,
+    new ButilEventListenerOptions { Passive = true, MinInterval = TimeSpan.FromMilliseconds(50) });
+
+// observers
+await _element.ObserveResize(js, OnResize, minInterval: TimeSpan.FromMilliseconds(50));
+await _element.ObserveIntersection(js, OnIntersect, new IntersectionObserverOptions { MinInterval = TimeSpan.FromMilliseconds(200) });
+await _element.ObserveMutations(js, OnMutate, new MutationObserverOptions { Subtree = true, MinInterval = TimeSpan.FromMilliseconds(250) });
+
+// visual viewport
+await visualViewport.SubscribeScroll(OnScroll, minInterval: TimeSpan.FromMilliseconds(100));
+```
+
+The gate runs in JavaScript, before the round trip, so a suppressed event costs nothing. It is
+leading-edge with a trailing send: the first event after an idle gap goes through immediately, and
+the newest event suppressed during an interval is delivered when that interval elapses - so the
+handler always ends up holding the size the element settled at, or where the pointer stopped, rather
+than a value one sample out of date. `preventDefault` and `stopPropagation` still run on every
+event; the gate changes how often .NET hears, not what the page does.
+
+The one case to leave ungated is a handler that must see *every* change - a mutation change log, an
+undo stack - because what a gate drops is whole batches, not individual records.
+
 ### Handles own hardware
 
 `MediaStreamHandle`, `MediaRecordingHandle`, `WakeLock`'s persistent handle and the File System
@@ -377,14 +411,31 @@ published app (see `AddBitButilServices` above); the JavaScript side can be tree
 ways of tree-shaking it, both set in the app's csproj, and both working from the same per-module build of
 the scripts (one `Scripts/*.ts` file is one module, `BitButil.clipboard` for `Clipboard` and so on).
 
+A module is kept or dropped whole, so how finely the JavaScript is divided is what decides how little an
+app can get away with. That is why a bigger API is split across several modules rather than served from
+one: `Crypto` is six (randomness and hashing, signing, key material, derivation, ciphers, and the key
+import both of the last two share), `WebAudio` six, the `ElementReference` extensions six - one per
+extension class - and `Window` four. A service calling more than one module is nothing a consumer has to
+know about: the class-to-module map behind `BitButilScriptModule` and the scan resolves a class to every
+module it needs. What it means in practice is that reading `element.ClientWidth()` no longer downloads the
+aria surface, `Crypto.RandomUuid()` no longer downloads key wrapping, and a page that reads
+`Window.GetInnerWidth()` downloads neither the selection API nor the popup registry.
+
+That granularity is per *member*, not per service, because the trimmer works from method bodies: a service
+is only as trimmable as the methods an app actually calls. The one thing that would undo it is handing
+JavaScript a callback object, since `DotNetObjectReference` preserves every public method of what it is
+given - so the services that take callbacks hand over a small internal relay instead of themselves. Nothing
+to do on your side; it is why subscribing to a media query costs the media-query module and reading a
+window property does not.
+
 **Publish-time bundle trimming - the default, nothing to add.** Keep the script tag. When the app is
 published trimmed - a Blazor WebAssembly publish is - the package's build logic reads the trimmed
 `Bit.Butil.dll`, finds which `BitButil.<module>.*` identifiers survived (every interop call goes
 through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
 Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
-that injects `Clipboard`, `LocalStorage` and `Window` ships about 23 KB of JavaScript instead of the
-315 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+that injects `Clipboard`, `LocalStorage` and `Window` ships about 6 KB of JavaScript instead of the
+321 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
 a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
 trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping
@@ -444,6 +495,12 @@ that is neither a module nor a Bit.Butil class fails the build rather than being
 </ItemGroup>
 ```
 
+A module name keeps that one module; a class name keeps every module the class can call, which for a
+class whose JavaScript is split across a family (`Crypto`, `Css`, `Window`, `WebAudio`, `IndexedDb`) is
+several. Naming the family's root module alone - `crypto` - is allowed, since it is the finer control the
+split offers, and the publish says at normal verbosity what the class would have added, so an app that
+meant the class finds out in the build output rather than in a browser.
+
 With none of the three in play - no `PublishTrimmed`, `BitButilScriptScan` set to `None`, no
 `BitButilScriptModule` - there is nothing to trim against, and the full bundle is published.
 
@@ -483,7 +540,9 @@ live check that reads back which modules the app you are looking at actually dow
 **Lazy scripts.** No script tag at all: the first call into an API `import()`s that API's module
 (`_content/Bit.Butil/modules/clipboard.js` for `Clipboard`), so only the JavaScript for the APIs the
 app actually calls is ever downloaded - in every hosting model, trimmed or not. Each module file is
-self-contained and safe to load more than once. Set the property in every project that uses Butil
+self-contained and safe to load more than once: an API costs one request, never one per dependency,
+which is why two modules of the same family (`webAudio` and `webAudioNodes`, say) each carry the shared
+base again rather than fetching it separately. Set the property in every project that uses Butil
 (a Blazor Web App's server and client both) and drop the script tag from the host page:
 
 ```xml

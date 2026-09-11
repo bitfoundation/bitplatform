@@ -57,20 +57,78 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
     }
 
-    // Device and sensor streams fire far faster than a Blazor render can keep up with - 60 Hz is
-    // the usual platform default - so a subscription that would otherwise flood the interop channel
-    // is rate-limited here, before the cost of a round-trip is paid. A non-positive interval means
-    // "every event", and returns the handler untouched rather than a wrapper that always passes.
-    function throttle(minInterval: number, send: (e: any) => void) {
+    // Device streams, pointer moves, scrolls and observer callbacks all fire far faster than a
+    // Blazor render can keep up with - 60 Hz is the usual platform default, and a resize drag or a
+    // pinch-zoom is a frame every 16 ms - so a subscription that would otherwise flood the interop
+    // channel is rate-limited here, before the cost of a round trip is paid. That cost is the whole
+    // point: a round trip is a JSON serialization plus, on Blazor Server, a SignalR message and a
+    // network hop, which is orders of magnitude more than anything this wrapper does.
+    //
+    // A non-positive interval means "every event", and returns the handler untouched rather than a
+    // wrapper that always passes, so an unthrottled subscription pays nothing at all.
+    //
+    // `trailing` decides what happens to the events that are suppressed. Without it the last one is
+    // simply dropped, which is what a sampling stream wants - the next reading is along shortly and
+    // is worth more than the one just missed. With it the newest suppressed event is delivered once
+    // the interval elapses, which is what every *state* stream wants: the final size of a resize,
+    // the resting position of a scroll, the place the pointer stopped. Dropping those leaves .NET
+    // holding a value that is permanently one sample out of date.
+    //
+    // Callers pass a payload already mapped out of the DOM event rather than the event itself, so a
+    // trailing send cannot read an event object the browser has finished dispatching.
+    //
+    // The gate carries a `cancel` for teardown: a trailing send is a timer that outlives the
+    // subscription that armed it, and firing it after an unsubscribe dispatches into a
+    // DotNetObjectReference the .NET side has already disposed. Callers that unsubscribe must call
+    // it - optionally, since an ungated subscription is handed the raw dispatch and has none.
+    function throttle(minInterval: number, send: (e: any) => void, trailing?: boolean): any {
         if (!(minInterval > 0)) return send;
 
-        let lastSentAt = 0;
-        return (e: any) => {
+        // Never sent, rather than "sent at the time origin": a subscription created inside the
+        // first `minInterval` ms of the page would otherwise lose its leading-edge send, which is
+        // the one behaviour a caller setting an interval still expects to get immediately.
+        let lastSentAt = -Infinity;
+        // A non-zero timer is the one signal that a trailing send is queued; `pending` is only the
+        // payload it will carry, and may legitimately be undefined for payload-less callers.
+        let timer: any = 0;
+        let pending: any;
+
+        const gate: any = (e: any) => {
             const now = performance.now();
-            if (now - lastSentAt < minInterval) return;
-            lastSentAt = now;
-            send(e);
+            const remaining = minInterval - (now - lastSentAt);
+
+            if (remaining <= 0) {
+                // A leading send makes a queued trailing one redundant - it would deliver an older
+                // payload than the one going out now.
+                if (timer) { clearTimeout(timer); timer = 0; }
+                pending = undefined;
+                lastSentAt = now;
+                send(e);
+                return;
+            }
+
+            if (!trailing) return;
+
+            // Only the newest suppressed payload is kept: a queue of them would deliver the whole
+            // burst late, which is the flooding this exists to prevent.
+            pending = e;
+            if (timer) return;
+
+            timer = setTimeout(() => {
+                timer = 0;
+                const last = pending;
+                pending = undefined;
+                lastSentAt = performance.now();
+                send(last);
+            }, remaining);
         };
+
+        gate.cancel = () => {
+            if (timer) { clearTimeout(timer); timer = 0; }
+            pending = undefined;
+        };
+
+        return gate;
     }
 
     // The handle registry the device modules share. A browser hands back the same SerialPort,

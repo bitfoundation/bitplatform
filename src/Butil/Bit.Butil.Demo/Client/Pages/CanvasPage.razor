@@ -85,6 +85,13 @@ var jpeg = await canvas.ToBytes(_canvas, "image/jpeg", 0.7);     // smaller, los
             <button class="secondary" @onclick="ExportJpeg">ToBytes (JPEG 0.7)</button>
             <button class="secondary" @onclick="ExportDataUrl">ToDataUrl</button>
         </div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem;align-items:flex-start">
+            <div>
+                <div class="field-label">This section's canvas</div>
+                <canvas @ref="_exportCanvas" width="320" height="160" style="border:1px solid var(--border, #d4d4d8);border-radius:.4rem;max-width:100%"></canvas>
+            </div>
+        </div>
+        <img @ref="_exportSource" src="@SampleImage" alt="sample" width="200" height="100" style="display:none" />
         @if (_preview is not null)
         {
             <div class="field">
@@ -108,6 +115,10 @@ var url = await canvas.CaptureToDataUrl(_image, width: 120);
         <div class="controls">
             <button @onclick="() => MakeThumbnail(120)">120px wide</button>
             <button @onclick="() => MakeThumbnail(48)">48px wide</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Source</span>
+            <img @ref="_thumbnailSource" src="@SampleImage" alt="sample" width="200" height="100" style="border:1px solid var(--border, #d4d4d8);border-radius:.4rem" />
         </div>
         @if (_thumbnail is not null)
         {
@@ -206,6 +217,14 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
     private ElementReference _image;
     private ElementReference _video;
 
+    // The export and thumbnail sections each own their source and their canvas: their results are
+    // only readable next to the thing they came from, and scrolling back to the drawing section to
+    // see what was exported is exactly what makes a demo page unusable.
+    private ElementReference _exportCanvas;
+    private ElementReference _exportSource;
+    private bool _exportCanvasDrawn;
+    private ElementReference _thumbnailSource;
+
     private MediaStreamHandle? _stream;
     private int _cameraGeneration;
     private string? _preview;
@@ -303,15 +322,27 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
     private async Task ClearCanvas()
     {
         await canvas.Clear(_canvas);
-        _preview = null;
         await drawOutput.Log("Cleared.");
+    }
+
+    // The export buttons draw the sample once so there is always something to export, whichever
+    // button the reader presses first.
+    private async Task EnsureExportCanvasDrawn()
+    {
+        if (_exportCanvasDrawn) return;
+
+        await canvas.SetSize(_exportCanvas, 320, 160);
+        await canvas.DrawImage(_exportCanvas, _exportSource);
+        _exportCanvasDrawn = true;
     }
 
     private async Task ExportPng()
     {
         try
         {
-            var bytes = await canvas.ToBytes(_canvas);
+            await EnsureExportCanvasDrawn();
+
+            var bytes = await canvas.ToBytes(_exportCanvas);
             if (bytes is null)
             {
                 await exportOutput.Warn("ToBytes returned null - the canvas is tainted, or not a canvas.");
@@ -330,8 +361,10 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
     {
         try
         {
-            var png = await canvas.ToBytes(_canvas);
-            var jpeg = await canvas.ToBytes(_canvas, "image/jpeg", 0.7);
+            await EnsureExportCanvasDrawn();
+
+            var png = await canvas.ToBytes(_exportCanvas);
+            var jpeg = await canvas.ToBytes(_exportCanvas, "image/jpeg", 0.7);
 
             if (jpeg is null || png is null)
             {
@@ -351,7 +384,9 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
     {
         try
         {
-            _preview = await canvas.ToDataUrl(_canvas);
+            await EnsureExportCanvasDrawn();
+
+            _preview = await canvas.ToDataUrl(_exportCanvas);
             if (_preview is null)
             {
                 await exportOutput.Warn("ToDataUrl returned null - the canvas is tainted, or not a canvas.");
@@ -370,8 +405,8 @@ var photo = await canvas.Capture(_video, width: 640, type: "image/jpeg", quality
     {
         try
         {
-            var bytes = await canvas.Capture(_image, width, type: "image/jpeg", quality: 0.7);
-            _thumbnail = await canvas.CaptureToDataUrl(_image, width, type: "image/jpeg", quality: 0.7);
+            var bytes = await canvas.Capture(_thumbnailSource, width, type: "image/jpeg", quality: 0.7);
+            _thumbnail = await canvas.CaptureToDataUrl(_thumbnailSource, width, type: "image/jpeg", quality: 0.7);
 
             if (bytes is null)
             {

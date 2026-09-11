@@ -37,18 +37,66 @@ var supported = await windowMessaging.IsSupported();
     <DemoSection Title="Talking to an iframe"
                  Api="Listen / Frame / PostMessage"
                  Description="The document in the frame below is a real separate document, so what crosses between them are real cross-document messages. A target is a description rather than a reference: the window behind an iframe is replaced on every navigation, so it is looked up on each send - which is also why a message sent before the frame has loaded goes nowhere rather than being queued."
-                 Code=@("""
-private ElementReference _frame;
+                 Files=@([
+new("Messaging.razor", """
+@implements IAsyncDisposable
+@inject NavigationManager navManager
+@inject Bit.Butil.WindowMessaging windowMessaging
 
-// receive - the allowed origins are the security boundary
-_subscription = await windowMessaging.Listen(
-    m => InvokeAsync(() => { /* m.Origin, m.Deserialize<T>() */ }),
-    allowedOrigins: [new Uri(navManager.BaseUri).GetLeftPart(UriPartial.Authority)]);
+<iframe @ref="_frame" src="/frames/echo.html" title="messaging frame"></iframe>
 
-// send
-await windowMessaging.Frame(_frame)
-    .PostMessage(new { hello = "frame" }, targetOrigin: "https://example.com");
-""")>
+@code {
+    private ElementReference _frame;
+    private ButilSubscription? _subscription;
+
+    private string Origin => new Uri(navManager.BaseUri).GetLeftPart(UriPartial.Authority);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // Receive. The allowed origins are the security boundary: a listener that accepts every
+        // origin accepts messages from anyone who can get a reference to this window.
+        _subscription = await windowMessaging.Listen(
+            m => InvokeAsync(() => { /* m.Origin, m.Deserialize<T>() */ }),
+            allowedOrigins: [Origin]);
+    }
+
+    // Send. A target is a description rather than a reference - the window behind an iframe is
+    // replaced on every navigation - so a message sent before the frame has loaded goes nowhere
+    // rather than being queued.
+    private async Task Send() =>
+        await windowMessaging.Frame(_frame)
+            .PostMessage(new { hello = "frame" }, targetOrigin: Origin);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
+}
+"""),
+new("wwwroot/frames/echo.html", """
+<!doctype html>
+<meta charset="utf-8">
+<title>An embedded document</title>
+
+<script>
+    addEventListener('message', e => {
+        // The same rule on this side: a document that does not check the origin accepts messages
+        // from anyone who can get a reference to it.
+        if (e.origin !== location.origin) return;
+
+        // e.source is the window that sent it, which is how a frame answers without being told
+        // anything about who embedded it.
+        e.source.postMessage({ op: 'echo', payload: e.data, from: 'the frame' }, e.origin);
+    });
+
+    // Announce readiness upwards: a message posted to a frame that has not loaded goes nowhere
+    // rather than being queued, so the page needs to know when there is something to talk to.
+    if (parent !== window) parent.postMessage({ op: 'frameReady' }, location.origin);
+</script>
+"""),
+])>
         <div class="controls">
             <input @bind="_payload" placeholder="message" aria-label="message to send" />
             <button @onclick="SendToFrame">Post to the frame</button>
@@ -62,21 +110,66 @@ await windowMessaging.Frame(_frame)
     <DemoSection Title="From messaging to a private channel"
                  Api="PostWithPorts / WindowMessage.Ports"
                  Description="This is the handshake worth knowing: post once with a port attached, and everything after that goes over the port instead - no origin argument on every message, and nobody else listening in. The ports are transferred, so the handles you pass stop working on this side. A message that arrives carrying ports hands them over in WindowMessage.Ports, and they deliver nothing until started."
-                 Code=@("""
-var channel = await messageChannel.Create();
-await channel!.Port1.OnMessage(m => InvokeAsync(StateHasChanged));
-await channel.Port1.Start();
+                 Files=@([
+new("Messaging.razor", """
+@inject NavigationManager navManager
+@inject Bit.Butil.MessageChannel messageChannel
+@inject Bit.Butil.WindowMessaging windowMessaging
 
-// Port2 goes to the frame, and stops working here
-await windowMessaging.Frame(_frame)
-    .PostWithPorts(new { op = "here is a line" }, origin, [channel.Port2]);
+<iframe @ref="_frame" src="/frames/echo.html" title="messaging frame"></iframe>
 
-await channel.Port1.PostMessage(new { over = "the port" });
-""")>
+@code {
+    private ElementReference _frame;
+    private MessageChannelHandle? _channel;
+
+    private string Origin => new Uri(navManager.BaseUri).GetLeftPart(UriPartial.Authority);
+
+    private async Task HandOverAPort()
+    {
+        _channel = await messageChannel.Create();
+        await _channel!.Port1.OnMessage(m => InvokeAsync(StateHasChanged));
+        await _channel.Port1.Start();
+
+        // Port2 goes to the frame, and stops working here - that transfer is what makes the line
+        // private.
+        await windowMessaging.Frame(_frame)
+            .PostWithPorts(new { op = "here is a line" }, Origin, [_channel.Port2]);
+    }
+
+    // From here on there is no origin argument and nobody else listening in.
+    private async Task SendOverPort() =>
+        await _channel!.Port1.PostMessage(new { over = "the port" });
+}
+"""),
+new("wwwroot/frames/echo.html", """
+<!doctype html>
+<meta charset="utf-8">
+<title>An embedded document</title>
+
+<script>
+    addEventListener('message', e => {
+        if (e.origin !== location.origin) return;
+
+        // A port arrived: from here on the conversation moves off window messaging entirely.
+        if (e.ports && e.ports.length > 0) {
+            const port = e.ports[0];
+            port.addEventListener('message', m => {
+                port.postMessage({ op: 'fromFrame', echoOf: m.data });
+            });
+            // A port delivers nothing until it is started.
+            port.start();
+            e.source.postMessage({ op: 'tookPort' }, e.origin);
+        }
+    });
+</script>
+"""),
+])>
         <div class="controls">
             <button @onclick="HandOverAPort">Hand the frame a port</button>
             <button class="secondary" @onclick="SendOverPort">Send over the port</button>
         </div>
+        <iframe @ref="_portFrame" src="/frames/echo.html" title="Butil port handshake frame"
+                style="width:100%;height:9rem;border:1px solid var(--border, #d4d4d8);border-radius:.5rem;margin-top:.75rem"></iframe>
         <DemoConsole @ref="portOutput" Title="port output" />
     </DemoSection>
 
@@ -84,11 +177,25 @@ await channel.Port1.PostMessage(new { over = "the port" });
                  Api="OpenedWindow"
                  Description="Window.Open hands back an id; this addresses the popup behind it. Only while it is open - a closed one, or an id from a NoOpener open (which deliberately hands back no reference at all), posts nothing and returns false. That is the feature working, not a failure to report."
                  Code=@("""
-var id = await window.Open("/frames/echo.html", "_blank", "popup=yes,width=420,height=320");
+@inject Bit.Butil.Window window
+@inject NavigationManager navManager
+@inject Bit.Butil.WindowMessaging windowMessaging
 
-await windowMessaging.OpenedWindow(id!)
-    .PostMessage(new { hello = "popup" }, targetOrigin: origin);
-""")>
+@code {
+    private string? _id;
+    private string Origin => new Uri(navManager.BaseUri).GetLeftPart(UriPartial.Authority);
+
+    // Must run inside a user gesture, or the popup is blocked.
+    private async Task OpenPopup() =>
+        _id = await window.Open("/frames/echo.html", "_blank", "popup=yes,width=420,height=320");
+
+    // False once the popup is closed, and for an id from a NoOpener open.
+    private async Task Post() =>
+        await windowMessaging.OpenedWindow(_id!)
+            .PostMessage(new { hello = "popup" }, targetOrigin: Origin);
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="OpenPopup">Open a popup</button>
             <button @onclick="SendToPopup">Post to it</button>
@@ -101,12 +208,24 @@ await windowMessaging.OpenedWindow(id!)
                  Api="Parent / Top / Opener"
                  Description="Parent is the document that embedded this one, Top the outermost of the frame tree, Opener the window that opened this one. In a top-level page opened by nobody, Parent and Top are this page itself - so a message posted there comes straight back to your own listener, which is what happens here."
                  Code=@("""
-await windowMessaging.Parent().PostMessage(new { up = true }, origin);
-await windowMessaging.Top().PostMessage(new { up = true }, origin);
+@inject NavigationManager navManager
+@inject Bit.Butil.WindowMessaging windowMessaging
 
-// null on the other side of a NoOpener open, where posting is a no-op
-await windowMessaging.Opener().PostMessage(new { back = true }, origin);
-""")>
+@code {
+    private string Origin => new Uri(navManager.BaseUri).GetLeftPart(UriPartial.Authority);
+
+    private async Task PostUpwards()
+    {
+        await windowMessaging.Parent().PostMessage(new { up = true }, Origin);
+        await windowMessaging.Top().PostMessage(new { up = true }, Origin);
+
+        // A no-op on the other side of a NoOpener open, where there is deliberately no reference at
+        // all - that is the feature working, not a failure to report.
+        await windowMessaging.Opener().PostMessage(new { back = true }, Origin);
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick='() => PostUpwards("parent")'>Post to Parent</button>
             <button @onclick='() => PostUpwards("top")'>Post to Top</button>
@@ -157,6 +276,10 @@ await windowMessaging.Opener().PostMessage(new { back = true }, origin);
     private DemoConsole upwardsOutput = default!;
 
     private ElementReference _frame;
+
+    // The port handshake gets a frame of its own: what the frame echoes back is the demonstration,
+    // and it has to be on screen beside the buttons that caused it.
+    private ElementReference _portFrame;
     private ButilSubscription? _subscription;
     private MessageChannelHandle? _channel;
     private ButilSubscription? _portSubscription;
@@ -259,7 +382,7 @@ await windowMessaging.Opener().PostMessage(new { back = true }, origin);
             }));
             await _channel.Port1.Start();
 
-            var sent = await windowMessaging.Frame(_frame)
+            var sent = await windowMessaging.Frame(_portFrame)
                 .PostWithPorts(new { op = "here is a line" }, Origin, [_channel.Port2]);
 
             _portHandedOver = sent;

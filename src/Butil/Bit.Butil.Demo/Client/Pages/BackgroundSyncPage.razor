@@ -40,12 +40,22 @@ var periodic = await backgroundSync.IsPeriodicSupported();
     <DemoSection Title="Prerequisite: register the demo worker"
                  Api="ServiceWorker.Register"
                  Description="Background sync tags are stored on a service worker registration, so one must exist before Register or GetTags can succeed. This button registers the same minimal /sw.js used across this category."
-                 Code=@("""
+                 Files=@([
+new("BackgroundSync.razor", """
 @inject Bit.Butil.ServiceWorker serviceWorker
 
-await serviceWorker.Register("/sw.js");
-""")
-                 Language="razor">
+<button @onclick="RegisterWorker">Register /sw.js</button>
+
+@code {
+    private async Task RegisterWorker() => await serviceWorker.Register("/sw.js");
+}
+"""),
+new("wwwroot/sw.js", """
+// A sync fires when the page that registered it may well be gone, so the work has to live here.
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+"""),
+])>
         <div class="controls">
             <button @onclick="RegisterWorker">Register /sw.js</button>
         </div>
@@ -55,11 +65,40 @@ await serviceWorker.Register("/sw.js");
     <DemoSection Title="One-shot sync"
                  Api="Register / GetTags"
                  Description="Register queues a one-shot sync under a tag; the service worker's sync event fires for that tag once the device is online (immediately, if it already is). GetTags lists the tags currently registered. Registering the same tag twice coalesces into one pending sync."
-                 Code=@("""
-var ok = await backgroundSync.Register("sync-outbox");
+                 Files=@([
+new("BackgroundSync.razor", """
+@inject Bit.Butil.BackgroundSync backgroundSync
 
-string[] tags = await backgroundSync.GetTags();
-""")>
+@code {
+    private async Task Queue()
+    {
+        // Registering the same tag twice coalesces into one pending sync, so this is safe to call
+        // on every failed send rather than tracking whether one is already queued.
+        var ok = await backgroundSync.Register("sync-outbox");
+
+        string[] tags = await backgroundSync.GetTags();
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// The other half. The browser wakes the worker for the tag once the device is online - the page
+// that registered it is usually closed by then, which is the whole point of registering it.
+self.addEventListener('sync', event => {
+    if (event.tag !== 'sync-outbox') return;
+
+    // The tag stays registered and the browser retries later if this rejects, so the work has to be
+    // safe to run more than once.
+    event.waitUntil(sendOutbox());
+});
+
+async function sendOutbox() {
+    // Whatever the page queued - typically read back out of IndexedDB, which is the only storage a
+    // worker can reach.
+    const response = await fetch('/api/outbox', { method: 'POST', body: '[]' });
+    if (!response.ok) throw new Error('retry me');
+}
+"""),
+])>
         <div class="field">
             <label class="field-label">Sync tag</label>
             <input @bind="syncTag" />
@@ -74,14 +113,47 @@ string[] tags = await backgroundSync.GetTags();
     <DemoSection Title="Periodic sync"
                  Api="RegisterPeriodic / GetPeriodicTags / UnregisterPeriodic"
                  Description="Periodic sync wakes the service worker at a browser-chosen cadence, never more often than the minimum interval you pass (in milliseconds). It requires the periodic-background-sync permission, which Chromium only grants to installed web apps (PWAs) with sufficient site engagement - expect a rejection when running this demo from a plain tab."
-                 Code=@("""
-// minimum interval: 1 hour (the browser may extend it)
-var ok = await backgroundSync.RegisterPeriodic("refresh-feed", 60 * 60 * 1000);
+                 Files=@([
+new("BackgroundSync.razor", """
+@inject Bit.Butil.BackgroundSync backgroundSync
 
-string[] tags = await backgroundSync.GetPeriodicTags();
+@code {
+    private async Task Schedule()
+    {
+        // minimum interval: 1 hour (the browser may extend it)
+        var ok = await backgroundSync.RegisterPeriodic("refresh-feed", 60 * 60 * 1000);
 
-var removed = await backgroundSync.UnregisterPeriodic("refresh-feed");
-""")>
+        string[] tags = await backgroundSync.GetPeriodicTags();
+    }
+
+    private async Task Cancel() => await backgroundSync.UnregisterPeriodic("refresh-feed");
+}
+"""),
+new("wwwroot/sw.js", """
+// Fires at a cadence the browser chooses, never more often than the minimum interval - and only for
+// an installed app the browser considers engaged enough. Treat it as an optimization, never as the
+// only path by which content gets refreshed.
+self.addEventListener('periodicsync', event => {
+    if (event.tag !== 'refresh-feed') return;
+
+    event.waitUntil(refreshFeed());
+});
+
+async function refreshFeed() {
+    const response = await fetch('/api/feed');
+    const cache = await caches.open('feed-v1');
+    await cache.put('/api/feed', response);
+}
+"""),
+new("wwwroot/manifest.json", """
+{
+  "name": "Bit.Butil demo",
+  "short_name": "Butil",
+  "start_url": "/",
+  "display": "standalone"
+}
+"""),
+])>
         <div class="field-row">
             <div class="field">
                 <label class="field-label">Periodic tag</label>

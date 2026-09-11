@@ -94,6 +94,7 @@
     <button id="intersection-observe" @onclick="ObserveIntersection">observe intersection</button>
     <button id="resize-observe" @onclick="ObserveResize">observe resize</button>
     <button id="resize-trigger" @onclick="TriggerResize">resize target</button>
+    <button id="resize-observe-gated" @onclick="ObserveResizeGated">observe resize (rate limited)</button>
     <button id="mutation-observe" @onclick="ObserveMutation">observe mutation</button>
 </section>
 
@@ -108,6 +109,7 @@
     <button id="idb-roundtrip" @onclick="IndexedDbRoundTrip">open + put + get</button>
     <button id="idb-advanced" @onclick="IndexedDbAdvanced">ranges + cursors + transactions</button>
     <button id="idb-migrate" @onclick="IndexedDbMigrate">schema migration</button>
+    <button id="idb-connection-callbacks" @onclick="IndexedDbConnectionCallbacks">versionchange + blocked</button>
 </section>
 
 <section>
@@ -158,6 +160,7 @@
     <button id="nav-info" @onclick="NavInfo">navigator info</button>
     <button id="nav-input-pending" @onclick="NavInputPending">isInputPending</button>
     <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
+    <button id="ua-extract-string" @onclick="UaExtractString">userAgent.extract(string)</button>
     <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
     <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
 </section>
@@ -366,6 +369,10 @@
 
     private async Task ObserveResize()
     {
+        // The gated variant below shares this field; a run that clicks both must not leave the first
+        // observer firing into a stale closure, or watching alongside the second.
+        if (_resizeSub is not null) { await _resizeSub.DisposeAsync(); _resizeSub = null; }
+
         var tcs = new TaskCompletionSource<bool>();
         _resizeSub = await _target.ObserveResize(js, entries =>
         {
@@ -380,6 +387,44 @@
         _resizeWidth += 40;
         await _target.SetAttribute("style", $"width:{_resizeWidth}px;height:40px;border:1px solid #888;");
         Set($"resize:triggered:{_resizeWidth}");
+    }
+
+    // The correctness half of the rate limit; Bit.Butil.Tests.Benchmarks measures how much traffic
+    // it removes, and this checks the thing that measurement cannot see - that the size the element
+    // *settles* at still arrives.
+    //
+    // Every one of the five resizes below lands inside a single 300 ms interval, so all of them are
+    // suppressed. A leading-edge-only gate would leave the handler holding the width the element had
+    // when the observer was attached, permanently. The trailing send is what makes the last one
+    // arrive, a little late, and that is what this waits for.
+    private const int GatedFinalWidth = 230;
+
+    // What a content-box ResizeObserver reports for that width: the target carries a 1px border on
+    // each side, and the content box is what is left inside them.
+    private const int GatedFinalContentWidth = GatedFinalWidth - 2;
+
+    private async Task ObserveResizeGated()
+    {
+        if (_resizeSub is not null) { await _resizeSub.DisposeAsync(); _resizeSub = null; }
+
+        var last = 0d;
+        var settled = new TaskCompletionSource<bool>();
+
+        _resizeSub = await _target.ObserveResize(js, entries =>
+        {
+            if (entries.Length == 0) return;
+            last = entries[^1].InlineSize;
+            if (Math.Abs(last - GatedFinalContentWidth) < 1) settled.TrySetResult(true);
+        }, minInterval: TimeSpan.FromMilliseconds(300));
+
+        foreach (var width in new[] { 150, 170, 190, 210, GatedFinalWidth })
+        {
+            await _target.SetAttribute("style", $"width:{width}px;height:40px;border:1px solid #888;");
+            await Task.Delay(20);
+        }
+
+        var arrived = await WaitFor(settled, 5000);
+        Set($"resize:gated:{arrived}:{last:0}");
     }
 
     private async Task ObserveMutation()
@@ -436,6 +481,47 @@
 
     // Walks the whole extended surface - ranges, cursors, index queries, batched transactions and
     // binary values - and reports the first check that fails so a red test names the culprit.
+    // The connection callbacks, which JavaScript dispatches through the interop reference the handle hands
+    // it: a second connection asking for a higher version makes the browser tell the first one to get out
+    // of the way. The blocked callback is registered as well and must NOT fire - Butil's own connection
+    // closes itself as it reports the versionchange, so the upgrade is never held up - which is the other
+    // half of what this arrangement promises.
+    private async Task IndexedDbConnectionCallbacks()
+    {
+        var name = $"butil-e2e-versionchange-{Guid.NewGuid():N}";
+        IndexedDbStoreSchema[] stores = [new IndexedDbStoreSchema { Name = "items", KeyPath = "id" }];
+
+        var versionChanged = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocked = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var first = await indexedDb.Open(name, 1, stores, onVersionChange: () => versionChanged.TrySetResult(true));
+
+        // Deliberately not awaited yet: this open cannot complete while the first connection is still
+        // holding the database, which is the situation both callbacks describe.
+        var upgrade = indexedDb.Open(name, 2, stores, onBlocked: () => blocked.TrySetResult(true)).AsTask();
+
+        var told = await WaitFor(versionChanged, 5000);
+
+        // Waited on rather than slept through: IndexedDB fires blocked *before* it proceeds with an
+        // upgrade, so an upgrade that has gone through while the first connection is still un-disposed
+        // is proof both that the versionchange handler closed that connection and that no blocked
+        // callback is still on its way. Letting a short timer expire and calling a callback that has
+        // not arrived yet "not blocked" would only ever be a race against how fast the browser is.
+        var yielded = (await Task.WhenAny(upgrade, Task.Delay(5000))) == upgrade;
+        var wasBlocked = yielded is false || blocked.Task.IsCompleted;
+
+        // A no-op when the upgrade is already through, and what unblocks it when it is not - so the
+        // failing run reports which of the three values went wrong instead of hanging on the await below.
+        await first.DisposeAsync();
+
+        var second = await upgrade;
+        var upgraded = second.Version == 2;
+        await second.DisposeAsync();
+        await indexedDb.DeleteDatabase(name);
+
+        Set($"idb:connection-callbacks:{told}/{wasBlocked}/{upgraded}");
+    }
+
     private async Task IndexedDbAdvanced()
     {
         const string dbName = "butil-e2e-adv";
@@ -898,9 +984,21 @@
 
     private async Task UaExtract()
     {
+        // Whatever engine the suite runs in names itself, its engine and its system, so this holds
+        // for Chromium, Firefox and WebKit alike without pinning any of them to a version.
         var props = await userAgent.Extract();
-        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue);
+        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue)
+                 && props.Name is { Length: > 0 } && props.Layout is { Length: > 0 } && props.OsName is { Length: > 0 };
         Set($"ua:extract:{ok}");
+    }
+
+    private async Task UaExtractString()
+    {
+        // The other half of Extract: a string that did not come from this browser. Being a fixed
+        // input it is the deterministic test of the parsing itself - an iPhone, named as one.
+        var props = await userAgent.Extract(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1");
+        Set($"ua:extract-string:{props?.Name}/{props?.Version}/{props?.Layout}/{props?.OsName}/{props?.OsVersion}/{props?.Product}");
     }
 
     private async Task ScreenMetrics()

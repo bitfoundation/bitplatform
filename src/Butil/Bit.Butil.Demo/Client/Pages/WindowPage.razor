@@ -42,6 +42,31 @@
         <DemoConsole @ref="eventsOutput" Title="window events output" />
     </DemoSection>
 
+    <DemoSection Title="Rate-limiting a high-frequency event"
+                 Api="ButilEventListenerOptions.MinInterval"
+                 Description="mousemove, pointermove, scroll, resize, wheel and touchmove all fire about once a frame, and every one of them is an interop round trip - a JSON serialization plus, under Blazor Server, a SignalR message and a network hop. MinInterval caps how often the handler is called. The gate runs in JavaScript, before the round trip, leading-edge with a trailing send: the first move after an idle gap goes through at once, and the last move of a gesture always arrives, so the handler ends up holding where the pointer stopped rather than where it was one sample earlier. preventDefault and stopPropagation are unaffected - they still run on every event. Subscribe both below and move the mouse: the counters diverge immediately."
+                 Code=@("""
+subscription = await window.SubscribeEvent<ButilMouseEventArgs>(
+    ButilEvents.MouseMove,
+    args => Console.WriteLine($"{args.ClientX}, {args.ClientY}"),
+    new ButilEventListenerOptions
+    {
+        Passive = true,
+        MinInterval = TimeSpan.FromMilliseconds(100),
+    });
+""")>
+        <div class="controls">
+            <button @onclick="SubscribeMouseMove" disabled="@(mouseMoveSubscription is not null)">Subscribe mousemove (ungated)</button>
+            <button @onclick="SubscribeMouseMoveGated" disabled="@(gatedMouseMoveSubscription is not null)">Subscribe mousemove (100 ms gate)</button>
+            <button class="secondary" @onclick="UnsubscribeMouseMoves" disabled="@(mouseMoveSubscription is null && gatedMouseMoveSubscription is null)">Unsubscribe both</button>
+        </div>
+        <p class="section-desc">
+            Ungated: <strong>@mouseMoveCount</strong> calls &nbsp;·&nbsp; gated: <strong>@gatedMouseMoveCount</strong> calls.
+            Move the pointer across the page and watch the two counts pull apart.
+        </p>
+        <DemoConsole @ref="rateLimitOutput" Title="rate limiting output" />
+    </DemoSection>
+
     <DemoSection Title="Before-unload and page lifecycle"
                  Api="AddBeforeUnload / RemoveBeforeUnload / SubscribeFreeze / SubscribeResume"
                  Description="AddBeforeUnload makes the browser show a confirmation prompt before the user leaves or reloads the page - ideal for unsaved-changes protection. SubscribeFreeze and SubscribeResume observe the back/forward-cache lifecycle so you can release and re-acquire expensive resources."
@@ -232,21 +257,37 @@ foreach (var range in ranges)
                  Api="IsSecureContext / GetOrigin / GetName / SetName / GetLocationBar / MatchMedia / WatchMatchMedia"
                  Description="Inspect the browsing context: secure-context state, origin, the window name and the location bar visibility. MatchMedia evaluates a CSS media query once, while WatchMatchMedia keeps a handler subscribed to its change event via a disposable subscription."
                  Code=@("""
-bool secure = await window.IsSecureContext();
-string origin = await window.GetOrigin();
-BarProp locationBar = await window.GetLocationBar();
+@implements IAsyncDisposable
+@inject Bit.Butil.Window window
 
-await window.SetName("butil-demo");
-string name = await window.GetName();
+@code {
+    private ButilSubscription? sub;
 
-MediaQueryList result = await window.MatchMedia("(max-width: 600px)");
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
 
-ButilSubscription sub = await window.WatchMatchMedia(
-    "(prefers-color-scheme: dark)",
-    mql => Console.WriteLine($"dark mode: {mql.Matches}"));
+        bool secure = await window.IsSecureContext();
+        string origin = await window.GetOrigin();
+        BarProp locationBar = await window.GetLocationBar();
 
-// later: await sub.DisposeAsync();
-""")>
+        await window.SetName("butil-demo");
+        string name = await window.GetName();
+
+        MediaQueryList result = await window.MatchMedia("(max-width: 600px)");
+
+        sub = await window.WatchMatchMedia(
+            "(prefers-color-scheme: dark)",
+            mql => Console.WriteLine($"dark mode: {mql.Matches}"));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (sub is not null) await sub.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="CheckSecureContext">IsSecureContext</button>
             <button @onclick="ReadOrigin">GetOrigin</button>
@@ -288,7 +329,8 @@ ButilSubscription sub = await window.WatchMatchMedia(
 <ApiTable Title="API reference">
     <ApiMember Name="AddEventListener" Signature="Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)" Description="Attaches a handler to a DOM event on window." />
     <ApiMember Name="RemoveEventListener" Signature="Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)" Description="Detaches a previously added handler (matched by delegate identity)." />
-    <ApiMember Name="SubscribeEvent" Signature="Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, bool useCapture = false)" Description="AddEventListener variant returning a disposable subscription. An overload accepts ButilEventListenerOptions (capture, passive, once)." />
+    <ApiMember Name="SubscribeEvent" Signature="Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, bool useCapture = false)" Description="AddEventListener variant returning a disposable subscription. An overload accepts ButilEventListenerOptions (capture, passive, once, minInterval)." />
+    <ApiMember Name="ButilEventListenerOptions.MinInterval" Signature="TimeSpan? MinInterval { get; set; }" Description="Shortest time between two calls into the handler. Null or Zero (the default) forwards every event. Applied in JavaScript before the round trip, leading-edge with a trailing send." />
     <ApiMember Name="AddBeforeUnload" Signature="Task AddBeforeUnload()" Description="Enables the browser's leave-confirmation prompt. An overload accepts a message string for maximum cross-browser consistency." />
     <ApiMember Name="RemoveBeforeUnload" Signature="Task RemoveBeforeUnload()" Description="Removes the beforeunload handlers registered by this instance." />
     <ApiMember Name="SubscribeFreeze" Signature="Task<ButilSubscription> SubscribeFreeze(Action handler)" Description="Fires when the page is frozen (moved to the back/forward cache)." />
@@ -325,7 +367,7 @@ ButilSubscription sub = await window.WatchMatchMedia(
     <ApiMember Name="Stop" Signature="Task Stop()" Description="Stops window loading." />
     <ApiMember Name="Scroll" Signature="Task Scroll(float? x, float? y)" Description="Scrolls the window to an absolute position. An overload accepts ScrollOptions for smooth/instant behavior." />
     <ApiMember Name="ScrollBy" Signature="Task ScrollBy(float? x, float? y)" Description="Scrolls the document by a relative amount. An overload accepts ScrollOptions." />
-    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Releases every listener, media-query watcher, popup ref and beforeunload handler this instance registered. InvokeMediaQueryChange is the public JSInvokable dispatch bridge and is not intended for app code." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Releases every listener, media-query watcher, popup ref and beforeunload handler this instance registered." />
     <ApiMember Name="GetDevicePixelRatio"
                Signature="Task<double> GetDevicePixelRatio()"
                Description="CSS pixels per device pixel - 2 on a typical retina display, fractional at OS zoom levels. Changes when the user zooms or moves the window to another monitor, so read it when needed rather than caching it." />
@@ -348,6 +390,7 @@ ButilSubscription sub = await window.WatchMatchMedia(
 
 @code {
     private DemoConsole eventsOutput = default!;
+    private DemoConsole rateLimitOutput = default!;
     private DemoConsole lifecycleOutput = default!;
     private DemoConsole dialogsOutput = default!;
     private DemoConsole dimensionsOutput = default!;
@@ -359,6 +402,10 @@ ButilSubscription sub = await window.WatchMatchMedia(
     private DemoConsole contextOutput = default!;
 
     private ButilSubscription? keydownSubscription;
+    private ButilSubscription? mouseMoveSubscription;
+    private ButilSubscription? gatedMouseMoveSubscription;
+    private int mouseMoveCount;
+    private int gatedMouseMoveCount;
     private ButilSubscription? mediaSubscription;
     private bool beforeUnloadActive;
     private string? popupId;
@@ -383,6 +430,64 @@ ButilSubscription sub = await window.WatchMatchMedia(
         {
             await eventsOutput.Error("SubscribeEvent failed:", ex.Message);
         }
+    }
+
+    // Passive on both, because neither cancels anything - the only difference between them is the
+    // gate, which is the whole point of putting them side by side.
+    private async Task SubscribeMouseMove()
+    {
+        try
+        {
+            mouseMoveCount = 0;
+            mouseMoveSubscription = await window.SubscribeEvent<ButilMouseEventArgs>(
+                ButilEvents.MouseMove,
+                args => { mouseMoveCount++; _ = InvokeAsync(StateHasChanged); },
+                new ButilEventListenerOptions { Passive = true });
+            await rateLimitOutput.Success("Subscribed to window mousemove with no rate limit.");
+        }
+        catch (Exception ex)
+        {
+            await rateLimitOutput.Error("SubscribeEvent failed:", ex.Message);
+        }
+    }
+
+    private async Task SubscribeMouseMoveGated()
+    {
+        try
+        {
+            gatedMouseMoveCount = 0;
+            gatedMouseMoveSubscription = await window.SubscribeEvent<ButilMouseEventArgs>(
+                ButilEvents.MouseMove,
+                args =>
+                {
+                    gatedMouseMoveCount++;
+                    _ = rateLimitOutput.Info($"gated mousemove → {args.ClientX:F0}, {args.ClientY:F0}");
+                    _ = InvokeAsync(StateHasChanged);
+                },
+                new ButilEventListenerOptions { Passive = true, MinInterval = TimeSpan.FromMilliseconds(100) });
+            await rateLimitOutput.Success("Subscribed to window mousemove, rate-limited to one call every 100 ms.");
+        }
+        catch (Exception ex)
+        {
+            await rateLimitOutput.Error("SubscribeEvent failed:", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeMouseMoves()
+    {
+        if (mouseMoveSubscription is not null)
+        {
+            await mouseMoveSubscription.DisposeAsync();
+            mouseMoveSubscription = null;
+        }
+
+        if (gatedMouseMoveSubscription is not null)
+        {
+            await gatedMouseMoveSubscription.DisposeAsync();
+            gatedMouseMoveSubscription = null;
+        }
+
+        await rateLimitOutput.Warn($"Unsubscribed. Ungated: {mouseMoveCount} calls, gated: {gatedMouseMoveCount}.");
     }
 
     private async Task UnsubscribeKeyDown()
@@ -808,6 +913,8 @@ ButilSubscription sub = await window.WatchMatchMedia(
         try
         {
             if (keydownSubscription is not null) await keydownSubscription.DisposeAsync();
+            if (mouseMoveSubscription is not null) await mouseMoveSubscription.DisposeAsync();
+            if (gatedMouseMoveSubscription is not null) await gatedMouseMoveSubscription.DisposeAsync();
             if (mediaSubscription is not null) await mediaSubscription.DisposeAsync();
             if (beforeUnloadActive) await window.RemoveBeforeUnload();
         }

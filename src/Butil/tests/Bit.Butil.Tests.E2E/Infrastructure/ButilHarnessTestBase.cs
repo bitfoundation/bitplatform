@@ -30,18 +30,7 @@ public abstract class ButilHarnessTestBase
     {
         _playwright = await Playwright.CreateAsync();
 
-        var launchOptions = new BrowserTypeLaunchOptions
-        {
-            Headless = Environment.GetEnvironmentVariable("BUTIL_E2E_HEADED") != "1"
-        };
-
-        var channel = Environment.GetEnvironmentVariable("BUTIL_E2E_CHANNEL");
-        if (!string.IsNullOrWhiteSpace(channel)) launchOptions.Channel = channel;
-
-        var executable = Environment.GetEnvironmentVariable("BUTIL_E2E_EXECUTABLE");
-        if (!string.IsNullOrWhiteSpace(executable)) launchOptions.ExecutablePath = executable;
-
-        _browser = await _playwright.Chromium.LaunchAsync(launchOptions);
+        _browser = await _playwright.Chromium.LaunchAsync(BrowserLaunch.OptionsFromEnvironment());
         _context = await _browser.NewContextAsync(new()
         {
             BaseURL = DemoServerFixture.BaseUrl,

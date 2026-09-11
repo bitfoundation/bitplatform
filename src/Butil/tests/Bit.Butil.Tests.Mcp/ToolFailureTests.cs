@@ -196,7 +196,9 @@ public class ToolFailureTests : McpTestBase
     {
         // Two different empties, and an agent cannot tell them apart from an empty list: nothing
         // matched, or the query was phrased entirely in words this index drops before matching.
-        var unmatched = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "quantum flux capacitor" });
+        // Every word here has to be one the docs cannot plausibly acquire - "quantum" was in this
+        // query until a Web Audio sample started talking about the render quantum.
+        var unmatched = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "gizmo flux capacitor" });
 
         using (Assert.Scope())
         {

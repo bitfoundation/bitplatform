@@ -1,13 +1,14 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    const _refs = {};
-    const _mediaQueryHandlers: { [id: string]: { mql: MediaQueryList, handler: (e: MediaQueryListEvent) => void } } = {};
     // beforeunload handlers keyed by a per-registration id. We use addEventListener (not the
     // single window.onbeforeunload slot) so multiple subscribers - and the host app's own
     // handler - coexist instead of clobbering one another, and each can be removed individually.
     const _beforeUnloadHandlers: { [id: string]: (e: BeforeUnloadEvent) => any } = {};
 
+    // The window itself: its geometry, its dialogs and its unload guard. Popups are windowRefs,
+    // the selection windowSelection and the media queries windowMediaQuery - each of those keeps a
+    // registry of its own, and none of them is wanted by an app that just reads innerWidth.
     butil.window = {
         addBeforeUnload,
         removeBeforeUnload,
@@ -30,12 +31,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         setName(value: string) { window.name = value },
         origin() { return window.origin },
         outerHeight() { return window.outerHeight },
-        // For other modules (windowMessaging): the live window a popup id opened, or undefined once
-        // it has been closed. A closed popup's ref is still an object, so the check is explicit.
-        refOf(id: string) {
-            const ref = (_refs as any)[id];
-            return ref && !ref.closed ? ref : undefined;
-        },
         outerWidth() { return window.outerWidth },
         screenX() { return window.screenX },
         screenY() { return window.screenY },
@@ -45,45 +40,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         alert(message?: string) { window.alert(message) },
         blur() { window.blur() },
         btoa(data: string) { return window.btoa(data) },
-        close,
         confirm(message?: string) { return window.confirm(message) },
         find,
         focus() { window.focus() },
-        getSelection,
-        isComposedRangesSupported() { return typeof (window.getSelection() as any)?.getComposedRanges === 'function' },
-        getComposedRanges,
-        getSelectionText() { return window.getSelection()?.toString() ?? '' },
-        clearSelection() { window.getSelection()?.removeAllRanges(); },
-        selectElement(element: HTMLElement) {
-            if (!element) return;
-            // Inputs/textareas have their own select(), and trying to wrap them in a Range fails.
-            if (typeof (element as any).select === 'function' && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
-                (element as HTMLInputElement).select();
-                return;
-            }
-            const sel = window.getSelection();
-            if (!sel) return;
-            sel.removeAllRanges();
-            const range = document.createRange();
-            try { range.selectNodeContents(element); sel.addRange(range); }
-            catch { /* element may not be in the DOM */ }
-        },
-        async copySelection() {
-            const text = window.getSelection()?.toString() ?? '';
-            if (!text) return false;
-            try { await navigator.clipboard.writeText(text); return true; }
-            catch { return false; }
-        },
-        matchMedia,
-        subscribeMatchMedia,
-        unsubscribeMatchMedia,
-        open,
         print() { window.print() },
         prompt(message?: string, defaultValue?: string) { return window.prompt(message, defaultValue) },
         scroll,
         scrollBy,
-        stop() { window.stop() },
-        dispose
+        stop() { window.stop() }
     };
 
     function addBeforeUnload(id: string, message?: string) {
@@ -112,15 +76,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         });
     }
 
-    function close(id: string | undefined) {
-        if (!id) { window.close(); return; }
-
-        const ref = _refs[id];
-        if (!ref) return;
-        delete _refs[id];
-        ref.close();
-    }
-
     function find(text?: string,
         caseSensitive?: boolean,
         backward?: boolean,
@@ -128,113 +83,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         wholeWord?: boolean,
         searchInFrame?: boolean) {
         return (window as any).find(text, caseSensitive, backward, wrapAround, wholeWord, searchInFrame);
-    }
-
-    function getSelection() {
-        const sel = window.getSelection();
-        if (!sel) return null;
-        return {
-            text: sel.toString(),
-            isCollapsed: sel.isCollapsed,
-            rangeCount: sel.rangeCount,
-            type: (sel as any).type ?? null,
-            anchorOffset: sel.anchorOffset,
-            focusOffset: sel.focusOffset
-        };
-    }
-
-    // An ordinary Selection reports the shadow host as its boundary, so a selection that starts or
-    // ends inside a shadow tree cannot be described at all. getComposedRanges takes the roots it is
-    // allowed to see into and reports the real boundary points within them.
-    function getComposedRanges(hosts: HTMLElement[]) {
-        const sel: any = window.getSelection();
-        if (typeof sel?.getComposedRanges !== 'function') return [];
-
-        const roots = (hosts ?? []).map(host => (host as any)?.shadowRoot).filter(root => !!root);
-
-        let ranges: any[];
-        try {
-            ranges = sel.getComposedRanges({ shadowRoots: roots }) ?? [];
-        } catch {
-            // Older shape: the roots were passed as loose arguments rather than in an options bag.
-            try { ranges = sel.getComposedRanges(...roots) ?? []; } catch { return []; }
-        }
-
-        return ranges.map((range: any) => ({
-            startOffset: range.startOffset ?? 0,
-            endOffset: range.endOffset ?? 0,
-            collapsed: range.collapsed === true,
-            // The containers themselves can't cross interop; what identifies them can.
-            startContainerName: nodeName(range.startContainer),
-            endContainerName: nodeName(range.endContainer),
-            // True when a boundary sits inside one of the shadow roots we were given, i.e. when this
-            // range is telling you something an ordinary Selection could not.
-            crossesShadowBoundary: isInShadow(range.startContainer, roots) || isInShadow(range.endContainer, roots)
-        }));
-    }
-
-    function nodeName(node: any) {
-        if (!node) return '';
-        return node.nodeType === Node.TEXT_NODE ? '#text' : (node.nodeName ?? '').toLowerCase();
-    }
-
-    function isInShadow(node: any, roots: any[]) {
-        if (!node) return false;
-        const root = node.getRootNode?.();
-        return roots.some(candidate => candidate === root);
-    }
-
-    function matchMedia(query: string) {
-        const media = window.matchMedia(query);
-        return {
-            matches: media.matches,
-            media: media.media
-        };
-    }
-
-    function subscribeMatchMedia(dotNetRef: any, listenerId: string, query: string) {
-        const mql = window.matchMedia(query);
-        const handler = (e: MediaQueryListEvent) => {
-            butil.utils.dispatch(dotNetRef, 'InvokeMediaQueryChange', listenerId, { matches: e.matches, media: e.media });
-        };
-
-        // addEventListener is supported on MediaQueryList in all evergreen browsers; older
-        // Safari only exposes the legacy addListener variant.
-        if (typeof mql.addEventListener === 'function') {
-            mql.addEventListener('change', handler);
-        } else {
-            (mql as any).addListener(handler);
-        }
-        _mediaQueryHandlers[listenerId] = { mql, handler };
-    }
-
-    function unsubscribeMatchMedia(ids: string[]) {
-        ids.forEach(id => {
-            const entry = _mediaQueryHandlers[id];
-            if (!entry) return;
-            delete _mediaQueryHandlers[id];
-            if (typeof entry.mql.removeEventListener === 'function') {
-                entry.mql.removeEventListener('change', entry.handler);
-            } else {
-                (entry.mql as any).removeListener(entry.handler);
-            }
-        });
-    }
-
-    function open(id: string, url?: string, target?: string, windowFeatures?: string) {
-        const ref = window.open(url, target, windowFeatures);
-        if (!ref) return undefined;
-        // Prune refs for popups the user closed manually. close(id) only runs on explicit
-        // closes, so without this sweep those entries would linger in _refs until dispose().
-        pruneClosedRefs();
-        _refs[id] = ref;
-        return id;
-    }
-
-    function pruneClosedRefs() {
-        for (const key of Object.keys(_refs)) {
-            if (_refs[key].closed) delete _refs[key];
-        }
     }
 
     function scroll(options?: ScrollToOptions, x?: number, y?: number) {
@@ -251,18 +99,5 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         } else {
             window.scrollBy(x, y);
         }
-    }
-
-    function dispose(ids?: string[]) {
-        // matchMedia handlers are unsubscribed individually by the C# side (it tracks the ids and
-        // calls unsubscribeMatchMedia before dispose), so we deliberately don't touch
-        // _mediaQueryHandlers here - wiping the shared map would clobber any other live instance.
-        //
-        // _refs is shared across every Butil Window instance (i.e. across all Blazor Server
-        // circuits and WASM apps in the module). Wiping it wholesale would orphan popups opened
-        // by *other* live instances, silently turning their close(id) into a no-op. So we only
-        // drop the ids this instance opened, which the C# side tracks and passes in here.
-        if (!ids) return;
-        ids.forEach(id => { delete _refs[id]; });
     }
 }(BitButil));

@@ -40,15 +40,32 @@ var inputPending = await scheduler.IsInputPendingSupported();
                  Api="OnAnimationFrame"
                  Description="The next frame is requested before your callback is told about this one, so the loop runs at the browser's cadence rather than at the speed of the interop round trip. A callback slower than a frame causes frames to be skipped rather than queued - which is what an animation wants, and why the box below is positioned from the timestamp rather than from a frame count."
                  Code=@("""
-_loop = await scheduler.OnAnimationFrame(timestamp => InvokeAsync(() =>
-{
-    // position from the timestamp, never from a count of calls
-    _offset = (Math.Sin(timestamp / 400) + 1) * 50;
-    StateHasChanged();
-}));
+@implements IAsyncDisposable
+@inject Bit.Butil.Scheduler scheduler
 
-await _loop.DisposeAsync();   // stops the loop
-""")>
+<div style="transform: translateX(@(_offset)px)">...</div>
+
+@code {
+    private double _offset;
+    private ButilSubscription? _loop;
+
+    private async Task Start() =>
+        _loop = await scheduler.OnAnimationFrame(timestamp => InvokeAsync(() =>
+        {
+            // position from the timestamp, never from a count of calls
+            _offset = (Math.Sin(timestamp / 400) + 1) * 50;
+            StateHasChanged();
+        }));
+
+    // Stops the loop. A frame loop nobody disposes runs for as long as the page lives, whether or
+    // not anything is still watching it.
+    public async ValueTask DisposeAsync()
+    {
+        if (_loop is not null) await _loop.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="StartLoop">Start</button>
             <button class="danger" @onclick="StopLoop">Stop</button>

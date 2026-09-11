@@ -47,16 +47,37 @@ if (await faceDetector.IsSupported() is false)
                  Api="Detect"
                  Description="Reads one frame of a video, image or canvas element. fastMode trades accuracy for speed, which is what a live preview wants; maxFaces stops the search early when you only need one. Landmarks - eyes, nose, mouth - are the platform's decision, not the browser's, so they are often empty on the same browser version that reports them elsewhere."
                  Code=@("""
-_stream = await mediaDevices.GetUserMedia(audio: false, video: true);
-await _stream!.AttachTo(_video);
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaDevices mediaDevices
+@inject Bit.Butil.FaceDetector faceDetector
 
-var faces = await faceDetector.Detect(_video, maxFaces: 5, fastMode: true);
+<video @ref="_video" autoplay playsinline muted></video>
 
-foreach (var face in faces)
-{
-    // face.X / Y / Width / Height in source pixels, face.Landmarks
+@code {
+    private ElementReference _video;
+    private MediaStreamHandle? _stream;
+
+    private async Task Detect()
+    {
+        _stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+        await _stream!.AttachTo(_video);
+
+        var faces = await faceDetector.Detect(_video, maxFaces: 5, fastMode: true);
+
+        foreach (var face in faces)
+        {
+            // face.X / Y / Width / Height in source pixels, face.Landmarks
+        }
+    }
+
+    // The camera light stays on until the stream is disposed, whatever the page does.
+    public async ValueTask DisposeAsync()
+    {
+        if (_stream is not null) await _stream.DisposeAsync();
+    }
 }
-""")>
+""")
+                 Language="razor">
         <video @ref="_video" autoplay playsinline muted
                class="demo-video" style="min-height:160px"></video>
         <div class="controls">
