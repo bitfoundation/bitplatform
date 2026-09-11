@@ -58,7 +58,9 @@
                 invalid markup. The root is laid out as an inline block either way, so the band sweeps across the width of the text rather than
                 the width of its container.
                 <br /><br />
-                A value that is not a name a tag can have falls back to the default tag.
+                A value that is not a name a tag can have falls back to the default tag. A void element (such as <b>br</b> or <b>img</b>) is
+                a valid name and is kept, but it is defined to hold no content, so neither <b>Text</b> nor <b>ChildContent</b> is rendered into
+                it: a shimmer that shows text needs a non-void element.
             </div>
             <br />
             <BitTextShimmer Element="h1" Text="A shimmering heading" />

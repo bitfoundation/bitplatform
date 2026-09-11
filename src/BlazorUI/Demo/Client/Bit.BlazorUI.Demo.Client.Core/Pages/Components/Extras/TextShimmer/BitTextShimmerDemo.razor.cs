@@ -67,7 +67,7 @@ public partial class BitTextShimmerDemo
             Name = "Element",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom html element used for the root node. The default is \"p\"; a value that is not a name a tag can have falls back to it.",
+            Description = "The custom html element used for the root node. The default is \"p\"; a value that is not a name a tag can have falls back to it. A void element (such as \"br\" or \"img\") holds no content, so neither Text nor ChildContent is rendered into it.",
         },
         new()
         {
