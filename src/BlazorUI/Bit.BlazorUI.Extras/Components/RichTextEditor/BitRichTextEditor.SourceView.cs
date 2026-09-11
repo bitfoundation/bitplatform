@@ -19,6 +19,11 @@ public partial class BitRichTextEditor
 
         if (_inSourceView is false)
         {
+            // Every tool panel belongs to the rendered view: source view hides them anyway, so
+            // closing them first keeps their state from coming back stale (a find panel still
+            // holding last search's term and highlights) when the rendered view returns.
+            await CloseOtherPanels("");
+
             _sourceText = await GetHtmlAsync();
             _inSourceView = true;
             StateHasChanged();

@@ -73,12 +73,23 @@ public partial class BitRichTextEditor
         // link through the normal validated path once a URL has been entered.
         if (string.Equals(command, LinkCommand, StringComparison.OrdinalIgnoreCase))
         {
-            // The panel lives inside the toolbar, so claiming the keystroke while the toolbar or
-            // the link group is off would swallow the browser default and show nothing.
-            if (ShowToolbar is false || Has(BitRichTextEditorToolbar.Link) is false) return false;
+            // The panel stands on its own (it opens without the toolbar), but the link group still
+            // gates it: claiming the keystroke with links turned off would swallow the browser
+            // default and show nothing.
+            if (Has(BitRichTextEditorToolbar.Link) is false) return false;
 
-            if (_showLinkInput is false) ToggleLinkInput();
+            if (_showLinkInput is false) await ToggleLinkInput();
             StateHasChanged();
+            return true;
+        }
+
+        // A block name maps to the paragraph format rather than to an editing command, so the
+        // same map that binds "bold" to a chord can bind "h1" or "blockquote" to one. Applying it
+        // toggles, matching the toolbar's own block buttons: pressing it on the block it already
+        // produces goes back to a normal paragraph.
+        if (BlockCommands.Contains(command))
+        {
+            await FormatBlockToggleAsync(command.ToLowerInvariant());
             return true;
         }
 
@@ -92,6 +103,45 @@ public partial class BitRichTextEditor
         await ExecAsync(command);
         return true;
     }
+
+    /// <summary>
+    /// The combo currently bound to a command, written the way <c>aria-keyshortcuts</c> wants it
+    /// ("Control+Shift+X"), or null when nothing reaches that command. Read from the effective
+    /// map - a custom binding first, then the built-in default unless the host has rebound that
+    /// key - so what a screen reader announces is what actually works.
+    /// </summary>
+    private string? ShortcutFor(string command)
+    {
+        if (KeyboardShortcuts is not null)
+        {
+            foreach (var (key, mapped) in KeyboardShortcuts)
+            {
+                if (string.Equals(mapped, command, StringComparison.OrdinalIgnoreCase))
+                    return ToAriaKeyShortcut(key);
+            }
+        }
+
+        foreach (var (key, mapped) in DefaultShortcuts)
+        {
+            if (string.Equals(mapped, command, StringComparison.OrdinalIgnoreCase) is false) continue;
+            // A default whose key the host has taken over no longer runs this command.
+            if (KeyboardShortcuts is not null
+                && KeyboardShortcuts.Any(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase))) continue;
+            return ToAriaKeyShortcut(key);
+        }
+
+        return null;
+    }
+
+    private static string ToAriaKeyShortcut(string combo)
+        => string.Join('+', combo.Split('+', StringSplitOptions.RemoveEmptyEntries).Select(part => part.ToLowerInvariant() switch
+        {
+            "ctrl" => "Control",
+            "shift" => "Shift",
+            "alt" => "Alt",
+            "meta" => "Meta",
+            var other => other.Length == 1 ? other.ToUpperInvariant() : char.ToUpperInvariant(other[0]) + other[1..]
+        }));
 
     private static string BuildComboKey(string key, bool ctrl, bool shift, bool alt)
     {
@@ -113,7 +163,18 @@ public partial class BitRichTextEditor
         LinkCommand
     };
 
-    private static bool IsKnownCommand(string command) => KnownCommands.Contains(command);
+    /// <summary>
+    /// The paragraph formats a shortcut may be bound to. They are block names, not editing
+    /// commands, so they run through the block path (like the toolbar's format selector) instead
+    /// of the command path.
+    /// </summary>
+    private static readonly HashSet<string> BlockCommands = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre"
+    };
+
+    private static bool IsKnownCommand(string command)
+        => KnownCommands.Contains(command) || BlockCommands.Contains(command);
 
     /// <summary>
     /// The set of owned key combos (built-in defaults merged with any custom shortcuts),

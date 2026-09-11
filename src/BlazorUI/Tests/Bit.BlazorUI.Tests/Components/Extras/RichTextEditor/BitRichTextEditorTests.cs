@@ -25,6 +25,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.createLink");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.updateLink");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.insertImageUrl");
+        Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.updateImage");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.insertHtml");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.alignImage");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.insertText");
@@ -34,6 +35,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.selectAll");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.setBlockDirection");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applyColor");
+        Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.clearColor");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applyFont");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applySlashCommand");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applyMention");
@@ -1383,6 +1385,51 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitRichTextEditorShouldOpenTheLinkPanelWithoutAToolbar()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.ShowToolbar, false);
+            parameters.Add(p => p.ShowQuickToolbar, true);
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Link);
+        });
+
+        var handled = await component.InvokeAsync(() => component.Instance._OnShortcut("k", true, false, false));
+
+        // A chrome-free surface still needs to be able to link: the panel is opened by the shortcut
+        // and the floating selection toolbar, not only by a toolbar button.
+        Assert.IsTrue(handled);
+        Assert.IsNotNull(component.Find(".bit-rte-bar input[type=url]"));
+        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb").Count);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldOfferTheLinkButtonOnTheQuickToolbarWithoutAToolbar()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.ShowToolbar, false);
+            parameters.Add(p => p.ShowQuickToolbar, true);
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Link);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState
+        {
+            HasSelection = true,
+            SelectionTop = 90,
+            SelectionLeft = 20,
+            SelectionHeight = 18
+        }));
+
+        var quick = component.Find(".bit-rte-quick");
+        Assert.IsNotNull(quick.QuerySelector("button[aria-label='Insert or edit link']"));
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldNotClaimTheLinkShortcutWithoutTheLinkGroup()
     {
         SetupJsInterop();
@@ -1517,6 +1564,28 @@ public class BitRichTextEditorTests : BunitTestContext
         StringAssert.Contains(footer, "10/10");
         // Reaching the cap is called out rather than silently swallowing further input.
         Assert.IsNotNull(component.Find(".bit-rte-cnt-over"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldCountOneWordInTheSingular()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnFactsChanged(
+            new BitRichTextEditorContentFacts(true, false, 1, 1)));
+
+        // Each count is a full template rather than a number glued to a word, so one word does not
+        // read "1 words" - and a translator keeps control of the plural.
+        var footer = component.Find(".bit-rte-cnt").TextContent;
+        StringAssert.Contains(footer, "1 word ");
+        StringAssert.Contains(footer, "1 char");
+        Assert.IsFalse(footer.Contains("1 words"));
+        Assert.IsFalse(footer.Contains("1 chars"));
     }
 
     [TestMethod]
@@ -1965,6 +2034,54 @@ public class BitRichTextEditorTests : BunitTestContext
         // so an iframe only survives when it points at an approved embed host over https.
         Assert.IsTrue(policy.AllowedTags.Contains("iframe"));
         Assert.IsTrue(policy.AllowedAttributes["iframe"].Contains("allowfullscreen"));
+        Assert.IsNotNull(policy.AllowedIframeHosts);
+        CollectionAssert.Contains(policy.AllowedIframeHosts!.ToArray(), "www.youtube-nocookie.com");
+        CollectionAssert.Contains(policy.AllowedIframeHosts!.ToArray(), "player.vimeo.com");
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldLeaveTheEmbedHostsToTheBridgeWhenAPolicyNamesNone()
+    {
+        SetupJsInterop();
+        Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetResult("");
+
+        RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.SanitizationPolicy, new BitRichTextEditorSanitizationPolicy
+            {
+                AllowedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "p", "iframe" },
+                AllowedAttributes = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase),
+                AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "https" }
+            });
+        });
+
+        // A policy that lists the iframe tag without saying where from sends no host list, which is
+        // what makes the bridge fall back to its built-in approved embed hosts rather than framing
+        // anything the scheme allowlist happens to accept.
+        var policy = SetupOption(LastSetupOptions(), "Policy")!;
+        Assert.IsNull(SetupOption(policy, "AllowedIframeHosts"));
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldSendTheLowercasedEmbedHosts()
+    {
+        SetupJsInterop();
+        Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetResult("");
+
+        RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.SanitizationPolicy, new BitRichTextEditorSanitizationPolicy
+            {
+                AllowedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "p", "iframe" },
+                AllowedAttributes = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase),
+                AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "https" },
+                AllowedIframeHosts = ["Player.Vimeo.COM", "maps.example.com"]
+            });
+        });
+
+        var policy = SetupOption(LastSetupOptions(), "Policy")!;
+        CollectionAssert.AreEqual(new[] { "player.vimeo.com", "maps.example.com" },
+            (string[])SetupOption(policy, "AllowedIframeHosts")!);
     }
 
     [TestMethod]
@@ -2341,6 +2458,524 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsNotNull(component.Find("button[aria-label='Gras']"));
         // A key the localizer does not know falls back to the built-in English text.
         Assert.IsNotNull(component.Find("button[aria-label='Italic']"));
+    }
+
+    // ---------------------------------------------------------------- panels
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldPrefillWhetherAnExistingLinkOpensInANewTab()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Link);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { InLink = true, LinkHref = "https://example.com", LinkNewTab = true }));
+
+        await ButtonByLabel(component, "Insert or edit link").ClickAsync(new());
+
+        // Opening the panel on a new-tab link must show it as such; otherwise pressing Apply after
+        // editing the URL would silently drop the target the author chose.
+        Assert.IsTrue(component.Find(".bit-rte-bar input[type=checkbox]").HasAttribute("checked"));
+
+        await ButtonByText(component, ".bit-rte-bar button", "Apply").ClickAsync(new());
+        Assert.AreEqual(true, Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.updateLink").Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldNotPrefillTheNewTabStateOfASameTabLink()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Link);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { InLink = true, LinkHref = "https://example.com" }));
+
+        await ButtonByLabel(component, "Insert or edit link").ClickAsync(new());
+
+        Assert.IsFalse(component.Find(".bit-rte-bar input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldCloseTheFindPanelWhenAnotherToolOpens()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Find | BitRichTextEditorToolbar.Link);
+        });
+
+        await ButtonByLabel(component, "Find and replace").ClickAsync(new());
+        await component.Find(".bit-rte-bar input[type=text]").InputAsync(new() { Value = "fox" });
+        var clearedBefore = InvokeCount("BitBlazorUI.RichTextEditor.clearFind");
+
+        await ButtonByLabel(component, "Insert or edit link").ClickAsync(new());
+
+        // The panels share one strip under the toolbar, so opening another tool closes find - and
+        // closing it has to take its highlight markup out of the content with it.
+        Assert.AreEqual(0, component.FindAll("input[aria-label='Replace with']").Count);
+        Assert.IsNotNull(component.Find(".bit-rte-bar input[type=url]"));
+        Assert.IsTrue(InvokeCount("BitBlazorUI.RichTextEditor.clearFind") > clearedBefore);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldCloseTheOtherPanelsWhenFindOpens()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Find | BitRichTextEditorToolbar.Image);
+        });
+
+        await ButtonByLabel(component, "Insert image").ClickAsync(new());
+        await ButtonByLabel(component, "Find and replace").ClickAsync(new());
+
+        Assert.AreEqual(0, component.FindAll("input[aria-label='Image URL']").Count);
+        Assert.IsNotNull(component.Find("input[aria-label='Find']"));
+    }
+
+
+    [DataTestMethod]
+    [DataRow(true, true)]
+    [DataRow(false, false)]
+    public void BitRichTextEditorShouldDisableTheSourceViewToggleWhenLocked(bool readOnly, bool isEnabled)
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Source);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        // Both ways of locking the editor keep source view out of reach, so the button must look
+        // the way it behaves rather than being enabled for a toggle that refuses to run.
+        Assert.IsTrue(ButtonByLabel(component, "HTML source view").HasAttribute("disabled"));
+    }
+
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldCloseTheOpenPanelsWhenSourceViewOpens()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Find | BitRichTextEditorToolbar.Source);
+        });
+
+        await ButtonByLabel(component, "Find and replace").ClickAsync(new());
+        await component.Find("input[aria-label='Find']").InputAsync(new() { Value = "fox" });
+
+        await ButtonByLabel(component, "HTML source view").ClickAsync(new());
+        Assert.IsNotNull(component.Find("textarea.bit-rte-src"));
+
+        // Coming back must not restore a panel still holding the previous search and its
+        // highlights: the panels belong to the rendered view, so entering source view closes them.
+        await ButtonByLabel(component, "HTML source view").ClickAsync(new());
+        Assert.AreEqual(0, component.FindAll("input[aria-label='Find']").Count);
+        Assert.IsTrue(InvokeCount("BitBlazorUI.RichTextEditor.clearFind") > 0);
+    }
+
+
+    // ---------------------------------------------------------------- accessibility
+
+    [TestMethod]
+    public void BitRichTextEditorShouldGiveAReadOnlySurfaceATabStop()
+    {
+        SetupJsInterop();
+
+        // An editable surface is focusable through contenteditable itself...
+        var editable = RenderComponent<BitRichTextEditor>();
+        Assert.IsFalse(editable.Find(".bit-rte-edt").HasAttribute("tabindex"));
+
+        // ...but a read-only one is a plain div, so without a tab stop its content could not be
+        // reached, scrolled or read out from the keyboard at all.
+        var readOnly = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+        });
+        Assert.AreEqual("0", readOnly.Find(".bit-rte-edt").GetAttribute("tabindex"));
+
+        // A disabled component takes no focus at all.
+        var disabled = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+        Assert.IsFalse(disabled.Find(".bit-rte-edt").HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldExposeThePlaceholderToAssistiveTechnology()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Placeholder, "Write something...");
+        });
+
+        // The placeholder is drawn by CSS from data-placeholder, which a screen reader never sees.
+        var editor = component.Find(".bit-rte-edt");
+        Assert.AreEqual("Write something...", editor.GetAttribute("data-placeholder"));
+        Assert.AreEqual("Write something...", editor.GetAttribute("aria-placeholder"));
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldAnnounceTheShortcutOfAToolbarButton()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.History);
+        });
+
+        Assert.AreEqual("Control+B", ButtonByLabel(component, "Bold").GetAttribute("aria-keyshortcuts"));
+        Assert.AreEqual("Control+Shift+X", ButtonByLabel(component, "Strikethrough").GetAttribute("aria-keyshortcuts"));
+        Assert.AreEqual("Control+Z", ButtonByLabel(component, "Undo").GetAttribute("aria-keyshortcuts"));
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldAnnounceTheCustomShortcutInsteadOfTheDefault()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
+            parameters.Add(p => p.KeyboardShortcuts, new Dictionary<string, string>
+            {
+                ["ctrl+shift+b"] = "bold",
+                ["ctrl+i"] = "underline"
+            });
+        });
+
+        // What is announced has to be what actually runs the command...
+        Assert.AreEqual("Control+Shift+B", ButtonByLabel(component, "Bold").GetAttribute("aria-keyshortcuts"));
+        // ...and a default whose key the host has taken over for something else announces nothing.
+        Assert.IsFalse(ButtonByLabel(component, "Italic").HasAttribute("aria-keyshortcuts"));
+        Assert.AreEqual("Control+I", ButtonByLabel(component, "Underline").GetAttribute("aria-keyshortcuts"));
+    }
+
+
+    // ---------------------------------------------------------------- block-format shortcuts
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldRunABlockFormatShortcut()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardShortcuts, new Dictionary<string, string> { ["ctrl+alt+1"] = "h1" });
+        });
+
+        var handled = await component.InvokeAsync(() => component.Instance._OnShortcut("1", true, false, true));
+
+        // A block name is a paragraph format, so it runs through the block path rather than being
+        // rejected as an unknown editing command.
+        Assert.IsTrue(handled);
+        Assert.AreEqual("h1", Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.execBlock").Arguments[1]);
+        Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.exec"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldToggleABlockFormatShortcutBackToAParagraph()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardShortcuts, new Dictionary<string, string> { ["ctrl+alt+1"] = "h1" });
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { Block = "h1" }));
+
+        await component.InvokeAsync(() => component.Instance._OnShortcut("1", true, false, true));
+
+        // Pressing the chord on the block it already produces goes back to a normal paragraph,
+        // exactly as the toolbar's own block buttons do.
+        Assert.AreEqual("p", Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.execBlock").Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldAdvertiseABlockShortcutAsOwned()
+    {
+        SetupJsInterop();
+
+        RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardShortcuts, new Dictionary<string, string>
+            {
+                ["ctrl+alt+1"] = "h1",
+                ["ctrl+alt+0"] = "p"
+            });
+        });
+
+        var combos = (string[])SetupOption(LastSetupOptions(), "ShortcutKeys")!;
+
+        CollectionAssert.Contains(combos, "ctrl+alt+1");
+        CollectionAssert.Contains(combos, "ctrl+alt+0");
+    }
+
+
+    // ---------------------------------------------------------------- editing a selected image
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldEditTheSelectedImageInsteadOfInsertingANewOne()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Image);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState
+        {
+            ImageSelected = true,
+            ImageSrc = "https://example.com/photo.png",
+            ImageAlt = "A photo"
+        }));
+
+        await ButtonByLabel(component, "Edit image").ClickAsync(new());
+
+        // The panel opens on the selected image, showing what it already carries - which is what
+        // makes alternative text fixable after the image was inserted without any.
+        Assert.AreEqual("https://example.com/photo.png", component.Find("input[aria-label='Image URL']").GetAttribute("value"));
+        Assert.AreEqual("A photo", component.Find("input[aria-label='Alternative text']").GetAttribute("value"));
+
+        await component.Find("input[aria-label='Alternative text']").InputAsync(new() { Value = "A better description" });
+        await ButtonByText(component, ".bit-rte-bar button", "Update").ClickAsync(new());
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.updateImage");
+        Assert.AreEqual("https://example.com/photo.png", invocation.Arguments[1]);
+        Assert.AreEqual("A better description", invocation.Arguments[2]);
+        Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.insertImageUrl"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldStillInsertAnImageWithNothingSelected()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Image);
+        });
+
+        await ButtonByLabel(component, "Insert image").ClickAsync(new());
+        Assert.AreEqual("", component.Find("input[aria-label='Image URL']").GetAttribute("value"));
+
+        await component.Find("input[aria-label='Image URL']").InputAsync(new() { Value = "https://example.com/new.png" });
+        await ButtonByText(component, ".bit-rte-bar button", "Insert").ClickAsync(new());
+
+        Assert.AreEqual("https://example.com/new.png",
+            Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.insertImageUrl").Arguments[1]);
+        Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.updateImage"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldRejectAnInvalidUrlWhenEditingAnImage()
+    {
+        SetupJsInterop();
+
+        BitRichTextEditorError? error = null;
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Image);
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState
+        {
+            ImageSelected = true,
+            ImageSrc = "https://example.com/photo.png",
+            ImageAlt = ""
+        }));
+
+        await ButtonByLabel(component, "Edit image").ClickAsync(new());
+        await component.Find("input[aria-label='Image URL']").InputAsync(new() { Value = "javascript:alert(1)" });
+        await ButtonByText(component, ".bit-rte-bar button", "Update").ClickAsync(new());
+
+        // Editing an image runs through the same URL validation as inserting one.
+        Assert.IsNotNull(error);
+        Assert.AreEqual("invalid-url", error!.Code);
+        Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.updateImage"));
+    }
+
+
+    // ---------------------------------------------------------------- color
+
+    [DataTestMethod]
+    [DataRow("Remove text color", "fore")]
+    [DataRow("Remove highlight", "back")]
+    public async Task BitRichTextEditorShouldClearTheColorOfTheSelection(string label, string kind)
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Color);
+        });
+
+        await ButtonByLabel(component, label).ClickAsync(new());
+
+        // Taking a color back off is its own operation: "clear formatting" would remove the bold
+        // and the links along with it.
+        Assert.AreEqual(kind, Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.clearColor").Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldDisableTheColorControlsWhileReadOnly()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Color);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        Assert.IsTrue(ButtonByLabel(component, "Remove text color").HasAttribute("disabled"));
+        Assert.IsTrue(ButtonByLabel(component, "Remove highlight").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find("input[aria-label='Text color']").HasAttribute("disabled"));
+    }
+
+
+    // ---------------------------------------------------------------- selection events
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldReportSelectionChangesToTheHost()
+    {
+        SetupJsInterop();
+
+        BitRichTextEditorSelectionState? reported = null;
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnSelectionChange,
+                EventCallback.Factory.Create<BitRichTextEditorSelectionState>(this, s => reported = s));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { Bold = true, Block = "h2", InLink = true, LinkHref = "https://example.com" }));
+
+        // The host gets the same snapshot the toolbar highlights itself from, so it can drive its
+        // own chrome from the caret without reaching into the browser.
+        Assert.IsNotNull(reported);
+        Assert.IsTrue(reported!.Bold);
+        Assert.AreEqual("h2", reported.Block);
+        Assert.IsTrue(reported.InLink);
+        Assert.AreEqual("https://example.com", reported.LinkHref);
+    }
+
+
+    // ---------------------------------------------------------------- content facts
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldExposeTheContentFactsAsProperties()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        // Before anything is typed the editor reads as empty rather than as unknown.
+        Assert.IsTrue(component.Instance.IsEmpty);
+        Assert.AreEqual(0, component.Instance.WordCount);
+        Assert.AreEqual(0, component.Instance.CharacterCount);
+
+        await component.InvokeAsync(() => component.Instance._OnContentChanged(
+            "<p>Two words</p>", new BitRichTextEditorContentFacts(true, false, 9, 2)));
+
+        Assert.IsFalse(component.Instance.IsEmpty);
+        Assert.AreEqual(2, component.Instance.WordCount);
+        Assert.AreEqual(9, component.Instance.CharacterCount);
+
+        // A programmatic set refreshes them without being treated as an edit.
+        await component.InvokeAsync(() => component.Instance._OnFactsChanged(
+            new BitRichTextEditorContentFacts(false, true, 0, 0)));
+
+        // An image is content even with no text, so the editor is not empty.
+        Assert.IsFalse(component.Instance.IsEmpty);
+    }
+
+
+    // ---------------------------------------------------------------- surface
+
+    [TestMethod]
+    public void BitRichTextEditorShouldOfferAResizeHandleWhenAsked()
+    {
+        SetupJsInterop();
+
+        Assert.IsFalse(RenderComponent<BitRichTextEditor>().Find(".bit-rte-edt").ClassList.Contains("bit-rte-edt-rsz"));
+
+        var resizable = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Resizable, true);
+        });
+
+        Assert.IsTrue(resizable.Find(".bit-rte-edt").ClassList.Contains("bit-rte-edt-rsz"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldHideTheQuickToolbarWhileAPanelIsOpen()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.ShowQuickToolbar, true);
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Link);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState
+        {
+            HasSelection = true,
+            SelectionTop = 120,
+            SelectionLeft = 40,
+            SelectionHeight = 20
+        }));
+        Assert.AreEqual(1, component.FindAll(".bit-rte-quick").Count);
+
+        // The panel and the floating bar occupy the same corner of the editor, so the bar steps
+        // aside rather than covering the fields the panel just opened.
+        await ButtonByLabel(component, "Insert or edit link").ClickAsync(new());
+        Assert.AreEqual(0, component.FindAll(".bit-rte-quick").Count);
+    }
+
+
+    // ---------------------------------------------------------------- typography
+
+    [TestMethod]
+    public void BitRichTextEditorShouldTellTheBridgeAboutSmartTypography()
+    {
+        SetupJsInterop();
+
+        RenderComponent<BitRichTextEditor>();
+        // The typographic input rules rewrite what was typed, so they stay off unless asked for.
+        Assert.AreEqual(false, SetupOption(LastSetupOptions(), "SmartTypography"));
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.SmartTypography, true);
+        });
+        Assert.AreEqual(true, SetupOption(LastSetupOptions(), "SmartTypography"));
+
+        var pushed = InvokeCount("BitBlazorUI.RichTextEditor.updateOptions");
+        component.Render(parameters => parameters.Add(p => p.SmartTypography, false));
+        Assert.IsTrue(InvokeCount("BitBlazorUI.RichTextEditor.updateOptions") > pushed);
     }
 
     private sealed class TestLocalizer(Dictionary<string, string> labels) : IBitRichTextEditorLocalizer

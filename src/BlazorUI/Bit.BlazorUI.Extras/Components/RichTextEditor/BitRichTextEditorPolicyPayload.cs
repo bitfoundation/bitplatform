@@ -8,4 +8,10 @@ internal class BitRichTextEditorPolicyPayload
     public Dictionary<string, string[]> AllowedAttributes { get; set; } = [];
     public string[] AllowedUriSchemes { get; set; } = [];
     public bool AllowDataImageUris { get; set; }
+
+    /// <summary>
+    /// Hosts an iframe may point at over https, or null to apply the bridge's built-in approved
+    /// embed hosts. A single "*" entry lifts the restriction.
+    /// </summary>
+    public string[]? AllowedIframeHosts { get; set; }
 }

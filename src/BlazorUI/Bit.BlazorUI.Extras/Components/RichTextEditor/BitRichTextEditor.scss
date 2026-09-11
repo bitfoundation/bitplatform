@@ -294,6 +294,12 @@
         outline-offset: spacing(-0.25);
     }
 
+    // Opt-in drag handle on the bottom edge (Resizable), mirroring what the source-view textarea
+    // has always offered. It resizes the surface only, so the toolbar and the count footer stay put.
+    &.bit-rte-edt-rsz {
+        resize: vertical;
+    }
+
     &.bit-rte-edt-empty::before {
         content: attr(data-placeholder);
         color: $clr-fg-ter;

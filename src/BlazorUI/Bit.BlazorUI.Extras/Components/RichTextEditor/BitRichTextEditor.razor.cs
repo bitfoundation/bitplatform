@@ -87,6 +87,13 @@ public partial class BitRichTextEditor : BitComponentBase
     [Parameter] public EventCallback OnFocus { get; set; }
 
     /// <summary>
+    /// Callback for when the selection - or the formatting under it - changes. Receives the same
+    /// snapshot the toolbar highlights itself from, so a host can drive its own chrome (a custom
+    /// toolbar, a status bar) from the caret without reaching into the browser.
+    /// </summary>
+    [Parameter] public EventCallback<BitRichTextEditorSelectionState> OnSelectionChange { get; set; }
+
+    /// <summary>
     /// The placeholder value of the editor shown while it is empty.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -98,6 +105,12 @@ public partial class BitRichTextEditor : BitComponentBase
     public bool ReadOnly { get; set; }
 
     /// <summary>
+    /// Lets the reader drag the bottom edge of the editing surface to make it taller or shorter,
+    /// the way the source-view textarea already can be resized.
+    /// </summary>
+    [Parameter] public bool Resizable { get; set; }
+
+    /// <summary>
     /// Whether a small formatting toolbar floats next to the current text selection.
     /// </summary>
     [Parameter] public bool ShowQuickToolbar { get; set; }
@@ -106,6 +119,14 @@ public partial class BitRichTextEditor : BitComponentBase
     /// Whether the formatting toolbar is shown.
     /// </summary>
     [Parameter] public bool ShowToolbar { get; set; } = true;
+
+    /// <summary>
+    /// Replaces common text patterns with their typographic characters as they are typed: straight
+    /// quotes become curly ones, <c>--</c> an em dash, <c>...</c> an ellipsis, <c>(c)</c> a
+    /// copyright sign, and the arrow, fraction and comparison shorthands their real symbols. Off by
+    /// default, since a document full of code or measurements wants what was typed.
+    /// </summary>
+    [Parameter] public bool SmartTypography { get; set; }
 
     /// <summary>
     /// Whether the browser's native spell checking runs over the editor content.
@@ -264,11 +285,16 @@ public partial class BitRichTextEditor : BitComponentBase
 
     /// <summary>
     /// Whether the floating selection toolbar should be on screen: it is opt-in, needs a real
-    /// selection to anchor to, and never competes with the slash menu or a disabled surface.
+    /// selection to anchor to, and never competes with the slash menu, an open tool panel (whose
+    /// fields it would float over), or a disabled surface.
     /// </summary>
     private bool ShowingQuickToolbar
         => ShowQuickToolbar && _state.HasSelection && ControlsDisabled is false
-        && _showSlash is false && _showMention is false;
+        && _showSlash is false && _showMention is false && AnyPanelOpen is false;
+
+    /// <summary>Whether one of the inline tool bars under the toolbar is currently showing.</summary>
+    private bool AnyPanelOpen
+        => _showLinkInput || _showImageInput || _showMediaInput || _showTableInput || _showFind || _showEmoji;
 
     /// <summary>
     /// Places the selection toolbar just above the selection, in the component root's coordinates.
@@ -335,10 +361,11 @@ public partial class BitRichTextEditor : BitComponentBase
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorSelectionState))]
     [JSInvokable("OnSelectionChanged")]
-    public void _OnSelectionChanged(BitRichTextEditorSelectionState state)
+    public Task _OnSelectionChanged(BitRichTextEditorSelectionState state)
     {
         _state = state;
         StateHasChanged();
+        return OnSelectionChange.InvokeAsync(state);
     }
 
     [JSInvokable("OnFocused")]
@@ -406,13 +433,24 @@ public partial class BitRichTextEditor : BitComponentBase
     /// the toolbar, so leaving two open stacks unrelated bars over the editor and makes the
     /// aria-expanded state of the toolbar buttons disagree with what is on screen.
     /// </summary>
-    private void CloseOtherPanels(string keep)
+    private async Task CloseOtherPanels(string keep)
     {
         if (keep != "link") { _showLinkInput = false; _linkUrl = ""; _linkText = ""; _linkNewTab = false; }
         if (keep != "image") { _showImageInput = false; _imageUrl = ""; _imageAlt = ""; }
         if (keep != "media") { _showMediaInput = false; _mediaUrl = ""; }
         if (keep != "table") { _showTableInput = false; }
         if (keep != "emoji") { _showEmoji = false; _emojiSearch = ""; }
+        if (keep != "find" && _showFind)
+        {
+            // The find panel is one of the same strip of bars, so opening another tool closes it -
+            // and closing it has to take its highlight markup out of the content with it, exactly
+            // as ToggleFind does.
+            _showFind = false;
+            _findTerm = "";
+            _replaceTerm = "";
+            ResetFindCount();
+            await ClearFindAsync();
+        }
     }
 
     private async Task FocusPanelIfPendingAsync()
@@ -509,7 +547,8 @@ public partial class BitRichTextEditor : BitComponentBase
         ReadOnly = EffectiveReadOnly,
         AutoLink = AutoLink,
         QuickToolbar = ShowQuickToolbar,
-        Mentions = OnMentionSearch is not null
+        Mentions = OnMentionSearch is not null,
+        SmartTypography = SmartTypography
     };
 
     // Serializes the setup payload so OnParametersSetAsync can detect whether any bridge-backed

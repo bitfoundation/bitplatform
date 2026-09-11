@@ -20,12 +20,12 @@ public partial class BitRichTextEditor
     /// </summary>
     private bool TableOpsDisabled => ControlsDisabled || _state.InTable is false;
 
-    private void ToggleTableInput()
+    private async Task ToggleTableInput()
     {
         _showTableInput = !_showTableInput;
         if (_showTableInput)
         {
-            CloseOtherPanels("table");
+            await CloseOtherPanels("table");
             RequestPanelFocus(() => _tableRowsRef);
         }
         ClearInlineError();
@@ -42,7 +42,7 @@ public partial class BitRichTextEditor
     private async Task OnTableKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await ApplyTableAsync();
-        else if (e.Key == "Escape") ToggleTableInput();
+        else if (e.Key == "Escape") await ToggleTableInput();
     }
 
     private async Task InsertTableAsync(int rows, int cols, bool header = false)

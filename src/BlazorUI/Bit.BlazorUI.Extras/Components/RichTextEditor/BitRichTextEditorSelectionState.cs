@@ -44,6 +44,9 @@ public sealed class BitRichTextEditorSelectionState
     /// <summary>The href of the link under the selection, or null when none/multiple.</summary>
     public string? LinkHref { get; set; }
 
+    /// <summary>True when the link under the selection opens in a new tab (target="_blank").</summary>
+    public bool LinkNewTab { get; set; }
+
     /// <summary>True when the selection sits inside an inline code span (not a code block).</summary>
     public bool InlineCode { get; set; }
 
@@ -73,4 +76,10 @@ public sealed class BitRichTextEditorSelectionState
 
     /// <summary>Alignment of the selected image ("left", "center", "right"), or null when it flows inline.</summary>
     public string? ImageAlign { get; set; }
+
+    /// <summary>Source of the selected image, or null when no image is selected.</summary>
+    public string? ImageSrc { get; set; }
+
+    /// <summary>Alternative text of the selected image (empty when it has none), or null when no image is selected.</summary>
+    public string? ImageAlt { get; set; }
 }

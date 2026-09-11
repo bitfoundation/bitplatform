@@ -30,4 +30,9 @@ internal class BitRichTextEditorSetupOptions
     /// so an editor without mentions pays nothing for the detection.
     /// </summary>
     public bool Mentions { get; set; }
+
+    /// <summary>
+    /// Whether the typographic input rules (curly quotes, em dash, ellipsis, symbols) run.
+    /// </summary>
+    public bool SmartTypography { get; set; }
 }

@@ -22,7 +22,7 @@ public partial class BitRichTextEditor
         _showFind = !_showFind;
         if (_showFind)
         {
-            CloseOtherPanels("find");
+            await CloseOtherPanels("find");
             RequestPanelFocus(() => _findInputRef);
         }
         else

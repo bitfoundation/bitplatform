@@ -146,6 +146,15 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "OnSelectionChange",
+            Type = "EventCallback<BitRichTextEditorSelectionState>",
+            DefaultValue = "",
+            Description = "Callback for when the selection - or the formatting under it - changes; receives the same snapshot the toolbar highlights itself from.",
+            LinkType = LinkType.Link,
+            Href = "#selection-state"
+        },
+        new()
+        {
             Name = "PasteAsPlainText",
             Type = "bool",
             DefaultValue = "false",
@@ -164,6 +173,13 @@ public partial class BitRichTextEditorDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the editor readonly."
+        },
+        new()
+        {
+            Name = "Resizable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the reader drag the bottom edge of the editing surface to make it taller or shorter."
         },
         new()
         {
@@ -194,6 +210,13 @@ public partial class BitRichTextEditorDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the formatting toolbar is shown."
+        },
+        new()
+        {
+            Name = "SmartTypography",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Replaces common text patterns with their typographic characters as they are typed: curly quotes, em dash, ellipsis, copyright/registered/trademark signs, fractions, arrows and comparison symbols."
         },
         new()
         {
@@ -240,6 +263,12 @@ public partial class BitRichTextEditorDemo
 
     private readonly List<ComponentParameter> componentPublicMembers =
     [
+        new()
+        {
+            Name = "CharacterCount",
+            Type = "int",
+            Description = "The plain-text character count of the current content, as the count footer and MaxLength count it."
+        },
         new()
         {
             Name = "ClearAsync",
@@ -290,6 +319,12 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "IsEmpty",
+            Type = "bool",
+            Description = "Whether the editor holds nothing a reader would see - no text and none of the elements that are content without carrying text (images, tables, rules, media)."
+        },
+        new()
+        {
             Name = "RedoAsync",
             Type = "Task",
             Description = "Redoes the last undone edit."
@@ -311,6 +346,12 @@ public partial class BitRichTextEditorDemo
             Name = "UndoAsync",
             Type = "Task",
             Description = "Undoes the last edit."
+        },
+        new()
+        {
+            Name = "WordCount",
+            Type = "int",
+            Description = "The word count of the current content."
         },
     ];
 
@@ -367,6 +408,7 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "AllowedAttributes", Type = "IDictionary<string, ISet<string>>", DefaultValue = "", Description = "Permitted attributes per tag name. Use the key \"*\" for attributes allowed on any tag. A permitted style attribute is filtered further, down to presentational CSS properties." },
                 new() { Name = "AllowedUriSchemes", Type = "ISet<string>", DefaultValue = "", Description = "Permitted URI schemes for href/src attributes (e.g. http, https, mailto)." },
                 new() { Name = "AllowDataImageUris", Type = "bool", DefaultValue = "true", Description = "Whether data: image URIs are permitted in image sources." },
+                new() { Name = "AllowedIframeHosts", Type = "IReadOnlyCollection<string>?", DefaultValue = "null", Description = "Hosts an iframe may point at, over https. Null applies the built-in approved embed hosts (YouTube, YouTube-nocookie, Vimeo); an empty collection permits no iframe at all; a single \"*\" entry lifts the restriction and lets any https source through." },
             ]
         },
         new()
@@ -379,6 +421,48 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "FileName", Type = "string", DefaultValue = "", Description = "Original file name, when available." },
                 new() { Name = "ContentType", Type = "string", DefaultValue = "", Description = "MIME type, e.g. \"image/png\"." },
                 new() { Name = "Content", Type = "byte[]", DefaultValue = "", Description = "Raw image bytes." },
+            ]
+        },
+        new()
+        {
+            Id = "selection-state",
+            Title = "BitRichTextEditorSelectionState",
+            Description = "Snapshot of the formatting under the selection, reported to OnSelectionChange and used to highlight the toolbar.",
+            Parameters =
+            [
+                new() { Name = "Bold", Type = "bool", DefaultValue = "false", Description = "Whether the selection is bold." },
+                new() { Name = "Italic", Type = "bool", DefaultValue = "false", Description = "Whether the selection is italic." },
+                new() { Name = "Underline", Type = "bool", DefaultValue = "false", Description = "Whether the selection is underlined." },
+                new() { Name = "StrikeThrough", Type = "bool", DefaultValue = "false", Description = "Whether the selection is struck through." },
+                new() { Name = "InlineCode", Type = "bool", DefaultValue = "false", Description = "Whether the selection sits inside an inline code span (not a code block)." },
+                new() { Name = "Subscript", Type = "bool", DefaultValue = "false", Description = "Whether the selection is subscript." },
+                new() { Name = "Superscript", Type = "bool", DefaultValue = "false", Description = "Whether the selection is superscript." },
+                new() { Name = "OrderedList", Type = "bool", DefaultValue = "false", Description = "Whether the selection sits in a numbered list." },
+                new() { Name = "UnorderedList", Type = "bool", DefaultValue = "false", Description = "Whether the selection sits in a bulleted list." },
+                new() { Name = "TaskList", Type = "bool", DefaultValue = "false", Description = "Whether the selection sits in a checklist item." },
+                new() { Name = "JustifyLeft", Type = "bool", DefaultValue = "false", Description = "Whether the block is aligned left." },
+                new() { Name = "JustifyCenter", Type = "bool", DefaultValue = "false", Description = "Whether the block is centered." },
+                new() { Name = "JustifyRight", Type = "bool", DefaultValue = "false", Description = "Whether the block is aligned right." },
+                new() { Name = "JustifyFull", Type = "bool", DefaultValue = "false", Description = "Whether the block is justified." },
+                new() { Name = "Block", Type = "string", DefaultValue = "\"\"", Description = "The current block tag (\"p\", \"h1\", \"blockquote\", \"pre\", ...), lowercase." },
+                new() { Name = "Direction", Type = "string?", DefaultValue = "null", Description = "Text direction of the selected block (\"ltr\"/\"rtl\"), or null." },
+                new() { Name = "ForeColor", Type = "string?", DefaultValue = "null", Description = "Active text color of the selection, or null when mixed/none." },
+                new() { Name = "BackColor", Type = "string?", DefaultValue = "null", Description = "Active highlight color of the selection, or null when mixed/none." },
+                new() { Name = "FontName", Type = "string?", DefaultValue = "null", Description = "Active font family, or null when the selection spans several." },
+                new() { Name = "FontSize", Type = "string?", DefaultValue = "null", Description = "Active font size as a CSS length, or null when the selection spans several." },
+                new() { Name = "InLink", Type = "bool", DefaultValue = "false", Description = "Whether the selection sits inside a hyperlink." },
+                new() { Name = "LinkHref", Type = "string?", DefaultValue = "null", Description = "The href of the link under the selection, or null when none/multiple." },
+                new() { Name = "LinkNewTab", Type = "bool", DefaultValue = "false", Description = "Whether that link opens in a new tab (target=\"_blank\")." },
+                new() { Name = "InTable", Type = "bool", DefaultValue = "false", Description = "Whether the selection sits inside a table cell, which is what enables the table operations." },
+                new() { Name = "ImageSelected", Type = "bool", DefaultValue = "false", Description = "Whether an image inside the editor is selected." },
+                new() { Name = "ImageAlign", Type = "string?", DefaultValue = "null", Description = "Alignment of the selected image (\"left\", \"center\", \"right\"), or null when it flows inline." },
+                new() { Name = "ImageSrc", Type = "string?", DefaultValue = "null", Description = "Source of the selected image, or null when no image is selected." },
+                new() { Name = "ImageAlt", Type = "string?", DefaultValue = "null", Description = "Alternative text of the selected image (empty when it has none), or null when no image is selected." },
+                new() { Name = "HasSelection", Type = "bool", DefaultValue = "false", Description = "Whether a non-empty range inside the editor is selected." },
+                new() { Name = "SelectionTop", Type = "double", DefaultValue = "0", Description = "Top of the selection rectangle, in pixels relative to the component root." },
+                new() { Name = "SelectionLeft", Type = "double", DefaultValue = "0", Description = "Left edge of the selection rectangle, in pixels relative to the component root." },
+                new() { Name = "SelectionWidth", Type = "double", DefaultValue = "0", Description = "Width of the selection rectangle in pixels." },
+                new() { Name = "SelectionHeight", Type = "double", DefaultValue = "0", Description = "Height of the selection rectangle in pixels." },
             ]
         },
         new()
@@ -522,11 +606,12 @@ public partial class BitRichTextEditorDemo
 
     private string? slashHtml = "<p>Place the cursor on a new line and type a slash, or start a line with # or -.</p>";
 
-    private string? shortcutHtml = "<p>Press your custom Ctrl/Cmd+Shift+S or Ctrl/Cmd+Shift+L.</p>";
+    private string? shortcutHtml = "<p>Press your custom Ctrl/Cmd+Shift+S, Ctrl/Cmd+Shift+L, or Ctrl/Cmd+Shift+1.</p>";
     private readonly Dictionary<string, string> shortcuts = new()
     {
         ["ctrl+shift+s"] = "strikeThrough",
         ["ctrl+shift+l"] = "insertUnorderedList",
+        ["ctrl+shift+1"] = "h1",
     };
 
     private string? emojiHtml = "<p>Add a little ✨ to your text — or a → arrow, a ½ fraction, or π.</p>";
@@ -648,6 +733,11 @@ public partial class BitRichTextEditorDemo
     {
         apiResult = await apiEditor.GetTextAsync();
     }
+    private void ShowEditorFacts()
+    {
+        apiResult = $"{apiEditor.WordCount} words, {apiEditor.CharacterCount} chars, empty: {apiEditor.IsEmpty}";
+    }
+
     private async Task GetEditorSelection()
     {
         apiResult = await apiEditor.GetSelectedTextAsync();
@@ -673,6 +763,23 @@ public partial class BitRichTextEditorDemo
         return Task.FromResult(matches);
     }
 
+    private string? selectionHtml = "<h2>A heading</h2><p>Some <strong>bold</strong> text with a <a href=\"https://example.com\">link</a> in it.</p>";
+    private string selectionSummary = "nothing yet";
+
+    private void HandleSelectionChange(BitRichTextEditorSelectionState state)
+    {
+        var parts = new List<string>();
+        if (string.IsNullOrEmpty(state.Block) is false) parts.Add(state.Block);
+        if (state.Bold) parts.Add("bold");
+        if (state.Italic) parts.Add("italic");
+        if (state.InLink) parts.Add("a link");
+        if (state.InTable) parts.Add("a table cell");
+        if (state.ImageSelected) parts.Add("an image");
+        selectionSummary = parts.Count > 0 ? string.Join(", ", parts) : "nothing yet";
+    }
+
+    private string? smartTypographyHtml ="<p>Type: \"quoted words\", an em dash -- like this, an ellipsis ... , (c) 2026, 1/2 a cup, -> and >= .</p>";
+
     private string? rtlHtml = "<p>این ویرایشگر از راست به چپ چیده شده است.</p><p dir=\"ltr\">And this block is left-to-right.</p>";
 
 
@@ -682,7 +789,7 @@ public partial class BitRichTextEditorDemo
 
     private readonly string example2RazorCode = @"
 <BitRichTextEditor Placeholder=""Write something...""
-                   Height=""10rem"" MaxHeight=""14rem"" SpellCheck=""false"" />";
+                   Height=""10rem"" MaxHeight=""14rem"" SpellCheck=""false"" Resizable />";
 
     private readonly string example3RazorCode = @"
 <BitRichTextEditor Value=""<p>This is <strong>read-only</strong>.</p>""
@@ -826,6 +933,8 @@ private readonly Dictionary<string, string> shortcuts = new()
 {
     [""ctrl+shift+s""] = ""strikeThrough"",
     [""ctrl+shift+l""] = ""insertUnorderedList"",
+    // A paragraph format works as a shortcut command too, and toggles like the toolbar button.
+    [""ctrl+shift+1""] = ""h1"",
 };";
 
     private readonly string example24RazorCode = @"
@@ -940,6 +1049,7 @@ public class SpanishEditorLocalizer : IBitRichTextEditorLocalizer
 <BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
 <BitButton OnClick=""GetEditorText"">GetTextAsync</BitButton>
 <BitButton OnClick=""GetEditorSelection"">GetSelectedTextAsync</BitButton>
+<BitButton OnClick=""ShowEditorFacts"">Counts</BitButton>
 <BitButton OnClick=""@(() => apiEditor.ClearAsync())"">ClearAsync</BitButton>
 
 <pre>@apiResult</pre>";
@@ -961,6 +1071,11 @@ private async Task GetEditorText()
 private async Task GetEditorSelection()
 {
     apiResult = await apiEditor.GetSelectedTextAsync();
+}
+private void ShowEditorFacts()
+{
+    // Kept current by the editor itself - no interop call needed.
+    apiResult = $""{apiEditor.WordCount} words, {apiEditor.CharacterCount} chars, empty: {apiEditor.IsEmpty}"";
 }";
 
     private readonly string example31RazorCode = @"
@@ -987,11 +1102,35 @@ private Task<IReadOnlyList<BitRichTextEditorMention>> SearchMentions(string term
 }";
 
     private readonly string example33RazorCode = @"
+<BitRichTextEditor @bind-Value=""html"" SmartTypography />";
+
+    private readonly string example34RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.All""
+                   OnSelectionChange=""HandleSelectionChange"" />
+
+<div>Caret is in: <b>@selectionSummary</b></div>";
+    private readonly string example34CsharpCode = @"
+private string selectionSummary = ""nothing yet"";
+
+private void HandleSelectionChange(BitRichTextEditorSelectionState state)
+{
+    var parts = new List<string>();
+    if (string.IsNullOrEmpty(state.Block) is false) parts.Add(state.Block);
+    if (state.Bold) parts.Add(""bold"");
+    if (state.Italic) parts.Add(""italic"");
+    if (state.InLink) parts.Add(""a link"");
+    if (state.InTable) parts.Add(""a table cell"");
+    if (state.ImageSelected) parts.Add(""an image"");
+    selectionSummary = parts.Count > 0 ? string.Join("", "", parts) : ""nothing yet"";
+}";
+
+    private readonly string example35RazorCode = @"
 <BitRichTextEditor Styles=""@(new() { Toolbar = ""border-bottom-color: red"", Editor = ""background-color: #fff8e1"" })""
                    Classes=""@(new() { Toolbar = ""custom-rte-toolbar"", Editor = ""custom-rte-editor"" })""
                    Placeholder=""Custom styles and classes applied to the toolbar and editor."" />";
 
-    private readonly string example34RazorCode = @"
+    private readonly string example36RazorCode = @"
 <BitRichTextEditor @bind-Value=""html"" Dir=""BitDir.Rtl""
                    Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Direction"" />";
 }

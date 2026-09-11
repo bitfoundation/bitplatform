@@ -169,13 +169,13 @@ public partial class BitRichTextEditor
         new("”", "right quote", "curly quotation symbol", EmojiGroupSymbols),
     ];
 
-    private void ToggleEmoji()
+    private async Task ToggleEmoji()
     {
         _showEmoji = !_showEmoji;
         _emojiSearch = "";
         if (_showEmoji)
         {
-            CloseOtherPanels("emoji");
+            await CloseOtherPanels("emoji");
             RequestPanelFocus(() => _emojiSearchRef);
         }
         // Clear any stale inline validation message when opening or closing the picker, matching

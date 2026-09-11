@@ -28,15 +28,29 @@ public sealed class BitRichTextEditorSanitizationPolicy
     public bool AllowDataImageUris { get; init; } = true;
 
     /// <summary>
+    /// The hosts an <c>iframe</c> may point at, over https. An iframe is the one allowlisted
+    /// element that can run code from another origin, so listing the tag is never enough on its
+    /// own: its source must also clear this list.
+    /// </summary>
+    /// <remarks>
+    /// Null (the default) applies the built-in approved embed hosts - YouTube, YouTube-nocookie
+    /// and Vimeo - which is what the editor's own media embeds produce. An empty collection
+    /// permits no iframe at all. A single <c>"*"</c> entry lifts the restriction and lets any
+    /// https source through, which means any page that can be pasted into the editor can frame
+    /// itself into the document: set it only when the content is already trusted.
+    /// </remarks>
+    public IReadOnlyCollection<string>? AllowedIframeHosts { get; init; }
+
+    /// <summary>
     /// A secure default policy covering the editor's standard formatting output. Returns a
     /// fresh instance on each access so callers can mutate it without affecting other editors.
     /// </summary>
     /// <remarks>
-    /// iframe is included, but only because the built-in policy is enforced together with a host
-    /// allowlist: an iframe survives the sanitize pass only when its source is an https URL on one
-    /// of the approved embed hosts (YouTube, YouTube-nocookie, Vimeo). That host restriction is
-    /// tied to this default policy - a custom policy that lists the iframe tag is taken at its
-    /// word and permits any source its scheme allowlist accepts, so only list it deliberately.
+    /// iframe is included, but only because it is enforced together with a host allowlist: an
+    /// iframe survives the sanitize pass only when its source is an https URL on one of the
+    /// approved embed hosts (YouTube, YouTube-nocookie, Vimeo). Every policy is held to that rule,
+    /// including a hand-written one - widen it deliberately through
+    /// <see cref="AllowedIframeHosts"/> rather than by listing the tag.
     /// </remarks>
     public static BitRichTextEditorSanitizationPolicy Default => new()
     {
@@ -79,6 +93,14 @@ public sealed class BitRichTextEditorSanitizationPolicy
         AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "http", "https", "mailto", "tel"
-        }
+        },
+        // The hosts the editor's own media embeds point at, and the only ones an iframe may come
+        // from under this policy.
+        AllowedIframeHosts =
+        [
+            "www.youtube-nocookie.com", "youtube-nocookie.com",
+            "www.youtube.com", "youtube.com",
+            "player.vimeo.com"
+        ]
     };
 }

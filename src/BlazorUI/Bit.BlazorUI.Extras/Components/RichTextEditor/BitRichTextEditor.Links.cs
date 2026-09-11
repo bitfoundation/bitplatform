@@ -9,15 +9,17 @@ public partial class BitRichTextEditor
     private bool _linkNewTab;
     private ElementReference _linkInputRef = default!;
 
-    private void ToggleLinkInput()
+    private async Task ToggleLinkInput()
     {
         _showLinkInput = !_showLinkInput;
         if (_showLinkInput)
         {
-            CloseOtherPanels("link");
+            await CloseOtherPanels("link");
             // Prefill when the selection is inside an existing link.
             _linkUrl = _state.InLink && _state.LinkHref is not null ? _state.LinkHref : "";
-            _linkNewTab = false;
+            // Reflect what the link already does, so re-applying an edited URL keeps its
+            // new-tab behavior instead of silently dropping the target the author chose.
+            _linkNewTab = _state.InLink && _state.LinkNewTab;
             _linkText = "";
             // Editing an existing link keeps its text; only a collapsed selection needs the text
             // field, so the panel opens with the focus request either way.
@@ -75,7 +77,7 @@ public partial class BitRichTextEditor
     private async Task OnLinkKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await ApplyLinkAsync();
-        else if (e.Key == "Escape") ToggleLinkInput();
+        else if (e.Key == "Escape") await ToggleLinkInput();
     }
 
     /// <summary>

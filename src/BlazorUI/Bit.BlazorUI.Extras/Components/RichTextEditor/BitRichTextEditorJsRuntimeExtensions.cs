@@ -96,6 +96,11 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertImageUrl", editor, url, alt);
     }
 
+    public static ValueTask BitRichTextEditorUpdateImage(this IJSRuntime jsRuntime, ElementReference editor, string url, string? alt)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.updateImage", editor, url, alt);
+    }
+
     public static ValueTask BitRichTextEditorAlignImage(this IJSRuntime jsRuntime, ElementReference editor, string align)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.alignImage", editor, align);
@@ -119,6 +124,11 @@ internal static class BitRichTextEditorJsRuntimeExtensions
     public static ValueTask BitRichTextEditorApplyColor(this IJSRuntime jsRuntime, ElementReference editor, string kind, string value)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.applyColor", editor, kind, value);
+    }
+
+    public static ValueTask BitRichTextEditorClearColor(this IJSRuntime jsRuntime, ElementReference editor, string kind)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.clearColor", editor, kind);
     }
 
     public static ValueTask BitRichTextEditorApplyFont(this IJSRuntime jsRuntime, ElementReference editor, string kind, string value)
