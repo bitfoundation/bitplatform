@@ -501,6 +501,9 @@ public class BitPdfViewerTests : BunitTestContext
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        // PageCount flips before the render that enables the toolbar: clicking the
+        // still-disabled button of the previous render would be ignored.
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find("button[aria-label='Document properties']").HasAttribute("disabled")));
         Assert.AreEqual(0, component.FindAll(".bit-pdv-dialog").Count);
 
         component.Find("button[aria-label='Document properties']").Click();
@@ -754,8 +757,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
 
-        var download = component.Find("button[aria-label='Download document']");
-        Assert.IsFalse(download.HasAttribute("disabled"));
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find("button[aria-label='Download document']").HasAttribute("disabled")));
     }
 
     [TestMethod]
@@ -2457,7 +2459,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         Assert.IsTrue(component.Instance.Permissions.CanPrint);
         Assert.IsTrue(component.Instance.Permissions.CanCopy);
-        Assert.IsFalse(component.Find("button[aria-label='Print document']").HasAttribute("disabled"));
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find("button[aria-label='Print document']").HasAttribute("disabled")));
         Assert.AreEqual(0, component.FindAll(".bit-pdv-surface.bit-pdv-nocopy").Count);
 
         await component.InvokeAsync(() => component.Instance.Print());
@@ -2505,7 +2507,7 @@ public class BitPdfViewerTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
 
         // The default fixture grants every permission, so enforcing them changes nothing.
-        Assert.IsFalse(component.Find("button[aria-label='Print document']").HasAttribute("disabled"));
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find("button[aria-label='Print document']").HasAttribute("disabled")));
         Assert.AreEqual(0, component.FindAll(".bit-pdv-surface.bit-pdv-nocopy").Count);
     }
 
