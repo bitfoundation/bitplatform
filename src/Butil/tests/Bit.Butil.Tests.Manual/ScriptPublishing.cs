@@ -100,6 +100,25 @@ internal static class ScriptPublishing
             ["BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie|battery"],
             Bundle: [.. Scanned, "cookie", "battery"]),
 
+        // One module out of a split family, kept by name through a real publish. The finer control the
+        // split is for: an app reaching Butil's JavaScript from its own scripts can keep the key-management
+        // module without the four other crypto modules coming with it - and cryptoKeyMaterial does come,
+        // because the manifest says cryptoKeys cannot run without it.
+        new("a csproj list naming one module of a split family publishes that module and its dependencies alone",
+            ["BitButilScriptScan=None", "FixtureScriptModules=cryptoKeys"],
+            Bundle: ["butil", "utils", "cryptoKeyMaterial", "cryptoKeys"]),
+
+        // And the whole family when the class is named instead, since that is what a consumer keeping
+        // "Crypto" means by it.
+        new("a csproj list naming the class of a split family publishes the whole family",
+            ["BitButilScriptScan=None", "FixtureScriptModules=Crypto"],
+            Bundle: ["butil", "utils", "crypto", "cryptoCipher", "cryptoDerive", "cryptoKeyMaterial", "cryptoKeys", "cryptoSign"]),
+
+        // The lazy shape of the same thing: one file per module, split family included.
+        new("lazy scripts publish one file per module of a kept split family",
+            ["BitButilLazyScripts=true", "BitButilScriptScan=None", "FixtureScriptModules=userAgentParser"],
+            Modules: ["butil", "userAgentParser"]),
+
         // The other shape of the same JavaScript: no bundle at all, one file per module the app can reach.
         new("lazy scripts publish only the module files the scan can reach, and no bundle",
             ["BitButilLazyScripts=true", "BitButilScriptScan=TypeReferences"],
@@ -288,7 +307,13 @@ internal static class ScriptPublishing
     /// it rather than on any occurrence of the module's name keeps a module that merely <em>mentions</em>
     /// another from being read as that other one being present.
     /// </summary>
-    private static string Guard(string module) => $"window.BitButil.{(module == "butil" ? "version" : module)}";
+    /// <remarks>
+    /// Closing paren included, because a module name can be a prefix of another's: the guard reads
+    /// <c>window.BitButil.cryptoKeys)</c>, and without the paren a bundle holding only that chunk would
+    /// answer yes to <c>crypto</c> as well - reporting a module the app cannot reach, or hiding one it
+    /// needs behind a sibling that happens to be there.
+    /// </remarks>
+    private static string Guard(string module) => $"window.BitButil.{(module == "butil" ? "version" : module)})";
 
     /// <summary>
     /// Runs <c>dotnet</c> with the arguments given. False when it could not be started or did not finish, and

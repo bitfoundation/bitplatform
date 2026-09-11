@@ -67,8 +67,16 @@ string url = await objectUrls.Create(Encoding.UTF8.GetBytes(svg), "image/svg+xml
 await objectUrls.Revoke(url);
 """)>
         <div class="controls">
-            <button class="danger" @onclick="RevokeAll">Revoke the URLs created above</button>
+            <button @onclick="CreateUrlToRevoke">Create a URL</button>
+            <button class="danger" @onclick="RevokeAll">Revoke it</button>
         </div>
+        @if (_revokeUrl is not null)
+        {
+            <div class="field">
+                <span class="field-label">The URL</span>
+                <a href="@_revokeUrl" target="_blank" rel="noopener"><code>@_revokeUrl</code></a>
+            </div>
+        }
         <DemoConsole @ref="revokeOutput" Title="revoke output" />
     </DemoSection>
 
@@ -103,6 +111,7 @@ string longLived = await objectUrls.Create(bytes, "application/pdf", track: fals
     private string _blobText = "Hello from Bit.Butil ObjectUrls!";
     private string? _textUrl;
     private string? _svgUrl;
+    private string? _revokeUrl;
 
     private async Task CreateTextUrl()
     {
@@ -149,29 +158,37 @@ string longLived = await objectUrls.Create(bytes, "application/pdf", track: fals
         }
     }
 
+    // This section creates the URL it revokes: revoking one made in a section further up left the
+    // reader with nothing on screen to watch stop working.
+    private async Task CreateUrlToRevoke()
+    {
+        try
+        {
+            if (_revokeUrl is not null) await objectUrls.Revoke(_revokeUrl);
+
+            _revokeUrl = await objectUrls.Create(Encoding.UTF8.GetBytes("This blob is about to be revoked."), "text/plain");
+            await revokeOutput.Success("Create →", _revokeUrl);
+        }
+        catch (Exception ex)
+        {
+            await revokeOutput.Error("Create failed:", ex.Message);
+        }
+    }
+
     private async Task RevokeAll()
     {
         try
         {
-            if (_textUrl is null && _svgUrl is null)
+            if (_revokeUrl is null)
             {
                 await revokeOutput.Warn("Nothing to revoke - create a URL first.");
                 return;
             }
 
-            if (_textUrl is not null)
-            {
-                await objectUrls.Revoke(_textUrl);
-                await revokeOutput.Log("Revoked", _textUrl);
-                _textUrl = null;
-            }
-
-            if (_svgUrl is not null)
-            {
-                await objectUrls.Revoke(_svgUrl);
-                await revokeOutput.Log("Revoked", _svgUrl);
-                _svgUrl = null;
-            }
+            await objectUrls.Revoke(_revokeUrl);
+            await revokeOutput.Log("Revoked", _revokeUrl);
+            await revokeOutput.Info("Open the link again and the browser has nothing to serve.");
+            _revokeUrl = null;
         }
         catch (Exception ex)
         {

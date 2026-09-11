@@ -21,21 +21,38 @@ namespace ButilTests.Manual;
 internal static class ScriptTrimming
 {
     /// <summary>
+    /// The three modules the <c>Window</c> class names that this project never calls: the popup registry,
+    /// the selection API and the media queries.
+    /// </summary>
+    /// <remarks>
+    /// They are the clearest illustration of what separates the two signals. A reference closure sees the
+    /// <c>Window</c> class whole, and every one of its methods carries an interop identifier - so all four
+    /// of its modules come along. ILLink sees method bodies, and <c>ConsumerComponent</c> only reads the
+    /// location bar and subscribes to an event, so the trimmed assembly names <c>window</c> and nothing
+    /// else of the family. That is only true while nothing roots the class as a whole: it is exactly what
+    /// handing JavaScript a <c>DotNetObjectReference</c> over the service used to do, and why the
+    /// media-query callback lives on its own relay object now.
+    /// </remarks>
+    internal static readonly string[] WindowReferenceModules = ["windowMediaQuery", "windowRefs", "windowSelection"];
+
+    /// <summary>
     /// The modules behind the services <see cref="ConsumerComponent"/> injects (plus <c>events</c>, reached
     /// through <c>Window.SubscribeEvent</c>'s internal <c>DomEventsInterop</c>) - the answer the class-to-module
     /// map has to give when asked about exactly those classes.
     /// </summary>
     internal static readonly string[] InjectedModules =
-        ["canvas", "clipboard", "cookie", "dom", "events", "geolocation", "storage", "streams", "webRtc", "window"];
+        ["canvas", "clipboard", "cookie", "dom", "domHandles", "events", "geolocation", "storage", "streams", "webRtc", "window"];
 
     /// <summary>
-    /// The modules a trimmed publish of this harness must end up calling: <see cref="InjectedModules"/> plus the
-    /// three <see cref="CancellationContract"/> reaches by constructing the services directly. Dependencies
-    /// (<c>butil</c>, <c>utils</c>) are added by the manifest, not listed here, so this stays a statement about
-    /// what the C# side calls.
+    /// The modules a trimmed publish of this harness must end up calling: <see cref="InjectedModules"/>, the
+    /// three <see cref="CancellationContract"/> reaches by constructing the services directly, the one module
+    /// per family <see cref="SplitModuleUse"/> narrowly uses, and <c>windowSelection</c>, which only
+    /// <see cref="LazyScripts"/> reaches - it reads a selection to show that two members of one service load
+    /// two different modules. Dependencies (<c>butil</c>, <c>utils</c>) are added by the manifest, not listed
+    /// here, so this stays a statement about what the C# side calls.
     /// </summary>
     internal static readonly string[] MustSurviveModules =
-        [.. InjectedModules, "digitalCredentials", "fetch", "webOtp"];
+        [.. InjectedModules, "digitalCredentials", "fetch", "webOtp", "windowSelection", .. SplitModuleUse.UsedModules];
 
     /// <summary>
     /// The same question asked of the <em>untrimmed</em> signals - the class-to-module map and the scan
@@ -49,20 +66,26 @@ internal static class ScriptTrimming
     /// bytes, while missing one breaks it in the browser - so the two lists are compared exactly and kept
     /// separately, rather than the check being loosened to a subset test that would stop noticing either.
     /// </remarks>
-    internal static readonly string[] InjectedReferenceModules = [.. InjectedModules, "abortController", "mediaDevices"];
+    internal static readonly string[] InjectedReferenceModules =
+        [.. InjectedModules, "abortController", "mediaDevices", .. WindowReferenceModules];
+
 
     /// <summary>
     /// The same closure taken over this harness's whole assembly rather than over the injected classes alone,
     /// so it also carries the three services <see cref="CancellationContract"/> constructs directly.
     /// </summary>
-    internal static readonly string[] ScanReachableModules = [.. MustSurviveModules, "abortController", "mediaDevices"];
+    internal static readonly string[] ScanReachableModules =
+    [
+        .. MustSurviveModules, "abortController", "mediaDevices",
+        .. WindowReferenceModules, .. SplitModuleUse.SiblingModulesReachedByReference
+    ];
 
     /// <summary>
     /// Modules no C# code calls directly and that are legitimately only ever pulled in as a dependency of
     /// another module. Anything else in the manifest that nothing calls is an orphan: JavaScript shipped
     /// for an API that no longer exists on the C# side.
     /// </summary>
-    private static readonly string[] DependencyOnlyModules = ["abortable", "butil", "utils"];
+    private static readonly string[] DependencyOnlyModules = ["abortable", "abortSignals", "butil", "cryptoKeyMaterial", "fetchRequest", "utils"];
 
     public sealed record Report(
         string[] Referenced,
@@ -129,6 +152,8 @@ internal static class ScriptTrimming
             {
                 failures.Add($"JavaScript modules nothing in this project calls survived trimming: {string.Join(", ", unexpected)} - either a static reference to unrelated Butil APIs was reintroduced, or ConsumerComponent gained a call without MustSurviveModules being updated.");
             }
+
+            CheckSplitFamiliesNarrow(referenced, failures);
         }
         else
         {
@@ -170,6 +195,35 @@ internal static class ScriptTrimming
             Compressed(trimmedBytes, stream => new GZipStream(stream, CompressionLevel.SmallestSize)),
             Compressed(trimmedBytes, stream => new BrotliStream(stream, CompressionLevel.SmallestSize)),
             lazyBytes);
+    }
+
+    /// <summary>
+    /// The claim a split module family makes, checked one family at a time: the narrow call
+    /// <see cref="SplitModuleUse"/> makes keeps that call's module, and the family's other modules are gone.
+    /// </summary>
+    /// <remarks>
+    /// The exact comparison above would fail on a surviving sibling too, but it would report it as "a module
+    /// nothing calls survived", which is where someone starts looking for a stray reference. The failure that
+    /// helps says which family stopped narrowing, because the cause is almost always the same one thing:
+    /// something rooted the whole class - a <c>DotNetObjectReference.Create(this)</c>, a
+    /// <c>DynamicDependency</c> on the type rather than on a member - and preserved every interop literal in
+    /// it. That is invisible in a browser and costs every consumer the whole family's JavaScript.
+    /// </remarks>
+    private static void CheckSplitFamiliesNarrow(IReadOnlyCollection<string> referenced, List<string> failures)
+    {
+        foreach (var (family, used, unused) in SplitModuleUse.Families)
+        {
+            foreach (var module in used.Where(module => referenced.Contains(module) is false))
+            {
+                failures.Add($"the {family} family: SplitModuleUse calls into '{module}' but its identifiers did not survive trimming - a consumer would be served a bundle without the module it calls.");
+            }
+
+            var survivors = unused.Where(referenced.Contains).ToArray();
+            if (survivors.Length > 0)
+            {
+                failures.Add($"the {family} family did not narrow: {string.Join(", ", survivors)} survived trimming though SplitModuleUse only calls [{string.Join(", ", used)}] - something is rooting the whole class (a DotNetObjectReference over it, or a type-wide DynamicDependency), so splitting the module bought nothing.");
+            }
+        }
     }
 
     /// <summary>

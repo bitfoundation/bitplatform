@@ -32,16 +32,18 @@ public class AppInsightsJsSdkService : IApplicationInsights
     /// <summary>Serializes the consent read with the write it feeds, so a decision taken mid update cannot lose to an older snapshot.</summary>
     private readonly SemaphoreSlim updateCfgLock = new(1, 1);
 
+    /// <summary>The SDK's own cookies that carry an id: the anonymous user, the session, and the signed in user.</summary>
+    private static readonly string[] identifyingCookieNames = ["ai_user", "ai_session", "ai_authUser"];
+
     private IJSRuntime jsRuntime = default!;
     private readonly TimeProvider timeProvider;
-    private readonly ConsentService consentService;
     private readonly ApplicationInsights applicationInsights = new();
 
-    /// <summary><see cref="ConsentService"/> is scoped while this is a singleton on the browser: still one instance, because client side Blazor has no DI scopes.</summary>
-    public AppInsightsJsSdkService(IJSRuntime jsRuntime, TimeProvider timeProvider, ConsentService consentService)
+    public Func<Task<bool>>? AnalyticsConsentProvider { get; set; }
+
+    public AppInsightsJsSdkService(IJSRuntime jsRuntime, TimeProvider timeProvider)
     {
         this.timeProvider = timeProvider;
-        this.consentService = consentService;
         InitJSRuntime(jsRuntime);
     }
 
@@ -148,7 +150,7 @@ public class AppInsightsJsSdkService : IApplicationInsights
 
     /// <summary>
     /// The single writer of the switches Analytics consent controls: stamped onto every update, so ApplicationInsightsInit's
-    /// <c>mergeExisting: false</c> replace cannot reset what consent granted. A caller's values for those four are overridden.
+    /// <c>mergeExisting: false</c> replace cannot reset what consent granted. A caller's values for those two are overridden.
     /// </summary>
     public async Task UpdateCfg(Config newConfig, bool mergeExisting = true)
     {
@@ -159,19 +161,46 @@ public class AppInsightsJsSdkService : IApplicationInsights
 
         try
         {
-            var granted = await consentService.IsGranted(ConsentCategory.Analytics);
+            var granted = AnalyticsConsentProvider is not null && await AnalyticsConsentProvider();
 
-            // Mutating the caller's instance is safe: nothing else reads it and all four are always assigned.
+            // Mutating the caller's instance is safe: nothing else reads it and both are always assigned. These two
+            // are what decides whether anything can be kept on the device and tied back to a person, so everything
+            // that needs an identity - the page visit time it measures included - follows from them.
             newConfig.DisableCookiesUsage = granted is false;
             newConfig.IsStorageUseDisabled = granted is false;
-            newConfig.AutoTrackPageVisitTime = granted;
-            newConfig.EnableAutoRouteTracking = granted;
 
             await applicationInsights.UpdateCfg(newConfig, mergeExisting);
+
+            if (granted is false)
+            {
+                await PurgeIdentifyingCookies();
+            }
         }
         finally
         {
             updateCfgLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Disabling cookies only stops the SDK from reading and writing them; whatever it wrote while consent stood is
+    /// left on the device, and <c>ai_user</c> is precisely the identifier that outlives a visit. Withdrawing consent
+    /// has to take it away rather than just stop using it.
+    /// </summary>
+    private async Task PurgeIdentifyingCookies()
+    {
+        var cookieMgr = applicationInsights.GetCookieMgr();
+
+        foreach (var cookieName in identifyingCookieNames)
+        {
+            try
+            {
+                await cookieMgr.Purge(cookieName, "/");
+            }
+            catch
+            {
+                // A cookie that is not there, or a cookie manager the SDK never wired up, is the outcome we wanted.
+            }
         }
     }
 

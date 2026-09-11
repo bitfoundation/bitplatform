@@ -34,16 +34,37 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
 
     <DemoCard Title="Resize observer" Api="ObserveResize"
               Description="Reports size changes when the target is resized.">
-        <div class="controls">
+        <div id="resize-target" @ref="_resizeTarget"
+             style="width:@(_resizeWidth)px;height:48px;border:2px solid var(--accent,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center">
+            target
+        </div>
+        <div class="controls" style="margin-top:0.75rem">
             <button @onclick="StartResize">Observe</button>
-            <button @onclick="TriggerResize">Grow target</button>
+            <button @onclick="() => Grow(false)">Grow target</button>
             <button class="danger" @onclick="StopResize">Stop</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Rate-limited resize observer" Api="ObserveResize(minInterval)"
+              Description="The same observer capped at one call every 300 ms. A drag or a reflow delivers an entry every frame, and each one is an interop round trip; minInterval gates them in JavaScript, before the round trip. It is leading-edge with a trailing send, so the size the element settles at still arrives - grow the target several times in a row and watch the console report far fewer lines, ending on the final width.">
+        <div id="gated-resize-target" @ref="_gatedResizeTarget"
+             style="width:@(_gatedResizeWidth)px;height:48px;border:2px solid var(--accent,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center">
+            target
+        </div>
+        <div class="controls" style="margin-top:0.75rem">
+            <button @onclick="StartGatedResize">Observe (300 ms)</button>
+            <button @onclick="() => Grow(true)">Grow target</button>
+            <button class="danger" @onclick="StopGatedResize">Stop</button>
         </div>
     </DemoCard>
 
     <DemoCard Title="Mutation observer" Api="ObserveMutations"
               Description="Logs attribute changes on the target element.">
-        <div class="controls">
+        <div id="mutation-target" @ref="_mutationTarget"
+             style="width:120px;height:48px;border:2px solid var(--accent,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center">
+            target
+        </div>
+        <div class="controls" style="margin-top:0.75rem">
             <button @onclick="StartMutation">Observe</button>
             <button @onclick="MutateTarget">Mutate attribute</button>
             <button class="danger" @onclick="StopMutation">Stop</button>
@@ -55,6 +76,15 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
         <div class="controls">
             <button @onclick="PerfMarkMeasure">Mark + measure</button>
             <button @onclick="PerfObserver">PerformanceObserver</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Typed timing entries" Api="GetNavigationEntries / GetResourceEntries / GetWebVitals"
+              Description="The timeline read as typed shapes instead of raw JSON, plus the Core Web Vitals already reduced from the entries they are computed over.">
+        <div class="controls">
+            <button @onclick="PerfNavigation">Navigation + resources</button>
+            <button @onclick="PerfWebVitals">Web Vitals</button>
+            <button @onclick="PerfLongTasks">Watch long tasks</button>
         </div>
     </DemoCard>
 
@@ -85,11 +115,17 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
 
 @code {
     private DemoConsole output = default!;
+    // One target per card: each observer is only legible next to the element it is watching.
     private ElementReference _target;
-    private int _targetWidth = 120;
+    private ElementReference _resizeTarget;
+    private ElementReference _gatedResizeTarget;
+    private ElementReference _mutationTarget;
+    private int _resizeWidth = 120;
+    private int _gatedResizeWidth = 120;
 
     private ButilSubscription? _intersectionSub;
     private ButilSubscription? _resizeSub;
+    private ButilSubscription? _gatedResizeSub;
     private ButilSubscription? _mutationSub;
     private ButilSubscription? _perfObserverSub;
     private ButilSubscription? _broadcastSub;
@@ -112,26 +148,59 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
         _intersectionSub = null;
     }
 
-    private async Task StartResize()
+    private Task StartResize() => StartResize(null);
+
+    private async Task StartGatedResize()
+    {
+        await StopGatedResize();
+        _gatedResizeSub = await _gatedResizeTarget.ObserveResize(js, entries =>
+        {
+            if (entries.Length > 0)
+            {
+                _ = output.Log($"Resize (gated) → {entries[^1].InlineSize:0} x {entries[^1].BlockSize:0}");
+            }
+        }, minInterval: TimeSpan.FromMilliseconds(300));
+    }
+
+    private async Task StopGatedResize()
+    {
+        if (_gatedResizeSub is null) return;
+        await _gatedResizeSub.DisposeAsync();
+        _gatedResizeSub = null;
+    }
+
+    private async Task StartResize(TimeSpan? minInterval)
     {
         await StopResize();
-        _resizeSub = await _target.ObserveResize(js, entries =>
+        _resizeSub = await _resizeTarget.ObserveResize(js, entries =>
         {
             if (entries.Length > 0)
             {
                 var rect = entries[0].ContentRect;
                 _ = output.Log($"Resize → {rect.Width:F0}×{rect.Height:F0}");
             }
-        });
-        await output.Log("Resize observer started.");
+        }, minInterval: minInterval);
+
+        await output.Log(minInterval is null
+            ? "Resize observer started."
+            : $"Resize observer started, rate-limited to one call every {minInterval.Value.TotalMilliseconds:F0} ms.");
     }
 
-    private async Task TriggerResize()
+    private async Task Grow(bool gated)
     {
-        _targetWidth += 40;
-        await _target.SetAttribute("style",
-            $"width:{_targetWidth}px;height:48px;border:2px solid var(--accent,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center");
-        await output.Log($"Target width → {_targetWidth}px");
+        if (gated)
+        {
+            _gatedResizeWidth += 40;
+            await _gatedResizeTarget.SetAttribute("style",
+                $"width:{_gatedResizeWidth}px;height:48px;border:2px solid var(--accent,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center");
+            await output.Log($"Gated target width → {_gatedResizeWidth}px");
+            return;
+        }
+
+        _resizeWidth += 40;
+        await _resizeTarget.SetAttribute("style",
+            $"width:{_resizeWidth}px;height:48px;border:2px solid var(--accent,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center");
+        await output.Log($"Target width → {_resizeWidth}px");
     }
 
     private async Task StopResize()
@@ -144,7 +213,7 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
     private async Task StartMutation()
     {
         await StopMutation();
-        _mutationSub = await _target.ObserveMutations(js, records =>
+        _mutationSub = await _mutationTarget.ObserveMutations(js, records =>
         {
             foreach (var record in records)
                 _ = output.Log($"Mutation → {record.Type} on {record.TargetId ?? "target"}");
@@ -154,7 +223,7 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
 
     private async Task MutateTarget()
     {
-        await _target.SetAttribute("data-butil", Guid.NewGuid().ToString("N")[..8]);
+        await _mutationTarget.SetAttribute("data-butil", Guid.NewGuid().ToString("N")[..8]);
     }
 
     private async Task StopMutation()
@@ -192,6 +261,65 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
         if (_perfObserverSub is null) return;
         await _perfObserverSub.DisposeAsync();
         _perfObserverSub = null;
+    }
+
+    private async Task PerfNavigation()
+    {
+        var navigation = await performance.GetNavigationEntries();
+        if (navigation.Length > 0)
+        {
+            var page = navigation[0];
+            await output.Success("Navigation →",
+                $"{page.Type} over {page.NextHopProtocol}, TTFB {page.ResponseStart - page.RequestStart:F0} ms, load {page.LoadEventEnd:F0} ms");
+        }
+        else
+        {
+            await output.Warn("No navigation entry - the document is prerendering.");
+        }
+
+        var resources = await performance.GetResourceEntries();
+        var slowest = resources.OrderByDescending(r => r.Duration).FirstOrDefault();
+        await output.Success("Resources →",
+            slowest is null
+                ? "(the resource-timing buffer is empty)"
+                : $"{resources.Length} fetched, slowest {slowest.Duration:F0} ms ({slowest.InitiatorType}, {slowest.TransferSize:N0} bytes)");
+    }
+
+    private async Task PerfWebVitals()
+    {
+        // The first call is what starts CLS and INP accumulating; reading it again later is how the
+        // numbers become meaningful.
+        var vitals = await performance.GetWebVitals();
+        if (vitals is null)
+        {
+            // Only reachable during prerender/SSR, where there is no JS runtime to read from.
+            await output.Info("Web Vitals →", "no JS runtime yet; read it after the first render.");
+            return;
+        }
+
+        await output.Success("Web Vitals →",
+            $"LCP {vitals.Lcp?.ToString("F0") ?? "n/a"} ms · CLS {vitals.Cls?.ToString("F3") ?? "n/a"} · INP {vitals.Inp?.ToString("F0") ?? "n/a"} ms");
+    }
+
+    private async Task PerfLongTasks()
+    {
+        await StopPerfObserver();
+
+        _perfObserverSub = await performance.SubscribeObserver<PerformanceLongTaskTiming>(
+            [PerformanceEntryTypes.LongTask],
+            tasks =>
+            {
+                foreach (var task in tasks)
+                {
+                    _ = output.Log($"Long task → {task.Duration:F0} ms in {task.Name}");
+                }
+            });
+
+        // Long tasks are only reported for work that genuinely blocked the thread, so produce one.
+        var until = DateTime.UtcNow.AddMilliseconds(120);
+        while (DateTime.UtcNow < until) { }
+
+        await output.Log("Blocked the main thread for 120 ms - the observer should have reported it.");
     }
 
     private async Task StorageEstimate()
@@ -252,6 +380,7 @@ await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
     {
         if (_intersectionSub is not null) await _intersectionSub.DisposeAsync();
         if (_resizeSub is not null) await _resizeSub.DisposeAsync();
+        if (_gatedResizeSub is not null) await _gatedResizeSub.DisposeAsync();
         if (_mutationSub is not null) await _mutationSub.DisposeAsync();
         if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
         if (_broadcastSub is not null) await _broadcastSub.DisposeAsync();

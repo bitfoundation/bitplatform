@@ -220,11 +220,13 @@ ButilKeyCodes.Backquote   // "Backquote"
     {
         try
         {
+            // The handlers report to whichever section registered them, so a shortcut re-registered
+            // from the removal section answers there rather than in a console further up the page.
             ctrlKId ??= await keyboard.Add(ButilKeyCodes.KeyK,
-                () => _ = shortcutsOutput.Success("Ctrl+K pressed!"), ButilModifiers.Ctrl);
+                () => _ = output.Success("Ctrl+K pressed!"), ButilModifiers.Ctrl);
 
             f9Id ??= await keyboard.Add(ButilKeyCodes.F9,
-                () => _ = shortcutsOutput.Success("F9 pressed!"));
+                () => _ = output.Success("F9 pressed!"));
         }
         catch (Exception ex)
         {

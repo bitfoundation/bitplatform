@@ -36,18 +36,55 @@ var transforms = await streams.IsTransformSupported();
     <DemoSection Title="Read a response as it arrives"
                  Api="FromResponse / Read"
                  Description="The difference between 'download it, then look at it' and 'look at it as it downloads': a gigabyte through Fetch.Send is a gigabyte of managed memory, while a gigabyte through here is one chunk at a time. TotalBytes is the Content-Length header, which describes the transfer rather than the stream - a compressed response reports the encoded size while the chunks you read are the decoded ones, and a chunked response sends no header at all. It is a hint for a progress bar, never the number of bytes you will read. The final read carries no data, so the loop ends on Done rather than on an empty array."
-                 Code=@("""
-var response = await streams.FromResponse(new FetchRequest { Url = "/api/stream" });
-if (response.Stream is null) { /* response.Error says why */ }
+                 Files=@([
+new("Streams.razor", """
+@implements IAsyncDisposable
+@inject Bit.Butil.Streams streams
 
-var received = 0L;
-while (true)
-{
-    var chunk = await response.Stream!.Read();
-    if (chunk.Done) break;
-    received += chunk.Data!.Length;   // ... and do something with it now
+@code {
+    private async Task Read()
+    {
+        var response = await streams.FromResponse(new FetchRequest { Url = "/api/stream" });
+        if (response.Stream is null) { /* response.Error says why */ return; }
+
+        // The stream holds a live connection open, so it is disposed however the loop ends.
+        await using var stream = response.Stream;
+
+        var received = 0L;
+        while (true)
+        {
+            var chunk = await stream.Read();
+            if (chunk.Done) break;
+            received += chunk.Data!.Length;   // ... and do something with it now
+        }
+    }
 }
-""")>
+"""),
+new("Program.cs", """
+// Something worth streaming: a body that arrives in visible instalments rather than all at once,
+// with a Content-Length so a progress bar has a denominator. The pause between chunks is what makes
+// "read it as it arrives" observably different from "wait, then read it".
+app.MapGet("/api/stream", async (HttpContext context, CancellationToken cancellationToken) =>
+{
+    const int chunks = 20;
+    const int chunkSize = 4096;
+
+    context.Response.Headers.ContentType = "application/octet-stream";
+    context.Response.ContentLength = chunks * chunkSize;
+
+    var payload = new byte[chunkSize];
+    Array.Fill(payload, (byte)'x');
+
+    for (var i = 0; i < chunks; i++)
+    {
+        await context.Response.Body.WriteAsync(payload, cancellationToken);
+        // Without the flush the server buffers the whole body and the client sees one chunk.
+        await context.Response.Body.FlushAsync(cancellationToken);
+        await Task.Delay(100, cancellationToken);
+    }
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="ReadStream">Read /api/stream</button>
             <button class="danger" @onclick="CancelRead">Cancel</button>
@@ -61,12 +98,20 @@ while (true)
 
     <DemoSection Title="Cancelling actually cancels"
                  Api="Cancel"
-                 Description="Cancelling a stream tells the source to give up - for a fetch body that aborts the download rather than letting it finish into nothing. Start the read above and press Cancel; the server stops sending, and the read loop ends where it was."
+                 Description="Cancelling a stream tells the source to give up - for a fetch body that aborts the download rather than letting it finish into nothing. Start this section's read and press Cancel; the server stops sending, and the read loop ends where it was."
                  Code=@("""
 await response.Stream!.Cancel("the user navigated away");
 
 // the next Read answers Done, and the request is gone from the network panel
 """)>
+        <div class="controls">
+            <button @onclick="ReadForCancel">Read /api/stream</button>
+            <button class="danger" @onclick="CancelReadForCancel">Cancel</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Progress</span>
+            <span>@_cancelProgress</span>
+        </div>
         <DemoConsole @ref="cancelOutput" Title="cancel output" />
     </DemoSection>
 
@@ -201,6 +246,11 @@ await sink!.Close();
 
     private ReadableStreamHandle? _reading;
     private string _progress = "Idle.";
+
+    // The cancellation section reads its own stream: cancelling is only a demonstration next to the
+    // progress it interrupts.
+    private ReadableStreamHandle? _cancelReading;
+    private string _cancelProgress = "Idle.";
     private string _pipelineResult = "Idle.";
 
     private const string StreamUrl = "/api/stream?chunks=20&chunkSize=4096&delayMs=100";
@@ -289,6 +339,70 @@ await sink!.Close();
         _reading = null;
         await stream.Cancel("cancelled from the page");
         _progress = "Cancelled.";
+        await readOutput.Warn("Cancelled - the download stops rather than finishing into nothing.");
+    }
+
+    private async Task ReadForCancel()
+    {
+        await CancelReadForCancel();
+
+        ReadableStreamHandle? reading = null;
+
+        try
+        {
+            var response = await streams.FromResponse(new FetchRequest { Url = StreamUrl });
+
+            if (response.Stream is null)
+            {
+                _cancelProgress = "Could not start.";
+                await cancelOutput.Warn("No stream →", response.Error);
+                return;
+            }
+
+            reading = response.Stream;
+            _cancelReading = reading;
+
+            await cancelOutput.Success($"Status {response.Status} →", "reading - press Cancel part way through.");
+
+            var received = 0L;
+            var chunks = 0;
+
+            while (true)
+            {
+                var chunk = await reading.Read();
+                if (chunk.Error is not null)
+                {
+                    await cancelOutput.Error("Read failed →", chunk.Error);
+                    break;
+                }
+                if (chunk.Done) break;
+
+                chunks++;
+                received += chunk.Data!.Length;
+                _cancelProgress = $"{received} bytes in {chunks} chunk(s)";
+                StateHasChanged();
+            }
+
+            await cancelOutput.Success("Loop ended →", $"{received} bytes in {chunks} chunk(s)");
+        }
+        catch (Exception ex)
+        {
+            await cancelOutput.Error("Read failed →", ex.Message);
+        }
+        finally
+        {
+            if (ReferenceEquals(_cancelReading, reading)) _cancelReading = null;
+        }
+    }
+
+    private async Task CancelReadForCancel()
+    {
+        if (_cancelReading is null) return;
+
+        var stream = _cancelReading;
+        _cancelReading = null;
+        await stream.Cancel("cancelled from the page");
+        _cancelProgress = "Cancelled.";
         await cancelOutput.Warn("Cancelled - the download stops rather than finishing into nothing.");
     }
 
@@ -439,6 +553,7 @@ await sink!.Close();
         try
         {
             if (_reading is not null) await _reading.DisposeAsync();
+            if (_cancelReading is not null) await _cancelReading.DisposeAsync();
         }
         catch (Exception)
         {

@@ -2,7 +2,11 @@
 using System.Net;
 using System.Net.Mail;
 using ImageMagick;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
+using Boilerplate.Server.Api.Features.Identity.OAuth;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
+using Boilerplate.Server.Api.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Api.Features.PersonalData;
 //#if (notification == true)
@@ -87,6 +91,8 @@ public static partial class Program
 
         ConfigureImageMagickResourceLimits();
 
+        services.AddOAuth();
+
         services.AddScoped<IdentityEmailService>();
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
@@ -94,11 +100,13 @@ public static partial class Program
         services.AddScoped<UserErasureService>();
         services.AddScoped<UserSessionsRetentionJobRunner>();
         services.AddScoped<UnconfirmedUsersRetentionJobRunner>();
+        services.AddScoped<ServerDiagnosticService>();
 
         services.AddPersonalDataServices();
         //#if (signalR == true)
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
+        services.AddSingleton<Features.Chatbot.ChatbotAnswerSigner>();
         //#endif
         services.AddDevMcp()
         //#if (signalR == true)
@@ -757,6 +765,11 @@ public static partial class Program
             options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
         })
         .AddBearerToken(IdentityConstants.BearerScheme /*Checkout AppBearerTokenOptionsConfigurator*/ );
+
+        // Tokens issued to external apps over OAuth: same certificate and issuer, different audience. Only the
+        // endpoints that opt in accept this scheme.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, AppOAuthBearerOptionsConfigurator>());
+        authenticationBuilder.AddJwtBearer(AppAuthSchemes.OAUTH_BEARER);
 
         services.AddAuthorization();
 

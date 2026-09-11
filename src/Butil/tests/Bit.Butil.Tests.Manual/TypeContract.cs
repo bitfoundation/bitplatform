@@ -17,7 +17,7 @@ namespace ButilTests.Manual;
 /// <list type="bullet">
 /// <item><b>[JSInvokable] callbacks.</b> JS dispatches these by method name through a
 /// <c>DotNetObjectReference</c>, including ones on internal types the consumer never names -
-/// <c>DomEventsInterop</c>, the observer interops, <c>IndexedDbHandle</c>. Nothing in a consumer's code
+/// <c>DomEventsInterop</c>, the observer interops, <c>IndexedDbCallbacksInterop</c>. Nothing in a consumer's code
 /// references them.</item>
 /// <item><b>JSON payload types.</b> The DTOs and option objects crossing the interop boundary are
 /// (de)serialized by <c>System.Text.Json</c> reflecting over their constructors and properties, so a

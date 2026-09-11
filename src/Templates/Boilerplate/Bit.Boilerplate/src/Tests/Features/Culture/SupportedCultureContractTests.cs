@@ -12,10 +12,8 @@ namespace Boilerplate.Tests.Features.Culture;
 /// <item><c>Bit.ResxTranslator.json</c>'s <c>SupportedLanguages</c> - without the language there, the CD pipelines
 /// deploy that culture with untranslated resources.</item>
 /// </list>
-/// Unlike most source-inspecting tests in this suite, this one deliberately runs in generated projects as well:
-/// that is where the twelfth language actually gets added. The repository root is therefore located by
-/// <c>Bit.ResxTranslator.json</c> (which every generated project ships) rather than by <c>.template.config</c>,
-/// and the MAUI project is found by pattern because generation renames it.
+/// The repository root is located by <c>Bit.ResxTranslator.json</c> rather than by <c>.template.config</c>, and the
+/// MAUI project is found by pattern rather than by name, so neither lookup depends on the template layout.
 /// </summary>
 [TestClass, TestCategory("UnitTest"), TestCategory("Localization")]
 public partial class SupportedCultureContractTests

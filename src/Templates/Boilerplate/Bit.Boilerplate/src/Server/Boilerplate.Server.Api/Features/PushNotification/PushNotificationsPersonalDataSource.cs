@@ -23,12 +23,15 @@ public partial class PushNotificationsPersonalDataSource : IPersonalDataSource
     /// </summary>
     public int ErasureOrder => 10;
 
-    public string Purpose => "Delivering push notifications to the devices you signed in on.";
+    public string Purpose => "Delivering push notifications to the devices you signed in on, and aiming a notification at the right devices by where and with which application version each last subscribed.";
 
     public string Retention => "Until the subscription expires, one month after it was last renewed, then deleted by a daily job. Deleting your account removes it immediately.";
 
     public string[] Recipients =>
     [
+        //#if (cloudflare == true)
+        "Cloudflare - sits in front of the application and supplies the country and city recorded below.",
+        //#endif
         "Firebase Cloud Messaging (Google) and Apple Push Notification service - the platform services that carry a notification to the device."
     ];
 
@@ -38,7 +41,7 @@ public partial class PushNotificationsPersonalDataSource : IPersonalDataSource
 
     public async Task<JsonNode?> Export(Guid userId, CancellationToken cancellationToken)
     {
-        // Materialised before mapping: ExpirationTime and RenewedOn are unix seconds.
+        // Materialised before mapping: unix seconds and AppVersionCode need decoding.
         var subscriptions = await dbContext.PushNotificationSubscriptions
             .AsNoTracking()
             .Where(subscription => dbContext.UserSessions.Any(userSession => userSession.Id == subscription.UserSessionId && userSession.UserId == userId))
@@ -50,6 +53,9 @@ public partial class PushNotificationsPersonalDataSource : IPersonalDataSource
                 subscription.Tags,
                 subscription.ExpirationTime,
                 subscription.RenewedOn,
+                subscription.IP,
+                subscription.Address,
+                subscription.AppVersionCode,
                 subscription.UserSessionId
             })
             .ToArrayAsync(cancellationToken);
@@ -63,6 +69,10 @@ public partial class PushNotificationsPersonalDataSource : IPersonalDataSource
             subscription.Tags,
             ExpiresOn = DateTimeOffset.FromUnixTimeSeconds(subscription.ExpirationTime),
             RenewedOn = DateTimeOffset.FromUnixTimeSeconds(subscription.RenewedOn),
+            // Recorded on the row at the last subscribe.
+            subscription.IP,
+            subscription.Address,
+            AppVersion = AppVersionCodes.Decode(subscription.AppVersionCode),
             // The session that registered this device - matches an entry in the sessions section.
             subscription.UserSessionId
         });

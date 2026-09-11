@@ -228,22 +228,39 @@ public static class IDistributedApplicationBuilderExtensions
         //#endif
 
         /// <summary>
-        /// Projects' launchSettings bind <c>http://*:port</c> so a direct <c>dotnet run</c> is reachable over the LAN
-        /// (e.g. from Android/iOS devices), but Aspire can't give a container a reachable address for a wildcard host,
-        /// so that endpoint only makes the ingress container fail to start. Drops every wildcard endpoint from the
-        /// model - run mode only, and launchSettings is untouched, so a direct run still binds every interface.
+        /// The <c>*</c> of a <c>http://*:5030</c> in launchSettings does not work with Aspire's proxy. This takes those
+        /// endpoints out of the proxy and lets Kestrel bind them itself, so devices on the same local network can reach
+        /// it. Run mode only.
         /// </summary>
-        public IDistributedApplicationBuilder RemoveWildcardEndpoints()
+        public IDistributedApplicationBuilder ExposeWildcardEndpointsToLan()
         {
             if (builder.ExecutionContext.IsRunMode is false)
                 return builder;
-
             foreach (var project in builder.Resources.OfType<ProjectResource>().ToArray())
             {
-                foreach (var wildcard in project.Annotations.OfType<EndpointAnnotation>().Where(endpoint => endpoint.TargetHost is "*").ToArray())
-                    project.Annotations.Remove(wildcard);
-            }
+                var endpoints = project.Annotations.OfType<EndpointAnnotation>().ToArray();
+                foreach (var wildcard in endpoints.Where(endpoint => endpoint.TargetHost is "*"))
+                {
+                    if (wildcard.Port is not int port)
+                    {
+                        project.Annotations.Remove(wildcard); // No fixed port to expose.
+                        continue;
+                    }
+                    var lanName = endpoints.Count(endpoint => endpoint.TargetHost is "*") is 1 ? "lan" : $"{wildcard.UriScheme}-lan";
+                    wildcard.Name = lanName;
+                    wildcard.TargetHost = "0.0.0.0";
+                    wildcard.TargetPort = port; // Proxy-less endpoints must have Port == TargetPort.
+                    wildcard.IsProxied = false;
+                    wildcard.ExcludeReferenceEndpoint = true; // Keep 0.0.0.0 out of service discovery / tunnel references.
 
+                    // Same port, same process: the localhost sibling(s) must be served by Kestrel too.
+                    foreach (var sibling in endpoints.Where(endpoint => endpoint != wildcard && endpoint.UriScheme == wildcard.UriScheme && endpoint.Port == port))
+                    {
+                        sibling.TargetPort = port;
+                        sibling.IsProxied = false;
+                    }
+                }
+            }
             return builder;
         }
 

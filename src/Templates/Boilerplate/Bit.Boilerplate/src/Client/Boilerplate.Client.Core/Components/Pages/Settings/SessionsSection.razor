@@ -1,7 +1,3 @@
-@*#if (signalR == true || notification == true)*@
-@using Boilerplate.Shared.Features.PushNotification
-@*#endif*@
-
 @*+:cnd:noEmit*@
 @inherits AppComponentBase
 
@@ -27,26 +23,29 @@
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
-                    <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
-                                SecondaryText="@GetLastSeenOn(currentSession.RenewedOnDateTimeOffset)"
+                    <BitPersona PrimaryText="@currentSession.DisplayAddress"
+                                SecondaryText="@currentSession.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
                                 TertiaryText="@currentSession.DeviceInfo"
                                 Class="session-persona"
                                 Size="BitPersonaSize.Size72"
+                                ImageUrl="@currentSession.ImageUrl"
                                 Styles="@(new() { Image = "width:50%;height:50%" })"
                                 ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
                                 CoinVariant="@(currentSession.Privileged ? BitVariant.Fill : BitVariant.Outline)"
-                                ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
-                                Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
+                                Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
+                        <PrimaryTextTemplate>
+                            <div class="session-address">@currentSession.DisplayAddress</div>
+                            @if (currentSession.DisplayIP is not null)
+                            {
+                                <div class="session-ip" title="@currentSession.DisplayIP">@currentSession.DisplayIP</div>
+                            }
+                        </PrimaryTextTemplate>
+                    </BitPersona>
                     <BitSpacer />
                     @*#if (signalR == true || notification == true)*@
-                    <BitButton IconOnly
-                               FixedColor
-                               AutoLoading
-                               Variant="BitVariant.Text"
-                               Color="BitColor.SecondaryBackground"
-                               OnClick="WrapHandled(() => ToggleNotification(currentSession))"
-                               IconName="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
-                               Title="@($"{(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
+                    <BitIcon Title="@currentSession.GetNotificationStatusTitle(Localizer)"
+                             IconName="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
+                             Color="@(currentSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitColor.Success : BitColor.TertiaryForeground)" />
                     @*#endif*@
                 </BitStack>
             </BitCard>
@@ -57,21 +56,60 @@
             <br />
             <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadSessions(false))" ScrollerSelector=".sessions-list" Style="width:100%">
                 <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
-                <BitBasicList Items="otherSessions" Virtualize ItemSize="120" Class="sessions-list">
+                <BitBasicList Items="otherSessions" Virtualize ItemSize="135" Class="sessions-list">
                     <RowTemplate Context="session">
                         <BitCard FullWidth Style="margin-bottom:1rem">
+                            @if (string.IsNullOrEmpty(session.OAuthClientId) is false)
+                            {
+                                @* An application the user authorized, not a device of theirs. *@
+                                <BitStack Gap="0.25rem" Class="oauth-session-banner">
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                                        <BitIcon IconName="@BitIconName.PlugConnected" Color="BitColor.Info" />
+                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                            @Localizer[nameof(AppStrings.OAuthSessionAuthorizedApplication)]
+                                        </BitText>
+                                        <BitText Typography="BitTypography.Subtitle2">
+                                            @(session.OAuthClientName ?? session.OAuthClientId)
+                                        </BitText>
+                                    </BitStack>
+
+                                    @foreach (var description in session.ScopeDescriptions(Localizer))
+                                    {
+                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                            @description
+                                        </BitText>
+                                    }
+
+                                    <BitText Typography="BitTypography.Caption1" Class="oauth-client-id" Color="BitColor.SecondaryForeground" Title="@session.OAuthClientId">
+                                        @session.OAuthClientId
+                                    </BitText>
+                                </BitStack>
+                            }
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
-                                <BitPersona PrimaryText="@($"{session.Address} ({session.IP})")"
-                                            SecondaryText="@GetLastSeenOn(session.RenewedOnDateTimeOffset)"
+                                <BitPersona PrimaryText="@session.DisplayAddress"
+                                            SecondaryText="@session.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
                                             TertiaryText="@session.DeviceInfo"
                                             Size="BitPersonaSize.Size72"
+                                            ImageUrl="@session.ImageUrl"
                                             Class="other-session-persona"
-                                            Presence="@GetPresence(session.RenewedOnDateTimeOffset)"
                                             Styles="@(new() { Image = "width:50%;height:50%" })"
                                             ImageInitials="@(session.Privileged ? "✓" : "✘")"
-                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)"
-                                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
+                                            Presence="@session.GetPresence(TimeProvider.GetUtcNow())"
+                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)">
+                                    <PrimaryTextTemplate>
+                                        <div class="session-address">@session.DisplayAddress</div>
+                                        @if (session.DisplayIP is not null)
+                                        {
+                                            <div class="session-ip" title="@session.DisplayIP">@session.DisplayIP</div>
+                                        }
+                                    </PrimaryTextTemplate>
+                                </BitPersona>
                                 <BitSpacer />
+                                @*#if (signalR == true || notification == true)*@
+                                <BitIcon Title="@session.GetNotificationStatusTitle(Localizer)"
+                                         IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
+                                         Color="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitColor.Success : BitColor.TertiaryForeground)" />
+                                @*#endif*@
                                 <BitButton IconOnly
                                            Color="BitColor.Error"
                                            Variant="BitVariant.Text"
@@ -80,17 +118,6 @@
                                            Title="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
                                            AriaLabel="@Localizer[nameof(AppStrings.RevokeSessionTitle)]"
                                            OnClick="WrapHandled(() => RevokeSession(session))" />
-                                @*#if (signalR == true || notification == true)*@
-                                <BitButton IconOnly
-                                           FixedColor
-                                           AutoLoading
-                                           Variant="BitVariant.Text"
-                                           Color="BitColor.SecondaryBackground"
-                                           OnClick="WrapHandled(() => ToggleNotification(session))"
-                                           IsEnabled="session.NotificationStatus is not UserSessionNotificationStatus.NotConfigured"
-                                           IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
-                                           Title="@($"{(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? Localizer[nameof(AppStrings.DisableNotifications)] : Localizer[nameof(AppStrings.EnableNotifications)])}")" />
-                                @*#endif*@
                             </BitStack>
                         </BitCard>
                     </RowTemplate>

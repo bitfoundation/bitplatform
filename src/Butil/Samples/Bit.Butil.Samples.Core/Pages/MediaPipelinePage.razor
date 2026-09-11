@@ -1,0 +1,233 @@
+@page "/media-pipeline"
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaCapabilities mediaCapabilities
+@inject Bit.Butil.MediaSource mediaSource
+@inject Bit.Butil.WebCodecs webCodecs
+@inject Bit.Butil.EncryptedMedia encryptedMedia
+
+<PageTitle>Butil - Media Pipeline Samples</PageTitle>
+
+<PageHeader Category="Media"
+            Title="Media Pipeline"
+            Lead="The pieces a player is built from: ask whether a codec will play smoothly, feed a video element with your own segments, run frames through the browser's codecs, and negotiate DRM."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API" />
+
+<pre>
+@@inject Bit.Butil.MediaCapabilities mediaCapabilities
+@@inject Bit.Butil.MediaSource mediaSource
+
+var info = await mediaCapabilities.DecodingInfo(configuration);   // supported, smooth, powerEfficient
+var source = await mediaSource.Open(videoElement);                // open, then add buffers and append
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Will it play smoothly?" Api="MediaCapabilities.DecodingInfo"
+              Description="Three flags rather than canPlayType's 'probably': supported, smooth (no dropped frames) and power-efficient (hardware rather than CPU).">
+        <div class="controls">
+            <button @onclick="ProbeLadder">Probe a 360p / 720p / 1080p ladder</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Segments into a video element" Api="MediaSource.Open"
+              Description="Open attaches a media source and hands back a handle only once the element has adopted it, so a buffer can be added straight away.">
+        <video @ref="videoElement" controls playsinline muted style="width:100%;max-width:360px;background:#000;border-radius:8px"></video>
+        <div class="controls">
+            <button @onclick="OpenSource" disabled="@(source is not null)">Open + AddSourceBuffer</button>
+            <button class="danger" @onclick="CloseSource" disabled="@(source is null)">Dispose</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Encode a frame" Api="WebCodecs.CreateVideoEncoder"
+              Description="A frame built from pixels generated here, encoded by the browser's own codec, and handed back as a compressed chunk.">
+        <div class="controls">
+            <button @onclick="EncodeOneFrame">Encode a single key frame</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Which DRM does this browser have?" Api="EncryptedMedia.IsKeySystemSupported"
+              Description="The resolved configuration says which robustness the key system agreed to - not merely that it exists.">
+        <div class="controls">
+            <button @onclick="ProbeKeySystems">Probe Clear Key, Widevine and PlayReady</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="media pipeline output" />
+
+@code {
+    private DemoConsole output = default!;
+    private ElementReference videoElement;
+
+    private MediaSourceHandle? source;
+    private SourceBufferHandle? buffer;
+
+    private async Task ProbeLadder()
+    {
+        try
+        {
+            foreach (var (width, height, bitrate) in new[] { (640, 360, 800_000L), (1280, 720, 2_500_000L), (1920, 1080, 5_000_000L) })
+            {
+                var info = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+                {
+                    Type = MediaDecodingType.MediaSource,
+                    Video = new VideoConfiguration
+                    {
+                        ContentType = "video/mp4;codecs=avc1.42E01E",
+                        Width = width,
+                        Height = height,
+                        Bitrate = bitrate,
+                        Framerate = 30
+                    }
+                });
+
+                await output.Log(info is null
+                    ? $"{width}x{height} → null (the configuration was rejected)"
+                    : $"{width}x{height} → supported={info.Supported}, smooth={info.Smooth}, powerEfficient={info.PowerEfficient}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await output.Error("DecodingInfo failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenSource()
+    {
+        try
+        {
+            source = await mediaSource.Open(videoElement);
+            if (source is null)
+            {
+                await output.Warn("Open → null (no Media Source Extensions, or the element never opened it)");
+                return;
+            }
+
+            var types = await mediaSource.GetSupportedTypes();
+            if (types.Length == 0)
+            {
+                await output.Warn("no supported segment type on this engine");
+                return;
+            }
+
+            buffer = await source.AddSourceBuffer(types[0]);
+            await output.Success($"Open → {await source.GetReadyState()}; AddSourceBuffer({types[0]}) → {(buffer is null ? "null" : buffer.Id.ToString())}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseSource()
+    {
+        try
+        {
+            await Teardown();
+            await output.Log("the media source was detached and its media freed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("dispose failed →", ex.Message);
+        }
+    }
+
+    private async Task EncodeOneFrame()
+    {
+        VideoEncoderHandle? encoder = null;
+        try
+        {
+            var config = new VideoEncoderConfig { Codec = "vp8", Width = 160, Height = 120, Bitrate = 200_000, Framerate = 10 };
+            if (await webCodecs.IsConfigSupported(config) is false)
+            {
+                await output.Warn("vp8 encoding is not supported on this engine");
+                return;
+            }
+
+            encoder = await webCodecs.CreateVideoEncoder(config,
+                onChunk: chunk => _ = output.Success($"chunk → {chunk.Type}, {chunk.Data.Length:N0} bytes at {chunk.Timestamp}us"),
+                onError: message => _ = output.Error("encoder error →", message));
+
+            if (encoder is null)
+            {
+                await output.Warn("CreateVideoEncoder → null");
+                return;
+            }
+
+            var pixels = new byte[160 * 120 * 4];
+            for (var i = 0; i < pixels.Length; i += 4)
+            {
+                pixels[i] = (byte)(i % 255);
+                pixels[i + 1] = 90;
+                pixels[i + 2] = 200;
+                pixels[i + 3] = 255;
+            }
+
+            await using var frame = await webCodecs.CreateFrame(pixels, "RGBA", 160, 120, 0);
+            if (frame is null)
+            {
+                await output.Error("CreateFrame → null");
+                return;
+            }
+
+            await encoder.Encode(frame, keyFrame: true);
+            await encoder.Flush();
+        }
+        catch (Exception ex)
+        {
+            await output.Error("encoding failed →", ex.Message);
+        }
+        finally
+        {
+            if (encoder is not null) await encoder.DisposeAsync();
+        }
+    }
+
+    private async Task ProbeKeySystems()
+    {
+        foreach (var keySystem in new[] { "org.w3.clearkey", "com.widevine.alpha", "com.microsoft.playready" })
+        {
+            try
+            {
+                var access = await encryptedMedia.IsKeySystemSupported(keySystem, new MediaKeySystemConfiguration
+                {
+                    InitDataTypes = ["cenc", "keyids"],
+                    VideoCapabilities = [new MediaKeySystemMediaCapability { ContentType = "video/mp4;codecs=\"avc1.42E01E\"" }]
+                });
+
+                await output.Log(access is null
+                    ? $"{keySystem} → not available"
+                    : $"{keySystem} → available, persistent state {access.Configuration.PersistentState}");
+            }
+            catch (Exception ex)
+            {
+                await output.Error($"{keySystem} failed →", ex.Message);
+            }
+        }
+    }
+
+    private async Task Teardown()
+    {
+        if (buffer is not null)
+        {
+            await buffer.DisposeAsync();
+            buffer = null;
+        }
+        if (source is not null)
+        {
+            await source.DisposeAsync();
+            source = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await Teardown();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

@@ -70,11 +70,16 @@ public sealed class TestChatClient : IChatClient
     /// </summary>
     public string NonStreamingResponse { get; set; } = "Hi, how can I help?";
 
+    /// <summary>What the agent asked the model for on the most recent streaming call, response format included.</summary>
+    public ChatOptions? LastStreamingOptions { get; private set; }
+
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        LastStreamingOptions = options;
+
         var conversation = Capture(messages);
 
         var callIndex = Interlocked.Increment(ref streamingCallCount) - 1;

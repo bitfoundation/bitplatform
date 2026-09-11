@@ -3,7 +3,7 @@ using Boilerplate.Shared.Features.Chatbot;
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// <c>AiChatMessageResponse.Successful</c> is the typed signal for "this answer was cancelled or failed". The client sets it
+/// <c>AiChatMessage.Successful</c> is the typed signal for "this answer was cancelled or failed". The client sets it
 /// and renders it as the "Canceled" tag, and the server drops those turns from the history it resends to the model
 /// (See <see cref="AppChatbotHistoryTests"/>) - but only if the flag actually crosses the wire. It carried a
 /// <c>[JsonIgnore]</c> for exactly as long as the flag was a client-only concern, and putting it back would not break
@@ -47,12 +47,43 @@ public class AiChatMessageWireContractTests
         })
         {
             Assert.Contains("successful", json, StringComparison.OrdinalIgnoreCase,
-                $"{name} does not put AiChatMessageResponse.Successful on the wire, so the server cannot tell a canceled answer from a real one and will replay truncated answers to the model. Payload: {json}");
+                $"{name} does not put AiChatMessage.Successful on the wire, so the server cannot tell a canceled answer from a real one and will replay truncated answers to the model. Payload: {json}");
 
             var received = JsonSerializer.Deserialize<StartChatRequest>(json, HubPayloadOptions)!;
 
             Assert.IsFalse(received.ChatMessagesHistory[1].Successful,
                 $"{name} lost the flag on the way back in. Payload: {json}");
+        }
+    }
+
+    /// <summary>
+    /// <c>Signature</c> crosses the same wire with the stakes reversed: the server drops every assistant turn it cannot
+    /// verify, so a signature serialized away costs the model its answers on every reconnect.
+    /// </summary>
+    [TestMethod]
+    public void ASignedAnswer_Should_ReachTheServerWithItsSignature()
+    {
+        const string signature = "CfDJ8-a-signature-the-server-wrote";
+
+        var request = new StartChatRequest
+        {
+            ChatMessagesHistory =
+            [
+                new() { Role = AiChatMessageRole.User, Content = "what is bit platform?" },
+                new() { Role = AiChatMessageRole.Assistant, Content = "bit platform is a set of tools.", Signature = signature }
+            ]
+        };
+
+        foreach (var (name, json) in new[]
+        {
+            ("Hub payload options", JsonSerializer.Serialize(request, HubPayloadOptions)),
+            (nameof(AppJsonContext), JsonSerializer.Serialize(request, AppJsonContext.Default.StartChatRequest))
+        })
+        {
+            var received = JsonSerializer.Deserialize<StartChatRequest>(json, HubPayloadOptions)!;
+
+            Assert.AreEqual(signature, received.ChatMessagesHistory[1].Signature,
+                $"{name} does not put AiChatMessage.Signature on the wire, so the server cannot tell its own answers from made up ones and drops every one of them. Payload: {json}");
         }
     }
 

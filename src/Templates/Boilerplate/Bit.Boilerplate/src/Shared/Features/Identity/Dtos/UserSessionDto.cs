@@ -49,7 +49,23 @@ public partial class UserSessionDto
     public string? CultureName { get; set; }
 
     /// <summary>
-    /// The version of the application used for this session.
+    /// The version of the application used for this session, as a sortable number so an OData filter or sort over it
+    /// means what it says - see <see cref="AppVersionCodes"/>.
     /// </summary>
-    public string? AppVersion { get; set; }
+    public long? AppVersionCode { get; set; }
+
+    /// <summary><see cref="AppVersionCode"/> for display.</summary>
+    public string? AppVersion => AppVersionCodes.Decode(AppVersionCode);
+
+    /// <summary>
+    /// Set when this session belongs to an external app authorized over OAuth. Surfaced in the sessions list because a
+    /// grant to somebody else's software is what a user most needs to recognise before revoking it.
+    /// </summary>
+    public string? OAuthClientId { get; set; }
+
+    /// <summary>The application's own name, where it gave one. Untrusted text: render as text, never as markup.</summary>
+    public string? OAuthClientName { get; set; }
+
+    /// <summary>Space delimited, as granted - what this application may actually do, rather than merely that it can.</summary>
+    public string? OAuthScope { get; set; }
 }

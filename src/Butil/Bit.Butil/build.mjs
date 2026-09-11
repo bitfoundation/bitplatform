@@ -6,7 +6,11 @@
 //   1. wwwroot/bit-butil.js            The classic single bundle: every module, once, in dependency order.
 //   2. wwwroot/modules/<name>.js       One self-contained file per module for lazy loading: the module
 //                                      plus everything it depends on, so a consumer can `import()` just
-//                                      the one file and call into it.
+//                                      the one file and call into it. Self-contained on purpose: a lazy
+//                                      app pays one request per module it touches and never one per
+//                                      dependency (the E2E suite asserts exactly that), at the price
+//                                      that two siblings of a split family each carry the family's
+//                                      base module again. Bytes were chosen over round trips there.
 //   3. obj/butil-js/chunks/<name>.js   The raw building blocks (one module each, no dependencies) plus
 //      obj/butil-js/chunks/manifest.txt the dependency manifest. These ship inside the NuGet package so a
 //                                      consumer's publish can assemble a bundle holding only the modules
@@ -20,9 +24,12 @@
 // happen inside a module. That is what lets one artifact serve both a `<script>` tag and `import()`.
 //
 // Dependencies are discovered from the TypeScript sources rather than declared by hand: any
-// `butil.<name>` / `BitButil.<name>` reference to another module's namespace is a dependency. Only
-// call-time references exist today (a module never touches another during its own initialization), so
-// order inside a file only matters for readability, but the manifest keeps dependency-first order anyway.
+// `butil.<name>` / `BitButil.<name>` reference to another module's namespace is a dependency. The order
+// inside a file is load-bearing: a module may register a hook with the module it depends on while it
+// initializes (webAudioNodes -> webAudio.onDispose, webAudioMedia -> webAudioNodes.onRelease,
+// performanceVitals -> performance.onStopRetained), which throws unless the dependency has already run.
+// Every file written here is dependency-first, and the publish-time bundler concatenates in the
+// manifest's order for the same reason - anything assembling chunks by hand has to keep that order too.
 //
 // Usage: node build.mjs [--minify] [--intermediate <dir>]
 //   --intermediate   the project's intermediate folder (MSBuild's BaseIntermediateOutputPath); default obj/
@@ -31,6 +38,7 @@ import { readFileSync, readdirSync, writeFileSync, renameSync, mkdirSync, rmSync
 import { join, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
+import { MINIFY_OPTIONS } from './minify-options.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const scriptsDir = join(root, 'Scripts');
@@ -78,6 +86,45 @@ for (const name of sources) {
     dependencies.set(name, [...referenced].sort());
 }
 
+// --- Module size budget --------------------------------------------------------------------------
+
+// A module is the unit a trimmed app downloads: the publish-time bundler keeps a module whole or
+// keeps none of it, so every feature parked in one is paid for by every app that calls any other
+// feature in it. That makes size here a user-facing number, not a style preference - hence a budget
+// the build enforces rather than a convention someone has to remember.
+//
+// Over WARN, split the module along its feature seams (see the crypto*, webAudio* and element*
+// families for the shape: one module per coherent group, shared state in a small module of its own
+// that the others depend on). Over FAIL, the build stops.
+const SIZE_WARN_LINES = 250;
+const SIZE_FAIL_LINES = 400;
+
+// The one module exempted from the budget, and why: its length is pattern tables, not features. One
+// call reads all of them - browser, engine, system, device - so there is nothing to split off that
+// a caller would not immediately download again. It is already the far side of a split (userAgent
+// holds the Client Hints members, which is what most callers want) and exists precisely so that
+// its weight is only downloaded by an app that asks for UserAgent.Extract(). Weight is what the
+// budget is really about, and by that measure it now sits just outside the ten heaviest rather
+// than first.
+const SIZE_EXEMPT = new Set(['userAgentParser']);
+
+const oversized = [];
+for (const name of sources) {
+    // Counted the way an editor numbers them: a file ending in a newline (which .editorconfig asks
+    // for) has no extra empty line after it, so a split on line breaks over-counts by one there.
+    const lines = readFileSync(join(scriptsDir, `${name}.ts`), 'utf8').replace(/\r?\n$/, '').split(/\r?\n/).length;
+    if (SIZE_EXEMPT.has(name)) continue;
+    if (lines > SIZE_FAIL_LINES) oversized.push(`${name}.ts (${lines} lines)`);
+    else if (lines > SIZE_WARN_LINES) {
+        console.warn(`bit-butil build: ${name}.ts is ${lines} lines (budget ${SIZE_WARN_LINES}); consider splitting it - ` +
+            'every app calling any part of this module downloads all of it.');
+    }
+}
+if (oversized.length > 0) {
+    fail(`these modules are over the ${SIZE_FAIL_LINES}-line budget and have to be split: ${oversized.join(', ')}. ` +
+        'A module is downloaded whole or not at all, so an app calling one of its functions pays for every other one.');
+}
+
 // Dependency-first order for a set of modules, deterministic (alphabetical among peers).
 function ordered(roots) {
     const result = [];
@@ -106,7 +153,7 @@ for (const name of sources) {
     // See the header comment for why every chunk is wrapped and guarded.
     let code = `(function(){if(window.BitButil&&window.BitButil.${keys.get(name)})return;\n${readFileSync(compiled, 'utf8').trimEnd()}\n})();\n`;
     if (minify) {
-        code = esbuild.transformSync(code, { minify: true, target: 'es2019', legalComments: 'none' }).code;
+        code = esbuild.transformSync(code, MINIFY_OPTIONS).code;
     }
     chunks.set(name, code);
 }
@@ -115,26 +162,41 @@ const concat = moduleNames => moduleNames.map(name => chunks.get(name)).join('')
 
 // --- Write everything ----------------------------------------------------------------------------
 
-rmSync(modulesOutDir, { recursive: true, force: true });
 rmSync(packOutDir, { recursive: true, force: true });
 mkdirSync(modulesOutDir, { recursive: true });
 mkdirSync(chunksOutDir, { recursive: true });
 
 // Every output is written to a temporary file and renamed into place, because a plain write truncates its
 // target first: an interrupted run would leave a half-written file newer than its inputs, which the MSBuild
-// Inputs/Outputs check in Bit.Butil.csproj would then take for an up-to-date build. A rename within a
-// directory is atomic, so an output holds either the previous run's content or this one's, never neither.
+// Inputs/Outputs check in Bit.Butil.csproj would then take for an up-to-date build. A rename is atomic
+// within a volume, so an output holds either the previous run's content or this one's, never neither.
+//
+// The temporary lives under obj/ instead of beside its target, and wwwroot/modules is pruned after the run
+// instead of emptied before it, because `dotnet watch` dies the moment a file *appears* under a watched
+// project's wwwroot (dotnet/roslyn#84062): a .tmp next to the bundle, or every module recreated in a
+// just-emptied directory, took the demo watcher down on every rebuild that reached this script. Renaming
+// over a file that is already there is an update, which the watcher survives. obj/ and wwwroot both sit
+// under the project directory, so the rename stays within one volume and stays atomic.
+const scratch = join(packOutDir, 'write.tmp');
+
 function write(path, contents) {
-    const temporary = `${path}.tmp`;
-    writeFileSync(temporary, contents);
-    renameSync(temporary, path);
+    writeFileSync(scratch, contents);
+    renameSync(scratch, path);
 }
 
 const everything = ordered(sources);
 write(join(wwwroot, 'bit-butil.js'), concat(everything));
 
 for (const name of sources) {
-    write(join(modulesOutDir, `${name}.js`), concat(ordered([name])));
+    // The closure, but laid out in the bundle's own order rather than in the order a walk from this
+    // module happens to reach it. Both orders are dependency-first, so either would run - but the
+    // publish-time bundler assembles a module's closure in manifest order, and these two files are
+    // compared byte-for-byte (the Manual harness checks exactly that). Ordering the closure the same
+    // way keeps them equal by construction instead of by coincidence: a module whose dependency is
+    // alphabetically before a dependency of its own (trustedTypes -> sanitizer, ahead of utils) comes
+    // out in a different order from a per-module walk.
+    const closure = new Set(ordered([name]));
+    write(join(modulesOutDir, `${name}.js`), concat(everything.filter(module => closure.has(module))));
     write(join(chunksOutDir, `${name}.js`), chunks.get(name));
 }
 
@@ -142,6 +204,17 @@ for (const name of sources) {
 // (Bit.Butil.Build) and checked by the test projects; keep the format that simple.
 write(join(chunksOutDir, 'manifest.txt'),
     everything.map(name => `${name}=${dependencies.get(name).join(',')}`).join('\n') + '\n');
+
+// Whatever a previous run left behind that this one did not produce: a module whose Scripts/*.ts was
+// renamed or deleted, or a .tmp from before these temporaries moved out of wwwroot. Pruning the stale
+// files afterwards is what lets every surviving module be written as an update rather than an addition.
+const expected = new Set(sources.map(name => `${name}.js`));
+for (const file of readdirSync(modulesOutDir)) {
+    if (!expected.has(file)) rmSync(join(modulesOutDir, file));
+}
+for (const file of readdirSync(wwwroot)) {
+    if (file.endsWith('.tmp')) rmSync(join(wwwroot, file));
+}
 
 console.log(`bit-butil: ${sources.length} modules -> bundle, ${sources.length} lazy modules, ${sources.length} chunks${minify ? ' (minified)' : ''}`);
 

@@ -80,7 +80,10 @@
                                          them, and it is the way to keep a module reached from somewhere
                                          none of them can see - by reflection, or from an app's own
                                          JavaScript. A name that is neither a module nor a Bit.Butil class
-                                         fails the build rather than being ignored.
+                                         fails the build rather than being ignored. A module name keeps
+                                         that module alone; a class name keeps every module the class
+                                         calls, and the publish says so when a module is named whose
+                                         class needs more (crypto against Crypto, say).
 
       BitButilScriptScanAssembly         An item: which assemblies BitButilScriptScan reads. Defaults to
                                          this project's own assembly and its copy-local references, which
@@ -239,7 +242,7 @@
 
     <!--
     Drops the shape of the JavaScript the app does not use from its static web assets, so a bundle-mode app
-    does not carry 97 module files it never requests and a lazy-mode app does not carry a bundle it never
+    does not carry 140 module files it never requests and a lazy-mode app does not carry a bundle it never
     loads. Runs once the SDK has gathered the assets from every source (see the DependsOn properties above)
     and long before the build manifest is written, so the removed items reach neither the build output nor
     that manifest.
@@ -294,7 +297,7 @@
     correct, and is where the removals above did land - and then asks every referenced project for its own
     *publish* assets and merges those back in wholesale. Bit.Butil, asked that question, answers with the whole
     of its wwwroot: it has no idea which shape the consuming app chose. So a bundle-mode app that references
-    Bit.Butil as a project ends up publishing all 97 module files, and a lazy-scripts app publishes the bundle
+    Bit.Butil as a project ends up publishing all 140 module files, and a lazy-scripts app publishes the bundle
     it never loads, even though neither is in its build output or its build manifest.
 
     Written out twice rather than shared: a target runs at most once per project build, so one target hooked

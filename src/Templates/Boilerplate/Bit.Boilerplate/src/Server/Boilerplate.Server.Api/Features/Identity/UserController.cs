@@ -108,10 +108,16 @@ public partial class UserController : AppControllerBase, IUserController
         // example scenario would be when user restarts the app after an update or after changing device settings like language.
         // so in server side, we always have the latest info about the user session.
 
+        // The client sends the version as text; anything unrepresentable becomes null.
+        var appVersionCode = AppVersionCodes.TryEncode(request.AppVersion);
+
         var affectedRows = await DbContext.UserSessions.Where(us => us.Id == User.GetSessionId()).ExecuteUpdateAsync(us =>
-            us.SetProperty(x => x.AppVersion, request.AppVersion)
+            us.SetProperty(x => x.AppVersionCode, appVersionCode)
                 .SetProperty(x => x.DeviceInfo, request.DeviceInfo)
                 .SetProperty(x => x.PlatformType, request.PlatformType)
+                //#if (signalR == true || notification == true)
+                .SetProperty(x => x.NotificationStatus, request.NotificationStatus)
+                //#endif
                 .SetProperty(x => x.CultureName, request.CultureName), cancellationToken);
 
         if (affectedRows == 0)
@@ -510,21 +516,19 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     //#if (signalR == true || notification == true)
-    [HttpPost("{userSessionId}/{enabled}")]
-    public async Task<UserSessionNotificationStatus> SetNotificationEnabled(Guid userSessionId, bool enabled, CancellationToken cancellationToken)
+    [HttpPost("{enabled}")]
+    public async Task SetNotificationEnabled(bool enabled, CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
+        var userSessionId = User.GetSessionId();
 
         var userSession = await DbContext.UserSessions
-            .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
+            .FirstOrDefaultAsync(us => us.Id == userSessionId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
-        // NotConfigured is the server's own "never asked" state, so it is only ever left behind, never stored.
         var status = enabled ? UserSessionNotificationStatus.Allowed : UserSessionNotificationStatus.Muted;
 
-        // The test notification below follows the change, not the call: AppMenu's toggle stores the state the switch
-        // ends up on, and re-storing Allowed is not worth another push.
+        // The welcome notification below follows the change, not the call, so re-storing Allowed sends nothing.
         if (userSession.NotificationStatus == status)
-            return status;
+            return;
 
         userSession.NotificationStatus = status;
 
@@ -549,8 +553,6 @@ public partial class UserController : AppControllerBase, IUserController
             }
             //#endif
         }
-
-        return status;
     }
     //#endif
 

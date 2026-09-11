@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using System.ComponentModel;
+using Boilerplate.Server.Api.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -14,22 +15,21 @@ public partial class DevMcpDiagnosticTools
     [AutoInject] private TimeProvider timeProvider = default!;
     [AutoInject] private HealthCheckService healthCheckService = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+    [AutoInject] private ServerDiagnosticService diagnostic = default!;
+    [AutoInject] private ILogger<DevMcpDiagnosticTools> logger = default!;
 
-    /// <summary>
-    /// Allow listed rather than deny listed: Authorization and Cookie are on the same request, and a deny list is one
-    /// forgotten entry away from returning them.
-    /// </summary>
-    private static readonly string[] forwardingHeaderNames =
-    [
-        "Host", "Origin", "X-Origin", "Forwarded", "CDN-Loop",
-        "X-Forwarded-For", "X-Forwarded-Proto", "X-Forwarded-Host", "X-Forwarded-Port", "X-Forwarded-Prefix",
-        "X-Original-Host", "X-Original-Proto", "X-Original-URL",
-        "CF-Connecting-IP", "CF-IPCountry", "CF-Ray", "CF-Visitor",
-        "X-App-Version", "X-App-Platform"
-    ];
+    /// <summary>Unguarded on purpose: nothing reaches a tool here without the endpoint's global-admin + 2FA authorization.</summary>
+    private Guid CallerId => httpContextAccessor.HttpContext!.User.GetUserId();
+
+    [McpServerTool(Name = nameof(GetDiagnosticReport))]
+    [Description("Returns, as plain text, what the server makes of this very call: the client ip it resolved (the edge's address when a CDN is in front and its network is not trusted), whether the call arrived through the CDN, the protocol and endpoint, the trace id, who the caller is, the culture, every request header, and the environment/base url/web app url/server clock. It is the same report the anonymous /diagnostic page shows and the same one AppHub's GetDiagnosticReport returns over the websocket, so the three can be compared - which is the point when a proxy resolves a different client ip per path. Headers arrive as they were sent except the two that are credentials: Authorization is reduced to its scheme and Cookie to its cookie names, so no token or session value is in the answer. Nothing about other users, other requests or the database is in it either. For configuration rather than this request, use GetDeploymentInfo.")]
+    public string GetDiagnosticReport()
+    {
+        return diagnostic.BuildReport(DiagnosticReportSource.DevMcp);
+    }
 
     [McpServerTool(Name = nameof(GetDeploymentInfo))]
-    [Description("Returns how this process is actually running: its effective configuration - not the contents of a file on disk - and what the current request shows about how traffic reaches it. Request carries the base url, the per-request WebAppUrl that ends up in the links the server mails, whether the call arrived through the CDN, and the forwarding/CDN headers it received; those headers are allow-listed, so Authorization and cookies are never among them. Other secrets are never returned either: identity-provider, SMS, push, recaptcha, AI, SMTP, Cloudflare, Application Insights and Sentry values are booleans or names only. Query filters, Hangfire job arguments and database rows are not part of this tool. Rendering is absent unless the API is integrated with the web app: a standalone API serves no Blazor.")]
+    [Description("Returns how this process is actually running: its effective configuration, not the contents of a file on disk. Secrets are never returned: identity-provider, SMS, push, recaptcha, AI, SMTP, Cloudflare, Application Insights and Sentry values are booleans or names only. Nothing about the current request is here - the client ip, the headers it arrived with and the per-request WebAppUrl belong to GetDiagnosticReport. Query filters, Hangfire job arguments and database rows are not part of this tool either. Rendering is absent unless the API is integrated with the web app: a standalone API serves no Blazor.")]
     public string GetDeploymentInfo()
     {
         var identity = settings.Identity;
@@ -48,7 +48,6 @@ public partial class DevMcpDiagnosticTools
                 UtcNow = timeProvider.GetUtcNow(),
                 TimeZone = TimeZoneInfo.Local.Id
             },
-            Request = ReadRequest(),
             //#if (api == "Integrated")
             Rendering = ReadRendering(),
             //#endif
@@ -65,7 +64,8 @@ public partial class DevMcpDiagnosticTools
                 UnconfirmedUsersRetention = identity.UnconfirmedUsersRetention.ToString(),
                 AccessTokenLifetime = identity.BearerTokenExpiration.ToString(),
                 RefreshTokenLifetime = identity.RefreshTokenExpiration.ToString(),
-                identity.Issuer,
+                // Derived from the request, so this is what every token minted on this deployment carries.
+                Issuer = httpContextAccessor.HttpContext?.Request.GetIssuer(),
                 identity.Audience
             },
             BackgroundJobs = new
@@ -88,10 +88,18 @@ public partial class DevMcpDiagnosticTools
     }
 
     [McpServerTool(Name = nameof(GetHealth))]
-    [Description("Runs the same health checks as GET /health and returns per-check status and duration. A Degraded check is still HTTP 200 on /health and does not mean the process is out of rotation. Exception details are omitted so connection strings and tokens cannot leak.")]
+    [Description("Runs the same health checks as GET /health and returns per-check status, duration, description, tags, the check's own diagnostic data and, for anything that did not report Healthy, the full exception including its inner exceptions and stack trace. Nothing here is redacted: a database or storage check's exception can carry a connection string, which is the point - the failure is what you came for - and it is why the whole endpoint is global-admin only and every unhealthy read is logged. A Degraded check is still HTTP 200 on /health and does not mean the process is out of rotation.")]
     public async Task<string> GetHealth(CancellationToken cancellationToken)
     {
         var report = await healthCheckService.CheckHealthAsync(cancellationToken);
+
+        var unhealthy = report.Entries.Where(entry => entry.Value.Status is not HealthStatus.Healthy).Select(entry => entry.Key).ToArray();
+
+        // A failing check's exception is unredacted and may carry a connection string, so who read it is worth a line.
+        if (unhealthy.Length > 0)
+        {
+            logger.LogInformation("Dev MCP read {Status} health for {UserId}. Not healthy: {Checks}.", report.Status, CallerId, unhealthy);
+        }
 
         return DevMcpJson.Serialize(new
         {
@@ -103,49 +111,13 @@ public partial class DevMcpDiagnosticTools
                 Status = entry.Value.Status.ToString(),
                 entry.Value.Duration,
                 entry.Value.Description,
-                entry.Value.Tags
+                entry.Value.Tags,
+                // ToString() rather than the message alone: the inner exception is usually the one naming the cause.
+                Exception = entry.Value.Exception?.ToString(),
+                // Stringified because a check may put anything in here, and one unserializable value would fail the call.
+                Data = entry.Value.Data.Count is 0 ? null : entry.Value.Data.ToDictionary(item => item.Key, item => item.Value?.ToString())
             })
         });
-    }
-
-    /// <summary>
-    /// What this very call shows about how requests reach the process: the readable half of the anonymous
-    /// /api/v1/Diagnostic/PerformDiagnostic endpoint, without its side effects (it sends a test push and a test
-    /// SignalR message) and without the headers that carry credentials.
-    /// </summary>
-    private object? ReadRequest()
-    {
-        var httpContext = httpContextAccessor.HttpContext;
-        if (httpContext is null)
-            return null;
-
-        var request = httpContext.Request;
-
-        string? webAppUrl;
-        try
-        {
-            webAppUrl = request.GetWebAppUrl().ToString();
-        }
-        catch (BadRequestException exception)
-        {
-            webAppUrl = exception.Message;
-        }
-
-        return new
-        {
-            BaseUrl = request.GetBaseUrl().ToString(),
-            WebAppUrl = webAppUrl,
-            IsFromCDN = request.IsFromCDN(),
-            Culture = CultureInfo.CurrentCulture.Name,
-            UICulture = CultureInfo.CurrentUICulture.Name,
-            //#if (multitenant == true)
-            // Null for a global admin who never switched into a tenant - which is why QueryEntity reads with IgnoreQueryFilters.
-            TenantIdClaim = httpContext.User.IsAuthenticated() ? httpContext.User.GetTenantId() : null,
-            //#endif
-            ReceivedHeaders = forwardingHeaderNames
-                .Where(request.Headers.ContainsKey)
-                .ToDictionary(name => name, name => request.Headers[name].ToString())
-        };
     }
 
     //#if (api == "Integrated")

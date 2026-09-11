@@ -98,8 +98,7 @@ serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 //#endif
 //#endif
 
-// Drop the projects' http://*:port (wildcard) endpoints - Aspire can't reach a wildcard host from the ingress container.
-builder.RemoveWildcardEndpoints();
+builder.ExposeWildcardEndpointsToLan();
 
 //#if (cloudflare == true)
 // cloudflared connects straight to the projects (no reverse proxy) - possible now that RemoveWildcardEndpoints drops http2.

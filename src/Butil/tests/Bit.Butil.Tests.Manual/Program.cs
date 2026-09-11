@@ -28,17 +28,18 @@ internal static class Program
     /// <see cref="ButilServiceAttribute"/> class.
     /// </summary>
     /// <remarks>
-    /// Two sources, and both are references a trimmer has to honour: <see cref="ConsumerComponent"/> injects
-    /// nine of them the way a razor <c>@inject</c> would, and <see cref="CancellationContract"/> constructs
+    /// Three sources, and all of them are references a trimmer has to honour: <see cref="ConsumerComponent"/>
+    /// injects nine of them the way a razor <c>@inject</c> would, <see cref="SplitModuleUse"/> injects six more
+    /// to call one module of each split family, and <see cref="CancellationContract"/> constructs
     /// <c>DigitalCredentials</c>, <c>Fetch</c> and <c>WebOtp</c> directly to check the handles they put on the
     /// wire. So the trimmed run measures a slightly larger consumer than the injected nine alone - the
-    /// alternative, checking that contract from a project that does not reference the library, is not a thing
+    /// alternative, checking those contracts from a project that does not reference the library, is not a thing
     /// that exists.
     /// </remarks>
     private static readonly string[] MustSurvive =
     [
-        "Canvas", "Clipboard", "Cookie", "DigitalCredentials", "Dom", "Fetch", "Geolocation", "LocalStorage",
-        "Streams", "WebOtp", "WebRtc", "Window"
+        "Canvas", "Clipboard", "Cookie", "Crypto", "Css", "DigitalCredentials", "Dom", "Fetch", "Geolocation",
+        "IndexedDb", "LocalStorage", "Performance", "Streams", "UserAgent", "WebAudio", "WebOtp", "WebRtc", "Window"
     ];
 
     /// <summary>
@@ -133,7 +134,7 @@ internal static class Program
         {
             foreach (var name in MustSurvive.Where(name => discoveredNames.Contains(name) is false))
             {
-                failures.Add($"{name} is used by ConsumerComponent but did not survive trimming.");
+                failures.Add($"{name} is referenced by this project but did not survive trimming.");
             }
 
             // Every survivor, not a hand-picked sample of the ones expected to go: a sampled list only ever
@@ -219,11 +220,13 @@ internal static class Program
         // a synchronous scope dispose throws on those.
         await using var scope = provider.CreateAsyncScope();
         var component = new ConsumerComponent();
+        var splitModuleUse = new SplitModuleUse();
 
         try
         {
             component.Inject(scope.ServiceProvider);
-            Console.WriteLine($"  injected: {string.Join(", ", ConsumerComponent.InjectedTypes.Select(type => type.Name))}");
+            splitModuleUse.Inject(scope.ServiceProvider);
+            Console.WriteLine($"  injected: {string.Join(", ", ConsumerComponent.InjectedTypes.Concat(SplitModuleUse.InjectedTypes).Select(type => type.Name))}");
         }
         catch (Exception exception)
         {
@@ -234,7 +237,8 @@ internal static class Program
         // Throwing is not a failure: the stub answers every call with default, so a service handed a null
         // where it expects a DTO is entitled to blow up. Activation is what matters, and that is checked above.
         var (succeeded, threw) = await component.Use();
-        Console.WriteLine($"  interop calls: {succeeded} completed, {threw} threw against the stub runtime");
+        var (splitSucceeded, splitThrew) = await splitModuleUse.Use();
+        Console.WriteLine($"  interop calls: {succeeded + splitSucceeded} completed, {threw + splitThrew} threw against the stub runtime");
         Console.WriteLine();
 
         Console.WriteLine(failures.Count == 0
@@ -315,7 +319,7 @@ internal static class Program
     /// </summary>
     /// <remarks>
     /// Every other check here starts from the attribute, so a class that simply never got one is invisible
-    /// to all of them: the report still says "64 of 64 registered, PASS" while consumers hit "Cannot provide
+    /// to all of them: the report still says "137 of 137 registered, PASS" while consumers hit "Cannot provide
     /// a value for property" at runtime. That is the failure mode reflection-based registration introduces -
     /// there is no central <c>AddScoped&lt;T&gt;()</c> list whose absence a reviewer would notice - so it is
     /// the one thing this harness has to find without being told the answer.

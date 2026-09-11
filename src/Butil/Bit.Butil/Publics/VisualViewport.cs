@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -157,13 +156,23 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event</see>
     /// </summary>
+    /// <param name="handler">Called when the viewport resizes. It receives no payload - read the properties you need.</param>
+    /// <param name="minInterval">
+    /// The shortest time allowed between two calls into <paramref name="handler"/>. <c>null</c> or
+    /// <see cref="TimeSpan.Zero"/> - the default - forwards every event.
+    /// <br/>
+    /// Worth setting: this event fires once a frame for as long as a pinch-zoom lasts, and the
+    /// notification carries nothing, so one event is a round trip to say "look again" plus a round
+    /// trip for every property the handler then reads. The gate runs in JavaScript, leading-edge
+    /// with a trailing send, so the settled viewport is always the last thing the handler sees.
+    /// </param>
     [DynamicDependency(nameof(InvokeVisualViewport), typeof(VisualViewport))]
-    public async ValueTask<Guid> AddResize(Action handler)
+    public async ValueTask<Guid> AddResize(Action handler, TimeSpan? minInterval = null)
     {
         var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.visualViewport.addResize", DotNetRef, listenerId);
+        await js.InvokeVoid("BitButil.visualViewport.addResize", DotNetRef, listenerId, minInterval?.TotalMilliseconds ?? 0);
 
         return listenerId;
     }
@@ -171,9 +180,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Subscribe variant of <see cref="AddResize"/> returning an <see cref="IAsyncDisposable"/> handle.
     /// </summary>
-    public async ValueTask<ButilSubscription> SubscribeResize(Action handler)
+    /// <param name="handler">Called when the viewport resizes.</param>
+    /// <param name="minInterval">See <see cref="AddResize"/>.</param>
+    public async ValueTask<ButilSubscription> SubscribeResize(Action handler, TimeSpan? minInterval = null)
     {
-        var id = await AddResize(handler);
+        var id = await AddResize(handler, minInterval);
         return new ButilSubscription(id, () => RemoveResize(id));
     }
 
@@ -230,13 +241,22 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event</see>
     /// </summary>
+    /// <param name="handler">Called when the viewport scrolls. It receives no payload - read the properties you need.</param>
+    /// <param name="minInterval">
+    /// The shortest time allowed between two calls into <paramref name="handler"/>. <c>null</c> or
+    /// <see cref="TimeSpan.Zero"/> - the default - forwards every event.
+    /// <br/>
+    /// The most flood-prone event on this service: it fires continuously through a pinch-zoom pan.
+    /// Either gate it, or use <see cref="SubscribeScrollEnd"/> when only the resting position
+    /// matters. See <see cref="AddResize"/> for how the gate behaves.
+    /// </param>
     [DynamicDependency(nameof(InvokeVisualViewport), typeof(VisualViewport))]
-    public async ValueTask<Guid> AddScroll(Action handler)
+    public async ValueTask<Guid> AddScroll(Action handler, TimeSpan? minInterval = null)
     {
         var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.visualViewport.addScroll", DotNetRef, listenerId);
+        await js.InvokeVoid("BitButil.visualViewport.addScroll", DotNetRef, listenerId, minInterval?.TotalMilliseconds ?? 0);
 
         return listenerId;
     }
@@ -244,9 +264,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Subscribe variant of <see cref="AddScroll"/> returning an <see cref="IAsyncDisposable"/> handle.
     /// </summary>
-    public async ValueTask<ButilSubscription> SubscribeScroll(Action handler)
+    /// <param name="handler">Called when the viewport scrolls.</param>
+    /// <param name="minInterval">See <see cref="AddScroll"/>.</param>
+    public async ValueTask<ButilSubscription> SubscribeScroll(Action handler, TimeSpan? minInterval = null)
     {
-        var id = await AddScroll(handler);
+        var id = await AddScroll(handler, minInterval);
         return new ButilSubscription(id, () => RemoveScroll(id));
     }
 
@@ -322,7 +344,13 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     }
 
 
-    /// <summary>Removes every resize and scroll handler registered through this instance.</summary>
+    /// <summary>Removes every resize, scroll and scrollend handler registered through this instance.</summary>
+    /// <remarks>
+    /// One call, with every id, and JavaScript detaches each from the event it was registered on. The
+    /// ids are not partitioned here because this side does not know which event an id belongs to - and
+    /// handing the whole set to <c>removeResize</c> and <c>removeScroll</c> in turn used to let the first
+    /// call forget the scroll ids before the second could detach them.
+    /// </remarks>
     public async ValueTask RemoveAllEventHandlers()
     {
         if (_handlers.Count == 0) return;
@@ -331,22 +359,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         _handlers.Clear();
 
-        var toAwait = new List<Task>();
-
-        var resizeValueTask = RemoveResizeFromJs(ids);
-        var scrollValueTask = RemoveScrollFromJs(ids);
-
-        if (resizeValueTask.IsCompleted is false)
-        {
-            toAwait.Add(resizeValueTask.AsTask());
-        }
-
-        if (scrollValueTask.IsCompleted is false)
-        {
-            toAwait.Add(scrollValueTask.AsTask());
-        }
-
-        await Task.WhenAll(toAwait);
+        await js.InvokeVoid("BitButil.visualViewport.removeAll", ids);
     }
 
     /// <summary>Removes every viewport handler this instance registered and releases its interop reference.</summary>

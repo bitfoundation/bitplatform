@@ -38,7 +38,7 @@
     <!-- Playwright itself, without a per-framework integration package: the suite drives the browser
          from ButilHarnessTestBase rather than from a PageTest base class - see the comment there. -->
     <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />
-    <PackageReference Include="MSTest" Version="4.3.3" />
+    <PackageReference Include="MSTest" Version="4.4.0" />
   </ItemGroup>
 
   <!-- Deliberately no ProjectReference to Bit.Butil: every test here drives a deployed harness page

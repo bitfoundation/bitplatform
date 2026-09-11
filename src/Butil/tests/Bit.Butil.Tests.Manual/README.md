@@ -37,8 +37,19 @@ and wraps before a caller sees them (`DomNodeDto`, `StreamedResponseDto`), so on
 
 [`CancellationContract`](CancellationContract.cs) adds three more references - `WebOtp`,
 `DigitalCredentials` and `Fetch` - which it constructs directly rather than injecting, because what it
-checks is the arguments they put on the wire. So a trimmed publish of this harness keeps twelve services,
-not nine; everything else in Bit.Butil is untouched and should be dropped.
+checks is the arguments they put on the wire.
+
+[`SplitModuleUse`](SplitModuleUse.cs) adds six more - `Crypto`, `Css`, `WebAudio`, `IndexedDb`,
+`Performance` and `UserAgent` - and calls exactly **one narrow member** of each, plus one
+`ElementReference` extension. Those APIs have their JavaScript split across a family of modules, and this
+is what checks the split holds: `Crypto.RandomUuid()` must keep `crypto` and leave signing, key material,
+derivation and the ciphers behind; `Performance.Now()` must not bring the Web Vitals module; a store read
+must not bring the index, cursor and transaction layers. It fails loudly when it stops being true, because
+the way that happens is subtle - anything that roots the whole class, a `DotNetObjectReference` over the
+service most of all, preserves every interop identifier in it and quietly undoes the split.
+
+So a trimmed publish of this harness keeps eighteen services, not the nine injected by
+`ConsumerComponent`; everything else in Bit.Butil is untouched and should be dropped.
 
 ## The checks
 
@@ -46,7 +57,7 @@ not nine; everything else in Bit.Butil is untouched and should be dropped.
 public constructor; the services nothing references must be gone.
 
 That check starts from the attribute, so on its own it is blind to a service class that never got one -
-the report would happily say "88 of 88 registered" while consumers hit *Cannot provide a value for
+the report would happily say "137 of 137 registered" while consumers hit *Cannot provide a value for
 property* at runtime. So the harness also looks for service classes by **shape**: a public, constructible
 class taking an `IJSRuntime`. Any such class without `[ButilService]` is a failure. (`ButilStorage` is
 excluded: it takes an `IJSRuntime` too, but it is the shared base of `LocalStorage` and `SessionStorage`
@@ -85,11 +96,16 @@ That is what the consumer-side publish step in the NuGet package (`Bit.Butil.Bui
 code against the very same trimmed assembly:
 
 - untrimmed, every module the library ships must answer to some `BitButil.<module>.*` call site (except
-  `butil` and `utils`, which exist only as dependencies) - an orphan module is JavaScript for a C# API that
+  `butil`, `utils` and the four registries no C# call site names - `abortable`, `abortSignals`,
+  `cryptoKeyMaterial` and `fetchRequest` - which exist only as dependencies) - an orphan module is JavaScript for a C# API that
   no longer exists - and every call site must name a module that exists;
+- per split module family, the narrow call `SplitModuleUse` makes keeps that call's module and none of
+  its siblings - the same facts the exact list below carries, reported per family so the failure names the
+  claim that stopped being true rather than just the module that appeared;
 - trimmed, the modules still called must be exactly `MustSurviveModules` (the JavaScript behind the
-  services `ConsumerComponent` uses, plus `events`, reached through `Window.SubscribeEvent`) - a module
-  nothing in this project calls surviving is the same regression as a service surviving;
+  services `ConsumerComponent` uses, plus `events` reached through `Window.SubscribeEvent`, the one module
+  per family `SplitModuleUse` calls into, and `windowSelection`, which only the lazy-loader checks reach) -
+  a module nothing in this project calls surviving is the same regression as a service surviving;
 - Bit.Butil's own JavaScript build outputs have to agree with each other and with the sources: a chunk and
   a lazy-loadable file per module in the manifest, and the manifest's dependencies equal to what the
   TypeScript sources reference (the same rule `build.mjs` uses), so a stale build is caught here rather
@@ -110,6 +126,14 @@ and this repository never does, plus the artifacts the whole feature rests on:
   writes them, and every malformed shape - a module listed twice, a dependency that is not a module, a line
   without a separator, a file that is not there - refused rather than half-read, since a line silently
   skipped is a bundle missing JavaScript the app calls;
+- **the shipped dependency graph**, module by module, for the splits that only pay off while it holds its
+  shape: `streams` reaching the shared request builder without the whole `fetch` module, `scheduler` the
+  signal registry without `abortController`, `shadowDom` the node registry without `dom`,
+  `webAudioAnalyser` the node registry and the context without the rest of the graph, `cryptoKeys` and
+  `cryptoDerive` the import helpers they share and nothing of each other, `userAgent` without the parser.
+  Both halves are asserted - what a module must bring, and what it must not - because one
+  `butil.otherModule.helper()` added to a TypeScript file silently puts a whole module back into the
+  download of every app that uses this one;
 - **resolution** (`Resolve`): dependencies come with their module, a dependency two modules share is included
   once, the result follows the manifest's dependency-first order rather than the call order, modules nothing
   calls are left out, an identifier naming no module is *reported* rather than dropped (the BUTIL001 warning
@@ -124,8 +148,8 @@ and this repository never does, plus the artifacts the whole feature rests on:
   into the `bit-butil.js` the package ships, each `modules/<name>.js` is byte-for-byte the bundle its own
   dependency closure assembles to, every chunk carries the guard that makes a second evaluation a no-op and
   appears in the bundle exactly once, and the manifest lists every module after the modules it depends on;
-- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 18-module,
-  36,636-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
+- **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 29-module,
+  55,371-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
   evaluated under Node in a browser-like sandbox and has to register exactly the expected `BitButil`
   namespaces, none of them empty, and register nothing a second time (the sentinel each namespace is marked
   with has to survive re-evaluation - a guard that stopped holding would reset a module's listener
@@ -195,6 +219,9 @@ Eleven `dotnet publish` runs and one `dotnet msbuild`, about fifteen seconds in 
 - a **scan** trims the bundle to the modules the fixture's two classes need; `TypeNames` finds at least those;
 - a **csproj module list** trims it on its own, with the scan turned off and no ILLink;
 - a csproj list **plus** a scan produces the union of the two, which is the whole meaning of "additive";
+- a csproj list naming **one module of a split family** publishes that module and its dependencies alone,
+  while naming the **class** publishes the whole family - the two ends of what keeping an API by name means
+  once its JavaScript is split, checked through a real publish rather than through `ResolveNames` alone;
 - **lazy scripts** publish one file per reachable module and no bundle at all;
 - `BitButilTrimScripts=false` publishes the full bundle even when given a scan and a list to work from;
 - a project that **does not publish an app's static web assets** - a Razor class library, a hybrid head, the
@@ -268,7 +295,7 @@ the same "removed entirely is not a defect" rule the verification already applie
 Run both from this folder, so they share the manifest:
 
 ```bash
-# untrimmed: all 88 [ButilService] classes present; writes interop-manifest.txt
+# untrimmed: all 137 [ButilService] classes present; writes interop-manifest.txt
 dotnet run -c Release
 
 # trimmed, TrimMode=full (what Blazor WebAssembly uses); checks against the manifest
@@ -282,34 +309,50 @@ read only partly would report `PASS` having verified less of it than the output 
 
 ## Reference results
 
+These are the figures from a full run of both modes: the sizes and per-run counts move with the
+library, so re-run the harness to refresh them. The library they were taken from ships 137
+`[ButilService]` classes over 171 JavaScript modules, and 95 interop contracts.
+
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 997,888 bytes | 160,256 bytes |
-| types in assembly | 1,156 | 207 |
-| `[ButilService]` discovered / registered | 88 / 88 | 12 / 12 |
-| interop contract | 67 types captured | 19 checked, 48 trimmed away, 0 problems |
-| JavaScript modules called | 94 of 97 | 13 of 97 (canvas, clipboard, cookie, digitalCredentials, dom, events, fetch, geolocation, storage, streams, webOtp, webRtc, window) |
-| `bit-butil.js` a publish would ship | 196,002 bytes, all 97 modules | 36,636 bytes, 18 modules (10,742 gzip / 9,537 brotli) - 18.7% |
-| lazy scripts would download | 348,241 bytes over 94 files | 57,521 bytes over 13 files |
-| script-bundling checks | 82 / 82 | 82 / 82 |
-| script-scanning checks | 41 / 41 | not run |
-| script-publishing checks | 33 / 33 (11 publishes, ~26s) | not run |
-| lazy-loader checks | 16 / 16 | 16 / 16 |
+| `Bit.Butil.dll` | 1,466,368 bytes | 147,968 bytes |
+| types in assembly | 1,614 | 180 |
+| `[ButilService]` discovered / registered | 137 / 137 | 18 / 18 |
+| interop contract | 95 types captured | 19 checked, 76 trimmed away, 0 problems |
+| JavaScript modules called | 165 of 171 | 23 of 171 (canvas, clipboard, cookie, crypto, css, digitalCredentials, dom, domHandles, element, events, fetch, geolocation, indexedDb, indexedDbStore, performance, storage, streams, userAgent, webAudio, webOtp, webRtc, window, windowSelection) |
+| `bit-butil.js` a publish would ship | 328,376 bytes, all 171 modules | 55,371 bytes, 29 modules (15,923 gzip / 14,035 brotli) - 16.9% |
+| lazy scripts would download | 652,970 bytes over 165 files | 91,478 bytes over 23 files |
+| script-bundling checks | 110 / 110 | 110 / 110 |
+| script-scanning checks | 51 / 51 | not run |
+| script-publishing checks | 43 / 43 (14 publishes, ~63s) | not run |
+| lazy-loader checks | 19 / 19 | 19 / 19 |
 | cancellation-contract checks | 24 / 24 | 24 / 24 |
 
 The two "not run" rows are untrimmed-only by design: the class-to-module map is a question about the
 library as shipped, and the publish fixture is published by this process, so a trimmed run would publish
 the same app to the same answers at twice the cost.
 
-Twelve services survive rather than the nine `ConsumerComponent` injects because `CancellationContract`
+Eighteen services survive rather than the nine `ConsumerComponent` injects: `CancellationContract`
 constructs `WebOtp`, `DigitalCredentials` and `Fetch` directly - a reference the trimmer honours the same
-as an injected one, which is why they are in `MustSurvive` and their modules in `MustSurviveModules`.
+as an injected one - and `SplitModuleUse` injects six more. That is why they are in `MustSurvive` and their
+modules in `MustSurviveModules`.
+
+Worth reading the module row next to the service row: eighteen services reach twenty-three modules, not
+the forty-five their APIs have between them, because the split families each contribute only what
+this project calls. `WebAudio` is the sharpest case - one of its seven modules survives - and it is also why
+the trimmed assembly is *smaller* here than it was when this harness used six services fewer: the
+callbacks those services hand to JavaScript live on small relay objects, so a
+`DotNetObjectReference.Create` no longer preserves every public method of the service around them.
 
 The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
-`GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code.
+`GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code. The
+other callback relays (`PerformanceObserverInterop`, `WindowMediaQueryInterop`,
+`IndexedDbCallbacksInterop`) come out the other way: nothing here subscribes, so the code that would hand
+them to JavaScript is gone and their callbacks go with it. That counts as removal rather than as a defect -
+see the note on it in `InteropContract.Verify`.
 
 Injecting fewer services shrinks it further: with only `LocalStorage`, `Clipboard` and `Cookie` the
-assembly comes out at 30,720 bytes and 36 types.
+assembly comes out at 32,256 bytes and 34 types.
 
 ## What a failure means
 
@@ -318,7 +361,14 @@ assembly comes out at 30,720 bytes and 36 types.
   in the app but DI can no longer activate it, which shows up in consumer apps only after publishing.
 - **`X.Y is [JSInvokable] but no longer resolves while its type survived`** - a JS callback would dispatch
   to nothing, because either the method or its attribute is gone. Usually means a `DotNetObjectReference`
-  was created through a path that does not carry the `PublicMethods` annotation.
+  was created through a path that does not carry the `PublicMethods` annotation. (A relay whose callbacks
+  are gone *as a set* is not this: nothing subscribed, so the code that would hand it to JavaScript was
+  trimmed with them.)
+- **`the <name> family did not narrow`** - a module of a split family survived though nothing calls it.
+  Almost always something rooting the whole class: a `DotNetObjectReference.Create(this)` over a service
+  or handle (it preserves every public method, and every interop identifier on them), or a
+  `DynamicDependency` naming a type rather than a member. The API still works; every consumer of it just
+  started downloading the rest of the family.
 - **`X.Y is part of a JSON interop payload but was trimmed away`** - an `Invoke<T>` overload lost its
   `LinkerFlags.JsonSerialized` annotation on `T`; the property would deserialize as null/default.
 - **`X is marked [ButilService] but was not registered`** - discovery in `AddBitButilServices` and the
@@ -377,7 +427,7 @@ assembly comes out at 30,720 bytes and 36 types.
 - **`script publishing: ...`** - the MSBuild half. The message names the claim; the ones worth knowing on
   sight are *is added to what the scan found, not used instead of it* (the csproj list has stopped being
   additive - a consumer naming one module would lose everything else), *publishes no per-module files* (the
-  publish asset list is no longer being narrowed, so a bundle-mode app ships all 97 module files - that is
+  publish asset list is no longer being narrowed, so a bundle-mode app ships all 171 module files - that is
   `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
   bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
   every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in

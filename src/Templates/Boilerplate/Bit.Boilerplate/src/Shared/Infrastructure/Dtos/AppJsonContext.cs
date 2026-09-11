@@ -18,6 +18,7 @@ using Boilerplate.Shared.Infrastructure.Dtos.SignalR;
 //#endif
 using Boilerplate.Shared.Features.Statistics;
 using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Shared.Features.Identity.OAuth.Dtos;
 //#if (multitenant == true)
 using Boilerplate.Shared.Features.Tenants.Dtos;
 //#endif
@@ -56,6 +57,12 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
 [JsonSerializable(typeof(AppProblemDetails))]
+[JsonSerializable(typeof(OAuthAuthorizeRequestDto))]
+[JsonSerializable(typeof(OAuthConsentDto))]
+[JsonSerializable(typeof(OAuthApprovalDto))]
+[JsonSerializable(typeof(OAuthClientDto))]
+[JsonSerializable(typeof(List<OAuthClientDto>))]
+[JsonSerializable(typeof(RevokeOAuthClientRequestDto))]
 //#if (notification == true)
 [JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
@@ -87,8 +94,9 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 //#if (signalR == true)
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]
-[JsonSerializable(typeof(AiChatMessageRequest))]
-[JsonSerializable(typeof(AiChatFollowUpList))]
+[JsonSerializable(typeof(AiChatMessage))]
+[JsonSerializable(typeof(AssistantReply))]
+[JsonSerializable(typeof(AssistantTurn))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
 [JsonSerializable(typeof(BackgroundJobProgressDto))]
 [JsonSerializable(typeof(SynthesizeSpeechRequestDto))]

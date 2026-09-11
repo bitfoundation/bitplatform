@@ -1,0 +1,703 @@
+name: All CI
+
+on:
+  workflow_dispatch:
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+  ConnectionStrings__mssqldb: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
+
+permissions:
+  contents: read
+
+jobs:
+
+# Bit.BlazorUI solution is being built in bit.ci.yml
+
+  build_boilerplate:
+    name: build boilerplate itself
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Boilerplate solution in Release mode
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -c Release -p:EnforceCodeStyleInBuild=true
+
+
+
+  test_boilerplate_postgres:
+    name: create project from template with postgresql and test it
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
+
+    - name: Prepare Boilerplate template
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Create project from template with PostgreSQL
+      run: dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire --redis --advancedTests
+
+    - name: Create appsettings.json for Client.Web
+      run: |
+        echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
+
+    - name: Build and setup database
+      run: |
+        cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
+        dotnet build -p:EnforceCodeStyleInBuild=true
+        dotnet tool restore
+        dotnet ef migrations add Initial --verbose
+
+    - name: Trust dotnet cert
+      continue-on-error: true
+      run: dotnet dev-certs https --trust # Necessary for aspire related resources
+
+    - name: Build tests and install Playwright
+      working-directory: TestPostgreSQL/src/Tests
+      run: |
+        dotnet build
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+
+    - name: Run tests (Blazor Server)
+      id: test-postgresql-blazorserver
+      working-directory: TestPostgreSQL/src/Tests
+      run: dotnet test
+
+    - name: Upload Blazor Server test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-postgresql-blazorserver.outcome == 'failure' }}
+      with:
+        name: postgres-tests-blazorserver
+        path: ./TestPostgreSQL/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (Blazor WebAssembly)
+      id: test-postgresql-blazorwasm
+      working-directory: TestPostgreSQL/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+
+    - name: Upload Blazor WebAssembly test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-postgresql-blazorwasm.outcome == 'failure' }}
+      with:
+        name: postgres-tests-blazorwasm
+        path: ./TestPostgreSQL/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (Blazor WebAssembly, prerender, Firefox)
+      id: test-postgresql-blazorwasm-prerender
+      working-directory: TestPostgreSQL/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
+
+    - name: Upload Blazor WebAssembly prerender test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-postgresql-blazorwasm-prerender.outcome == 'failure' }}
+      with:
+        name: postgres-tests-blazorwasm-prerender-firefox
+        path: ./TestPostgreSQL/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (InvariantGlobalization)
+      id: test-postgresql-invariantglobalization
+      working-directory: TestPostgreSQL/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest&TestCategory!=Localization"
+
+    - name: Upload InvariantGlobalization test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-postgresql-invariantglobalization.outcome == 'failure' }}
+      with:
+        name: postgres-tests-invariantglobalization
+        path: ./TestPostgreSQL/src/Tests/TestResults
+        retention-days: 14
+
+
+  test_boilerplate_mssql:
+    name: create project from template with sql server and test it
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
+
+    - name: Prepare Boilerplate template
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Create project from template with SQL Server
+      run: dotnet new bit-bp --name TestSqlServer --database SqlServer --module Admin --signalR --aspire false --advancedTests
+
+    - name: Create appsettings.json for Client.Web
+      run: |
+        echo '{"ServerAddress":"/"}' > TestSqlServer/src/Client/TestSqlServer.Client.Web/wwwroot/appsettings.json
+
+    - name: Build and setup database
+      run: |
+        cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
+        dotnet build -p:EnforceCodeStyleInBuild=true
+        dotnet tool restore
+        dotnet ef migrations add Initial --verbose
+
+    - name: Install sql server
+      uses: potatoqualitee/mssqlsuite@2291d923e83859edd871679c05b379037376761f # v1.12
+      with:
+        version: 2025
+        install: sqlengine
+        sa-password: P@ssw0rdP@ssw0rd
+        show-log: true
+
+    - name: Build tests and install Playwright
+      working-directory: TestSqlServer/src/Tests
+      run: |
+        dotnet build
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+
+    - name: Run tests (Blazor Server)
+      id: test-mssql-blazorserver
+      working-directory: TestSqlServer/src/Tests
+      run: dotnet test
+
+    - name: Upload Blazor Server test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mssql-blazorserver.outcome == 'failure' }}
+      with:
+        name: sqlserver-tests-blazorserver
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (Blazor WebAssembly)
+      id: test-mssql-blazorwasm
+      working-directory: TestSqlServer/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+
+    - name: Upload Blazor WebAssembly test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mssql-blazorwasm.outcome == 'failure' }}
+      with:
+        name: sqlserver-tests-blazorwasm
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (Blazor WebAssembly, prerender, Firefox)
+      id: test-mssql-blazorwasm-prerender
+      working-directory: TestSqlServer/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
+
+    - name: Upload Blazor WebAssembly prerender test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mssql-blazorwasm-prerender.outcome == 'failure' }}
+      with:
+        name: sqlserver-tests-blazorwasm-prerender-firefox
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
+    # This job deliberately has no InvariantGlobalization run: Microsoft.Data.SqlClient throws
+    # "Globalization Invariant Mode is not supported." out of SqlConnection.Open, so the whole assembly aborts in
+    # its initializer before a single browser starts. The PostgreSQL job above covers that configuration.
+
+
+  build_boilerplate_configurations:
+    name: create several projects from template and build them
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
+
+    - name: Prepare Boilerplate template
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build backend setup options
+      run: |
+        dotnet new bit-bp --name TestStandalone --api Standalone
+        cd TestStandalone/src/Server/TestStandalone.Server.Api/
+        dotnet build -p:EnforceCodeStyleInBuild=true
+        cd ../
+        cd TestStandalone.Server.Web/
+        dotnet build
+        cd ../../../../
+        rm -r "TestStandalone"
+        dotnet new bit-bp --name TestIntegrated --api Integrated
+        cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
+        dotnet build -p:EnforceCodeStyleInBuild=true
+        cd ../../../../
+        rm -r "TestIntegrated"
+
+    - name: Build sample configuration 1
+      run: |
+        dotnet new bit-bp --name MyCompany.TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant --brouter
+        dotnet build MyCompany.TestProject/MyCompany.TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging -p:EnforceCodeStyleInBuild=true
+        rm -r "MyCompany.TestProject"
+
+    - name: Build sample configuration 2
+      run: |
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false --brouter false
+        dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development -p:EnforceCodeStyleInBuild=true
+        rm -r "TestProject2"
+
+
+
+  build_blazorempty_configurations:
+    name: build blazorempty based projects
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Prepare BlazorEmpty template
+      run: |
+        cd src/Templates/BlazorEmpty && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
+
+    - name: Create projects from BlazorEmpty template
+      run: |
+        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
+        dotnet new bit-empty --name SsrPerPage --interactivity None
+
+    - name: Build blazor empty based projects
+      run: |
+        dotnet build AutoGlobal/AutoGlobal.sln
+        dotnet build SsrPerPage/SsrPerPage.csproj
+
+
+
+  build_nuget_packages:
+    name: build nuget packages locally
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Generate ES2019 based blazor.*.js files for .NET 9
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/9.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/BlazorES2019/wwwroot.net9/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net9/
+        rm -rf aspnetcore
+
+    - name: Generate ES2019 based blazor.*.js files for .NET 10
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/10.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/BlazorES2019/wwwroot.net10/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net10/
+        rm -rf aspnetcore
+
+    - name: Build and pack BlazorES2019
+      run: |
+        dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output ./packages --configuration Release
+
+    - name: Generate CSS/JS files BlazorUI
+      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+
+    - name: Build and pack BlazorUI
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output ./packages --configuration Release
+
+    - name: Generate CSS/JS files BlazorUI.Extras
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+
+    - name: Build and pack BlazorUI.Extras
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output ./packages --configuration Release
+
+    - name: Generate CSS/JS files BlazorUI.Legacy
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+
+    - name: Build and pack BlazorUI.Legacy
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output ./packages --configuration Release
+
+    - name: Generate CSS/JS files BlazorUI.Assets
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+
+    - name: Build and pack BlazorUI.Assets
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj --output ./packages --configuration Release
+
+    - name: Generate CSS/JS files BlazorUI.Icons
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+
+    - name: Build and pack BlazorUI.Icons
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output ./packages --configuration Release
+
+    # No "Generate CSS/JS files" pre-step: unlike the BlazorUI projects above, Bit.Bswup generates
+    # its bundles as part of the build itself (see IncludeBswupAssetsAsStaticWebAsset /
+    # BuildBswupAssetsOnCrossTargeting in Bit.Bswup.csproj), so the build below emits them from a
+    # clean checkout on its own.
+    - name: Build and pack Bswup
+      run: |
+        dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Butil
+      run: |
+        dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Brouter
+      run: |
+        dotnet build src/Brouter/Bit.Brouter/Bit.Brouter.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Brouter/Bit.Brouter/Bit.Brouter.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Brouter.Generators
+      run: |
+        dotnet build src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Besql
+      run: |
+        dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bmotion
+      run: |
+        dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output ./packages --configuration Release
+
+    - name: Build and pack CodeAnalyzers
+      run: |
+        dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output ./packages --configuration Release
+
+    - name: Build and pack ResxTranslator
+      run: |
+        dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj --output ./packages --configuration Release
+
+    - name: Build SourceGenerators
+      run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release
+
+    - name: Pack Boilerplate template
+      run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output ./packages --configuration Release
+
+    - name: Pack BlazorEmpty template
+      run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output ./packages --configuration Release
+
+    - name: Upload NuGet packages artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: nuget-packages
+        path: ./packages/*.nupkg
+        retention-days: 30
+
+
+
+  build_bswup_solution:
+    name: build bswup solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Bswup solution in Release mode
+      run: dotnet build src/Bswup/Bit.Bswup.slnx -c Release
+
+
+
+  build_butil_solution:
+    name: build butil solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Butil solution in Release mode
+      run: dotnet build src/Butil/Bit.Butil.slnx -c Release
+
+
+
+  build_brouter_solution:
+    name: build brouter solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Brouter solution in Release mode
+      run: dotnet build src/Brouter/Bit.Brouter.slnx -c Release
+
+
+
+  build_bmotion_solution:
+    name: build bmotion solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Bmotion solution in Release mode
+      run: dotnet build src/Bmotion/Bit.Bmotion.slnx -c Release
+
+
+
+  build_tooling_solutions:
+    name: build tooling solutions
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Build CodeAnalyzers solution in Release mode
+      run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx -c Release
+
+    - name: Build ResxTranslator solution in Release mode
+      run: dotnet build src/ResxTranslator/Bit.ResxTranslator.slnx -c Release
+
+    - name: Build SourceGenerators solution in Release mode
+      run: dotnet build src/SourceGenerators/Bit.SourceGenerators.slnx -c Release
+
+
+
+  build_websites:
+    name: build website solutions
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Build Careers website in Release mode
+      run: dotnet build src/Websites/Careers/Bit.Websites.Careers.slnx -c Release
+
+    - name: Build Platform website in Release mode
+      run: dotnet build src/Websites/Platform/Bit.Websites.Platform.slnx -c Release
+
+    - name: Build Sales website in Release mode
+      run: dotnet build src/Websites/Sales/Bit.Websites.Sales.slnx -c Release

@@ -26,6 +26,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private CultureService cultureService = default!;
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
+    [AutoInject] private ConsentService consentService = default!;
     //#endif
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IUserController userController = default!;
@@ -35,6 +36,9 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private BitAccentColorService accentColorService = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
     //#endif
     //#if (brouter == true)
     [AutoInject] private IBrouter brouter = default!;
@@ -95,9 +99,19 @@ public partial class AppClientCoordinator : AppComponentBase
                 }
             });
 
-            // Nothing to apply at startup: UpdateCfg reads the decision itself. This only says it changed, since
-            // consent is withdrawable. The empty config asks for nothing - the switches are filled in there.
-            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ => await appInsights.UpdateCfg(new())));
+            if (appInsights is AppInsightsJsSdkService appInsightsJsSdk)
+            {
+                appInsightsJsSdk.AnalyticsConsentProvider = () => consentService.IsGranted(ConsentCategory.Analytics);
+            }
+
+            _ = appInsights.UpdateCfg(new());
+
+            // The empty config asks for nothing - the switches are filled in there.
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ =>
+            {
+                await appInsights.UpdateCfg(new());
+                await ApplyAuthenticatedUserContext(lastPropagatedUser);
+            }));
             //#endif
 
             await accentColorService.InitializeAsync();
@@ -141,8 +155,31 @@ public partial class AppClientCoordinator : AppComponentBase
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
         TelemetryContext.PageUrl = new Uri(e.Location).GetUrlWithMaskedQueryValues();
+        //#if (appInsights != true)
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
+        //#endif
     }
+
+    //#if (appInsights == true)
+    private async Task ApplyAuthenticatedUserContext(ClaimsPrincipal? user)
+    {
+        try
+        {
+            if (user?.IsAuthenticated() is true && await consentService.IsGranted(ConsentCategory.Analytics))
+            {
+                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+            }
+            else
+            {
+                await appInsights.ClearAuthenticatedUserContext();
+            }
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
+        }
+    }
+    //#endif
 
     private ClaimsPrincipal? lastPropagatedUser;
     /// <summary>
@@ -165,7 +202,15 @@ public partial class AppClientCoordinator : AppComponentBase
             //#if (brouter == true)
             // KeepAlive routes are hidden rather than disposed, so a retained page would otherwise hand the next
             // principal the previous one's search text and grid filters.
-            brouter.ClearKeepAlive();
+            try
+            {
+                brouter.ClearKeepAlive();
+            }
+            catch (InvalidOperationException)
+            {
+                // Not mounted yet on a SOFT_RESTART remount, so nothing to clear - and it must not take the rest of
+                // this method with it. TEMPORARY: ClearKeepAlive should no-op while unmounted.
+            }
             //#endif
 
             TelemetryContext.UserId = userId;
@@ -182,14 +227,7 @@ public partial class AppClientCoordinator : AppComponentBase
             // By leveraging this method during authentication state changes, we streamline the propagation of user-specific contexts across these systems.
 
             //#if (appInsights == true)
-            if (isAuthenticated)
-            {
-                _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
-            }
-            else
-            {
-                _ = appInsights.ClearAuthenticatedUserContext();
-            }
+            _ = ApplyAuthenticatedUserContext(user);
             //#endif
 
             var data = TelemetryContext.ToDictionary();
@@ -406,6 +444,9 @@ public partial class AppClientCoordinator : AppComponentBase
             AppVersion = TelemetryContext.AppVersion,
             DeviceInfo = TelemetryContext.Platform,
             CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            //#if (signalR == true || notification == true)
+            NotificationStatus = await notificationPreferenceService.GetSessionStatus(),
+            //#endif
             PlatformType = AppPlatform.Type
         }, CurrentCancellationToken);
     }

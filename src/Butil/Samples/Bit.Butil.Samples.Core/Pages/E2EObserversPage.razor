@@ -6,6 +6,8 @@
 @inject Bit.Butil.BroadcastChannel broadcastChannel
 @inject Bit.Butil.IndexedDb indexedDb
 @inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.OriginPrivateFileSystem opfs
+@inject Bit.Butil.StorageBuckets storageBuckets
 @inject Bit.Butil.WebLocks webLocks
 @inject Bit.Butil.ObjectUrls objectUrls
 @inject Bit.Butil.CookieStore cookieStore
@@ -19,6 +21,15 @@
 @inject Bit.Butil.Location butilLocation
 @inject Bit.Butil.Document butilDocument
 @inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.MediaCapabilities mediaCapabilities
+@inject Bit.Butil.MediaSource mediaSource
+@inject Bit.Butil.WebCodecs webCodecs
+@inject Bit.Butil.WebAudio webAudio
+@inject Bit.Butil.EncryptedMedia encryptedMedia
+@inject Bit.Butil.DocumentPictureInPicture documentPictureInPicture
+@inject Bit.Butil.RemotePlayback remotePlayback
+@inject Bit.Butil.Presentation presentation
+@inject Bit.Butil.WebXr webXr
 @inject Bit.Butil.Bluetooth bluetooth
 @inject Bit.Butil.Usb usb
 @inject Bit.Butil.Serial serial
@@ -54,6 +65,11 @@
     <h3>Performance</h3>
     <button id="perf-mark-measure" @onclick="PerfMarkMeasure">mark + measure</button>
     <button id="perf-observer" @onclick="PerfObserver">PerformanceObserver(mark)</button>
+    <button id="perf-typed-observer" @onclick="PerfTypedObserver">typed observer(measure)</button>
+    <button id="perf-navigation" @onclick="PerfNavigation">navigation timing</button>
+    <button id="perf-resources" @onclick="PerfResources">resource timing</button>
+    <button id="perf-vitals" @onclick="PerfWebVitals">web vitals</button>
+    <button id="perf-buffered-read" @onclick="PerfBufferedRead">first read of a buffered observer-only type</button>
 </section>
 
 <section>
@@ -78,6 +94,7 @@
     <button id="intersection-observe" @onclick="ObserveIntersection">observe intersection</button>
     <button id="resize-observe" @onclick="ObserveResize">observe resize</button>
     <button id="resize-trigger" @onclick="TriggerResize">resize target</button>
+    <button id="resize-observe-gated" @onclick="ObserveResizeGated">observe resize (rate limited)</button>
     <button id="mutation-observe" @onclick="ObserveMutation">observe mutation</button>
 </section>
 
@@ -92,11 +109,24 @@
     <button id="idb-roundtrip" @onclick="IndexedDbRoundTrip">open + put + get</button>
     <button id="idb-advanced" @onclick="IndexedDbAdvanced">ranges + cursors + transactions</button>
     <button id="idb-migrate" @onclick="IndexedDbMigrate">schema migration</button>
+    <button id="idb-connection-callbacks" @onclick="IndexedDbConnectionCallbacks">versionchange + blocked</button>
 </section>
 
 <section>
     <h3>CacheStorage</h3>
     <button id="cache-roundtrip" @onclick="CacheRoundTrip">putText + match + delete</button>
+</section>
+
+<section>
+    <h3>Origin private file system</h3>
+    <button id="opfs-roundtrip" @onclick="OpfsRoundTrip">write + read + list + remove</button>
+    <button id="opfs-sync" @onclick="OpfsSyncAccess">sync access handle (worker)</button>
+    <button id="opfs-sync-aliases" @onclick="OpfsSyncPathAliases">sync access handle (aliased paths)</button>
+</section>
+
+<section>
+    <h3>Storage buckets</h3>
+    <button id="buckets-roundtrip" @onclick="StorageBucketsRoundTrip">open + write + keys + delete</button>
 </section>
 
 <section>
@@ -128,9 +158,27 @@
 <section>
     <h3>Platform</h3>
     <button id="nav-info" @onclick="NavInfo">navigator info</button>
+    <button id="nav-input-pending" @onclick="NavInputPending">isInputPending</button>
     <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
+    <button id="ua-extract-string" @onclick="UaExtractString">userAgent.extract(string)</button>
     <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
     <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
+</section>
+
+<section>
+    @* The media APIs that can be exercised without a prompt, a device or a network fetch. The
+       video element below is the attachment point for the MediaSource check; it stays muted and
+       is never played, so nothing here needs an autoplay gesture. *@
+    <h3>Media</h3>
+    <video id="media-target" @ref="_mediaTarget" muted preload="auto" width="80" height="60"></video>
+    <button id="mediacaps-decoding" @onclick="MediaCapabilitiesDecoding">mediaCapabilities.decodingInfo</button>
+    <button id="mediasource-types" @onclick="MediaSourceTypes">mediaSource.isTypeSupported</button>
+    <button id="mediasource-open" @onclick="MediaSourceOpen">mediaSource.open + addSourceBuffer</button>
+    <button id="webcodecs-roundtrip" @onclick="WebCodecsRoundTrip">webCodecs encode + decode</button>
+    <button id="webaudio-graph" @onclick="WebAudioGraph">webAudio graph + analyser</button>
+    <button id="webaudio-decode" @onclick="WebAudioDecode">webAudio.decodeAudioData</button>
+    <button id="eme-clearkey" @onclick="EmeClearKey">encryptedMedia clear key</button>
+    <button id="media-support" @onclick="MediaSupport">support probes</button>
 </section>
 
 @* Identity and commerce, headless-safe: every call here either only reads a feature-detection
@@ -147,11 +195,13 @@
 @code {
     private string _status = "ready";
     private ElementReference _target;
+    private ElementReference _mediaTarget;
 
     private ButilSubscription? _intersectionSub;
     private ButilSubscription? _resizeSub;
     private ButilSubscription? _mutationSub;
     private ButilSubscription? _perfObserverSub;
+    private ButilSubscription? _typedObserverSub;
     private ButilSubscription? _broadcastSub;
 
     private int _resizeWidth = 120;
@@ -171,6 +221,10 @@
     private async Task PerfObserver()
     {
         var tcs = new TaskCompletionSource<bool>();
+
+        // The harness button can be pressed more than once; drop the previous observer first so a
+        // second run does not leave the first one still reporting into a dead handler.
+        if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
         _perfObserverSub = await performance.SubscribeObserver(["mark"], entries =>
         {
             if (entries.Length > 0) tcs.TrySetResult(true);
@@ -180,6 +234,76 @@
 
         var fired = await WaitFor(tcs, 5000);
         Set($"perf:observer:{fired}");
+    }
+
+    private async Task PerfTypedObserver()
+    {
+        // Measures are deterministic - unlike long tasks or layout shifts, one can be produced on
+        // demand - so this proves the typed relay without depending on the browser being slow.
+        var tcs = new TaskCompletionSource<bool>();
+
+        // Same as above: a repeated activation replaces the subscription, so release the old one.
+        if (_typedObserverSub is not null) await _typedObserverSub.DisposeAsync();
+        _typedObserverSub = await performance.SubscribeObserver<PerformanceEntry>(
+            [PerformanceEntryTypes.Measure],
+            entries =>
+            {
+                var typed = entries.FirstOrDefault(e => e.Name == "butil-e2e-typed-measure");
+                if (typed is not null) tcs.TrySetResult(typed.EntryType == "measure");
+            },
+            buffered: false);
+
+        await performance.Mark("butil-e2e-typed-a");
+        await performance.Mark("butil-e2e-typed-b");
+        await performance.Measure("butil-e2e-typed-measure", "butil-e2e-typed-a", "butil-e2e-typed-b");
+
+        var deserialized = await WaitFor(tcs, 5000);
+        Set($"perf:typed-observer:{deserialized}");
+    }
+
+    private async Task PerfNavigation()
+    {
+        var entries = await performance.GetNavigationEntries();
+        var page = entries.FirstOrDefault();
+        // A navigation entry always exists once the document has loaded, and its response has to
+        // have started - the fields being non-default is what proves the typed deserialization.
+        var ok = page is not null && page.EntryType == "navigation" && page.ResponseStart > 0 && page.Type?.Length > 0;
+        Set($"perf:navigation:{ok}");
+    }
+
+    private async Task PerfResources()
+    {
+        var resources = await performance.GetResourceEntries();
+        // The harness page itself loads scripts, so the buffer is never empty here; every entry has
+        // to be a resource with a name and a start time.
+        var ok = resources.Length > 0 && resources.All(r => r.EntryType == "resource" && r.Name.Length > 0);
+        Set($"perf:resources:{ok}");
+    }
+
+    private async Task PerfWebVitals()
+    {
+        var vitals = await performance.GetWebVitals();
+        // TTFB comes from the navigation entry, so it is the one metric present on every engine
+        // and without any user interaction.
+        var ok = vitals is not null && vitals.Ttfb is >= 0;
+        Set($"perf:vitals:{ok}");
+    }
+
+    private async Task PerfBufferedRead()
+    {
+        // Long tasks never reach the timeline and are only ever observed - and unlike an LCP
+        // candidate one can be produced on demand, which is what makes this deterministic. Block the
+        // main thread, let the blocking task end so the engine records it, and only then make the
+        // very first read of the type. That read is what starts the observer behind it, so it can
+        // only see the long task if the module drains the fresh observer's records rather than
+        // waiting for the callback a later task would have run.
+        var until = DateTime.UtcNow.AddMilliseconds(120);
+        while (DateTime.UtcNow < until) { }
+        await Task.Delay(50);
+
+        var tasks = await performance.GetLongTasks();
+        var ok = tasks.Length > 0 && tasks.All(t => t.EntryType == "longtask" && t.Duration > 0);
+        Set($"perf:buffered-read:{ok}");
     }
 
     // ─── Storage Manager + Network ───────────────────────────────────────────────
@@ -245,6 +369,10 @@
 
     private async Task ObserveResize()
     {
+        // The gated variant below shares this field; a run that clicks both must not leave the first
+        // observer firing into a stale closure, or watching alongside the second.
+        if (_resizeSub is not null) { await _resizeSub.DisposeAsync(); _resizeSub = null; }
+
         var tcs = new TaskCompletionSource<bool>();
         _resizeSub = await _target.ObserveResize(js, entries =>
         {
@@ -259,6 +387,44 @@
         _resizeWidth += 40;
         await _target.SetAttribute("style", $"width:{_resizeWidth}px;height:40px;border:1px solid #888;");
         Set($"resize:triggered:{_resizeWidth}");
+    }
+
+    // The correctness half of the rate limit; Bit.Butil.Tests.Benchmarks measures how much traffic
+    // it removes, and this checks the thing that measurement cannot see - that the size the element
+    // *settles* at still arrives.
+    //
+    // Every one of the five resizes below lands inside a single 300 ms interval, so all of them are
+    // suppressed. A leading-edge-only gate would leave the handler holding the width the element had
+    // when the observer was attached, permanently. The trailing send is what makes the last one
+    // arrive, a little late, and that is what this waits for.
+    private const int GatedFinalWidth = 230;
+
+    // What a content-box ResizeObserver reports for that width: the target carries a 1px border on
+    // each side, and the content box is what is left inside them.
+    private const int GatedFinalContentWidth = GatedFinalWidth - 2;
+
+    private async Task ObserveResizeGated()
+    {
+        if (_resizeSub is not null) { await _resizeSub.DisposeAsync(); _resizeSub = null; }
+
+        var last = 0d;
+        var settled = new TaskCompletionSource<bool>();
+
+        _resizeSub = await _target.ObserveResize(js, entries =>
+        {
+            if (entries.Length == 0) return;
+            last = entries[^1].InlineSize;
+            if (Math.Abs(last - GatedFinalContentWidth) < 1) settled.TrySetResult(true);
+        }, minInterval: TimeSpan.FromMilliseconds(300));
+
+        foreach (var width in new[] { 150, 170, 190, 210, GatedFinalWidth })
+        {
+            await _target.SetAttribute("style", $"width:{width}px;height:40px;border:1px solid #888;");
+            await Task.Delay(20);
+        }
+
+        var arrived = await WaitFor(settled, 5000);
+        Set($"resize:gated:{arrived}:{last:0}");
     }
 
     private async Task ObserveMutation()
@@ -315,6 +481,47 @@
 
     // Walks the whole extended surface - ranges, cursors, index queries, batched transactions and
     // binary values - and reports the first check that fails so a red test names the culprit.
+    // The connection callbacks, which JavaScript dispatches through the interop reference the handle hands
+    // it: a second connection asking for a higher version makes the browser tell the first one to get out
+    // of the way. The blocked callback is registered as well and must NOT fire - Butil's own connection
+    // closes itself as it reports the versionchange, so the upgrade is never held up - which is the other
+    // half of what this arrangement promises.
+    private async Task IndexedDbConnectionCallbacks()
+    {
+        var name = $"butil-e2e-versionchange-{Guid.NewGuid():N}";
+        IndexedDbStoreSchema[] stores = [new IndexedDbStoreSchema { Name = "items", KeyPath = "id" }];
+
+        var versionChanged = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocked = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var first = await indexedDb.Open(name, 1, stores, onVersionChange: () => versionChanged.TrySetResult(true));
+
+        // Deliberately not awaited yet: this open cannot complete while the first connection is still
+        // holding the database, which is the situation both callbacks describe.
+        var upgrade = indexedDb.Open(name, 2, stores, onBlocked: () => blocked.TrySetResult(true)).AsTask();
+
+        var told = await WaitFor(versionChanged, 5000);
+
+        // Waited on rather than slept through: IndexedDB fires blocked *before* it proceeds with an
+        // upgrade, so an upgrade that has gone through while the first connection is still un-disposed
+        // is proof both that the versionchange handler closed that connection and that no blocked
+        // callback is still on its way. Letting a short timer expire and calling a callback that has
+        // not arrived yet "not blocked" would only ever be a race against how fast the browser is.
+        var yielded = (await Task.WhenAny(upgrade, Task.Delay(5000))) == upgrade;
+        var wasBlocked = yielded is false || blocked.Task.IsCompleted;
+
+        // A no-op when the upgrade is already through, and what unblocks it when it is not - so the
+        // failing run reports which of the three values went wrong instead of hanging on the await below.
+        await first.DisposeAsync();
+
+        var second = await upgrade;
+        var upgraded = second.Version == 2;
+        await second.DisposeAsync();
+        await indexedDb.DeleteDatabase(name);
+
+        Set($"idb:connection-callbacks:{told}/{wasBlocked}/{upgraded}");
+    }
+
     private async Task IndexedDbAdvanced()
     {
         const string dbName = "butil-e2e-adv";
@@ -503,6 +710,115 @@
         Set($"cache:roundtrip:{match.Found}/{body}/{deleted}");
     }
 
+    // ─── Origin private file system ────────────────────────────────────────────
+    private async Task OpfsRoundTrip()
+    {
+        const string directory = "butil-e2e";
+        const string path = "butil-e2e/note.txt";
+
+        // Start from a clean tree: the harness runs more than once against the same profile.
+        await opfs.Remove(directory, recursive: true);
+
+        var written = await opfs.WriteText(path, "hello-opfs");
+        var read = await opfs.ReadText(path);
+        var entries = await opfs.List(directory);
+        var info = await opfs.GetFileInfo(path);
+        var removed = await opfs.Remove(directory, recursive: true);
+        var exists = await opfs.Exists(path);
+
+        Set($"opfs:roundtrip:{written}/{read}/{entries.Length}/{info?.Size}/{removed}/{exists}");
+    }
+
+    private async Task OpfsSyncAccess()
+    {
+        const string path = "butil-e2e-sync/log.bin";
+
+        await opfs.Remove(path);
+
+        if (await opfs.IsSyncAccessSupported() is false)
+        {
+            // createSyncAccessHandle is worker-only and not everywhere; the suite also has to pass
+            // where it is absent, and every call below would silently report a failed write there.
+            Set("opfs:sync:unsupported");
+            return;
+        }
+
+        var written = await opfs.SyncWrite(path, System.Text.Encoding.UTF8.GetBytes("record-1;"));
+        var appended = await opfs.SyncAppend(path, System.Text.Encoding.UTF8.GetBytes("record-2;"));
+        var size = await opfs.SyncSize(path);
+        var slice = await opfs.SyncRead(path, offset: 9, length: 9);
+        var text = slice is null ? "null" : System.Text.Encoding.UTF8.GetString(slice);
+        await opfs.Remove("butil-e2e-sync", recursive: true);
+
+        Set($"opfs:sync:True/{written}/{appended}/{size}/{text}");
+    }
+
+    // The worker serializes sync operations per file, and a sync access handle is an exclusive lock -
+    // so two overlapping appends to one file only survive if both take the same queue. These three
+    // spellings are one file, and a queue keyed on the raw string would give them three queues and
+    // have the later handles fail with NoModificationAllowedError.
+    private async Task OpfsSyncPathAliases()
+    {
+        const string directory = "butil-e2e-alias";
+
+        await opfs.Remove(directory, recursive: true);
+
+        if (await opfs.IsSyncAccessSupported() is false)
+        {
+            Set("opfs:aliases:unsupported");
+            return;
+        }
+
+        // Created up front: three concurrent creates of the same missing file is a different race
+        // than the one under test.
+        await opfs.SyncWrite($"{directory}/log.bin", []);
+
+        var record = System.Text.Encoding.UTF8.GetBytes("abc");
+        var appends = await Task.WhenAll(
+            opfs.SyncAppend($"{directory}/log.bin", record).AsTask(),
+            opfs.SyncAppend($"./{directory}/log.bin", record).AsTask(),
+            opfs.SyncAppend($"{directory}//log.bin", record).AsTask());
+
+        // -1 is what the interop reports for a failed sync operation, so a bypassed queue shows up
+        // as a negative here rather than only as a short file.
+        var failures = appends.Count(count => count < 0);
+        var size = await opfs.SyncSize($"{directory}/log.bin");
+        await opfs.Remove(directory, recursive: true);
+
+        Set($"opfs:aliases:{failures}/{size}");
+    }
+
+    // ─── Storage buckets ───────────────────────────────────────────────────────
+    private async Task StorageBucketsRoundTrip()
+    {
+        const string bucket = "butil-e2e";
+
+        if (await storageBuckets.IsSupported() is false)
+        {
+            // Chromium-only API, and the suite also has to pass where it is absent.
+            Set("buckets:roundtrip:unsupported");
+            return;
+        }
+
+        await storageBuckets.Delete(bucket);
+
+        var opened = await storageBuckets.Open(bucket);
+        var written = await storageBuckets.WriteText(bucket, "letters/draft.txt", "unsent");
+        var read = await storageBuckets.ReadText(bucket, "letters/draft.txt");
+
+        // Not valid UTF-8 on purpose: these four bytes are what tells ReadBytes apart from
+        // ReadText, which would decode 0xC3 0x28 into replacement characters and lose them.
+        byte[] payload = [0x00, 0xC3, 0x28, 0xFF];
+        var wroteBytes = await storageBuckets.WriteBytes(bucket, "letters/seal.bin", payload);
+        var readBytes = await storageBuckets.ReadBytes(bucket, "letters/seal.bin");
+        var bytesMatch = readBytes is not null && readBytes.SequenceEqual(payload);
+
+        var keys = await storageBuckets.Keys();
+        var deleted = await storageBuckets.Delete(bucket);
+
+        Set($"buckets:roundtrip:{opened?.Name}/{written}/{read}/{wroteBytes}/{bytesMatch}/{keys.Contains(bucket)}/{deleted}");
+    }
+
     // ─── Web Locks ─────────────────────────────────────────────────────────────
     private async Task LockRun()
     {
@@ -656,11 +972,33 @@
         Set($"nav:info:{language.Length > 0 && cores > 0 && online}");
     }
 
+    private async Task NavInputPending()
+    {
+        // Whether input is pending depends on what the user is doing, so the assertion is that both
+        // forms answer at all - a browser without navigator.scheduling has to report false rather
+        // than throw, and that is the half of this a headless run actually exercises.
+        var pending = await navigator.IsInputPending();
+        var continuous = await navigator.IsInputPending(includeContinuous: true);
+        Set($"nav:input-pending:ok:{pending is true or false}/{continuous is true or false}");
+    }
+
     private async Task UaExtract()
     {
+        // Whatever engine the suite runs in names itself, its engine and its system, so this holds
+        // for Chromium, Firefox and WebKit alike without pinning any of them to a version.
         var props = await userAgent.Extract();
-        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue);
+        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue)
+                 && props.Name is { Length: > 0 } && props.Layout is { Length: > 0 } && props.OsName is { Length: > 0 };
         Set($"ua:extract:{ok}");
+    }
+
+    private async Task UaExtractString()
+    {
+        // The other half of Extract: a string that did not come from this browser. Being a fixed
+        // input it is the deterministic test of the parsing itself - an iPhone, named as one.
+        var props = await userAgent.Extract(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1");
+        Set($"ua:extract-string:{props?.Name}/{props?.Version}/{props?.Layout}/{props?.OsName}/{props?.OsVersion}/{props?.Product}");
     }
 
     private async Task ScreenMetrics()
@@ -741,12 +1079,263 @@
         public string Text { get; set; } = "";
     }
 
+    // ─── Media ───────────────────────────────────────────────────────────────────
+    private async Task MediaCapabilitiesDecoding()
+    {
+        // VP8 in WebM at a modest size: the one combination every Chromium build can decode, so the
+        // answer is deterministic in a headless run.
+        var info = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+        {
+            Type = MediaDecodingType.MediaSource,
+            Video = new VideoConfiguration
+            {
+                ContentType = "video/webm;codecs=vp8",
+                Width = 640,
+                Height = 360,
+                Bitrate = 800_000,
+                Framerate = 30
+            }
+        });
+
+        // Opus in WebM, with the Boolean spatial-rendering member set: as universally decodable as
+        // VP8, and the one query that carries AudioConfiguration.SpatialRendering over the boundary.
+        var audio = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+        {
+            Type = MediaDecodingType.MediaSource,
+            Audio = new AudioConfiguration
+            {
+                ContentType = "audio/webm;codecs=opus",
+                Channels = "2",
+                Samplerate = 48000,
+                SpatialRendering = false
+            }
+        });
+
+        Set($"mediacaps:decoding:{info is not null}/{info?.Supported}/{audio is not null}/{audio?.Supported}");
+    }
+
+    private async Task MediaSourceTypes()
+    {
+        var supported = await mediaSource.IsSupported();
+        var typeOk = await mediaSource.IsTypeSupported("video/webm;codecs=\"vp8\"");
+        Set($"mediasource:types:{supported}/{typeOk}");
+    }
+
+    private async Task MediaSourceOpen()
+    {
+        await using var source = await mediaSource.Open(_mediaTarget);
+        if (source is null)
+        {
+            Set("mediasource:open:null/False");
+            return;
+        }
+
+        var buffer = await source.AddSourceBuffer("video/webm;codecs=\"vp8\"");
+        var state = await source.GetReadyState();
+        var buffered = buffer is null ? 0 : (await buffer.GetBuffered()).Length;
+        if (buffer is not null) await buffer.DisposeAsync();
+
+        // Open, a buffer created, and nothing buffered yet because nothing has been appended.
+        Set($"mediasource:open:{state}/{buffer is not null}/{buffered}");
+    }
+
+    private async Task WebCodecsRoundTrip()
+    {
+        var config = new VideoEncoderConfig { Codec = "vp8", Width = 64, Height = 48, Bitrate = 100_000, Framerate = 10 };
+        if (await webCodecs.IsConfigSupported(config) is false)
+        {
+            Set("webcodecs:roundtrip:unsupported");
+            return;
+        }
+
+        var chunks = new List<EncodedVideoChunk>();
+        var encoder = await webCodecs.CreateVideoEncoder(config, chunk => chunks.Add(chunk));
+        if (encoder is null)
+        {
+            Set("webcodecs:roundtrip:no-encoder");
+            return;
+        }
+
+        await using (encoder)
+        {
+            var pixels = new byte[64 * 48 * 4];
+            for (var i = 0; i < pixels.Length; i++) pixels[i] = (byte)(i % 251);
+
+            await using var frame = await webCodecs.CreateFrame(pixels, "RGBA", 64, 48, 0);
+            await encoder.Encode(frame!, keyFrame: true);
+            await encoder.Flush();
+        }
+
+        var frames = 0;
+        var decoder = await webCodecs.CreateVideoDecoder(
+            new VideoDecoderConfig { Codec = "vp8", CodedWidth = 64, CodedHeight = 48, Description = chunks.FirstOrDefault()?.DecoderDescription },
+            async decoded => { frames++; await decoded.DisposeAsync(); });
+
+        if (decoder is null)
+        {
+            Set($"webcodecs:roundtrip:{chunks.Count > 0}/no-decoder");
+            return;
+        }
+
+        await using (decoder)
+        {
+            foreach (var chunk in chunks) await decoder.Decode(chunk);
+            await decoder.Flush();
+        }
+
+        Set($"webcodecs:roundtrip:{chunks.Count > 0}/{frames > 0}");
+    }
+
+    private async Task WebAudioGraph()
+    {
+        // An analyser reports its buffer even while the context is suspended, so this needs no
+        // autoplay gesture - which is what makes it safe in a headless run.
+        var oscillator = await webAudio.CreateOscillator(AudioOscillatorType.Sine, 440);
+        var analyser = await webAudio.CreateAnalyser(fftSize: 512);
+        if (oscillator is null || analyser is null)
+        {
+            Set("webaudio:graph:null");
+            return;
+        }
+
+        await oscillator.Connect(analyser);
+        await analyser.ConnectToDestination();
+
+        var wave = await analyser.GetByteTimeDomainData();
+        var spectrum = await analyser.GetByteFrequencyData();
+        var rate = await webAudio.GetSampleRate();
+
+        await analyser.DisposeAsync();
+        await oscillator.DisposeAsync();
+
+        Set($"webaudio:graph:{wave?.Length}/{spectrum?.Length}/{rate > 0}");
+    }
+
+    private async Task WebAudioDecode()
+    {
+        await using var buffer = await webAudio.DecodeAudioData(BuildWav());
+        if (buffer is null)
+        {
+            Set("webaudio:decode:null");
+            return;
+        }
+
+        Set($"webaudio:decode:{buffer.NumberOfChannels}/{buffer.Duration > 0.4 && buffer.Duration < 0.6}");
+    }
+
+    private async Task EmeClearKey()
+    {
+        // Clear Key is the key system every engine has, and its licence is a JSON document this page
+        // can produce itself - so the whole exchange runs with no server and no user interaction.
+        var keyId = new byte[] { 0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x70, 0x81, 0x92, 0xa3, 0xb4, 0xc5, 0xd6, 0xe7, 0xf8, 0x09 };
+        var key = new byte[] { 0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x87, 0x96, 0xa5, 0xb4, 0xc3, 0xd2, 0xe1, 0xf0 };
+
+        await using var keys = await encryptedMedia.CreateMediaKeys("org.w3.clearkey", new MediaKeySystemConfiguration
+        {
+            InitDataTypes = ["keyids"],
+            VideoCapabilities = [new MediaKeySystemMediaCapability { ContentType = "video/webm;codecs=\"vp8\"" }]
+        });
+
+        if (keys is null)
+        {
+            Set("eme:clearkey:no-keys");
+            return;
+        }
+
+        var licensed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        MediaKeySessionHandle? session = null;
+        session = await keys.CreateSession(
+            onMessage: async message =>
+            {
+                var licence = System.Text.Encoding.UTF8.GetBytes(
+                    $$"""{"keys":[{"kty":"oct","kid":"{{Base64Url(keyId)}}","k":"{{Base64Url(key)}}"}],"type":"temporary"}""");
+                await session!.Update(licence);
+            },
+            // Only a usable key settles it: an earlier status change carrying no usable key is a
+            // step on the way, not a verdict, and completing on it would lock in a false negative.
+            onKeyStatusesChange: statuses =>
+            {
+                if (statuses.Any(s => s.Status == MediaKeyStatus.Usable)) licensed.TrySetResult(true);
+            });
+
+        if (session is null)
+        {
+            Set("eme:clearkey:no-session");
+            return;
+        }
+
+        await using (session)
+        {
+            var requested = await session.GenerateRequest("keyids",
+                System.Text.Encoding.UTF8.GetBytes($$"""{"kids":["{{Base64Url(keyId)}}"]}"""));
+
+            var usable = await Task.WhenAny(licensed.Task, Task.Delay(5000)) == licensed.Task && licensed.Task.Result;
+            Set($"eme:clearkey:{requested}/{usable}");
+        }
+    }
+
+    private async Task MediaSupport()
+    {
+        // Support probes for the APIs whose answer depends on the engine: what matters here is that
+        // every call completes and reports something, not which way it goes.
+        var docPip = await documentPictureInPicture.IsSupported();
+        var remote = await remotePlayback.IsSupported();
+        var present = await presentation.IsSupported();
+        var xr = await webXr.IsSupported();
+        var inlineXr = await webXr.IsSessionSupported(XrSessionMode.Inline);
+        var eme = await encryptedMedia.IsSupported();
+        var codecs = await webCodecs.IsSupported();
+        var caps = await mediaCapabilities.IsSupported();
+
+        Set($"media:support:{docPip}/{remote}/{present}/{xr}/{inlineXr}/{eme}/{codecs}/{caps}");
+    }
+
+    private static string Base64Url(byte[] value)
+        => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    /// <summary>Half a second of 8-bit mono silence-ish tone as a wav, for the decode check.</summary>
+    private static byte[] BuildWav()
+    {
+        const int sampleRate = 8000;
+        const int samples = sampleRate / 2;
+        var data = new byte[44 + samples];
+
+        void WriteAscii(int offset, string text)
+        {
+            for (var i = 0; i < text.Length; i++) data[offset + i] = (byte)text[i];
+        }
+
+        void WriteInt32(int offset, int value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+        void WriteInt16(int offset, short value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+
+        WriteAscii(0, "RIFF");
+        WriteInt32(4, 36 + samples);
+        WriteAscii(8, "WAVEfmt ");
+        WriteInt32(16, 16);
+        WriteInt16(20, 1);
+        WriteInt16(22, 1);
+        WriteInt32(24, sampleRate);
+        WriteInt32(28, sampleRate);
+        WriteInt16(32, 1);
+        WriteInt16(34, 8);
+        WriteAscii(36, "data");
+        WriteInt32(40, samples);
+
+        for (var i = 0; i < samples; i++)
+        {
+            data[44 + i] = (byte)(128 + Math.Sin(2 * Math.PI * 440 * i / sampleRate) * 30);
+        }
+
+        return data;
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_intersectionSub is not null) await _intersectionSub.DisposeAsync();
         if (_resizeSub is not null) await _resizeSub.DisposeAsync();
         if (_mutationSub is not null) await _mutationSub.DisposeAsync();
         if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
+        if (_typedObserverSub is not null) await _typedObserverSub.DisposeAsync();
         if (_broadcastSub is not null) await _broadcastSub.DisposeAsync();
     }
 }

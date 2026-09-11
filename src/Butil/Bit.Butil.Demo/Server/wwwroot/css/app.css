@@ -554,6 +554,7 @@ svg {
 .feature-card:focus-visible,
 .hero-actions a:focus-visible,
 .copy-btn:focus-visible,
+.code-tab:focus-visible,
 .anchor:focus-visible {
     outline: var(--strokeWidthThick) solid var(--colorStrokeFocus2);
     outline-offset: var(--strokeWidthThin);
@@ -1635,6 +1636,60 @@ svg {
     color: var(--colorNeutralForeground3);
 }
 
+/* A sample that spans several files puts a tab per file where the language name
+   would be. The names are paths, so the strip scrolls rather than wrapping: a bar
+   that grows to three rows on a narrow screen pushes the code itself off it. */
+.code-tabs {
+    display: flex;
+    min-width: 0;
+    gap: var(--spacingXS);
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* The strip's own left padding, in place of the bar's - which the code below
+       is aligned to, and an active tab's background should start at. */
+    margin-inline-start: calc(-1 * var(--codePad) + var(--spacingXS));
+}
+
+.code-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.code-tab {
+    flex: none;
+    min-height: 1.75rem;
+    padding: 0 var(--spacingS);
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--fontFamilyMonospace);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    border: none;
+    color: var(--colorNeutralForeground3);
+    background-color: transparent;
+    border-radius: var(--borderRadiusMedium);
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.code-tab:hover {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.code-tab.active {
+    color: var(--colorNeutralForeground1);
+    font-weight: var(--fontWeightSemibold);
+    background-color: var(--colorCodeBackground);
+}
+
+/* The pane sets display on <pre> itself, which outruns the user agent's rule for
+   [hidden] - so the files behind the active tab would all render on top of each
+   other. They stay in the markup rather than being rendered on demand because
+   that markup is what the MCP server reads every file of the sample out of. */
+.code-holder pre[hidden] {
+    display: none;
+}
+
 .copy-btn {
     display: inline-flex;
     flex: none;
@@ -2657,6 +2712,72 @@ label.check {
     border-color: var(--colorNeutralStroke1Hover);
 }
 
+/* The command bar hands its search field to the hero on the home page, so the box
+   is dressed as one of the hero's own controls instead of a utility squeezed in
+   among the icon buttons: the Large button height the two calls to action use, a
+   real border and the same float the code panes have. Every rule here carries the
+   wrapper as well as .header-search, which is what keeps the command bar's own
+   narrower widths - set in the lg and md media queries further down - from
+   winning on source order. */
+.hero-search {
+    max-width: 24rem;
+    margin-top: var(--spacingXL);
+}
+
+.hero-search .header-search {
+    display: flex;
+    width: 100%;
+    margin-inline-end: 0;
+}
+
+.hero-search .header-search-icon {
+    left: var(--spacingM);
+}
+
+.hero-search .header-search input,
+.hero-search .header-search input:focus {
+    width: 100%;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 4rem 0 2.75rem;
+    box-shadow: var(--shadow8);
+    border-color: var(--colorNeutralStroke1);
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+    background-color: var(--colorNeutralBackground1);
+    /* Nothing grows on focus here - the field is already the width it gets - so the
+       transition has nothing left to animate but the colours. */
+    transition: border-color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.hero-search .header-search input:hover {
+    border-color: var(--colorNeutralStroke1Hover);
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+    background-color: var(--colorNeutralBackground1);
+}
+
+/* The site draws a focused field's second pixel of brand rule as an inset shadow,
+   which the elevation this one carries would otherwise replace outright - so both
+   are declared together rather than one of them being lost. */
+.hero-search .header-search input:focus {
+    border-bottom-color: var(--colorBrandStroke1);
+    box-shadow: inset 0 calc(-1 * var(--strokeWidthThin)) 0 0 var(--colorBrandStroke1), var(--shadow8);
+}
+
+.hero-search .search-hint {
+    right: var(--spacingS);
+}
+
+/* Anchored to the start of the field rather than its end: in the bar the box sits
+   against the right edge of the window, here it sits against the left edge of the
+   pitch. It is allowed to be wider than the field so a hit still gets a readable
+   line of the sentence it matched. */
+.hero-search .header-search-results {
+    left: 0;
+    right: auto;
+    width: max(100%, 26rem);
+    max-width: 88vw;
+}
 .hero-install {
     max-width: 24rem;
 }
@@ -3501,6 +3622,14 @@ label.check {
         display: none;
     }
 
+    /* Except on the home page, which has neither the menu button nor the search
+       field in the bar - its search lives in the hero - so the two section tabs
+       are what that room is spent on instead. They are the only way off this page
+       and into the documentation from the bar, since the nav panel is not here. */
+    .header .container.home-page .header-nav {
+        display: flex;
+    }
+
     .header .brand {
         margin-inline-end: 0;
     }
@@ -3702,8 +3831,22 @@ label.check {
     .doc-pager,
     .footer,
     .copy-btn,
+    .code-tabs,
     #blazor-error-ui {
         display: none !important;
+    }
+
+    /* Paper has no tab to click, so a multi-file sample prints as all of its files,
+       each under the name its tab gave it. */
+    .code-holder pre[hidden] {
+        display: block !important;
+    }
+
+    .code-holder pre[data-file]::before {
+        content: attr(data-file);
+        display: block;
+        margin-bottom: var(--spacingS);
+        font-weight: var(--fontWeightSemibold);
     }
 
     .app-root,

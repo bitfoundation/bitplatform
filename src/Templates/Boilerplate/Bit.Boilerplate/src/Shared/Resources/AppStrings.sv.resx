@@ -1493,11 +1493,20 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Skicka notis</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Aktivera notiser</value>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Notiser är aktiverade för den här sessionen.</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Inaktivera notiser</value>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Notiser är tystade för den här sessionen.</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notiser</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Slå på notiser</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Stäng av notiser</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Aviseringar är på</value>
@@ -1820,15 +1829,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Ingen tidszon matchar din sökning.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Pushnotiser</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Slå på pushnotiser</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Stäng av pushnotiser</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Pushnotiser är blockerade för den här appen. Tillåt notiser i webbläsarens eller operativsystemets inställningar och försök igen.</value>
   </data>
@@ -1902,4 +1902,134 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>Godkänn och fortsätt</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>Auktorisera applikation</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>Kontrollerar den här begäran...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>Den här begäran kan inte auktoriseras</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>Ingenting har delats. Du kan stänga den här sidan och försöka igen från applikationen.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>Gå till startsidan</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>Du kan gå tillbaka till applikationen</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>Resultatet lämnades över till {0}. Om den inte kom fram av sig själv, växla till den.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>Auktorisera {0}?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>Den ber om att få agera å dina vägnar. Fortsätt bara om du själv startade detta från en applikation du litar på.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>Applikation</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>Kan komma åt</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>Skickar tillbaka dig till</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>Den kommer att kunna:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>Ditt konto kan inte bevilja allt som den här applikationen bad om, så följande utelämnas: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>Den här applikationen beskrev sig själv; ingen hos {0} har gått i god för den.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>Auktorisera</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>Applikationen som gör den här begäran kunde inte identifieras.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>Adressen som den här applikationen vill skickas tillbaka till är inte någon av dem den har registrerat.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>Den här auktoriseringsbegäran är inte giltig.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>Läsa diagnostikinformation om den här driftsättningen - konfiguration, databasschema, bakgrundsjobb. Den kan inte ändra något.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>Läsa diagnostikinformation om den här driftsättningen.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>Auktoriserad applikation</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>Applikationer</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>Auktoriserade applikationer</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>Externa applikationer som dina användare har auktoriserat via OAuth.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>Ingen applikation har auktoriserats än.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>Applikationer dyker upp här så fort någon auktoriserar en; ingenting behöver registreras i förväg.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>aktiva behörigheter</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>Skickar tillbaka användare till:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>Återkalla åtkomst</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} har för närvarande {1} behörighet(er). Att återkalla loggar ut den för alla som auktoriserat den; de kan auktorisera den igen.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>{0} behörighet(er) återkallade.</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>Förkonfigurerad</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>Självbeskriven</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>Den här applikationen kunde inte identifieras, så det finns ingenstans att återvända till.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>Den här auktoriseringsbegäran är inte giltig ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>Ditt konto har inte de behörigheter som den här applikationen ber om.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>Den här applikationen kräver tvåfaktorsautentisering. Slå på den i dina kontoinställningar, logga in igen och börja sedan om från applikationen.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>Arbetsyta</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>Du är inte medlem i arbetsytan som den här applikationen frågar efter.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>Använda appens assistent å dina vägnar - ställa frågor till den och söka i det den kan söka i. Den kan inte agera på din enhet.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>Använda appens assistent å dina vägnar.</value>
+  </data>
+  <!--#endif -->
 </root>

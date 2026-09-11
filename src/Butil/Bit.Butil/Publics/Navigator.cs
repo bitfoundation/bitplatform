@@ -162,6 +162,44 @@ public class Navigator(IJSRuntime js)
         => await js.Invoke<UserActivationState?>("BitButil.navigator.userActivation");
 
     /// <summary>
+    /// Whether the browser has user input waiting that this task is holding up - the hint that lets
+    /// a long loop yield sooner than its own schedule would.
+    /// <br/>
+    /// Experimental and Chromium-only. <c>navigator.scheduling.isInputPending()</c> has been
+    /// superseded by the Prioritized Task Scheduling API; new code should reach for
+    /// <c>globalThis.scheduler.yield()</c> or a deadline-based scheduler, and use this only as the
+    /// compatibility wrapper it is.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Scheduling/isInputPending">https://developer.mozilla.org/en-US/docs/Web/API/Scheduling/isInputPending</see>
+    /// </summary>
+    /// <param name="includeContinuous">
+    /// Also count the continuous events - <c>mousemove</c>, <c>pointermove</c>, <c>wheel</c>,
+    /// <c>drag</c>. They fire constantly while a pointer is moving, so including them makes this
+    /// answer true far more often; leave it false unless the work is genuinely interruptible.
+    /// </param>
+    /// <returns>
+    /// False on a browser without <c>navigator.scheduling</c> (everything but Chromium at the time
+    /// of writing), which is also the answer that lets a loop written around this keep running
+    /// rather than yielding forever.
+    /// </returns>
+    /// <remarks>
+    /// This is a hint about the browser's input queue, not about your own handlers: it goes true
+    /// while a click is queued and behind schedule, and back to false the moment the browser gets to
+    /// dispatch it. Poll it between chunks of work, and yield when it says yes.
+    /// <br/>
+    /// Because it is false both when there is no input and when the browser cannot answer at all, it
+    /// can only ever make a loop yield <i>sooner</i> - it can never be the thing that makes it yield.
+    /// Bound the loop with a deadline or a periodic yield of your own and treat a true answer as the
+    /// early exit from that budget, or a browser without the API will run the whole loop unbroken.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> IsInputPending(bool includeContinuous = false)
+        => await js.Invoke<bool>("BitButil.navigator.isInputPending", includeContinuous);
+
+    /// <summary>
     /// Returns true if a call to Navigator.share() would succeed.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare</see>
@@ -259,4 +297,88 @@ public class Navigator(IJSRuntime js)
     /// </remarks>
     public async Task<bool> Vibrate(int[] pattern)
         => await js.Invoke<bool>("BitButil.navigator.vibrate", pattern);
+
+    /// <summary>
+    /// True when the runtime implements <c>registerProtocolHandler</c>.
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> CanRegisterProtocolHandler()
+        => await js.Invoke<bool>("BitButil.navigator.canRegisterProtocolHandler");
+
+    /// <summary>
+    /// Offers this site as the handler for a URL scheme, so that opening a <c>mailto:</c>,
+    /// <c>web+coffee:</c> or similar link brings the user here.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/registerProtocolHandler">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/registerProtocolHandler</see>
+    /// </summary>
+    /// <param name="scheme">
+    /// The scheme to handle. Either one of the safelisted schemes (<c>mailto</c>, <c>bitcoin</c>,
+    /// <c>sms</c>, <c>tel</c>, <c>webcal</c>…) or a custom one prefixed with <c>web+</c> and
+    /// otherwise all-lowercase letters, e.g. <c>"web+coffee"</c>.
+    /// </param>
+    /// <param name="url">
+    /// The page that handles it, containing a single <c>%s</c> placeholder that the whole link is
+    /// substituted into - <c>"/open?link=%s"</c>. Must be same-origin with this page.
+    /// </param>
+    /// <returns>
+    /// False when the runtime has no such method, or rejected the request: a disallowed scheme, a
+    /// cross-origin url, or a url with no <c>%s</c> in it.
+    /// </returns>
+    /// <remarks>
+    /// Registering does not switch the handler over - the browser asks the user, and may hold the
+    /// request back until the site has been engaged with. Nothing observable happens on success.
+    /// <br/>
+    /// An installed app usually wants the manifest's <c>protocol_handlers</c> instead, which routes
+    /// the link to <see cref="LaunchQueue"/> rather than to a browser tab.
+    /// </remarks>
+    public async Task<bool> RegisterProtocolHandler(string scheme, string url)
+        => await js.Invoke<bool>("BitButil.navigator.registerProtocolHandler", scheme, url);
+
+    /// <summary>
+    /// Removes a registration made by <see cref="RegisterProtocolHandler"/>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/unregisterProtocolHandler">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/unregisterProtocolHandler</see>
+    /// </summary>
+    /// <returns>False when the runtime doesn't implement it - it is non-standard and Chromium-only.</returns>
+    /// <remarks>
+    /// The scheme and url must match the registration exactly. Where this isn't implemented the user
+    /// can still remove the handler from the browser's site settings.
+    /// </remarks>
+    public async Task<bool> UnregisterProtocolHandler(string scheme, string url)
+        => await js.Invoke<bool>("BitButil.navigator.unregisterProtocolHandler", scheme, url);
+
+    /// <summary>
+    /// True when the runtime implements <c>getInstalledRelatedApps</c>.
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> CanGetInstalledRelatedApps()
+        => await js.Invoke<bool>("BitButil.navigator.canGetInstalledRelatedApps");
+
+    /// <summary>
+    /// Which of the apps this site claims as its own are actually installed - the check behind
+    /// "you already have our app, open it there".
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getInstalledRelatedApps">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getInstalledRelatedApps</see>
+    /// </summary>
+    /// <returns>
+    /// The installed subset of the manifest's <c>related_applications</c>, or an empty array when
+    /// none are installed, the manifest declares none, or the runtime doesn't implement this.
+    /// </returns>
+    /// <remarks>
+    /// Requires a secure context and a manifest whose <c>related_applications</c> entries name the
+    /// apps, and the relationship has to be proven from the other side too (Digital Asset Links on
+    /// Android). This is deliberately not an install enumerator: an app the manifest doesn't claim
+    /// is never reported.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RelatedApp))]
+    public async Task<RelatedApp[]> GetInstalledRelatedApps()
+        => await js.Invoke<RelatedApp[]>("BitButil.navigator.getInstalledRelatedApps");
 }

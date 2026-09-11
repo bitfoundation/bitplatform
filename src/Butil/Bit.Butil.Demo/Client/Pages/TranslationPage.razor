@@ -1,0 +1,304 @@
+@page "/translation"
+@implements IAsyncDisposable
+@inject Bit.Butil.Translator translator
+@inject Bit.Butil.LanguageDetector languageDetector
+
+<PageTitle>Translation - Bit.Butil</PageTitle>
+
+<PageHeader Category="Built-in AI"
+            Title="Translation"
+            Lead="Two APIs that belong together: LanguageDetector works out what language a piece of text is in, and Translator turns it into another - both on the device."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Translator"
+            InjectAs="Translator translator, LanguageDetector languageDetector" />
+
+<Callout Type="warning" Title="One model per language pair">
+    A translator is created for a pair, and each pair is its own downloadable model: a runtime that
+    can do <code>en → fr</code> may not be able to do <code>fr → ja</code>. Probe the pair you
+    actually need. Chromium only; see <a href="/language-model">LanguageModel</a> for the rest.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Detect the language"
+                 Api="LanguageDetector.Create / Detect"
+                 Description="Ranks the candidate languages, most confident first. A result of 'und' is the detector saying it could not decide - short input often lands there. This is the natural front half of translation."
+                 Code=@("""
+@inject Bit.Butil.LanguageDetector languageDetector
+
+await using var detector = await languageDetector.Create();
+var candidates = await detector.Detect(text);
+var best = candidates.FirstOrDefault()?.DetectedLanguage;
+""")>
+        <div class="field">
+            <span class="field-label">Text</span>
+            <textarea rows="3" @bind="_input"></textarea>
+        </div>
+        <div class="controls">
+            <button @onclick="CheckDetectorAvailability">Availability</button>
+            <button @onclick="Detect">Create + Detect</button>
+        </div>
+        <DemoConsole @ref="detectOutput" Title="detection output" />
+    </DemoSection>
+
+    <DemoSection Title="Can this pair be translated?"
+                 Api="Translator.IsSupported / Availability"
+                 Description="Availability takes the pair, either as a TranslatorOptions or as two BCP 47 tags. Downloadable means creating a session will fetch that pair's model first."
+                 Code=@("""
+var availability = await translator.Availability("en", "fr");
+
+if (availability == AiAvailability.Downloadable)
+{
+    // creating the session will download - do it from a user gesture, show progress
+}
+""")>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">From</span>
+                <input @bind="_source" />
+            </label>
+            <label class="field">
+                <span class="field-label">To</span>
+                <input @bind="_target" />
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="CheckAvailability">Availability</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Translate"
+                 Api="Translator.Create / Translate / TranslateStreaming"
+                 Description="Create a session for the pair, then translate through it as many times as you like. TranslateStreaming reports the translation as it is produced, which is worth it for anything longer than a sentence. Dispose the session when the pair is no longer needed."
+                 Code=@("""
+await using var session = await translator.Create("en", "fr",
+    onDownloadProgress: p => { _progress = p; InvokeAsync(StateHasChanged); });
+
+var translated = await session!.Translate(text);
+""")>
+        <div class="controls">
+            <button @onclick="CreateSession" disabled="@(_session is not null || _creating)">Create</button>
+            <button @onclick="Translate" disabled="@(_session is null)">Translate</button>
+            <button @onclick="TranslateStreaming" disabled="@(_session is null)">TranslateStreaming</button>
+            <button class="danger" @onclick="DestroySession" disabled="@(_session is null)">Dispose session</button>
+        </div>
+        @if (_progress > 0 && _progress < 1)
+        {
+            <div class="field">
+                <span class="field-label">Downloading model</span>
+                <span><code>@($"{_progress:P0}")</code></span>
+            </div>
+        }
+        @if (string.IsNullOrEmpty(_translated) is false)
+        {
+            <div class="field">
+                <span class="field-label">Translation</span>
+                <span>@_translated</span>
+            </div>
+        }
+        <DemoConsole @ref="runOutput" Title="translation output" />
+    </DemoSection>
+
+    <DemoSection Title="Detect, then translate"
+                 Api="LanguageDetector + Translator"
+                 Description="The two together are what 'translate this page for me' actually is: detect the source, create a translator into the user's own language, and skip the whole thing when they already match."
+                 Code=@("""
+await using var detector = await languageDetector.Create();
+var detected = (await detector.Detect(text)).FirstOrDefault()?.DetectedLanguage;
+
+if (detected is null or "und" || detected == userLanguage) return text;
+
+await using var session = await translator.Create(detected, userLanguage);
+return await session!.Translate(text) ?? text;
+""") />
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="Translator.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes the Translator API." />
+    <ApiMember Name="Translator.Availability"
+               Signature="ValueTask<AiAvailability> Availability(TranslatorOptions options) / Availability(string sourceLanguage, string targetLanguage)"
+               Description="Whether this language pair can be translated right now, and whether that means a download first." />
+    <ApiMember Name="Translator.Create"
+               Signature="ValueTask<TranslatorSession?> Create(TranslatorOptions options, Action<double>? onDownloadProgress = null) / Create(string sourceLanguage, string targetLanguage, …)"
+               Description="Creates a translator for one language pair. Null when the pair can't be served." />
+    <ApiMember Name="TranslatorSession.Translate"
+               Signature="ValueTask<string?> Translate(string input)"
+               Description="Translates a piece of text and waits for the whole result." />
+    <ApiMember Name="TranslatorSession.TranslateStreaming"
+               Signature="Task<string> TranslateStreaming(string input, Action<string>? onChunk = null)"
+               Description="Translates a piece of text, reporting it as it is produced." />
+    <ApiMember Name="TranslatorSession.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
+    <ApiMember Name="LanguageDetector.IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes the LanguageDetector API." />
+    <ApiMember Name="LanguageDetector.Availability"
+               Signature="ValueTask<AiAvailability> Availability() / Availability(LanguageDetectorOptions options)"
+               Description="Whether a detector can be created right now, and whether that means a download first." />
+    <ApiMember Name="LanguageDetector.Create"
+               Signature="ValueTask<LanguageDetectorSession?> Create(LanguageDetectorOptions? options = null, Action<double>? onDownloadProgress = null)"
+               Description="Creates a detector. Null when the runtime refused." />
+    <ApiMember Name="LanguageDetectorSession.Detect"
+               Signature="ValueTask<LanguageDetectionResult[]> Detect(string input)"
+               Description="Ranks the languages a piece of text might be in, most confident first." />
+    <ApiMember Name="LanguageDetectorSession.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Destroys the model instance and frees what it holds. Always dispose." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole detectOutput = default!;
+    private DemoConsole runOutput = default!;
+
+    private TranslatorSession? _session;
+    // Create is slow enough to be clicked twice, and the second session would overwrite - and leak -
+    // the first: the button only knows to disable itself once _session has been assigned.
+    private bool _creating;
+    private string _source = "en";
+    private string _target = "fr";
+    private string _input = "The browser can now translate this sentence without a server.";
+    private string _translated = "";
+    private double _progress;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("Translator.IsSupported →", await translator.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckAvailability()
+    {
+        try
+        {
+            var availability = await translator.Availability(_source, _target);
+            if (availability == AiAvailability.Unavailable)
+                await supportOutput.Warn("Availability →", $"Unavailable - '{_source} → {_target}' can't be served here.");
+            else
+                await supportOutput.Success("Availability →", availability);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Availability failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckDetectorAvailability()
+    {
+        try
+        {
+            await detectOutput.Success("LanguageDetector.Availability →", await languageDetector.Availability());
+        }
+        catch (Exception ex)
+        {
+            await detectOutput.Error("Availability failed →", ex.Message);
+        }
+    }
+
+    private async Task Detect()
+    {
+        try
+        {
+            await using var detector = await languageDetector.Create();
+            if (detector is null)
+            {
+                await detectOutput.Warn("Create →", "null - no detector available here.");
+                return;
+            }
+
+            var results = await detector.Detect(_input);
+            if (results.Length == 0) await detectOutput.Warn("Detect →", "no candidates.");
+            else await detectOutput.Success("Detect →", results);
+        }
+        catch (Exception ex)
+        {
+            await detectOutput.Error("Detect failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateSession()
+    {
+        if (_creating) return;
+
+        _creating = true;
+        try
+        {
+            _session = await translator.Create(_source, _target, async fraction => await InvokeAsync(() =>
+            {
+                _progress = fraction;
+                StateHasChanged();
+            }));
+
+            if (_session is null) await runOutput.Warn("Create →", $"null - '{_source} → {_target}' can't be served here.");
+            else await runOutput.Success("Create →", $"session {_session.Id}");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("Create failed →", ex.Message);
+        }
+        finally
+        {
+            _creating = false;
+        }
+    }
+
+    private async Task DestroySession()
+    {
+        try
+        {
+            if (_session is not null) await _session.DisposeAsync();
+            _session = null;
+            await runOutput.Info("Session disposed.");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("Dispose failed →", ex.Message);
+        }
+    }
+
+    private async Task Translate()
+    {
+        try
+        {
+            _translated = await _session!.Translate(_input) ?? "";
+            await runOutput.Success("Translate →", _translated.Length == 0 ? "(null - the session is gone)" : _translated);
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("Translate failed →", ex.Message);
+        }
+    }
+
+    private async Task TranslateStreaming()
+    {
+        try
+        {
+            _translated = "";
+            var whole = await _session!.TranslateStreaming(_input, async chunk => await InvokeAsync(() =>
+            {
+                _translated += chunk;
+                StateHasChanged();
+            }));
+
+            await runOutput.Success("TranslateStreaming →", $"{whole.Length} characters.");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("TranslateStreaming failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_session is not null) await _session.DisposeAsync();
+    }
+}

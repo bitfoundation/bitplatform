@@ -40,12 +40,40 @@ var supported = await push.IsSupported();
     <DemoSection Title="Prerequisite: register the demo worker"
                  Api="ServiceWorker.Register"
                  Description="Push subscriptions belong to a service worker registration. This button registers the demo /sw.js, whose push handler shows a notification with the received payload."
-                 Code=@("""
+                 Files=@([
+new("Push.razor", """
 @inject Bit.Butil.ServiceWorker serviceWorker
 
-await serviceWorker.Register("/sw.js");
-""")
-                 Language="razor">
+<button @onclick="RegisterWorker">Register /sw.js</button>
+
+@code {
+    private async Task RegisterWorker() => await serviceWorker.Register("/sw.js");
+}
+"""),
+new("wwwroot/sw.js", """
+// Nothing in a page can receive a push: the browser wakes the service worker, which is why a
+// subscription belongs to a registration rather than to a tab.
+self.addEventListener('push', event => {
+    const text = event.data ? event.data.text() : '(no payload)';
+
+    // Chromium enforces the userVisibleOnly promise the subscription made: a push handler that
+    // shows no notification eventually loses the subscription.
+    event.waitUntil(self.registration.showNotification('Bit.Butil push demo', { body: text }));
+});
+
+// The endpoint can be rotated by the push service, which arrives here rather than in the page. The
+// new subscription has to be sent to your server, or it goes on pushing to the old endpoint.
+self.addEventListener('pushsubscriptionchange', event => {
+    event.waitUntil(self.registration.pushManager
+        .subscribe(event.oldSubscription.options)
+        .then(subscription => fetch('/api/push/subscriptions', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(subscription)
+        })));
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="RegisterWorker">Register /sw.js</button>
         </div>
@@ -55,14 +83,32 @@ await serviceWorker.Register("/sw.js");
     <DemoSection Title="Subscribe"
                  Api="Subscribe"
                  Description="Creates a push subscription for the active service worker. The applicationServerKey is your VAPID public key (base64-url encoded); generate a key pair once on your machine and keep the private key on your server. userVisibleOnly defaults to true because Chromium requires every push to result in a user-visible notification."
-                 Code=@("""
-// Generate a VAPID key pair once (keep the private key server-side):
-//   npx web-push generate-vapid-keys
+                 Files=@([
+new("keys.sh", """
+# Once per application, not once per user. The public half goes to the browser as the
+# applicationServerKey; the private half stays on your server and signs every push you send.
+npx web-push generate-vapid-keys
+"""),
+new("Push.razor", """
+@inject Bit.Butil.Push push
 
-var sub = await push.Subscribe(applicationServerKey: "<your VAPID public key>");
+@code {
+    // The public half of the VAPID key pair, base64-url encoded.
+    private const string ApplicationServerKey = "BPk3...your public key...";
 
-// sub.IsActive, sub.Endpoint, sub.ExpirationTime, sub.P256dh, sub.Auth
-""")>
+    private async Task Subscribe()
+    {
+        var sub = await push.Subscribe(applicationServerKey: ApplicationServerKey);
+
+        if (sub.IsActive is false) return;
+
+        // sub.Endpoint, sub.P256dh and sub.Auth are the three values your server needs to push to
+        // this browser; sub.ExpirationTime is usually null. Nothing on this side can send a push.
+        await http.PostAsJsonAsync("/api/push/subscriptions", sub);
+    }
+}
+"""),
+])>
         <div class="field">
             <label class="field-label">VAPID public key (base64-url) - generate with: npx web-push generate-vapid-keys</label>
             <input @bind="vapidKey" placeholder="BPk3...your public key..." />

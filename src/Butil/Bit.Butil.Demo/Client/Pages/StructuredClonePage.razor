@@ -1,0 +1,164 @@
+@page "/structured-clone"
+@inject Bit.Butil.StructuredClone structuredClone
+
+<PageTitle>StructuredClone - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files &amp; Data"
+            Title="StructuredClone"
+            Lead="The browser's own deep-copy algorithm - and the test that decides whether postMessage, IndexedDB and history.pushState will accept a payload before you hand it to one of them."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone"
+            InjectAs="StructuredClone structuredClone" />
+
+<Callout Type="info" Title="What crosses the boundary, and what doesn't">
+    Every value going to or from JavaScript is marshalled as JSON, so what the browser clones is the
+    marshalled shape. Within plain data the round trip is faithful; a <code>DateTime</code> arrives
+    as a string and comes back a string, and the <code>Map</code>, <code>Set</code> and
+    <code>ArrayBuffer</code> types structured clone preserves have no representation here to
+    preserve. This is a deep copy and a compatibility check - not a way to smuggle types past the
+    boundary.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes structuredClone. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.StructuredClone structuredClone
+
+var supported = await structuredClone.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Deep-copy a graph"
+                 Api="Clone"
+                 Description="A deep copy with no ICloneable to implement and no copy constructor to keep in sync: the value goes out, a detached copy comes back. Mutating the copy here leaves the original untouched, nested objects and all."
+                 Code=@("""
+var copy = await structuredClone.Clone(order);
+
+copy!.Lines[0].Quantity = 99;   // the original is unaffected
+""")>
+        <div class="controls">
+            <button @onclick="CloneOrder">Clone, then mutate the copy</button>
+        </div>
+        <DemoConsole @ref="cloneOutput" Title="clone output" />
+    </DemoSection>
+
+    <DemoSection Title="Will the browser take this?"
+                 Api="CanClone"
+                 Description="The same algorithm decides what postMessage, IndexedDB and history.pushState accept - so this answers 'will this payload survive' before you find out from a DataCloneError at the far end. Worth calling once against a representative payload rather than per message."
+                 Code=@("""
+if (await structuredClone.CanClone(payload) is false)
+{
+    // don't hand it to BroadcastChannel / IndexedDb / History
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckOrder">Check the sample order</button>
+            <button class="secondary" @onclick="CheckPrimitives">Check a handful of primitives</button>
+        </div>
+        <DemoConsole @ref="checkOutput" Title="check output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes structuredClone. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Clone"
+               Signature="ValueTask<T?> Clone<T>(T value)"
+               Description="Deep-copies a value through the browser's structured clone algorithm. Default when the runtime has no structuredClone or the value isn't cloneable." />
+    <ApiMember Name="CanClone"
+               Signature="ValueTask<bool> CanClone<T>(T value)"
+               Description="Whether the structured clone algorithm accepts this value - the same test postMessage, IndexedDB and history.pushState apply." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole cloneOutput = default!;
+    private DemoConsole checkOutput = default!;
+
+    public class OrderLine
+    {
+        public string Sku { get; set; } = "";
+        public int Quantity { get; set; }
+    }
+
+    public class Order
+    {
+        public string Reference { get; set; } = "";
+        public List<OrderLine> Lines { get; set; } = [];
+    }
+
+    private static Order SampleOrder() => new()
+    {
+        Reference = "ORD-1042",
+        Lines = [new() { Sku = "A-1", Quantity = 2 }, new() { Sku = "B-7", Quantity = 5 }],
+    };
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await structuredClone.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task CloneOrder()
+    {
+        try
+        {
+            var original = SampleOrder();
+            var copy = await structuredClone.Clone(original);
+
+            if (copy is null)
+            {
+                await cloneOutput.Warn("Clone returned null - structuredClone is unavailable here.");
+                return;
+            }
+
+            copy.Lines[0].Quantity = 99;
+
+            await cloneOutput.Success("Clone →", $"{copy.Reference}, {copy.Lines.Count} lines.");
+            await cloneOutput.Info($"After mutating the copy: copy[0].Quantity = {copy.Lines[0].Quantity}, original[0].Quantity = {original.Lines[0].Quantity}.");
+        }
+        catch (Exception ex)
+        {
+            await cloneOutput.Error("Clone failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckOrder()
+    {
+        try
+        {
+            await checkOutput.Success("CanClone(order) →", await structuredClone.CanClone(SampleOrder()));
+        }
+        catch (Exception ex)
+        {
+            await checkOutput.Error("CanClone failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckPrimitives()
+    {
+        try
+        {
+            await checkOutput.Info("CanClone(42) →", await structuredClone.CanClone(42));
+            await checkOutput.Info("CanClone(\"text\") →", await structuredClone.CanClone("text"));
+            await checkOutput.Info("CanClone(DateTime.Now) →", await structuredClone.CanClone(DateTime.Now));
+            await checkOutput.Log("The DateTime is marshalled as a string, so what was tested - and what an interop call would hand to postMessage - is a string.");
+        }
+        catch (Exception ex)
+        {
+            await checkOutput.Error("CanClone failed →", ex.Message);
+        }
+    }
+}

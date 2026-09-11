@@ -1,0 +1,202 @@
+@page "/invoker-commands"
+@implements IAsyncDisposable
+@inject Bit.Butil.InvokerCommands invokerCommands
+
+<PageTitle>InvokerCommands - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="InvokerCommands"
+            Lead="A button says which element it acts on and what it does to it, and the browser wires the two together - no click handler, no id plumbing, and none of the focus management to get wrong."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API"
+            InjectAs="InvokerCommands invokerCommands" />
+
+<Callout Type="info" Title="Built-in commands are handled for you">
+    <code>show-modal</code>, <code>close</code>, <code>request-close</code>,
+    <code>toggle-popover</code>, <code>show-picker</code> and the media commands are carried out by
+    the browser itself - correctly, including the top layer and focus restoration. A command starting
+    with <code>--</code> is yours: the browser dispatches the event and does nothing else.
+</Callout>
+
+<Callout Type="warning" Title="Chromium and Safari">
+    Where <code>IsSupported</code> is false the button does nothing at all, so keep an ordinary click
+    handler as the fallback.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime implements command/commandfor and CommandEvent. During prerender/SSR the check returns false rather than throwing."
+                 Code=@("""
+@inject Bit.Butil.InvokerCommands invokerCommands
+
+var supported = await invokerCommands.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Open a dialog with no handler"
+                 Api="SetCommandFor"
+                 Description="Points the button at the dialog with the built-in show-modal command. After wiring, clicking the button opens the dialog with no C# involved at all - the browser does it, including the top layer and focus restoration. Butil sets the commandForElement property rather than the commandfor attribute, because the attribute takes an id and a Blazor-rendered element often has none."
+                 Code=@("""
+<button @ref="_invoker">Open</button>
+<dialog @ref="_dialog">…</dialog>
+
+await invokerCommands.SetCommandFor(_invoker, _dialog, "show-modal");
+""")>
+        <div class="controls">
+            <button @ref="_openInvoker">Open dialog</button>
+            <button class="secondary" @onclick="WireDialog">Wire the button</button>
+        </div>
+        <dialog @ref="_dialog">
+            <p style="margin:0 0 1rem">A real <code>&lt;dialog&gt;</code>, opened by the browser.</p>
+            <button @ref="_closeInvoker">Close</button>
+        </dialog>
+        <DemoConsole @ref="dialogOutput" Title="dialog output" />
+    </DemoSection>
+
+    <DemoSection Title="Custom commands"
+                 Api="OnCommand"
+                 Description="A command starting with -- is dispatched at the target and otherwise ignored by the browser, which is what makes it a declarative way to wire your own behaviour. The event fires on the target, not the button, so one handler serves however many invokers point at it."
+                 Code=@("""
+_sub = await invokerCommands.OnCommand(_panel, args =>
+{
+    if (args.Command == "--refresh") Reload();
+    InvokeAsync(StateHasChanged);
+});
+
+await invokerCommands.SetCommandFor(_refreshButton, _panel, "--refresh");
+""")>
+        <div class="controls">
+            <button @ref="_customInvoker">Send --refresh</button>
+            <button class="secondary" @onclick="WireCustom">Wire the button</button>
+            <button @onclick="ReadCommand">GetCommand</button>
+            <button class="danger" @onclick="ClearCommand">ClearCommandFor</button>
+        </div>
+        <div @ref="_panel" class="field">
+            <span class="field-label">Target panel</span>
+            <span>Commands received: <code>@_received</code></span>
+        </div>
+        <DemoConsole @ref="commandOutput" Title="command output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime implements command/commandfor and CommandEvent." />
+    <ApiMember Name="SetCommandFor"
+               Signature="ValueTask<bool> SetCommandFor(ElementReference invoker, ElementReference target, string command)"
+               Description="Points an invoker at a target and says what it does. The invoker must be a <button>." />
+    <ApiMember Name="ClearCommandFor"
+               Signature="ValueTask<bool> ClearCommandFor(ElementReference invoker)"
+               Description="Unpoints an invoker, so it stops acting on anything." />
+    <ApiMember Name="GetCommand"
+               Signature="ValueTask<string> GetCommand(ElementReference invoker)"
+               Description="The command an invoker currently carries, or an empty string." />
+    <ApiMember Name="OnCommand"
+               Signature="Task<ButilSubscription> OnCommand(ElementReference target, Action<CommandEventArgs> handler)"
+               Description="Listens for commands dispatched at an element. Built-in ones have already been carried out by the time the handler runs." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every listener registered through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole dialogOutput = default!;
+    private DemoConsole commandOutput = default!;
+
+    private ElementReference _openInvoker;
+    private ElementReference _closeInvoker;
+    private ElementReference _dialog;
+    private ElementReference _customInvoker;
+    private ElementReference _panel;
+
+    private ButilSubscription? _sub;
+    private int _received;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await invokerCommands.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - the buttons below will do nothing here.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task WireDialog()
+    {
+        try
+        {
+            var opened = await invokerCommands.SetCommandFor(_openInvoker, _dialog, "show-modal");
+            var closed = await invokerCommands.SetCommandFor(_closeInvoker, _dialog, "close");
+
+            if (opened && closed) await dialogOutput.Success("SetCommandFor →", "wired 'show-modal' and 'close'. Click 'Open dialog'.");
+            else await dialogOutput.Warn("SetCommandFor →", "false - this runtime has no invoker commands.");
+        }
+        catch (Exception ex)
+        {
+            await dialogOutput.Error("SetCommandFor failed →", ex.Message);
+        }
+    }
+
+    private async Task WireCustom()
+    {
+        try
+        {
+            _sub ??= await invokerCommands.OnCommand(_panel, async args => await InvokeAsync(async () =>
+            {
+                _received++;
+                StateHasChanged();
+                await commandOutput.Success("command →", args);
+            }));
+
+            var wired = await invokerCommands.SetCommandFor(_customInvoker, _panel, "--refresh");
+            if (wired) await commandOutput.Info("Wired '--refresh'. Click the button.");
+            else await commandOutput.Warn("SetCommandFor →", "false - this runtime has no invoker commands.");
+        }
+        catch (Exception ex)
+        {
+            await commandOutput.Error("Wiring failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadCommand()
+    {
+        try
+        {
+            var command = await invokerCommands.GetCommand(_customInvoker);
+            await commandOutput.Success("GetCommand →", string.IsNullOrEmpty(command) ? "(none)" : command);
+        }
+        catch (Exception ex)
+        {
+            await commandOutput.Error("GetCommand failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearCommand()
+    {
+        try
+        {
+            await invokerCommands.ClearCommandFor(_customInvoker);
+            await commandOutput.Info("ClearCommandFor →", "the button no longer acts on anything.");
+        }
+        catch (Exception ex)
+        {
+            await commandOutput.Error("ClearCommandFor failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+    }
+}

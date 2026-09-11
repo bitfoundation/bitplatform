@@ -41,6 +41,16 @@ public static partial class HttpRequestExtensions
             return uriBuilder.Uri;
         }
 
+        /// <summary>
+        /// The OAuth issuer for this request: the origin the caller reached, no trailing slash, as RFC 8414 requires.
+        /// Token minting and the discovery document must both come through here, or a conforming client rejects the
+        /// mismatch - as does the RFC 9207 check on the authorization response.
+        /// </summary>
+        public string GetIssuer()
+        {
+            return request.GetBaseUrl().ToString().TrimEnd('/');
+        }
+
         public bool IsLightHouseRequest()
         {
             return GetLoweredUserAgent(request).Contains("lighthouse");

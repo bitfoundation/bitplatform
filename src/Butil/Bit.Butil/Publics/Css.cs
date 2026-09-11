@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -8,7 +9,9 @@ namespace Bit.Butil;
 
 /// <summary>
 /// Wraps the CSS object model: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/getComputedStyle">getComputedStyle</see>,
-/// <c>CSS.supports</c>, <c>CSS.escape</c>, <c>CSS.registerProperty</c>, stylesheet rules, and the
+/// the <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSS">CSS</see> namespace object
+/// (<c>CSS.supports</c>, <c>CSS.escape</c>, <c>CSS.registerProperty</c> and the Houdini worklets),
+/// stylesheet rules, and the
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSS_Custom_Highlight_API">CSS Custom Highlight API</see>.
 /// </summary>
 /// <remarks>
@@ -20,10 +23,22 @@ namespace Bit.Butil;
 /// Computing a style is not free: it forces layout if anything has changed since the last one, which
 /// is why reading a style inside a loop that also writes one is the classic way to make a page
 /// crawl. Read what you need in one call, then write.
+/// <br/>
+/// The per-element half of the Typed OM - reading computed values as numbers, writing inline styles
+/// without string concatenation - lives on <see cref="ElementReferenceStyleMapExtensions"/>.
+/// <br/>
+/// <c>registerProperty</c> is the piece most worth knowing about: it is what turns a custom property
+/// into something the animation engine can interpolate, so a gradient or an angle can be animated at
+/// all.
 /// </remarks>
 [ButilService(typeof(Css))]
 public class Css(IJSRuntime js) : IAsyncDisposable
 {
+    // Set the first time a stylesheet is created - see CreateStyleSheet for why it is a delegate and
+    // not a call in DisposeAsync. Null means this instance made no stylesheet, so there is nothing to
+    // remove and no reason to reach into JavaScript (or to load the module) at teardown.
+    private Func<ValueTask>? _styleSheetTeardown;
+
     /// <summary>True when the runtime exposes <c>getComputedStyle</c>, which is everywhere.</summary>
     /// <remarks>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (<c>false</c>) rather than
@@ -42,10 +57,27 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     /// either way - where they are missing it appends a <c>&lt;style&gt;</c> element instead, which
     /// behaves the same from here.
     /// </summary>
-    public ValueTask<bool> IsConstructableStyleSheetAvailable() => js.Invoke<bool>("BitButil.css.isConstructableStyleSheetAvailable");
+    public ValueTask<bool> IsConstructableStyleSheetAvailable() => js.Invoke<bool>("BitButil.cssStyleSheet.isConstructableStyleSheetAvailable");
 
     /// <summary>True when the runtime has the CSS Custom Highlight API.</summary>
-    public ValueTask<bool> IsHighlightAvailable() => js.Invoke<bool>("BitButil.css.isHighlightAvailable");
+    public ValueTask<bool> IsHighlightAvailable() => js.Invoke<bool>("BitButil.cssHighlight.isHighlightAvailable");
+
+    /// <summary>True when the runtime implements the CSS Typed OM's unit factories (<c>CSS.px</c> and friends).</summary>
+    /// <remarks>
+    /// The Typed OM ships separately from <c>getComputedStyle</c>, so it has its own probe: this is
+    /// what gates <see cref="ElementReferenceStyleMapExtensions"/>, not <see cref="IsSupported"/>.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (<c>false</c>) rather than
+    /// throwing, so the result can't be distinguished from a genuine value. If you branch on it,
+    /// defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsTypedOmAvailable() => js.Invoke<bool>("BitButil.cssTypedOm.isTypedOmAvailable");
+
+    /// <summary>True when the runtime implements the Houdini paint worklet - Chromium only.</summary>
+    public ValueTask<bool> SupportsPaintWorklet() => js.Invoke<bool>("BitButil.cssWorklet.supportsPaintWorklet");
+
+    /// <summary>True when the runtime implements the Houdini layout worklet - behind a flag even in Chromium.</summary>
+    public ValueTask<bool> SupportsLayoutWorklet() => js.Invoke<bool>("BitButil.cssWorklet.supportsLayoutWorklet");
 
     /// <summary>
     /// The resolved value of each named property.
@@ -93,6 +125,8 @@ public class Css(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Whether the browser understands a property/value pair - <c>Supports("display", "grid")</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSS/supports_static">https://developer.mozilla.org/en-US/docs/Web/API/CSS/supports_static</see>
     /// </summary>
     /// <remarks>
     /// The honest way to feature-detect CSS: it asks the parser, rather than inferring support from
@@ -110,6 +144,8 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     /// Whether the browser understands a whole condition, written as it would be inside
     /// <c>@supports</c>: <c>"(display: grid) and (gap: 1rem)"</c>, or
     /// <c>"selector(:has(a))"</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSS/supports_static">https://developer.mozilla.org/en-US/docs/Web/API/CSS/supports_static</see>
     /// </summary>
     public ValueTask<bool> SupportsCondition(string condition)
     {
@@ -119,6 +155,8 @@ public class Css(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Escapes a string for use in a selector.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSS/escape_static">https://developer.mozilla.org/en-US/docs/Web/API/CSS/escape_static</see>
     /// </summary>
     /// <remarks>
     /// An id that starts with a digit, or contains a dot or a space, is perfectly legal HTML and
@@ -133,6 +171,8 @@ public class Css(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Teaches the browser what a custom property means.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSS/registerProperty_static">https://developer.mozilla.org/en-US/docs/Web/API/CSS/registerProperty_static</see>
     /// </summary>
     /// <param name="name">The property, including its leading dashes: <c>"--brand"</c>.</param>
     /// <param name="syntax">
@@ -156,6 +196,63 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
+    /// Registers a custom property from a <see cref="CssPropertyDefinition"/>, so the browser can
+    /// interpolate it.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSS/registerProperty_static">https://developer.mozilla.org/en-US/docs/Web/API/CSS/registerProperty_static</see>
+    /// </summary>
+    /// <returns>
+    /// False when the runtime has no <c>registerProperty</c>, the property is already registered, or
+    /// the initial value doesn't parse as the declared syntax. Use the overload taking a name when
+    /// you want the reason rather than a yes/no.
+    /// </returns>
+    /// <remarks>
+    /// A registration lasts for the document's lifetime and cannot be undone or replaced, so
+    /// registering the same name twice returns false rather than throwing - which is what makes this
+    /// safe to call from a component that mounts more than once.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CssPropertyDefinition))]
+    public async ValueTask<bool> RegisterProperty(CssPropertyDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+
+        var syntax = string.IsNullOrWhiteSpace(definition.Syntax) ? "*" : definition.Syntax;
+        var initialValue = string.IsNullOrEmpty(definition.InitialValue) ? null : definition.InitialValue;
+
+        return await RegisterProperty(definition.Name, syntax, definition.Inherits, initialValue) is null;
+    }
+
+    /// <summary>
+    /// Loads a paint worklet - a script that draws a custom <c>paint()</c> image the way a canvas
+    /// does, but as a live CSS value.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/PaintWorklet">https://developer.mozilla.org/en-US/docs/Web/API/PaintWorklet</see>
+    /// </summary>
+    /// <param name="url">
+    /// URL of the worklet module. It is fetched as a classic worklet script, so it has to be a real
+    /// file the server serves - not something bundled into the app's own JS.
+    /// </param>
+    /// <returns>False when the runtime has no paint worklet, or the module failed to load.</returns>
+    /// <remarks>
+    /// The worklet runs in its own global scope with no DOM: it receives the size and the custom
+    /// properties it declared an interest in, and draws. That is what makes it fast, and what makes
+    /// it unable to reach anything in the page.
+    /// </remarks>
+    public ValueTask<bool> AddPaintWorklet(string url) => js.Invoke<bool>("BitButil.cssWorklet.addPaintWorklet", url);
+
+    /// <summary>
+    /// Loads a layout worklet - a script that implements a custom <c>display: layout(…)</c>.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSS/layoutWorklet_static">https://developer.mozilla.org/en-US/docs/Web/API/CSS/layoutWorklet_static</see>
+    /// </summary>
+    /// <returns>False when the runtime has no layout worklet, or the module failed to load.</returns>
+    /// <remarks>
+    /// The least-shipped part of Houdini - behind a flag even in Chromium. Treat a true here as a
+    /// pleasant surprise rather than a platform you can build on.
+    /// </remarks>
+    public ValueTask<bool> AddLayoutWorklet(string url) => js.Invoke<bool>("BitButil.cssWorklet.addLayoutWorklet", url);
+
+    /// <summary>
     /// Creates a stylesheet of your own, already in the document.
     /// </summary>
     /// <returns>A handle, or null when it could not be created.</returns>
@@ -167,7 +264,19 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     public async ValueTask<StyleSheetHandle?> CreateStyleSheet()
     {
         var id = Guid.NewGuid();
-        var created = await js.Invoke<bool>("BitButil.css.createSheet", id);
+
+        // Teardown is armed here rather than written into DisposeAsync, and the difference is what an
+        // app that never creates a stylesheet downloads. An interop identifier is a string literal in a
+        // method body, and the set of those the trimmer keeps is the set of JavaScript modules a published
+        // app still ships - so naming cssStyleSheet in a Dispose that always runs would put that module in
+        // every Css consumer's bundle. In this lambda it goes away with CreateStyleSheet itself.
+        //
+        // Armed before the await, not after: a Css disposed while createSheet is in flight has to find the
+        // delegate in place, or the sheet JavaScript has already adopted outlives the scope that made it.
+        _styleSheetTeardown ??= () => js.InvokeVoid("BitButil.cssStyleSheet.disposeAll");
+
+        var created = await js.Invoke<bool>("BitButil.cssStyleSheet.createSheet", id);
+
         return created ? new StyleSheetHandle(js, id) : null;
     }
 
@@ -192,14 +301,14 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(search);
-        return js.Invoke<int>("BitButil.css.highlightText", name, element, search, caseSensitive);
+        return js.Invoke<int>("BitButil.cssHighlight.highlightText", name, element, search, caseSensitive);
     }
 
     /// <summary>Removes a highlight by name. Removing one that is not there is not an error.</summary>
     public ValueTask ClearHighlight(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return js.InvokeVoid("BitButil.css.clearHighlight", name);
+        return js.InvokeVoid("BitButil.cssHighlight.clearHighlight", name);
     }
 
     /// <summary>
@@ -208,8 +317,14 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        try { await js.InvokeVoid("BitButil.css.disposeAll"); }
-        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        var teardown = _styleSheetTeardown;
+        _styleSheetTeardown = null;
+
+        if (teardown is not null)
+        {
+            try { await teardown(); }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        }
 
         GC.SuppressFinalize(this);
     }

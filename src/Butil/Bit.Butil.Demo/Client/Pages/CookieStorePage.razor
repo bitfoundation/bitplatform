@@ -129,6 +129,14 @@ await subscription.DisposeAsync();
             <button @onclick="WatchChanges" disabled="@(_changeSub is not null)">SubscribeChange</button>
             <button class="secondary" @onclick="UnwatchChanges" disabled="@(_changeSub is null)">Dispose</button>
         </div>
+        <div class="field">
+            <span class="field-label">Cookie to write and remove</span>
+            <input @bind="_watchName" placeholder="butil-watched" />
+        </div>
+        <div class="controls">
+            <button @onclick="WriteWatched">Set it</button>
+            <button class="danger" @onclick="DeleteWatched">Delete it</button>
+        </div>
         <DemoConsole @ref="changeOutput" Title="change output" />
     </DemoSection>
 </div>
@@ -178,6 +186,7 @@ await subscription.DisposeAsync();
     private DemoConsole supportOutput = default!;
     private DemoConsole changeOutput = default!;
     private ButilSubscription? _changeSub;
+    private string _watchName = "butil-watched";
 
     private async Task WatchChanges()
     {
@@ -197,7 +206,7 @@ await subscription.DisposeAsync();
                 await changeOutput.Warn("SubscribeChange → null (no CookieStore in this browser).");
                 return;
             }
-            await changeOutput.Log("Watching - use the Set and Delete sections above to see events.");
+            await changeOutput.Log("Watching - write and remove the cookie below to see events.");
         }
         catch (Exception ex)
         {
@@ -315,6 +324,32 @@ await subscription.DisposeAsync();
         catch (Exception ex)
         {
             await readOutput.Error(ex.Message);
+        }
+    }
+
+    // The watching section writes and removes its own cookie: an event fired by a control two
+    // sections up arrives in a console the reader is no longer looking at.
+    private async Task WriteWatched()
+    {
+        try
+        {
+            await cookieStore.Set(new CookieStoreItem { Name = _watchName, Value = DateTime.Now.ToString("HH:mm:ss") });
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteWatched()
+    {
+        try
+        {
+            await cookieStore.Delete(_watchName);
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error(ex.Message);
         }
     }
 

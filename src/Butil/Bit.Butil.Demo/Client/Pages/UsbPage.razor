@@ -58,7 +58,7 @@ var granted = await usb.GetDevices();
             </div>
         </div>
         <div class="controls">
-            <button @onclick="RequestDevice">RequestDevice</button>
+            <button @onclick="() => RequestDevice(deviceOutput)">RequestDevice</button>
             <button class="secondary" @onclick="GetDevices">GetDevices</button>
             <button class="danger" @onclick="ReleaseDevice">Dispose handle</button>
         </div>
@@ -76,15 +76,28 @@ var granted = await usb.GetDevices();
                  Api="Open / SelectConfiguration / ClaimInterface / SelectAlternateInterface / ReleaseInterface / Close / IsOpened / GetInfo"
                  Description="The order is fixed: open, select a configuration, claim an interface, and only then transfer. Skipping a step fails with an InvalidStateError rather than a hint about which step was missed."
                  Code=@("""
-await _device.Open();
-await _device.SelectConfiguration(1);
-await _device.ClaimInterface(0);
+@code {
+    // The handle from RequestDevice above - a grant is per device, and this is the way back to one
+    // the user has already chosen.
+    private UsbDevice? _device;
 
-// ... transfers ...
+    private async Task Session()
+    {
+        await _device!.Open();
+        await _device.SelectConfiguration(1);
 
-await _device.ReleaseInterface(0);
-await _device.Close();
-""")>
+        // Nothing can be transferred until the interface is claimed, and the OS may already hold it
+        // for a driver of its own.
+        await _device.ClaimInterface(0);
+
+        // ... transfers ...
+
+        await _device.ReleaseInterface(0);
+        await _device.Close();
+    }
+}
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <span class="field-label">Configuration value</span>
@@ -98,6 +111,10 @@ await _device.Close();
                 <span class="field-label">Alternate setting</span>
                 <input type="number" min="0" @bind="_alternateSetting" />
             </div>
+        </div>
+        <div class="controls">
+            <button @onclick="() => RequestDevice(setupOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
         </div>
         <div class="controls">
             <button @onclick="Open">Open</button>
@@ -118,20 +135,28 @@ await _device.Close();
                  Api="ControlTransferIn / ControlTransferOut / TransferIn / TransferOut / ClearHalt / Reset"
                  Description="Control transfers carry a setup packet and address the device itself; bulk and interrupt transfers address an endpoint number taken from the claimed interface's descriptor. A 'stall' status means the endpoint halted - ClearHalt is the way out."
                  Code=@("""
-var read = await _device.TransferIn(endpointNumber: 1, length: 64);
-var text = read?.Data is null ? "" : System.Text.Encoding.UTF8.GetString(read.Data);
+@code {
+    private UsbDevice? _device;   // opened, with its interface claimed
 
-await _device.TransferOut(endpointNumber: 2, "ping"u8.ToArray());
+    private async Task Transfer()
+    {
+        var read = await _device!.TransferIn(endpointNumber: 1, length: 64);
+        var text = read?.Data is null ? "" : System.Text.Encoding.UTF8.GetString(read.Data);
 
-await _device.ControlTransferOut(new UsbControlTransferParameters
-{
-    RequestType = "vendor",
-    Recipient = "device",
-    Request = 0x01,
-    Value = 0x0001,
-    Index = 0
-});
-""")>
+        await _device.TransferOut(endpointNumber: 2, "ping"u8.ToArray());
+
+        await _device.ControlTransferOut(new UsbControlTransferParameters
+        {
+            RequestType = "vendor",
+            Recipient = "device",
+            Request = 0x01,
+            Value = 0x0001,
+            Index = 0
+        });
+    }
+}
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <span class="field-label">IN endpoint</span>
@@ -149,6 +174,10 @@ await _device.ControlTransferOut(new UsbControlTransferParameters
         <div class="field">
             <span class="field-label">Bytes to send (hex, space separated)</span>
             <input type="text" @bind="_writeHex" placeholder="01 02 ff" />
+        </div>
+        <div class="controls">
+            <button @onclick="() => RequestDevice(transferOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
         </div>
         <div class="controls">
             <button @onclick="TransferIn">TransferIn</button>
@@ -182,8 +211,18 @@ await using var watch = await usb.SubscribeConnection(
                  Api="Forget"
                  Description="Drops this origin's permission for the device, so it stops appearing in GetDevices until the user picks it again."
                  Code=@("""
-var revoked = await _device.Forget();
-""")>
+@code {
+    private UsbDevice? _device;   // from RequestDevice
+
+    // Drops the grant, so GetDevices stops returning it and the picker has to be shown again.
+    private async Task Revoke()
+    {
+        var revoked = await _device!.Forget();
+        _device = null;
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button class="danger" @onclick="ForgetDevice">Forget</button>
         </div>
@@ -299,13 +338,19 @@ var revoked = await _device.Forget();
         }
     }
 
-    private async Task RequestDevice()
+    private string SelectedDeviceLabel => _device is null
+        ? "no device picked yet"
+        : $"{_device.Info.ProductName ?? "(unnamed)"} {_device.Info.VendorId:x4}:{_device.Info.ProductId:x4}";
+
+    // Picking is the setup step every section below needs, so each can do it and read the answer
+    // in its own console rather than sending the reader back to the chooser section.
+    private async Task RequestDevice(DemoConsole output)
     {
         try
         {
             if (!await usb.IsSupported())
             {
-                await deviceOutput.Warn("WebUSB is not supported in this browser.");
+                await output.Warn("WebUSB is not supported in this browser.");
                 return;
             }
 
@@ -322,7 +367,7 @@ var revoked = await _device.Forget();
             if (requested is null)
             {
                 // A dismissed chooser is not a reason to throw away the device already in hand.
-                await deviceOutput.Warn("The chooser was dismissed.");
+                await output.Warn("The chooser was dismissed.");
                 return;
             }
 
@@ -336,12 +381,11 @@ var revoked = await _device.Forget();
             }
 
             _device = requested;
-            await deviceOutput.Success("RequestDevice →",
-                $"{_device.Info.ProductName ?? "(unnamed)"} {_device.Info.VendorId:x4}:{_device.Info.ProductId:x4}");
+            await output.Success("RequestDevice →", SelectedDeviceLabel);
         }
         catch (Exception ex)
         {
-            await deviceOutput.Error("RequestDevice failed →", ex.Message);
+            await output.Error("RequestDevice failed →", ex.Message);
         }
     }
 
@@ -605,7 +649,7 @@ var revoked = await _device.Forget();
     private async Task<bool> RequireDevice(DemoConsole output)
     {
         if (_device is not null) return true;
-        await output.Warn("Pick a device first with RequestDevice.");
+        await output.Warn("Pick a device first - the RequestDevice button in this section will do it.");
         return false;
     }
 

@@ -79,19 +79,5 @@ public class InteropContractTests
     /// Walks up from the test binary to the <c>src/Butil</c> folder, so the test works from a
     /// build output directory whose depth differs between configurations and runners.
     /// </summary>
-    private static string LocateButilRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "Bit.Butil", "Bit.Butil.csproj")))
-                return directory.FullName;
-
-            directory = directory.Parent;
-        }
-
-        throw new DirectoryNotFoundException(
-            $"Could not find the src/Butil folder walking up from {AppContext.BaseDirectory}.");
-    }
+    private static string LocateButilRoot() => Infrastructure.RepoLayout.ButilRoot();
 }

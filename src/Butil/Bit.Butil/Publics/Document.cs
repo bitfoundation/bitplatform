@@ -85,8 +85,15 @@ public class Document(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// <see cref="ButilEventListenerOptions"/> variant of <see cref="SubscribeEvent{T}(string, Action{T}, bool, bool, bool)"/>,
-    /// adding <c>passive</c> and <c>once</c> control on top of <c>capture</c>.
+    /// adding <c>passive</c>, <c>once</c> and
+    /// <see cref="ButilEventListenerOptions.MinInterval">rate limiting</see> on top of <c>capture</c>.
     /// </summary>
+    /// <remarks>
+    /// The overload to reach for on a high-frequency document event - <c>mousemove</c>,
+    /// <c>pointermove</c>, <c>scroll</c>, <c>selectionchange</c> - where
+    /// <see cref="ButilEventListenerOptions.MinInterval"/> caps how often the handler is called
+    /// without changing what the page does.
+    /// </remarks>
     public async Task<ButilSubscription> SubscribeEvent<T>(
         string domEvent,
         Action<T> listener,
@@ -96,7 +103,8 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     {
         var useCapture = options.Capture;
         var id = await _events.AddEventListener(js, ElementName, domEvent, listener,
-            useCapture, preventDefault, stopPropagation, options.Passive, options.Once);
+            useCapture, preventDefault, stopPropagation, options.Passive, options.Once,
+            options.MinInterval?.TotalMilliseconds ?? 0);
         var key = (id, domEvent, useCapture);
         _listenerIds.TryAdd(key, 0);
 

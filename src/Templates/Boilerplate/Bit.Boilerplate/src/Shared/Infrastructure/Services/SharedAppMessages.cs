@@ -79,26 +79,6 @@ public partial class SharedAppMessages
 
     #endregion
 
-    #region AI Chatbot messages
-
-    /// <summary>
-    /// This would let the client know that a chat bot encountered an error while processing the user's message.
-    /// </summary>
-    public const string MESSAGE_PROCESS_ERROR = nameof(MESSAGE_PROCESS_ERROR);
-
-    /// <summary>
-    /// This would let the client know that a chat bot successfully processed the user's message.
-    /// </summary>
-    public const string MESSAGE_PROCESS_SUCCESS = nameof(MESSAGE_PROCESS_SUCCESS);
-
-    /// <summary>
-    /// The chat bot sends this message with the follow-up suggestions it wrote for the answer it has just given
-    /// (See <c>AppChatbot.SendFollowUpSuggestions</c>). The payload is an <c>AiChatFollowUpList</c>.
-    /// </summary>
-    public const string SHOW_FOLLOW_UP_SUGGESTIONS = nameof(SHOW_FOLLOW_UP_SUGGESTIONS);
-
-    #endregion
-
     #region Client commands to server
 
     /// <summary>
@@ -110,6 +90,12 @@ public partial class SharedAppMessages
     /// Using this message, the client notifies the server about a change in its authentication state.
     /// </summary>
     public const string ChangeAuthenticationState = nameof(ChangeAuthenticationState);
+
+    /// <summary>
+    /// Using this message, the client asks for the same report the /diagnostic page gets over http, but about the
+    /// websocket connection it is asking over - so the two paths through the proxy can be compared.
+    /// </summary>
+    public const string GetDiagnosticReport = nameof(GetDiagnosticReport);
 
     #endregion
 
