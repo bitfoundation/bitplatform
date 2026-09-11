@@ -32,9 +32,6 @@ public partial class BitTextShimmer : BitComponentBase
 {
     private const string DefaultElement = "p";
 
-    // The sweep the stylesheet plays when no Duration is given, before the theme's loop factor retunes it.
-    private const int DefaultDuration = 2000;
-
 
 
     /// <summary>
@@ -317,20 +314,17 @@ public partial class BitTextShimmer : BitComponentBase
         StyleBuilder.Register(() => Duration.HasValue ? $"--bit-tsh-duration:{Ms(Duration.Value)}" : string.Empty);
         StyleBuilder.Register(() => Delay.HasValue ? $"--bit-tsh-delay:{Ms(Delay.Value)}" : string.Empty);
 
-        // The pause is written as the length of the whole cycle over the length of the sweep, which the stylesheet
-        // lengthens the animation and the distance the band travels by alike, so the band crosses the text at the
-        // same speed and simply spends longer outside it. The default duration is the one the ratio is taken of when
-        // none is given, and since the stylesheet multiplies the duration by the ratio rather than adding the pause
-        // to it, the loop factor of the theme retunes the pause along with the sweep it belongs to.
+        // The pause is written as a time, and the stylesheet turns it into the ratio of the whole cycle to the sweep
+        // it lengthens the animation and the distance the band travels by alike - taken of the duration the element
+        // actually ends up with, which may be one a class sets rather than one this component knows. Without a
+        // Duration the pause is retuned by the loop factor of the theme, the same as the default sweep it follows.
         StyleBuilder.Register(() =>
         {
-            if (RepeatDelay is not > 0) return string.Empty;
+            if (RepeatDelay is not > 0 || Duration <= 0) return string.Empty;
 
-            var duration = Math.Max(0, Duration ?? DefaultDuration);
-            if (duration == 0) return string.Empty;
-
-            var cycle = 1 + (double)RepeatDelay.Value / duration;
-            return $"--bit-tsh-cycle:{cycle.ToString("0.######", CultureInfo.InvariantCulture)}";
+            return Duration.HasValue
+                ? $"--bit-tsh-repeat-delay:{Ms(RepeatDelay.Value)}"
+                : $"--bit-tsh-repeat-delay:calc({Ms(RepeatDelay.Value)} * var(--bit-mot-loop-factor, 1))";
         });
 
         StyleBuilder.Register(() => Iterations >= 1 ? $"--bit-tsh-iterations:{Iterations.Value.ToString(CultureInfo.InvariantCulture)}" : string.Empty);

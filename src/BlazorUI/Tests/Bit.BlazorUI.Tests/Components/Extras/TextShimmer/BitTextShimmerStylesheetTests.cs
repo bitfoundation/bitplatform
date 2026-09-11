@@ -93,6 +93,16 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
         StringAssert.Contains(keyframes, "calc(-50% + var(--bit-tsh-spread) * var(--bit-tsh-cycle))");
     }
 
+    // The component writes the pause as a time and the cycle is derived here, from the duration the element ends up
+    // with - so a duration a class sets gets the rest that was asked for, not one taken of a duration it replaced.
+    [TestMethod]
+    public void TheCycleIsTakenOfTheDurationTheElementEndsUpWith()
+    {
+        var block = GetBlock(ReadStylesheet(), "@supports (animation-duration: calc(1s * tan(atan2(1s, 2s))))");
+
+        StringAssert.Contains(block, "--bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-duration)), 89.9deg)));");
+    }
+
 
 
     private static string[] GetRootDeclarations()

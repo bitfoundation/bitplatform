@@ -18,9 +18,11 @@
     // the pace. Reduced motion stops the shimmer outright rather than slowing it (see below).
     --bit-tsh-duration: calc(2000ms * #{$mot-loop-factor});
     --bit-tsh-delay: 0ms;
-    // The length of a whole cycle - a sweep and the extra rest RepeatDelay adds after it - as a multiple of the
-    // sweep. It lengthens the animation and the distance the band travels by the same factor, so the band crosses
-    // the text at the same speed with or without the rest.
+    // The extra rest RepeatDelay adds after every sweep.
+    --bit-tsh-repeat-delay: 0ms;
+    // The length of a whole cycle - a sweep and the extra rest after it - as a multiple of the sweep. It lengthens
+    // the animation and the distance the band travels by the same factor, so the band crosses the text at the same
+    // speed with or without the rest. It stays 1 here, for the engines that cannot take the ratio (see below).
     --bit-tsh-cycle: 1;
     --bit-tsh-iterations: infinite;
     --bit-tsh-angle: 0deg;
@@ -83,6 +85,18 @@
     &::selection,
     & ::selection {
         -webkit-text-fill-color: currentcolor;
+    }
+}
+
+// The cycle is taken of the duration the element ends up with - the one a parameter writes inline, the one a class
+// sets, or the default the loop factor retunes - so the rest is the one asked for whichever of them wins. CSS cannot
+// divide a time by a time directly, but atan2 takes two values of any one type and the tangent of the angle it
+// returns is their ratio. The angle is kept short of a quarter turn, whose tangent is infinite: a sweep of no length
+// is then a cycle that is merely very long, which still multiplies the duration to nothing. An engine without
+// atan2 keeps the cycle of 1, which only drops the extra rest.
+@supports (animation-duration: calc(1s * tan(atan2(1s, 2s)))) {
+    .bit-tsh {
+        --bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-duration)), 89.9deg)));
     }
 }
 

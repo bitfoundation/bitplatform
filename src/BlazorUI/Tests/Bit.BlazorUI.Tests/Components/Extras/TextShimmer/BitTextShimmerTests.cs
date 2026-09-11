@@ -343,6 +343,7 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.IsFalse(style.Contains("--bit-tsh-duration"));
         Assert.IsFalse(style.Contains("--bit-tsh-delay"));
         Assert.IsFalse(style.Contains("--bit-tsh-iterations"));
+        Assert.IsFalse(style.Contains("--bit-tsh-repeat-delay"));
         Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
         Assert.IsFalse(style.Contains("--bit-tsh-angle"));
         Assert.IsFalse(style.Contains("--bit-tsh-mirror"));
@@ -718,15 +719,14 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.AreEqual("Done", root.TextContent);
     }
 
-    // The pause is written as the length of the whole cycle over the length of the sweep ((duration + pause) /
-    // duration), which the stylesheet lengthens the animation and the distance the band travels by alike, so the
-    // band keeps the speed it had without it.
+    // The pause is written as a time, and the ratio of the whole cycle to the sweep is left to the stylesheet, which
+    // takes it of the duration the element ends up with - one a class sets included - rather than of the one given
+    // here. So the component never writes the cycle itself.
     [TestMethod,
-        DataRow(1000, 2000, "1.5"),
-        DataRow(2000, 2000, "2"),
-        DataRow(500, 1500, "1.333333"),
-        DataRow(1, 3000, "1.000333")]
-    public void BitTextShimmerShouldRespectRepeatDelay(int repeatDelay, int duration, string expectedCycle)
+        DataRow(1000, 2000),
+        DataRow(2000, 750),
+        DataRow(1, 3000)]
+    public void BitTextShimmerShouldRespectRepeatDelay(int repeatDelay, int duration)
     {
         var component = RenderComponent<BitTextShimmer>(parameters =>
         {
@@ -736,46 +736,25 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        CollectionAssert.Contains(style.Split(';'), $"--bit-tsh-cycle:{expectedCycle}");
+        CollectionAssert.Contains(style.Split(';'), $"--bit-tsh-repeat-delay:{repeatDelay}ms");
         // The duration is left as it was given: the stylesheet multiplies it by the cycle rather than adding to it.
         StringAssert.Contains(style, $"--bit-tsh-duration:{duration}ms");
+        Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
     }
 
+    // Without a Duration the pause follows the default sweep, which the loop factor of the theme retunes.
     [TestMethod]
-    public void BitTextShimmerShouldWriteTheCycleInTheInvariantCulture()
-    {
-        var culture = CultureInfo.CurrentCulture;
-        try
-        {
-            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-
-            var component = RenderComponent<BitTextShimmer>(parameters =>
-            {
-                parameters.Add(p => p.RepeatDelay, 1000);
-                parameters.Add(p => p.Duration, 2000);
-            });
-
-            StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-cycle:1.5");
-        }
-        finally
-        {
-            CultureInfo.CurrentCulture = culture;
-        }
-    }
-
-    // Without a Duration the ratio is taken of the default two-second sweep.
-    [TestMethod]
-    public void BitTextShimmerShouldScaleRepeatDelayByTheDefaultDuration()
+    public void BitTextShimmerShouldScaleRepeatDelayByTheLoopFactorWithoutADuration()
     {
         var component = RenderComponent<BitTextShimmer>(parameters =>
         {
             parameters.Add(p => p.RepeatDelay, 1000);
         });
 
-        var style = component.Find(".bit-tsh").GetAttribute("style");
+        var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "--bit-tsh-cycle:1.5");
-        Assert.IsFalse(style!.Contains("--bit-tsh-duration"));
+        CollectionAssert.Contains(style.Split(';'), "--bit-tsh-repeat-delay:calc(1000ms * var(--bit-mot-loop-factor, 1))");
+        Assert.IsFalse(style.Contains("--bit-tsh-duration"));
     }
 
     // A pause of nothing, or a sweep of no length to pause between, leaves the stylesheet's defaults alone.
@@ -794,7 +773,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
+        Assert.IsFalse(style.Contains("--bit-tsh-repeat-delay"));
     }
 
     [TestMethod]
@@ -810,15 +789,15 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Duration, 4000);
         });
 
-        // The cycle is a ratio of the pause to the sweep, so a new duration is a new cycle too.
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-cycle:1.25");
+        // An explicit duration is not retuned by the theme, so neither is the pause that follows it.
+        CollectionAssert.Contains(component.Find(".bit-tsh").GetAttribute("style")!.Split(';'), "--bit-tsh-repeat-delay:1000ms");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.RepeatDelay, (int?)null);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-cycle"));
+        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-repeat-delay"));
     }
 
     [TestMethod,
