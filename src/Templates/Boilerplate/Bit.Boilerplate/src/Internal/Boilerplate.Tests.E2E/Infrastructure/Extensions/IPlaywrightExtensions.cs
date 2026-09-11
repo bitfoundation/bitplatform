@@ -24,7 +24,7 @@ public static class IPlaywrightExtensions
         /// (e.g. <see cref="DeployedApps.TodoWindowsAppId"/>) and attaches to it. Every Client.Windows app hard-codes
         /// <c>--remote-debugging-port=9222</c>, so a leftover instance of any of them would be the one answering on
         /// the port - hence every running Client.Windows process is killed first, then its data cleared (see
-        /// <see cref="ClearWindowsAppData"/>). Started minimized, so a run leaves the machine's screen alone.
+        /// <see cref="WindowsAppData"/>). Started minimized, so a run leaves the machine's screen alone.
         /// </summary>
         public async Task<(IPage Page, Func<Task> Stop)> LaunchWindowsApp(string windowsAppId, int port = 9222)
         {
@@ -36,7 +36,8 @@ public static class IPlaywrightExtensions
             StopWindowsApps();
 
             // After the kill, so nothing still holds the files open.
-            ClearWindowsAppData(windowsAppId);
+            WindowsAppData.BackUpOnce();
+            WindowsAppData.Clear(windowsAppId);
 
             Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true, WindowStyle = ProcessWindowStyle.Minimized });
 
@@ -200,7 +201,7 @@ public static class IPlaywrightExtensions
         => browser.Contexts.SelectMany(context => context.Pages).FirstOrDefault()
            ?? throw new InvalidOperationException("The attached app exposes no page.");
 
-    private static void StopWindowsApps()
+    internal static void StopWindowsApps()
     {
         foreach (var process in Process.GetProcesses().Where(IsWindowsApp))
         {
@@ -210,43 +211,6 @@ public static class IPlaywrightExtensions
     }
 
     private static bool IsWindowsApp(Process process) => process.ProcessName.EndsWith(".Client.Windows", StringComparison.Ordinal);
-
-    /// <summary>
-    /// The Windows counterpart of the Android launch's <c>pm clear</c>: drops WindowsStorageService's isolated storage
-    /// file (access token, culture, consent answer) and the WebView2 profile, so a run inherits no earlier session.
-    /// Best effort - what it cannot delete, the app recreates.
-    /// </summary>
-    private static void ClearWindowsAppData(string windowsAppId)
-    {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        // Named after the app by WebView2 itself, since Client.Windows sets no user data folder of its own.
-        TryDelete(() => Directory.Delete(Path.Combine(localAppData, $"{windowsAppId}.WebView2"), recursive: true));
-
-        // The store's path is hashed out of the assembly's evidence, so it is searched for by the file name
-        // WindowsStorageService writes - the assembly name, which is windowsAppId - rather than derived from a path.
-        var isolatedStorage = Path.Combine(localAppData, "IsolatedStorage");
-
-        if (Directory.Exists(isolatedStorage) is false)
-            return;
-
-        TryDelete(() =>
-        {
-            foreach (var store in Directory.EnumerateFiles(isolatedStorage, $"{windowsAppId}.storage.json", SearchOption.AllDirectories))
-                TryDelete(() => File.Delete(store));
-        });
-    }
-
-    private static void TryDelete(Action delete)
-    {
-        try
-        {
-            delete();
-        }
-        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-        {
-        }
-    }
 
     /// <summary>
     /// When adb sees no device, boots the first local AVD - and leaves it running, since the next session reuses it.
