@@ -243,6 +243,15 @@ public static partial class BitMarkdownEditorCommands
         table.Row = Math.Clamp(table.Row, 0, table.Rows.Count - 1);
         table.Column = Math.Clamp(table.Column, 0, columns - 1);
 
+        // A plain loop, not a LINQ lambda: the net8.0 trim analyzer (ILLink 8.0) never finishes its
+        // dataflow over a lambda capturing `widths` next to the `ref caret` loop below, which hangs
+        // every CI build (CI=true turns the trim analyzers on).
+        var delimiters = new List<string>(table.Aligns.Count);
+        for (int c = 0; c < table.Aligns.Count; c++)
+        {
+            delimiters.Add(DelimiterCell(table.Aligns[c], widths[c]));
+        }
+
         var sb = new StringBuilder();
         caret = 0;
         caretEnd = 0;
@@ -255,7 +264,7 @@ public static partial class BitMarkdownEditorCommands
 
             // The delimiter row belongs to the table, not to the grid: it is written back out
             // right below the header, whether or not the table has any body rows yet.
-            if (r == 0) AppendCells(sb, [.. table.Aligns.Select((a, i) => DelimiterCell(a, widths[i]))], widths, ref caret, -1, -1);
+            if (r == 0) AppendCells(sb, delimiters, widths, ref caret, -1, -1);
 
         }
 
