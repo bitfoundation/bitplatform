@@ -1,40 +1,127 @@
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// The text drawn in one flat color instead of the shimmer: the glyphs are painted by the color itself rather than
+// by a background clipped to them. It is what every place the shimmer is not animated, or cannot be painted at all,
+// falls back to, so the text is never left transparent with nothing behind it.
+@mixin bit-tsh-static($color: var(--bit-tsh-base-clr)) {
+    color: $color;
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentcolor;
+}
+
 .bit-tsh {
+    // Declared on every root rather than left to fallbacks, so that a shimmer nested in the content of another one
+    // starts from its own defaults instead of inheriting the values the outer one was given.
     --bit-tsh-spread: 20px;
-    --bit-tsh-duration: 2000ms;
+    // A looping animation multiplies its literal duration by the loop factor of the theme, so a theme can retune
+    // the pace. Reduced motion stops the shimmer outright rather than slowing it (see below).
+    --bit-tsh-duration: calc(2000ms * #{$mot-loop-factor});
+    --bit-tsh-delay: 0ms;
+    --bit-tsh-repeat-delay: 0ms;
+    --bit-tsh-iterations: infinite;
+    --bit-tsh-size: 200%;
+    --bit-tsh-angle: 0deg;
     --bit-tsh-base-clr: #{$clr-fg-ter};
     --bit-tsh-gradient-clr: #{$clr-fg-pri};
 
     margin: 0;
-    color: transparent;
     display: inline-block;
-    background-size: 200% 100%;
-    background-position: 100% 50%;
-    background-clip: text;
-    -webkit-background-clip: text;
+    // The color stays the base color and only the fill of the glyphs is left transparent for the band to show
+    // through, so what is not a glyph - an SVG icon drawn in currentcolor, an underline - keeps a visible color.
+    color: var(--bit-tsh-base-clr);
     -webkit-text-fill-color: transparent;
-    background-image: linear-gradient(90deg,
+    background-clip: text;
+    -webkit-background-clip: text; // Safari still clips from the prefixed property only.
+    // The base color is painted under the band as well, so the text keeps its color wherever the band's background
+    // does not reach - and even where a custom color or spread the browser refuses leaves no gradient at all.
+    background-color: var(--bit-tsh-base-clr);
+    background-repeat: no-repeat;
+    background-size: var(--bit-tsh-size) 100%;
+    background-image: linear-gradient(calc(90deg + var(--bit-tsh-angle)),
             var(--bit-tsh-base-clr) 0%,
             var(--bit-tsh-base-clr) calc(50% - var(--bit-tsh-spread)),
             var(--bit-tsh-gradient-clr) 50%,
             var(--bit-tsh-base-clr) calc(50% + var(--bit-tsh-spread)),
             var(--bit-tsh-base-clr) 100%);
-    animation: bit-tsh-anim var(--bit-tsh-duration) linear infinite;
+    // The resting place of the band, which is also where a shimmer that has not started yet - or has finished -
+    // leaves it: outside the text, so the text is all in its base color.
+    background-position: 150% 50%;
+    // Written as longhands so that the classes below can each change one of them without resetting the others.
+    animation-name: bit-tsh-anim;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-delay: var(--bit-tsh-delay);
+    animation-duration: calc(var(--bit-tsh-duration) + var(--bit-tsh-repeat-delay));
+    animation-iteration-count: var(--bit-tsh-iterations);
 
+    // A percentage of background-position is taken of the room the background has to move in, which is its own
+    // size less the size of the text, so the same two keyframes move the band from as far before the text to as
+    // far after it whatever the size is. At the default size of twice the text the band travels from half a width
+    // before the text to half a width after it: it crosses the text in the middle of each sweep, and both ends of
+    // a sweep leave the text in its base color, which is what keeps a shimmer that starts, pauses or stops from
+    // ever showing a band stuck on its first letters. A wider background - which is what RepeatDelay asks for -
+    // only adds to the distance travelled outside the text, and so to the rest between two sweeps.
     @keyframes bit-tsh-anim {
         from {
-            background-position: 100% 50%;
+            background-position: 150% 50%;
         }
 
         to {
-            background-position: -100% 50%;
+            background-position: -50% 50%;
         }
     }
 }
 
-.bit-tsh.bit-rtl {
+// The direction the band runs in. It follows the reading direction of the element - read off the element itself, so
+// a "dir" set anywhere above it counts, with the class of an explicit Dir kept for the engines without :dir() - and
+// .bit-tsh-rev turns it against that direction. The four combinations are spelled out at rising specificity, so the
+// more specific of two that match is always the one that was meant.
+.bit-tsh:is(.bit-rtl, :dir(rtl)),
+.bit-tsh.bit-tsh-rev {
     animation-direction: reverse;
+}
+
+.bit-tsh.bit-tsh-rev:is(.bit-rtl, :dir(rtl)) {
+    animation-direction: normal;
+}
+
+.bit-tsh.bit-tsh-alt {
+    animation-direction: alternate;
+}
+
+.bit-tsh.bit-tsh-alt:is(.bit-rtl, :dir(rtl)),
+.bit-tsh.bit-tsh-alt.bit-tsh-rev {
+    animation-direction: alternate-reverse;
+}
+
+.bit-tsh.bit-tsh-alt.bit-tsh-rev:is(.bit-rtl, :dir(rtl)) {
+    animation-direction: alternate;
+}
+
+.bit-tsh-pau,
+.bit-tsh-poh:hover,
+.bit-tsh-poh:focus-within {
+    animation-play-state: paused;
+}
+
+.bit-tsh.bit-tsh-sta {
+    @include bit-tsh-static;
+}
+
+// A disabled run of text is dimmed rather than recolored, and a shimmer that sweeps across it would say that
+// something is still going on - so it is left at rest as well.
+.bit-tsh.bit-dis {
+    opacity: $opa-dis;
+
+    @include bit-tsh-static;
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tsh-#{$role} {
+        --bit-tsh-gradient-clr: #{role($tokens, main)};
+    }
 }
 
 // The shimmer loops forever, so it keeps a literal duration and opts out of reduced motion here
@@ -44,7 +131,29 @@
 // here as it does for the token-driven animations, which inherit the class's custom properties.
 @media (prefers-reduced-motion: reduce) {
     .bit-tsh:not(.bit-fam):not(.bit-fam *) {
-        animation: none;
-        background-image: linear-gradient(var(--bit-tsh-base-clr), var(--bit-tsh-base-clr));
+        @include bit-tsh-static;
+    }
+}
+
+// A browser that cannot clip a background to the text would paint the gradient as a box behind the text.
+@supports not ((background-clip: text) or (-webkit-background-clip: text)) {
+    .bit-tsh {
+        @include bit-tsh-static;
+    }
+}
+
+// Windows High Contrast / forced-colors: a forced palette removes every gradient and does not reach the fill of the
+// glyphs, which would leave the transparent text with nothing painted behind it - so the text gets its fill back, in
+// the system color for text.
+@media (forced-colors: active) {
+    .bit-tsh {
+        @include bit-tsh-static(CanvasText);
+    }
+}
+
+// Printing drops the backgrounds unless the reader asks for them, which would print the transparent text as nothing.
+@media print {
+    .bit-tsh {
+        @include bit-tsh-static;
     }
 }

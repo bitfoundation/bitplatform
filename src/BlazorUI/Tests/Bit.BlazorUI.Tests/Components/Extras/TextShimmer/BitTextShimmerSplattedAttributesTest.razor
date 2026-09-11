@@ -1,0 +1,40 @@
+@* Covers the attribute splatting of the text shimmer: the class and the style the component builds itself are merged
+   with the ones splatted through a dictionary rather than replacing them, and every attribute the component would
+   otherwise write as null is resolved against the splatted spelling of the same name instead of removing it.
+
+   The dictionary is the only way to reach these: the razor compiler matches a plain "class" or "dir" written on a
+   component to the parameter of that name, case insensitively, so they never arrive as splatted attributes. *@
+
+<BitTextShimmer Element="p" Text="12345"
+                @attributes="@(new Dictionary<string, object>
+                               {
+                                   ["class"] = "splatted-class",
+                                   ["style"] = "font-weight:bold",
+                               })" />
+
+<BitTextShimmer Element="section" Text="splatted"
+                @attributes="@(new Dictionary<string, object>
+                               {
+                                   ["id"] = "splatted-id",
+                                   ["dir"] = "rtl",
+                                   ["aria-label"] = "splatted label",
+                                   ["tabindex"] = "-1",
+                                   ["role"] = "status",
+                                   ["aria-live"] = "polite",
+                               })" />
+
+@* The dictionary is written first here, so the parameters beside it are the later of the two spellings and are
+   the ones kept - which is how a page gives a component a default set of attributes and overrides one of them. *@
+<BitTextShimmer @attributes="@(new Dictionary<string, object>
+                               {
+                                   ["id"] = "splatted-id",
+                                   ["dir"] = "rtl",
+                                   ["aria-label"] = "splatted label",
+                                   ["tabindex"] = "-1",
+                               })"
+                Element="article"
+                Text="overriding"
+                Id="own-id"
+                Dir="BitDir.Ltr"
+                AriaLabel="own label"
+                TabIndex="0" />

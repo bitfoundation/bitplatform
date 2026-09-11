@@ -2,12 +2,13 @@
 
 <PageOutlet Url="components/textshimmer"
             Title="TextShimmer"
-            Description="BitTextShimmer is an animated text shimmer in which a bright gradient band sweeps across the text, ideal for AI thinking/loading states or progressive reveals." />
+            Description="BitTextShimmer sweeps a bright band across a run of text, the signal an AI thinking label, a loading message or a progressive reveal needs - in pure CSS, in every render mode." />
 
 <DemoPage Name="TextShimmer"
           SecondaryNames="@(["Skeleton", "Loading", "AI"])"
-          Description="BitTextShimmer is an animated text shimmer in which a bright gradient band sweeps across the text, ideal for AI thinking/loading states or progressive reveals. The effect is implemented in pure CSS (no JavaScript interop), so it works in every Blazor render mode, including static server-side rendering."
+          Description="BitTextShimmer sweeps a bright gradient band across a run of text, which is the signal an AI thinking label, a loading message or a progressive reveal needs. The band is scaled to the length of the text and follows its reading direction; it can be retimed, delayed, paused between sweeps, played a set number of times, tilted, reversed, held, colored from the theme and stopped for good once the work is over. The effect is pure CSS with no JavaScript interop, so it works in every Blazor render mode including static server-side rendering, and the text stays real text - copied, found and read out as it is - and falls back to a flat color wherever the shimmer cannot or should not be painted."
           Parameters="componentParameters"
+          SubEnums="componentSubEnums"
           GitHubExtrasUrl="TextShimmer/BitTextShimmer.cs"
           GitHubDemoUrl="Extras/TextShimmer/BitTextShimmerDemo.razor">
     <NotesTemplate>
@@ -32,73 +33,240 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <BitTextShimmer Text="Thinking about your question..." />
-            
-            <br/><br/><br/>
-            
             <div>
-                BitTextShimmer honors the reduced motion preference of the OS/browser (prefers-reduced-motion) by default
-                and renders a static, dim text instead of animating. The ForceAnimation parameter keeps the shimmer animating
-                regardless of that preference:
+                Give the shimmer its <b>Text</b> and a band of the highlight color sweeps across it, in the direction the text is read, over a
+                dim resting color. The band is scaled to the length of the text, it crosses the text in the middle of each two-second sweep and
+                leaves it in its resting color at both ends, so the text never starts or stops with a band stuck on its first letters.
+                <br /><br />
+                The shimmer is a paint effect only: the characters are real text, so they are copied, found by a find-in-page and read out by a
+                screen reader exactly as they are written.
+                <br /><br />
+                The shimmer honors the reduced motion preference of the OS/browser and shows the text in its resting color instead of
+                animating. <b>ForceAnimation</b> keeps it animating regardless - reserve it for a shimmer whose motion carries a meaning that is
+                lost without it.
             </div>
-            
             <br />
-            
+            <BitTextShimmer Text="Thinking about your question..." />
+            <br /><br />
             <BitTextShimmer ForceAnimation Text="This shimmer keeps animating even in reduced motion mode" />
         </DemoExample>
 
         <DemoExample Title="Element" RazorCode="@example2RazorCode" Id="example2">
-            <div>Customize the root html element of the BitTextShimmer using the Element parameter:</div>
+            <div>
+                The shimmer renders a <b>p</b> by default. <b>Element</b> picks any other tag: a heading tag for a shimmering heading, or a
+                <b>span</b> for a shimmer inside a sentence, a button or anything else that only accepts phrasing content, where a <b>p</b> is
+                invalid markup. The root is laid out as an inline block either way, so the band sweeps across the width of the text rather than
+                the width of its container.
+                <br /><br />
+                A value that is not a name a tag can have falls back to the default tag.
+            </div>
             <br />
             <BitTextShimmer Element="h1" Text="A shimmering heading" />
             <br />
             <div>An <BitTextShimmer Element="span" Text="inline text shimmer" /> in the middle of a sentence.</div>
         </DemoExample>
 
-        <DemoExample Title="Duration & Spread" RazorCode="@example3RazorCode" Id="example3">
-            <div>Customize the animation speed and the width of the bright band of the BitTextShimmer:</div>
+        <DemoExample Title="Spread" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>Spread</b> is how far the band reaches from its brightest point to each of its edges, as a multiplier of the character count
+                of the text (2 by default, in px per character), so a longer text gets a proportionally wider band. A larger value gives a soft,
+                wide glow; a smaller one a crisp, narrow glint.
+                <br /><br />
+                <b>SpreadLength</b> replaces that computation with an explicit CSS length. A font-relative one (<b>em</b>, <b>ch</b>) follows
+                the size of the text without counting its characters, so the same shimmer looks alike in a heading and in a caption.
+            </div>
+            <br />
+            <BitTextShimmer Spread="5" Text="A wide shimmer band" />
+            <br />
+            <BitTextShimmer Spread="0.5" Text="A narrow shimmer band" />
+            <br />
+            <BitTextShimmer SpreadLength="2em" Text="A band two ems wide" />
+            <br />
+            <BitTextShimmer SpreadLength="2em" Element="h3" Text="A band two ems wide" />
+        </DemoExample>
+
+        <DemoExample Title="Content" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                Shimmer any content using <b>ChildContent</b>, which takes precedence over <b>Text</b>. Every glyph of the content shimmers as
+                one run - the markup and the font icons inside it included - while an SVG drawn in the current color keeps the resting color.
+                <br /><br />
+                The length of the content cannot be measured, so supply <b>ContentLength</b> - the character count to scale the band by, 10 by
+                default - or give the band a font-relative <BitLink Href="#example3">SpreadLength</BitLink> that needs no count at all.
+            </div>
+            <br />
+            <BitTextShimmer ContentLength="30">
+                Thinking <strong>really</strong> hard about it...
+            </BitTextShimmer>
+            <br />
+            <BitTextShimmer SpreadLength="3em">
+                <BitIcon IconName="@BitIconName.Robot" /> Searching <em>the docs</em> for an answer...
+            </BitTextShimmer>
+        </DemoExample>
+
+        <DemoExample Title="Timing" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                <b>Duration</b> is the length of one sweep in milliseconds - the band crossing the text and the rest before it enters again,
+                which take about half of it each. A slow sweep reads as calm, a fast one as urgent.
+                <br /><br />
+                <b>RepeatDelay</b> adds to that rest without changing the speed of the band, which is what keeps a label that stays on screen
+                for a long while from reading as a blinking one.
+                <br /><br />
+                <b>Delay</b> postpones the first sweep. Giving each shimmer of a list a slightly later start than the one before it turns many
+                shimmers blinking at once into one wave running down the list.
+            </div>
             <br />
             <BitTextShimmer Duration="4000" Text="Slow and calm shimmer (4 seconds)" />
             <br />
             <BitTextShimmer Duration="750" Text="Fast and urgent shimmer (750 milliseconds)" />
             <br />
-            <BitTextShimmer Spread="5" Text="A wide shimmer band" />
+            <BitTextShimmer RepeatDelay="2000" Text="A sweep, then an extra two seconds of rest" />
+            <br /><br />
+            <div>Staggered with Delay:</div>
             <br />
-            <BitTextShimmer Spread="0.5" Text="A narrow shimmer band" />
+            <BitTextShimmer Delay="0" Text="Reading the question..." />
+            <br />
+            <BitTextShimmer Delay="250" Text="Searching the knowledge base..." />
+            <br />
+            <BitTextShimmer Delay="500" Text="Drafting an answer..." />
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example4RazorCode" Id="example4">
-            <div>Customize the resting and highlight colors of the BitTextShimmer:</div>
+        <DemoExample Title="Direction" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                The band follows the reading direction of the text: left to right, and right to left in right-to-left text. <b>Reversed</b>
+                turns it against the reading direction, and <b>Alternate</b> sweeps it back and forth, with <b>Reversed</b> deciding which way
+                the first sweep runs.
+            </div>
+            <br />
+            <BitTextShimmer Text="Following the reading direction (default)" />
+            <br />
+            <BitTextShimmer Reversed Text="Against the reading direction" />
+            <br />
+            <BitTextShimmer Alternate Text="Back and forth" />
+        </DemoExample>
+
+        <DemoExample Title="Angle" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                <b>Angle</b> tilts the band, in degrees from upright. A positive angle leans its top towards the end the band is heading for, a
+                negative one the other way. A tilted band reads as a light catching the text rather than a scan passing over it; keep it within
+                about 45 degrees either way, since the sweep stops reading as one as the band approaches a quarter turn.
+            </div>
+            <br />
+            <BitTextShimmer Angle="25" Element="h2" Text="A band tilted by 25 degrees" />
+            <br />
+            <BitTextShimmer Angle="-25" Element="h2" Text="A band tilted by -25 degrees" />
+        </DemoExample>
+
+        <DemoExample Title="Iterations" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The shimmer sweeps forever by default, which says that something is still going on. <b>Iterations</b> plays a set number of
+                sweeps instead and then leaves the text at rest - a single sweep is a progressive reveal, an entrance for a heading or a freshly
+                arrived answer rather than a waiting state.
+            </div>
+            <br />
+            <BitButton OnClick="() => replayCount++">Replay</BitButton>
+            <br /><br />
+            <BitTextShimmer @key="@($"once-{replayCount}")" Iterations="1" Element="h2" Text="Revealed with a single sweep" />
+            <br />
+            <BitTextShimmer @key="@($"thrice-{replayCount}")" Iterations="3" Text="Three sweeps, then at rest" />
+        </DemoExample>
+
+        <DemoExample Title="Playback" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>Paused</b> holds the band wherever it happens to be and carries on from there once it is turned off, so the text never jumps.
+                <b>PauseOnHover</b> does the same while the pointer is over the shimmer or the focus is inside it, which gives a reader who is
+                trying to read the text a way to stop it.
+                <br /><br />
+                <b>Static</b> takes the band away altogether and leaves the plain text in its resting color - the finished state of a label
+                that stays on the page once the work is over; turning it off starts the sweeps again from the beginning. A disabled shimmer
+                (<b>IsEnabled="false"</b>) is at rest as well, and dimmed.
+            </div>
+            <br />
+            <BitToggle @bind-Value="isPaused" Text="Paused" />
+            <BitTextShimmer Paused="isPaused" Text="Pause me and resume me" />
+            <br /><br />
+            <BitTextShimmer PauseOnHover Text="Hover over me to pause the sweep" />
+            <br /><br />
+            <BitToggle @bind-Value="isStatic" Text="Static" />
+            <BitTextShimmer Static="isStatic" Text="Stop me and start me again" />
+            <br /><br />
+            <BitTextShimmer IsEnabled="false" Text="A disabled shimmer" />
+        </DemoExample>
+
+        <DemoExample Title="Thinking status" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                A practical AI assistant example. While the answer is on its way the shimmer is the message, so it is announced to screen
+                readers as a polite live region: anything that is not a parameter - here a <b>role</b> of <b>status</b> - is splatted onto the
+                rendered element. Once the answer is in, <BitLink Href="#example9">Static</BitLink> stops the band and the same element carries
+                the finished text, so the announcement lands in the region the reader was already told about.
+                <br /><br />
+                A calm <BitLink Href="#example5">RepeatDelay</BitLink> keeps a wait that runs long from turning into a distraction.
+            </div>
+            <br />
+            <BitButton OnClick="AskAsync" IsEnabled="isThinking is false">Ask a question</BitButton>
+            <br /><br />
+            <BitTextShimmer role="status"
+                            Static="isThinking is false"
+                            RepeatDelay="1000"
+                            Text="@(isThinking ? "Thinking about your question..." : thinkingResult)" />
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                <b>Color</b> paints the band in one of the general colors of the theme, so it follows the preset and the color scheme of the page.
+                The resting color stays the dim foreground of the theme, which keeps the text readable whichever color sweeps across it.
+                <br /><br />
+                <b>BaseColor</b> and <b>GradientColor</b> take any CSS color for the resting text and the band, and the explicit
+                <b>GradientColor</b> wins over <b>Color</b>. The resting color is what the text is read in most of the time, so it is the one to
+                check for contrast.
+            </div>
+            <br />
+            <BitTextShimmer Color="BitColor.Primary" Text="Primary" />
+            <br />
+            <BitTextShimmer Color="BitColor.Secondary" Text="Secondary" />
+            <br />
+            <BitTextShimmer Color="BitColor.Tertiary" Text="Tertiary" />
+            <br />
+            <BitTextShimmer Color="BitColor.Info" Text="Info" />
+            <br />
+            <BitTextShimmer Color="BitColor.Success" Text="Success" />
+            <br />
+            <BitTextShimmer Color="BitColor.Warning" Text="Warning" />
+            <br />
+            <BitTextShimmer Color="BitColor.SevereWarning" Text="SevereWarning" />
+            <br />
+            <BitTextShimmer Color="BitColor.Error" Text="Error" />
+            <br /><br />
+            <div>Custom colors:</div>
             <br />
             <BitTextShimmer BaseColor="#3f3f46" GradientColor="#22d3ee" Text="An ocean colored shimmer" />
             <br />
             <BitTextShimmer BaseColor="#92400e" GradientColor="#fbbf24" Text="A golden colored shimmer" />
         </DemoExample>
 
-        <DemoExample Title="Content" RazorCode="@example5RazorCode" Id="example5">
+        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
             <div>
-                Shimmer any content using ChildContent. Since the length of the content cannot be measured,
-                supply the ContentLength parameter to scale the shimmer band width:
+                Use <b>Style</b> and <b>Class</b> to customize the root element of the shimmer - its font, its size, its weight. The shimmer
+                also reads a set of custom properties that a class or a style can set directly, such as <b>--bit-tsh-base-clr</b> and
+                <b>--bit-tsh-gradient-clr</b> for its colors.
             </div>
-            <br />
-            <BitTextShimmer ContentLength="30">
-                Thinking <strong>really</strong> hard about it...
-            </BitTextShimmer>
-        </DemoExample>
-
-        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
-            <div>Use Style and Class to customize the BitTextShimmer:</div>
             <br />
             <BitTextShimmer Style="font-size:2rem;font-weight:bold" Text="A styled text shimmer" />
             <br />
             <BitTextShimmer Class="custom-class" Text="A classy text shimmer" />
+            <br />
+            <BitTextShimmer Style="--bit-tsh-gradient-clr:hotpink" Text="A band colored through a custom property" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
-            <div>Use BitTextShimmer in right-to-left (RTL):</div>
+        <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+            <div>
+                Use BitTextShimmer in right-to-left (RTL). The band follows the reading direction, so it sweeps from right to left - whether the
+                direction comes from the <b>Dir</b> parameter or from a <b>dir</b> attribute on the page around it.
+            </div>
+            <br />
+            <BitTextShimmer Dir="BitDir.Rtl" Text="در حال فکر کردن به سوال شما..." />
             <br />
             <div dir="rtl">
-                <BitTextShimmer Dir="BitDir.Rtl" Text="در حال فکر کردن به سوال شما..." />
+                <BitTextShimmer Text="در حال جستجو در مستندات..." />
             </div>
         </DemoExample>
     </Examples>
