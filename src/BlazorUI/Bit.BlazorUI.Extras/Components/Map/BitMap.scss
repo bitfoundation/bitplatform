@@ -1,9 +1,19 @@
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+
 .bit-map {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
+}
+
+// A fullscreen element has no ancestor to inherit a size or a background from, so both are
+// stated here - otherwise the map is letterboxed against the browser's default black.
+.bit-map:fullscreen {
+    width: 100%;
+    height: 100%;
+    background: $clr-bg-pri;
 }
 
 .bit-map-canvas {
@@ -14,19 +24,329 @@
 }
 
 .bit-map-canvas:focus-visible {
-    outline: 2px solid Highlight;
-    outline: 2px solid -webkit-focus-ring-color;
-    outline-offset: -2px;
+    outline: $shp-border-width-thick solid $clr-brd-pri-focus;
+    outline-offset: -#{$shp-border-width-thick};
 }
 
 .bit-map-overlay {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 1;
+    z-index: 3;
 
     > * {
         pointer-events: auto;
+    }
+}
+
+// Keyboard instructions and the live region: read by assistive tech, invisible on screen.
+// clip-path over `display:none` because a hidden element is not announced at all.
+.bit-map-help,
+.bit-map-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// Sighted keyboard users get the same instructions the moment the map takes focus - they
+// are the ones who need to know that arrow keys pan and Escape leaves.
+.bit-map-canvas:focus-visible ~ .bit-map-help {
+    inset-inline-start: spacing(1);
+    inset-block-start: spacing(1);
+    width: auto;
+    height: auto;
+    max-width: calc(100% - #{spacing(2)});
+    margin: 0;
+    padding: spacing(1) spacing(1.5);
+    overflow: visible;
+    white-space: normal;
+    clip-path: none;
+    z-index: 4;
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    border-radius: $shp-radius-popup;
+    box-shadow: $box-shadow-popup;
+    font-size: $tg-fs-xs;
+}
+
+// Cooperative-gestures hint. Covers the canvas while a blocked gesture is attempted, then
+// fades out; aria-hidden because the same information is in .bit-map-help for AT users.
+.bit-map-gesture-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: spacing(2);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.5);
+    transition: opacity 0.2s $mot-easing, visibility 0.2s $mot-easing;
+}
+
+.bit-map-gesture-hint-vis {
+    opacity: 1;
+    visibility: visible;
+}
+
+.bit-map-gesture-hint-text {
+    color: #fff;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-medium;
+    text-align: center;
+}
+
+// Loading / error / unsupported states. They sit above the canvas but below the consumer's
+// own overlay content so a custom control is never buried by a transient status.
+.bit-map-status {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: spacing(2);
+    background: $clr-bg-pri;
+}
+
+.bit-map-status-box {
+    display: flex;
+    gap: spacing(1);
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    padding: spacing(1) spacing(2);
+    color: $clr-fg-sec;
+    font-size: $tg-fs-sm;
+    text-align: center;
+}
+
+.bit-map-status-box-err {
+    color: $clr-fg-pri;
+}
+
+.bit-map-status-spinner {
+    flex: none;
+    display: inline-block;
+    width: $siz-icon-sm;
+    height: $siz-icon-sm;
+    border: $siz-spinner-stroke solid $clr-brd-sec;
+    border-block-start-color: $clr-pri;
+    border-radius: $shp-radius-full;
+    animation: bit-map-spin 0.9s linear infinite;
+}
+
+@keyframes bit-map-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// The spinner is decorative motion, so it stops entirely rather than merely slowing down.
+@media (prefers-reduced-motion: reduce) {
+    .bit-map-status-spinner {
+        animation: none;
+    }
+
+    .bit-map-gesture-hint {
+        transition: none;
+    }
+}
+
+// Anchor for map-pinned Blazor content. The chrome layer drives its transform every frame, so it
+// starts at the container origin and is moved from there; `visibility` is what hides it while the
+// anchor is off-screen, since a display:none element cannot be measured.
+.bit-map-anchor {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: 4;
+    // The transform positions the anchor point itself; this lifts the bubble above it and centres
+    // it, the same relationship a map pin has to its tip.
+    will-change: transform;
+    pointer-events: none;
+}
+
+.bit-map-popup {
+    position: relative;
+    transform: translate(-50%, calc(-100% - #{spacing(1.5)}));
+    min-width: 8rem;
+    max-width: 18rem;
+    padding: spacing(1) spacing(1.25);
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    border-radius: $shp-radius-popup;
+    box-shadow: $box-shadow-popup;
+    font-size: $tg-fs-sm;
+    pointer-events: auto;
+    overflow-wrap: break-word;
+
+    // The tail, drawn as a rotated square so it inherits the same background and shadow colour
+    // as the bubble no matter which theme is active.
+    &::after {
+        content: "";
+        position: absolute;
+        inset-block-end: -4px;
+        inset-inline-start: calc(50% - 4px);
+        width: 8px;
+        height: 8px;
+        background: $clr-bg-pri;
+        transform: rotate(45deg);
+    }
+}
+
+.bit-map-popup-close {
+    position: absolute;
+    inset-block-start: 2px;
+    inset-inline-end: 4px;
+    padding: 2px 6px;
+    border: none;
+    background: transparent;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-md;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        color: $clr-fg-pri;
+    }
+}
+
+.bit-map-popup-body {
+    // Room for the close button, so the first line of content does not run under it.
+    padding-inline-end: spacing(1.5);
+}
+
+// Text alternative to the markers. Sits outside .bit-map so the map's overflow does not clip
+// it; in ScreenReaderOnly mode it also carries .bit-map-help, which hides it visually while
+// leaving it in the accessibility tree.
+.bit-map-marker-list {
+    margin-block-start: spacing(1);
+}
+
+.bit-map-marker-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: $clr-fg-pri;
+    font-size: $tg-fs-sm;
+
+    caption {
+        padding-block-end: spacing(0.5);
+        color: $clr-fg-sec;
+        font-size: $tg-fs-xs;
+        text-align: start;
+    }
+
+    th,
+    td {
+        padding: spacing(0.5) spacing(1);
+        border-block-end: $siz-divider solid $clr-brd-sec;
+        text-align: start;
+    }
+
+    th[scope="col"] {
+        font-weight: $tg-fw-semibold;
+    }
+
+    th[scope="row"] {
+        font-weight: $tg-fw-regular;
+    }
+}
+
+.bit-map-marker-table-action {
+    padding: spacing(0.25) spacing(0.75);
+    border: $siz-divider solid $clr-brd-sec;
+    border-radius: $shp-radius-button;
+    background: transparent;
+    color: $clr-pri;
+    font: inherit;
+    cursor: pointer;
+
+    &:hover {
+        background: $clr-bg-pri-hover;
+    }
+}
+
+// Printing a map: keep what carries meaning, drop what only works on screen. The attribution is
+// kept deliberately - it is a licence requirement, not decoration.
+@media print {
+    .bit-map {
+        break-inside: avoid;
+    }
+
+    .bit-map-gesture-hint,
+    .bit-map-status {
+        display: none !important;
+    }
+
+    // The list is the only part of a map that survives being printed in black and white, so it is
+    // shown on paper even when it is screen-reader-only on screen.
+    .bit-map-marker-list.bit-map-help {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        overflow: visible;
+        white-space: normal;
+        clip-path: none;
+    }
+}
+
+// Marker icon shell used by the Azure Maps provider's HtmlMarker. Everything static lives
+// here rather than in an inline style attribute, which a strict CSP would strip.
+.bit-map-marker-icon {
+    position: relative;
+    transform: translate(-50%, -100%);
+}
+
+// Popup body shared by the providers that build their popup content as DOM.
+.bit-map-popup-content {
+    padding: spacing(0.75) spacing(1);
+    overflow-wrap: break-word;
+}
+
+// OpenLayers hover tooltip. A lighter surface than the click popup, and pointer-transparent so
+// it cannot interrupt the hover that produced it.
+.bit-map-ol-tooltip {
+    padding: spacing(0.5) spacing(0.75);
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    border-radius: $shp-radius-popup;
+    box-shadow: $box-shadow-popup;
+    font-size: $tg-fs-xs;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.bit-map-ol-tooltip--hidden {
+    display: none;
+}
+
+// Tooltip variant of the shared popup body: tighter, and never wide enough to cover the marker.
+.bit-map-popup-content-tooltip {
+    padding: spacing(0.25) spacing(0.5);
+    font-size: $tg-fs-xs;
+    white-space: nowrap;
+}
+
+// The GL providers render a tooltip as a second popup; this trims the padding their stylesheet
+// gives a full popup and keeps it out of the pointer's way.
+.bit-map-gl-tooltip {
+    pointer-events: none;
+
+    .maplibregl-popup-content,
+    .mapboxgl-popup-content {
+        padding: spacing(0.25) spacing(0.75);
+        font-size: $tg-fs-xs;
+        white-space: nowrap;
     }
 }
 
@@ -36,10 +356,12 @@
 .bit-map-ol-popup {
     position: relative;
     max-width: 280px;
-    padding: 10px 12px;
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    padding: spacing(1.25) spacing(1.5);
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    border-radius: $shp-radius-popup;
+    box-shadow: $box-shadow-popup;
+    font-size: $tg-fs-sm;
     overflow-wrap: break-word;
 }
 
@@ -49,17 +371,17 @@
 
 .bit-map-ol-popup__close {
     position: absolute;
-    top: 2px;
-    right: 6px;
+    inset-block-start: 2px;
+    inset-inline-end: 6px;
     padding: 2px 4px;
     border: none;
     background: transparent;
-    color: #666;
-    font-size: 16px;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-md;
     line-height: 1;
     cursor: pointer;
 }
 
 .bit-map-ol-popup__content {
-    margin-top: 4px;
+    margin-block-start: spacing(0.5);
 }

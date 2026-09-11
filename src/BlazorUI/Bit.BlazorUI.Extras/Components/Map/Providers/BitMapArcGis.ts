@@ -14,6 +14,7 @@ namespace BitBlazorUI {
             geoJsonLayers: { [k: string]: { graphics: any[] } },
             tileOverlays: { [k: string]: any },
             scaleBar: any,
+            suppressBrowserContextMenu: boolean,
             dragHandlersWired?: boolean,
         } } = {};
 
@@ -56,6 +57,7 @@ namespace BitBlazorUI {
                 geoJsonLayers: {} as any,
                 tileOverlays: {} as any,
                 scaleBar: null as any,
+                suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
             };
 
             BitMapArcGis._ensureScaleBar(state, !!o.showScaleControl);
@@ -88,6 +90,15 @@ namespace BitBlazorUI {
                         } catch { /* ignore */ }
                         (view as any).__bmPrevTabIndex = undefined;
                     }
+                }
+                // The contextmenu listener goes on the view's container rather than the element
+                // above, so it needs the same removal dispose() does - otherwise a failed init
+                // leaves a handler on the DOM node holding a destroyed view.
+                const ctxHandler = (view as any).__bmContextMenuHandler;
+                if (ctxHandler) {
+                    const ctxContainer = view.container as HTMLElement | null | undefined;
+                    if (ctxContainer) try { ctxContainer.removeEventListener('contextmenu', ctxHandler); } catch { /* ignore */ }
+                    (view as any).__bmContextMenuHandler = null;
                 }
                 try { view?.destroy?.(); } catch { /* ignore */ }
                 state.dotnetObj = null;
@@ -155,6 +166,10 @@ namespace BitBlazorUI {
                     try { container.removeEventListener('keydown', view.__bmKeyHandler, true); } catch { /* ignore */ }
                     view.__bmKeyHandler = null;
                 }
+                if (view.__bmContextMenuHandler) {
+                    try { container.removeEventListener('contextmenu', view.__bmContextMenuHandler); } catch { /* ignore */ }
+                    view.__bmContextMenuHandler = null;
+                }
                 // Restore the original tabindex captured by _applyInteractivity. Without
                 // this the container is left pinned at tabindex="-1" (or absent when it
                 // was originally absent and we forced a value) after dispose, leaving
@@ -204,7 +219,41 @@ namespace BitBlazorUI {
             s.view.goTo({ center: [lng, lat], zoom: zoom ?? s.view.zoom }, { duration: 1200, easing: 'in-out-expo' }).catch(() => {});
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
+        /**
+         * Projects a geographic coordinate to a pixel offset inside the map container.
+         *
+         * This is what lets BitMap anchor its own DOM - a Blazor-rendered popup, say - to a place
+         * on the map without handing that DOM to the mapping library, which would take it out of
+         * Blazor's hands. Returns null when the coordinate is not currently on screen.
+         */
+        public static project(id: string, lat: number, lng: number): { x: number, y: number } | null {
+            const s = BitMapArcGis._maps[id];
+            if (!s) return null;
+            try {
+                const screenPoint = s.view.toScreen(new s.esri.Point({ longitude: lng, latitude: lat }));
+                return screenPoint ? { x: screenPoint.x, y: screenPoint.y } : null;
+            } catch {
+                return null;
+            }
+        }
+
+        public static zoomBy(id: string, delta: number, animate: boolean) {
+            const s = BitMapArcGis._require(id);
+            s.view.goTo({ zoom: (s.view.zoom ?? 0) + delta }, animate === false ? { animate: false } : {}).catch(() => {});
+        }
+
+        public static panBy(id: string, dx: number, dy: number, animate: boolean) {
+            const s = BitMapArcGis._require(id);
+            // MapView has no pixel-space pan, so convert the screen offset from the view
+            // centre into a map point and recentre on it.
+            const width = s.view.width ?? 0, height = s.view.height ?? 0;
+            if (!width || !height) return;
+            const target = s.view.toMap({ x: width / 2 + dx, y: height / 2 + dy });
+            if (!target) return;
+            s.view.goTo({ center: target }, animate === false ? { animate: false } : {}).catch(() => {});
+        }
+
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, _maxZoom?: number) {
             const s = BitMapArcGis._require(id);
             const pad = paddingPx ?? 48;
             const latFrac = ((neLat - swLat) * pad) / 300;
@@ -217,7 +266,7 @@ namespace BitBlazorUI {
             s.view.goTo(ext).catch(() => {});
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, _maxZoom?: number) {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
             const geoms = s.markerLayer.graphics.toArray().map((g: any) => g.geometry).filter(Boolean);
@@ -455,8 +504,13 @@ namespace BitBlazorUI {
             const existing = s.tileOverlays[opts.id];
             if (existing) { s.map.remove(existing); delete s.tileOverlays[opts.id]; }
             const esri = s.esri;
+            // WebTileLayer has its own subdomain support, spelled {subDomain}, so the {s}
+            // placeholder is translated rather than expanded.
+            const subDomains = BitMapHelpers.readSubdomains(opts.subdomains);
+            const urlTemplate = (opts.urlTemplate || '').split('{s}').join('{subDomain}');
             const tl = new esri.WebTileLayer({
-                urlTemplate: (opts.urlTemplate || '').replace('{s}', 'a'),
+                urlTemplate,
+                subDomains,
                 copyright: opts.attribution || '',
                 opacity: opts.opacity ?? 1,
             });
@@ -737,7 +791,11 @@ namespace BitBlazorUI {
         }
 
         private static _wireEvents(s: any) {
-            const view = s.view, dn = s.dotnetObj;
+            const view = s.view;
+            // Read s.dotnetObj at dispatch time. dispose() nulls it, and the hitTest
+            // promise below resolves asynchronously - a captured handle would invoke a
+            // DotNetObjectReference that has already been released.
+            const dn = () => s.dotnetObj;
             view.on('click', (event: any) => {
                 view.hitTest(event).then((response: any) => {
                     let hit = false;
@@ -747,7 +805,7 @@ namespace BitBlazorUI {
                         if (!a) continue;
                         if (a.markerId && s.markers[a.markerId]) {
                             hit = true;
-                            if (dn) dn.invokeMethodAsync('OnMarkerClick', a.markerId);
+                            dn()?.invokeMethodAsync('OnMarkerClick', a.markerId);
                             if (a.popupHtml) {
                                 view.popup.open({ content: a.popupHtml, title: a.title || '', location: g.geometry });
                             } else if (a.popupText) {
@@ -760,26 +818,43 @@ namespace BitBlazorUI {
                         if (a._bmKind === 'geojson' && a._bmLayerId && s.geoJsonLayers[a._bmLayerId]) {
                             hit = true;
                             const props = { ...a }; delete props._bmLayerId; delete props._bmKind;
-                            if (dn) dn.invokeMethodAsync('OnGeoJsonFeatureClick', a._bmLayerId, props);
+                            dn()?.invokeMethodAsync('OnGeoJsonFeatureClick', a._bmLayerId, props);
                             break;
                         }
                         if (a.bmVectorKind && a.layerId && s.layers[a.layerId]) {
                             hit = true;
-                            if (dn && event.mapPoint) {
-                                dn.invokeMethodAsync('OnVectorClick', a.layerId, a.bmVectorKind, {
+                            if (event.mapPoint) {
+                                dn()?.invokeMethodAsync('OnVectorClick', a.layerId, a.bmVectorKind, {
                                     lat: event.mapPoint.latitude, lng: event.mapPoint.longitude,
                                 });
                             }
                             break;
                         }
                     }
-                    if (!hit && dn && event.mapPoint) {
-                        dn.invokeMethodAsync('OnClick', { lat: event.mapPoint.latitude, lng: event.mapPoint.longitude });
+                    if (!hit && event.mapPoint) {
+                        dn()?.invokeMethodAsync('OnClick', { lat: event.mapPoint.latitude, lng: event.mapPoint.longitude });
                     }
                 });
             });
+            // MapView exposes no contextmenu event, so it comes off the container element and
+            // the screen point is converted with the view's own projection.
+            const container = view.container as HTMLElement | null | undefined;
+            if (container) {
+                const handler = (evt: MouseEvent) => {
+                    if (s.suppressBrowserContextMenu) evt.preventDefault();
+                    const target = dn();
+                    if (!target) return;
+                    const rect = container.getBoundingClientRect();
+                    const point = view.toMap({ x: evt.clientX - rect.left, y: evt.clientY - rect.top });
+                    if (!point) return;
+                    target.invokeMethodAsync('OnContextMenu', { lat: point.latitude, lng: point.longitude });
+                };
+                container.addEventListener('contextmenu', handler);
+                (view as any).__bmContextMenuHandler = handler;
+            }
+
             view.on('double-click', (event: any) => {
-                if (dn && event.mapPoint) dn.invokeMethodAsync('OnDoubleClick', { lat: event.mapPoint.latitude, lng: event.mapPoint.longitude });
+                if (event.mapPoint) dn()?.invokeMethodAsync('OnDoubleClick', { lat: event.mapPoint.latitude, lng: event.mapPoint.longitude });
             });
             let viewTimer: any = null;
             s.esri.reactiveUtils?.watch(

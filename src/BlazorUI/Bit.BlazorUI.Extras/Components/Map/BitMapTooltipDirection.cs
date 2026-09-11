@@ -2,7 +2,9 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Tooltip placement direction for <see cref="BitMapMarker.TooltipDirection"/>.
-/// Currently honored by the Leaflet provider; other providers ignore it.
+/// Honoured in full by Leaflet; MapLibre and Mapbox honour every value except
+/// <see cref="Auto"/>, which they resolve themselves; the remaining providers place tooltips
+/// above the marker regardless.
 /// </summary>
 public enum BitMapTooltipDirection
 {

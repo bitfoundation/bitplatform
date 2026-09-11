@@ -21,11 +21,20 @@ namespace BitBlazorUI {
         public static flyTo(id: string, lat: number, lng: number, zoom: number | null) {
             return BitMapGlBase.flyTo(BitMapMapbox._key, id, lat, lng, zoom);
         }
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
-            return BitMapGlBase.fitBounds(BitMapMapbox._key, id, swLat, swLng, neLat, neLng, paddingPx);
+        public static project(id: string, lat: number, lng: number) {
+            return BitMapGlBase.project(BitMapMapbox._key, id, lat, lng);
         }
-        public static fitBoundsToMarkers(id: string, paddingPx: number) {
-            return BitMapGlBase.fitBoundsToMarkers(BitMapMapbox._key, id, paddingPx);
+        public static zoomBy(id: string, delta: number, animate: boolean) {
+            return BitMapGlBase.zoomBy(BitMapMapbox._key, id, delta, animate);
+        }
+        public static panBy(id: string, dx: number, dy: number, animate: boolean) {
+            return BitMapGlBase.panBy(BitMapMapbox._key, id, dx, dy, animate);
+        }
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
+            return BitMapGlBase.fitBounds(BitMapMapbox._key, id, swLat, swLng, neLat, neLng, paddingPx, maxZoom);
+        }
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
+            return BitMapGlBase.fitBoundsToMarkers(BitMapMapbox._key, id, paddingPx, maxZoom);
         }
         public static addMarker(id: string, markerId: string, opts: any) { return BitMapGlBase.addMarker(BitMapMapbox._key, id, markerId, opts); }
         public static removeMarker(id: string, markerId: string) { return BitMapGlBase.removeMarker(BitMapMapbox._key, id, markerId); }
