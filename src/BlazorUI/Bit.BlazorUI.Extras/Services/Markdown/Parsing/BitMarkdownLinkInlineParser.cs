@@ -2,7 +2,12 @@ using System.Text;
 
 namespace Bit.BlazorUI;
 
-/// <summary>Handles inline links <c>[text](url "title")</c> and images <c>![alt](url)</c>.</summary>
+/// <summary>
+/// Handles inline links <c>[text](url "title")</c> and images <c>![alt](url)</c>, plus the
+/// three reference forms - full <c>[text][ref]</c>, collapsed <c>[text][]</c> and shortcut
+/// <c>[text]</c> - whose destination comes from a link reference definition elsewhere in
+/// the document.
+/// </summary>
 public sealed class BitMarkdownLinkInlineParser : BitMarkdownInlineParser
 {
     public override char[] TriggerChars => new[] { '[', '!' };
@@ -15,18 +20,89 @@ public sealed class BitMarkdownLinkInlineParser : BitMarkdownInlineParser
         int bracket = isImage ? i + 1 : i;
         if (bracket >= s.Length || s[bracket] != '[') return false;
 
-        int labelEnd = FindLabelEnd(s, bracket);
+        int labelEnd = BitMarkdownLinkHelpers.FindLabelEnd(s, bracket);
         if (labelEnd < 0) return false;
-
-        int p = labelEnd + 1;
-        if (p >= s.Length || s[p] != '(') return false;
 
         string label = s.Substring(bracket + 1, labelEnd - bracket - 1);
 
-        int q = p + 1;
+        int p = labelEnd + 1;
+        if (p < s.Length && s[p] == '(')
+            return TryParseInline(state, s, label, isImage, p);
+
+        return TryParseReference(state, s, label, isImage, labelEnd);
+    }
+
+    private static bool TryParseInline(BitMarkdownInlineProcessor state, string s, string label, bool isImage, int openParen)
+    {
+        int q = openParen + 1;
         if (!ParseDestination(s, ref q, out string url, out string? title)) return false;
         if (q >= s.Length || s[q] != ')') return false;
 
+        Emit(state, label, isImage, BitMarkdownEntities.Decode(url), title);
+        state.Pos = q + 1;
+        return true;
+    }
+
+    // Full, collapsed and shortcut references all resolve against a link reference
+    // definition, which may appear anywhere in the document - including after this point.
+    // Rather than guess, the parser emits an unresolved node that
+    // BitMarkdownLinkReferenceAstProcessor rewrites once the whole document is parsed. It
+    // only does so for a label the document actually defines (the pre-scan knows them all),
+    // so ordinary bracketed prose in a document with no definitions is scanned untouched.
+    private static bool TryParseReference(BitMarkdownInlineProcessor state, string s, string label, bool isImage, int labelEnd)
+    {
+        string reference;
+        string suffix;
+        int end;
+
+        int p = labelEnd + 1;
+        if (p < s.Length && s[p] == '[')
+        {
+            int referenceEnd = BitMarkdownLinkHelpers.FindLabelEnd(s, p);
+            if (referenceEnd < 0) return false;
+
+            string inner = s.Substring(p + 1, referenceEnd - p - 1);
+            if (inner.Trim().Length == 0)
+            {
+                // Collapsed: "[text][]" reuses the text as the reference label.
+                reference = label;
+                suffix = "][]";
+            }
+            else
+            {
+                reference = inner;
+                suffix = "][" + inner + "]";
+            }
+            end = referenceEnd;
+        }
+        else
+        {
+            // Shortcut: "[text]" is itself the reference label.
+            reference = label;
+            suffix = "]";
+            end = labelEnd;
+        }
+
+        string normalized = BitMarkdownLinkHelpers.NormalizeLabel(reference);
+        if (normalized.Length == 0 || normalized.Length > BitMarkdownLinkHelpers.MaxLabelLength) return false;
+        if (state.HasReferenceLabel(normalized) is false) return false;
+
+        var node = new BitMarkdownLinkReferenceNode
+        {
+            Label = normalized,
+            IsImage = isImage,
+            RawPrefix = isImage ? "![" : "[",
+            RawSuffix = suffix
+        };
+        node.Children.AddRange(isImage ? state.ParseInlines(label) : RemoveNestedLinks(state.ParseInlines(label)));
+
+        state.AppendNode(node);
+        state.Pos = end + 1;
+        return true;
+    }
+
+    private static void Emit(BitMarkdownInlineProcessor state, string label, bool isImage, string url, string? title)
+    {
         if (isImage)
         {
             state.AppendNode(new BitMarkdownImageNode
@@ -35,21 +111,18 @@ public sealed class BitMarkdownLinkInlineParser : BitMarkdownInlineParser
                 Title = title,
                 Alt = BitMarkdownInlineHelpers.PlainText(state.ParseInlines(label))
             });
+            return;
         }
-        else
+
+        var link = new BitMarkdownLinkNode
         {
-            var link = new BitMarkdownLinkNode
-            {
-                Url = BitMarkdownUrlSanitizer.Sanitize(url, isImage: false),
-                Title = title
-            };
-            // A link may not contain another link; unwrap any nested links so the
-            // inner link's content survives as plain inline text instead.
-            link.Children.AddRange(RemoveNestedLinks(state.ParseInlines(label)));
-            state.AppendNode(link);
-        }
-        state.Pos = q + 1;
-        return true;
+            Url = BitMarkdownUrlSanitizer.Sanitize(url, isImage: false),
+            Title = title
+        };
+        // A link may not contain another link; unwrap any nested links so the
+        // inner link's content survives as plain inline text instead.
+        link.Children.AddRange(RemoveNestedLinks(state.ParseInlines(label)));
+        state.AppendNode(link);
     }
 
     // Recursively replaces any nested link node with its (also unwrapped) children,
@@ -73,56 +146,6 @@ public sealed class BitMarkdownLinkInlineParser : BitMarkdownInlineParser
             result.Add(node);
         }
         return result;
-    }
-
-    private static int FindLabelEnd(string s, int openBracket)
-    {
-        int depth = 0;
-        int i = openBracket;
-        while (i < s.Length)
-        {
-            char c = s[i];
-            if (c == '\\') { i += 2; continue; }
-            if (c == '`')
-            {
-                // Skip an inline code span so that ']' enclosed by backticks does
-                // not prematurely terminate the link label.
-                i = SkipCodeSpan(s, i);
-                continue;
-            }
-            if (c == '[') depth++;
-            else if (c == ']')
-            {
-                depth--;
-                if (depth == 0) return i;
-            }
-            i++;
-        }
-        return -1;
-    }
-
-    // Given the index of a backtick, returns the index just past a matching
-    // closing code-span run. If no closing run of equal length exists, the
-    // backticks are treated as literal text and the index just past the opening
-    // run is returned.
-    private static int SkipCodeSpan(string s, int i)
-    {
-        int start = i;
-        int openLen = 0;
-        while (i < s.Length && s[i] == '`') { i++; openLen++; }
-
-        int j = i;
-        while (j < s.Length)
-        {
-            if (s[j] == '`')
-            {
-                int closeLen = 0;
-                while (j < s.Length && s[j] == '`') { j++; closeLen++; }
-                if (closeLen == openLen) return j;
-            }
-            else j++;
-        }
-        return start + openLen;
     }
 
     private static bool ParseDestination(string s, ref int i, out string url, out string? title)
@@ -173,7 +196,7 @@ public sealed class BitMarkdownLinkInlineParser : BitMarkdownInlineParser
             }
             if (i >= n) return false;
             i++;
-            title = tb.ToString();
+            title = BitMarkdownEntities.Decode(tb.ToString());
             while (i < n && (s[i] is ' ' or '\t' or '\n')) i++;
         }
 

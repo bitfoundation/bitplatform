@@ -17,6 +17,19 @@ public sealed class BitMarkdownEmojiExtension : IBitMarkdownExtension
         _overrides = new Dictionary<string, string>(overrides);
     }
 
+    public bool IsSameConfigurationAs(IBitMarkdownExtension other)
+    {
+        if (other is not BitMarkdownEmojiExtension e) return false;
+        if (_overrides is null || e._overrides is null) return _overrides is null && e._overrides is null;
+        if (_overrides.Count != e._overrides.Count) return false;
+
+        foreach (var pair in _overrides)
+        {
+            if (e._overrides.TryGetValue(pair.Key, out var value) is false || value != pair.Value) return false;
+        }
+        return true;
+    }
+
     public void Setup(BitMarkdownPipelineBuilder builder)
         => builder.AstProcessors.Add(_overrides is null
             ? new BitMarkdownEmojiAstProcessor()

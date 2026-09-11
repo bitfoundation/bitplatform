@@ -8,31 +8,69 @@ namespace Bit.BlazorUI;
 public sealed class BitMarkdownBlockProcessor
 {
     internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines)
-        : this(pipeline, lines, BitMarkdownParseOptions.Default, 0)
+        : this(pipeline, lines, BitMarkdownParseContext.Empty, 0, UnknownLine)
     {
     }
 
-    internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownParseOptions options, int depth)
+    internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownParseContext context, int depth, int lineOffset)
     {
         Pipeline = pipeline;
         Lines = lines;
-        Options = options;
+        Context = context;
         Depth = depth;
+        LineOffset = lineOffset;
     }
+
+    /// <summary>The value a source line takes when it cannot be traced back to the document.</summary>
+    internal const int UnknownLine = -1;
 
     public BitMarkdownPipeline Pipeline { get; }
 
+    /// <summary>The state shared by every parser taking part in this parse.</summary>
+    internal BitMarkdownParseContext Context { get; }
+
     /// <summary>The safety limits in effect for this parse.</summary>
-    internal BitMarkdownParseOptions Options { get; }
+    internal BitMarkdownParseOptions Options => Context.Options;
+
+    /// <summary>
+    /// True when the document declares a <c>[label]:</c> definition line for the supplied
+    /// (already normalized) label. Block and inline parsers consult this before treating
+    /// bracketed text as a reference, since definitions may appear after their references.
+    /// </summary>
+    public bool HasReferenceLabel(string normalizedLabel) => Context.ReferenceLabels.Contains(normalizedLabel);
 
     /// <summary>The current nesting depth of this processor within the document.</summary>
     internal int Depth { get; }
+
+    /// <summary>
+    /// True when these lines are the document's own, rather than the inside of a block quote, a
+    /// list item or any other nested container. A construct that is only meaningful at the top of
+    /// a file - front matter, for one - checks this before claiming its lines.
+    /// </summary>
+    public bool IsTopLevel => Depth == 0;
 
     /// <summary>The lines being parsed in the current scope.</summary>
     public IReadOnlyList<string> Lines { get; }
 
     /// <summary>Index of the line currently being considered.</summary>
     public int Line { get; set; }
+
+    /// <summary>
+    /// The document line <c>Lines[0]</c> was taken from, or <see cref="UnknownLine"/> when these
+    /// lines cannot be traced back to it. Every container that recurses hands its inner lines the
+    /// document line the first of them came from, so a node parsed inside a list item inside a
+    /// block quote still knows which line of the source it was written on.
+    /// </summary>
+    internal int LineOffset { get; }
+
+    /// <summary>
+    /// The document line <paramref name="localLine"/> of this scope was written on, or
+    /// <see cref="UnknownLine"/> when it cannot be traced back to the source. This is what lets a
+    /// node be edited in the source it came from - a ticked task box being written back into its
+    /// own <c>[ ]</c> marker - without a second scanner that has to agree with this parser.
+    /// </summary>
+    public int SourceLine(int localLine)
+        => LineOffset == UnknownLine ? UnknownLine : LineOffset + localLine;
 
     internal List<BitMarkdownNode> Run()
     {
@@ -55,11 +93,24 @@ public sealed class BitMarkdownBlockProcessor
         return output;
     }
 
-    /// <summary>Recursively parses a nested set of lines (list items, block quotes).</summary>
-    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines) => Pipeline.ParseBlocks(lines, Options, Depth + 1);
+    /// <summary>
+    /// Recursively parses a nested set of lines (list items, block quotes) that cannot be traced
+    /// back to the document's own lines.
+    /// </summary>
+    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines)
+        => Pipeline.ParseBlocks(lines, Context, Depth + 1, UnknownLine);
+
+    /// <summary>
+    /// Recursively parses a nested set of lines, the first of which was taken from
+    /// <paramref name="firstLine"/> of this scope. Pass the local index the inner lines start at -
+    /// they have to map one-to-one onto the lines from there - so the nested nodes keep knowing
+    /// which document line they were written on.
+    /// </summary>
+    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines, int firstLine)
+        => Pipeline.ParseBlocks(lines, Context, Depth + 1, SourceLine(firstLine));
 
     /// <summary>Parses inline content using the pipeline's inline parsers.</summary>
-    public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
+    public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Context, Depth + 1);
 
     /// <summary>True if any block parser (other than the paragraph fallback) starts at the line.</summary>
     public bool StartsBlock(int lineIndex)
