@@ -149,7 +149,7 @@ and this repository never does, plus the artifacts the whole feature rests on:
   dependency closure assembles to, every chunk carries the guard that makes a second evaluation a no-op and
   appears in the bundle exactly once, and the manifest lists every module after the modules it depends on;
 - **running the result** - the bundle a publish of *this* assembly would ship (trimmed: the 29-module,
-  55,035-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
+  55,371-byte one), the full bundle, and two overlapping lazy module files loaded one after the other. Each is
   evaluated under Node in a browser-like sandbox and has to register exactly the expected `BitButil`
   namespaces, none of them empty, and register nothing a second time (the sentinel each namespace is marked
   with has to survive re-evaluation - a guard that stopped holding would reset a module's listener
@@ -315,16 +315,16 @@ library, so re-run the harness to refresh them. The library they were taken from
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 1,461,760 bytes | 147,968 bytes |
-| types in assembly | 1,610 | 179 |
+| `Bit.Butil.dll` | 1,466,368 bytes | 147,968 bytes |
+| types in assembly | 1,614 | 180 |
 | `[ButilService]` discovered / registered | 137 / 137 | 18 / 18 |
 | interop contract | 95 types captured | 19 checked, 76 trimmed away, 0 problems |
 | JavaScript modules called | 165 of 171 | 23 of 171 (canvas, clipboard, cookie, crypto, css, digitalCredentials, dom, domHandles, element, events, fetch, geolocation, indexedDb, indexedDbStore, performance, storage, streams, userAgent, webAudio, webOtp, webRtc, window, windowSelection) |
-| `bit-butil.js` a publish would ship | 331,384 bytes, all 171 modules | 55,035 bytes, 29 modules (15,742 gzip / 13,876 brotli) - 16.6% |
-| lazy scripts would download | 633,370 bytes over 165 files | 88,440 bytes over 23 files |
+| `bit-butil.js` a publish would ship | 328,376 bytes, all 171 modules | 55,371 bytes, 29 modules (15,923 gzip / 14,035 brotli) - 16.9% |
+| lazy scripts would download | 652,970 bytes over 165 files | 91,478 bytes over 23 files |
 | script-bundling checks | 110 / 110 | 110 / 110 |
-| script-scanning checks | 49 / 49 | not run |
-| script-publishing checks | 43 / 43 (14 publishes, ~40s) | not run |
+| script-scanning checks | 51 / 51 | not run |
+| script-publishing checks | 43 / 43 (14 publishes, ~63s) | not run |
 | lazy-loader checks | 19 / 19 | 19 / 19 |
 | cancellation-contract checks | 24 / 24 | 24 / 24 |
 
@@ -338,8 +338,8 @@ as an injected one - and `SplitModuleUse` injects six more. That is why they are
 modules in `MustSurviveModules`.
 
 Worth reading the module row next to the service row: eighteen services reach twenty-three modules, not
-the thirty-eight their APIs have between them, because the seven split families each contribute only what
-this project calls. `Window` is the sharpest case - one of its four modules survives - and it is also why
+the forty-five their APIs have between them, because the split families each contribute only what
+this project calls. `WebAudio` is the sharpest case - one of its seven modules survives - and it is also why
 the trimmed assembly is *smaller* here than it was when this harness used six services fewer: the
 callbacks those services hand to JavaScript live on small relay objects, so a
 `DotNetObjectReference.Create` no longer preserves every public method of the service around them.
@@ -427,7 +427,7 @@ assembly comes out at 32,256 bytes and 34 types.
 - **`script publishing: ...`** - the MSBuild half. The message names the claim; the ones worth knowing on
   sight are *is added to what the scan found, not used instead of it* (the csproj list has stopped being
   additive - a consumer naming one module would lose everything else), *publishes no per-module files* (the
-  publish asset list is no longer being narrowed, so a bundle-mode app ships all 140 module files - that is
+  publish asset list is no longer being narrowed, so a bundle-mode app ships all 171 module files - that is
   `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
   bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
   every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in

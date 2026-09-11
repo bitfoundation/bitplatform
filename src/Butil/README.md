@@ -414,7 +414,7 @@ the scripts (one `Scripts/*.ts` file is one module, `BitButil.clipboard` for `Cl
 A module is kept or dropped whole, so how finely the JavaScript is divided is what decides how little an
 app can get away with. That is why a bigger API is split across several modules rather than served from
 one: `Crypto` is six (randomness and hashing, signing, key material, derivation, ciphers, and the key
-import both of the last two share), `WebAudio` six, the `ElementReference` extensions five - one per
+import both of the last two share), `WebAudio` six, the `ElementReference` extensions six - one per
 extension class - and `Window` four. A service calling more than one module is nothing a consumer has to
 know about: the class-to-module map behind `BitButilScriptModule` and the scan resolves a class to every
 module it needs. What it means in practice is that reading `element.ClientWidth()` no longer downloads the
@@ -434,8 +434,8 @@ published trimmed - a Blazor WebAssembly publish is - the package's build logic 
 through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
 Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
-that injects `Clipboard`, `LocalStorage` and `Window` ships about 10 KB of JavaScript instead of the
-324 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+that injects `Clipboard`, `LocalStorage` and `Window` ships about 6 KB of JavaScript instead of the
+321 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
 a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
 trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping

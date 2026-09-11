@@ -123,7 +123,7 @@ var secure = await window.IsSecureContext();
 
 <DemoSection Title="Optional: tree-shake the JavaScript"
              Api="BitButilTrimScripts"
-             Description="The bundle behind step 2 covers every API on this site, and a published app can shed the parts it never calls: a publish rebuilds bit-butil.js from only the modules your code can still reach, so an app injecting Clipboard, LocalStorage and Window ships around 23 KB of JavaScript instead of 315 KB. One property turns it on, and in a Blazor WebAssembly project it is already on. It is publish-only, so a build - dotnet run and dotnet watch included - always keeps the full bundle."
+             Description="The bundle behind step 2 covers every API on this site, and a published app can shed the parts it never calls: a publish rebuilds bit-butil.js from only the modules your code can still reach, so an app injecting Clipboard, LocalStorage and Window ships around 6 KB of JavaScript instead of 321 KB. One property turns it on, and in a Blazor WebAssembly project it is already on. It is publish-only, so a build - dotnet run and dotnet watch included - always keeps the full bundle."
              Code=@("""
 <!-- In a Blazor WebAssembly project there is nothing to add. Anywhere else: -->
 <PropertyGroup>
