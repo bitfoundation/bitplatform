@@ -324,10 +324,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             });
         }
 
-        var lineVariant = GetLineVariant(item);
-        if (lineVariant is not null)
+        var lineStyle = GetLineStyle(item);
+        if (lineStyle is not null)
         {
-            className.Append(lineVariant switch
+            className.Append(lineStyle switch
             {
                 BitLineStyle.Dashed => " bit-tln-ild",
                 BitLineStyle.Dotted => " bit-tln-ilt",
@@ -869,7 +869,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitVariant?>(NameSelectors.Variant.Name, null);
     }
 
-    private BitLineStyle? GetLineVariant(TItem? item)
+    private BitLineStyle? GetLineStyle(TItem? item)
     {
         if (item is null) return null;
 

@@ -988,15 +988,8 @@ public partial class BitDropMenu : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    // The edge the responsive panel slides in from. BitPlacement carries sides a panel has no styles for - the
-    // physical pair and the two combined values - so every consumer goes through this rather than through
-    // PanelPlacement itself, which keeps the class it draws, the axis it locks the swipe to and the value the
-    // gesture is registered with from ever disagreeing with each other.
-    private BitPlacement EffectivePanelPosition => PanelPlacement switch
-    {
-        BitPlacement.Start or BitPlacement.Top or BitPlacement.Bottom => PanelPlacement.Value,
-        _ => BitPlacement.End
-    };
+    // The edge the responsive panel slides in from; every consumer of PanelPlacement goes through it (see ToPanelSide).
+    private BitPlacement EffectivePanelPosition => PanelPlacement.ToPanelSide();
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.
     private string? GetSwipesKey()
@@ -1021,12 +1014,7 @@ public partial class BitDropMenu : BitComponentBase
                 trigger: 0.25m,
                 position: EffectivePanelPosition,
                 isRtl: Dir is BitDir.Rtl,
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what
-                // takes that axis from the page: a top or bottom panel dragged with the wrong lock follows
-                // the finger while the page scrolls out from under it at the same time.
-                orientationLock: EffectivePanelPosition is BitPlacement.Top or BitPlacement.Bottom
-                                    ? BitSwipeOrientation.Vertical
-                                    : BitSwipeOrientation.Horizontal,
+                orientationLock: EffectivePanelPosition.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: true,
                 scrollContainerId: ScrollContainerId ?? "");

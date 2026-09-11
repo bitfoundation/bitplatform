@@ -185,7 +185,7 @@ public partial class BitCircularTimePickerDemo
             Name = "IconPlacement",
             Type = "BitPlacement",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
             DefaultValue = "BitPlacement.End",
             Description = "Determines the side of the input the TimePicker's icon is rendered on. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one."
         },
@@ -537,69 +537,7 @@ public partial class BitCircularTimePickerDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitPlacement",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Value = "0",
-                    Description = "The top edge."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "1",
-                    Description = "The bottom edge."
-                },
-                new()
-                {
-                    Name = "Start",
-                    Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "4",
-                    Description = "The left edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Right",
-                    Value = "5",
-                    Description = "The right edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "The middle of the axis, against neither edge."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "7",
-                    Description = "Both edges of the block axis at once."
-                },
-                new()
-                {
-                    Name = "StartAndEnd",
-                    Value = "8",
-                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "edit-mode-enum",

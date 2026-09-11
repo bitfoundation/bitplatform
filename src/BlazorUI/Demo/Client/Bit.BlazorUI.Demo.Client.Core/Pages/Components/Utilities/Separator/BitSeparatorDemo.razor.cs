@@ -11,7 +11,7 @@ public partial class BitSeparatorDemo
             DefaultValue = "null",
             Description = "Where the content should be aligned in the separator. Defaults to the center of the line.",
             LinkType = LinkType.Link,
-            Href = "#separator-align-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -91,7 +91,7 @@ public partial class BitSeparatorDemo
             DefaultValue = "null",
             Description = "The style the line of the separator is drawn in: solid, dashed, dotted or double.",
             LinkType = LinkType.Link,
-            Href = "#separator-line-style-enum",
+            Href = "#line-style-enum",
         },
         new()
         {
@@ -156,102 +156,8 @@ public partial class BitSeparatorDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "separator-align-enum",
-            Name = "BitPlacement",
-            Description = "Where the content of the separator sits along its line.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Value = "0",
-                    Description = "The top edge."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "1",
-                    Description = "The bottom edge."
-                },
-                new()
-                {
-                    Name = "Start",
-                    Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "4",
-                    Description = "The left edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Right",
-                    Value = "5",
-                    Description = "The right edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "The middle of the axis, against neither edge."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "7",
-                    Description = "Both edges of the block axis at once."
-                },
-                new()
-                {
-                    Name = "StartAndEnd",
-                    Value = "8",
-                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
-                }
-            ]
-        },
-        new()
-        {
-            Id = "separator-line-style-enum",
-            Name = "BitLineStyle",
-            Description = "The style the line of the separator is drawn in.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Solid",
-                    Value = "0",
-                    Description = "A continuous line."
-                },
-                new()
-                {
-                    Name = "Dashed",
-                    Value = "1",
-                    Description = "A line of short dashes."
-                },
-                new()
-                {
-                    Name = "Dotted",
-                    Value = "2",
-                    Description = "A line of dots."
-                },
-                new()
-                {
-                    Name = "Double",
-                    Value = "3",
-                    Description = "Two parallel lines with a gap between them, which needs a line at least three pixels thick."
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
+        SharedSubEnums.BitLineStyle,
         new()
         {
             Id = "size-enum",

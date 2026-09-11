@@ -907,19 +907,10 @@ public partial class BitPanel : BitComponentBase
                                         && AbsolutePosition is false
                                         && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
 
-    // The edge the panel actually slides in from. BitPlacement carries sides a panel has no styles for - the physical
-    // pair and the two combined values - so every consumer of the parameter goes through this rather than through
-    // Placement itself, which is what keeps the class it draws, the axis it locks the swipe to and the value the
-    // gesture is registered with from ever disagreeing with each other.
-    private BitPlacement EffectivePosition => Placement switch
-    {
-        BitPlacement.Start or BitPlacement.End or BitPlacement.Top or BitPlacement.Bottom => Placement.Value,
-        _ => BitPlacement.End
-    };
+    // The edge the panel actually slides in from; every consumer of Placement goes through it (see ToPanelSide).
+    private BitPlacement EffectivePosition => Placement.ToPanelSide();
 
-    // Whether the panel slides in along the horizontal axis, which is what decides both the axis the swipe
-    // gesture is locked to and which of the two coordinates the swipe callbacks are given.
-    private bool IsHorizontal => EffectivePosition is BitPlacement.Start or BitPlacement.End;
+    private bool IsHorizontal => EffectivePosition.IsInlineSide();
 
     // Whether the content of the panel is in the page. It goes in on the first opening and comes back out
     // once the panel has finished sliding away, so every opening starts over; a KeepMounted panel keeps it
@@ -1077,10 +1068,7 @@ public partial class BitPanel : BitComponentBase
                 trigger: GetSwipeTrigger(),
                 position: position,
                 isRtl: Dir is BitDir.Rtl,
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what takes
-                // that axis from the page: a top or bottom panel dragged with the wrong lock follows the finger
-                // while the page scrolls out from under it at the same time.
-                orientationLock: IsHorizontal ? BitSwipeOrientation.Horizontal : BitSwipeOrientation.Vertical,
+                orientationLock: position.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: false);
         }

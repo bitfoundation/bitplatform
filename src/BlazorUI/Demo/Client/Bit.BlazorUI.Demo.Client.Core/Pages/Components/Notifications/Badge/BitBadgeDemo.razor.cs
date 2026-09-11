@@ -182,7 +182,7 @@ public partial class BitBadgeDemo
             Name = "Shape",
             Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the badge.",
+            Description = "The corner shape of the badge. Only Pill, Rounded and Square are honoured: a badge takes its box from its own content, so Circle has no proportions to impose and falls back to the default.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -376,138 +376,8 @@ public partial class BitBadgeDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitShape",
-            Description = "Determines the corner shape of the BitBadge.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Rounded",
-                    Value = "0",
-                    Description = "The corner radius the current theme gives to this kind of surface."
-                },
-                new()
-                {
-                    Name = "Square",
-                    Value = "1",
-                    Description = "Sharp corners with no radius at all."
-                },
-                new()
-                {
-                    Name = "Pill",
-                    Value = "2",
-                    Description = "Fully rounded ends: a pill where the box is wider than it is tall, and a circle where the box is square."
-                },
-                new()
-                {
-                    Name = "Circle",
-                    Value = "3",
-                    Description = "A true circle, which takes its diameter from whichever of the height and the width is set."
-                }
-            ]
-        },
-        new()
-        {
-            Id = "position-enum",
-            Name = "BitPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "TopLeft",
-                    Value = "0",
-                    Description = "The top left corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "TopCenter",
-                    Value = "1",
-                    Description = "The top edge, centered horizontally."
-                },
-                new()
-                {
-                    Name = "TopRight",
-                    Value = "2",
-                    Description = "The top right corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "TopStart",
-                    Value = "3",
-                    Description = "The top edge, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "TopEnd",
-                    Value = "4",
-                    Description = "The top edge, on the side the reading direction ends at."
-                },
-                new()
-                {
-                    Name = "CenterLeft",
-                    Value = "5",
-                    Description = "The left edge, centered vertically, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "Centered both ways."
-                },
-                new()
-                {
-                    Name = "CenterRight",
-                    Value = "7",
-                    Description = "The right edge, centered vertically, in both reading directions."
-                },
-                new()
-                {
-                    Name = "CenterStart",
-                    Value = "8",
-                    Description = "Centered vertically, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "CenterEnd",
-                    Value = "9",
-                    Description = "Centered vertically, on the side the reading direction ends at."
-                },
-                new()
-                {
-                    Name = "BottomLeft",
-                    Value = "10",
-                    Description = "The bottom left corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "BottomCenter",
-                    Value = "11",
-                    Description = "The bottom edge, centered horizontally."
-                },
-                new()
-                {
-                    Name = "BottomRight",
-                    Value = "12",
-                    Description = "The bottom right corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "BottomStart",
-                    Value = "13",
-                    Description = "The bottom edge, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "BottomEnd",
-                    Value = "14",
-                    Description = "The bottom edge, on the side the reading direction ends at."
-                }
-            ]
-        },
+        SharedSubEnums.BitShape,
+        SharedSubEnums.BitPosition,
         new()
         {
             Id = "variant-enum",

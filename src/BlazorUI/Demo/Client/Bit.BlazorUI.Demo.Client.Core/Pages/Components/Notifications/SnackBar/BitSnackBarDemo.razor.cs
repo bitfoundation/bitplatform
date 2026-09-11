@@ -220,7 +220,7 @@ public partial class BitSnackBarDemo
             DefaultValue = "null",
             Description = "The position of the snack bars to show (default is bottom right).",
             LinkType = LinkType.Link,
-            Href = "#snackbar-position-enum"
+            Href = "#position-enum"
         },
         new()
         {
@@ -318,105 +318,7 @@ public partial class BitSnackBarDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "snackbar-position-enum",
-            Name = "BitPosition",
-            Description = "Determines the corner or edge of the screen the snack bars are stacked at. The start/end naming follows the text direction.",
-            Items =
-            [
-                new()
-                {
-                    Name = "TopLeft",
-                    Value = "0",
-                    Description = "The top left corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "TopCenter",
-                    Value = "1",
-                    Description = "The top edge, centered horizontally."
-                },
-                new()
-                {
-                    Name = "TopRight",
-                    Value = "2",
-                    Description = "The top right corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "TopStart",
-                    Value = "3",
-                    Description = "The top edge, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "TopEnd",
-                    Value = "4",
-                    Description = "The top edge, on the side the reading direction ends at."
-                },
-                new()
-                {
-                    Name = "CenterLeft",
-                    Value = "5",
-                    Description = "The left edge, centered vertically, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "Centered both ways."
-                },
-                new()
-                {
-                    Name = "CenterRight",
-                    Value = "7",
-                    Description = "The right edge, centered vertically, in both reading directions."
-                },
-                new()
-                {
-                    Name = "CenterStart",
-                    Value = "8",
-                    Description = "Centered vertically, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "CenterEnd",
-                    Value = "9",
-                    Description = "Centered vertically, on the side the reading direction ends at."
-                },
-                new()
-                {
-                    Name = "BottomLeft",
-                    Value = "10",
-                    Description = "The bottom left corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "BottomCenter",
-                    Value = "11",
-                    Description = "The bottom edge, centered horizontally."
-                },
-                new()
-                {
-                    Name = "BottomRight",
-                    Value = "12",
-                    Description = "The bottom right corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "BottomStart",
-                    Value = "13",
-                    Description = "The bottom edge, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "BottomEnd",
-                    Value = "14",
-                    Description = "The bottom edge, on the side the reading direction ends at."
-                }
-            ]
-        },
+        SharedSubEnums.BitPosition,
         new()
         {
             Id = "snackbar-overflow-behavior-enum",

@@ -48,10 +48,12 @@ public partial class BitCallout : BitComponentBase
     /// The alignment is applied before the callout is kept within the screen, so a callout that would hang
     /// off an edge is still slid back onto it, and the arrow keeps pointing at the anchor either way.
     /// <br />
-    /// Only Start, Center and End are meaningful here: which side a callout is placed on is settled by the
-    /// room it finds, so the axis it is aligned on is not known until it is opened, and a physical alignment
-    /// has no meaning on the vertical one. The physical pair therefore aligns to the start, exactly as
-    /// leaving this unset does.
+    /// Start and End are logical on the horizontal axis, so they follow the reading direction there, while the
+    /// vertical axis reads top to bottom in both. Each axis's physical pair - Left and Right above or below the
+    /// anchor, Top and Bottom beside it - names a side of the screen and only means anything on its own axis:
+    /// which side a callout is placed on is settled by the room it finds, so a physical alignment used off its
+    /// axis falls back to Start, exactly as leaving this unset does. The two combined values fall back the same
+    /// way. This is the rule BitTooltip's Alignment follows, each falling back to its own default.
     /// </remarks>
     [Parameter] public BitPlacement? Alignment { get; set; }
 
@@ -1014,6 +1016,10 @@ public partial class BitCallout : BitComponentBase
                 {
                     BitPlacement.Center => "center",
                     BitPlacement.End => "end",
+                    BitPlacement.Left => "left",
+                    BitPlacement.Right => "right",
+                    BitPlacement.Top => "top",
+                    BitPlacement.Bottom => "bottom",
                     _ => ""
                 },
                 noFlip: NoFlip,
@@ -1316,19 +1322,13 @@ public partial class BitCallout : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    // The edge a responsive callout slides in from, which is the panel position for the Panel mode and
-    // the mode itself for the two that name an edge of their own. BitPlacement carries sides a panel has no styles
-    // for - the physical pair and the two combined values - so they are resolved to the default here, which
-    // keeps the class the callout draws and the value the swipe is registered with from disagreeing.
+    // The edge a responsive callout slides in from, which is the panel placement for the Panel mode (see
+    // ToPanelSide) and the mode itself for the two that name an edge of their own.
     private BitPlacement ResponsivePosition => ResponsiveMode switch
     {
         BitResponsiveMode.Top => BitPlacement.Top,
         BitResponsiveMode.Bottom => BitPlacement.Bottom,
-        _ => PanelPlacement switch
-        {
-            BitPlacement.Start or BitPlacement.Top or BitPlacement.Bottom => PanelPlacement.Value,
-            _ => BitPlacement.End
-        }
+        _ => PanelPlacement.ToPanelSide()
     };
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.
@@ -1354,12 +1354,7 @@ public partial class BitCallout : BitComponentBase
                 trigger: 0.25m,
                 position: ResponsivePosition,
                 isRtl: Dir is BitDir.Rtl,
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what
-                // takes that axis from the page: a top or bottom panel dragged with the wrong lock follows
-                // the finger while the page scrolls out from under it at the same time.
-                orientationLock: ResponsivePosition is BitPlacement.Top or BitPlacement.Bottom
-                                    ? BitSwipeOrientation.Vertical
-                                    : BitSwipeOrientation.Horizontal,
+                orientationLock: ResponsivePosition.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: true,
                 scrollContainerId: ScrollContainerId ?? "");

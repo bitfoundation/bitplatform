@@ -57,13 +57,14 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitPlacement.Start, "flex-start", "left")]
-    [DataRow(BitPlacement.Left, "flex-start", "left")]
-    [DataRow(BitPlacement.End, "flex-end", "right")]
-    [DataRow(BitPlacement.Right, "flex-end", "right")]
+    [DataRow(BitPlacement.Start, "flex-start", "start")]
+    [DataRow(BitPlacement.Left, "left", "left")]
+    [DataRow(BitPlacement.End, "flex-end", "end")]
+    [DataRow(BitPlacement.Right, "right", "right")]
     [DataRow(BitPlacement.Center, "center", "center")]
     [DataRow(BitPlacement.Top, "center", "center")]
-    // A chart is laid out physically, so Start and Left are the same edge, as are End and Right.
+    // Start and End follow the reading direction and Left and Right do not, so each is written as the keyword that
+    // says so rather than the four collapsing onto two physical edges.
     public void TitleAndLegendAlignAlongTheirEdge(BitPlacement align, string justify, string textAlign)
     {
         var config = new BitChartConfig(

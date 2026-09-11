@@ -780,7 +780,7 @@ public class BitBadgeTests : BunitTestContext
 
         Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
     }
-
+
     [TestMethod]
     public void BitBadgeShouldMoveTheAriaLabelOntoItsButton()
     {

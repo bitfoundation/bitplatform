@@ -144,8 +144,9 @@ public partial class BitSticky : BitComponentBase
     /// direction (Start is left in LTR and right in RTL). When neither a Placement nor any offset is
     /// set, the component sticks to the top.
     /// <br />
-    /// Every side but the physical pair is meaningful here: Left and Right fall back to the default, since a
-    /// sticky element is pinned along the axis it scrolls on rather than to a side of the screen.
+    /// Every value but the physical pair and Center is meaningful here: Left, Right and Center fall back to the
+    /// default, since a sticky element is pinned against an edge of the axis it scrolls on, never to a side of the
+    /// screen or to the middle of the container.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement? Placement { get; set; }

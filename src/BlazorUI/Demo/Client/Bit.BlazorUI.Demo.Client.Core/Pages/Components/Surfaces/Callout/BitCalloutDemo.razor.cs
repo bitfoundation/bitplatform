@@ -9,7 +9,7 @@ public partial class BitCalloutDemo
             Name = "Alignment",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "How the callout is lined up with its anchor along the axis it is not placed on. It defaults to Start, and only Start, Center and End are meaningful here: the physical pair aligns to the start, since the axis the callout is aligned on is not known until it is opened.",
+            Description = "How the callout is lined up with its anchor along the axis it is not placed on. It defaults to Start. Start, Center and End work on either axis, following the reading direction on the horizontal one; Left and Right only mean something above or below the anchor, and Top and Bottom beside it. A physical value used off its own axis, like the two combined values, falls back to Start.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },
@@ -519,69 +519,7 @@ public partial class BitCalloutDemo
                 },
             ]
         },
-        new()
-        {
-            Id = "placement-enum",
-            Name = "BitPlacement",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Value = "0",
-                    Description = "The top edge."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "1",
-                    Description = "The bottom edge."
-                },
-                new()
-                {
-                    Name = "Start",
-                    Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "4",
-                    Description = "The left edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Right",
-                    Value = "5",
-                    Description = "The right edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "The middle of the axis, against neither edge."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "7",
-                    Description = "Both edges of the block axis at once."
-                },
-                new()
-                {
-                    Name = "StartAndEnd",
-                    Value = "8",
-                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "color-kind-enum",

@@ -347,7 +347,7 @@ public partial class BitDialogDemo
             DefaultValue = "BitPosition.Center",
             Description = "Position of the Dialog on the screen.",
             LinkType = LinkType.Link,
-            Href = "#component-position-enum",
+            Href = "#position-enum",
         },
         new()
         {
@@ -780,105 +780,7 @@ public partial class BitDialogDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "component-position-enum",
-            Name = "BitPosition",
-            Description = "The Left and Right values are physical and stay on the same side of the screen in both reading directions. The Start and End values are logical: Start is the left in an LTR Dialog and the right in an RTL one.",
-            Items =
-            [
-                new()
-                {
-                    Name = "TopLeft",
-                    Value = "0",
-                    Description = "The top left corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "TopCenter",
-                    Value = "1",
-                    Description = "The top edge, centered horizontally."
-                },
-                new()
-                {
-                    Name = "TopRight",
-                    Value = "2",
-                    Description = "The top right corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "TopStart",
-                    Value = "3",
-                    Description = "The top edge, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "TopEnd",
-                    Value = "4",
-                    Description = "The top edge, on the side the reading direction ends at."
-                },
-                new()
-                {
-                    Name = "CenterLeft",
-                    Value = "5",
-                    Description = "The left edge, centered vertically, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "Centered both ways."
-                },
-                new()
-                {
-                    Name = "CenterRight",
-                    Value = "7",
-                    Description = "The right edge, centered vertically, in both reading directions."
-                },
-                new()
-                {
-                    Name = "CenterStart",
-                    Value = "8",
-                    Description = "Centered vertically, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "CenterEnd",
-                    Value = "9",
-                    Description = "Centered vertically, on the side the reading direction ends at."
-                },
-                new()
-                {
-                    Name = "BottomLeft",
-                    Value = "10",
-                    Description = "The bottom left corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "BottomCenter",
-                    Value = "11",
-                    Description = "The bottom edge, centered horizontally."
-                },
-                new()
-                {
-                    Name = "BottomRight",
-                    Value = "12",
-                    Description = "The bottom right corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "BottomStart",
-                    Value = "13",
-                    Description = "The bottom edge, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "BottomEnd",
-                    Value = "14",
-                    Description = "The bottom edge, on the side the reading direction ends at."
-                }
-            ]
-        },
+        SharedSubEnums.BitPosition,
         new()
         {
             Id = "component-result-enum",

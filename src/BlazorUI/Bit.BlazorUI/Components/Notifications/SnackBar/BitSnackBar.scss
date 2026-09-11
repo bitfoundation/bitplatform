@@ -126,6 +126,20 @@
     }
 }
 
+@keyframes bit-snb-ent-l {
+    from {
+        opacity: 0;
+        transform: translateX(spacing(-1.5));
+    }
+}
+
+@keyframes bit-snb-ent-r {
+    from {
+        opacity: 0;
+        transform: translateX(spacing(1.5));
+    }
+}
+
 @keyframes bit-snb-exi {
     to {
         opacity: 0;
@@ -429,10 +443,14 @@
 
 // The centred stacks are pinned at the middle of the block axis and pulled back by half their own height. The
 // horizontally centred one carries both halves of the translate, since a transform is one declaration.
+// A stack pinned to a side slides its items in from that side; the logical pair names the side by the reading
+// direction, so it turns its animation around with it, and the one centred on the screen, pinned to no edge, keeps
+// the default rise from below.
 .bit-snb-cst {
     top: 50%;
     transform: translateY(-50%);
     inset-inline: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-l;
 }
 
 .bit-snb-cen {
@@ -440,6 +458,25 @@
     align-items: flex-end;
     transform: translateY(-50%);
     inset-inline: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+// Kept apart like the slider's, so a browser without :dir() drops only the rule it cannot parse and still gets
+// the turn from the class the component sets itself.
+.bit-rtl.bit-snb-cst {
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-rtl.bit-snb-cen {
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-cst:dir(rtl) {
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-snb-cen:dir(rtl) {
+    --bit-snb-ent: bit-snb-ent-l;
 }
 
 .bit-snb-clf {
@@ -448,6 +485,7 @@
     right: auto;
     transform: translateY(-50%);
     left: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-l;
 }
 
 .bit-snb-crg {
@@ -456,6 +494,7 @@
     left: auto;
     transform: translateY(-50%);
     right: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-r;
 }
 
 .bit-snb-ctr {

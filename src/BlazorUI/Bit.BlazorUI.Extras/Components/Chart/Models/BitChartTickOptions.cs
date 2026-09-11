@@ -17,6 +17,10 @@ public sealed class BitChartTickOptions
     /// <summary>Minimum auto-rotation (degrees) for tick labels.</summary>
     public double MinRotation { get; set; }
     /// <summary>Tick label alignment relative to the tick (start/center/end).</summary>
+    /// <remarks>
+    /// Only Start, Center and End are meaningful here, as the two ends of the tick along its own axis; every other
+    /// value centers the label.
+    /// </remarks>
     public BitPlacement Align { get; set; } = BitPlacement.Center;
     /// <summary>Render value-axis tick labels inside the chart area.</summary>
     public bool Mirror { get; set; }

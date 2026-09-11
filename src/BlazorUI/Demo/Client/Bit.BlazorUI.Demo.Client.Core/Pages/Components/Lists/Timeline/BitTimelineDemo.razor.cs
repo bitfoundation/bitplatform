@@ -73,9 +73,9 @@ public partial class BitTimelineDemo
             Name = "LineStyle",
             Type = "BitLineStyle?",
             DefaultValue = "null",
-            Description = "The way the connecting line of the timeline is painted, which the items can override one by one.",
+            Description = "The way the connecting line of the timeline is painted, which the items can override one by one. Only Solid, Dashed and Dotted are drawn: the connector is a hairline, which leaves Double no room for its two strokes, so it is drawn solid.",
             LinkType = LinkType.Link,
-            Href = "#line-variant-enum",
+            Href = "#line-style-enum",
         },
         new()
         {
@@ -231,9 +231,9 @@ public partial class BitTimelineDemo
                    Name = "LineStyle",
                    Type = "BitLineStyle?",
                    DefaultValue = "null",
-                   Description = "The way the connecting line of the item is painted, overriding the line variant of the timeline.",
+                   Description = "The way the connecting line of the item is painted, overriding the line style of the timeline. Only Solid, Dashed and Dotted are drawn; Double is drawn solid.",
                    LinkType = LinkType.Link,
-                   Href = "#line-variant-enum",
+                   Href = "#line-style-enum",
                },
                new()
                {
@@ -396,9 +396,9 @@ public partial class BitTimelineDemo
                    Name = "LineStyle",
                    Type = "BitLineStyle?",
                    DefaultValue = "null",
-                   Description = "The way the connecting line of the option is painted, overriding the line variant of the timeline.",
+                   Description = "The way the connecting line of the option is painted, overriding the line style of the timeline. Only Solid, Dashed and Dotted are drawn; Double is drawn solid.",
                    LinkType = LinkType.Link,
-                   Href = "#line-variant-enum",
+                   Href = "#line-style-enum",
                },
                new()
                {
@@ -915,39 +915,7 @@ public partial class BitTimelineDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "line-variant-enum",
-            Name = "BitLineStyle",
-            Description = "Determines how the connecting line of the timeline is painted.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Solid",
-                    Value = "0",
-                    Description = "A continuous line."
-                },
-                new()
-                {
-                    Name = "Dashed",
-                    Value = "1",
-                    Description = "A line of short dashes."
-                },
-                new()
-                {
-                    Name = "Dotted",
-                    Value = "2",
-                    Description = "A line of dots."
-                },
-                new()
-                {
-                    Name = "Double",
-                    Value = "3",
-                    Description = "Two parallel lines with a gap between them, which needs a line at least three pixels thick."
-                }
-            ]
-        },
+        SharedSubEnums.BitLineStyle,
         new()
         {
             Id = "truncate-line-enum",

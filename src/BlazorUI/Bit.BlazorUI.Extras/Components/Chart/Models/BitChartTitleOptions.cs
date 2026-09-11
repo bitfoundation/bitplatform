@@ -15,6 +15,13 @@ public sealed class BitChartTitleOptions
     /// to move it along the edge it is drawn against.
     /// </remarks>
     public BitPlacement Placement { get; set; } = BitPlacement.Top;
+    /// <summary>
+    /// Where the title lines up along the edge it is drawn against (default is the center).
+    /// </summary>
+    /// <remarks>
+    /// Only Start, Center, End, Left and Right are meaningful here. Start and End follow the reading direction, while
+    /// Left and Right stay on the same side of the screen in both; every other value centers the title.
+    /// </remarks>
     public BitPlacement Align { get; set; } = BitPlacement.Center;
     public BitChartFont Font { get; set; } = new() { Size = 16, Weight = "bold" };
     public BitChartPadding Padding { get; set; } = 10;

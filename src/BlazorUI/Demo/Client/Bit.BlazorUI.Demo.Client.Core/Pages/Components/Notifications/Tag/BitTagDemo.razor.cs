@@ -266,7 +266,7 @@ public partial class BitTagDemo
             Name = "Shape",
             Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the tag.",
+            Description = "The corner shape of the tag. Only Rounded, Pill and Square are honoured: a tag takes its box from its own content, so Circle has no proportions to impose and falls back to the default.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -650,39 +650,7 @@ public partial class BitTagDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitShape",
-            Description = "Determines the corner shape of the BitTag.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Rounded",
-                    Value = "0",
-                    Description = "The corner radius the current theme gives to this kind of surface."
-                },
-                new()
-                {
-                    Name = "Square",
-                    Value = "1",
-                    Description = "Sharp corners with no radius at all."
-                },
-                new()
-                {
-                    Name = "Pill",
-                    Value = "2",
-                    Description = "Fully rounded ends: a pill where the box is wider than it is tall, and a circle where the box is square."
-                },
-                new()
-                {
-                    Name = "Circle",
-                    Value = "3",
-                    Description = "A true circle, which takes its diameter from whichever of the height and the width is set."
-                }
-            ]
-        },
+        SharedSubEnums.BitShape,
         new()
         {
             Id = "size-enum",

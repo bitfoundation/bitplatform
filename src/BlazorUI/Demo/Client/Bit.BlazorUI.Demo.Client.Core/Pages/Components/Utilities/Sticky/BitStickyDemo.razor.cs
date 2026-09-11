@@ -69,8 +69,8 @@ public partial class BitStickyDemo
             Name = "Placement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The edge of the scrolling container the element pins to. Start and End follow the reading direction. When neither a Placement nor any offset is set, the component sticks to the top.",
-            Href = "#sticky-position-enum",
+            Description = "The edge of the scrolling container the element pins to. Start and End follow the reading direction. Left, Right and Center are not honoured and fall back to the default: when neither a Placement nor any offset is set, the component sticks to the top.",
+            Href = "#placement-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -139,69 +139,7 @@ public partial class BitStickyDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "sticky-position-enum",
-            Name = "BitPlacement",
-            Description = "The edges of the scrolling container a BitSticky pins itself to.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Value = "0",
-                    Description = "The top edge."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "1",
-                    Description = "The bottom edge."
-                },
-                new()
-                {
-                    Name = "Start",
-                    Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "4",
-                    Description = "The left edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Right",
-                    Value = "5",
-                    Description = "The right edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "The middle of the axis, against neither edge."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "7",
-                    Description = "Both edges of the block axis at once."
-                },
-                new()
-                {
-                    Name = "StartAndEnd",
-                    Value = "8",
-                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "sticky-edges-enum",

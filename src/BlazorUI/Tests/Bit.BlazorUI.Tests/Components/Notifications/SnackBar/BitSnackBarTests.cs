@@ -14,15 +14,24 @@ namespace Bit.BlazorUI.Tests.Components.Notifications.SnackBar;
 public class BitSnackBarTests : BunitTestContext
 {
     [TestMethod,
-         DataRow(BitPosition.TopStart),
-         DataRow(BitPosition.TopCenter),
-         DataRow(BitPosition.TopEnd),
-         DataRow(BitPosition.BottomStart),
-         DataRow(BitPosition.BottomCenter),
-         DataRow(BitPosition.BottomEnd),
-         DataRow(null)
+         DataRow(BitPosition.TopStart, "bit-snb-tst"),
+         DataRow(BitPosition.TopCenter, "bit-snb-tcn"),
+         DataRow(BitPosition.TopEnd, "bit-snb-ten"),
+         DataRow(BitPosition.TopLeft, "bit-snb-tlf"),
+         DataRow(BitPosition.TopRight, "bit-snb-trg"),
+         DataRow(BitPosition.CenterStart, "bit-snb-cst"),
+         DataRow(BitPosition.Center, "bit-snb-ctr"),
+         DataRow(BitPosition.CenterEnd, "bit-snb-cen"),
+         DataRow(BitPosition.CenterLeft, "bit-snb-clf"),
+         DataRow(BitPosition.CenterRight, "bit-snb-crg"),
+         DataRow(BitPosition.BottomStart, "bit-snb-bst"),
+         DataRow(BitPosition.BottomCenter, "bit-snb-bcn"),
+         DataRow(BitPosition.BottomEnd, "bit-snb-ben"),
+         DataRow(BitPosition.BottomLeft, "bit-snb-blf"),
+         DataRow(BitPosition.BottomRight, "bit-snb-brg"),
+         DataRow(null, "bit-snb-ben")
     ]
-    public void BitSnackBarPositionTest(BitPosition? position)
+    public void BitSnackBarPositionTest(BitPosition? position, string positionClass)
     {
         var com = RenderComponent<BitSnackBar>(parameters =>
         {
@@ -30,17 +39,6 @@ public class BitSnackBarTests : BunitTestContext
         });
 
         var element = com.Find(".bit-snb");
-
-        var positionClass = position switch
-        {
-            BitPosition.TopStart => "bit-snb-tst",
-            BitPosition.TopCenter => "bit-snb-tcn",
-            BitPosition.TopEnd => "bit-snb-ten",
-            BitPosition.BottomStart => "bit-snb-bst",
-            BitPosition.BottomCenter => "bit-snb-bcn",
-            BitPosition.BottomEnd => "bit-snb-ben",
-            _ => "bit-snb-ben",
-        };
 
         Assert.IsTrue(element.ClassList.Contains(positionClass));
     }

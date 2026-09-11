@@ -606,11 +606,13 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitPlacement.Start, BitSwipeOrientation.Horizontal)]
-    [DataRow(BitPlacement.End, BitSwipeOrientation.Horizontal)]
-    [DataRow(BitPlacement.Top, BitSwipeOrientation.Vertical)]
-    [DataRow(BitPlacement.Bottom, BitSwipeOrientation.Vertical)]
-    public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitPlacement position, BitSwipeOrientation expected)
+    [DataRow(BitPlacement.Start, "start", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.End, "end", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Top, "top", BitSwipeOrientation.Vertical)]
+    [DataRow(BitPlacement.Bottom, "bottom", BitSwipeOrientation.Vertical)]
+    [DataRow(BitPlacement.Left, "end", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Center, "end", BitSwipeOrientation.Horizontal)]
+    public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitPlacement position, string edge, BitSwipeOrientation expected)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
@@ -622,9 +624,10 @@ public class BitDropMenuTests : BunitTestContext
         var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swipes.setup");
 
         // The arguments of Swipes.setup, in order: id, trigger, position, isRtl, orientationLock,
-        // dotnetObj, isResponsive, scrollContainerId.
+        // dotnetObj, isResponsive, scrollContainerId. The position crosses by name, and a side a panel cannot slide
+        // in from is resolved to the default end before it does.
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
-        Assert.AreEqual(position, setup.Arguments[2]);
+        Assert.AreEqual(edge, setup.Arguments[2]);
         Assert.AreEqual(expected, setup.Arguments[4]);
     }
 

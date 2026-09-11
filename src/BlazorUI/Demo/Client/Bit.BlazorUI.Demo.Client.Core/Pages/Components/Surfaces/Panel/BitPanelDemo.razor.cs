@@ -251,7 +251,7 @@ public partial class BitPanelDemo
             Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The edge of the screen the panel slides in from. Start and End are the logical edges, so they follow the direction of the panel. It defaults to End.",
-            Href = "#position-enum",
+            Href = "#placement-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -458,69 +458,7 @@ public partial class BitPanelDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "position-enum",
-            Name = "BitPlacement",
-            Description = "The edge of the screen the panel slides in from.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Value = "0",
-                    Description = "The top edge."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "1",
-                    Description = "The bottom edge."
-                },
-                new()
-                {
-                    Name = "Start",
-                    Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "4",
-                    Description = "The left edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Right",
-                    Value = "5",
-                    Description = "The right edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "The middle of the axis, against neither edge."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "7",
-                    Description = "Both edges of the block axis at once."
-                },
-                new()
-                {
-                    Name = "StartAndEnd",
-                    Value = "8",
-                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "dismiss-reason-enum",

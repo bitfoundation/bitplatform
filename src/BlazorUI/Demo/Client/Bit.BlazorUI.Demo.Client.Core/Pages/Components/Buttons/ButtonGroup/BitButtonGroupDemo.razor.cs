@@ -982,33 +982,7 @@ public partial class BitButtonGroupDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "selection-mode-enum",
-            Name = "BitSelectionMode",
-            Description = "Determines how many items of a BitButtonGroup can be toggled at the same time.",
-            Items =
-            [
-                new()
-                {
-                    Name = "None",
-                    Value = "0",
-                    Description = "Nothing can be selected: the items act as plain content or as plain action buttons."
-                },
-                new()
-                {
-                    Name = "Single",
-                    Value = "1",
-                    Description = "At most one item can be selected at a time."
-                },
-                new()
-                {
-                    Name = "Multiple",
-                    Value = "2",
-                    Description = "Any number of items can be selected at the same time."
-                }
-            ]
-        },
+        SharedSubEnums.BitSelectionMode,
         new()
         {
             Id = "overflow-enum",

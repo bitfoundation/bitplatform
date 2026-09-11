@@ -337,7 +337,9 @@ public partial class BitSnackBar : BitComponentBase
     /// <remarks>
     /// The Start and End values follow the text direction rather than the screen, so a stack keeps to the same
     /// side of the reading order in both LTR and RTL; the Left and Right ones stay on the same side of the
-    /// screen in either. The enter animation of an item always slides out of the edge its stack is pinned to.
+    /// screen in either. The enter animation of an item slides out of the edge its stack is pinned to - down from
+    /// the top, up from the bottom, in from the side for the vertically centered stacks - and one centered on the
+    /// screen, pinned to no edge, rises from below.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPosition? Position { get; set; }

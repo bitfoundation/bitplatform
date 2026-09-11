@@ -265,9 +265,9 @@ public abstract class BitLoadingBase : BitComponentBase
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(LabelPlacement):
-                    var labelPosition = (BitPlacement?)parameter.Value;
-                    if (LabelPlacement != labelPosition) ClassBuilder.Reset();
-                    LabelPlacement = labelPosition;
+                    var labelPlacement = (BitPlacement?)parameter.Value;
+                    if (LabelPlacement != labelPlacement) ClassBuilder.Reset();
+                    LabelPlacement = labelPlacement;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(LabelTemplate):

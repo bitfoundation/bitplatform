@@ -122,7 +122,7 @@ public partial class BitButtonDemo
             DefaultValue = "null",
             Description = "Specifies the position of the floating button.",
             LinkType = LinkType.Link,
-            Href = "#button-position"
+            Href = "#position-enum"
         },
         new()
         {
@@ -177,7 +177,7 @@ public partial class BitButtonDemo
             DefaultValue = "null",
             Description = "Gets or sets the position of the icon relative to the component's content.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -207,7 +207,7 @@ public partial class BitButtonDemo
             DefaultValue = "BitPlacement.End",
             Description = "The position of the loading Label in regards to the spinner icon.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -609,69 +609,7 @@ public partial class BitButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitPlacement",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Value = "0",
-                    Description = "The top edge."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "1",
-                    Description = "The bottom edge."
-                },
-                new()
-                {
-                    Name = "Start",
-                    Value = "2",
-                    Description = "The edge the reading direction starts from - the left in LTR, the right in RTL. On the vertical axis, which does not turn around, it is the top."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "3",
-                    Description = "The edge the reading direction ends at - the right in LTR, the left in RTL. On the vertical axis, which does not turn around, it is the bottom."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "4",
-                    Description = "The left edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Right",
-                    Value = "5",
-                    Description = "The right edge, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "The middle of the axis, against neither edge."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "7",
-                    Description = "Both edges of the block axis at once."
-                },
-                new()
-                {
-                    Name = "StartAndEnd",
-                    Value = "8",
-                    Description = "Both edges of the inline axis at once, following the reading direction the way Start and End do."
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "link-rels",
@@ -795,105 +733,7 @@ public partial class BitButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "button-position",
-            Name = "BitPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "TopLeft",
-                    Value = "0",
-                    Description = "The top left corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "TopCenter",
-                    Value = "1",
-                    Description = "The top edge, centered horizontally."
-                },
-                new()
-                {
-                    Name = "TopRight",
-                    Value = "2",
-                    Description = "The top right corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "TopStart",
-                    Value = "3",
-                    Description = "The top edge, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "TopEnd",
-                    Value = "4",
-                    Description = "The top edge, on the side the reading direction ends at."
-                },
-                new()
-                {
-                    Name = "CenterLeft",
-                    Value = "5",
-                    Description = "The left edge, centered vertically, in both reading directions."
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6",
-                    Description = "Centered both ways."
-                },
-                new()
-                {
-                    Name = "CenterRight",
-                    Value = "7",
-                    Description = "The right edge, centered vertically, in both reading directions."
-                },
-                new()
-                {
-                    Name = "CenterStart",
-                    Value = "8",
-                    Description = "Centered vertically, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "CenterEnd",
-                    Value = "9",
-                    Description = "Centered vertically, on the side the reading direction ends at."
-                },
-                new()
-                {
-                    Name = "BottomLeft",
-                    Value = "10",
-                    Description = "The bottom left corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "BottomCenter",
-                    Value = "11",
-                    Description = "The bottom edge, centered horizontally."
-                },
-                new()
-                {
-                    Name = "BottomRight",
-                    Value = "12",
-                    Description = "The bottom right corner, in both reading directions."
-                },
-                new()
-                {
-                    Name = "BottomStart",
-                    Value = "13",
-                    Description = "The bottom edge, on the side the reading direction starts from."
-                },
-                new()
-                {
-                    Name = "BottomEnd",
-                    Value = "14",
-                    Description = "The bottom edge, on the side the reading direction ends at."
-                }
-            ]
-        },
+        SharedSubEnums.BitPosition,
     ];
 
     private bool fillIsLoading;

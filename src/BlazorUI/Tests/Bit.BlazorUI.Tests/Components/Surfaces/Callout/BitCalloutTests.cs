@@ -1717,6 +1717,12 @@ public class BitCalloutTests : BunitTestContext
     [DataRow(BitPlacement.Start, "")]
     [DataRow(BitPlacement.Center, "center")]
     [DataRow(BitPlacement.End, "end")]
+    [DataRow(BitPlacement.Left, "left")]
+    [DataRow(BitPlacement.Right, "right")]
+    [DataRow(BitPlacement.Top, "top")]
+    [DataRow(BitPlacement.Bottom, "bottom")]
+    [DataRow(BitPlacement.TopAndBottom, "")]
+    [DataRow(BitPlacement.StartAndEnd, "")]
     public void BitCalloutShouldPassTheAlignmentToThePositioning(BitPlacement? alignment, string expected)
     {
         var component = RenderComponent<BitCallout>(parameters =>
@@ -2127,7 +2133,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.AreEqual(component.Find(".bit-clo-cal").Id, setup[^1].Arguments[0]);
         // A sheet is swiped away along the axis it slid in on, and the lock is what takes that axis from
         // the page underneath it.
-        Assert.AreEqual(BitPlacement.Bottom, setup[^1].Arguments[2]);
+        Assert.AreEqual("bottom", setup[^1].Arguments[2]);
         Assert.AreEqual(BitSwipeOrientation.Vertical, setup[^1].Arguments[4]);
     }
 
@@ -2157,7 +2163,7 @@ public class BitCalloutTests : BunitTestContext
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.dispose"].Count);
         Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count);
-        Assert.AreEqual(BitPlacement.Start, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[2]);
+        Assert.AreEqual("start", Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[2]);
     }
 
     [DataTestMethod]

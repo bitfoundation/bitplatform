@@ -314,39 +314,7 @@ public partial class BitShimmerDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitShape",
-            Description = "Determines the shape of the placeholder the BitShimmer draws.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Rounded",
-                    Value = "0",
-                    Description = "The corner radius the current theme gives to this kind of surface."
-                },
-                new()
-                {
-                    Name = "Square",
-                    Value = "1",
-                    Description = "Sharp corners with no radius at all."
-                },
-                new()
-                {
-                    Name = "Pill",
-                    Value = "2",
-                    Description = "Fully rounded ends: a pill where the box is wider than it is tall, and a circle where the box is square."
-                },
-                new()
-                {
-                    Name = "Circle",
-                    Value = "3",
-                    Description = "A true circle, which takes its diameter from whichever of the height and the width is set."
-                }
-            ]
-        },
+        SharedSubEnums.BitShape,
         new()
         {
             Id = "size-enum",

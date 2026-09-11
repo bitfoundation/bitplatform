@@ -112,7 +112,7 @@ public partial class BitTooltip : BitComponentBase
     /// A pair used off its own axis - Left or Right beside the anchor, Top or Bottom above or below it - centers the
     /// tooltip along the axis it has.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter]
     public BitPlacement Alignment { get; set; } = BitPlacement.Center;
 
     /// <summary>
@@ -320,9 +320,9 @@ public partial class BitTooltip : BitComponentBase
     /// Start and End follow the reading direction - Start is the left of the anchor in an LTR tooltip and the
     /// right of it in an RTL one - which is what a tooltip that reads as part of its anchor wants. Left and
     /// Right stay on the same side of the screen in either direction, for a tooltip aimed at the edge of a
-    /// fixed layout. The two combined values are not meaningful here and leave the tooltip above its anchor.
+    /// fixed layout. Center and the two combined values name no side of the anchor and leave the tooltip above it.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter]
     public BitPlacement Placement { get; set; } = BitPlacement.Top;
 
     /// <summary>
@@ -941,53 +941,28 @@ public partial class BitTooltip : BitComponentBase
         _ => BitPlacement.Top
     };
 
-    // The logical pair turns around with the direction, but only on the horizontal axis: a tooltip beside its
-    // anchor is aligned top to bottom in both. Each axis's physical pair already names a side of the screen, so
-    // it is returned as the class map's own Start and End - which the map draws as the left and the right on the
-    // horizontal axis and as the top and the bottom on the vertical one - and it only means anything on its own
-    // axis: Left and Right beside the anchor, or Top and Bottom above or below it, fall back to the default.
-    private BitPlacement PhysicalAlignment
+    // The alignment as the class map's own Start, Center and End - which it draws as the left and the right on the
+    // horizontal axis (a tooltip above or below its anchor) and as the top and the bottom on the vertical one (a
+    // tooltip beside it). The logical pair turns around with the direction on the horizontal axis only, since the
+    // vertical one reads top to bottom in both. Each axis's physical pair already names a side of the screen and
+    // only means anything on its own axis; off it, like every value without an edge, it falls back to Center.
+    private static BitPlacement PhysicalAlignment(BitPlacement alignment, bool horizontal, bool rtl) => (alignment, horizontal) switch
     {
-        get
-        {
-            var horizontal = PhysicalPlacement is BitPlacement.Top or BitPlacement.Bottom;
-
-            if (Alignment is BitPlacement.Left)
-            {
-                return horizontal ? BitPlacement.Start : BitPlacement.Center;
-            }
-
-            if (Alignment is BitPlacement.Right)
-            {
-                return horizontal ? BitPlacement.End : BitPlacement.Center;
-            }
-
-            if (Alignment is BitPlacement.Top)
-            {
-                return horizontal ? BitPlacement.Center : BitPlacement.Start;
-            }
-
-            if (Alignment is BitPlacement.Bottom)
-            {
-                return horizontal ? BitPlacement.Center : BitPlacement.End;
-            }
-
-            if (Dir != BitDir.Rtl || horizontal is false) return Alignment;
-
-            return Alignment switch
-            {
-                BitPlacement.Start => BitPlacement.End,
-                BitPlacement.End => BitPlacement.Start,
-                _ => BitPlacement.Center
-            };
-        }
-    }
+        (BitPlacement.Start, true) => rtl ? BitPlacement.End : BitPlacement.Start,
+        (BitPlacement.End, true) => rtl ? BitPlacement.Start : BitPlacement.End,
+        (BitPlacement.Left, true) or (BitPlacement.Top or BitPlacement.Start, false) => BitPlacement.Start,
+        (BitPlacement.Right, true) or (BitPlacement.Bottom or BitPlacement.End, false) => BitPlacement.End,
+        _ => BitPlacement.Center
+    };
 
     private string GetTooltipClasses()
     {
         var visibility = IsShown ? "bit-ttp-vis " : string.Empty;
 
-        var position = (PhysicalPlacement, PhysicalAlignment) switch
+        var placement = PhysicalPlacement;
+        var alignment = PhysicalAlignment(Alignment, placement is BitPlacement.Top or BitPlacement.Bottom, Dir == BitDir.Rtl);
+
+        var position = (placement, alignment) switch
         {
             (BitPlacement.Top, BitPlacement.Start) => "bit-ttp-tlf",
             (BitPlacement.Top, BitPlacement.End) => "bit-ttp-trg",

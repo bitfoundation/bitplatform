@@ -24,9 +24,17 @@ public sealed class BitChartTooltipOptions
     public string? BorderColor { get; set; }
     /// <summary>Border width of the tooltip box.</summary>
     public double BorderWidth { get; set; }
-    /// <summary>Text alignment of the title (left/center/right).</summary>
+    /// <summary>Text alignment of the title (default is the start).</summary>
+    /// <remarks>
+    /// Only Start, Center, End, Left and Right are meaningful here. Start and End follow the reading direction, while
+    /// Left and Right stay on the same side of the screen in both; every other value centers the text.
+    /// </remarks>
     public BitPlacement TitleAlign { get; set; } = BitPlacement.Start;
-    /// <summary>Text alignment of the body (left/center/right).</summary>
+    /// <summary>Text alignment of the body (default is the start).</summary>
+    /// <remarks>
+    /// Only Start, Center, End, Left and Right are meaningful here. Start and End follow the reading direction, while
+    /// Left and Right stay on the same side of the screen in both; every other value centers the text.
+    /// </remarks>
     public BitPlacement BodyAlign { get; set; } = BitPlacement.Start;
     /// <summary>Rich text/styling callbacks.</summary>
     public BitChartTooltipCallbacks Callbacks { get; set; } = new();
