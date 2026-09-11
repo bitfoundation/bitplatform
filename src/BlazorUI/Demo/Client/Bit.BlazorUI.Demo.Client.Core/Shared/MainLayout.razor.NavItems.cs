@@ -177,7 +177,7 @@ public partial class MainLayout
                 new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
-                new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "Skeleton, Loading, AI" },
+                new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
             ]
         },
