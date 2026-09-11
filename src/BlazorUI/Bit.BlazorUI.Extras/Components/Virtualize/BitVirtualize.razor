@@ -8,21 +8,27 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     role="list"
+     role="@Role"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      tabindex="@GetRootTabIndex()"
+     aria-busy="@(_fetching ? "true" : null)"
      aria-label="@AriaLabel">
-    @if (_initialized is false && _itemCount == 0 && LoadingTemplate is not null)
+    @if (HeaderTemplate is not null)
     {
-        <div class="bit-vir-ldg">@LoadingTemplate</div>
+        <div style="@Styles?.Header" class="bit-vir-hdr @Classes?.Header">@HeaderTemplate</div>
     }
-    else if (_itemCount == 0 && _loading is false && (Items is not null || _initialized))
+
+    @if (ShowsLoading())
+    {
+        <div style="@Styles?.Loading" class="bit-vir-ldg @Classes?.Loading">@LoadingTemplate</div>
+    }
+    else if (ShowsEmpty())
     {
         @if (EmptyTemplate is not null)
         {
-            <div class="bit-vir-emp">@EmptyTemplate</div>
+            <div style="@Styles?.Empty" class="bit-vir-emp @Classes?.Empty">@EmptyTemplate</div>
         }
     }
     else
@@ -38,12 +44,13 @@
                     if (hasItem is false && PlaceholderTemplate is null) continue;
 
                     <div @key="GetItemKeyAt(index, hasItem, item)"
-                         role="listitem"
-                         class="bit-vir-itm@(Dynamic ? null : " bit-vir-fix")"
-                         style="@GetItemStyle(index)"
+                         role="@ItemRole"
+                         class="bit-vir-itm@(Dynamic ? null : " bit-vir-fix") @Classes?.Item"
+                         style="@JoinStyles(GetItemStyle(index), Styles?.Item)"
                          tabindex="@(index == _activeIndex ? "0" : "-1")"
                          aria-setsize="@_itemCount"
                          aria-posinset="@(index + 1)"
+                         aria-busy="@(hasItem ? null : "true")"
                          data-bit-vir-index="@index">
                         @if (hasItem)
                         {
@@ -61,13 +68,18 @@
             {
                 <div role="presentation"
                      aria-hidden="true"
-                     class="bit-vir-stk"
-                     style="@GetStickyStyle()"
+                     class="bit-vir-stk @Classes?.Sticky"
+                     style="@JoinStyles(GetStickyStyle(), Styles?.Sticky)"
                      data-bit-vir-sticky-size="@FormatCssValue(GetItemSize(_stickyActiveIndex))"
                      data-bit-vir-sticky-next="@FormatCssValue(_stickyNextOffset)">
                     @((StickyTemplate ?? template)?.Invoke(stickyItem))
                 </div>
             }
         </div>
+    }
+
+    @if (FooterTemplate is not null)
+    {
+        <div style="@Styles?.Footer" class="bit-vir-ftr @Classes?.Footer">@FooterTemplate</div>
     }
 </div>
