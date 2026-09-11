@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace Bit.Brouter;
 
@@ -10,6 +11,24 @@ public interface IBrouter
 {
     /// <summary>The current parsed location. Always non-null; defaults to <see cref="BrouterLocation.Empty"/> before mount.</summary>
     BrouterLocation Location { get; }
+
+    /// <summary>
+    /// Whether a <see cref="Brouter"/> is currently mounted in this scope, i.e. whether the members
+    /// that act on the router can run. It is <see langword="false"/> before the router initializes
+    /// (e.g. for a service or a component that runs ahead of it), after it has been disposed, and in a
+    /// scope that never renders one. While it is <see langword="false"/> those members throw
+    /// <see cref="InvalidOperationException"/>; each has a <c>Try...</c> counterpart
+    /// (<see cref="TryNavigate"/>, <see cref="TryBackAsync"/>, <see cref="TryResolveUrl"/>, ...) that
+    /// checks this first and returns <see langword="false"/> - doing nothing - instead.
+    /// <see cref="ClearLoaderCache"/> and <see cref="SetConfirmExternalNavigationAsync"/> never
+    /// need a mounted router.
+    /// </summary>
+    /// <remarks>
+    /// Default implementation returns <see langword="true"/>: a custom implementation without a notion
+    /// of mounting is assumed to always serve its members. The shipped <see cref="IBrouter"/> service
+    /// reports the real state.
+    /// </remarks>
+    bool IsMounted => true;
 
     /// <summary>
     /// Imperatively navigate to a URL.
@@ -273,6 +292,151 @@ public interface IBrouter
         throw new NotSupportedException(
             $"This {nameof(IBrouter)} implementation does not support {nameof(SetConfirmExternalNavigationAsync)}. " +
             "Override the method on your custom implementation to enable external-navigation confirmation.");
+
+    // The Try... counterparts below are for call sites that can't be sure a <Brouter/> is mounted -
+    // a service reacting to an event, a component that may outlive or precede the router, a teardown
+    // path. Each one is a no-op returning false (or null) while IsMounted is false and otherwise
+    // behaves exactly like its throwing counterpart, including any exception about the arguments
+    // (a negative delta, an unknown route name, a missing route parameter): only the router's mount
+    // state is tolerated, never a bad call.
+
+    /// <summary>
+    /// <see cref="Navigate"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise does
+    /// nothing. Returns whether the navigation was triggered.
+    /// </summary>
+    bool TryNavigate(string url, bool replace = false, bool forceLoad = false, string? historyState = null)
+    {
+        if (IsMounted is false) return false;
+        Navigate(url, replace, forceLoad, historyState);
+        return true;
+    }
+
+    /// <summary>
+    /// <see cref="NavigateAsync"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise
+    /// does nothing and resolves with <see langword="null"/> instead of an outcome.
+    /// </summary>
+    ValueTask<BrouterNavigationOutcome?> TryNavigateAsync(string url, bool replace = false, string? historyState = null) =>
+        IsMounted ? AsNullable(NavigateAsync(url, replace, historyState)) : new((BrouterNavigationOutcome?)null);
+
+    /// <summary>
+    /// <see cref="Back"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise does
+    /// nothing. Returns whether the traversal was triggered.
+    /// </summary>
+    bool TryBack()
+    {
+        if (IsMounted is false) return false;
+        Back();
+        return true;
+    }
+
+    /// <summary>
+    /// <see cref="BackAsync"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise does
+    /// nothing. Resolves with whether the traversal was performed.
+    /// </summary>
+    ValueTask<bool> TryBackAsync(int delta = 1) => IsMounted ? AsTrue(BackAsync(delta)) : new(false);
+
+    /// <summary>
+    /// <see cref="Forward"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise does
+    /// nothing. Returns whether the traversal was triggered.
+    /// </summary>
+    bool TryForward()
+    {
+        if (IsMounted is false) return false;
+        Forward();
+        return true;
+    }
+
+    /// <summary>
+    /// <see cref="ForwardAsync"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise
+    /// does nothing. Resolves with whether the traversal was performed.
+    /// </summary>
+    ValueTask<bool> TryForwardAsync(int delta = 1) => IsMounted ? AsTrue(ForwardAsync(delta)) : new(false);
+
+    /// <summary>
+    /// <see cref="NavigateToName"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise
+    /// does nothing. Returns whether the navigation was triggered.
+    /// </summary>
+    bool TryNavigateToName(string name, IReadOnlyDictionary<string, object?>? parameters = null,
+                           string? query = null, bool replace = false, string? historyState = null)
+    {
+        if (IsMounted is false) return false;
+        NavigateToName(name, parameters, query, replace, historyState);
+        return true;
+    }
+
+    /// <summary>
+    /// <see cref="ResolveUrl"/> when a router is mounted (see <see cref="IsMounted"/>). Returns
+    /// <see langword="false"/> with a <see langword="null"/> <paramref name="url"/> when none is -
+    /// named routes are registered by the mounted router, so there is nothing to resolve against.
+    /// </summary>
+    bool TryResolveUrl(string name, [NotNullWhen(true)] out string? url,
+                       IReadOnlyDictionary<string, object?>? parameters = null, string? query = null)
+    {
+        url = IsMounted ? ResolveUrl(name, parameters, query) : null;
+        return url is not null;
+    }
+
+    /// <summary>
+    /// <see cref="NavigateWithQuery"/> when a router is mounted (see <see cref="IsMounted"/>);
+    /// otherwise does nothing and never invokes <paramref name="mutate"/>. Returns whether the
+    /// navigation was triggered.
+    /// </summary>
+    bool TryNavigateWithQuery(Action<BrouterQueryBuilder> mutate, bool replace = true)
+    {
+        if (IsMounted is false) return false;
+        NavigateWithQuery(mutate, replace);
+        return true;
+    }
+
+    /// <summary>
+    /// <see cref="RevalidateAsync"/> when a router is mounted (see <see cref="IsMounted"/>);
+    /// otherwise does nothing. Resolves with whether the revalidation ran.
+    /// </summary>
+    ValueTask<bool> TryRevalidateAsync() => IsMounted ? AsTrue(RevalidateAsync()) : new(false);
+
+    /// <summary>
+    /// <see cref="ReloadAsync"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise
+    /// does nothing. Resolves with whether the reload was requested - a reload the mounted router
+    /// itself declines (a navigation in flight, nothing committed) still resolves with <see langword="true"/>.
+    /// </summary>
+    ValueTask<bool> TryReloadAsync() => IsMounted ? AsTrue(ReloadAsync()) : new(false);
+
+    /// <summary>
+    /// <see cref="PreloadAsync"/> when a router is mounted (see <see cref="IsMounted"/>); otherwise
+    /// does nothing. Resolves with whether the preload ran.
+    /// </summary>
+    ValueTask<bool> TryPreloadAsync(string url) => IsMounted ? AsTrue(PreloadAsync(url)) : new(false);
+
+    /// <summary>
+    /// <see cref="ClearKeepAlive()"/> when a router is mounted (see <see cref="IsMounted"/>);
+    /// otherwise does nothing - with no router there is nothing retained. Returns whether the
+    /// eviction ran.
+    /// </summary>
+    bool TryClearKeepAlive()
+    {
+        if (IsMounted is false) return false;
+        ClearKeepAlive();
+        return true;
+    }
+
+    /// <summary>
+    /// <see cref="ClearKeepAlive(bool)"/> when a router is mounted (see <see cref="IsMounted"/>);
+    /// otherwise does nothing. Returns whether the eviction ran.
+    /// </summary>
+    bool TryClearKeepAlive(bool includeActive)
+    {
+        if (IsMounted is false) return false;
+        ClearKeepAlive(includeActive);
+        return true;
+    }
+
+    private static async ValueTask<bool> AsTrue(ValueTask task)
+    {
+        await task;
+        return true;
+    }
+
+    private static async ValueTask<BrouterNavigationOutcome?> AsNullable(ValueTask<BrouterNavigationOutcome> task) => await task;
 
     /// <summary>Async hook fired before any navigation. Inspect/cancel/redirect via the context.</summary>
     event Func<BrouterNavigationContext, ValueTask>? OnNavigating;

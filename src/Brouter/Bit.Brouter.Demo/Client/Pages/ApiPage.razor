@@ -130,6 +130,7 @@
         <thead><tr><th>Member</th><th>Notes</th></tr></thead>
         <tbody>
             <tr><td>Location</td><td><code>BrouterLocation</code> for the current URL. Never null.</td></tr>
+            <tr><td>IsMounted</td><td>Whether a <code>&lt;Brouter&gt;</code> is mounted in this scope. While it's false the members below that act on the router throw - except <code>ClearLoaderCache</code> and <code>SetConfirmExternalNavigationAsync</code>, which never need one.</td></tr>
             <tr><td>Navigate(url, replace, forceLoad, historyState)</td><td>Fire-and-forget. <code>forceLoad</code> does a full document load and skips the pipeline entirely.</td></tr>
             <tr><td>NavigateAsync(url, replace, historyState)</td><td>Awaits the whole pipeline and returns a <code>BrouterNavigationOutcome</code>. No <code>forceLoad</code> - nothing would survive to resolve the task.</td></tr>
             <tr><td>Back() / BackAsync(delta = 1)</td><td>Move back; the async form is awaitable and can jump several entries.</td></tr>
@@ -144,6 +145,7 @@
             <tr><td>ClearKeepAlive()</td><td>Disposes every retained keep-alive component. The visible page keeps its instance.</td></tr>
             <tr><td>ClearKeepAlive(includeActive)</td><td>With <code>includeActive: true</code> the page on screen is disposed and rebuilt in place too - fresh instance, no navigation, no guards or loaders re-run.</td></tr>
             <tr><td>SetConfirmExternalNavigationAsync(enabled)</td><td>Arms/disarms the browser's "leave site?" dialog at runtime. Idempotent.</td></tr>
+            <tr><td>TryNavigate, TryNavigateAsync, TryBack(Async), TryForward(Async), TryNavigateToName, TryResolveUrl, TryNavigateWithQuery, TryRevalidateAsync, TryReloadAsync, TryPreloadAsync, TryClearKeepAlive</td><td>Safe counterparts for when the router may not be mounted: they do nothing and return <code>false</code> (<code>TryNavigateAsync</code>: <code>null</code>) instead of throwing. Once mounted they behave exactly like the originals, argument errors included.</td></tr>
         </tbody>
     </table>
 </div>
