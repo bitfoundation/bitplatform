@@ -26,7 +26,9 @@ public interface IBrouter
     /// <remarks>
     /// Default implementation returns <see langword="true"/>: a custom implementation without a notion
     /// of mounting is assumed to always serve its members. The shipped <see cref="IBrouter"/> service
-    /// reports the real state.
+    /// reports the real state. A decorator that wraps another <see cref="IBrouter"/> must forward this
+    /// member to the inner instance; otherwise it keeps this default, and its <c>Try...</c> members
+    /// call straight through and throw while the wrapped router isn't mounted.
     /// </remarks>
     bool IsMounted => true;
 

@@ -575,6 +575,12 @@ its counterpart, so an unknown route name, a missing route parameter or a `delta
 throws. `ClearLoaderCache` and `SetConfirmExternalNavigationAsync` never need a mounted router and
 have no `Try...` form.
 
+The `Try...` members are default interface members built on `IsMounted`, so a custom `IBrouter`
+gets them for free. `IsMounted` itself defaults to `true` (an implementation without a notion of
+mounting is assumed to always serve calls), which means a decorator wrapping another `IBrouter` must
+forward it - `public bool IsMounted => _inner.IsMounted;` - or its `Try...` calls will throw while
+the wrapped router isn't mounted.
+
 ## Navigation type (push / replace / pop)
 
 `BrouterNavigationContext.NavigationType` tells guards, loaders and hooks how the current navigation
