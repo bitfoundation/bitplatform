@@ -51,10 +51,15 @@ await document.SetTitle("New shiny title");
     </DemoCard>
 
     <DemoCard Title="Text direction" Api="SetDir / GetDir"
-              Description="Switch the document between left-to-right and right-to-left.">
-        <div class="check-row">
-            <input type="checkbox" @bind="@isDocumentDirRtl" id="dir" />
-            <label for="dir">@(isDocumentDirRtl ? "Rtl" : "Ltr")</label>
+              Description="Switch the document between left-to-right and right-to-left, or let the browser pick from the content.">
+        <div class="field">
+            <label class="field-label" for="dir">Direction</label>
+            <select id="dir" @bind="documentDir">
+                @foreach (var dir in Enum.GetValues<DocumentDir>())
+                {
+                    <option value="@dir">@dir</option>
+                }
+            </select>
         </div>
         <div class="controls">
             <button @onclick=SetDocumentDir>Set dir</button>
@@ -87,7 +92,7 @@ await document.SetTitle("New shiny title");
 
     private bool isDesignModeOn;
 
-    private bool isDocumentDirRtl;
+    private DocumentDir documentDir;
 
     protected override void OnInitialized()
     {
@@ -160,8 +165,8 @@ await document.SetTitle("New shiny title");
 
     private async Task SetDocumentDir()
     {
-        await document.SetDir(isDocumentDirRtl ? DocumentDir.Rtl : DocumentDir.Ltr);
-        await output.Log("document.dir set to", isDocumentDirRtl ? "Rtl" : "Ltr");
+        await document.SetDir(documentDir);
+        await output.Log("document.dir set to", documentDir);
     }
 
     private async Task GetDocumentDir()

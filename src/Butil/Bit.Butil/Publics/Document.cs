@@ -184,7 +184,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode">https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode</see>
     /// </summary>
     public async Task SetDesignMode(DesignMode mode)
-        => await js.InvokeVoid("BitButil.document.setDesignMode", mode.ToString());
+        => await js.InvokeVoid("BitButil.document.setDesignMode", mode is DesignMode.On ? "on" : "off");
 
     /// <summary>
     /// Gets directionality (rtl/ltr) of the document.
@@ -199,19 +199,26 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     public async Task<DocumentDir> GetDir()
     {
         var mode = await js.Invoke<string>("BitButil.document.getDir");
+        // An unset dir reads as "", which renders left to right - so it maps to Ltr rather than Auto.
         return mode switch
         {
             "rtl" => DocumentDir.Rtl,
+            "auto" => DocumentDir.Auto,
             _ => DocumentDir.Ltr
         };
     }
     /// <summary>
-    /// Sets directionality (rtl/ltr) of the document.
+    /// Sets directionality (rtl/ltr/auto) of the document.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/dir">https://developer.mozilla.org/en-US/docs/Web/API/Document/dir</see>
     /// </summary>
     public async Task SetDir(DocumentDir dir)
-        => await js.InvokeVoid("BitButil.document.setDir", dir.ToString());
+        => await js.InvokeVoid("BitButil.document.setDir", dir switch
+        {
+            DocumentDir.Rtl => "rtl",
+            DocumentDir.Auto => "auto",
+            _ => "ltr",
+        });
 
     /// <summary>
     /// Returns the URI of the page that linked to this page.

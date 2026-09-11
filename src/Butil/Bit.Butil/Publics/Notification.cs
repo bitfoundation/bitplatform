@@ -65,6 +65,9 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission_static">https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission_static</see>
     /// </summary>
     /// <remarks>
+    /// Where the runtime has no Notifications API at all this reports <see cref="NotificationPermission.Denied"/>,
+    /// since nothing can be shown there; use <see cref="IsSupported"/> to tell the two apart.
+    /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
@@ -88,6 +91,9 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static">https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static</see>
     /// </summary>
     /// <remarks>
+    /// Where the runtime has no Notifications API at all this reports <see cref="NotificationPermission.Denied"/>
+    /// without prompting.
+    /// <br/>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.

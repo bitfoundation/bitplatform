@@ -46,4 +46,22 @@ public enum MediaSessionAction
 
     /// <summary>End a call. Meant for conferencing apps.</summary>
     HangUp,
+
+    /// <summary>Go to the previous slide. Meant for presentation apps.</summary>
+    PreviousSlide,
+
+    /// <summary>Go to the next slide. Meant for presentation apps.</summary>
+    NextSlide,
+
+    /// <summary>
+    /// Move the playing video into a picture-in-picture window. The platform offers it when the user
+    /// switches away, which is the one moment the page may open the window without a click of its own.
+    /// </summary>
+    EnterPictureInPicture,
+
+    /// <summary>
+    /// The user started speaking while muted. Meant for conferencing apps, which can use it to
+    /// suggest unmuting. Voice detection only runs while the page holds the microphone.
+    /// </summary>
+    VoiceActivity,
 }

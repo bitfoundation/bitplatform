@@ -14,6 +14,9 @@
 @inject Bit.Butil.Navigator navigator
 @inject Bit.Butil.UserAgent userAgent
 @inject Bit.Butil.Screen screen
+@inject Bit.Butil.ScreenOrientation screenOrientation
+@inject Bit.Butil.MediaSession mediaSession
+@inject Bit.Butil.Notification notification
 @inject Bit.Butil.Battery battery
 @inject Bit.Butil.Permissions permissions
 @inject Bit.Butil.StorageAccess storageAccess
@@ -162,6 +165,8 @@
     <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
     <button id="ua-extract-string" @onclick="UaExtractString">userAgent.extract(string)</button>
     <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
+    <button id="screen-orientation-watch" @onclick="ScreenOrientationWatch">orientation change</button>
+    <button id="notification-missing" @onclick="NotificationMissing">notification permission without the API</button>
     <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
 </section>
 
@@ -179,6 +184,7 @@
     <button id="webaudio-decode" @onclick="WebAudioDecode">webAudio.decodeAudioData</button>
     <button id="eme-clearkey" @onclick="EmeClearKey">encryptedMedia clear key</button>
     <button id="media-support" @onclick="MediaSupport">support probes</button>
+    <button id="mediasession-actions" @onclick="MediaSessionActions">mediaSession action names</button>
 </section>
 
 @* Identity and commerce, headless-safe: every call here either only reads a feature-detection
@@ -1009,6 +1015,31 @@
         Set($"screen:metrics:{width > 0 && height > 0 && depth > 0}");
     }
 
+    // The rotation itself comes from the test, which emulates one over CDP once the status says the
+    // subscription is live; the event carries the orientation type as a spec keyword to be mapped.
+    private async Task ScreenOrientationWatch()
+    {
+        var changed = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using var subscription = await screenOrientation.SubscribeChange(
+            state => changed.TrySetResult($"{state.Type}/{state.Angle}"));
+
+        Set("screen:orientation-watching");
+
+        var orientation = await WaitForValue(changed, 10_000);
+        Set($"screen:orientation-change:{(orientation.Length > 0 ? orientation : "none")}");
+    }
+
+    // The test removes window.Notification first, standing in for an engine without the API (an iOS
+    // page that was not installed to the home screen). Both reads have to answer rather than throw.
+    private async Task NotificationMissing()
+    {
+        var supported = await notification.IsSupported();
+        var current = await notification.GetPermission();
+        var requested = await notification.RequestPermission();
+        Set($"notification:missing:{supported}/{current}/{requested}");
+    }
+
     // ─── Identity & commerce ─────────────────────────────────────────────────────
     // The support checks assert only that every identifier resolves and returns a bool: which
     // engine implements what is the browser's business, and asserting an engine's answer here
@@ -1288,6 +1319,23 @@
         var caps = await mediaCapabilities.IsSupported();
 
         Set($"media:support:{docPip}/{remote}/{present}/{xr}/{inlineXr}/{eme}/{codecs}/{caps}");
+    }
+
+    // An engine answers an action name it does not recognise with a TypeError, which SetActionHandler
+    // reports as false - so a true here is the proof the name crossing the boundary is the spec's.
+    // These are the newer actions Chromium implements; registering shows no UI in a headless run.
+    private async Task MediaSessionActions()
+    {
+        MediaSessionAction[] actions = [MediaSessionAction.PreviousSlide, MediaSessionAction.NextSlide, MediaSessionAction.EnterPictureInPicture];
+
+        var results = new List<bool>();
+        foreach (var action in actions)
+        {
+            results.Add(await mediaSession.SetActionHandler(action, _ => { }));
+            await mediaSession.ClearActionHandler(action);
+        }
+
+        Set($"mediasession:actions:{string.Join("/", results)}");
     }
 
     private static string Base64Url(byte[] value)

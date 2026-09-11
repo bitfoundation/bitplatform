@@ -67,7 +67,8 @@ public class History(IJSRuntime js) : IAsyncDisposable
     public async Task<ScrollRestoration> GetScrollRestoration()
     {
         var value = await js.InvokeFast<string>("BitButil.history.scrollRestoration");
-        return value == "auto" ? ScrollRestoration.Auto : ScrollRestoration.Manual;
+        // "auto" is the spec default, so it is also what an unreadable value (prerender) falls back to.
+        return value == "manual" ? ScrollRestoration.Manual : ScrollRestoration.Auto;
     }
 
     /// <summary>
@@ -77,7 +78,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration">https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration</see>
     /// </summary>
     public async Task SetScrollRestoration(ScrollRestoration value)
-        => await js.InvokeVoid("BitButil.history.setScrollRestoration", value.ToString().ToLowerInvariant());
+        => await js.InvokeVoid("BitButil.history.setScrollRestoration", value is ScrollRestoration.Manual ? "manual" : "auto");
 
     /// <summary>
     /// Returns an any value representing the state at the top of the history stack.
