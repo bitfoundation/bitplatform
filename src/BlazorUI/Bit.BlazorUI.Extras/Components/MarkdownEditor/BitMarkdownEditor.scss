@@ -1,4 +1,4 @@
-@import '../../../Bit.BlazorUI/Styles/functions.scss';
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-mde {
     width: 100%;
@@ -21,6 +21,14 @@
     z-index: $zindex-modal;
 }
 
+// While an image is dragged over the editor, the whole frame reads as the drop target.
+// The marker is an attribute rather than a class: the script sets it, and Blazor rewrites
+// the root's class attribute whenever FullScreen or Resizable flips, which would drop it.
+.bit-mde[data-bit-mde-drag] {
+    border-color: $clr-pri;
+    box-shadow: inset 0 0 0 $shp-border-width $clr-pri;
+}
+
 .bit-mde-tlb {
     display: flex;
     flex-wrap: wrap;
@@ -34,20 +42,20 @@
 .bit-mde-btn {
     padding: 0;
     cursor: pointer;
-    width: spacing(3.75);
-    height: spacing(3.75);
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
     align-items: center;
     color: $clr-fg-sec;
     display: inline-flex;
     background: transparent;
     justify-content: center;
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-button;
     border: $shp-border-width $shp-border-style transparent;
-    transition: background-color $mot-duration-short, color $mot-duration-short, border-color $mot-duration-short;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
     svg {
-        width: spacing(2.25);
-        height: spacing(2.25);
+        width: $siz-icon-md;
+        height: $siz-icon-md;
     }
 
     &:hover:not(:disabled) {
@@ -61,8 +69,8 @@
     }
 
     &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(0.125);
+        outline: $shp-focus-ring-width solid $clr-pri;
+        outline-offset: $shp-focus-ring-offset;
     }
 
     &.bit-mde-act {
@@ -91,34 +99,54 @@
 
 .bit-mde-ddm {
     top: 100%;
-    left: 0;
     margin: 0;
+    // Logical, so the menu hangs off the trigger's leading edge in RTL too.
+    inset-inline-start: 0;
     display: none;
+    overflow: auto;
     min-width: spacing(18);
     position: absolute;
     padding: spacing(0.5);
     z-index: $zindex-overlay;
     color: $clr-fg-pri;
     background: $clr-bg-pri;
+    max-height: $siz-popup-max-height;
     box-shadow: $box-shadow-popup;
     border-radius: $shp-radius-popup;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
-.bit-mde-dd:hover .bit-mde-ddm,
-.bit-mde-dd:focus-within .bit-mde-ddm {
+// The open state is a class rather than a :hover / :focus-within rule so that pointer,
+// click and keyboard all go through the script, which keeps aria-expanded honest and
+// stops the menu from sticking open after a tap on a touch device.
+.bit-mde-dd.bit-mde-ddo .bit-mde-ddm {
     display: block;
+}
+
+// Set by the script on a menu that would otherwise open past the edge of the window.
+.bit-mde-dd.bit-mde-ddf .bit-mde-ddm {
+    inset-inline-end: 0;
+    inset-inline-start: auto;
 }
 
 .bit-mde-mi {
     width: 100%;
     gap: spacing(1);
+    height: $siz-item-md;
     justify-content: flex-start;
     padding: spacing(0.5) spacing(0.75);
 }
 
+.bit-mde-msep {
+    height: $shp-border-width;
+    margin: spacing(0.375) 0;
+    background: $clr-brd-sec;
+}
+
 .bit-mde-mit {
     font-size: $tg-fs-sm;
+    white-space: nowrap;
+    letter-spacing: $tg-ctrl-letter-spacing;
 }
 
 .bit-mde-guard {
@@ -135,7 +163,7 @@
     gap: spacing(0.5);
     background: $clr-bg-sec;
     padding: spacing(0.5) spacing(1);
-    border-top: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-mde-fni {
@@ -144,13 +172,13 @@
     color: $clr-fg-pri;
     font-size: $tg-fs-sm;
     background: $clr-bg-pri;
-    padding: spacing(0.5) spacing(0.75);
+    padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
     border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(-0.125);
+        outline: $shp-focus-ring-width solid $clr-pri;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 }
 
@@ -159,12 +187,25 @@
     color: $clr-fg-pri;
     background: $clr-bg-pri;
     font-size: $tg-fs-xs;
-    padding: spacing(0.5) spacing(1);
-    border-radius: $shp-radius-control;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
+    border-radius: $shp-radius-button;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     &:hover:not(:disabled) {
         background: $clr-bg-sec-hover;
+    }
+
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid $clr-pri;
+        outline-offset: $shp-focus-ring-offset;
+    }
+
+    &.bit-mde-act {
+        color: $clr-pri-text;
+        background: $clr-pri;
+        border-color: $clr-pri;
     }
 
     &:disabled {
@@ -173,16 +214,36 @@
     }
 }
 
+.bit-mde-fnc {
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-mde-fns {
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    white-space: nowrap;
+}
+
 .bit-mde-bdy {
     display: flex;
     overflow: hidden;
-    min-height: spacing(15);
-    height: var(--bit-mde-height, spacing(40));
+    min-height: var(--bit-mde-min-height, #{spacing(15)});
+    max-height: var(--bit-mde-max-height, none);
+    height: var(--bit-mde-height, #{spacing(40)});
+}
+
+// `resize` needs a non-visible overflow, which the body already has; the height it
+// writes inline wins over the --bit-mde-height default.
+.bit-mde-rsz .bit-mde-bdy {
+    resize: vertical;
 }
 
 .bit-mde-fsc .bit-mde-bdy {
     flex: 1;
     height: auto;
+    resize: none;
+    max-height: none;
+    min-height: 0;
 }
 
 .bit-mde-pne {
@@ -229,18 +290,35 @@
     // The textarea fills its pane, so an inset outline keeps the keyboard
     // focus indicator visible instead of being clipped by the container.
     &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(-0.25);
+        outline: $shp-focus-ring-width solid $clr-pri;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 }
 
 .bit-mde-ppn {
     padding: spacing(1.5) spacing(2);
+
+    // The pane is a tab stop so the arrow keys can scroll it; the same inset outline
+    // keeps that focus visible against the pane's own edge.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid $clr-pri;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
 }
 
 .bit-mde-emp {
     font-style: italic;
     color: $clr-fg-sec;
+}
+
+.bit-mde-lbl {
+    display: block;
+    cursor: pointer;
+    color: $clr-fg-pri;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-semibold;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: spacing(0.75) spacing(1) 0;
 }
 
 .bit-mde-sbr {
@@ -254,8 +332,21 @@
     border-top: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
+// The character counter once the MaxLength is reached.
+.bit-mde-lim {
+    color: $clr-err;
+    font-weight: $tg-fw-semibold;
+}
+
 .bit-mde-spc {
     flex: 1;
+}
+
+// The caret readout changes on every keystroke, so it keeps a fixed slot instead of
+// shoving the rest of the status bar sideways as the numbers grow.
+.bit-mde-pos {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .bit-mde-mod {
@@ -277,8 +368,10 @@
 }
 
 .bit-mde-hcr {
+    overflow: auto;
     color: $clr-fg-pri;
     background: $clr-bg-pri;
+    max-height: calc(100% - #{spacing(4)});
     width: min(spacing(45), 90%);
     box-shadow: $box-shadow-dialog;
     padding: spacing(2) spacing(2.25);
@@ -296,6 +389,7 @@
         margin: 0;
 
         > div {
+            gap: spacing(1.5);
             display: flex;
             padding: spacing(0.625) 0;
             justify-content: space-between;
@@ -312,6 +406,8 @@
 
         dd {
             margin: 0;
+            text-align: end;
+            white-space: nowrap;
             color: $clr-fg-sec;
             font-family: ui-monospace, monospace;
         }
@@ -325,4 +421,9 @@
     color: $clr-fg-sec;
     background: transparent;
     font-size: $tg-fs-xl;
+
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid $clr-pri;
+        outline-offset: $shp-focus-ring-offset;
+    }
 }

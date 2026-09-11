@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Provides the default toolbar layout and the inline SVG icons used by it.
@@ -45,6 +45,24 @@ public static class BitMarkdownEditorToolbar
         Cmd("code", "Inline code", BitMarkdownEditorCommand.InlineCode, Icons.Code),
         Cmd("codeblock", "Code block", BitMarkdownEditorCommand.CodeBlock, Icons.CodeBlock),
         Cmd("table", "Table", BitMarkdownEditorCommand.Table, Icons.Table),
+        new()
+        {
+            Name = "tabletools", Title = "Table tools", Type = BitMarkdownEditorToolbarItemType.Dropdown, Icon = Icons.TableTools,
+            Children =
+            [
+                MenuCmd("trowabove", "Insert row above", BitMarkdownEditorCommand.TableInsertRowAbove, Icons.TableRowAbove),
+                MenuCmd("trowbelow", "Insert row below", BitMarkdownEditorCommand.TableInsertRowBelow, Icons.TableRowBelow),
+                MenuCmd("trowdelete", "Delete row", BitMarkdownEditorCommand.TableDeleteRow, Icons.TableRowDelete),
+                BitMarkdownEditorToolbarItem.Separator,
+                MenuCmd("tcolbefore", "Insert column before", BitMarkdownEditorCommand.TableInsertColumnBefore, Icons.TableColumnBefore),
+                MenuCmd("tcolafter", "Insert column after", BitMarkdownEditorCommand.TableInsertColumnAfter, Icons.TableColumnAfter),
+                MenuCmd("tcoldelete", "Delete column", BitMarkdownEditorCommand.TableDeleteColumn, Icons.TableColumnDelete),
+                BitMarkdownEditorToolbarItem.Separator,
+                MenuCmd("talignleft", "Align column left", BitMarkdownEditorCommand.TableAlignLeft, Icons.AlignLeft),
+                MenuCmd("taligncenter", "Align column center", BitMarkdownEditorCommand.TableAlignCenter, Icons.AlignCenter),
+                MenuCmd("talignright", "Align column right", BitMarkdownEditorCommand.TableAlignRight, Icons.AlignRight),
+            ]
+        },
         Cmd("hr", "Horizontal rule", BitMarkdownEditorCommand.HorizontalRule, Icons.HorizontalRule),
         Cmd("clear", "Clear formatting", BitMarkdownEditorCommand.ClearFormatting, Icons.ClearFormatting),
         BitMarkdownEditorToolbarItem.Separator,
@@ -56,6 +74,9 @@ public static class BitMarkdownEditorToolbar
 
     private static BitMarkdownEditorToolbarItem Cmd(string name, string title, BitMarkdownEditorCommand command, string icon, string? shortcut = null) =>
         new() { Name = name, Title = title, Command = command, Icon = icon, Shortcut = shortcut, Type = BitMarkdownEditorToolbarItemType.Command };
+
+    private static BitMarkdownEditorToolbarItem MenuCmd(string name, string title, BitMarkdownEditorCommand command, string icon) =>
+        new() { Name = name, Title = title, Text = title, Command = command, Icon = icon, Type = BitMarkdownEditorToolbarItemType.Command };
 
     private static BitMarkdownEditorToolbarItem HeadingItem(string name, string title, BitMarkdownEditorCommand command, string icon) =>
         new() { Name = name, Title = title, Text = title, Command = command, Icon = icon, Type = BitMarkdownEditorToolbarItemType.Command };
@@ -97,6 +118,16 @@ public static class BitMarkdownEditorToolbar
         public static readonly string HorizontalRule = S("<line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"/>");
         public static readonly string Preview = S("<path d=\"M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>");
         public static readonly string FullScreen = S("<path d=\"M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M16 21h3a2 2 0 0 0 2-2v-3M8 21H5a2 2 0 0 1-2-2v-3\"/>");
+        public static readonly string TableRowAbove = S("<rect x=\"3\" y=\"11\" width=\"18\" height=\"10\" rx=\"1\"/><line x1=\"3\" y1=\"16\" x2=\"21\" y2=\"16\"/><path d=\"M12 2v7M8.5 5.5h7\"/>");
+        public static readonly string TableRowBelow = S("<rect x=\"3\" y=\"3\" width=\"18\" height=\"10\" rx=\"1\"/><line x1=\"3\" y1=\"8\" x2=\"21\" y2=\"8\"/><path d=\"M12 15v7M8.5 18.5h7\"/>");
+        public static readonly string TableRowDelete = S("<rect x=\"3\" y=\"10\" width=\"18\" height=\"7\" rx=\"1\"/><path d=\"M9 2l5 5M14 2l-5 5\"/>");
+        public static readonly string TableColumnBefore = S("<rect x=\"10\" y=\"3\" width=\"11\" height=\"18\" rx=\"1\"/><line x1=\"15.5\" y1=\"3\" x2=\"15.5\" y2=\"21\"/><path d=\"M4 8.5v7M0.5 12h7\"/>");
+        public static readonly string TableColumnAfter = S("<rect x=\"3\" y=\"3\" width=\"11\" height=\"18\" rx=\"1\"/><line x1=\"8.5\" y1=\"3\" x2=\"8.5\" y2=\"21\"/><path d=\"M20 8.5v7M16.5 12h7\"/>");
+        public static readonly string TableColumnDelete = S("<rect x=\"9\" y=\"3\" width=\"8\" height=\"18\" rx=\"1\"/><path d=\"M2 8l5 5M7 8l-5 5\"/>");
+        public static readonly string AlignLeft = S("<line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/><line x1=\"3\" y1=\"12\" x2=\"13\" y2=\"12\"/><line x1=\"3\" y1=\"18\" x2=\"17\" y2=\"18\"/>");
+        public static readonly string AlignCenter = S("<line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/><line x1=\"7\" y1=\"12\" x2=\"17\" y2=\"12\"/><line x1=\"5\" y1=\"18\" x2=\"19\" y2=\"18\"/>");
+        public static readonly string AlignRight = S("<line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/><line x1=\"11\" y1=\"12\" x2=\"21\" y2=\"12\"/><line x1=\"7\" y1=\"18\" x2=\"21\" y2=\"18\"/>");
+        public static readonly string TableTools = S("<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"1\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/><line x1=\"12\" y1=\"4\" x2=\"12\" y2=\"20\"/><path d=\"M16 14.5v4M14 16.5h4\"/>");
         public static readonly string Help = S("<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3\"/><line x1=\"12\" y1=\"17\" x2=\"12\" y2=\"17\"/>");
     }
 }

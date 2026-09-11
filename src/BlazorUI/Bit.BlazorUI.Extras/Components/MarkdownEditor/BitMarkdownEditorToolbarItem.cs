@@ -54,6 +54,15 @@ public class BitMarkdownEditorToolbarItem
     public string? Text { get; init; }
 
     /// <summary>
+    /// Keeps a <see cref="BitMarkdownEditorToolbarItemType.Custom"/> item enabled while the
+    /// editor is read-only. Editing items are disabled in read-only mode because they would
+    /// change the text; a custom item that only reads it (export, copy, save, ...) sets this
+    /// to stay clickable. Has no effect on the built-in editing items, which refuse to run
+    /// against a read-only editor either way, nor while the whole component is disabled.
+    /// </summary>
+    public bool AlwaysEnabled { get; init; }
+
+    /// <summary>
     /// Convenience instance for a toolbar separator.
     /// </summary>
     public static BitMarkdownEditorToolbarItem Separator { get; } = new() { Type = BitMarkdownEditorToolbarItemType.Separator, Name = "separator" };
