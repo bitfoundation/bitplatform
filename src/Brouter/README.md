@@ -558,7 +558,8 @@ async forms), `NavigateToName`, `ResolveUrl`, `NavigateWithQuery`, `RevalidateAs
 `<Brouter>` is mounted in the scope: before it initializes, after it is disposed, or in a scope that
 never renders one. When a call site can't be sure (a scoped service reacting to an event, a
 component that may run ahead of or outlive the router, a teardown path), check `IsMounted` or use
-the `Try...` counterpart, which does nothing and returns `false` instead:
+the `Try...` counterpart, which does nothing and returns `false` instead (`TryNavigateAsync` returns
+`null`, and `TryResolveUrl` sets its `url` to `null`):
 
 ```csharp
 brouter.TryNavigate("/login");                           // false: skipped, nothing mounted

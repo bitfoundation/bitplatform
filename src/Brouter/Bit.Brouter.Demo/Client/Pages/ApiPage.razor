@@ -130,7 +130,7 @@
         <thead><tr><th>Member</th><th>Notes</th></tr></thead>
         <tbody>
             <tr><td>Location</td><td><code>BrouterLocation</code> for the current URL. Never null.</td></tr>
-            <tr><td>IsMounted</td><td>Whether a <code>&lt;Brouter&gt;</code> is mounted in this scope. While it's false the members below that act on the router throw - except <code>ClearLoaderCache</code> and <code>SetConfirmExternalNavigationAsync</code>, which never need one.</td></tr>
+            <tr><td>IsMounted</td><td>Whether a <code>&lt;Brouter&gt;</code> is mounted in this scope. While it's false the non-<code>Try...</code> members below that act on the router throw - except <code>ClearLoaderCache</code> and <code>SetConfirmExternalNavigationAsync</code>, which never need one. The <code>Try...</code> members don't throw: they return <code>false</code> (<code>TryNavigateAsync</code>: <code>null</code>), and <code>TryResolveUrl</code> sets its <code>url</code> to <code>null</code>.</td></tr>
             <tr><td>Navigate(url, replace, forceLoad, historyState)</td><td>Fire-and-forget. <code>forceLoad</code> does a full document load and skips the pipeline entirely.</td></tr>
             <tr><td>NavigateAsync(url, replace, historyState)</td><td>Awaits the whole pipeline and returns a <code>BrouterNavigationOutcome</code>. No <code>forceLoad</code> - nothing would survive to resolve the task.</td></tr>
             <tr><td>Back() / BackAsync(delta = 1)</td><td>Move back; the async form is awaitable and can jump several entries.</td></tr>
