@@ -2,6 +2,12 @@ namespace Boilerplate.Client.Core.Components.Common;
 
 public partial class AppPageData
 {
+    /// <summary>
+    /// The head section <see cref="AppHeadCoordinator"/> hosts an outlet for, so a page's head tags and the
+    /// app-wide ones both reach the document's single HeadOutlet.
+    /// </summary>
+    public const string HeadSectionName = "app-page-head";
+
     private string? _lastPublishedMessage;
 
     [AutoInject] private PubSubService pubSubService = default!;
@@ -19,9 +25,9 @@ public partial class AppPageData
     [Parameter] public string? Description { get; set; }
 
     /// <summary>
-    /// Whatever else this page wants in the document head - a sharing card, a schema. It renders INSIDE this
-    /// component's one HeadContent rather than as a HeadContent of the page's own, because a page has a single
-    /// HeadOutlet and only the last HeadContent rendered into it survives.
+    /// Whatever else this page wants in the document head - a sharing card, a schema. It renders into
+    /// <see cref="HeadSectionName"/> rather than as a HeadContent of the page's own, which would shadow every other one.
+    /// A tag every page needs goes in <see cref="Layout.AppHead"/> instead.
     /// </summary>
     [Parameter] public RenderFragment? Head { get; set; }
 

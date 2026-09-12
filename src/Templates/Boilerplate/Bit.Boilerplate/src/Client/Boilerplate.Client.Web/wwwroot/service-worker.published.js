@@ -60,7 +60,11 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-light\.css$/,
 
     // country flags
-    /_content\/Bit\.BlazorUI\.Extras\/flags/
+    /_content\/Bit\.BlazorUI\.Extras\/flags/,
+
+    // Host configuration, not app assets: the host consumes them and answers 404, which stalls the offline install.
+    /staticwebapp\.config\.json$/,
+    /_headers$/
 ];
 self.externalAssets = [
     {

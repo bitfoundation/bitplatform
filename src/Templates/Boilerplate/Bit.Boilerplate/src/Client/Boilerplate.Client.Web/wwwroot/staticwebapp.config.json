@@ -22,9 +22,10 @@
   "routes": [
     {
       "route": "/.well-known/apple-app-site-association",
-      "headers": {
-        "Content-Type": "application/json; charset=utf-8"
-      }
+      "rewrite": "/.well-known/apple-app-site-association.json"
     }
-  ]
+  ],
+  "mimeTypes": {
+    ".json": "application/json"
+  }
 }

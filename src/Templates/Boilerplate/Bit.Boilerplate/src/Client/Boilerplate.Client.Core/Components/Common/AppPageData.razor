@@ -1,8 +1,10 @@
+@using Microsoft.AspNetCore.Components.Sections
+
 <PageTitle>@(PageTitle ?? Title)</PageTitle>
 
-@* App.razor carries the same two tags only when no page component renders at all, so a document never has two of either. *@
-<HeadContent>
+@* Not a HeadContent of its own: only the last one rendered into the document's single HeadOutlet survives. *@
+<SectionContent SectionName="@HeadSectionName">
     <meta name="description" content="@(Description ?? localizer[nameof(AppStrings.DescriptionMetaTagValue)])" />
     <link rel="canonical" href="@CanonicalUrl" />
     @Head
-</HeadContent>
+</SectionContent>

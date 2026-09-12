@@ -87,6 +87,11 @@ public static class DeployedSite
             {
                 // A site in the middle of a restart refuses the connection, which is neither answer.
             }
+            catch (TaskCanceledException) when (cancellationToken.IsCancellationRequested is false)
+            {
+                // The probe's own timeout: a hung site is not an answer either, and throwing here would replace the
+                // caller's failure from its finally.
+            }
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
         }

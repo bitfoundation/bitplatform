@@ -33,12 +33,9 @@ public static partial class Program
 
         if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") != "true")
         {
-            // By default, App.razor adds Routes and HeadOutlet.
-            // The following is only required for blazor webassembly standalone.
+            AppPlatform.IsWasmStandalone = true;
+
             builder.RootComponents.Add<HeadOutlet>("head::after");
-            //#if (appInsights == true)
-            builder.RootComponents.Add(componentType: typeof(BlazorApplicationInsights.ApplicationInsightsInit), selector: "head::after", parameters: ParameterView.FromDictionary(new Dictionary<string, object?> { { nameof(BlazorApplicationInsights.ApplicationInsightsInit.IsWasmStandalone), true } }));
-            //#endif
             builder.RootComponents.Add<Routes>("#app-container");
         }
 

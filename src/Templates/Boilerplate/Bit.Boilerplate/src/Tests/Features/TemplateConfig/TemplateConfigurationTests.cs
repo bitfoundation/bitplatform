@@ -230,7 +230,7 @@ public class TemplateConfigurationTests
             "src/Tests/Features/Identity/IntegrationTests.cs",
             "src/Tests/Features/Identity/UITests.cs",
             "src/Tests/Features/Identity/BunitUITests.cs",
-            "src/Tests/Features/Identity/TestData.cs"
+            "src/Tests/Features/Identity/TestData.cs",
         ];
 
         var (templateRoot, template) = LoadTemplateJson();

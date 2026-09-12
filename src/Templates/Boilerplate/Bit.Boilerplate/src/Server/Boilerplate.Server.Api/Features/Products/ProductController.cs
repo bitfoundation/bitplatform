@@ -179,7 +179,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
             if (await blobStorage.ObjectExists(filePath, cancellationToken))
             {
-                await blobStorage.DeleteObject(filePath, cancellationToken);
+                await blobStorage.DeleteSingleObject(filePath, cancellationToken);
             }
         }
 
