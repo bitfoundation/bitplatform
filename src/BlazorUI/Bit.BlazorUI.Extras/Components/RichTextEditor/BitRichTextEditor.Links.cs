@@ -93,6 +93,9 @@ public partial class BitRichTextEditor
         if (url.Contains("://", StringComparison.Ordinal)) return url;
         if (url.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
             || url.StartsWith("tel:", StringComparison.OrdinalIgnoreCase)) return url;
+        // An address typed without its scheme is meant as an email link. Promoted as a host it
+        // would become "https://john@example.com", a web link to example.com.
+        if (LooksLikeEmailAddress(url)) return "mailto:" + url;
         // A colon before the first slash means some other scheme was typed; leave it alone so the
         // validation below can reject it rather than silently rewriting it. The exception is a
         // colon followed only by digits up to the path, which is a port ("example.com:8443/docs").
@@ -112,6 +115,24 @@ public partial class BitRichTextEditor
         var dot = host.IndexOf('.');
         if (dot <= 0 || dot == host.Length - 1) return url;
         return "https://" + url;
+    }
+
+    /// <summary>
+    /// "name@domain.tld", optionally followed by a query ("?subject=..."): one '@' with something
+    /// before it, a dotted domain after it, and no slash, colon, backslash or white space anywhere,
+    /// so a URL carrying a user name ("user@example.com/path") is not mistaken for one.
+    /// </summary>
+    private static bool LooksLikeEmailAddress(string url)
+    {
+        var at = url.IndexOf('@');
+        if (at <= 0 || url.IndexOf('@', at + 1) >= 0) return false;
+        if (url.Any(c => c is '/' or ':' or '\\' || char.IsWhiteSpace(c))) return false;
+
+        var domain = url[(at + 1)..];
+        var query = domain.IndexOf('?');
+        if (query >= 0) domain = domain[..query];
+        var dot = domain.IndexOf('.');
+        return dot > 0 && dot < domain.Length - 1;
     }
 
     private static bool IsAcceptableLinkUrl(string url)

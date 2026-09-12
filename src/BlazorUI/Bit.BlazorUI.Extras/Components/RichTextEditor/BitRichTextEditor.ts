@@ -598,8 +598,11 @@ namespace BitBlazorUI {
 
         // Takes a text or highlight color back off the selection. Every editor can paint text and
         // few can unpaint it, which leaves "clear all formatting" - and the bold and the links that
-        // go with it - as the only way back. The declaration is removed from the markup inside the
-        // selection, and the replacement opts out of any color set on an element around it.
+        // go with it - as the only way back. A painted inline element the selection only partly
+        // covers is split at the selection's edges first, so the text around the selection keeps
+        // its color while the selected part stops inheriting it; then the declaration is removed
+        // from every element inside the selection. Layering a reset over the paint instead does
+        // not work: a transparent highlight shows the one around it, and an inherited color is it.
         public static clearColor(editor: any, kind: string) {
             if (!editor || editor._readOnly) return;
             RichTextEditor.restoreSelection(editor);
@@ -611,25 +614,82 @@ namespace BitBlazorUI {
             }
             const range = sel.getRangeAt(0);
             if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return;
-            if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
-                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'That formatting is not allowed by the current policy.');
-                return;
-            }
 
-            const holder = document.createElement('div');
-            holder.appendChild(range.cloneContents());
             const property = kind === 'back' ? 'background-color' : 'color';
-            (Array.from(holder.querySelectorAll('[style]')) as HTMLElement[]).forEach(el => {
+            const painted = (n: Node) => n.nodeType === 1
+                && (!!(n as HTMLElement).style.getPropertyValue(property)
+                    || (kind === 'back' && !!(n as HTMLElement).style.getPropertyValue('background')));
+            // The outermost painted element around a node, stopping at the first block: splitting a
+            // span only divides its paint, where splitting a paragraph would break it in two.
+            const paintedAround = (node: Node): HTMLElement | null => {
+                let found: HTMLElement | null = null;
+                for (let n = node.parentNode; n && n !== editor; n = n.parentNode) {
+                    if (n.nodeType !== 1 || getComputedStyle(n as Element).display !== 'inline') break;
+                    if (painted(n)) found = n as HTMLElement;
+                }
+                return found;
+            };
+            // Moves everything in `top` from the marker on into a shallow copy placed right after it.
+            const splitAt = (top: HTMLElement, marker: Node): HTMLElement => {
+                const tail = document.createRange();
+                tail.setStartBefore(marker);
+                tail.setEnd(top, top.childNodes.length);
+                const copy = top.cloneNode(false) as HTMLElement;
+                copy.appendChild(tail.extractContents());
+                top.after(copy);
+                return copy;
+            };
+
+            // Comments mark the edges: they travel with the content through the splits and add no
+            // text. The end goes in first so inserting it cannot move the start.
+            const startMarker = document.createComment('');
+            const endMarker = document.createComment('');
+            const head = range.cloneRange();
+            head.collapse(true);
+            const tail = range.cloneRange();
+            tail.collapse(false);
+            tail.insertNode(endMarker);
+            head.insertNode(startMarker);
+
+            const endTop = paintedAround(endMarker);
+            const endCopy = endTop ? splitAt(endTop, endMarker) : null;
+            const startTop = paintedAround(startMarker);
+            const startCopy = startTop ? splitAt(startTop, startMarker) : null;
+
+            const region = document.createRange();
+            if (startCopy) region.setStartBefore(startCopy); else region.setStartAfter(startMarker);
+            if (endCopy) region.setEndBefore(endCopy); else region.setEndBefore(endMarker);
+
+            const whole = (el: Element) => {
+                const r = document.createRange();
+                r.selectNode(el);
+                return region.compareBoundaryPoints(Range.START_TO_START, r) <= 0
+                    && region.compareBoundaryPoints(Range.END_TO_END, r) >= 0;
+            };
+            const common = region.commonAncestorContainer;
+            const scope = (common.nodeType === 1 ? common : common.parentNode) as Element;
+            (Array.from(scope.querySelectorAll('[style]')) as HTMLElement[]).filter(whole).forEach(el => {
                 el.style.removeProperty(property);
                 // The shorthand carries the same paint, so a background-color removal has to take
                 // it with it or the color comes straight back.
                 if (kind === 'back') el.style.removeProperty('background');
-                if (!el.getAttribute('style')) el.removeAttribute('style');
+                if (el.getAttribute('style')) return;
+                el.removeAttribute('style');
+                // A span that carried nothing but the paint is no longer worth keeping.
+                if (el.tagName === 'SPAN' && el.attributes.length === 0) el.replaceWith(...Array.from(el.childNodes));
             });
 
-            const reset = kind === 'back' ? 'background-color:transparent' : 'color:inherit';
-            const html = `<span style="${reset}">${holder.innerHTML}</span>`;
-            RichTextEditor.dispatch(editor, 'insertHtml', { html: RichTextEditor.sanitize(editor, html) });
+            startMarker.remove();
+            endMarker.remove();
+            // The pieces left on either side of the selection when it reached a painted element's edge.
+            [startTop, endCopy].forEach(piece => {
+                if (piece && piece.isConnected && !(piece.textContent || '').length
+                    && !piece.querySelector('img,br,iframe,video,audio')) piece.remove();
+            });
+
+            sel.removeAllRanges();
+            sel.addRange(region);
+            editor._range = region.cloneRange();
             RichTextEditor.afterChange(editor);
         }
 
@@ -1261,14 +1321,13 @@ namespace BitBlazorUI {
                         await root.requestFullscreen();
                         editor._cssFullScreen = false;
                         return;
-                    } catch {
-                        if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', 'fullscreen-denied', 'Full-screen mode was blocked by the browser.');
-                    }
+                    } catch { /* refused: the fallback below takes over */ }
                 }
                 // No Fullscreen API, or the browser refused it (an iframe without the permission,
                 // a gesture it did not trust): fall back to the component's own fixed-position
                 // full-screen class, which fills the viewport without the browser's cooperation.
-                // The caller applies that class either way, so the toggle still does something.
+                // The caller applies that class either way, so the toggle still does something -
+                // which is why a refusal is no error worth reporting.
                 editor._cssFullScreen = true;
                 return;
             }
@@ -1793,26 +1852,32 @@ namespace BitBlazorUI {
         public static applyMention(editor: any, html: string) {
             if (!editor || !html || editor._readOnly) return;
             RichTextEditor.restoreSelection(editor);
-            if (!RichTextEditor.fitsWithinMaxLength(editor, html)) {
-                RichTextEditor.reportClientError(editor, 'max-length', 'The content would exceed the maximum length.');
-                return;
-            }
 
             const sel = document.getSelection();
+            let trigger: Range | null = null;
             if (sel && sel.rangeCount > 0 && sel.isCollapsed) {
                 const current = sel.getRangeAt(0);
                 const node = current.startContainer;
                 if (node.nodeType === 3 && current.startOffset > 0
                     && (node.nodeValue || '')[current.startOffset - 1] === '@') {
-                    const trigger = document.createRange();
+                    trigger = document.createRange();
                     trigger.setStart(node, current.startOffset - 1);
                     trigger.setEnd(node, current.startOffset);
-                    trigger.deleteContents();
-                    trigger.collapse(true);
-                    sel.removeAllRanges();
-                    sel.addRange(trigger);
-                    editor._range = trigger.cloneRange();
                 }
+            }
+
+            // The trigger goes away with the insert, so its character is room the mention may use.
+            if (!RichTextEditor.fitsWithinMaxLength(editor, html, trigger ? 1 : 0)) {
+                RichTextEditor.reportClientError(editor, 'max-length', 'The content would exceed the maximum length.');
+                return;
+            }
+
+            if (sel && trigger) {
+                trigger.deleteContents();
+                trigger.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(trigger);
+                editor._range = trigger.cloneRange();
             }
 
             RichTextEditor.dispatch(editor, 'insertHtml', { html: RichTextEditor.sanitize(editor, html) });
@@ -1963,19 +2028,34 @@ namespace BitBlazorUI {
             if (RichTextEditor.plainText(tail.toString()).trim().length > 0) return false;
 
             // ...and only when that last line is already empty, so the first Enter still adds a
-            // line inside the block and the second one leaves it.
-            const text = RichTextEditor.plainText(block.textContent || '');
-            const last = block.lastChild;
-            const endsWithBreak = !!last && last.nodeType === 1 && (last as HTMLElement).tagName === 'BR';
-            const endsWithEmptyChild = !!block.lastElementChild
-                && (block.lastElementChild.textContent || '').trim().length === 0
-                && !block.lastElementChild.querySelector('img,table,hr');
-            if (!endsWithBreak && !endsWithEmptyChild && !/\n[ \t]*$/.test(text)) return false;
+            // line inside the block and the second one leaves it. The last node decides, not the
+            // last element: a quote whose lines are split by <br> ends in the text of its last
+            // line, which the <br> before it says nothing about.
+            const isBreak = (n: Node | null) => !!n && n.nodeType === 1 && (n as HTMLElement).tagName === 'BR';
+            const isBlock = (n: Node | null) => !!n && n.nodeType === 1 && getComputedStyle(n as Element).display !== 'inline';
+            const last = RichTextEditor.lastMeaningfulNode(block, block.lastChild);
+            // A trailing <br> is an empty line only when nothing but another break or a block comes
+            // before it; right after text it merely ends that text's line, which renders no more.
+            const beforeLast = last ? RichTextEditor.lastMeaningfulNode(block, last.previousSibling) : null;
+            const endsWithBreak = isBreak(last) && (!beforeLast || isBreak(beforeLast) || isBlock(beforeLast));
+            const endsWithEmptyChild = !isBreak(last) && isBlock(last)
+                && ((last as HTMLElement).textContent || '').trim().length === 0
+                && !(last as HTMLElement).querySelector('img,table,hr');
+            // Only a <pre> keeps its newlines as lines; in a quote they are collapsed white space.
+            const isPre = block.tagName === 'PRE';
+            const endsWithNewline = isPre && /\n[ \t]*$/.test(RichTextEditor.plainText(block.textContent || ''));
+            if (!endsWithBreak && !endsWithEmptyChild && !endsWithNewline) return false;
 
             // Drop the now-consumed empty line so leaving does not leave a blank one behind.
-            if (endsWithBreak) last!.remove();
-            else if (endsWithEmptyChild) block.lastElementChild!.remove();
-            else if (last && last.nodeType === 3) last.nodeValue = (last.nodeValue || '').replace(/\n[ \t]*$/, '');
+            if (endsWithBreak || endsWithEmptyChild) {
+                (last as ChildNode).remove();
+            } else {
+                // The newline sits in the block's last text node, which a <pre><code> nests.
+                const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+                let tailText: Node | null = null;
+                for (let n = walker.nextNode(); n; n = walker.nextNode()) tailText = n;
+                if (tailText) tailText.nodeValue = (tailText.nodeValue || '').replace(/\n[ \t]*$/, '');
+            }
 
             const paragraph = document.createElement('p');
             paragraph.innerHTML = '<br>';
@@ -1993,6 +2073,19 @@ namespace BitBlazorUI {
             editor._range = caret.cloneRange();
             RichTextEditor.afterChange(editor);
             return true;
+        }
+
+        // The node a block ends in, walking back from `from`: comments are skipped, and so is the
+        // white-space-only text formatted source leaves between a quote's children (a <pre> keeps
+        // its white space, so there only empty text is skipped).
+        private static lastMeaningfulNode(block: HTMLElement, from: Node | null): Node | null {
+            const collapses = block.tagName !== 'PRE';
+            let n = from;
+            while (n && (n.nodeType === 8
+                || (n.nodeType === 3 && (collapses ? /^[ \t\n\r]*$/.test(n.nodeValue || '') : !n.nodeValue)))) {
+                n = n.previousSibling;
+            }
+            return n;
         }
 
         // Visible text as the editor counts it: non-breaking spaces read as ordinary spaces.
@@ -2064,6 +2157,15 @@ namespace BitBlazorUI {
                     editor._activeImage = null;
                     RichTextEditor.removeResizeHandle(editor);
                 }
+                RichTextEditor.reportState(editor);
+            });
+            // A key moves the caret (or types) away from the clicked image just as a click
+            // elsewhere does, so it lets go of the image too; otherwise the image panel would open
+            // on it and Apply would rewrite it instead of inserting at the caret.
+            editor.addEventListener('keydown', (e: KeyboardEvent) => {
+                if (!editor._activeImage || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
+                editor._activeImage = null;
+                RichTextEditor.removeResizeHandle(editor);
                 RichTextEditor.reportState(editor);
             });
         }
@@ -2374,7 +2476,11 @@ namespace BitBlazorUI {
             }
 
             if (!(e.ctrlKey || e.metaKey)) return;
-            const key = e.key.toLowerCase();
+            // Shift turns the digit row into symbols ("&", "*", "(" on a US layout), so a digit is
+            // read off the physical key: combos are written "ctrl+shift+7", not in whatever the
+            // layout prints for it.
+            const digit = /^Digit(\d)$/.exec(e.code || '');
+            const key = digit ? digit[1] : e.key.toLowerCase();
             const primary = e.ctrlKey || e.metaKey;
 
             // Identify owned shortcuts synchronously (before any await) so the browser default
@@ -2524,7 +2630,8 @@ namespace BitBlazorUI {
         }
 
         // The image the user last clicked, as long as it is still in this editor. Clicking anywhere
-        // else clears it (see enableImageResize), so this doubles as "an image is selected".
+        // else or pressing a key clears it (see enableImageResize), so this doubles as "an image
+        // is selected".
         private static selectedImage(editor: any): HTMLImageElement | null {
             const img = editor._activeImage as HTMLImageElement | null;
             if (!img || !editor.contains(img)) return null;
@@ -2898,14 +3005,15 @@ namespace BitBlazorUI {
         }
 
         // Whether inserting a fragment at the current selection keeps the visible text within
-        // _maxLength. Selected text is replaced by the insert, so it frees its own length.
-        private static fitsWithinMaxLength(editor: any, html: string): boolean {
+        // _maxLength. Selected text is replaced by the insert, so it frees its own length, as do the
+        // `freed` characters the caller removes alongside it.
+        private static fitsWithinMaxLength(editor: any, html: string, freed: number = 0): boolean {
             const max = editor._maxLength;
             if (max == null) return true;
             const sel = document.getSelection();
             const selected = (sel && !sel.isCollapsed) ? sel.toString().length : 0;
             const current = (editor.textContent || '').length;
-            return current - selected + RichTextEditor.visibleTextLength(html) <= max;
+            return current - selected - freed + RichTextEditor.visibleTextLength(html) <= max;
         }
 
         // Measures the visible (text) length of an HTML fragment, matching how _maxLength is

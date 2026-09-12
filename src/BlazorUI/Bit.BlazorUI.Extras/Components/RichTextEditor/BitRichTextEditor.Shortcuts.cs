@@ -48,24 +48,10 @@ public partial class BitRichTextEditor
         // browser default for a command that will not run.
         if (ControlsDisabled) return false;
 
-        var combo = BuildComboKey(key, ctrl, shift, alt);
-        string? command = null;
         // Custom shortcut keys are advertised to the JS bridge lowercased (see
-        // BuildOwnedShortcutCombos), so probe the user-supplied map case-insensitively to keep
+        // BuildOwnedShortcutCombos), so the user-supplied map is probed case-insensitively to keep
         // matching consistent regardless of the casing used in the KeyboardShortcuts keys.
-        if (KeyboardShortcuts is not null)
-        {
-            foreach (var (k, v) in KeyboardShortcuts)
-            {
-                if (string.Equals(k, combo, StringComparison.OrdinalIgnoreCase))
-                {
-                    command = v;                                // custom wins
-                    break;
-                }
-            }
-        }
-        if (command is null && DefaultShortcuts.TryGetValue(combo, out var def))
-            command = def;
+        var command = EffectiveShortcutCommand(BuildComboKey(key, ctrl, shift, alt));
 
         if (command is null) return false;
 
@@ -199,9 +185,34 @@ public partial class BitRichTextEditor
                     combos.Remove(key);
             }
         }
+        // With the link group off, _OnShortcut declines "link" (see there), so a combo whose
+        // effective command is "link" - the ctrl+k default or a custom binding - is not owned
+        // either: the bridge would otherwise swallow the browser default for nothing. A combo a
+        // custom map rebinds away from "link" keeps its own command and stays owned.
+        if (Has(BitRichTextEditorToolbar.Link) is false)
+        {
+            combos.RemoveWhere(combo => string.Equals(EffectiveShortcutCommand(combo), LinkCommand, StringComparison.OrdinalIgnoreCase));
+        }
         // Sort into a stable order so SerializeSetupOptions() produces a deterministic snapshot;
         // the underlying HashSet has no guaranteed iteration order, which would otherwise let the
         // same logical shortcuts serialize differently and retrigger BitRichTextEditorUpdateOptions.
         return combos.Select(c => c.ToLowerInvariant()).OrderBy(c => c, StringComparer.Ordinal).ToArray();
+    }
+
+    /// <summary>
+    /// The command a combo runs: the custom binding when <see cref="KeyboardShortcuts"/> has one
+    /// (matched case-insensitively, as <see cref="_OnShortcut"/> does), otherwise the built-in default.
+    /// </summary>
+    private string? EffectiveShortcutCommand(string combo)
+    {
+        if (KeyboardShortcuts is not null)
+        {
+            foreach (var (key, command) in KeyboardShortcuts)
+            {
+                if (string.Equals(key, combo, StringComparison.OrdinalIgnoreCase)) return command;
+            }
+        }
+
+        return DefaultShortcuts.TryGetValue(combo, out var def) ? def : null;
     }
 }

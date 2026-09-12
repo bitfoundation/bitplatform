@@ -711,6 +711,9 @@ public class BitRichTextEditorTests : BunitTestContext
     [DataRow("/relative/path", "/relative/path")]
     [DataRow("#anchor", "#anchor")]
     [DataRow("mailto:a@b.com", "mailto:a@b.com")]
+    [DataRow("john@example.com", "mailto:john@example.com")]
+    [DataRow("john@example.com?subject=Hi", "mailto:john@example.com?subject=Hi")]
+    [DataRow("user@example.com/docs", "https://user@example.com/docs")]
     public async Task BitRichTextEditorShouldNormalizeAcceptedLinkUrls(string typed, string expected)
     {
         SetupJsInterop();
@@ -1522,6 +1525,48 @@ public class BitRichTextEditorTests : BunitTestContext
         CollectionAssert.DoesNotContain(combos, "ctrl+q");
         // The list is sorted so an unchanged configuration serializes identically each render.
         CollectionAssert.AreEqual(combos.OrderBy(c => c, StringComparer.Ordinal).ToArray(), combos);
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldNotAdvertiseTheLinkShortcutWithLinksOff()
+    {
+        SetupJsInterop();
+
+        RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
+            parameters.Add(p => p.KeyboardShortcuts, new Dictionary<string, string>
+            {
+                ["ctrl+l"] = "link"
+            });
+        });
+
+        var combos = (string[])SetupOption(LastSetupOptions(), "ShortcutKeys")!;
+
+        // _OnShortcut declines "link" with the link group off, so the bridge must not swallow
+        // the browser default for it - neither the ctrl+k default nor a custom binding.
+        CollectionAssert.DoesNotContain(combos, "ctrl+k");
+        CollectionAssert.DoesNotContain(combos, "ctrl+l");
+        CollectionAssert.Contains(combos, "ctrl+b");
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldKeepARemappedCtrlKOwnedWithLinksOff()
+    {
+        SetupJsInterop();
+
+        RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
+            parameters.Add(p => p.KeyboardShortcuts, new Dictionary<string, string>
+            {
+                ["Ctrl+K"] = "bold"
+            });
+        });
+
+        var combos = (string[])SetupOption(LastSetupOptions(), "ShortcutKeys")!;
+
+        CollectionAssert.Contains(combos, "ctrl+k");
     }
 
 
