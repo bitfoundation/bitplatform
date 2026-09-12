@@ -2,12 +2,14 @@
 
 <PageOutlet Url="components/messagebox"
             Title="MessageBox"
-            Description="BitMessageBox is a pre-implemented box for showing messages with title and body." />
+            Description="BitMessageBox is a pre-implemented box for showing a message with a title, a body, a severity icon and the buttons it is answered with." />
 
 <DemoPage Name="MessageBox"
-          Description="BitMessageBox is a pre-implemented box for showing messages with title and body."
+          Description="BitMessageBox is a pre-implemented box for showing a message with a title, a body, an optional severity icon and the set of buttons it is answered with (Ok, Ok/Cancel, Yes/No, Yes/No/Cancel, or none at all). It renders inline, inside a BitModal, or - the usual way - through the BitMessageBoxService, which shows it in a modal and hands back the BitMessageBoxResult it was answered with. Every part of it takes a template, the answer can be guarded before it is handed over, and the whole box scales with its size."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers"
           GitHubExtrasUrl="MessageBox/BitMessageBox.razor"
           GitHubDemoUrl="Extras/MessageBox/BitMessageBoxDemo.razor">
     <NotesTemplate>
@@ -25,40 +27,378 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <div>The basic usage of the BitMessageBox, rendered inline inside a BitCard.</div>
+            <div>
+                The basic usage of the BitMessageBox: a <b>Title</b>, a <b>Body</b> and the Ok button that answers it.
+                The body keeps the line breaks written into it and wraps the lines that are too long for the box,
+                and <b>OkText</b> renames the button.
+            </div>
             <br />
             <BitCard Style="padding:0">
                 <BitMessageBox Title="It's a title" Body="It's a body." />
             </BitCard>
         </DemoExample>
 
-        <DemoExample Title="BitModal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div>Show the BitMessageBox inside a BitModal component and close it using the OnClose event.</div>
+        <DemoExample Title="Buttons" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Buttons</b> picks the set the message box is answered with, and <b>OnResult</b> reports which
+                button ended it as a <b>BitMessageBoxResult</b> - the close button answering with <b>None</b>, so a
+                message box that was walked away from is told apart from one that was refused. <b>CancelText</b>,
+                <b>YesText</b> and <b>NoText</b> rename the other buttons the way <b>OkText</b> renames the Ok one.
+                <b>None</b> is the set for a message box that only tells the reader something: it leaves the footer
+                off entirely, so the box is dismissed through its close button (or, in a modal, the Escape key and
+                the overlay) rather than answered.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="Ok"
+                                   Body="A single button, which is the default."
+                                   OnResult="v => buttonsResult = v" />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="OkCancel"
+                                   Body="An Ok and a Cancel button."
+                                   Buttons="BitMessageBoxButtons.OkCancel"
+                                   OnResult="v => buttonsResult = v" />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="YesNo"
+                                   Body="A Yes and a No button."
+                                   Buttons="BitMessageBoxButtons.YesNo"
+                                   OnResult="v => buttonsResult = v" />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="YesNoCancel"
+                                   Body="A Yes, a No and a Cancel button."
+                                   Buttons="BitMessageBoxButtons.YesNoCancel"
+                                   OnResult="v => buttonsResult = v" />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="None"
+                                   Body="No buttons at all - only the close button ends this one."
+                                   Buttons="BitMessageBoxButtons.None"
+                                   OnResult="v => buttonsResult = v" />
+                </BitCard>
+            </div>
+            <br />
+            <div>Last answer: <b>@buttonsResult</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Order, focus & emphasis" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>Reversed</b> renders the action buttons the other way round, which also reverses the order the
+                keyboard reaches them in, and <b>DefaultButton</b> names the one <b>AutoFocus</b> puts the focus on -
+                point it at Cancel or No for the message boxes that ask about something destructive, so the answer a
+                stray keystroke gives is the harmless one, and at <b>None</b> to land the focus on the close button
+                instead, which is also where it goes for a message box that renders no action buttons of its own.
+                The affirmative button always keeps the filled look;
+                <b>PrimaryButtonColor</b> is what paints it - a red Delete beside a neutral Keep - and
+                <b>ButtonColor</b> repaints the whole set. The size of the message box scales the buttons with it.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Reversed
+                                   Title="Reversed"
+                                   Body="Cancel comes first here."
+                                   Buttons="BitMessageBoxButtons.OkCancel" />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="Default button"
+                                   Body="No is the button the focus would land on."
+                                   Buttons="BitMessageBoxButtons.YesNo"
+                                   DefaultButton="BitMessageBoxResult.No" />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="Delete the file?"
+                                   Body="The destructive action is the one that stands out."
+                                   Buttons="BitMessageBoxButtons.YesNo"
+                                   YesText="Delete"
+                                   NoText="Keep"
+                                   PrimaryButtonColor="BitColor.Error"
+                                   DefaultButton="BitMessageBoxResult.No" />
+                </BitCard>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                A message box carries a leading glyph as soon as it is given one: <b>IconName</b> for the built-in
+                Fluent set, <b>Icon</b> for an external icon library, or <b>IconTemplate</b> for markup of your own.
+                A <b>Color</b> brings a glyph with it too (see the Color section), and <b>HideIcon</b> takes it back
+                off. The glyph is decoration by default; <b>IconAriaLabel</b> is what turns it into an image that is
+                announced, for the message boxes whose severity is carried by the icon alone.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="IconName"
+                                   Body="A glyph from the built-in Fluent set."
+                                   IconName="@BitIconName.Lightbulb" />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="IconTemplate"
+                                   Body="Any markup can stand in for the glyph.">
+                        <IconTemplate>
+                            <span class="example-emoji">🎉</span>
+                        </IconTemplate>
+                    </BitMessageBox>
+                </BitCard>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Close button" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                The close button in the header dismisses the message box without an answer:
+                it raises <b>OnClose</b> and reports <b>BitMessageBoxResult.None</b>. <b>ShowCloseButton</b> takes it
+                away for a message box that has to be answered, <b>CloseIconName</b> (or <b>CloseIcon</b>) changes its
+                glyph, and <b>CloseButtonTitle</b> is both its tooltip and its accessible name - which is what to
+                translate, since an icon-only button has no words of its own.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="No close button"
+                                   Body="This one has to be answered."
+                                   ShowCloseButton="false"
+                                   Buttons="BitMessageBoxButtons.YesNo" />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="Custom close button"
+                                   Body="Another glyph, and another name for it."
+                                   CloseIconName="@BitIconName.Cancel"
+                                   CloseButtonTitle="Dismiss this message" />
+                </BitCard>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Each of the three parts takes markup instead of text: <b>BodyTemplate</b> (or the child content)
+                for a body that is more than a paragraph, <b>HeaderTemplate</b> for a header of your own - which
+                takes the icon, the title and the close button with it - and <b>FooterTemplate</b> for actions the
+                built-in sets do not cover. The controls in a footer of your own are the page's own, so nothing in
+                them answers the message box by itself: <b>AnswerAsync</b> is what ends it with the answer of your
+                choosing, down the same road a pressed button takes.
+            </div>
+            <br />
+            <BitCard Style="padding:0">
+                <BitMessageBox @ref="templatesMessageBox"
+                               Title="Delete the workspace?"
+                               OnResult="v => templatesResult = v">
+                    <BodyTemplate>
+                        <div>
+                            Everything in <b>Design system</b> is removed, including:
+                            <ul>
+                                <li>18 projects</li>
+                                <li>4 shared libraries</li>
+                            </ul>
+                            <BitLink Href="/components/messagebox">Read what this means</BitLink>
+                        </div>
+                    </BodyTemplate>
+                    <FooterTemplate>
+                        <BitButton Color="BitColor.Error"
+                                   IconName="@BitIconName.Delete"
+                                   OnClick="() => templatesMessageBox!.AnswerAsync(BitMessageBoxResult.Yes)">
+                            Delete forever
+                        </BitButton>
+                        <BitButton Variant="BitVariant.Outline"
+                                   Color="BitColor.Tertiary"
+                                   OnClick="() => templatesMessageBox!.AnswerAsync(BitMessageBoxResult.No)">
+                            Keep it
+                        </BitButton>
+                    </FooterTemplate>
+                </BitMessageBox>
+            </BitCard>
+            <br />
+            <div>Last answer: <b>@templatesResult</b></div>
+        </DemoExample>
+
+        <DemoExample Title="BitModal" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                Show the BitMessageBox inside a BitModal component and close it using the OnClose event, which every
+                button of the message box raises after its own callback. <b>AutoFocus</b> moves the focus onto the
+                default button once the box is on the screen, which is what a dialog that takes over the screen has
+                to do for the keyboard and the screen reader.
+            </div>
             <br />
             <BitButton OnClick="() => isModalOpen = true">Show</BitButton>
             <BitModal @bind-IsOpen="isModalOpen">
-                <BitMessageBox OnClose="() => isModalOpen = false" Title="This is the Title" Body="This is the Body!" />
+                <BitMessageBox AutoFocus
+                               OnClose="() => isModalOpen = false"
+                               Title="This is the Title"
+                               Body="This is the Body!" />
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="BitModalService" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div>Show the BitMessageBox as the content of a modal shown by the BitModalService.</div>
-            <br />
-            <BitButton OnClick="ShowMessageBox">Show MessageBox</BitButton>
-        </DemoExample>
-
-        <DemoExample Title="BitMessageBoxService" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="BitModalService" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
-                Show the BitMessageBox with a simple call to the Show method of the BitMessageBoxService.
-                This service uses the BitModalService to show the message box, so a BitModalContainer has to be
-                mounted in the layout for it to render.
+                Show the BitMessageBox as the content of a modal shown by the BitModalService. The message box answers
+                the modal through <b>OnResult</b>, so awaiting the modal reference is awaiting the answer.
             </div>
             <br />
-            <BitButton OnClick="ShowMessageBoxService">Show MessageBox</BitButton>
+            <BitButton OnClick="ShowMessageBox">Show MessageBox</BitButton>
+            <br /><br />
+            <div>Last answer: <b>@modalServiceResult</b></div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
-            <div>Customize the appearance of BitMessageBox using styles and CSS classes.</div>
+        <DemoExample Title="BitMessageBoxService" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                The BitMessageBoxService does all of that in a single call: it shows the message box in a modal, moves
+                the focus into it, names the dialog after the title and describes it with the body, and hands back the
+                <b>BitMessageBoxResult</b> once the box is closed. <b>ShowInfo</b>, <b>ShowSuccess</b>,
+                <b>ShowWarning</b>, <b>ShowSevereWarning</b> and <b>ShowError</b> are the same call with a severity
+                already set - the three urgent ones are announced as alerts. The service shows through the
+                BitModalService, so a BitModalContainer has to be mounted in the layout for anything to render.
+            </div>
+            <br />
+            <div class="example-buttons">
+                <BitButton OnClick="ShowMessageBoxService">Show</BitButton>
+                <BitButton Color="BitColor.Info" OnClick="ShowInfoMessageBox">Info</BitButton>
+                <BitButton Color="BitColor.Success" OnClick="ShowSuccessMessageBox">Success</BitButton>
+                <BitButton Color="BitColor.Warning" OnClick="ShowWarningMessageBox">Warning</BitButton>
+                <BitButton Color="BitColor.SevereWarning" OnClick="ShowSevereWarningMessageBox">SevereWarning</BitButton>
+                <BitButton Color="BitColor.Error" OnClick="ShowErrorMessageBox">Error</BitButton>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Confirmation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>Confirm</b> asks a question and reports whether it was answered affirmatively: only Ok and Yes
+                answer <b>true</b>, so a refusal, a dismissal and a message box that never rendered all leave the
+                destructive branch untaken. <b>BitMessageBoxParameters</b> is the way to say the rest -
+                the buttons, the severity, the wording, the default button, and through its <b>Modal</b> member,
+                anything about the modal the box is shown in.
+            </div>
+            <br />
+            <div class="example-buttons">
+                <BitButton OnClick="ShowConfirm">Confirm</BitButton>
+                <BitButton Color="BitColor.Error" OnClick="ShowDangerousConfirm">Delete something</BitButton>
+            </div>
+            <br />
+            <div>Last answer: <b>@confirmResult</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Guarding the answer" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>OnBeforeResult</b> is asked before the message box hands over an answer, and setting
+                <b>Cancel</b> on its arguments refuses it: nothing is reported, nothing is closed, and a box shown
+                through the service stays open with its caller still waiting. It guards every button the message box
+                draws, the close button included - the Escape key and the overlay belong to the layer around it,
+                which <b>BitModalParameters.CanClose</b> guards instead. <b>AutoLoading</b> keeps the pressed button
+                spinning for as long as the guard and the callbacks of the answer run, which is what stops a slow
+                answer from being handed in twice; only one answer is taken per press either way.
+            </div>
+            <br />
+            <BitCard Style="padding:0">
+                <BitMessageBox AutoLoading
+                               Title="Delete the file?"
+                               Buttons="BitMessageBoxButtons.YesNo"
+                               YesText="Delete"
+                               NoText="Keep"
+                               PrimaryButtonColor="BitColor.Error"
+                               DefaultButton="BitMessageBoxResult.No"
+                               OnBeforeResult="HandleBeforeResult"
+                               OnResult="v => guardResult = v">
+                    <BodyTemplate>
+                        <BitCheckbox @bind-Value="guardConfirmed" Label="Yes, I understand this cannot be undone." />
+                    </BodyTemplate>
+                </BitMessageBox>
+            </BitCard>
+            <br />
+            <div>
+                Last answer: <b>@guardResult</b>
+                @if (guardRefused)
+                {
+                    <span> - the last Delete was refused, since the box was not ticked.</span>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
+            <div>
+                <b>Color</b> is the severity of the message: it paints the leading glyph and, for the five severities
+                that have one, picks the glyph itself - Info, Success (Completed), Warning, SevereWarning and Error.
+                Setting a color is therefore all it takes to give a message box its icon, and <b>IconName</b> still
+                overrides which glyph that is.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Color="BitColor.Info" Title="Info" Body="Something worth knowing." />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Color="BitColor.Success" Title="Success" Body="Something went well." />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Color="BitColor.Warning" Title="Warning" Body="Something needs attention." />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Color="BitColor.SevereWarning" Title="SevereWarning" Body="Something needs attention now." />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Color="BitColor.Error" Title="Error" Body="Something went wrong." />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Color="BitColor.Primary" Title="Primary" Body="The accent of the theme." />
+                </BitCard>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+            <div>
+                Besides the built-in Fluent set exposed through <b>IconName</b> and <b>CloseIconName</b>, the
+                <b>Icon</b> and <b>CloseIcon</b> parameters render icons from any CSS-class based library such as
+                FontAwesome or Bootstrap Icons. Pass the raw classes directly, or use the <b>BitIconInfo</b> helpers
+                (<code>Css</code>, <code>Fa</code> and <code>Bi</code>). When both are set, <b>Icon</b> wins.
+                Remember to reference the icon library's stylesheet in your app.
+            </div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+            <div class="example-grid">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Color="BitColor.Warning"
+                                   Icon="@BitIconInfo.Fa("solid triangle-exclamation")"
+                                   Title="FontAwesome"
+                                   Body="The glyph comes from FontAwesome through BitIconInfo.Fa." />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Color="BitColor.Info"
+                                   Icon="@BitIconInfo.Bi("info-circle")"
+                                   CloseIcon="@BitIconInfo.Bi("x-lg")"
+                                   Title="Bootstrap Icons"
+                                   Body="The glyph and the close icon come from Bootstrap Icons." />
+                </BitCard>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
+            <div>
+                <b>Size</b> scales the inset of the message box, its body text and its leading glyph together, so a
+                small message box is not left carrying a medium-sized icon. The default is the medium one.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitCard Style="padding:0">
+                    <BitMessageBox Size="BitSize.Small" Color="BitColor.Info" Title="Small" Body="The small size." />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Size="BitSize.Medium" Color="BitColor.Info" Title="Medium" Body="The medium size." />
+                </BitCard>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Size="BitSize.Large" Color="BitColor.Info" Title="Large" Body="The large size." />
+                </BitCard>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+            <div>
+                Customize the appearance of BitMessageBox using styles and CSS classes. <b>Style</b> and <b>Class</b>
+                reach the root element, while <b>Styles</b> and <b>Classes</b> reach every part of it by name -
+                including each action button, with <b>ActionButton</b> standing in for the ones given nothing of
+                their own.
+            </div>
             <br />
             <div>
                 <BitCard Style="padding:0">
@@ -70,17 +410,25 @@
                 <BitCard Style="padding:0">
                     <BitMessageBox Title="It's a title"
                                    Body="It's a body."
-                                   Classes="@(new() { Root = "custom-msg", OkButton = new() { Root = "custom-msg-btn" } })" />
+                                   Buttons="BitMessageBoxButtons.OkCancel"
+                                   Classes="@(new() { Root = "custom-msg", ActionButton = new() { Root = "custom-msg-btn" } })" />
                 </BitCard>
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+        <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
             <div>Use BitMessageBox in right-to-left (RTL).</div>
             <br /><br />
             <div dir="rtl">
                 <BitCard Style="padding:0">
-                    <BitMessageBox Dir="BitDir.Rtl" Title="عنوان پیام" Body="متن تست پیام..." OkText="تایید" />
+                    <BitMessageBox Dir="BitDir.Rtl"
+                                   Color="BitColor.Warning"
+                                   Title="عنوان پیام"
+                                   Body="متن تست پیام..."
+                                   Buttons="BitMessageBoxButtons.YesNo"
+                                   YesText="بله"
+                                   NoText="خیر"
+                                   CloseButtonTitle="بستن" />
                 </BitCard>
             </div>
         </DemoExample>
