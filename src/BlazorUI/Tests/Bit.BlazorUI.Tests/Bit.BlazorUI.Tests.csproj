@@ -97,6 +97,25 @@
         <None Include="..\..\Bit.BlazorUI\Components\Utilities\MediaQuery\BitMediaQuery.ts" Link="ts-sources\BitMediaQuery.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <!-- The rich text editor's C# half and its JS bridge are wired together by nothing but
+             strings: the setup option names, the JSInvokable callback names, and the
+             BitBlazorUI.RichTextEditor.* function names the interop extensions call. A rename on
+             either side compiles and then silently does nothing at runtime, so
+             BitRichTextEditorBridgeContractTests reads this source to fail on the drift. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditor.ts" Link="ts-sources\BitRichTextEditor.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- The two C# halves of that same contract. They are internal types, so the test reads
+             them as source rather than referencing them. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorSetupOptions.cs" Link="cs-sources\BitRichTextEditorSetupOptions.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorPolicyPayload.cs" Link="cs-sources\BitRichTextEditorPolicyPayload.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorJsRuntimeExtensions.cs" Link="cs-sources\BitRichTextEditorJsRuntimeExtensions.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>
