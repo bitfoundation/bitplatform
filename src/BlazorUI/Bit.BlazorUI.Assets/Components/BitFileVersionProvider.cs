@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 public static class BitFileVersionProvider
 {
     // Keyed on everything the answer depends on: the file provider the file is read from, the path as
-    // written, the query key, and the request path base - but the base only when the path starts with it,
+    // written, the query key, and the request path base - but the base only when the path is under it,
     // which is the only case in which it takes part in the lookup. That keeps the table bounded by the
     // paths an app renders, however many bases it is asked to render them under.
     // An entry carries the file's change token, so a file rewritten in place - dotnet watch, a deploy that
@@ -38,9 +38,7 @@ public static class BitFileVersionProvider
             return path;
         }
 
-        var pathBase = requestPathBase.HasValue && resolvedPath.StartsWith(requestPathBase.Value, StringComparison.OrdinalIgnoreCase)
-                       ? requestPathBase.Value
-                       : string.Empty;
+        var pathBase = GetMatchingPathBase(resolvedPath, requestPathBase);
 
         var key = new CacheKey(fileProvider, pathBase, path, versionKey);
 
@@ -54,6 +52,25 @@ public static class BitFileVersionProvider
     }
 
 
+
+    /// <summary>
+    /// The part of the path the base accounts for, or nothing where the path is not under it. Matched by whole
+    /// segments, so an app served from /app never reads /appsettings.css as one of its files and goes looking
+    /// for a settings.css in the web root. The trailing slash a base may be written with is not part of the
+    /// answer, so /app/ and /app take the same path to the same file and to the same cache entry.
+    /// </summary>
+    private static string GetMatchingPathBase(string resolvedPath, PathString requestPathBase)
+    {
+        if (requestPathBase.HasValue is false) return string.Empty;
+
+        var pathBase = requestPathBase.Value!.TrimEnd('/');
+
+        if (pathBase.Length == 0) return string.Empty;
+
+        if (resolvedPath.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase) is false) return string.Empty;
+
+        return resolvedPath.Length == pathBase.Length || resolvedPath[pathBase.Length] == '/' ? pathBase : string.Empty;
+    }
 
     private static CacheEntry GenerateVersionedPath(IFileProvider fileProvider, string pathBase, string path, string versionKey, string resolvedPath)
     {

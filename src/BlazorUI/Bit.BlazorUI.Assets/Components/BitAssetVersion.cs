@@ -88,25 +88,25 @@ internal static class BitAssetVersion
     }
 
     /// <summary>
-    /// Answers from the page's paths, and takes the persisted entry on a miss. TryTakeFromJson removes what
+    /// Takes whatever the state is holding, then answers from the page's paths. TryTakeFromJson removes what
     /// it reads, so the entry is merged into the page's paths for the components that initialize after the
-    /// first one. It is taken again on every later miss rather than once per state: on WebAssembly the state
-    /// is the app's for its whole lifetime, and .NET 10 refills it on enhanced navigation, so a page reached
-    /// later has its entry appear after the first take.
+    /// first one. It is taken before the lookup rather than only on a miss: on WebAssembly the state is the
+    /// app's for its whole lifetime and .NET 10 refills it on enhanced navigation, so a page reached later
+    /// brings a fresh entry whose value for a path already in the table is the newer one - answering from the
+    /// table first would leave that entry unread until some other path missed, and render the stale value.
     /// </summary>
     private static bool TryGetRestored(PersistentComponentState state, string path, [NotNullWhen(true)] out string? value)
     {
         var page = Pages.GetValue(state, static _ => new PageAssets());
 
-        if (page.Paths.TryGetValue(path, out value)) return true;
-
         var taken = TakePersisted(state);
 
-        if (taken is null) return false;
-
-        foreach (var (persistedPath, versionedPath) in taken)
+        if (taken is not null)
         {
-            page.Paths[persistedPath] = versionedPath;
+            foreach (var (persistedPath, versionedPath) in taken)
+            {
+                page.Paths[persistedPath] = versionedPath;
+            }
         }
 
         return page.Paths.TryGetValue(path, out value);

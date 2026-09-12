@@ -120,6 +120,23 @@ public class BitAssetVersionTests : BunitTestContext
         Assert.AreEqual($"{JsPath}?v=sha256-restored-js", Src(RenderScript(JsPath)));
     }
 
+    [TestMethod]
+    public void ARefilledEntryShouldWinOverWhatAnEarlierOneRestored()
+    {
+        var state = Context.AddBunitPersistentComponentState();
+
+        state.Persist(StateKey, new Dictionary<string, string> { [CssPath] = $"{CssPath}?v=sha256-restored-css" });
+
+        Assert.AreEqual($"{CssPath}?v=sha256-restored-css", Href(RenderLink(CssPath)));
+
+        // What an enhanced navigation refills the state with: the same path, hashed again after the file
+        // changed. A tag rendering now must take that entry rather than answer from the first one's value.
+        state.Persist(StateKey, new Dictionary<string, string> { [CssPath] = $"{CssPath}?v=sha256-refreshed-css" });
+
+        Assert.AreEqual($"{CssPath}?v=sha256-refreshed-css", Href(RenderLink(CssPath)));
+        Assert.AreEqual($"{CssPath}?v=sha256-refreshed-css", Href(RenderLink(CssPath)));
+    }
+
     private IRenderedComponent<Link> RenderLink(string href)
     {
         return RenderComponent<Link>(parameters => Interactive(parameters.Add(p => p.Href, href)));
