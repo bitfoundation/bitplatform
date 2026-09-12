@@ -23,6 +23,7 @@ builder.Services.AddBitBrouterServices(o =>
     o.ScrollBehavior = BrouterScrollMode.ToTop;
     o.ScrollToFragment = true;            // default: /docs#install scrolls #install into view
     o.FocusOnNavigateSelector = "h1";     // move focus after navigation (accessibility)
+    o.RemountOnParameterChange = false;   // default: /item/1 -> /item/2 re-binds the page instance (true rebuilds it)
 });
 ```
 
@@ -127,6 +128,7 @@ code can be exercised in each render mode.
 - **Source-generated typed routes** (`Bit.Brouter.Generators`): compile-time-safe URL builders generated from your `@page` directives and `<Broute>` declarations - `BrouterRoutes.Counter(1234)` instead of `"/counter/1234"`, with constraint-typed parameters and a `Names` class for named routes
 - **Named outlets**: `<BrouterOutlet Name="sidebar">` + `<BrouterView Name="sidebar">` let one route drive multiple regions of its parent layout (Vue named views / Angular secondary outlets style)
 - **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget), and `brouter.ClearKeepAlive()` evicts retained pages on demand - `ClearKeepAlive(includeActive: true)` throws away the page on screen as well and rebuilds it in place
+- **Parameter-change semantics, your choice**: by default a navigation that only changes a route's parameter values (`/settings/profile → /settings/account`) re-binds the live instance and reports the change as `OnRenavigated` - the same reuse Blazor's built-in `Router` gives a page, and what Angular and Vue do. Set `o.RemountOnParameterChange = true` (or `<Broute RemountOnParameterChange="true">` for a single route) to rebuild the content instead, so a page that reads a value once (`OnInitialized`, an uncontrolled `Default*` parameter on a UI component) sees the new one
 - **Route lifecycle**: every routed component (keep-alive or not, at any depth) can receive `OnActivated` / `OnDeactivated` / `OnRenavigated` callbacks - implement `IBrouterRoute` on a page (auto-discovered) or derive from `BrouterRouteBase` (the Ionic `ionViewWillEnter` / Vue `onActivated` idea, with async support and a Disposing-vs-Hidden reason) - plus the pre-commit `OnDeactivating` / `OnRenavigating` lock callbacks above
 - **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
@@ -929,6 +931,58 @@ Named views receive the route's parameters (the `Context`) and see its data/meta
 Angular's secondary outlets there is no URL serialization - the named regions always follow the
 primary match, which is the common layout case.
 
+## Rebuild or re-bind on a parameter change
+
+A navigation can keep the same route matched and change only its parameter values
+(`/settings/profile → /settings/account`, `/item/1 → /item/2`). By default the component instance
+survives: the new values arrive as parameters and the change is reported as `OnRenavigated` rather
+than a deactivation plus a fresh activation. That is the same reuse Blazor's built-in `Router`
+gives a page (its `RouteView` re-parameterizes the existing component - `OnParametersSet` runs,
+`OnInitialized` does not), and what Angular and Vue do; it preserves scroll position, form state
+and in-flight work across the change, at the cost of every affected component having to react to
+the new parameters itself.
+
+That bites anything that reads a value *once*: `OnInitialized`, a child that captures a parameter
+when it registers with its parent, an uncontrolled `Default*` parameter on a UI component
+(`DefaultExpandedKey`, `DefaultSelectedKey`). With the instance re-bound, those keep showing the
+value the page was first mounted with, and the navigation looks to the user like nothing happened.
+Opt into rebuilding instead - the old content is disposed and a brand-new instance mounts, so
+everything starts from the new values:
+
+```csharp
+services.AddBitBrouterServices(o =>
+{
+    o.RemountOnParameterChange = true; // /item/1 -> /item/2 disposes the page and mounts a fresh one
+});
+```
+
+A single route overrides either default:
+
+```razor
+<Broute Path="/item/{id:int}" RemountOnParameterChange="true">
+    <Content><ItemPage /></Content>
+</Broute>
+```
+
+Notes:
+
+- Only **template parameters** count - every parameter of the route's full template, so a child
+  under `/user/{id}` is rebuilt when `id` changes even though its own segment didn't. A query-only
+  change (`?tab=2`) never rebuilds - the built-in router keeps its page there too, re-supplying
+  `[SupplyParameterFromQuery]` values.
+- A rebuild is a leave as far as the content is concerned: it votes through `OnDeactivating`
+  (reason `Disposing`) and the route's `LeaveGuard`, gets `OnDeactivated` - never `OnRenavigating`
+  / `OnRenavigated` - and the fresh instance starts with a first `OnActivated`.
+- Rebuilding a route rebuilds everything nested inside it: a child's content lives in the subtree
+  being replaced. A parent layout declared as a `<Broute>` whose own parameters didn't change is
+  untouched. Pages rendered through `DefaultLayout` / `Found` are different: the framework
+  `RouteView` composes the layout *inside* the page's subtree, so the layout is rebuilt with the
+  page - the cost of opting in on those routes.
+- `KeepAlive` routes never rebuild for their own parameter change - retaining the instance is what
+  they asked for - and a `KeepAliveMax > 1` route already mounts one instance per parameter set. A
+  kept route hosted in the outlet of an ancestor that *is* rebuilt dies with that subtree (reported
+  as `Disposing`, exactly like a kept child whose layout is left).
+
 ## Keep-alive routes
 
 ```razor
@@ -956,10 +1010,14 @@ component-level hooks Angular's `RouteReuseStrategy` never delivered and Ionic's
   and unlike `Dispose` it carries the destination location). `KeepAlive` only changes which reason
   you get; pages written against the lifecycle keep working when the route's retention changes.
 - **`OnRenavigated`** - a navigation re-committed this route while the *same instance* stayed
-  visible (`/item/1 → /item/2` on a singleton route, or a query-only change): the "user arrived
-  here again" moment that `OnInitialized` misses on instance reuse. On a per-parameter keep-alive
-  route (`KeepAliveMax` > 1) a parameter change mounts a separate instance instead, so it surfaces
-  as an activate/deactivate pair rather than a renavigation.
+  visible (`/item/1 → /item/2` on a singleton route, a query-only change, or moving between the
+  route's descendants): the "user arrived here again" moment that `OnInitialized` misses on
+  instance reuse. A route that opted into
+  [rebuilding on a parameter change](#rebuild-or-re-bind-on-a-parameter-change) never gets it for
+  such a change - the content is disposed, so it sees a `Disposing` deactivation plus a first
+  activation instead. On a per-parameter keep-alive route (`KeepAliveMax` > 1) a parameter change
+  mounts a separate instance too, so it surfaces as an activate/deactivate pair rather than a
+  renavigation.
 
 All callbacks have async variants; returned tasks are observed for errors (surfaced via
 `IBrouter.OnError`) but never delay the navigation. They are not invoked during static prerendering.
@@ -1003,7 +1061,7 @@ automatically:
 @implements IBrouterRoute
 @code {
     public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
-        => RefreshAsync(); // e.g. /item/1 -> /item/2 reused this instance; OnInitialized won't re-run
+        => RefreshAsync(); // e.g. /item/1 -> /item/2 reused this instance (the default); OnInitialized won't re-run
 }
 ```
 
@@ -1036,7 +1094,10 @@ component-side):
   entirely - or `Disposing`).
 - **`OnRenavigating`** - a pending navigation keeps this route matched (a route/query parameter
   change, or moving between its descendants). This is the case `LeaveGuard` deliberately never
-  fires for - without it, a dirty edit form on `/item/1` couldn't veto going to `/item/2`.
+  fires for - without it, a dirty edit form on `/item/1` couldn't veto going to `/item/2`. A route
+  that opted into [rebuilding on a parameter change](#rebuild-or-re-bind-on-a-parameter-change)
+  is the exception: its content is disposed by the change, so it votes through `OnDeactivating`
+  (reason `Disposing`) and its `LeaveGuard` runs, exactly as if the route were left.
 
 Both are **awaited** by the pipeline (unlike the notify-only lifecycle callbacks) and run inside
 the preventive phase, so `context.Cancel()` / `context.Redirect(...)` stop the URL from ever

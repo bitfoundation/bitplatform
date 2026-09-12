@@ -103,6 +103,20 @@ public class Broute : ComponentBase, IDisposable
     [Parameter] public int? KeepAliveMax { get; set; }
 
     /// <summary>
+    /// Whether a navigation that stays on this route but changes its parameter values rebuilds the
+    /// route's content instead of re-binding the live instance. Null (the default) follows
+    /// <see cref="BrouterOptions.RemountOnParameterChange"/>, which defaults to <c>false</c>: the
+    /// instance survives and takes the change as a renavigation
+    /// (<see cref="IBrouterRoute.OnRenavigatedAsync"/>), the same reuse the built-in <c>Router</c>
+    /// gives a page. Set it explicitly to opt this one route either way - <c>true</c> to dispose the
+    /// content and mount a fresh instance on every parameter change, <c>false</c> to keep it even
+    /// where the application default is to rebuild. The parameters that count are every parameter
+    /// of the route's full template, ancestors' included. Ignored on a <see cref="KeepAlive"/>
+    /// route, which never remounts.
+    /// </summary>
+    [Parameter] public bool? RemountOnParameterChange { get; set; }
+
+    /// <summary>
     /// Freshness window for this route's <see cref="Loader"/> result, enabling the router's
     /// stale-while-revalidate cache: a navigation (or Back/Forward) to a URL whose cached result is
     /// younger than this skips the loader entirely; an older-but-not-garbage-collected result is
@@ -398,6 +412,59 @@ public class Broute : ComponentBase, IDisposable
     // instead of rendering nothing.
     internal int EffectiveKeepAliveMax => Math.Max(1, KeepAliveMax ?? Brouter?.Options.DefaultKeepAliveMax ?? 1);
 
+    // Whether a parameter-only navigation rebuilds this route's content rather than re-binding the
+    // live instance: the route's own setting, else the global option (off by default). KeepAlive
+    // always wins - retaining the instance is what the route asked for, and a per-parameter
+    // keep-alive route already mounts one instance per parameter set.
+    internal bool EffectiveRemountOnParameterChange =>
+        KeepAlive is false && (RemountOnParameterChange ?? Brouter?.Options.RemountOnParameterChange ?? false);
+
+    /// <summary>
+    /// Builds this route's parameter identity from the values it is currently matched with - see
+    /// <see cref="ComputeParameterKey(IReadOnlyDictionary{string, object?})"/>.
+    /// </summary>
+    internal string ComputeParameterKey() => ComputeParameterKey(Parameters);
+
+    /// <summary>
+    /// Builds this route's parameter identity for <paramref name="values"/>: its template parameter
+    /// values in template order, formatted invariantly. Two matches of the same route produce the
+    /// same key exactly when they bind every template parameter to the same value - the comparison
+    /// behind both per-parameter keep-alive retention and <see cref="WillRemountForParameters"/>.
+    /// The query string is excluded. The navigation pipeline passes a prospective match's values
+    /// to learn, before it commits, whether a route that stays matched is about to be rebuilt.
+    /// </summary>
+    internal string ComputeParameterKey(IReadOnlyDictionary<string, object?> values)
+    {
+        if (RouteTemplate is null) return string.Empty;
+
+        var sb = new System.Text.StringBuilder();
+        foreach (var seg in RouteTemplate.TemplateSegments)
+        {
+            foreach (var paramName in seg.ParameterNames)
+            {
+                values.TryGetValue(paramName, out var value);
+                // U+001F (unit separator) can't appear in a template's parameter name, so the
+                // key is unambiguous even when values themselves contain '=' or '/'.
+                sb.Append(paramName).Append('=').Append(BrouterService.FormatRouteValue(value)).Append('\u001f');
+            }
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Whether committing a match that binds this route's parameters to <paramref name="values"/>
+    /// rebuilds its content. False when the route doesn't remount at all, when nothing of its
+    /// content is currently mounted (there is nothing to rebuild - the commit mounts it fresh
+    /// anyway), and when the values it is already rendering are the same.
+    /// </summary>
+    internal bool WillRemountForParameters(IReadOnlyDictionary<string, object?> values)
+    {
+        if (EffectiveRemountOnParameterChange is false) return false;
+        if (_renderer?.LastRenderedParameterKey is not { } rendered) return false;
+
+        return string.Equals(rendered, ComputeParameterKey(values), StringComparison.Ordinal) is false;
+    }
+
     /// <summary>
     /// Builds the retention key for the current match of a per-parameter keep-alive route
     /// (<see cref="EffectiveKeepAliveMax"/> &gt; 1): the route's template parameter values, in
@@ -406,22 +473,7 @@ public class Broute : ComponentBase, IDisposable
     /// string is deliberately excluded (documented on <see cref="KeepAliveMax"/>).
     /// </summary>
     internal string ComputeKeepAliveKey()
-    {
-        if (EffectiveKeepAliveMax <= 1 || RouteTemplate is null) return string.Empty;
-
-        var sb = new System.Text.StringBuilder();
-        foreach (var seg in RouteTemplate.TemplateSegments)
-        {
-            foreach (var paramName in seg.ParameterNames)
-            {
-                Parameters.TryGetValue(paramName, out var value);
-                // U+001F (unit separator) can't appear in a template's parameter name, so the
-                // key is unambiguous even when values themselves contain '=' or '/'.
-                sb.Append(paramName).Append('=').Append(BrouterService.FormatRouteValue(value)).Append('\u001f');
-            }
-        }
-        return sb.ToString();
-    }
+        => EffectiveKeepAliveMax <= 1 ? string.Empty : ComputeParameterKey();
 
     // Releases this route's retained keep-alive state - both its own inline hidden content (when it
     // is a kept-but-hidden top-level/inline route, or hidden per-parameter siblings of the active
@@ -546,9 +598,13 @@ public class Broute : ComponentBase, IDisposable
     /// <paramref name="willRemainMatched"/> and <paramref name="contentReplaced"/> contracts.
     /// <paramref name="contentReplaced"/> is only honored by the inline renderer: an outlet-hosted
     /// error render happens inside the surviving child entry, whose context handles the page swap
-    /// via <see cref="BrouterRouteContext.ClearAutoRegistered"/>.
+    /// via <see cref="BrouterRouteContext.ClearAutoRegistered"/>. <paramref name="hostTornDown"/>
+    /// is only honored by the outlet: it says the hosting subtree itself is about to be unmounted
+    /// (the host is being left or rebuilt), so keep-alive retention cannot save this route's content
+    /// and it reports Disposing rather than Hidden.
     /// </summary>
-    internal void NotifyDeparture(BrouterNavigationContext ctx, bool willRemainMatched, bool contentReplaced = false)
+    internal void NotifyDeparture(BrouterNavigationContext ctx, bool willRemainMatched, bool contentReplaced = false,
+        bool hostTornDown = false)
     {
         if (_disposed || _renderer is null) return;
 
@@ -557,7 +613,11 @@ public class Broute : ComponentBase, IDisposable
         var primary = PrimaryOutletOf(outletHost);
         if (primary is not null)
         {
-            primary.NotifyDeparture(this, ctx.To, willRemainMatched, onError);
+            primary.NotifyDeparture(this, ctx.To, willRemainMatched, onError, hostTornDown);
+            // The outlet owns the content session, but the parameter identity that
+            // WillRemountForParameters compares lives on the inline renderer (RenderRoute records it
+            // for both content paths), so end it here too when the session ends.
+            if (willRemainMatched is false) _renderer.ForgetRenderedParameterKey();
         }
         else
         {

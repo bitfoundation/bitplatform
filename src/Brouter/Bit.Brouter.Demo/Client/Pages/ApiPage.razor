@@ -1,4 +1,4 @@
-<PageTitle>API reference · Brouter docs</PageTitle>
+﻿<PageTitle>API reference · Brouter docs</PageTitle>
 
 @* The lookup page: every public parameter, option, service member and value type in one place,
    with defaults. Topic pages teach; this one answers "what is that parameter called and what does
@@ -78,6 +78,7 @@
             <tr><td>Meta</td><td>object?</td><td>Static per-route metadata, cascaded as <code>BrouterRouteMeta</code>. No code runs.</td></tr>
             <tr><td>KeepAlive</td><td>bool (false)</td><td>Retain the rendered component (hidden) when navigated away.</td></tr>
             <tr><td>KeepAliveMax</td><td>int?</td><td>Retained-instance budget. Above 1, one instance per distinct parameter set, LRU-evicted. Defaults to <code>DefaultKeepAliveMax</code>.</td></tr>
+            <tr><td>RemountOnParameterChange</td><td>bool?</td><td>Rebuild this route's content when only its parameter values change, instead of re-binding the live instance. Defaults to the <code>RemountOnParameterChange</code> option; ignored on a keep-alive route.</td></tr>
             <tr><td>ErrorContent</td><td>RenderFragment&lt;BrouterErrorContext&gt;?</td><td>Error boundary for this route and its descendants; nearest boundary wins.</td></tr>
         </tbody>
     </table>
@@ -229,6 +230,7 @@
             <tr><td>PersistLoaderState</td><td><code>false</code></td><td>Carry prerender loader results into the interactive pass so they don't double-fetch.</td></tr>
             <tr><td>LoaderStateTypeInfoResolver</td><td><code>null</code></td><td>Source-generated JSON context that makes the above trimming/AOT-safe.</td></tr>
             <tr><td>DefaultKeepAliveMax</td><td><code>1</code></td><td>Retained-instance budget for keep-alive routes that don't set their own.</td></tr>
+            <tr><td>RemountOnParameterChange</td><td><code>false</code></td><td>A parameter-only navigation re-binds the live instance and arrives as a renavigation (the built-in <code>Router</code>'s reuse). Set <code>true</code> to dispose the content and mount a fresh instance instead - it then votes and is notified like a route being left.</td></tr>
         </tbody>
     </table>
 </div>

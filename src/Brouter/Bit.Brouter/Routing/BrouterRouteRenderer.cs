@@ -39,6 +39,16 @@ internal class BrouterRouteRenderer
     // route matches again, so a later visit rebuilds it fresh.
     private bool _keptDropped;
 
+    // The parameter identity (see Broute.ComputeParameterKey) this route's content was last
+    // rendered with, while it is mounted; null whenever nothing is mounted. Recorded by RenderRoute
+    // for both content paths (the outlet-hosted one too - the outlet owns that session, but the
+    // route's render pass is still where the match lands), and cleared by every path that ends the
+    // session: the inline departure/teardown/drop paths below, and Broute.NotifyDeparture for the
+    // outlet path (ForgetRenderedParameterKey). The navigation pipeline compares it with an incoming
+    // match's values to decide whether a route that stays matched has to be rebuilt
+    // (BrouterOptions.RemountOnParameterChange) or merely re-bound.
+    private string? _renderedParameterKey;
+
     // Per-parameter retention (EffectiveKeepAliveMax > 1) for the inline (non-outlet) render path:
     // one entry per recently-visited parameter set, LRU-ordered with the most recently active at the
     // end. Each entry owns a keyed subtree whose parameters/data are frozen while hidden, so a
@@ -64,6 +74,18 @@ internal class BrouterRouteRenderer
         _route = route;
     }
 
+    /// <summary>
+    /// The parameter identity this route's content currently on screen was rendered with, or null
+    /// when it holds no mounted content (nothing to rebuild). See <see cref="_renderedParameterKey"/>.
+    /// </summary>
+    public string? LastRenderedParameterKey => _renderedParameterKey;
+
+    /// <summary>
+    /// Ends the recorded parameter identity for content this renderer does not own - an
+    /// outlet-hosted session the outlet just closed (see <see cref="Broute.NotifyDeparture"/>).
+    /// </summary>
+    public void ForgetRenderedParameterKey() => _renderedParameterKey = null;
+
     // Drops this route's retained (hidden) keep-alive content on the next render, keeping only the
     // currently active instance (when the route is matched). Backs IBrouter.ClearKeepAlive.
     public void DropKeptContent(bool routeIsMatched)
@@ -86,6 +108,7 @@ internal class BrouterRouteRenderer
         {
             _keptDropped = true;
             _context = null;
+            _renderedParameterKey = null;
         }
     }
 
@@ -147,6 +170,7 @@ internal class BrouterRouteRenderer
         // ending the session.
         _context?.FireDeactivated(BrouterRouteDeactivationReason.Disposing, to, onError);
         _context = null;
+        _renderedParameterKey = null;
     }
 
     /// <summary>
@@ -208,6 +232,7 @@ internal class BrouterRouteRenderer
         }
         _context?.FireDeactivated(BrouterRouteDeactivationReason.Disposing, location, onError);
         _context = null;
+        _renderedParameterKey = null;
     }
 
     /// <summary>
@@ -329,6 +354,12 @@ internal class BrouterRouteRenderer
             _cachedInheritedRef = inherited;
             _cachedLocalRef = local;
         }
+
+        // The content on screen from this render on is the one carrying the route's current values.
+        // Recorded on every matched render rather than only on a parameter-cache miss: the cache can
+        // survive the drop that ended the previous session, and a fresh session must record its
+        // identity regardless. A handful of short string appends per render.
+        if (matched) _renderedParameterKey = _route.ComputeParameterKey();
 
         // Typed wrappers instead of raw object? cascades: a distinct wrapper type per cascade
         // means consumers get compile-time-safe access (Get<T>/TryGet<T>) and match by type

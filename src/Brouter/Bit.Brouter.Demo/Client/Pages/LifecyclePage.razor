@@ -34,7 +34,9 @@
     </dl>
     <p class="bb-card-desc">
         This route is a singleton (not keep-alive), so switching between ids re-commits the
-        <strong>same component instance</strong>: <code>OnInitialized</code> does not re-run, and
+        <strong>same component instance</strong> (a route that opts into
+        <code>RemountOnParameterChange</code> would be rebuilt instead):
+        <code>OnInitialized</code> does not re-run, and
         <code>OnRenavigated</code> is the "user arrived here again" signal, carrying both locations.
         Navigating away fires <code>OnDeactivated</code> with reason <code>Disposing</code> (its
         synchronous part is guaranteed to run before <code>Dispose</code>); coming back mounts a fresh

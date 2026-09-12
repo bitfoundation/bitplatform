@@ -962,9 +962,15 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// EVERYTHING for the duration of the load): then survivors are notified with
     /// willRemainMatched, so retained keep-alive content no-ops while transient content gets its
     /// honest Disposing notification for the instance that render destroys.
+    /// <paramref name="remountFrom"/> is the index in <paramref name="surviving"/> of the shallowest
+    /// route whose content the commit rebuilds (see <see cref="FindRemountStart"/>), or -1: a
+    /// departing keep-alive route hosted at or below it - or below a transient host being left -
+    /// loses its retained subtree with the host, so it is told Disposing rather than Hidden (the
+    /// same call the lock phase made for its vote, see <see cref="KeptContentSurvivesLeave"/>).
     /// </summary>
     private void NotifyChainDepartures(BrouterNavigationContext ctx, Broute[] departingChain,
-        List<Broute>? surviving = null, bool notifySurvivorsAsRemaining = false, Broute? contentReplacedNode = null)
+        List<Broute>? surviving = null, bool notifySurvivorsAsRemaining = false, Broute? contentReplacedNode = null,
+        int remountFrom = -1)
     {
         // A departure callback's synchronous prefix can start a new navigation, superseding this
         // one. The rest of the chain then belongs to that navigation's own departure phase (which
@@ -982,9 +988,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // contentReplacedNode is the error-boundary route whose committed content the coming
             // render REPLACES with its ErrorContent (see RenderNavigationError): its departure is
             // forced to Disposing - keep-alive retention keeps a subtree that no longer holds the
-            // page, so Hidden would be a lie.
+            // page, so Hidden would be a lie. Likewise a kept route whose hosting subtree is about
+            // to be unmounted (hostTornDown).
+            var hostTornDown = survives is false && node.KeepAlive
+                && KeptContentSurvivesLeave(node, surviving, remountFrom) is false;
             node.NotifyDeparture(ctx, willRemainMatched: survives,
-                contentReplaced: ReferenceEquals(node, contentReplacedNode));
+                contentReplaced: ReferenceEquals(node, contentReplacedNode), hostTornDown: hostTornDown);
             if (ctx.CancellationToken.IsCancellationRequested || generation != _lifecycleNavGeneration) return;
         }
     }
@@ -1019,6 +1028,63 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (matchedChain.Contains(node)) continue;
             node.Refresh();
             if (version != _navVersion) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// The one rule behind <see cref="BrouterOptions.RemountOnParameterChange"/>: the index in
+    /// <paramref name="chain"/> of the shallowest route that was on screen before the pending
+    /// commit (present in <paramref name="committed"/>) and stays matched, but whose content the
+    /// commit rebuilds because its parameter values changed - or -1 when nothing is rebuilt.
+    /// Everything below that index is rebuilt with it (see <see cref="DropContentForRemount"/>).
+    /// Both chains are root -> leaf parent paths, so the routes they share are a common prefix at
+    /// equal indices; the walk stops at the first route that wasn't committed before (it is
+    /// mounting fresh regardless, and so is everything below it). Shared by the lock phase (which
+    /// passes the prospective match's values) and the commit (which passes null to compare each
+    /// route's just-committed <see cref="Broute.Parameters"/>), so the vote a route casts and what
+    /// then happens to its instance can never disagree.
+    /// </summary>
+    private static int FindRemountStart(List<Broute> chain, Broute[] committed,
+        IReadOnlyDictionary<string, object?>? values, out int sharedPrefix)
+    {
+        var from = -1;
+        var shared = Math.Min(chain.Count, committed.Length);
+        for (sharedPrefix = 0; sharedPrefix < shared; sharedPrefix++)
+        {
+            var node = chain[sharedPrefix];
+            if (ReferenceEquals(committed[sharedPrefix], node) is false) break;
+            if (from < 0 && node.WillRemountForParameters(values ?? node.Parameters)) from = sharedPrefix;
+        }
+        return from;
+    }
+
+    /// <summary>
+    /// Tears down the content of routes that stay matched across this commit but are re-entered
+    /// with different parameter values (<see cref="BrouterOptions.RemountOnParameterChange"/>), so
+    /// the commit render mounts brand-new instances. <paramref name="from"/> is the shallowest such
+    /// route and <paramref name="sharedPrefix"/> the length of the chain's previously-committed
+    /// prefix, both from <see cref="FindRemountStart"/>. Everything nested below the rebuilt route
+    /// is torn down with it: its content lives inside the subtree being replaced, so keeping the
+    /// child's instance would mean keeping a component whose host is gone - except keep-alive
+    /// content that lives elsewhere (inline at its declaration site, or inside a kept host that
+    /// survives), which stays exactly as <see cref="KeptContentSurvivesLeave"/> promised its vote.
+    /// Leaf -> root, and each drop both fires the content's Disposing deactivation and disposes the
+    /// subtree synchronously - the same dispose-before-mount ordering
+    /// <see cref="UnrenderDepartedRoutes"/> exists to preserve (#12752). Returns false when a drop's
+    /// synchronous user code (Dispose, OnDeactivated) started a navigation that superseded this
+    /// commit, which the caller must abandon immediately.
+    /// </summary>
+    private bool DropContentForRemount(List<Broute> matchedChain, int from, int sharedPrefix)
+    {
+        var generation = _lifecycleNavGeneration;
+        var version = _navVersion;
+        for (var i = sharedPrefix - 1; i >= from; i--)
+        {
+            var node = matchedChain[i];
+            if (i > from && node.KeepAlive && KeptContentSurvivesLeave(node, matchedChain, from)) continue;
+            node.DropAllContent();
+            if (_disposed || version != _navVersion || generation != _lifecycleNavGeneration) return false;
         }
         return true;
     }
@@ -2656,9 +2722,18 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // runs while the departing components are still alive). Routes present in both chains
             // aren't notified here: their content survives the commit untouched (the
             // no-pending-render path never unmounted it) and resolves as a renavigation below.
+            // Routes that stay matched but are re-entered with different parameter values: under
+            // RemountOnParameterChange their content is rebuilt rather than re-bound. Decided once
+            // here, for the departure notifications (a kept child hosted below the rebuilt route
+            // dies with its subtree and must not be told Hidden) and the teardown further down.
+            // Irrelevant when the pending-UI render already unmounted everything (departuresNotified):
+            // the commit mounts fresh instances anyway.
+            var remountFrom = -1;
+            var remountPrefix = 0;
             if (departuresNotified is false)
             {
-                NotifyChainDepartures(ctx, _committedChain, matchedChain);
+                remountFrom = FindRemountStart(matchedChain, _committedChain, null, out remountPrefix);
+                NotifyChainDepartures(ctx, _committedChain, matchedChain, remountFrom: remountFrom);
                 // Departure callbacks run synchronously into user code and can start a new
                 // navigation; abandon this commit before it mutates state the newer one owns.
                 if (token.IsCancellationRequested || version != _navVersion) return;
@@ -2674,6 +2749,15 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // reports it; the token check covers cancellation without a version bump.
                 if (UnrenderDepartedRoutes(matchedChain) is false) return;
                 if (token.IsCancellationRequested || version != _navVersion) return;
+
+                // The rebuilt routes' content is torn down here - after the departed routes, before
+                // the commit render mounts the replacement - exactly like a route this commit
+                // removes; same synchronous-supersession hazard as the unrender above.
+                if (remountFrom >= 0)
+                {
+                    if (DropContentForRemount(matchedChain, remountFrom, remountPrefix) is false) return;
+                    if (token.IsCancellationRequested || version != _navVersion) return;
+                }
             }
 
             // Pre-render arrival preparation: per-parameter keep-alive routes deactivate the
@@ -2935,10 +3019,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// The leave phase of the pending navigation to <paramref name="to"/>, leaf -> root (children
     /// veto before their parents, mirroring Angular's CanDeactivate order). For every currently
     /// committed route it runs, in order: the component-level navigation locks of its active
-    /// content (<see cref="IBrouterRoute.OnDeactivatingAsync"/> when the route is being left,
-    /// <see cref="IBrouterRoute.OnRenavigatingAsync"/> when it stays matched - so parameter changes
-    /// are voteable too), then - only for routes actually being left - the route-declared
-    /// <see cref="Broute.LeaveGuard"/>. Locks are awaited, so they can hold the navigation open for
+    /// content (<see cref="IBrouterRoute.OnDeactivatingAsync"/> when the route is being left or its
+    /// content rebuilt, <see cref="IBrouterRoute.OnRenavigatingAsync"/> when it stays matched with
+    /// the instance surviving - so parameter changes are voteable too), then - only for routes
+    /// whose content actually goes away - the route-declared <see cref="Broute.LeaveGuard"/>.
+    /// Locks are awaited, so they can hold the navigation open for
     /// user input. Returns false when a lock/guard cancelled/redirected (the decision is on
     /// <paramref name="ctx"/> for the caller to apply) or the navigation was superseded; true to
     /// continue the pipeline. A throwing lock/guard propagates to the caller, which fails closed.
@@ -2959,13 +3044,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         if (anyWork is false) return true;
 
         // Which committed routes survive the new URL? Match it (SelectWinner is pure, so this is
-        // safe pre-commit) and collect the new chain; committed routes present in it are updated,
-        // not left. A null match means everything is being left.
-        HashSet<Broute>? staying = null;
+        // safe pre-commit) and collect the new chain, root -> leaf; committed routes present in it
+        // are updated, not left. A null match means everything is being left. remountFrom is the
+        // shallowest staying route whose content the commit will rebuild rather than re-bind
+        // (RemountOnParameterChange) - everything at or below it votes as a departure, because that
+        // is what actually happens to it. Same rule, same routine as the commit (FindRemountStart).
+        List<Broute>? newChain = null;
+        var remountFrom = -1;
         if (SelectWinner(to) is { } newMatch)
         {
-            staying = [];
-            for (var node = newMatch.Route; node is not null; node = node.Parent) staying.Add(node);
+            newChain = [];
+            for (var node = newMatch.Route; node is not null; node = node.Parent) newChain.Add(node);
+            newChain.Reverse();
+            remountFrom = FindRemountStart(newChain, committed, newMatch.Parameters, out _);
         }
 
         // Leaf -> root, and per route the content's own locks run before the route-declared
@@ -2978,7 +3069,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         for (var i = committed.Length - 1; i >= 0; i--)
         {
             var node = committed[i];
-            var stays = staying is not null && staying.Contains(node);
+            // A staying route sits at the same index in both chains (common root -> leaf prefix),
+            // so "at or below the rebuilt route" is an index comparison. Keep-alive content that
+            // lives outside the rebuilt subtree survives it and re-binds like any staying route.
+            var index = newChain?.IndexOf(node) ?? -1;
+            var stays = index >= 0;
+            var remounts = stays && remountFrom >= 0 && index >= remountFrom
+                && (node.KeepAlive && KeptContentSurvivesLeave(node, newChain, remountFrom)) is false;
 
             // 1. Component-level locks. A route being left dispatches OnDeactivatingAsync to its
             // active content; a route that stays matched dispatches OnRenavigatingAsync instead
@@ -3005,15 +3102,18 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 {
                     var context = lockContexts[c];
                     if (ctx.CancellationToken.IsCancellationRequested) return false;
-                    if (stays)
+                    if (stays && remounts is false)
                     {
                         renavigating ??= new BrouterRouteRenavigatingContext(ctx);
                         await context.FireRenavigatingAsync(renavigating);
                     }
                     else
                     {
+                        // Being left - or rebuilt on commit (remounts): either way the instance
+                        // voting here is the one that will be disposed, so it votes as a departure
+                        // rather than as a parameter change it would live through.
                         var reason = c < namedFrom
-                            && node.KeepAlive && KeptContentSurvivesLeave(node, staying)
+                            && node.KeepAlive && KeptContentSurvivesLeave(node, newChain, remountFrom)
                             ? BrouterRouteDeactivationReason.Hidden
                             : BrouterRouteDeactivationReason.Disposing;
                         await context.FireDeactivatingAsync(new BrouterRouteDeactivatingContext(ctx, reason));
@@ -3023,8 +3123,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 }
             }
 
-            // 2. The route-declared LeaveGuard, only when the route is actually being left.
-            if (stays || node.LeaveGuard is null) continue;
+            // 2. The route-declared LeaveGuard, only when the route's content is actually going
+            // away: the route is being left, or it stays matched but is rebuilt, which disposes the
+            // content just the same (a dirty editor on /doc/1 must get its prompt before /doc/2
+            // replaces it).
+            if ((stays && remounts is false) || node.LeaveGuard is null) continue;
 
             if (ctx.CancellationToken.IsCancellationRequested) return false;
             // Expose the route being left for the duration of its own guard call only.
@@ -3054,12 +3157,18 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// inside it, kept children included (see
     /// <c>KeepAliveTests.KeepAlive_state_is_lost_across_the_hosting_layout_unmount</c>). Inline
     /// content renders at the route's declaration site, which stays mounted regardless of matching.
+    /// A staying host at or below <paramref name="remountFrom"/> (its index in
+    /// <paramref name="staying"/>, root -> leaf) has its content rebuilt by the commit, which
+    /// unmounts its outlets exactly like being left does - so it counts as left here. Used by the
+    /// lock phase for the vote, and by the commit (departure notification and remount teardown)
+    /// for what it then does, so the two always agree.
     /// </summary>
-    private static bool KeptContentSurvivesLeave(Broute node, HashSet<Broute>? staying)
+    private static bool KeptContentSurvivesLeave(Broute node, List<Broute>? staying, int remountFrom)
     {
         for (var host = node.FindOutletHost(); host is not null; host = host.FindOutletHost())
         {
-            if (staying is not null && staying.Contains(host)) return true;
+            var index = staying?.IndexOf(host) ?? -1;
+            if (index >= 0 && (remountFrom < 0 || index < remountFrom)) return true;
             if (host.KeepAlive is false) return false;
         }
         return true;

@@ -1,0 +1,106 @@
+﻿@* Host for RemountOnParameterChangeTests: the same parameterized route declared four ways -
+   following the application default, opted out of remounting, opted in, and keep-alive (which
+   never remounts) - plus a parent layout with an outlet-hosted parameterized child, a Component
+   route, a route-declared LeaveGuard, and a parameterized host with a kept outlet child, so both
+   content-fragment and directly-instantiated pages and every vote a rebuild triggers are covered. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/rm/{id:int}">
+        <Content>
+            <StatefulCounter />
+            <LifecycleProbe Log="Log" />
+        </Content>
+    </Broute>
+
+    <Broute Path="/rmoff/{id:int}" RemountOnParameterChange="false">
+        <Content><StatefulCounter /></Content>
+    </Broute>
+
+    <Broute Path="/rmon/{id:int}" RemountOnParameterChange="true">
+        <Content><StatefulCounter /></Content>
+    </Broute>
+
+    <Broute Path="/rmka/{id:int}" KeepAlive="true">
+        <Content><StatefulCounter /></Content>
+    </Broute>
+
+    <Broute Path="/rmlock/{id:int}">
+        <Content Context="p">
+            <div data-testid="locked">doc @p["id"]</div>
+            <NavigationLockProbe Label="doc" State="LockState" />
+        </Content>
+    </Broute>
+
+    <Broute Path="/rmguard/{id:int}" LeaveGuard="GuardDoc">
+        <Content Context="p"><div data-testid="guarded">doc @p["id"]</div></Content>
+    </Broute>
+
+    <Broute Path="/rmpage/{id:int}" Component="@typeof(StatefulCounter)" />
+
+    <Broute Path="/shell">
+        <Content>
+            <StatefulCounter />
+            <div data-testid="shell-outlet"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/doc/{id:int}">
+                <Content Context="p">
+                    <div data-testid="doc">doc @p["id"]</div>
+                    <KeepAliveParam />
+                </Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    <Broute Path="/user/{id:int}">
+        <Content>
+            <StatefulCounter />
+            <div data-testid="user-outlet"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/edit">
+                <Content><KeepAliveParam /></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    <Broute Path="/acct/{id:int}">
+        <Content Context="p">
+            <div data-testid="acct">acct @p["id"]</div>
+            <div data-testid="acct-outlet"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/draft" KeepAlive="true">
+                <Content>
+                    <KeepAliveParam />
+                    <LifecycleProbe Log="DraftLog" />
+                    <NavigationLockProbe Label="draft" State="DraftLockState" />
+                </Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+</Brouter>
+
+@code {
+    /// <summary>Outlives the disposed content so remount lifecycle transitions stay assertable.</summary>
+    public List<string> Log { get; } = [];
+
+    public NavigationLockState LockState { get; } = new();
+
+    /// <summary>Every GuardDoc firing; while <see cref="BlockGuard"/> is set the guard cancels.</summary>
+    public List<string> GuardFired { get; } = [];
+    public bool BlockGuard { get; set; }
+
+    private ValueTask GuardDoc(BrouterNavigationContext ctx)
+    {
+        GuardFired.Add("doc");
+        if (BlockGuard) ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    /// <summary>The kept /draft child's lifecycle and lock votes, hosted in a rebuildable parent.</summary>
+    public List<string> DraftLog { get; } = [];
+    public NavigationLockState DraftLockState { get; } = new();
+}

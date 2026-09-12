@@ -46,7 +46,11 @@
     <p class="bb-card-desc">
         A parameter change (<code>/lock/1 → /lock/2</code>) keeps this route matched, so a
         route-declared <code>LeaveGuard</code> would never fire - <code>OnRenavigating</code> is what
-        protects the dirty draft there.
+        protects the dirty draft there. A route that opts into
+        <code>RemountOnParameterChange</code> is the exception: its content is rebuilt by the change,
+        so the instance about to be disposed votes with <code>OnDeactivating</code> (reason
+        <code>Disposing</code>) and the <code>LeaveGuard</code> runs - either way the dirty draft is
+        protected.
     </p>
 </div>
 

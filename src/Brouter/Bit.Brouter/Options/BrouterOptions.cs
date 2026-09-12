@@ -138,6 +138,40 @@ public sealed class BrouterOptions
     public int DefaultKeepAliveMax { get; set; } = 1;
 
     /// <summary>
+    /// Whether a navigation that stays on the same route but changes its route parameter values
+    /// (<c>/settings/profile</c> -> <c>/settings/account</c>) rebuilds the route's content instead of
+    /// re-binding the live instance. Defaults to <c>false</c>: the component instance survives, the
+    /// new values arrive as parameters, and the route lifecycle reports the navigation as a
+    /// renavigation (<see cref="IBrouterRoute.OnRenavigatingAsync"/> /
+    /// <see cref="IBrouterRoute.OnRenavigatedAsync"/>) rather than a deactivation + activation. That
+    /// is the same instance reuse the built-in <c>Router</c> gives a page (its <c>RouteView</c>
+    /// re-parameterizes the existing component - <c>OnParametersSet</c> runs, <c>OnInitialized</c>
+    /// does not) and what Angular and Vue do; it keeps scroll position, form state and in-flight
+    /// work across the change, at the cost of every such component having to react to the new
+    /// parameters itself.
+    /// <para>
+    /// Set it to <c>true</c> to dispose the old components and mount a brand-new instance on every
+    /// parameter change, so anything a component reads once - <c>OnInitialized</c>, a child that
+    /// captures a parameter when it registers, an uncontrolled <c>Default*</c> value on a UI
+    /// component - sees the new values. The content then votes on the change through
+    /// <see cref="IBrouterRoute.OnDeactivatingAsync"/> (reason Disposing) and the route's
+    /// <see cref="Broute.LeaveGuard"/>, exactly like a route being left. Individual routes can opt
+    /// either way with <see cref="Broute.RemountOnParameterChange"/>. Everything nested below a
+    /// rebuilt route is rebuilt with it - including, for pages rendered through
+    /// <c>Brouter.DefaultLayout</c> / <c>Found</c>, the framework <c>RouteView</c> and the layout it
+    /// composes inside the page's subtree; a layout declared as a parent <c>Broute</c> whose own
+    /// parameters didn't change is untouched.
+    /// </para>
+    /// <para>
+    /// <see cref="Broute.KeepAlive"/> routes are never remounted for their own parameter change:
+    /// retaining the instance is the whole point of keep-alive, and a per-parameter keep-alive route
+    /// (<see cref="Broute.KeepAliveMax"/> &gt; 1) already gives each parameter set its own instance.
+    /// A kept route hosted in the outlet of an ancestor that IS rebuilt dies with that subtree.
+    /// </para>
+    /// </summary>
+    public bool RemountOnParameterChange { get; set; }
+
+    /// <summary>
     /// Debounce for <see cref="BrouterLinkPreload.Intent"/> preloading: the pointer must rest on the
     /// link this long before the preload fires, so merely brushing past links doesn't fetch.
     /// Defaults to 50 ms (TanStack Router's <c>defaultPreloadDelay</c>).
