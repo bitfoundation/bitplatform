@@ -1,6 +1,3 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Hosting;
-
 namespace Bit.BlazorUI;
 
 public partial class Link
@@ -13,8 +10,7 @@ public partial class Link
 
 
 
-    [Inject] private IWebHostEnvironment webHost { get; set; } = default!;
-    [Inject] private IHttpContextAccessor httpContextAccessor { get; set; } = default!;
+    [Inject] private IServiceProvider serviceProvider { get; set; } = default!;
 
 
 
@@ -25,8 +21,7 @@ public partial class Link
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        href = (Href is not null && AppendVersion) 
-                ? BitFileVersionProvider.AppendFileVersion(webHost.WebRootFileProvider, httpContextAccessor?.HttpContext?.Request.PathBase ?? PathString.Empty, Href) 
-                : Href;
+
+        href = AppendVersion ? BitAssetVersion.TryAppend(serviceProvider, Href) : Href;
     }
 }
