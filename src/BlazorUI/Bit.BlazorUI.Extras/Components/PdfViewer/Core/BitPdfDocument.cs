@@ -85,6 +85,26 @@ public sealed class BitPdfDocument
     public IReadOnlyList<BitPdfStructElement> StructureTree =>
         _structure ??= BitPdfStructTree.Build(_xref, Catalog);
 
+    private IReadOnlyList<BitPdfLayer>? _layers;
+
+    /// <summary>
+    /// The optional-content groups (layers) the document declares, with the
+    /// visibility its default configuration gives each. Empty when the document
+    /// declares no <c>/OCProperties</c>.
+    /// </summary>
+    public IReadOnlyList<BitPdfLayer> Layers =>
+        _layers ??= BitPdfOptionalContent.Build(_xref, Catalog);
+
+    private IReadOnlyList<BitPdfAttachment>? _attachments;
+
+    /// <summary>
+    /// The files embedded in the document: the catalog's <c>/Names /EmbeddedFiles</c>
+    /// name tree plus any <c>/FileAttachment</c> annotation pinned to a page. Empty
+    /// when the document carries none.
+    /// </summary>
+    public IReadOnlyList<BitPdfAttachment> Attachments =>
+        _attachments ??= BitPdfEmbeddedFiles.Build(_xref, Catalog, Pages);
+
     private IReadOnlyList<BitPdfFormField>? _formFields;
 
     /// <summary>
@@ -99,10 +119,17 @@ public sealed class BitPdfDocument
     /// <c>[page …]</c> array, or a GoTo action's <c>/D</c>) to a 1-based page
     /// number, or <c>null</c> when it cannot be resolved. Used for internal links.
     /// </summary>
-    public int? ResolveDestinationPage(object? dest)
+    public int? ResolveDestinationPage(object? dest) => ResolveDestination(dest)?.PageNumber;
+
+    /// <summary>
+    /// Resolves a destination to its full view parameters - the page plus the fit
+    /// mode and coordinates it asks for - or <c>null</c> when it cannot be resolved.
+    /// <see cref="ResolveDestinationPage"/> is the page-only shortcut.
+    /// </summary>
+    public BitPdfDestination? ResolveDestination(object? dest)
     {
         _ = Pages; // ensure the page-index map is populated
-        return new BitPdfOutlineBuilder(_xref, Catalog, _pageIndexByDict).ResolveDestination(dest)?.PageNumber;
+        return new BitPdfOutlineBuilder(_xref, Catalog, _pageIndexByDict).ResolveDestination(dest);
     }
 
     /// <summary>Parses <paramref name="bytes"/> into a document model.</summary>

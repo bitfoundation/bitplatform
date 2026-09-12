@@ -1,6 +1,9 @@
 ﻿namespace BitBlazorUI {
     export class PdfViewer {
         private static _rezoomTimers = new WeakMap<HTMLElement, number>();
+        // The controls that opened the currently trapped dialogs, innermost last, so
+        // closing one hands focus back to whatever the reader was on when it opened.
+        private static readonly _focusReturn: HTMLElement[] = [];
         private static readonly _CAPS: CanvasLineCap[] = ["butt", "round", "square"];
         private static readonly _JOINS: CanvasLineJoin[] = ["miter", "round", "bevel"];
 
@@ -91,39 +94,68 @@
         // .NET to render any that are not rendered yet. Only pages still showing a
         // placeholder are reported, so scrolling across already-rendered pages costs
         // no interop round-trip at all (on WASM every call runs on the UI thread).
+        // The pages element carries the document's direction; the surface around it may
+        // not, so ask the one that actually lays the pages out.
+        private static isRtl(container: HTMLElement) {
+            const pages = container.querySelector(".bit-pdv-pages") as HTMLElement | null;
+            return getComputedStyle(pages || container).direction === "rtl";
+        }
+
         private static renderVisiblePages(container: HTMLElement, dotnetRef: any) {
             const pages = container.querySelectorAll("[data-page]");
             if (!pages.length) {
                 return;
             }
             const rect = container.getBoundingClientRect();
-            const buffer = Math.max(container.clientHeight * 1.5, 800);
-            const lo = rect.top - buffer;
-            const hi = rect.bottom + buffer;
+            // Horizontal scrolling is the one layout whose pages do NOT run down the
+            // page: measure along the axis they actually flow on, so the early exit
+            // below stays valid (in every other mode - including wrapped - document
+            // order is monotonic in `top`).
+            const horizontal = container.getAttribute("data-bit-pdv-axis") === "h";
+            // A right-to-left horizontal layout flows the other way along x: later pages
+            // sit further LEFT, so raw left/right would break out of the loop at the very
+            // first page once it scrolled off. Mirroring x keeps `near` monotonic in
+            // document order, which is what the early break relies on.
+            const rtl = horizontal && PdfViewer.isRtl(container);
+            const extent = horizontal ? container.clientWidth : container.clientHeight;
+            const buffer = Math.max(extent * 1.5, 800);
+            const near = (r: DOMRect) => horizontal ? (rtl ? -r.right : r.left) : r.top;
+            const far = (r: DOMRect) => horizontal ? (rtl ? -r.left : r.right) : r.bottom;
+            const viewNear = horizontal ? (rtl ? -rect.right : rect.left) : rect.top;
+            const viewFar = horizontal ? (rtl ? -rect.left : rect.right) : rect.bottom;
+            const lo = viewNear - buffer;
+            const hi = viewFar + buffer;
 
             // Pages actually on screen are requested before buffer pages (which are
             // ordered by distance from the viewport) - pages render one at a time on
             // the .NET side, so this ordering is what the user perceives as speed.
             const visible: number[] = [];
             const buffered: { n: number, d: number }[] = [];
-            const mid = (rect.top + rect.bottom) / 2;
+            const mid = (viewNear + viewFar) / 2;
             for (let i = 0; i < pages.length; i++) {
                 const page = pages[i];
                 const r = page.getBoundingClientRect();
-                if (r.top > hi) {
-                    break; // pages are stacked in order; everything after is further down
+                // Page mode (and presentation) hides every page but the current one, and a
+                // display:none element measures as all zeros: it is neither visible nor a
+                // meaningful distance away, so measuring it would queue the WHOLE document
+                // and defeat both the ordered early exit below and eviction.
+                if (r.width === 0 && r.height === 0) {
+                    continue;
                 }
-                if (r.bottom < lo || !page.querySelector(".bit-pdv-page-placeholder")) {
+                if (near(r) > hi) {
+                    break; // pages are laid out in order; everything after is further along
+                }
+                if (far(r) < lo || !page.querySelector(".bit-pdv-page-placeholder")) {
                     continue;
                 }
                 const n = parseInt(page.getAttribute("data-page") || "", 10);
                 if (Number.isNaN(n)) {
                     continue;
                 }
-                if (r.bottom >= rect.top && r.top <= rect.bottom) {
+                if (far(r) >= viewNear && near(r) <= viewFar) {
                     visible.push(n);
                 } else {
-                    buffered.push({ n, d: Math.abs((r.top + r.bottom) / 2 - mid) });
+                    buffered.push({ n, d: Math.abs((near(r) + far(r)) / 2 - mid) });
                 }
             }
             buffered.sort((a, b) => a.d - b.d);
@@ -191,24 +223,127 @@
                     const n = parseInt(hot.getAttribute("data-bit-pdv-page") || "", 10);
                     if (!Number.isNaN(n)) {
                         e.preventDefault();
-                        PdfViewer.scrollToPage(container, n);
+                        // A link whose destination named a vertical position navigates
+                        // through .NET, which knows the page height and zoom the offset
+                        // has to be measured against; a plain one scrolls straight away.
+                        const raw = hot.getAttribute("data-bit-pdv-top");
+                        const top = raw === null ? null : parseFloat(raw);
                         (container as any).__bitPdvLastPage = n;
-                        dotnetRef.invokeMethodAsync("OnPageVisible", n);
+                        if (top !== null && !Number.isNaN(top)) {
+                            dotnetRef.invokeMethodAsync("OnLinkNavigate", n, top);
+                        } else {
+                            PdfViewer.scrollToPage(container, n);
+                            dotnetRef.invokeMethodAsync("OnPageVisible", n);
+                        }
                     }
+                    return;
+                }
+                // Presenting: a click anywhere on the slide advances, the way every
+                // presentation tool works. A click on a link (handled above) or an
+                // actual text selection is not an advance.
+                const root = container.closest(".bit-pdv-presenting");
+                if (root && !target.closest("a") && !window.getSelection()?.toString()) {
+                    dotnetRef.invokeMethodAsync("OnShortcut", e.shiftKey ? "prev" : "next");
                 }
             };
             container.addEventListener("click", onClick);
             (container as any).__bitPdvClick = onClick;
 
-            // Ctrl+wheel (and pinch, which browsers report as ctrl+wheel) zooms.
+            // Ctrl+wheel (and pinch, which browsers report as ctrl+wheel) zooms, keeping
+            // the point under the cursor where it is instead of jumping to the top-left.
             const onWheel = (e: WheelEvent) => {
                 if (e.ctrlKey) {
                     e.preventDefault();
+                    PdfViewer.stashZoomAnchor(container, e.clientX, e.clientY);
                     dotnetRef.invokeMethodAsync("OnWheelZoom", e.deltaY);
                 }
             };
             container.addEventListener("wheel", onWheel, { passive: false });
             (container as any).__bitPdvWheel = onWheel;
+
+            // Hand tool: while .bit-pdv-pan is on the surface, dragging scrolls it
+            // instead of selecting. Pointer events cover mouse, pen and single-finger
+            // touch alike; touch already pans natively, so only a mouse/pen primary
+            // button is captured (capturing touch here would fight the native scroll).
+            const pan = { active: false, id: -1, x: 0, y: 0, left: 0, top: 0 };
+            const onPointerDown = (e: PointerEvent) => {
+                if (!container.classList.contains("bit-pdv-pan") || e.button !== 0 || e.pointerType === "touch") {
+                    return;
+                }
+                pan.active = true;
+                pan.id = e.pointerId;
+                pan.x = e.clientX;
+                pan.y = e.clientY;
+                pan.left = container.scrollLeft;
+                pan.top = container.scrollTop;
+                container.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            };
+            const onPointerMove = (e: PointerEvent) => {
+                if (!pan.active || e.pointerId !== pan.id) {
+                    return;
+                }
+                container.scrollLeft = pan.left - (e.clientX - pan.x);
+                container.scrollTop = pan.top - (e.clientY - pan.y);
+            };
+            const onPointerUp = (e: PointerEvent) => {
+                if (!pan.active || e.pointerId !== pan.id) {
+                    return;
+                }
+                pan.active = false;
+                try {
+                    container.releasePointerCapture(e.pointerId);
+                } catch { /* the pointer may already be gone */ }
+            };
+            container.addEventListener("pointerdown", onPointerDown);
+            container.addEventListener("pointermove", onPointerMove);
+            container.addEventListener("pointerup", onPointerUp);
+            container.addEventListener("pointercancel", onPointerUp);
+            (container as any).__bitPdvPan = { onPointerDown, onPointerMove, onPointerUp };
+
+            // Two-finger pinch to zoom. Browsers report a trackpad pinch as ctrl+wheel
+            // (handled above), but a touchscreen pinch arrives as two touch points and
+            // is otherwise swallowed by the page's own zoom.
+            const pinch = { active: false, distance: 0, scale: 1 };
+            const spread = (t: TouchList) => Math.hypot(
+                t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+            const onTouchStart = (e: TouchEvent) => {
+                if (e.touches.length === 2) {
+                    pinch.active = true;
+                    pinch.distance = spread(e.touches);
+                    pinch.scale = 1;
+                }
+            };
+            const onTouchMove = (e: TouchEvent) => {
+                if (!pinch.active || e.touches.length !== 2 || pinch.distance <= 0) {
+                    return;
+                }
+                e.preventDefault();
+                const ratio = spread(e.touches) / pinch.distance;
+                PdfViewer.stashZoomAnchor(container,
+                    (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                    (e.touches[0].clientY + e.touches[1].clientY) / 2);
+                // Only cross the interop boundary once the pinch has actually moved a
+                // step's worth: .NET clamps and re-renders, so a call per touchmove
+                // frame would stall the UI thread on WebAssembly.
+                if (ratio / pinch.scale > 1.1) {
+                    pinch.scale *= 1.1;
+                    dotnetRef.invokeMethodAsync("OnWheelZoom", -1);
+                } else if (pinch.scale / ratio > 1.1) {
+                    pinch.scale /= 1.1;
+                    dotnetRef.invokeMethodAsync("OnWheelZoom", 1);
+                }
+            };
+            const onTouchEnd = (e: TouchEvent) => {
+                if (e.touches.length < 2) {
+                    pinch.active = false;
+                }
+            };
+            container.addEventListener("touchstart", onTouchStart, { passive: true });
+            container.addEventListener("touchmove", onTouchMove, { passive: false });
+            container.addEventListener("touchend", onTouchEnd, { passive: true });
+            container.addEventListener("touchcancel", onTouchEnd, { passive: true });
+            (container as any).__bitPdvTouch = { onTouchStart, onTouchMove, onTouchEnd };
 
             // Notify .NET when the container resizes (used for fit-to-width/page).
             if (typeof ResizeObserver !== "undefined") {
@@ -252,11 +387,390 @@
                 container.removeEventListener("wheel", c.__bitPdvWheel);
                 c.__bitPdvWheel = null;
             }
+            if (c.__bitPdvPan) {
+                container.removeEventListener("pointerdown", c.__bitPdvPan.onPointerDown);
+                container.removeEventListener("pointermove", c.__bitPdvPan.onPointerMove);
+                container.removeEventListener("pointerup", c.__bitPdvPan.onPointerUp);
+                container.removeEventListener("pointercancel", c.__bitPdvPan.onPointerUp);
+                c.__bitPdvPan = null;
+            }
+            if (c.__bitPdvTouch) {
+                container.removeEventListener("touchstart", c.__bitPdvTouch.onTouchStart);
+                container.removeEventListener("touchmove", c.__bitPdvTouch.onTouchMove);
+                container.removeEventListener("touchend", c.__bitPdvTouch.onTouchEnd);
+                container.removeEventListener("touchcancel", c.__bitPdvTouch.onTouchEnd);
+                c.__bitPdvTouch = null;
+            }
             c.__bitPdvDotnet = null;
             c.__bitPdvLastPage = null;
             if (c.__bitPdvResize) {
                 c.__bitPdvResize.disconnect();
                 c.__bitPdvResize = null;
+            }
+        }
+
+        // Remembers where the point being zoomed about sits in the content, as a
+        // fraction of the scrollable extent plus its offset inside the viewport. Both
+        // change when the pages are re-sized, which is why the fraction (not the pixel
+        // offset) is what survives the zoom.
+        private static stashZoomAnchor(container: HTMLElement, clientX: number, clientY: number) {
+            const rect = container.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            (container as any).__bitPdvZoomAnchor = {
+                x, y,
+                fx: container.scrollWidth > 0 ? (container.scrollLeft + x) / container.scrollWidth : 0,
+                fy: container.scrollHeight > 0 ? (container.scrollTop + y) / container.scrollHeight : 0,
+            };
+        }
+
+        // Puts the stashed point back under the cursor now that the pages have been
+        // re-sized. A no-op when nothing was stashed, so an ordinary zoom (a toolbar
+        // button, a fit mode) still lands wherever it always did.
+        public static restoreZoomAnchor(container: HTMLElement) {
+            if (!container) {
+                return;
+            }
+            const anchor = (container as any).__bitPdvZoomAnchor;
+            (container as any).__bitPdvZoomAnchor = null;
+            if (!anchor) {
+                return;
+            }
+            container.scrollLeft = anchor.fx * container.scrollWidth - anchor.x;
+            container.scrollTop = anchor.fy * container.scrollHeight - anchor.y;
+        }
+
+        // Scrolls a page to the top of the surface, then a further `offset` CSS pixels
+        // down it - which is how a bookmark or link that points into the MIDDLE of a
+        // long page lands where it means to instead of at the page's top edge.
+        public static scrollToPageOffset(container: HTMLElement, pageNumber: number, offset: number) {
+            if (!container) {
+                return;
+            }
+            const target = container.querySelector(`[data-page='${pageNumber}']`);
+            if (!target) {
+                return;
+            }
+            const cRect = container.getBoundingClientRect();
+            const tRect = target.getBoundingClientRect();
+            container.scrollTo({
+                top: container.scrollTop + (tRect.top - cRect.top) + (offset || 0),
+                left: container.scrollLeft + Math.min(0, tRect.left - cRect.left),
+                behavior: "smooth",
+            });
+            PdfViewer.scheduleRender(container, (container as any).__bitPdvDotnet);
+        }
+
+        // ----- Keyboard shortcuts -----
+        //
+        // Matched here rather than in .NET because only the event carries the target
+        // (so typing in the find or page box is never mistaken for a shortcut) and
+        // only preventDefault can stop the BROWSER's own Ctrl+P / Ctrl+F / Ctrl+S.
+        // Every match is forwarded to .NET as a single command string.
+
+        // Whether the event originates from something the user is typing into, where
+        // a bare letter is text and not a command.
+        private static isTypingTarget(target: EventTarget | null) {
+            const el = target as HTMLElement | null;
+            if (!el || !el.tagName) {
+                return false;
+            }
+            const tag = el.tagName.toLowerCase();
+            return tag === "input" || tag === "textarea" || tag === "select" || el.isContentEditable === true;
+        }
+
+        // Whether the viewer is showing one page (or spread) at a time - the layout in
+        // which the surface does not scroll, so the arrow and space keys have nothing to
+        // scroll and page instead. Presentation mode is that layout by definition.
+        private static isPaged(root: HTMLElement) {
+            return !!root.querySelector(".bit-pdv-pages.bit-pdv-single");
+        }
+
+        private static resolveShortcut(e: KeyboardEvent, root: HTMLElement): { command: string, prevent: boolean } | null {
+            const mod = e.ctrlKey || e.metaKey;
+            const typing = PdfViewer.isTypingTarget(e.target);
+
+            if (mod && e.altKey && (e.key === "p" || e.key === "P")) {
+                return { command: "presentation", prevent: true };
+            }
+            if (mod && !e.altKey) {
+                switch (e.key) {
+                    case "+": case "=": return { command: "zoomIn", prevent: true };
+                    case "-": return { command: "zoomOut", prevent: true };
+                    case "0": return { command: "actualSize", prevent: true };
+                    case "f": case "F": return { command: "find", prevent: true };
+                    case "g": case "G": return { command: e.shiftKey ? "findPrev" : "findNext", prevent: true };
+                    case "p": case "P": return { command: "print", prevent: true };
+                    case "s": case "S": return { command: "download", prevent: true };
+                }
+                return null;
+            }
+
+            if (e.key === "F4") {
+                return { command: "sidebar", prevent: true };
+            }
+            if (e.key === "Escape") {
+                // Escape must reach .NET even from the find box, whose own handler
+                // closes it; the duplicate is harmless (the second call finds nothing
+                // open) and it is what makes Escape work from anywhere else.
+                return { command: "escape", prevent: false };
+            }
+            if (typing || e.altKey) {
+                return null;
+            }
+
+            switch (e.key) {
+                case "n": case "j": case "PageDown": return { command: "next", prevent: e.key !== "PageDown" };
+                case "p": case "k": case "PageUp": return { command: "prev", prevent: e.key !== "PageUp" };
+                case "Home": return { command: "first", prevent: true };
+                case "End": return { command: "last", prevent: true };
+                case "r": return { command: "rotateCw", prevent: true };
+                case "R": return { command: "rotateCcw", prevent: true };
+            }
+
+            // One page at a time: the surface has nothing to scroll, so the keys that
+            // would scroll it turn the page instead (and only then - in a scrolling
+            // layout they must keep scrolling).
+            if (PdfViewer.isPaged(root)) {
+                switch (e.key) {
+                    case "ArrowRight": case "ArrowDown": return { command: "next", prevent: true };
+                    case "ArrowLeft": case "ArrowUp": return { command: "prev", prevent: true };
+                    case " ": case "Spacebar":
+                        return { command: e.shiftKey ? "prev" : "next", prevent: true };
+                }
+            }
+            return null;
+        }
+
+        public static registerKeyboard(root: HTMLElement, dotnetRef: any) {
+            if (!root || !dotnetRef) {
+                return;
+            }
+            PdfViewer.disposeKeyboard(root);
+            const onKeyDown = (e: KeyboardEvent) => {
+                const hit = PdfViewer.resolveShortcut(e, root);
+                if (!hit) {
+                    return;
+                }
+                if (hit.prevent) {
+                    e.preventDefault();
+                }
+                dotnetRef.invokeMethodAsync("OnShortcut", hit.command);
+            };
+            root.addEventListener("keydown", onKeyDown);
+            (root as any).__bitPdvKeys = onKeyDown;
+        }
+
+        public static disposeKeyboard(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            const r = root as any;
+            if (r.__bitPdvKeys) {
+                root.removeEventListener("keydown", r.__bitPdvKeys);
+                r.__bitPdvKeys = null;
+            }
+        }
+
+        // ----- Drag and drop -----
+        //
+        // A pdf dropped on the viewer is handed to the file input the open-file control
+        // already renders, and a synthetic change event lets Blazor read it exactly as
+        // it reads a picked file - no second path across interop for the bytes.
+
+        public static registerDropZone(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            PdfViewer.disposeDropZone(root);
+
+            const isFileDrag = (e: DragEvent) =>
+                !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") !== -1;
+
+            const onDragOver = (e: DragEvent) => {
+                if (!isFileDrag(e)) {
+                    return;
+                }
+                e.preventDefault();
+                if (e.dataTransfer) {
+                    e.dataTransfer.dropEffect = "copy";
+                }
+                root.classList.add("bit-pdv-dropping");
+            };
+            const onDragLeave = (e: DragEvent) => {
+                // Only when the pointer actually left the viewer, not when it crossed
+                // into one of its children (which fires dragleave on the parent too).
+                if (!root.contains(e.relatedTarget as Node)) {
+                    root.classList.remove("bit-pdv-dropping");
+                }
+            };
+            const onDrop = (e: DragEvent) => {
+                if (!isFileDrag(e)) {
+                    return;
+                }
+                e.preventDefault();
+                root.classList.remove("bit-pdv-dropping");
+                const files = e.dataTransfer?.files;
+                const input = root.querySelector("input.bit-pdv-file") as HTMLInputElement | null;
+                if (!files || !files.length || !input) {
+                    return;
+                }
+                const pdf = Array.prototype.find.call(files, (f: File) =>
+                    f.type === "application/pdf" || /\.pdf$/i.test(f.name)) as File | undefined;
+                if (!pdf) {
+                    return;
+                }
+                try {
+                    const carrier = new DataTransfer();
+                    carrier.items.add(pdf);
+                    input.files = carrier.files;
+                    input.dispatchEvent(new Event("change", { bubbles: true }));
+                } catch { /* a browser that forbids assigning .files cannot accept drops */ }
+            };
+
+            root.addEventListener("dragover", onDragOver);
+            root.addEventListener("dragleave", onDragLeave);
+            root.addEventListener("drop", onDrop);
+            (root as any).__bitPdvDrop = { onDragOver, onDragLeave, onDrop };
+        }
+
+        public static disposeDropZone(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            const r = root as any;
+            if (r.__bitPdvDrop) {
+                root.removeEventListener("dragover", r.__bitPdvDrop.onDragOver);
+                root.removeEventListener("dragleave", r.__bitPdvDrop.onDragLeave);
+                root.removeEventListener("drop", r.__bitPdvDrop.onDrop);
+                r.__bitPdvDrop = null;
+            }
+            root.classList.remove("bit-pdv-dropping");
+        }
+
+        // Moves focus to an element, used after .NET opens a control that was not in
+        // the DOM yet (the find box) so the user can type into it straight away.
+        public static focus(element: HTMLElement) {
+            if (element && element.focus) {
+                element.focus();
+            }
+        }
+
+        // The text the reader has selected inside the document surface, or "" when the
+        // selection is empty or lies outside it (a selection elsewhere on the hosting
+        // page is not the document's).
+        public static getSelectedText(container: HTMLElement) {
+            const selection = window.getSelection();
+            if (!container || !selection || selection.rangeCount === 0 || selection.isCollapsed) {
+                return "";
+            }
+            const range = selection.getRangeAt(0);
+            return container.contains(range.commonAncestorContainer) ? selection.toString() : "";
+        }
+
+        // Drops the reader's selection, but only when it is inside the surface: clearing
+        // one made elsewhere on the page would be none of the viewer's business.
+        public static clearSelection(container: HTMLElement) {
+            const selection = window.getSelection();
+            if (!container || !selection || selection.rangeCount === 0) {
+                return;
+            }
+            if (container.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+                selection.removeAllRanges();
+            }
+        }
+
+        // Writes a value straight into an input. Blazor only re-emits a value attribute
+        // that CHANGED, so an entry the component ignored (it moved nothing) would
+        // otherwise stay in the box; going through the DOM puts it right without
+        // re-creating the element, which would take the reader's focus with it.
+        public static setValue(element: HTMLInputElement, value: string) {
+            if (element && element.value !== value) {
+                element.value = value;
+            }
+        }
+
+        // Focuses a modal dialog and keeps Tab inside it. A modal the keyboard can tab
+        // out of is a modal in name only: focus lands behind it, on controls the dialog
+        // is covering. The listener lives on the dialog element, which .NET removes from
+        // the DOM when the dialog closes, so it needs no separate teardown.
+        public static trapFocus(dialog: HTMLElement) {
+            if (!dialog) {
+                return;
+            }
+            // Remember where focus was, so releaseFocus can put it back: a modal that
+            // closes leaving focus on <body> drops a keyboard reader out of the viewer.
+            const opener = document.activeElement as HTMLElement | null;
+            if (opener && opener !== dialog && !dialog.contains(opener)) {
+                PdfViewer._focusReturn.push(opener);
+            } else {
+                PdfViewer._focusReturn.push(null as any);
+            }
+
+            const focusables = () => Array.prototype.filter.call(
+                dialog.querySelectorAll(
+                    "a[href],button:not([disabled]),input:not([disabled]),select:not([disabled])," +
+                    "textarea:not([disabled]),[tabindex]:not([tabindex='-1'])"),
+                (el: HTMLElement) => el.offsetParent !== null || el === document.activeElement) as HTMLElement[];
+
+            // The first control, or the dialog itself - which carries tabindex="-1" so
+            // it can hold focus while the reader has not reached a control yet.
+            const first = focusables()[0];
+            (first || dialog).focus();
+
+            const onKeyDown = (e: KeyboardEvent) => {
+                if (e.key !== "Tab") {
+                    return;
+                }
+                const items = focusables();
+                if (!items.length) {
+                    e.preventDefault();
+                    return;
+                }
+                const head = items[0];
+                const tail = items[items.length - 1];
+                const active = document.activeElement;
+                if (e.shiftKey && (active === head || active === dialog)) {
+                    e.preventDefault();
+                    tail.focus();
+                } else if (!e.shiftKey && active === tail) {
+                    e.preventDefault();
+                    head.focus();
+                }
+            };
+            dialog.addEventListener("keydown", onKeyDown);
+        }
+
+        // The other half of trapFocus: called once the dialog has left the DOM, it
+        // returns focus to the control that opened it.
+        public static releaseFocus() {
+            const opener = PdfViewer._focusReturn.pop();
+            if (opener && opener.isConnected && opener.focus) {
+                opener.focus();
+            }
+        }
+
+        // Follows the roving tabindex of the thumbnail listbox: arrowing changes the
+        // active option, and focus has to move with it or the next key is lost.
+        public static focusThumb(container: HTMLElement, pageNumber: number) {
+            if (!container) {
+                return;
+            }
+            const target = container.querySelector(`[data-thumb='${pageNumber}']`) as HTMLElement | null;
+            if (target && target.focus) {
+                target.focus({ preventScroll: true });
+            }
+        }
+
+        // Moves focus onto a bookmark row by its paint order, which is how the tree's
+        // arrow keys follow the tab stop .NET just moved.
+        public static focusOutlineItem(root: HTMLElement, index: number) {
+            if (!root) {
+                return;
+            }
+            const target = root.querySelector(`[data-bit-pdv-outline='${index}']`) as HTMLElement | null;
+            if (target && target.focus) {
+                target.focus({ preventScroll: false });
             }
         }
 
@@ -419,14 +933,54 @@
             }
         }
 
+        public static exitFullscreen() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+
+        // Reports fullscreen transitions to .NET. The browser can leave fullscreen on
+        // its own (Escape, or the user switching away), and presentation mode has to
+        // hear about it or the two states drift apart.
+        public static registerFullscreenSpy(root: HTMLElement, dotnetRef: any) {
+            if (!root || !dotnetRef) {
+                return;
+            }
+            PdfViewer.disposeFullscreenSpy(root);
+            const onChange = () => dotnetRef.invokeMethodAsync("OnFullscreenChanged", document.fullscreenElement === root);
+            document.addEventListener("fullscreenchange", onChange);
+            (root as any).__bitPdvFsc = onChange;
+        }
+
+        public static disposeFullscreenSpy(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            const r = root as any;
+            if (r.__bitPdvFsc) {
+                document.removeEventListener("fullscreenchange", r.__bitPdvFsc);
+                r.__bitPdvFsc = null;
+            }
+        }
+
         // Prints the rendered pages at their true physical size by cloning each page
         // into a hidden iframe (one sheet per page) and invoking the browser dialog.
-        public static async print(container: HTMLElement) {
+        public static async print(container: HTMLElement, from?: number, to?: number) {
             if (!container) {
                 return;
             }
-            const pages = container.querySelectorAll("[data-page] .bit-pdv-html-page");
-            if (!pages.length) {
+            // A range prints the sheets it names and nothing else; without one every
+            // rendered page goes to the printer, as it always has.
+            const lo = typeof from === "number" && from > 0 ? from : 1;
+            const hi = typeof to === "number" && to > 0 ? to : Number.MAX_SAFE_INTEGER;
+            const pages = Array.prototype.slice.call(
+                container.querySelectorAll("[data-page] .bit-pdv-html-page")) as HTMLElement[];
+            const selected = pages.filter((el) => {
+                const host = el.closest("[data-page]");
+                const n = parseInt(host?.getAttribute("data-page") || "", 10);
+                return !Number.isNaN(n) && n >= lo && n <= hi;
+            });
+            if (!selected.length) {
                 return;
             }
 
@@ -436,10 +990,17 @@
             document.body.appendChild(frame);
 
             const doc = (frame.contentDocument || frame.contentWindow?.document)!;
+            // The sheet size drives the paper the browser picks; without it a landscape
+            // page is laid onto portrait paper and cropped. Taken from the first page in
+            // the range, which is the size a single-format document has throughout.
+            const first = selected[0];
+            const pageW = (parseFloat(first.style.width) || 612) * (96 / 72);
+            const pageH = (parseFloat(first.style.height) || 792) * (96 / 72);
             doc.open();
             doc.write(
                 "<!DOCTYPE html><html><head><meta charset='utf-8'><style>" +
-                "@page{margin:0}html,body{margin:0;padding:0;background:#fff}" +
+                "@page{size:" + pageW.toFixed(2) + "px " + pageH.toFixed(2) + "px;margin:0}" +
+                "html,body{margin:0;padding:0;background:#fff}" +
                 ".bit-pdv-sheet{position:relative;overflow:hidden;page-break-after:always;break-after:page}" +
                 ".bit-pdv-sheet:last-child{page-break-after:auto;break-after:auto}" +
                 "</style></head><body></body></html>");
@@ -453,7 +1014,7 @@
             });
 
             const ptToPx = 96 / 72; // PDF points to CSS pixels for physical-size output
-            for (const inner of Array.prototype.slice.call(pages) as HTMLElement[]) {
+            for (const inner of selected) {
                 const el = inner;
                 const w = parseFloat(el.style.width) || 0;
                 const h = parseFloat(el.style.height) || 0;
@@ -811,22 +1372,105 @@
             return range;
         }
 
-        // Finds every case-insensitive occurrence of `query` across all pages and
-        // registers a highlight. Returns the match count, or -1 if unsupported.
-        public static searchAll(container: HTMLElement, query: string) {
-            PdfViewer.clearSearch(container);
-            if (!container || !query) {
-                return 0;
+        // Folds a string's combining marks away, returning the folded text alongside a
+        // map from each folded index back to the index it came from in the original.
+        // The map is what lets a match found in folded text be highlighted over the
+        // real DOM text. .NET folds identically (NFD, then drop the non-spacing marks),
+        // so the counter and this highlighter agree on what matched.
+        private static fold(text: string): { text: string, map: number[] } {
+            let folded = "";
+            const map: number[] = [];
+            for (let i = 0; i < text.length; i++) {
+                const parts = text[i].normalize("NFD");
+                for (const ch of parts) {
+                    // \p{Mn} is the non-spacing-mark class - the accents themselves.
+                    if (/\p{Mn}/u.test(ch)) {
+                        continue;
+                    }
+                    folded += ch;
+                    map.push(i);
+                }
             }
-            if (!PdfViewer.searchSupported()) {
-                return -1;
+            map.push(text.length); // one past the end, so an end offset always maps
+            return { text: folded, map };
+        }
+
+        // The one form both sides of the search compare over: folded (unless diacritics
+        // are being matched), then every run of whitespace collapsed to a single space,
+        // with a map from each canonical index back to the index it came from in the
+        // DOM text. .NET canonicalizes its extracted page text identically - which is
+        // what stops its '\n'-per-line, space-per-gap heuristics from disagreeing with
+        // the selection layer's positional ones about how many matches a page holds.
+        private static canonical(text: string, matchDiacritics: boolean): { text: string, map: number[] } {
+            const base = matchDiacritics ? null : PdfViewer.fold(text);
+            const src = base ? base.text : text;
+            const at = (i: number) => base ? base.map[i] : i;
+
+            let out = "";
+            const map: number[] = [];
+            let pendingSpace = false;
+            let pendingAt = 0;
+            for (let i = 0; i < src.length; i++) {
+                if (/\s/.test(src[i])) {
+                    if (!pendingSpace) {
+                        pendingSpace = true;
+                        pendingAt = at(i);
+                    }
+                    continue;
+                }
+                if (pendingSpace) {
+                    out += " ";
+                    map.push(pendingAt);
+                    pendingSpace = false;
+                }
+                out += src[i];
+                map.push(at(i));
+            }
+            if (pendingSpace) {
+                out += " ";
+                map.push(pendingAt);
+            }
+            map.push(at(src.length)); // one past the end, so an end offset always maps
+            return { text: out, map };
+        }
+
+        // Whether the character at `index` of `text` can be part of a word, used to
+        // reject a substring hit that sits inside a longer word in whole-word mode.
+        private static isWordChar(text: string, index: number) {
+            if (index < 0 || index >= text.length) {
+                return false;
+            }
+            // Unicode-aware: letters, digits, marks and the underscore count as word
+            // characters, so accented and non-Latin scripts behave like ASCII does.
+            return /[\p{L}\p{N}\p{M}_]/u.test(text[index]);
+        }
+
+        // Paints every occurrence of `query` on the pages currently in the DOM and
+        // marks the one at (currentPage, currentOrdinal) - the match .NET counted its
+        // way to - optionally scrolling it into view. Counting happens in .NET over
+        // the whole document; this only decorates what is rendered, so an unrendered
+        // page costs nothing here.
+        // `matchCase` compares case-sensitively; `wholeWord` rejects hits whose
+        // neighbouring characters are word characters.
+        public static highlight(container: HTMLElement, query: string, matchCase: boolean, wholeWord: boolean,
+            matchDiacritics: boolean, highlightAll: boolean,
+            currentPage: number, currentOrdinal: number, scrollToCurrent: boolean) {
+            PdfViewer.clearSearch(container);
+            if (!container || !query || !PdfViewer.searchSupported()) {
+                return;
             }
             PdfViewer.ensureSearchStyles();
 
-            const needle = query.toLowerCase();
+            let needle = PdfViewer.canonical(query, matchDiacritics).text;
+            needle = matchCase ? needle : needle.toLowerCase();
+            if (!needle) {
+                return;
+            }
             const ranges: Range[] = [];
+            let current: Range | null = null;
 
             container.querySelectorAll("[data-page]").forEach((page) => {
+                const pageNumber = parseInt(page.getAttribute("data-page") || "", 10);
                 // Search only the coalesced selection layer ([data-bit-pdv-sel]) - it
                 // holds the real Unicode in reading order. The painted layer beneath is
                 // presentational (real glyphs or Private-Use codepoints) and would
@@ -842,39 +1486,57 @@
                 let text = "";
                 let node: Node | null;
                 while ((node = walker.nextNode())) {
+                    // Each selection run is its own visual line, separated in the DOM by
+                    // a <br> the walker never sees. .NET's extracted text marks the same
+                    // break with '\n', so put one here too - the canonical form collapses
+                    // both to the single space that keeps the two counts in step.
+                    if (text.length) {
+                        text += "\n";
+                    }
                     nodes.push({ node, start: text.length });
                     text += node.nodeValue;
                 }
-                const haystack = text.toLowerCase();
+                // Matching runs over the canonical text, and the map takes each hit's
+                // offsets back to the real text the ranges address.
+                const canonical = PdfViewer.canonical(text, matchDiacritics);
+                const haystack = matchCase ? canonical.text : canonical.text.toLowerCase();
+                const toSource = (pos: number) => canonical.map[Math.min(pos, canonical.map.length - 1)];
                 let idx = haystack.indexOf(needle);
+                let ordinal = 0;
                 while (idx !== -1) {
-                    const range = PdfViewer.buildRange(nodes, idx, idx + needle.length);
-                    if (range) {
-                        ranges.push(range);
+                    const end = idx + needle.length;
+                    const bounded = !wholeWord
+                        || (!PdfViewer.isWordChar(haystack, idx - 1) && !PdfViewer.isWordChar(haystack, end));
+                    if (bounded) {
+                        const range = PdfViewer.buildRange(nodes, toSource(idx), toSource(end));
+                        if (range) {
+                            ranges.push(range);
+                            if (pageNumber === currentPage && ordinal === currentOrdinal) {
+                                current = range;
+                            }
+                        }
+                        ordinal++;
                     }
-                    idx = haystack.indexOf(needle, idx + needle.length);
+                    // Advance by one when a whole-word hit was rejected, so an
+                    // overlapping later occurrence is still found.
+                    idx = haystack.indexOf(needle, bounded ? end : idx + 1);
                 }
             });
 
             (container as any).__bitPdvRanges = ranges;
-            if (ranges.length) {
+            // With "highlight all" off only the match being walked to is painted, so the
+            // page reads as it does without a search running.
+            if (ranges.length && highlightAll) {
                 (CSS as any).highlights.set("bit-pdv-search", new (globalThis as any).Highlight(...ranges));
             }
-            return ranges.length;
-        }
-
-        // Marks the match at `index` as current and scrolls it into view.
-        public static gotoMatch(container: HTMLElement, index: number) {
-            const ranges = container && (container as any).__bitPdvRanges;
-            if (!ranges || !ranges.length || !PdfViewer.searchSupported()) {
-                return;
-            }
-            const i = ((index % ranges.length) + ranges.length) % ranges.length;
-            const range = ranges[i] as Range;
-            (CSS as any).highlights.set("bit-pdv-search-current", new (globalThis as any).Highlight(range));
-            const el = range.startContainer.parentElement;
-            if (el) {
-                PdfViewer.scrollWithin(container, el, "center", "smooth");
+            if (current) {
+                (CSS as any).highlights.set("bit-pdv-search-current", new (globalThis as any).Highlight(current));
+                if (scrollToCurrent) {
+                    const el = (current as Range).startContainer.parentElement;
+                    if (el) {
+                        PdfViewer.scrollWithin(container, el, "center", "smooth");
+                    }
+                }
             }
         }
 

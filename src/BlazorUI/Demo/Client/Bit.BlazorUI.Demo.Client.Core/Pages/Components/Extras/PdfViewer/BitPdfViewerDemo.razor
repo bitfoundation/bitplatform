@@ -1,13 +1,13 @@
-@page "/components/pdfviewer"
+﻿@page "/components/pdfviewer"
 @page "/components/pdfreader"
 
 <PageOutlet Url="components/pdfviewer"
             Title="PdfViewer"
-            Description="BitPdfViewer is a native pure-C# pdf viewer component for Blazor with no js library dependency." />
+            Description="BitPdfViewer is a native pure-C# pdf viewer component for Blazor with a full reading toolbar and no js library dependency." />
 
 <DemoPage Name="PdfViewer"
           SecondaryNames="@(["PdfReader, Pdf"])"
-          Description="BitPdfViewer is a native pure-C# pdf viewer component for Blazor. It parses pdf files and renders pages as plain HTML/CSS DOM with no browser pdf plugin and no js library dependency, offering page navigation, zoom, rotation, search, thumbnails, bookmarks, download, print and fullscreen out of the box."
+          Description="BitPdfViewer is a native pure-C# pdf viewer component for Blazor: it parses pdf files and paints their pages as plain HTML/CSS DOM (or onto a canvas), with no browser pdf plugin and no js library dependency. A full reading toolbar comes with it - navigation, zoom and fit modes, page layouts and spreads, rotation, find-in-document, side panels for thumbnails, bookmarks, attachments and layers, printing, download, presentation and fullscreen - and everything it does is on the public API too, alongside read access to the parsed document itself."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -26,82 +26,510 @@
             nuget package, as described in the Optional steps of the
             <BitLink Href="/getting-started">Getting started</BitLink> page.
         </BitText>
+        <br />
+        <BitText>
+            Parsing and rendering happen entirely in .NET, so a document never leaves the app and no server round-trip
+            is needed. On the single-threaded WebAssembly runtime that work shares the UI thread, which is why every
+            example below other than the first one loads its document on demand.
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <div>The document can be provided from a URL (fetched via the registered HttpClient) or from in-memory bytes.</div>
+            <div>
+                A document is described by a <BitTag Text="BitPdfSource" Color="BitColor.Info" />: either
+                <BitTag Text="FromUrl" Color="BitColor.SecondaryBackground" /> (fetched through the registered
+                <code>HttpClient</code>) or <BitTag Text="FromBytes" Color="BitColor.SecondaryBackground" /> for a buffer
+                you already have - an upload, a database blob, an embedded resource - with
+                <BitTag Text="FromBase64" Color="BitColor.SecondaryBackground" /> and
+                <BitTag Text="FromStreamAsync" Color="BitColor.SecondaryBackground" /> for the other two shapes a
+                document arrives in. Everything else is on by default: the toolbar, lazy per-page rendering as you
+                scroll, selectable text, and links that jump to the exact spot in the document they point at.
+                <BitTag Text="AllowDropFile" Color="BitColor.Info" /> additionally lets a reader drop a pdf straight
+                onto the viewer.
+            </div>
             <br />
-            <div>You can also select a pdf file from your computer to view it here:</div>
+            <div>You can also drop a pdf onto the viewer below, or select one from your computer:</div>
             <InputFile OnChange="OnBasicFileChange" accept=".pdf,application/pdf" />
             <br /><br />
-            <BitPdfViewer Source="basicSource" />
+            <BitPdfViewer Source="basicSource" AllowDropFile />
         </DemoExample>
 
-        <DemoExample Title="Toolbar & Height" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div>The toolbar can be hidden and the height of the viewer customized.</div>
-            <br />
-            <BitButton IsEnabled="plainSource is null" OnClick="() => plainSource = CreateSampleSource()">Load document</BitButton>
-            <br /><br />
-            <BitPdfViewer Source="plainSource" ShowToolbar="false" Height="600px" />
-        </DemoExample>
-
-        <DemoExample Title="Canvas render mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Dimensions" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                In <BitTag Text="Canvas" Color="BitColor.Info" /> mode, the page content is painted onto a per-page canvas by replaying
-                a display list produced by the C# engine (far fewer DOM nodes on graphics-heavy documents), while selection,
-                search and links still work through the DOM text layer.
+                Without a <BitTag Text="Height" Color="BitColor.Info" /> the viewer is responsive: it is capped at 780px
+                and shrinks to fit the viewport on small screens. Set the parameter to any CSS length to pin it instead.
+                <BitTag Text="Width" Color="BitColor.Info" /> does the same for the horizontal axis; left unset the
+                viewer fills whatever width its host gives it. Both are plain CSS lengths, so a percentage, a
+                <code>vh</code> or a <code>calc()</code> all work, and a fit mode re-fits itself whenever the resulting
+                box changes size.
             </div>
+            <br />
+            <BitButton IsEnabled="heightSource is null" OnClick="() => heightSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="heightSource" Height="400px" Width="min(100%, 40rem)" />
+        </DemoExample>
+
+        <DemoExample Title="Toolbar" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <BitTag Text="ShowToolbar" Color="BitColor.Info" /> hides the toolbar entirely - useful when the hosting
+                page drives the viewer through its public API. To keep the toolbar but trim it,
+                <BitTag Text="ToolbarItems" Color="BitColor.Info" /> is a flags enum: combine only the groups you want
+                and the rest are not rendered at all.
+                <BitTag Text="OpenFile" Color="BitColor.SecondaryBackground" /> is one of those groups - it puts a file
+                picker in the toolbar so a reader can open a pdf from their own machine without the page providing an
+                upload of its own. The viewer opens the picked file itself unless
+                <BitTag Text="OnFileOpened" Color="BitColor.Info" /> is handled, in which case the source is handed to
+                you to drive <BitTag Text="Source" Color="BitColor.Info" /> with;
+                <BitTag Text="MaxOpenFileSize" Color="BitColor.Info" /> caps what it will read. The page box in the
+                navigation group takes the document's own page label ("iv", "A-1") as readily as a page number, and
+                shows the plain number beside it whenever the two differ.
+            </div>
+            <br />
+            <BitButton IsEnabled="toolbarSource is null" OnClick="() => toolbarSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="toolbarSource" Height="400px"
+                          ToolbarItems="BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom | BitPdfToolbarItems.OpenFile | BitPdfToolbarItems.Fullscreen" />
+        </DemoExample>
+
+        <DemoExample Title="Sidebars" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Four side panels ship with the viewer: page thumbnails, the document's own bookmarks (its outline), its
+                embedded files, and its optional-content layers. Thumbnails render lazily on their own scroll, so opening
+                the panel on a 500-page document only builds the handful on screen; the bookmarks tree folds and unfolds
+                and is navigable by keyboard; the attachments panel saves an embedded file when its row is activated; the
+                layers panel switches a group of content on or off and repaints the pages, the way a CAD or map document
+                expects.
+                <BitTag Text="DefaultSidebar" Color="BitColor.Info" /> picks the one that is open when a document loads,
+                and the toolbar toggles decide from there. A toggle whose panel has nothing to show - no outline, no
+                attachments - stays disabled.
+            </div>
+            <br />
+            <BitButton IsEnabled="sidebarSource is null" OnClick="() => sidebarSource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="sidebarSource" Height="450px" DefaultSidebar="BitPdfSidebar.Thumbnails" />
+        </DemoExample>
+
+        <DemoExample Title="Zoom" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <BitTag Text="InitialZoomMode" Color="BitColor.Info" /> sets the fit the viewer opens with, and the zoom
+                dropdown offers the same five modes afterwards:
+                <BitTag Text="Automatic" Color="BitColor.SecondaryBackground" /> (fit the width, but stop magnifying at
+                125% so a narrow page stays readable rather than filling a wide screen),
+                <BitTag Text="FitWidth" Color="BitColor.SecondaryBackground" />,
+                <BitTag Text="FitPage" Color="BitColor.SecondaryBackground" />,
+                <BitTag Text="FitHeight" Color="BitColor.SecondaryBackground" /> and
+                <BitTag Text="ActualSize" Color="BitColor.SecondaryBackground" /> - plus the percentage presets, which
+                <BitTag Text="ZoomPresets" Color="BitColor.Info" /> replaces with a list of your own. A fit mode re-fits
+                itself when the container resizes and when the reader reaches a page of a different size.
+                <BitTag Text="MinZoom" Color="BitColor.Info" />, <BitTag Text="MaxZoom" Color="BitColor.Info" /> and
+                <BitTag Text="ZoomStep" Color="BitColor.Info" /> bound and pace every zoom, whether it comes from the
+                buttons, Ctrl+wheel, a pinch or the public API - and a wheel or pinch zoom keeps the point under the
+                cursor where it is instead of jumping back to the top of the page.
+            </div>
+            <br />
+            <BitButton IsEnabled="zoomSource is null" OnClick="() => zoomSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="zoomSource" Height="450px"
+                          InitialZoomMode="BitPdfZoomMode.Automatic"
+                          ZoomPresets="zoomPresets"
+                          MinZoom="0.5" MaxZoom="3" ZoomStep="1.5" />
+        </DemoExample>
+
+        <DemoExample Title="Page layout" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <BitTag Text="ScrollMode" Color="BitColor.Info" /> lays the pages out the four ways a desktop viewer
+                does: stacked vertically (the default), side by side on one horizontally scrolling row, wrapped into rows
+                that fill the width, or one page at a time.
+                <BitTag Text="SpreadMode" Color="BitColor.Info" /> pairs them into spreads the way a printed book falls
+                open - <BitTag Text="Odd" Color="BitColor.SecondaryBackground" /> pairs 1-2, 3-4, while
+                <BitTag Text="Even" Color="BitColor.SecondaryBackground" /> leaves page 1 alone as a cover.
+                <BitTag Text="CursorTool" Color="BitColor.Info" /> switches dragging between selecting text and panning
+                the document. All three are toolbar controls too, and a choice made there survives the host re-rendering.
+                Presentation mode (the toolbar's screen button, <code>Ctrl+Alt+P</code>, or
+                <BitTag Text="TogglePresentationMode" Color="BitColor.Info" />) combines them: fullscreen, one page at a
+                time, scaled to fit - and leaving it, however it happens, puts the previous layout back. Whenever one
+                page is shown at a time the surface has nothing to scroll, so the arrow keys and
+                <kbd>Space</kbd> turn the page instead, and while presenting a click anywhere on the slide advances
+                (<kbd>Shift</kbd>+click goes back).
+            </div>
+            <br />
+            <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                <BitDropdown @bind-Value="scrollMode" Label="ScrollMode" TItem="BitDropdownItem<BitPdfScrollMode>" TValue="BitPdfScrollMode" Style="min-width:12rem">
+                    <BitDropdownOption Text="Vertical" Value="BitPdfScrollMode.Vertical" />
+                    <BitDropdownOption Text="Horizontal" Value="BitPdfScrollMode.Horizontal" />
+                    <BitDropdownOption Text="Wrapped" Value="BitPdfScrollMode.Wrapped" />
+                    <BitDropdownOption Text="Page" Value="BitPdfScrollMode.Page" />
+                </BitDropdown>
+                <BitDropdown @bind-Value="spreadMode" Label="SpreadMode" TItem="BitDropdownItem<BitPdfSpreadMode>" TValue="BitPdfSpreadMode" Style="min-width:12rem">
+                    <BitDropdownOption Text="None" Value="BitPdfSpreadMode.None" />
+                    <BitDropdownOption Text="Odd" Value="BitPdfSpreadMode.Odd" />
+                    <BitDropdownOption Text="Even" Value="BitPdfSpreadMode.Even" />
+                </BitDropdown>
+                <BitToggle @bind-Value="panTool" Label="Pan tool" />
+            </div>
+            <br />
+            <BitButton IsEnabled="layoutSource is null" OnClick="() => layoutSource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="layoutSource" Height="500px"
+                          ScrollMode="scrollMode"
+                          SpreadMode="spreadMode"
+                          CursorTool="@(panTool ? BitPdfCursorTool.Pan : BitPdfCursorTool.Select)" />
+        </DemoExample>
+
+        <DemoExample Title="Find in document" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                Matches are counted in C# over a per-page text index, so the total covers the whole document without
+                rendering any of it - stepping to a match is what brings its page in, one page at a time. The hits
+                themselves are painted with the CSS Custom Highlight API, which never touches the page markup. Four
+                options narrow or widen the query: <BitTag Text="Aa" Color="BitColor.SecondaryBackground" /> matches
+                case, <BitTag Text="ab" Color="BitColor.SecondaryBackground" /> matches whole words,
+                <BitTag Text="á" Color="BitColor.SecondaryBackground" /> tells an accented letter apart from its bare
+                one (off by default, so typing <code>resume</code> finds <code>résumé</code>), and the last one paints
+                every match rather than only the one being walked to. A query that matches nothing says so rather than
+                showing a zero counter. Typing searches as you pause; <code>Enter</code> and <code>Shift+Enter</code>
+                step through the results, and <BitTag Text="Search" Color="BitColor.Info" />,
+                <BitTag Text="SetSearchOptions" Color="BitColor.Info" />,
+                <BitTag Text="FindNext" Color="BitColor.Info" /> and
+                <BitTag Text="ClearSearch" Color="BitColor.Info" /> do the same from code.
+            </div>
+            <br />
+            <BitButton IsEnabled="searchSource is null" OnClick="() => searchSource = CreateArticleSource()">Load document</BitButton>
+            <BitButton IsEnabled="searchSource is not null" OnClick="() => searchViewerRef.Search(searchTerm)">Search from code</BitButton>
+            <BitButton IsEnabled="searchSource is not null" OnClick="() => searchViewerRef.SetSearchOptions(matchCase: true, wholeWord: true)">Case + whole word</BitButton>
+            <br /><br />
+            <BitTextField @bind-Value="searchTerm" Label="Term" Style="max-width:16rem" />
+            <br />
+            <BitPdfViewer @ref="searchViewerRef" Source="searchSource" Height="450px" />
+        </DemoExample>
+
+        <DemoExample Title="Keyboard shortcuts" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                While focus is inside the viewer it handles the shortcuts readers already know from desktop pdf viewers.
+                They are matched in the browser, so <code>Ctrl+F</code>, <code>Ctrl+P</code> and <code>Ctrl+S</code> open
+                the viewer's own find box, print pass and download instead of the browser's, and a bare letter typed into
+                the find or page box is never mistaken for a command. Set
+                <BitTag Text="EnableKeyboardShortcuts" Color="BitColor.Info" /> to <code>false</code> to hand every key
+                back to the page.
+            </div>
+            <br />
+            <div class="pdf-shortcuts">
+                <div><kbd>n</kbd> <kbd>j</kbd> <kbd>PageDown</kbd> next page</div>
+                <div><kbd>p</kbd> <kbd>k</kbd> <kbd>PageUp</kbd> previous page</div>
+                <div><kbd>&#8594;</kbd> <kbd>&#8595;</kbd> <kbd>Space</kbd> next page, <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>Shift</kbd>+<kbd>Space</kbd> previous - while one page is shown at a time</div>
+                <div><kbd>Home</kbd> <kbd>End</kbd> first / last page</div>
+                <div><kbd>Ctrl</kbd>+<kbd>+</kbd> <kbd>Ctrl</kbd>+<kbd>-</kbd> <kbd>Ctrl</kbd>+<kbd>0</kbd> zoom in / out / 100%</div>
+                <div><kbd>r</kbd> <kbd>Shift</kbd>+<kbd>r</kbd> rotate clockwise / counter-clockwise</div>
+                <div><kbd>Ctrl</kbd>+<kbd>F</kbd> <kbd>Ctrl</kbd>+<kbd>G</kbd> <kbd>Shift</kbd>+<kbd>Ctrl</kbd>+<kbd>G</kbd> find / next / previous</div>
+                <div><kbd>Ctrl</kbd>+<kbd>P</kbd> <kbd>Ctrl</kbd>+<kbd>S</kbd> print / download</div>
+                <div><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd> presentation mode</div>
+                <div><kbd>F4</kbd> toggle the sidebar, <kbd>Esc</kbd> close the find box, the properties dialog or presentation mode</div>
+            </div>
+            <br />
+            <BitButton IsEnabled="keyboardSource is null" OnClick="() => keyboardSource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="keyboardSource" Height="450px" />
+        </DemoExample>
+
+        <DemoExample Title="Render mode" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <BitTag Text="Html" Color="BitColor.Info" /> (the default) lays every page out as positioned DOM: it is
+                fully prerenderable, stays crisp at any zoom and needs no JavaScript to paint.
+                <BitTag Text="Canvas" Color="BitColor.Info" /> instead replays a display list produced by the same C#
+                engine onto a per-page <code>&lt;canvas&gt;</code> - far fewer DOM nodes on graphics-heavy documents,
+                re-rasterized when the zoom settles - while selection, find and links keep working through the DOM text
+                layer above it.
+            </div>
+            <br />
+            <BitChoiceGroup @bind-Value="renderMode" Horizontal Label="RenderMode" TItem="BitChoiceGroupOption<BitPdfRenderMode>" TValue="BitPdfRenderMode">
+                <BitChoiceGroupOption Text="Html" Value="BitPdfRenderMode.Html" />
+                <BitChoiceGroupOption Text="Canvas" Value="BitPdfRenderMode.Canvas" />
+            </BitChoiceGroup>
             <br />
             <BitButton IsEnabled="canvasSource is null" OnClick="() => canvasSource = CreateSampleSource()">Load document</BitButton>
             <br /><br />
             <div>You can also select a pdf file from your computer to view it here:</div>
             <InputFile OnChange="OnCanvasFileChange" accept=".pdf,application/pdf" />
             <br /><br />
-            <BitPdfViewer Source="canvasSource" RenderMode="BitPdfRenderMode.Canvas" />
+            <BitPdfViewer Source="canvasSource" Height="450px" RenderMode="renderMode" />
         </DemoExample>
 
-        <DemoExample Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div>The viewer reports document loading, page changes, warnings and errors.</div>
+        <DemoExample Title="Text coalescing" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                Some producers emit one show-text operator per glyph. <BitTag Text="Exact" Color="BitColor.Info" /> (the
+                default) keeps each run in its own positioned span, so every glyph lands where the pdf says it does.
+                <BitTag Text="Compact" Color="BitColor.Info" /> merges same-line, same-style runs into one span per
+                visual line - dramatically fewer DOM nodes on those documents, at the cost of a small intra-line drift
+                where explicit kerning between runs is approximated. Rotated text is never coalesced.
+            </div>
+            <br />
+            <BitChoiceGroup @bind-Value="textCoalescing" Horizontal Label="TextCoalescing" TItem="BitChoiceGroupOption<BitPdfTextCoalescing>" TValue="BitPdfTextCoalescing">
+                <BitChoiceGroupOption Text="Exact" Value="BitPdfTextCoalescing.Exact" />
+                <BitChoiceGroupOption Text="Compact" Value="BitPdfTextCoalescing.Compact" />
+            </BitChoiceGroup>
+            <br />
+            <BitButton IsEnabled="coalescingSource is null" OnClick="() => coalescingSource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="coalescingSource" Height="450px" TextCoalescing="textCoalescing" />
+        </DemoExample>
+
+        <DemoExample Title="Document info" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                The toolbar's info button opens a properties dialog with the file name and size, the
+                <code>/Info</code> fields, the pdf version and the current page size. The same data - and more - is on
+                the component reference: <BitTag Text="Metadata" Color="BitColor.Info" />,
+                <BitTag Text="Permissions" Color="BitColor.Info" />,
+                <BitTag Text="PageLabels" Color="BitColor.Info" />,
+                <BitTag Text="FormFields" Color="BitColor.Info" />,
+                <BitTag Text="StructureTree" Color="BitColor.Info" /> and the whole parsed
+                <BitTag Text="Document" Color="BitColor.Info" />, so an app can index, audit or reflow a file without
+                parsing it a second time.
+            </div>
+            <br />
+            <BitButton IsEnabled="infoSource is null" OnClick="() => infoSource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer @ref="infoViewerRef" Source="infoSource" Height="400px" OnDocumentLoaded="StateHasChanged" />
+            <br />
+            @if (infoViewerRef?.Document is not null)
+            {
+                <div class="pdf-info">
+                <div>Title: @(infoViewerRef.Metadata?.Title ?? "-")</div>
+                <div>Producer: @(infoViewerRef.Metadata?.Producer ?? "-")</div>
+                <div>Pdf version: @(infoViewerRef.PdfVersion ?? "-")</div>
+                <div>Encrypted: @infoViewerRef.IsEncrypted</div>
+                <div>Can print: @infoViewerRef.Permissions.CanPrint, can copy: @infoViewerRef.Permissions.CanCopy</div>
+                <div>Form fields: @infoViewerRef.FormFields.Count</div>
+                <div>File size: @infoViewerRef.FileSize bytes</div>
+                </div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Encrypted documents" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                An encrypted document opens with a password the viewer asks for in a dialog of its own, retrying as long
+                as answers keep arriving and giving up when the reader cancels. A known password can be carried on the
+                source instead with <BitTag Text="WithPassword" Color="BitColor.Info" />, and
+                <BitTag Text="OnPasswordRequested" Color="BitColor.Info" /> replaces the built-in dialog with your own
+                UI. Set <BitTag Text="ShowPasswordPrompt" Color="BitColor.Info" /> to <code>false</code> to skip the
+                asking entirely and let the failure surface through <BitTag Text="OnError" Color="BitColor.Info" />.
+                Once open, <BitTag Text="Permissions" Color="BitColor.Info" /> reports what the document's owner allows,
+                and <BitTag Text="RespectPermissions" Color="BitColor.Info" /> makes the viewer act on it: a document
+                that forbids printing or copying gets those toolbar controls disabled, its text stops being selectable,
+                and the matching methods refuse. It is off by default, as in every browser pdf viewer - the flags are
+                advisory, not a security boundary.
+            </div>
+            <br />
+            <div>Select an encrypted pdf file from your computer to try it:</div>
+            <InputFile OnChange="OnPasswordFileChange" accept=".pdf,application/pdf" />
+            <br /><br />
+            <BitPdfViewer Source="passwordSource" Height="400px" RespectPermissions
+                          OnError='e => passwordError = e' />
+            @if (passwordError is not null)
+            {
+                <div>Error: @passwordError</div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                The viewer reports every state change a host might want to mirror: the document loading, the focused
+                page, the zoom factor, the rotation and the open side panel - plus
+                <BitTag Text="OnPageRendered" Color="BitColor.Info" /> as each page is actually built (lazily, as the
+                reader reaches it), <BitTag Text="OnProgress" Color="BitColor.Info" /> while a URL source downloads
+                (when the server declares a length), <BitTag Text="OnWarnings" Color="BitColor.Info" /> for the
+                non-fatal diagnostics of a damaged file (a rebuilt cross-reference table, say) - also readable
+                afterwards from <BitTag Text="Warnings" Color="BitColor.Info" /> - and
+                <BitTag Text="OnError" Color="BitColor.Info" /> when a load or a page render fails.
+            </div>
             <br />
             <BitButton IsEnabled="eventsSource is null" OnClick="() => eventsSource = CreateSampleSource()">Load document</BitButton>
             <br /><br />
-            <BitPdfViewer Source="eventsSource"
+            <BitPdfViewer Source="eventsSource" Height="400px"
                           OnDocumentLoaded='() => eventsLog.Add("Document loaded")'
                           OnPageChanged='p => eventsLog.Add($"Page changed: {p}")'
+                          OnPageRendered='p => eventsLog.Add($"Page rendered: {p}")'
+                          OnZoomChanged='z => eventsLog.Add($"Zoom changed: {z:P0}")'
+                          OnRotationChanged='r => eventsLog.Add($"Rotation changed: {r}deg")'
+                          OnSidebarChanged='s => eventsLog.Add($"Sidebar changed: {s}")'
+                          OnWarnings='w => eventsLog.Add($"Warnings: {w.Count}")'
+                          OnProgress='p => eventsLog.Add($"Downloading: {p:P0}")'
                           OnError='e => eventsLog.Add($"Error: {e}")' />
             <br />
             <div>Events:</div>
             <div style="max-height:8rem;overflow:auto">
-                @foreach (var log in Enumerable.Reverse(eventsLog).Take(5))
+                @foreach (var log in Enumerable.Reverse(eventsLog).Take(8))
                 {
                     <div>@log</div>
                 }
             </div>
         </DemoExample>
 
-        <DemoExample Title="Public API" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-            <div>The viewer can be driven from outside using its public members (e.g. with a hidden toolbar).</div>
+        <DemoExample Title="Public API" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                Every toolbar action is also a method, so the viewer can be driven from your own chrome with the toolbar
+                hidden - and a few things only the API offers:
+                <BitTag Text="OpenAsync" Color="BitColor.Info" /> swaps the document without going through the
+                <BitTag Text="Source" Color="BitColor.Info" /> parameter,
+                <BitTag Text="GoToDestination" Color="BitColor.Info" /> and
+                <BitTag Text="GoToNamedDestination" Color="BitColor.Info" /> land on the exact spot a bookmark or a
+                named anchor points at rather than the top of its page, and
+                <BitTag Text="ExtractText" Color="BitColor.Info" /> /
+                <BitTag Text="RenderPageHtml" Color="BitColor.Info" /> hand you the document's text or a page's markup
+                for indexing and export, while <BitTag Text="GetSelectedText" Color="BitColor.Info" /> and
+                <BitTag Text="ClearSelection" Color="BitColor.Info" /> read and drop what the reader has highlighted -
+                what a "quote this" or "look this up" action is built on. <BitTag Text="BackgroundRendering" Color="BitColor.Info" /> additionally moves
+                parsing and page building off the UI thread where the runtime has a spare one (Blazor Server, or a
+                WebAssembly app built with <code>WasmEnableThreads</code>); on the default single-threaded WebAssembly
+                runtime it is a safe no-op.
+            </div>
             <br />
             <BitButton IsEnabled="publicApiSource is null" OnClick="() => publicApiSource = CreateArticleSource()">Load document</BitButton>
             <br /><br />
             <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
-                <BitButton OnClick="() => pdfViewerRef.GoToPage(1)">First</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.FirstPage()">First</BitButton>
                 <BitButton OnClick="() => pdfViewerRef.PrevPage()">Prev</BitButton>
                 <BitTag Variant="BitVariant.Outline" Text="@($"{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}")" Color="BitColor.Info" />
                 <BitButton OnClick="() => pdfViewerRef.NextPage()">Next</BitButton>
-                <BitButton OnClick="() => pdfViewerRef.GoToPage(pdfViewerRef.PageCount)">Last</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.LastPage()">Last</BitButton>
                 <BitButton OnClick="() => pdfViewerRef.ZoomOut()">Zoom -</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.SetZoom(1)">100%</BitButton>
                 <BitButton OnClick="() => pdfViewerRef.ZoomIn()">Zoom +</BitButton>
-                <BitButton OnClick="() => pdfViewerRef.RotateClockwise()">Rotate</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.SetZoomMode(BitPdfZoomMode.FitPage)">Fit page</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.RotateCounterClockwise()">Rotate ccw</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.RotateClockwise()">Rotate cw</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.ShowSidebar(BitPdfSidebar.Thumbnails)">Thumbnails</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.GoToDestination(FirstBookmarkDestination())">First bookmark</BitButton>
+                <BitButton OnClick="ShowSelectedText">Selected text</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.Download()">Download</BitButton>
                 <BitButton OnClick="() => pdfViewerRef.Print()">Print</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.TogglePresentationMode()">Present</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.ToggleFullscreen()">Fullscreen</BitButton>
             </div>
             <br />
-            @* RenderMode="BitPdfRenderMode.Canvas" *@
-            <BitPdfViewer @ref="pdfViewerRef"  BackgroundRendering
+            <BitPdfViewer @ref="pdfViewerRef" BackgroundRendering
                           Source="publicApiSource"
+                          Height="400px"
                           ShowToolbar="false"
                           OnDocumentLoaded="StateHasChanged"
                           OnPageChanged="_ => StateHasChanged()" />
+            @if (selectedText is not null)
+            {
+                <div>Selected: @(selectedText.Length == 0 ? "(nothing)" : selectedText)</div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                <BitTag Text="CurrentPage" Color="BitColor.Info" />,
+                <BitTag Text="Zoom" Color="BitColor.Info" /> and
+                <BitTag Text="Rotation" Color="BitColor.Info" /> are two-way bindable: read them to follow the reader,
+                assign them to drive the viewer. Bound one way - a value without its <code>Changed</code> callback - the
+                value becomes the host's to control and the viewer stops moving it on its own, reporting what the reader
+                did through <BitTag Text="OnPageChanged" Color="BitColor.Info" /> and friends instead.
+            </div>
+            <br />
+            <BitButton IsEnabled="bindingSource is null" OnClick="() => bindingSource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end">
+                <BitNumberField @bind-Value="boundPage" Label="CurrentPage" Min="1" Style="max-width:9rem" />
+                <BitNumberField @bind-Value="boundZoom" Label="Zoom" Step="0.25" Min="0.1" Max="8" Style="max-width:9rem" />
+                <BitNumberField @bind-Value="boundRotation" Label="Rotation" Step="90" Style="max-width:9rem" />
+            </div>
+            <br />
+            <BitPdfViewer Source="bindingSource" Height="400px"
+                          @bind-CurrentPage="boundPage"
+                          @bind-Zoom="boundZoom"
+                          @bind-Rotation="boundRotation" />
+        </DemoExample>
+
+        <DemoExample Title="Localization" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                Every string the viewer renders - button labels, aria labels, the zoom dropdown, the find box, the
+                status messages and the properties dialog - comes from a
+                <BitTag Text="BitPdfViewerTexts" Color="BitColor.Info" /> instance. Assign
+                <BitTag Text="Texts" Color="BitColor.Info" /> with only the properties you want to replace; the rest keep
+                their English defaults.
+            </div>
+            <br />
+            <BitButton IsEnabled="localizedSource is null" OnClick="() => localizedSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Dir="BitDir.Rtl" Source="localizedSource" Height="400px" Texts="persianTexts" />
+        </DemoExample>
+
+        <DemoExample Title="Printing" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                Printing renders every page in range first - lazily-rendered pages that were never scrolled to included,
+                with a progress bar while it catches up - then clones them into a hidden frame, one sheet per page, at
+                their true physical size. The sheet declares the page's own dimensions, so a landscape document reaches
+                the printer as landscape instead of being cropped onto portrait paper, and canvas-mode pages are
+                re-rasterized at 300 dpi rather than upscaling the screen bitmap.
+                <BitTag Text="Print" Color="BitColor.Info" /> takes the whole document,
+                <BitTag Text="PrintCurrentPage" Color="BitColor.Info" /> just the page in front of the reader, and
+                <BitTag Text="Print" Color="BitColor.Info" /> with a range prints from one page to another. A document
+                whose owner forbids printing keeps the button enabled unless
+                <BitTag Text="RespectPermissions" Color="BitColor.Info" /> is set.
+            </div>
+            <br />
+            <BitButton IsEnabled="printSource is null" OnClick="() => printSource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+                <BitButton OnClick="() => printViewerRef.Print()">Print all</BitButton>
+                <BitButton OnClick="() => printViewerRef.PrintCurrentPage()">Print current page</BitButton>
+                <BitButton OnClick="() => printViewerRef.Print(1, 2)">Print pages 1-2</BitButton>
+            </div>
+            <br />
+            <BitPdfViewer @ref="printViewerRef" Source="printSource" Height="400px" />
+        </DemoExample>
+
+        <DemoExample Title="Accessibility" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <div>
+                The chrome is built to the ARIA patterns assistive technology expects - and only claims the ones it
+                implements. The toolbar is a labelled <code>group</code> whose toggles report
+                <code>aria-pressed</code> (not a <code>toolbar</code>, whose single tab stop would take the arrow keys
+                away from the page box and the dropdowns inside it); the thumbnail panel is a
+                <code>listbox</code> with a roving tab stop, so one Tab reaches it and the arrow keys move the
+                selection; the bookmarks panel is a real <code>tree</code> - each bookmark is the focusable
+                <code>treeitem</code> itself, with the left and right arrows folding and unfolding branches and
+                Home/End jumping to its ends. Moving to another page is announced through a polite live region, because
+                the page box is an <code>&lt;input&gt;</code> and changing its value says nothing on its own. The
+                password and properties dialogs open with focus inside them, keep <kbd>Tab</kbd> within them and close
+                on <kbd>Esc</kbd> whether or not the keyboard shortcuts are enabled, and page content itself carries a
+                selectable,
+                screen-reader-readable text layer in reading order - the same layer find and copy work over. A page the
+                engine cannot render says so in place of its content rather than shimmering forever;
+                <BitTag Text="FailedPages" Color="BitColor.Info" /> lists them.
+            </div>
+            <br />
+            <BitButton IsEnabled="a11ySource is null" OnClick="() => a11ySource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="a11ySource" Height="450px" DefaultSidebar="BitPdfSidebar.Bookmarks" />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+            <div>
+                <BitTag Text="Style" Color="BitColor.Info" /> and <BitTag Text="Class" Color="BitColor.Info" /> reach the
+                root element, while <BitTag Text="Styles" Color="BitColor.Info" /> and
+                <BitTag Text="Classes" Color="BitColor.Info" /> address the individual parts - the toolbar and its
+                buttons, the sidebars, the surface, each page and the properties dialog.
+            </div>
+            <br />
+            <BitButton IsEnabled="styleSource is null" OnClick="() => styleSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="styleSource" Height="400px"
+                          Styles="@(new() { Toolbar = "background:var(--bit-clr-pri);color:var(--bit-clr-pri-text)",
+                                            ToolbarButton = "color:var(--bit-clr-pri-text)",
+                                            Surface = "background:#2b2b30" })" />
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+            <div>
+                Set <BitTag Text="Dir" Color="BitColor.Info" /> to <BitTag Text="BitDir.Rtl" Color="BitColor.Info" /> to
+                mirror the chrome - the toolbar groups, the sidebars and the find box - for right-to-left layouts. Page
+                content itself keeps the orientation the document defines.
+            </div>
+            <br />
+            <BitButton IsEnabled="rtlSource is null" OnClick="() => rtlSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Dir="BitDir.Rtl" Source="rtlSource" Height="400px" />
         </DemoExample>
     </Examples>
 </DemoPage>

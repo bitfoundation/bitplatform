@@ -14,4 +14,17 @@ public enum BitPdfZoomMode
 
     /// <summary>Pages are shown at their natural size (one CSS pixel per point).</summary>
     ActualSize,
+
+    /// <summary>
+    /// Each page is scaled so its height fills the viewport, letting a wide page
+    /// overflow horizontally rather than shrinking it to fit.
+    /// </summary>
+    FitHeight,
+
+    /// <summary>
+    /// Fit-width, but never magnified past <see cref="BitPdfViewer.AutomaticZoomCap"/>
+    /// (125% by default) - the behavior a desktop viewer calls "automatic zoom", which
+    /// keeps a narrow page readable without blowing it up to fill a wide screen.
+    /// </summary>
+    Automatic,
 }
