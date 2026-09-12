@@ -3,7 +3,29 @@
     border: 1px solid gray;
 }
 
-.loading {
+.h-item {
+    flex: 0 0 auto;
+    padding: 1rem;
+    white-space: nowrap;
+    border: 1px solid gray;
+}
+
+.k-message {
+    gap: 0.5rem;
+    display: flex;
+    padding: 0.5rem;
+    align-items: center;
+    border-radius: 0.5rem;
+    justify-content: space-between;
+    background-color: #80808040;
+}
+
+.note {
+    width: 6rem;
+}
+
+.loading,
+.empty {
     width: 100%;
     padding: 1rem;
     display: flex;
@@ -21,5 +43,33 @@
         display: flex;
         flex-wrap: wrap;
         position: relative;
+    }
+
+    .chat {
+        gap: 0.5rem;
+        padding: 0.5rem;
+        max-height: 300px;
+    }
+
+    .h-list {
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .message {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: #80808040;
+    }
+
+    .custom-loading {
+        font-style: italic;
+        color: blueviolet;
+    }
+
+    .custom-end {
+        padding: 0.5rem;
+        text-align: center;
+        border-top: 1px solid gray;
     }
 }

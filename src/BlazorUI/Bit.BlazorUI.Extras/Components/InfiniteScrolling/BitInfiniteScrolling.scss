@@ -1,14 +1,142 @@
-﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-isc {
     overflow: auto;
     box-sizing: border-box;
 }
 
-.bit-isc-ldg {
-    width: 100%;
+// The reversed (chat) mode inserts each page above the rendered items, so the sentinel and every status
+// block belong at the top of the list. A flex order moves them there without a mirrored copy of the
+// markup, and the browser's own scroll anchoring is turned off because the component anchors the scroll
+// itself around each prepend.
+.bit-isc-rev {
+    display: flex;
+    flex-direction: column;
+    overflow-anchor: none;
+
+    > .bit-isc-lst,
+    > .bit-isc-ldg,
+    > .bit-isc-emp,
+    > .bit-isc-err,
+    > .bit-isc-end,
+    > .bit-isc-btn {
+        order: -1;
+    }
 }
 
-.bit-isc-emp {
+// The horizontal mode scrolls sideways, so the list lays its items out in a row and the sentinel becomes a
+// thin column at its end. Declared after the reversed block so a list that is both stays a row.
+.bit-isc-hor {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    // Along a row the status blocks are as wide as their text rather than as wide as the list, and none of
+    // them may be squeezed by the items that overflow the container.
+    > .bit-isc-ldg,
+    > .bit-isc-emp,
+    > .bit-isc-err,
+    > .bit-isc-end,
+    > .bit-isc-btn {
+        width: auto;
+        flex: 0 0 auto;
+        align-self: center;
+    }
+
+    // The sentinel is as tall as the row, and never thinner than the pixel the observer needs to see.
+    > .bit-isc-lst {
+        min-height: 1px;
+        align-self: stretch;
+    }
+}
+
+// A component that hands its scrolling over to another element must not clip and scroll its own content on
+// top of it. Declared last so it wins over the overflow of every mode above.
+.bit-isc-ext {
+    overflow: visible;
+}
+
+// The wrapper that carries the key of an item. It is not part of the layout: the item's own root element is
+// what the list (or its flex container) lays out.
+.bit-isc-itm {
+    display: contents;
+}
+
+// The sentinel is never squeezed by the flex line of a reversed or horizontal list: an element shrunk to no
+// area is one the observer stops reporting, and the list would silently stop loading.
+.bit-isc-lst {
+    flex: 0 0 auto;
+}
+
+// The always-present live region: out of sight, but never out of the accessibility tree.
+.bit-isc-sts {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    clip: rect(0 0 0 0);
+}
+
+.bit-isc-ldg,
+.bit-isc-emp,
+.bit-isc-end {
     width: 100%;
+    box-sizing: border-box;
+    font-family: $tg-font-family;
+    font-size: $tg-fs-sm;
+}
+
+.bit-isc-emp,
+.bit-isc-end {
+    color: $clr-fg-sec;
+}
+
+.bit-isc-err {
+    width: 100%;
+    box-sizing: border-box;
+    color: $clr-err-text;
+    font-size: $tg-fs-sm;
+    font-family: $tg-font-family;
+}
+
+.bit-isc-btn {
+    cursor: pointer;
+    color: $clr-pri-text;
+    align-self: flex-start;
+    background-color: transparent;
+    font-family: $tg-font-family;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-medium;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    border-radius: $shp-radius-button;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-sec-hover;
+        }
+    }
+
+    &:active {
+        background-color: $clr-bg-sec-active;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    // The button keeps its place while the load it started runs, so the focus that pressed it is not dropped.
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
+    }
 }
