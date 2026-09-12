@@ -52,7 +52,8 @@ public partial class AppleAppSiteAssociationTests
     [TestMethod]
     public async Task StaticWebAppsConfig_Should_RewriteTheAssociationUrl_ToTheJsonFile()
     {
-        const string configRelativePath = @"src\Client\Boilerplate.Client.Web\wwwroot\staticwebapp.config.json";
+        // Segment by segment: the CI that generates and builds a project from this template runs on Linux.
+        var configRelativePath = Path.Combine("src", "Client", "Boilerplate.Client.Web", "wwwroot", "staticwebapp.config.json");
 
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null && File.Exists(Path.Combine(directory.FullName, configRelativePath)) is false)
@@ -64,7 +65,7 @@ public partial class AppleAppSiteAssociationTests
 
         var wwwroot = Path.GetDirectoryName(Path.Combine(directory.FullName, configRelativePath))!;
 
-        Assert.IsTrue(File.Exists(Path.Combine(wwwroot, @".well-known\apple-app-site-association.json")),
+        Assert.IsTrue(File.Exists(Path.Combine(wwwroot, ".well-known", "apple-app-site-association.json")),
             "The association file itself is gone; both hosts rewrite the extension-less url to it.");
 
         using var config = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, configRelativePath), TestContext.CancellationToken));
