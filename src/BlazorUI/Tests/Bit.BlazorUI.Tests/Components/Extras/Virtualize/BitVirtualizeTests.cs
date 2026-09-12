@@ -924,6 +924,35 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitVirtualizeOnStartReachedShouldNotFireAgainForAnAppend()
+    {
+        SetupViewport(300);
+
+        var fired = 0;
+        var list = Enumerable.Range(0, 100).ToList();
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, list);
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+            parameters.Add(p => p.OnStartReached, () => fired++);
+        });
+
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300));
+        Assert.AreEqual(1, fired);
+
+        // The count changes, but nothing arrived at the start.
+        list.Add(100);
+        component.Render(p => p.Add(x => x.Items, list));
+        Assert.AreEqual(1, fired);
+
+        list.Insert(0, -1);
+        component.Render(p => p.Add(x => x.Items, list));
+        Assert.AreEqual(2, fired);
+    }
+
+    [TestMethod]
     public void BitVirtualizeCallbackFailuresShouldSurfaceThroughTheRenderer()
     {
         SetupViewport(300);
@@ -1388,6 +1417,51 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitVirtualizeDynamicMeasurementsOfItemsWithoutAKeyShouldSurviveADataChange()
+    {
+        var list = Enumerable.Range(0, 10).ToList();
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, list);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.EstimatedItemSize, 40);
+            // The odd items have no identity.
+            parameters.Add(p => p.ItemKey, i => i % 2 == 0 ? (object)i : null!);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([0, 1], [140d, 140d]));
+
+        list.AddRange(Enumerable.Range(10, 10));
+        component.Render(p => p.Add(x => x.Items, list));
+
+        Assert.AreEqual("height:1000px", component.Find(".bit-vir-spc").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeDynamicMeasurementsBeyondTheSizeCacheShouldSurviveADataChange()
+    {
+        const int count = 20_001; // one more than the size cache holds
+        var list = Enumerable.Range(0, count).ToList();
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, list);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.EstimatedItemSize, 40);
+            parameters.Add(p => p.ItemKey, i => i);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([.. Enumerable.Range(0, count)], [.. Enumerable.Repeat(50d, count)]));
+
+        // The last item's size is not cached by key, yet it is still a measured one.
+        list.Add(count);
+        component.Render(p => p.Add(x => x.Items, list));
+
+        Assert.AreEqual($"height:{count * 50 + 40}px", component.Find(".bit-vir-spc").GetAttribute("style"));
+    }
+
+    [TestMethod]
     public async Task BitVirtualizeDynamicScrollToIndexShouldRealignOnceTheTargetIsMeasured()
     {
         SetupViewport(300);
@@ -1556,6 +1630,21 @@ public class BitVirtualizeTests : BunitTestContext
 
         component.Render(p => p.Add(x => x.IsStickyItem, null));
         Assert.AreEqual(0, component.FindAll(".bit-vir-stk").Count);
+    }
+
+    [TestMethod]
+    public void BitVirtualizeShouldApplyTheSameStickyLambdaOverOtherCapturedValues()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50, p => p.Add(x => x.IsStickyItem, EveryNth(10)));
+        Assert.AreEqual("500", component.Find(".bit-vir-stk").GetAttribute("data-bit-vir-sticky-next"));
+
+        // The same method, but not the same predicate.
+        component.Render(p => p.Add(x => x.IsStickyItem, EveryNth(20)));
+        Assert.AreEqual("1000", component.Find(".bit-vir-stk").GetAttribute("data-bit-vir-sticky-next"));
+
+        static Func<int, bool> EveryNth(int n) => i => i % n == 0;
     }
 
     [TestMethod]

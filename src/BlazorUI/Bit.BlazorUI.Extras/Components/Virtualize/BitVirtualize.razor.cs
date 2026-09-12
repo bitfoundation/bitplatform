@@ -28,7 +28,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private bool _refreshPending;
     private bool _usingProvider;
     private bool _lastHorizontal;
-    private System.Reflection.MethodInfo? _lastStickyMethod;
+    private Func<TItem, bool>? _lastIsStickyItem;
 
     private IList<TItem>? _itemList;            // materialized view of Items
     private ICollection<TItem>? _lastItems;     // the Items reference of the last recompute
@@ -55,6 +55,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     // Infinite-scroll edge tracking.
     private int _lastEndReachedCount = -1;
     private int _lastStartReachedCount = -1;
+    private object? _startReachedItem;   // the identity of the first item when OnStartReached last fired
     private bool _wasAtStart;
     private bool _wasAtEnd;
 
@@ -156,7 +157,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// <summary>
     /// A predicate that marks certain items (for example, group headers) as sticky. The active sticky item
     /// gets pinned to the leading edge of the viewport while its group scrolls. Fully supported with in-memory
-    /// Items; in provider mode it is applied on a best-effort basis to the currently loaded window.
+    /// Items; in provider mode it is applied on a best-effort basis to the currently loaded window. A change in
+    /// the state the predicate reads, rather than in the predicate itself, gets applied by RefreshDataAsync.
     /// </summary>
     [Parameter] public Func<TItem, bool>? IsStickyItem { get; set; }
 
@@ -206,8 +208,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     /// <summary>
     /// The callback to be called when the first item comes within ReachedThreshold items of the visible window,
-    /// useful for prepending older data (for example, loading chat history when scrolling up). Fires once per
-    /// item-count value.
+    /// useful for prepending older data (for example, loading chat history when scrolling up). Fires again when
+    /// items get prepended while the start is still within reach.
     /// </summary>
     [Parameter] public EventCallback OnStartReached { get; set; }
 
@@ -559,9 +561,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             RecomputeRange();
         }
 
-        // A different sticky predicate (compared by method, so a lambda re-created on every render of the
-        // parent does not rescan the items each time).
-        if (IsStickyItem?.Method != _lastStickyMethod)
+        // A different sticky predicate. Delegates compare by method and target, so a lambda the parent re-creates on
+        // every render does not rescan the items each time, while the same lambda over other captured values does.
+        if (Equals(IsStickyItem, _lastIsStickyItem) is false)
         {
             ComputeStickyIndices();
             UpdateSticky();
@@ -933,7 +935,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private void ComputeStickyIndices()
     {
-        _lastStickyMethod = IsStickyItem?.Method;
+        _lastIsStickyItem = IsStickyItem;
 
         if (IsStickyItem is null)
         {
@@ -1188,14 +1190,26 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         if (_itemList is not null)
         {
-            // Every item's size follows its key; an item with no known size (e.g. a newly inserted one) gets the
-            // estimate rather than the stale size of whichever item held its index before.
+            // Every item's size follows its key. A key with no known size is a new item (e.g. a just inserted one) that
+            // gets the estimate rather than the stale size of whichever item held its index before, unless the cache is
+            // full, when it may as well be a measured item the cache had no room for. An item without a key keeps the
+            // size of its index.
+            var estimateUnknown = _sizeByKey.Count < SizeCacheCap;
             var estimate = EstimatedSize;
             var count = Math.Min(_itemList.Count, _tree.Count);
             for (var i = 0; i < count; i++)
             {
                 var key = ItemKey(_itemList[i]);
-                _tree.SetSize(i, key is not null && _sizeByKey.TryGetValue(key, out var size) ? size : estimate);
+                if (key is null) continue;
+
+                if (_sizeByKey.TryGetValue(key, out var size))
+                {
+                    _tree.SetSize(i, size);
+                }
+                else if (estimateUnknown)
+                {
+                    _tree.SetSize(i, estimate);
+                }
             }
         }
         else if (_loadedItems is not null)
@@ -1358,20 +1372,34 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         }
         _wasAtEnd = atEnd;
 
-        // Not fired for the initial position; fired again when the count changes while still at the start
-        // (so a prepended batch too small to leave the threshold does not stall the history loading).
+        // Not fired for the initial position; fired again when items get prepended while still at the start (so a
+        // batch too small to leave the threshold does not stall the history loading). An append changes the count
+        // too, so a prepend is told apart by the first item no longer being the one it was.
         var atStart = _visibleStart <= threshold;
-        if (OnStartReached.HasDelegate && atStart && _initialScrollDone && (_wasAtStart is false || _lastStartReachedCount != _itemCount))
+        if (atStart && (_initialScrollDone is false || OnStartReached.HasDelegate))
         {
-            _lastStartReachedCount = _itemCount;
-            _ = ObserveCallbackAsync(OnStartReached.InvokeAsync());
-        }
-        else if (atStart && _initialScrollDone is false)
-        {
-            _lastStartReachedCount = _itemCount;
+            var first = GetItemIdentityAt(0);
+            // An unknown identity (an item not loaded yet, or one without a key) never counts as a prepend.
+            var prepended = _lastStartReachedCount != _itemCount && first is not null && _startReachedItem is not null && Equals(first, _startReachedItem) is false;
+            if (_initialScrollDone is false || _wasAtStart is false || prepended)
+            {
+                _lastStartReachedCount = _itemCount;
+                _startReachedItem = first;
+                if (_initialScrollDone)
+                {
+                    _ = ObserveCallbackAsync(OnStartReached.InvokeAsync());
+                }
+            }
+            else
+            {
+                _startReachedItem ??= first; // the first item may have only got loaded since
+            }
         }
         _wasAtStart = atStart;
     }
+
+    // What tells the item at an index apart from others: its ItemKey or, without one, the item itself; null while it is not loaded.
+    private object? GetItemIdentityAt(int index) => TryGetItem(index, out var item) ? (ItemKey is null ? item : ItemKey(item)) : null;
 
     private void NotifyRangeChanged()
     {

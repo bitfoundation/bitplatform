@@ -65,6 +65,9 @@ namespace BitBlazorUI {
     class VirtualizeInstance {
         private static readonly NAV_KEYS = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'PageDown', 'PageUp', 'Home', 'End'];
         private static readonly ITEM_SELECTOR = ':scope > .bit-vir-spc > .bit-vir-blk > [data-bit-vir-index]';
+        // A smooth scroll is taken to be over once no scroll event arrived for SMOOTH_IDLE_MS, or SMOOTH_MAX_MS after it started.
+        private static readonly SMOOTH_IDLE_MS = 150;
+        private static readonly SMOOTH_MAX_MS = 1000;
 
         private _element: HTMLElement;
         private _horizontal: boolean;
@@ -85,6 +88,9 @@ namespace BitBlazorUI {
         // scroll anchoring does) would cancel the animation, so the anchoring waits for it to settle.
         private _smoothScrolling = false;
         private _smoothTimer: any = null;
+        // When the animation is over at the latest, however long scroll events keep arriving: the user may carry on
+        // scrolling from where it ends, which would otherwise hold the anchoring back for as long as they scroll.
+        private _smoothDeadline = 0;
         // The signed anchor correction that arrived while the animation was running, applied once it settles.
         private _pendingAnchor = 0;
         // index -> element, tracks which items are currently observed.
@@ -119,6 +125,8 @@ namespace BitBlazorUI {
 
             this._element.addEventListener('scroll', this._onScroll, { passive: true });
             this._element.addEventListener('keydown', this._onKeyDown);
+            this._element.addEventListener('wheel', this._onGesture, { passive: true });
+            this._element.addEventListener('touchstart', this._onGesture, { passive: true });
 
             // Track viewport resizes. The observer's initial callback reports the size setup already returned;
             // notifying it would only send a stale offset that could race a scroll .NET is about to request.
@@ -236,6 +244,8 @@ namespace BitBlazorUI {
             this._disposed = true;
             this._element.removeEventListener('scroll', this._onScroll);
             this._element.removeEventListener('keydown', this._onKeyDown);
+            this._element.removeEventListener('wheel', this._onGesture);
+            this._element.removeEventListener('touchstart', this._onGesture);
             this._viewportObserver.disconnect();
             this._leadObserver.disconnect();
             this._itemObserver.disconnect();
@@ -275,10 +285,16 @@ namespace BitBlazorUI {
         }
 
         private _scrollTo(raw: number, smooth: boolean) {
+            // The target is computed from the current sizes, so the corrections held back during an earlier animation are moot.
+            this._pendingAnchor = 0;
             const behavior: ScrollBehavior = smooth && !VirtualizeInstance._reducedMotion() ? 'smooth' : 'auto';
             if (behavior === 'smooth') {
                 this._smoothScrolling = true;
+                this._smoothDeadline = performance.now() + VirtualizeInstance.SMOOTH_MAX_MS;
                 this._armSmoothEnd();
+            } else {
+                // An instant scroll cancels any animation in flight.
+                this._endSmooth();
             }
             if (this._horizontal) {
                 this._element.scrollTo({ left: this._rtl ? -raw : raw, behavior });
@@ -287,16 +303,33 @@ namespace BitBlazorUI {
             }
         }
 
-        // The animation is over once no scroll event arrived for a while (the scrollend event is not everywhere yet).
+        // The animation is over once no scroll event arrived for a while (the scrollend event is not everywhere yet),
+        // or once its deadline has passed.
         private _armSmoothEnd() {
             if (this._smoothTimer) clearTimeout(this._smoothTimer);
-            this._smoothTimer = setTimeout(() => {
-                this._smoothScrolling = false;
-                this._smoothTimer = null;
-                const pending = this._pendingAnchor;
-                this._pendingAnchor = 0;
-                this.adjustScroll(pending);
-            }, 150);
+            const remaining = this._smoothDeadline - performance.now();
+            if (remaining <= 0) {
+                this._endSmooth();
+                return;
+            }
+            this._smoothTimer = setTimeout(() => this._endSmooth(), Math.min(VirtualizeInstance.SMOOTH_IDLE_MS, remaining));
+        }
+
+        // Leaves the smooth-scrolling state, applying the anchor corrections held back while it lasted.
+        private _endSmooth() {
+            if (this._smoothTimer) { clearTimeout(this._smoothTimer); this._smoothTimer = null; }
+            if (!this._smoothScrolling) return;
+
+            this._smoothScrolling = false;
+            const pending = this._pendingAnchor;
+            this._pendingAnchor = 0;
+            this.adjustScroll(pending);
+        }
+
+        // A wheel or touch gesture interrupts the browser's smooth scroll, so the anchoring need not wait for it any longer.
+        private _onGesture = () => {
+            if (this._disposed) return;
+            this._endSmooth();
         }
 
         private static _reducedMotion() {
@@ -388,9 +421,13 @@ namespace BitBlazorUI {
             // latency, so it gets applied here synchronously on every scroll event.
             this._updateSticky();
 
+            // Read before the animation may end below, applying its held-back anchoring: this event is not that adjustment's.
+            const suppressed = this._suppressScroll;
             if (this._smoothScrolling) this._armSmoothEnd();
 
-            if (this._suppressScroll) return;
+            // The scroll event of a programmatic adjustment is not a user scroll, but a viewport change that came with it
+            // (a resize can move the lead, which adjusts the scroll before notifying) still has to reach .NET.
+            if (suppressed && !this._viewportChanged) return;
 
             if (!this._scrollScheduled) {
                 this._scrollScheduled = true;

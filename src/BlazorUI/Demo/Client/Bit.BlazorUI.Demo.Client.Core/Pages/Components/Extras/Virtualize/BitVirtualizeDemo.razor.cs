@@ -81,7 +81,7 @@ public partial class BitVirtualizeDemo
             Name = "IsStickyItem",
             Type = "Func<TItem, bool>?",
             DefaultValue = "null",
-            Description = "A predicate that marks certain items (for example, group headers) as sticky. The active sticky item gets pinned to the leading edge of the viewport while its group scrolls. Fully supported with in-memory Items; in provider mode it is applied on a best-effort basis to the currently loaded window.",
+            Description = "A predicate that marks certain items (for example, group headers) as sticky. The active sticky item gets pinned to the leading edge of the viewport while its group scrolls. Fully supported with in-memory Items; in provider mode it is applied on a best-effort basis to the currently loaded window. A change in the state the predicate reads, rather than in the predicate itself, gets applied by RefreshDataAsync.",
          },
          new()
          {
@@ -146,7 +146,7 @@ public partial class BitVirtualizeDemo
             Name = "OnStartReached",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "The callback to be called when the first item comes within ReachedThreshold items of the visible window, useful for prepending older data (for example, loading chat history when scrolling up). Fires once per item-count value.",
+            Description = "The callback to be called when the first item comes within ReachedThreshold items of the visible window, useful for prepending older data (for example, loading chat history when scrolling up). Fires again when items get prepended while the start is still within reach.",
          },
          new()
          {
