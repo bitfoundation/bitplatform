@@ -143,6 +143,17 @@ internal static class ScriptPublishing
             ["StaticWebAssetProjectMode=Default", "UsingMicrosoftNETSdkWeb=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
             FullBundle: true),
 
+        // Root is not enough on its own, and this is the shape that says so: a MAUI/Blazor Hybrid head IS the
+        // root of its asset graph - the WebView package makes it one so that it can package its wwwroot - and
+        // it reaches the publish asset stage from ConvertStaticWebAssetsToMauiAssets, before ResolveReferences
+        // rather than after. Trimming there reads references that are not resolved yet, and the dependency
+        // that would resolve them closes a cycle in that head's target graph (MSB4006), which is a failed
+        // build rather than a wrong bundle. So one of the SDK markers is required alongside Root, and the
+        // fixture stands in for a hybrid head by forcing Root with the Web SDK marker off.
+        new("the asset root of a hybrid head does not trim",
+            ["StaticWebAssetProjectMode=Root", "UsingMicrosoftNETSdkWeb=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
+            FullBundle: true),
+
         // MSBuild accepts a misspelled item without a word, so the build is the only thing that can say so.
         new("a module name that names nothing fails the publish",
             ["FixtureScriptModules=Clippboard"],

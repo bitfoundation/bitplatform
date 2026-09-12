@@ -424,6 +424,19 @@
             <_BitButilIsAssetRoot>false</_BitButilIsAssetRoot>
             <_BitButilIsAssetRoot Condition="'$(StaticWebAssetProjectMode)' == 'Root' or '$(UsingMicrosoftNETSdkWeb)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">true</_BitButilIsAssetRoot>
 
+            <!-- And never on Root alone, which is the correction to the paragraph above: a MAUI hybrid
+                 head IS Root - Microsoft.AspNetCore.Components.WebView.Maui makes it the root of the asset
+                 graph so that it can package its wwwroot - so the disjunction let in exactly the shape it
+                 was written to keep out. It is also the one shape that reaches this stage BEFORE
+                 ResolveReferences rather than after: the assets are converted from
+                 ConvertStaticWebAssetsToMauiAssets while the references are still unresolved, and the
+                 dependency that would force them cannot be taken there without closing a cycle in that
+                 head's target graph (MSB4006 - see _BitButilAssembleTrimmedBundleDependsOn). So one of the
+                 SDK markers is required and Root alone is not enough: the answer is only both reachable
+                 and right in a head that loaded the Web or WebAssembly SDK. A hybrid head publishes the
+                 full bundle, exactly as a build does. -->
+            <_BitButilIsAssetRoot Condition="'$(_BitButilIsScriptTrimmingHead)' != 'true'">false</_BitButilIsAssetRoot>
+
             <_BitButilPublishTrimming>false</_BitButilPublishTrimming>
             <_BitButilPublishTrimming Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(_BitButilIsAssetRoot)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitButilPublishTrimming>
 
@@ -464,13 +477,32 @@
 
     </Target>
 
-    <!-- ResolveReferences, because @(ReferenceCopyLocalPaths) is where both the assemblies to scan and the
-         untrimmed Bit.Butil.dll come from, and the stage this hangs off does NOT imply it has run: reached
-         through ComputeReferencedStaticWebAssetsPublishManifest, or through a MSBuild call carrying global
-         properties that fork a fresh project instance, only the requested target chain runs and the item is
-         empty. Named here rather than on _BitButilResolveScriptTrimming so it is paid for only when the
-         trimming is actually on - MSBuild skips a false-conditioned target's DependsOnTargets entirely. -->
-    <Target Name="_BitButilAssembleTrimmedBundle" DependsOnTargets="_BitButilResolveScriptTrimming;ResolveReferences" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
+    <!--
+    ResolveReferences, because @(ReferenceCopyLocalPaths) is where both the assemblies to scan and the
+    untrimmed Bit.Butil.dll come from, and the stage this hangs off does NOT imply it has run: reached
+    through ComputeReferencedStaticWebAssetsPublishManifest, or through a MSBuild call carrying global
+    properties that fork a fresh project instance, only the requested target chain runs and the item is
+    empty. Named here rather than on _BitButilResolveScriptTrimming so it is paid for only when the
+    trimming is actually on - MSBuild skips a false-conditioned target's DependsOnTargets entirely.
+
+    Taken through a property rather than written into the attribute, because forcing ResolveReferences is
+    not free of consequence everywhere this file is imported. In a MAUI hybrid head it closes a cycle in
+    the target graph: the publish asset stage is reached from ConvertStaticWebAssetsToMauiAssets, while
+    ResolveReferences pulls in the Android resource targets, one of which runs
+    BeforeTargets="ConvertStaticWebAssetsToMauiAssets", and the build fails with MSB4006 before any of this
+    runs. The gate below keeps that head out of the trimming altogether, and so out of this dependency
+    with it; the property is what says so at the one place the dependency is taken, so that widening the
+    gate cannot quietly put ResolveReferences back into a graph that cannot take it.
+    -->
+    <PropertyGroup>
+        <_BitButilIsScriptTrimmingHead>false</_BitButilIsScriptTrimmingHead>
+        <_BitButilIsScriptTrimmingHead Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">true</_BitButilIsScriptTrimmingHead>
+
+        <_BitButilAssembleTrimmedBundleDependsOn>_BitButilResolveScriptTrimming</_BitButilAssembleTrimmedBundleDependsOn>
+        <_BitButilAssembleTrimmedBundleDependsOn Condition="'$(_BitButilIsScriptTrimmingHead)' == 'true'">$(_BitButilAssembleTrimmedBundleDependsOn);ResolveReferences</_BitButilAssembleTrimmedBundleDependsOn>
+    </PropertyGroup>
+
+    <Target Name="_BitButilAssembleTrimmedBundle" DependsOnTargets="$(_BitButilAssembleTrimmedBundleDependsOn)" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
 
         <PropertyGroup>
             <!-- Only set when ILLink is in play: the task reads "a path was given but the file is not there"
