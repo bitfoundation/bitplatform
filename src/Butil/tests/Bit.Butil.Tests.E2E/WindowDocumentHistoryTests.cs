@@ -74,6 +74,11 @@ public class WindowDocumentHistoryTests : ButilPageTest
 
         var attribute = await Page.EvaluateAsync<string>("document.documentElement.getAttribute('dir')");
         Assert.AreEqual("rtl", attribute);
+
+        await ClickAndExpectAsync("doc-dir-ltr", "doc:dir-ltr:Ltr");
+
+        attribute = await Page.EvaluateAsync<string>("document.documentElement.getAttribute('dir')");
+        Assert.AreEqual("ltr", attribute);
     }
 
     [TestMethod]

@@ -113,6 +113,7 @@
     <button id="doc-title" @onclick="DocSetTitle">Set document.title</button>
     <button id="doc-meta" @onclick="DocMeta">visibility/charset/url</button>
     <button id="doc-dir" @onclick="DocDir">dir + designMode</button>
+    <button id="doc-dir-ltr" @onclick="DocDirLtr">dir ltr</button>
 </section>
 
 <section>
@@ -624,6 +625,13 @@
         var design = await document.GetDesignMode();
         await document.SetDesignMode(DesignMode.Off);
         Set($"doc:dir:{auto}/{dir}/{design}");
+    }
+    private async Task DocDirLtr()
+    {
+        // Separate from DocDir so the test can read the raw attribute of each keyword it writes.
+        await document.SetDir(DocumentDir.Ltr);
+        var dir = await document.GetDir();
+        Set($"doc:dir-ltr:{dir}");
     }
     private async Task LocationHref()
     {
