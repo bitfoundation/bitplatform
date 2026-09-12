@@ -115,21 +115,6 @@ public class BitPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPanelOverlayShouldHandTheFocusOfAPressToTheContainer()
-    {
-        var com = RenderComponent<BitPanel>(parameters => parameters.Add(p => p.IsOpen, true));
-
-        // Refusing the default of the press also keeps the focus on an input the user typed into, which then
-        // never commits its value before the dismissal handlers run. The overlay names the container for the
-        // script to move the focus onto instead, which takes it off the input without leaving the panel.
-        var overlay = com.Find(".bit-pnl-ovl");
-        var container = com.Find(".bit-pnl-cnt");
-
-        Assert.AreEqual(container.Id, overlay.GetAttribute("data-bit-press-focus"));
-        Assert.AreEqual("-1", container.GetAttribute("tabindex"));
-    }
-
-    [TestMethod]
     public void BitPanelContentTest()
     {
         var com = RenderComponent<BitPanel>(parameters =>
@@ -740,6 +725,25 @@ public class BitPanelTests : BunitTestContext
 
         var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1];
         Assert.AreEqual(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1].Arguments[0], released.Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitPanelOverlayShouldLeaveThePressItsDefaultAndKeepTheFocusOnTheRoot()
+    {
+        var com = RenderComponent<BitPanel>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // The press on the overlay keeps its default action, which is what blurs the input the user was
+        // typing into - and an input only commits what was typed once it loses the focus, before the click
+        // the press turns into reaches any dismissal handler.
+        Assert.IsFalse(com.Find(".bit-pnl-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
+
+        // The focus that press moves lands on the root rather than on the body: the browser moves it to the
+        // nearest element that can hold it, and the root is made focusable for exactly that. That is what
+        // keeps the Escape handler and the focus trap, both of which sit on the root, reachable.
+        Assert.AreEqual("-1", com.Find(".bit-pnl").GetAttribute("tabindex"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+        Assert.AreEqual(com.Find(".bit-pnl").Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
     }
 
     [TestMethod]

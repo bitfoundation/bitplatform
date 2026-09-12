@@ -5,23 +5,18 @@
    layer - a dim scrim or a transparent click catcher - so it is taken out of the accessibility tree the
    way every surveyed backdrop is; one given content is the very thing a screen reader is meant to reach. *@
 @* Pressing something that cannot hold the focus is what takes the focus off whatever had it, and the layer
-   is the largest such thing on the screen while an Overlay is open. A press on it would otherwise leave the
-   keyboard on the body, walking the next Tab into the page the Overlay is there to keep out of reach. The
-   default of the press is refused so that the focus stays where the content put it - the click itself still
-   arrives, and still dismisses. Only the presses on the layer reach here: the content stops its own.
-   The focus is still taken off whatever had it, onto the layer itself (data-bit-press-focus, handled by the
-   script, which is what tabindex="-1" makes the layer able to hold): an input only commits what was typed
-   into it once it loses the focus, and the handlers the click runs are the ones that most need to see that
-   value. A TabIndex of the consumer's own still wins over it. *@
+   is the largest such thing on the screen while an Overlay is open. The press is left to do exactly that -
+   an input only commits what was typed into it once it loses the focus, and the handlers the click runs are
+   the ones that most need to see that value - and the layer is made focusable instead (GetTabIndex), so the
+   focus it moves lands there rather than on the body, and the next Tab walks into the content rather than
+   into the page the Overlay is there to keep out of reach. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     tabindex="@(TabIndex ?? "-1")"
      @onclick="HandleOnClick"
      @onmousedown="HandleOnMouseDown"
-     @onmousedown:preventDefault="true"
-     data-bit-press-focus="@_Id"
+     tabindex="@GetTabIndex()"
      id="@_Id"
      aria-label="@AriaLabel"
-     aria-hidden="@(ChildContent is null && AriaLabel.HasNoValue() ? "true" : null)"
+     aria-hidden="@(IsDecorative ? "true" : null)"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()">

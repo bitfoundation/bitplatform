@@ -1113,7 +1113,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsSetupFocusTrap(_containerId);
+            await _js.BitUtilsSetupFocusTrap(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1126,7 +1126,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsDisposeFocusTrap(_containerId);
+            await _js.BitUtilsDisposeFocusTrap(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1139,7 +1139,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsCaptureFocusOrigin(_containerId);
+            await _js.BitUtilsCaptureFocusOrigin(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1150,7 +1150,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsRestoreFocusOrigin(_containerId);
+            await _js.BitUtilsRestoreFocusOrigin(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1305,7 +1305,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsDisposeFocusOrigin(_containerId);
+            await _js.BitUtilsDisposeFocusOrigin(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

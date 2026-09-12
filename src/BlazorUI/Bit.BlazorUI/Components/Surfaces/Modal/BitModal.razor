@@ -11,8 +11,15 @@
     @* While a kept-mounted Modal is closed it is still in the page, only hidden: inert and aria-hidden
        take it out of the tab sequence and out of the reading order for the browsers that would otherwise
        still reach into a display:none subtree through a stale reference. *@
+    @* tabindex="-1" makes the root programmatically focusable, which is what a press on the overlay needs:
+       pressing something that cannot hold the focus moves it to the nearest element that can, and the root
+       is the nearest one to the overlay. That keeps the focus inside the Modal - where the Escape handler
+       and the focus trap both are, the trap being registered on this element for the same reason - while
+       the press itself is left alone, so the input the user was typing into still blurs and still commits
+       what was typed before the click dismisses anything. *@
     <div @ref="RootElement" @attributes="_params.HtmlAttributes"
          @onkeydown="HandleOnKeyDown" @onkeydown:stopPropagation
+         tabindex="-1"
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@GetRootClasses()"
@@ -22,17 +29,12 @@
         @if (ShowsOverlay)
         {
             @* Pressing something that cannot hold the focus is what takes the focus off whatever had it, and
-               the overlay is the largest such thing on the screen while a Modal is open. A press on it would
-               otherwise leave the keyboard on the body: the Escape handler sits on the Modal and the focus
-               trap on its content, so neither of them is reached from there, and the next Tab walks into the
-               page the overlay is there to keep out of reach. The default of the press is refused so that the
-               focus stays where the Modal put it - the click itself still arrives, and still dismisses.
-               The focus is still taken off whatever had it, onto the content (data-bit-press-focus, handled by
-               the script): an input only commits what was typed into it once it loses the focus, and the
-               dismissal handlers the click runs are the ones that most need to see that value. *@
+               the overlay is the largest such thing on the screen while a Modal is open. The press is left
+               to do exactly that: the focus lands on the root, which is the nearest element to the overlay
+               that can hold it and is inside the Modal, so the Escape handler and the focus trap keep the
+               keyboard - and the input the focus came off commits what was typed into it on the way, before
+               the click the press turns into runs any dismissal handler. *@
             <div @onclick="HandleOnOverlayClick"
-                 @onmousedown:preventDefault="true"
-                 data-bit-press-focus="@_containerId"
                  aria-hidden="true"
                  style="@GetOverlayStyles()"
                  class="@GetOverlayClasses()" />

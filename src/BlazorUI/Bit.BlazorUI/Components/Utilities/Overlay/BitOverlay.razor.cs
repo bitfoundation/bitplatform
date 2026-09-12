@@ -364,6 +364,19 @@ public partial class BitOverlay : BitComponentBase
 
 
 
+    // An Overlay that hosts no content and carries no accessible name of its own is a purely decorative
+    // layer - a dim scrim or a transparent click catcher - which is what takes it out of the accessibility
+    // tree, and out of the focus path with it.
+    private bool IsDecorative => ChildContent is null && AriaLabel.HasNoValue();
+
+    // The layer is made programmatically focusable so that a press on it has somewhere inside the Overlay
+    // to put the focus the press takes off whatever had it: the browser moves the focus to the nearest
+    // element that can hold it, which is the body while the layer cannot, and the next Tab from there walks
+    // into the page the Overlay is there to keep out of reach. A decorative layer is left as it is - it
+    // hosts nothing the focus has to stay near, and focusing an aria-hidden element is a contradiction the
+    // browsers report. A TabIndex of the consumer's own wins over it.
+    private string? GetTabIndex() => TabIndex ?? (IsDecorative ? null : "-1");
+
     // What the overflow toggle acts on, in the order the consumer's intent is expressed: the element it
     // named, then the selector it named, then the scroller of the application shell the Overlay is inside
     // of, and the page when it is inside none.

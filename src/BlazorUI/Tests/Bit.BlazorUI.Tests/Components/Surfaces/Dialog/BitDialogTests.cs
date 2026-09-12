@@ -1887,28 +1887,45 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogOverlayShouldRefuseTheDefaultOfThePressSoTheFocusNeverLeaves()
+    public void BitDialogOverlayShouldLeaveThePressItsDefaultAndKeepTheFocusOnTheRoot()
     {
         var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
 
-        // Pressing the overlay is what would otherwise leave the body holding the focus, outside the trap.
-        // The default of the press is refused, so the focus stays where the Dialog put it.
-        StringAssert.Contains(component.Markup, "onmousedown:preventDefault");
+        // The press on the overlay keeps its default action, which is what blurs the input the user was
+        // typing into - and an input only commits what was typed once it loses the focus, before the click
+        // the press turns into reaches any dismissal handler.
+        Assert.IsFalse(component.Find(".bit-dlg-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
+
+        // The focus that press moves lands on the root rather than on the body: the browser moves it to the
+        // nearest element that can hold it, and the root is made focusable for exactly that. That is what
+        // keeps the Escape handler and the focus trap, both of which sit on the root, reachable.
+        Assert.AreEqual("-1", component.Find(".bit-dlg").GetAttribute("tabindex"));
     }
 
     [TestMethod]
-    public void BitDialogOverlayShouldHandTheFocusOfAPressToTheSurface()
+    public void BitDialogShouldTrapTheFocusOnTheRootTheOverlayPressLandsOn()
     {
         var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
 
-        // Refusing the default of the press also keeps the focus on an input the user typed into, which then
-        // never commits its value before the dismissal handlers run. The overlay names the surface for the
-        // script to move the focus onto instead, which takes it off the input without leaving the Dialog.
-        var overlay = component.Find(".bit-dlg-ovl");
-        var surface = component.Find(".bit-dlg-ctn");
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
 
-        Assert.AreEqual(surface.Id, overlay.GetAttribute("data-bit-press-focus"));
-        Assert.AreEqual("-1", surface.GetAttribute("tabindex"));
+        // The trap is registered on the root rather than on the surface: a press on the overlay leaves the
+        // focus on the root, and a trap on the surface would never see the Tab that follows it.
+        Assert.AreEqual(component.Find(".bit-dlg").Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitDialogEscapeShouldDismissFromTheRootTheOverlayPressLandsOn()
+    {
+        var isOpen = true;
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dlg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(isOpen);
     }
 
     [TestMethod]

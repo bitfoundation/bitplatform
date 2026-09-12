@@ -95,26 +95,6 @@ document.addEventListener('pointerdown', (e: PointerEvent) => {
     BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
 }, true);
 
-// The overlays the dialog surfaces cover the page with refuse the default of a press on them, so that the
-// focus is not dropped on the body, out of reach of their Escape handling and their focus trap. That same
-// default is what takes the focus off whatever had it, though, and an input commits what was typed into it
-// (its change event, which a binding waits for) only once the focus leaves it: a value typed and then left
-// by pressing the overlay would reach the dismissal handlers uncommitted. So the press moves the focus
-// itself, onto the element the layer names - the surface, which holds the focus where the browser would
-// have dropped it - and the input it leaves commits before the click that follows the press is dispatched.
-// The capture phase is what runs this ahead of the handlers of the press, and of the click after it.
-document.addEventListener('mousedown', (e: MouseEvent) => {
-    if (!(e.target instanceof Element)) return;
-
-    const targetId = e.target.getAttribute('data-bit-press-focus');
-    if (!targetId) return;
-
-    const target = document.getElementById(targetId);
-    if (!target || document.activeElement === target) return;
-
-    target.focus({ preventScroll: true });
-}, true);
-
 // A right-click dismisses the same callouts, except where the page took the click for itself - a handler
 // that opens a context menu of its own calls preventDefault on it - since that is the page moving its own
 // menu to the new point rather than the user leaving it. Whether the click was taken is only known once

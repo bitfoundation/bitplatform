@@ -9,19 +9,22 @@
 // scrim that centers a loader and a decision the Overlay has none of its own to make.
 // The layer is made programmatically focusable so that a press on it has somewhere inside the Overlay to
 // put the focus it takes off an input. That focus is never one the user moved there with the keyboard, so
-// it is not one to draw a ring around - and leaving a text input hands :focus-visible on to wherever the
-// focus goes next, which would otherwise ring the whole screen.
+// it is not one to draw a ring around; :focus-visible still does for the consumer who makes the layer
+// reachable with a TabIndex of their own.
 .bit-ovl {
     inset: 0;
     opacity: 0;
     width: 100%;
     height: 100%;
-    outline: none;
     display: flex;
     position: fixed;
     visibility: hidden;
     z-index: $zindex-overlay;
     transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
+
+    &:focus:not(:focus-visible) {
+        outline: none;
+    }
 }
 
 .bit-ovl-opn {

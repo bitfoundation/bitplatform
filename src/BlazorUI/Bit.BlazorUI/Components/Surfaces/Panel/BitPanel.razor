@@ -6,8 +6,15 @@
    The key stops here when the panel acts on it: a panel opened from inside another one sits in that one's
    content, where an Escape left to carry on up would dismiss the panel the keyboard is still working inside
    of along with the one it was meant for. *@
+@* tabindex="-1" makes the root programmatically focusable, which is what a press on the overlay needs:
+   pressing something that cannot hold the focus moves it to the nearest element that can, and the root is
+   the nearest one to the overlay. That keeps the focus inside the panel - where the Escape handler and the
+   focus trap both are, the trap being registered on this element for the same reason - while the press
+   itself is left alone, so the input the user was typing into still blurs and still commits what was typed
+   before the click dismisses anything. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onkeydown="HandleOnKeyDown" @onkeydown:stopPropagation="DismissesOnEscape"
+     tabindex="-1"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -16,18 +23,14 @@
     @* The overlay stays in the page while the panel is closed so that it fades out with the panel instead
        of vanishing under it in one frame. It is hidden rather than removed, which also takes it out of the
        way of the clicks the page is meant to keep while the panel is closed.
-       The pointer press on it is refused its default action so that the click never takes the focus out of
-       the panel: the overlay is not focusable, so a browser left to itself drops the focus on the body,
-       which takes the Escape key away from the panel and starts the next Tab at the top of the very page
-       the overlay is there to keep the user off. The focus is still taken off whatever had it, onto the
-       container (data-bit-press-focus, handled by the script): an input only commits what was typed into it
-       once it loses the focus, and the dismissal handlers the click runs are the ones that most need to see
-       that value. *@
+       The press on it is left its default action, which is what blurs whatever had the focus - an input
+       only commits what was typed into it once it loses the focus, and the dismissal handlers the click
+       runs are the ones that most need to see that value. The focus it moves lands on the root rather than
+       on the body, since that is the nearest element to the overlay that can hold it, so neither the
+       Escape key nor the next Tab leaves the panel. *@
     @if (Modeless is false)
     {
         <div @onclick="HandleOnOverlayClick"
-             @onmousedown:preventDefault
-             data-bit-press-focus="@_containerId"
              aria-hidden="true"
              style="@Styles?.Overlay"
              class="@GetOverlayCssClasses()" />

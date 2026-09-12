@@ -1,6 +1,10 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-pnl {
+    // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
+    // panel to leave the focus. That focus is never one the user moved there themselves, so it is not one
+    // to draw a ring around.
+    outline: none;
     font-weight: $tg-fw-regular;
     font-size: $tg-fs-md;
     z-index: $zindex-modal;

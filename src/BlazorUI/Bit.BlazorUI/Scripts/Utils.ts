@@ -957,6 +957,19 @@
             const last = focusables[focusables.length - 1];
             const active = document.activeElement;
 
+            // The focus is on the container itself rather than on anything inside it, which is where a press
+            // on the overlay of a dialog surface leaves it: the container is the nearest element to the
+            // overlay that can hold the focus, and the surfaces make it focusable for that. Tab from there
+            // reaches the content on its own, since the content follows the container in the tab order, but
+            // Shift+Tab walks backwards out of the trap and into the page behind it.
+            if (active === root) {
+                if (e.shiftKey) {
+                    last.focus();
+                    e.preventDefault();
+                }
+                return;
+            }
+
             if (e.shiftKey && active === first) {
                 last.focus();
                 e.preventDefault();
