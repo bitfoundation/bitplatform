@@ -2,14 +2,19 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+@* A label on a plain container is dropped by a screen reader, so the one that carries a label says what it
+   is - a group of the headers it holds - while one that does not is left the bare box it always was. *@
+<div @ref="RootElement" role="@_Role" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@AriaLabel">
     @if (ChildContent is not null || Options is not null)
     {
         <CascadingValue Value="this" IsFixed="true">
+            @* The options report the order they are rendered in from here on, which is their markup order. *@
+            @{ BeginOptionsOrder(); }
             @(Options ?? ChildContent)
         </CascadingValue>
     }
@@ -19,5 +24,10 @@
         {
             <_BitAccordionListItem @key="@GetItemKey(item)" AccordionList="this" Item="item" />
         }
+    }
+
+    @if (_ShowEmptyContent)
+    {
+        @EmptyContent
     }
 </div>

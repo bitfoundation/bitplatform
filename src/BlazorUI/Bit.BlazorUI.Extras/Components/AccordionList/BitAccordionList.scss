@@ -7,3 +7,13 @@
     flex-flow: column nowrap;
     gap: spacing(1);
 }
+
+// The three wrappers the list puts around the parts of an item - one to know which item a key was pressed on,
+// two to keep the keys pressed inside the panel and inside the actions from reaching it - are there for the
+// events alone, so they generate no box at all and leave the layout of the item exactly as the accordion
+// draws it.
+.bit-acl-itm,
+.bit-acl-bdy,
+.bit-acl-act {
+    display: contents;
+}

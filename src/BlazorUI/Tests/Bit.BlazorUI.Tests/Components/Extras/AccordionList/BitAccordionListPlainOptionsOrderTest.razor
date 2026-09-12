@@ -1,0 +1,19 @@
+@using Bit.BlazorUI
+
+@* Every option carries nothing but constants - no content, no template, no handler - so Blazor hands none of
+   them their parameters again when another one is added beside them, and none of them can report the order
+   they are rendered in. *@
+<BitAccordionList @ref="List" TItem="BitAccordionListOption" Multiple="true">
+    <BitAccordionListOption Key="first" Title="First" />
+    @if (ShowMiddle)
+    {
+        <BitAccordionListOption Key="middle" Title="Middle" />
+    }
+    <BitAccordionListOption Key="last" Title="Last" />
+</BitAccordionList>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+
+    public BitAccordionList<BitAccordionListOption>? List { get; set; }
+}

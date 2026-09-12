@@ -10,13 +10,21 @@ public class Section
 
     public bool IsEnabled { get; set; } = true;
 
+    public bool? Locked { get; set; }
+
     public string? Class { get; set; }
 
     public string? Style { get; set; }
 
     public string? Image { get; set; }
 
+    public string? Glyph { get; set; }
+
+    public BitIconInfo? CustomGlyph { get; set; }
+
     public RenderFragment<Section>? Content { get; set; }
+
+    public RenderFragment<Section>? Extra { get; set; }
 
     public Action<Section>? Clicked { get; set; }
 }

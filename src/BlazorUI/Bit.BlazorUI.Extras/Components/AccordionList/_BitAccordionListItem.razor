@@ -4,23 +4,56 @@
 @{
     var isEnabled = AccordionList.IsEnabled && AccordionList.GetIsEnabled(Item);
     var headerTemplate = AccordionList.GetItemHeaderTemplate(Item);
+    var titleTemplate = AccordionList.GetItemTitleTemplate(Item);
+    var expanderTemplate = AccordionList.GetItemExpanderTemplate(Item);
 }
 
-<BitAccordion Background="AccordionList.Background"
-              Border="AccordionList.Border"
-              Class="@AccordionList.GetClass(Item)"
-              Style="@AccordionList.GetStyle(Item)"
-              Classes="AccordionList._itemClasses"
-              Styles="AccordionList._itemStyles"
-              Dir="AccordionList.Dir"
-              IsEnabled="isEnabled"
-              NoBorder="AccordionList.NoBorder"
-              Title="@AccordionList.GetTitle(Item)"
-              Description="@AccordionList.GetDescription(Item)"
-              ExpanderIcon="AccordionList.GetItemExpanderIcon(Item)"
-              ExpanderIconName="@AccordionList.GetItemExpanderIconName(Item)"
-              HeaderTemplate="headerTemplate"
-              IsExpanded="AccordionList.IsItemExpanded(Item)"
-              OnClick="() => AccordionList.HandleOnItemClick(Item)">
-    @AccordionList.GetItemBody(Item)
-</BitAccordion>
+@* The wrapper generates no box of its own (display: contents), so it leaves the layout of the list exactly
+   as it was while giving the keyboard navigation of the AccordionList something to listen on that knows
+   which item the key was pressed on - which the list root, shared by every item, could not tell. *@
+<div class="bit-acl-itm" @onkeydown="HandleOnKeyDown">
+    <BitAccordion @ref="_accordion"
+                  Actions="BuildActions()"
+                  Background="AccordionList.Background"
+                  Border="AccordionList.Border"
+                  Busy="AccordionList.IsItemBusy(Item)"
+                  Class="@AccordionList.GetClass(Item)"
+                  Style="@AccordionList.GetStyle(Item)"
+                  Classes="AccordionList._itemClasses"
+                  Styles="AccordionList._itemStyles"
+                  Description="@AccordionList.GetDescription(Item)"
+                  Dir="AccordionList.Dir"
+                  ExpandedExpanderIcon="AccordionList.GetItemExpandedExpanderIcon(Item)"
+                  ExpandedExpanderIconName="@AccordionList.GetItemExpandedExpanderIconName(Item)"
+                  ExpanderIcon="AccordionList.GetItemExpanderIcon(Item)"
+                  ExpanderIconName="@AccordionList.GetItemExpanderIconName(Item)"
+                  ExpanderIconPosition="AccordionList.ExpanderIconPosition"
+                  ExpanderTemplate="expanderTemplate"
+                  ExpandOnPrint="AccordionList.ExpandOnPrint"
+                  HeaderAriaLabel="@AccordionList.GetItemHeaderAriaLabel(Item)"
+                  HeaderTemplate="headerTemplate"
+                  HeadingLevel="AccordionList.HeadingLevel"
+                  HideExpanderIcon="AccordionList.GetItemHideExpanderIcon(Item)"
+                  Icon="AccordionList.GetItemIcon(Item)"
+                  IconName="@AccordionList.GetItemIconName(Item)"
+                  IsEnabled="isEnabled"
+                  IsExpanded="AccordionList.IsItemExpanded(Item)"
+                  LazyContent="AccordionList.LazyContent"
+                  MaxHeight="@AccordionList.MaxHeight"
+                  NoBorder="AccordionList.NoBorder"
+                  NoContentRegion="AccordionList.NoContentRegion"
+                  NoExpanderRotation="AccordionList.NoExpanderRotation"
+                  ReadOnly="AccordionList.GetItemIsReadOnly(Item)"
+                  Size="AccordionList.Size"
+                  Title="@AccordionList.GetTitle(Item)"
+                  TitleTemplate="titleTemplate"
+                  TransitionDuration="AccordionList.TransitionDuration"
+                  UnmountOnCollapse="AccordionList.UnmountOnCollapse"
+                  OnClick="() => AccordionList.HandleOnItemClick(Item)">
+        @* A key pressed inside the panel belongs to whatever the panel holds - a text field, a nested list -
+           so it is kept from reaching the navigation handler on the wrapper above. *@
+        <div class="bit-acl-bdy" @onkeydown:stopPropagation="true">
+            @AccordionList.GetItemBody(Item)
+        </div>
+    </BitAccordion>
+</div>

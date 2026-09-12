@@ -2087,6 +2087,49 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionBusyShouldNotToggleOnClick()
+    {
+        var changes = 0;
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Busy, true);
+            parameters.Add(p => p.DefaultIsExpanded, true);
+            parameters.Add(p => p.OnChange, (bool _) => changes++);
+        });
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.AreEqual(0, changes);
+        Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+        Assert.AreEqual("true", com.Find(".bit-acd-hdr").GetAttribute("aria-expanded"));
+
+        com.Render(parameters => parameters.Add(p => p.Busy, false));
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.AreEqual(1, changes);
+        Assert.IsFalse(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+    }
+
+    [TestMethod]
+    public async Task BitAccordionBusyShouldStillAnswerTheMethods()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Busy, true);
+        });
+
+        await com.InvokeAsync(() => com.Instance.Expand());
+
+        Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+
+        await com.InvokeAsync(() => com.Instance.Collapse());
+
+        Assert.IsFalse(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
+    }
+
+    [TestMethod]
     public void BitAccordionShouldNotReportTheHeaderAsBusyWithoutAnOnToggling()
     {
         var com = RenderComponent<BitAccordion>();
