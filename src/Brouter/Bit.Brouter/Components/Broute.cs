@@ -443,9 +443,12 @@ public class Broute : ComponentBase, IDisposable
             foreach (var paramName in seg.ParameterNames)
             {
                 values.TryGetValue(paramName, out var value);
-                // U+001F (unit separator) can't appear in a template's parameter name, so the
-                // key is unambiguous even when values themselves contain '=' or '/'.
-                sb.Append(paramName).Append('=').Append(BrouterService.FormatRouteValue(value)).Append('\u001f');
+                var formatted = BrouterService.FormatRouteValue(value);
+                // Length-prefixed so the key stays unambiguous whatever a value contains - '=',
+                // '/' or even the U+001F separator itself (a %1F in the URL decodes to one): with
+                // the length up front a value can never be read as the end of its own field plus
+                // the start of the next one.
+                sb.Append(paramName).Append('=').Append(formatted.Length).Append(':').Append(formatted).Append('\u001f');
             }
         }
         return sb.ToString();

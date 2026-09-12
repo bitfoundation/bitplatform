@@ -196,7 +196,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
     }
 
     [TestMethod]
-    public void Deactivating_lock_vetoes_a_remounting_parameter_change()
+    public async Task Deactivating_lock_vetoes_a_remounting_parameter_change()
     {
         UseRemount();
         var nav = Services.GetRequiredService<BunitNavigationManager>();
@@ -204,7 +204,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
         cut.WaitForAssertion(() => cut.Find("[data-testid=locked]"));
 
         cut.Instance.LockState.Locked = true;
-        cut.InvokeAsync(() => brouter.Navigate("/rmlock/2"));
+        await cut.InvokeAsync(() => brouter.Navigate("/rmlock/2"));
 
         cut.WaitForAssertion(() =>
         {
@@ -219,7 +219,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
     }
 
     [TestMethod]
-    public void LeaveGuard_fires_for_a_remounting_parameter_change()
+    public async Task LeaveGuard_fires_for_a_remounting_parameter_change()
     {
         // A parameter change on a route that keeps its instance is not a leave, so LeaveGuard stays
         // silent there (see LeaveGuardTests). Under a rebuild the content is disposed exactly as if
@@ -229,7 +229,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
         cut.WaitForAssertion(() => cut.Find("[data-testid=guarded]"));
 
         cut.Instance.BlockGuard = true;
-        cut.InvokeAsync(() => brouter.Navigate("/rmguard/2"));
+        await cut.InvokeAsync(() => brouter.Navigate("/rmguard/2"));
 
         cut.WaitForAssertion(() =>
         {
@@ -238,7 +238,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
         });
 
         cut.Instance.BlockGuard = false;
-        cut.InvokeAsync(() => brouter.Navigate("/rmguard/2"));
+        await cut.InvokeAsync(() => brouter.Navigate("/rmguard/2"));
 
         cut.WaitForAssertion(() =>
         {
