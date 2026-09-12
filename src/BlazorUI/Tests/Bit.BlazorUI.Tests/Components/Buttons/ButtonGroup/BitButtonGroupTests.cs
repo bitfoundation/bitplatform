@@ -511,4 +511,60 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("vertical", root.GetAttribute("aria-orientation"));
         Assert.AreEqual("Operations", root.GetAttribute("aria-label"));
     }
+
+    [TestMethod]
+    public void BitButtonGroupShouldKeepTheToggledItemWhenItemsAreRebuiltWithNewInstances()
+    {
+        // A page that builds its items in a property hands the group a fresh list of fresh instances on
+        // every render, so the toggled item has to be followed by its key rather than by reference.
+        static List<BitButtonGroupItem> NewItems() =>
+        [
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        ];
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, NewItems());
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.ToggleKey, "b");
+            parameters.Add(p => p.ToggleKeyChanged, (string? _) => { });
+        });
+
+        Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-checked"));
+
+        comp.Render(parameters => parameters.Add(p => p.Items, NewItems()));
+
+        Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-checked"));
+        Assert.AreEqual(1, comp.FindAll(".bit-btg-chk").Count);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupShouldKeepTheToggledItemsWhenItemsAreRebuiltWithNewInstancesInMultipleMode()
+    {
+        static List<BitButtonGroupItem> NewItems() =>
+        [
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        ];
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, NewItems());
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.ToggleKeys, new[] { "a", "c" });
+            parameters.Add(p => p.ToggleKeysChanged, (IEnumerable<string>? _) => { });
+        });
+
+        Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
+
+        comp.Render(parameters => parameters.Add(p => p.Items, NewItems()));
+
+        var buttons = comp.FindAll("button");
+
+        Assert.AreEqual("true", buttons[0].GetAttribute("aria-pressed"));
+        Assert.AreEqual("false", buttons[1].GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", buttons[2].GetAttribute("aria-pressed"));
+    }
 }

@@ -435,6 +435,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 _items = [.. Items];
 
                 AssignItemKeys();
+                RemapToggledItems();
             }
         }
 
@@ -476,6 +477,30 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         foreach (var item in _items)
         {
             (item as BitButtonGroupOption)?.InternalStateHasChanged();
+        }
+    }
+
+    // The toggled items are held by reference, so a collection rebuilt out of new instances - a page that
+    // hands over a fresh list on every render - would leave them pointing at items no longer in the list, and
+    // nothing would render as toggled. Each is followed to the item that now carries its key.
+    private void RemapToggledItems()
+    {
+        if (_toggleItem is not null && _items.Contains(_toggleItem) is false)
+        {
+            var key = GetItemKey(_toggleItem);
+            _toggleItem = _items.FirstOrDefault(i => GetItemKey(i) == key);
+
+            if (_toggleItem is not null) SetIsToggled(_toggleItem, true);
+        }
+
+        if (_toggledItems.Count == 0 || _toggledItems.All(_items.Contains)) return;
+
+        var keys = _toggledItems.Select(GetItemKey).Where(k => k.HasValue()).Select(k => k!).ToHashSet();
+        _toggledItems = [.. _items.Where(i => keys.Contains(GetItemKey(i) ?? string.Empty))];
+
+        foreach (var item in _toggledItems)
+        {
+            SetIsToggled(item, true);
         }
     }
 

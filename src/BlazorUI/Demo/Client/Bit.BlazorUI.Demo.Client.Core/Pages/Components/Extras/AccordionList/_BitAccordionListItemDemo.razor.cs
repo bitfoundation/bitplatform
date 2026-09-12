@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public partial class _BitAccordionListItemDemo
 {
@@ -40,6 +40,14 @@ public partial class _BitAccordionListItemDemo
         new() { Title = "General settings", Description = "The general settings of the application", IconName = BitIconName.Settings, ExpanderIconName = BitIconName.ChevronDownSmall, Body = BodyFor(Story1) },
         new() { Title = "Users", Description = "You are currently not an owner", IconName = BitIconName.Contact, ExpanderIconName = BitIconName.ChevronDownSmall, Body = BodyFor(Story2) },
         new() { Title = "Advanced settings", Description = "Filtering has been entirely disabled", IconName = BitIconName.Ringer, Body = BodyFor(Story3) },
+    ];
+
+    // No Body: an item that carries one of its own takes precedence over the list's BodyTemplate.
+    private readonly List<BitAccordionListItem> templateItems =
+    [
+        new() { Title = "General settings", Description = "The general settings of the application" },
+        new() { Title = "Users", Description = "You are currently not an owner" },
+        new() { Title = "Advanced settings", Description = "Filtering has been entirely disabled" },
     ];
 
     private readonly List<BitAccordionListItem> stateItems =

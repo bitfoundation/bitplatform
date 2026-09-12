@@ -1,4 +1,4 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div>
         The items are declared as <code>BitAccordionListOption</code> child components, each carrying the
         <code>Title</code> and <code>Description</code> of its header and its panel as plain child content. The
@@ -135,13 +135,13 @@
     <div class="example-content">
         <div>Per-option expander icon and leading icon:</div>
         <BitAccordionList TItem="BitAccordionListOption">
-            <BitAccordionListOption Title="General settings" IconName="@BitIconName.Settings" ExpanderIconName="@BitIconName.ChevronDownSmall">
+            <BitAccordionListOption Title="General settings" Description="The general settings of the application" IconName="@BitIconName.Settings" ExpanderIconName="@BitIconName.ChevronDownSmall">
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
             </BitAccordionListOption>
-            <BitAccordionListOption Title="Users" IconName="@BitIconName.Contact" ExpanderIconName="@BitIconName.ChevronDownSmall">
+            <BitAccordionListOption Title="Users" Description="You are currently not an owner" IconName="@BitIconName.Contact" ExpanderIconName="@BitIconName.ChevronDownSmall">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
-            <BitAccordionListOption Title="Advanced settings" IconName="@BitIconName.Ringer">
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled" IconName="@BitIconName.Ringer">
                 In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
             </BitAccordionListOption>
         </BitAccordionList>
@@ -156,6 +156,9 @@
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
     </div>
     <br /><br />
@@ -167,6 +170,9 @@
             </BitAccordionListOption>
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
             </BitAccordionListOption>
         </BitAccordionList>
     </div>
@@ -180,43 +186,42 @@
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
     </div>
 </DemoExample>
 
 <DemoExample Title="Actions" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
     <div>
-        <code>Actions</code> renders content beside the header of an option, outside of the toggle button and of
-        the heading it sits in, so it can hold interactive elements of its own - a menu, a delete button, a switch
-        - without nesting a control inside another one. The list can also carry an <code>ActionsTemplate</code>
-        for every option that does not bring one.
+        <code>ActionsTemplate</code> renders content beside the header of every option, outside of the toggle
+        button and of the heading it sits in, so it can hold interactive elements of its own - a menu, a delete
+        button, a switch - without nesting a control inside another one. An option can also carry its own
+        <code>Actions</code>, which takes precedence over the template. The options are wrapped in
+        <code>Options</code> here, as a list that carries a named fragment of its own can no longer take them as
+        its plain child content.
     </div>
     <br />
     <BitAccordionList TItem="BitAccordionListOption">
-        <BitAccordionListOption Title="General settings" Description="The general settings of the application">
-            <Actions Context="option">
-                <BitButton IconOnly
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.MoreVertical"
-                           Title="@($"More about {option.Title}")"
-                           OnClick="() => actionedTitle = option.Title" />
-            </Actions>
-            <Body Context="option">
+        <ActionsTemplate Context="option">
+            <BitButton IconOnly
+                       Variant="BitVariant.Text"
+                       IconName="@BitIconName.MoreVertical"
+                       Title="@($"More about {option.Title}")"
+                       OnClick="() => actionedTitle = option.Title" />
+        </ActionsTemplate>
+        <Options>
+            <BitAccordionListOption Title="General settings" Description="The general settings of the application">
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-            </Body>
-        </BitAccordionListOption>
-        <BitAccordionListOption Title="Users" Description="You are currently not an owner">
-            <Actions Context="option">
-                <BitButton IconOnly
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.MoreVertical"
-                           Title="@($"More about {option.Title}")"
-                           OnClick="() => actionedTitle = option.Title" />
-            </Actions>
-            <Body Context="option">
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            </Body>
-        </BitAccordionListOption>
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
+        </Options>
     </BitAccordionList>
     <br />
     <div>Last action: <b>@actionedTitle</b></div>
@@ -284,6 +289,9 @@
         <BitAccordionListOption Title="Users" Description="You are currently not an owner" OnClick="_ => { clickCounter++; StateHasChanged(); }">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordionListOption>
+        <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled" OnClick="_ => { clickCounter++; StateHasChanged(); }">
+            In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+        </BitAccordionListOption>
     </BitAccordionList>
     <div>Item click count: <b>@clickCounter</b></div>
 </DemoExample>
@@ -308,6 +316,9 @@
         </BitAccordionListOption>
         <BitAccordionListOption Key="users" Title="Users" Description="You are currently not an owner">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordionListOption>
+        <BitAccordionListOption Key="advanced" Title="Advanced settings" Description="Filtering has been entirely disabled">
+            In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
         </BitAccordionListOption>
     </BitAccordionList>
     <br />
@@ -416,8 +427,14 @@
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                 In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
             </BitAccordionListOption>
             <BitAccordionListOption Key="long-2" Title="Another long panel" Description="Scrolls inside the option">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
@@ -442,6 +459,9 @@
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
     </div>
     <br /><br />
@@ -454,67 +474,60 @@
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
     </div>
 </DemoExample>
 
 <DemoExample Title="Templates" RazorCode="@example14RazorCode" Id="example14" PreventRenderForMcpClient>
     <div>
-        <code>HeaderTemplate</code> replaces the whole header of an option and <code>Body</code> its panel, while
-        <code>TitleTemplate</code> and <code>ExpanderTemplate</code> take the place of only the title and only the
-        expander, leaving the rest of the header as it is. Each of them receives the option as its context, and the
-        list can carry the same four templates for every option that does not bring one.
+        <code>HeaderTemplate</code> replaces the whole header of every option and <code>BodyTemplate</code> its
+        panel, while <code>TitleTemplate</code> and <code>ExpanderTemplate</code> take the place of only the title
+        and only the expander, leaving the rest of the header as it is. Each of them receives the option as its
+        context, and an option that carries a template of its own - or, for the panel, plain child content - takes
+        precedence over the one of the list.
     </div>
     <br /><br />
     <div class="example-content">
-        <div>HeaderTemplate &amp; Body:</div>
+        <div>HeaderTemplate &amp; BodyTemplate:</div>
         <BitAccordionList TItem="BitAccordionListOption">
-            <BitAccordionListOption Title="General settings">
-                <HeaderTemplate Context="option">
-                    <BitIcon IconName="@BitIconName.FavoriteStarFill" Color="BitColor.Warning" />
-                    <b>@option.Title</b>
-                </HeaderTemplate>
-                <Body Context="option">
-                    <BitText Typography="BitTypography.Caption1">The general settings of the application</BitText>
-                </Body>
-            </BitAccordionListOption>
-            <BitAccordionListOption Title="Users">
-                <HeaderTemplate Context="option">
-                    <BitIcon IconName="@BitIconName.FavoriteStarFill" Color="BitColor.Warning" />
-                    <b>@option.Title</b>
-                </HeaderTemplate>
-                <Body Context="option">
-                    <BitText Typography="BitTypography.Caption1">You are currently not an owner</BitText>
-                </Body>
-            </BitAccordionListOption>
+            <HeaderTemplate Context="option">
+                <BitIcon IconName="@BitIconName.FavoriteStarFill" Color="BitColor.Warning" />
+                <b>@option.Title</b>
+            </HeaderTemplate>
+            <BodyTemplate Context="option">
+                <BitText Typography="BitTypography.Caption1">@option.Description</BitText>
+            </BodyTemplate>
+            <Options>
+                <BitAccordionListOption Title="General settings" Description="The general settings of the application" />
+                <BitAccordionListOption Title="Users" Description="You are currently not an owner" />
+                <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled" />
+            </Options>
         </BitAccordionList>
     </div>
     <br /><br />
     <div class="example-content">
         <div>TitleTemplate &amp; ExpanderTemplate:</div>
         <BitAccordionList TItem="BitAccordionListOption">
-            <BitAccordionListOption Title="General settings" Description="The general settings of the application">
-                <TitleTemplate Context="option">
-                    <BitTag Text="@option.Title" Color="BitColor.SecondaryBackground" />
-                </TitleTemplate>
-                <ExpanderTemplate Context="option">
-                    <BitIcon IconName="@BitIconName.ChevronDownSmall" />
-                </ExpanderTemplate>
-                <Body Context="option">
+            <TitleTemplate Context="option">
+                <BitTag Text="@option.Title" Color="BitColor.SecondaryBackground" />
+            </TitleTemplate>
+            <ExpanderTemplate Context="option">
+                <BitIcon IconName="@BitIconName.ChevronDownSmall" />
+            </ExpanderTemplate>
+            <Options>
+                <BitAccordionListOption Title="General settings" Description="The general settings of the application">
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </Body>
-            </BitAccordionListOption>
-            <BitAccordionListOption Title="Users" Description="You are currently not an owner">
-                <TitleTemplate Context="option">
-                    <BitTag Text="@option.Title" Color="BitColor.SecondaryBackground" />
-                </TitleTemplate>
-                <ExpanderTemplate Context="option">
-                    <BitIcon IconName="@BitIconName.ChevronDownSmall" />
-                </ExpanderTemplate>
-                <Body Context="option">
+                </BitAccordionListOption>
+                <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                </Body>
-            </BitAccordionListOption>
+                </BitAccordionListOption>
+                <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+                </BitAccordionListOption>
+            </Options>
         </BitAccordionList>
     </div>
 </DemoExample>
@@ -574,6 +587,9 @@
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
     </div>
     <br /><br />
@@ -585,6 +601,9 @@
             </BitAccordionListOption>
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
             </BitAccordionListOption>
         </BitAccordionList>
     </div>
@@ -606,6 +625,9 @@
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
     </div>
     <br /><br />
@@ -617,6 +639,9 @@
             </BitAccordionListOption>
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
             </BitAccordionListOption>
         </BitAccordionList>
     </div>
@@ -643,6 +668,9 @@
                 </BitAccordionListOption>
                 <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                </BitAccordionListOption>
+                <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
                 </BitAccordionListOption>
             }
         </Options>
@@ -691,6 +719,9 @@
         <BitAccordionListOption Title="Users" Description="You are currently not an owner">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordionListOption>
+        <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+            In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+        </BitAccordionListOption>
     </BitAccordionList>
     <br />
     <BitAccordionList Background="BitColorKind.Tertiary" Border="BitColorKind.Transparent" TItem="BitAccordionListOption">
@@ -699,6 +730,9 @@
         </BitAccordionListOption>
         <BitAccordionListOption Title="Users" Description="You are currently not an owner">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordionListOption>
+        <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+            In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
         </BitAccordionListOption>
     </BitAccordionList>
 </DemoExample>
@@ -752,6 +786,12 @@
             <BitAccordionListOption Title="General settings" Description="The general settings of the application">
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Users" Description="You are currently not an owner">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
     </div>
     <br /><br />
@@ -761,6 +801,12 @@
             <BitAccordionListOption Title="General settings" Description="The general settings of the application">
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Users" Description="You are currently not an owner">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
     </div>
     <br /><br />
@@ -769,6 +815,12 @@
         <BitAccordionList Size="BitSize.Large" TItem="BitAccordionListOption">
             <BitAccordionListOption Title="General settings" Description="The general settings of the application">
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Users" Description="You are currently not an owner">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
             </BitAccordionListOption>
         </BitAccordionList>
     </div>
@@ -793,6 +845,9 @@
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
         <BitAccordionList Gap="8" Class="custom-item" TItem="BitAccordionListOption">
             <BitAccordionListOption Title="General settings" Description="The general settings of the application">
@@ -800,6 +855,9 @@
             </BitAccordionListOption>
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
             </BitAccordionListOption>
         </BitAccordionList>
     </div>
@@ -813,6 +871,9 @@
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
         </BitAccordionList>
         <BitAccordionList Classes="@(new() { ItemTitle = "custom-title", ItemExpanded = "custom-expanded" })" TItem="BitAccordionListOption">
             <BitAccordionListOption Title="General settings" Description="The general settings of the application">
@@ -820,6 +881,9 @@
             </BitAccordionListOption>
             <BitAccordionListOption Title="Users" Description="You are currently not an owner">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Title="Advanced settings" Description="Filtering has been entirely disabled">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
             </BitAccordionListOption>
         </BitAccordionList>
     </div>

@@ -308,6 +308,24 @@ public class BitAccordionListTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionListOptionsShouldNotReportBoundExpandedKeysThePageAlreadyHolds()
+    {
+        var component = RenderComponent<BitAccordionListBoundOptionsTest>();
+
+        Assert.AreEqual(1, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        CollectionAssert.AreEqual(new[] { "second" }, component.Instance.ExpandedKeys.ToArray());
+        Assert.AreEqual(0, component.Instance.ChangeCount);
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+
+        component.WaitForAssertion(() =>
+        {
+            CollectionAssert.AreEqual(new[] { "first", "second" }, component.Instance.ExpandedKeys.ToArray());
+            Assert.AreEqual(1, component.Instance.ChangeCount);
+        });
+    }
+
+    [TestMethod]
     public void BitAccordionListMultipleShouldSetRootClass()
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>

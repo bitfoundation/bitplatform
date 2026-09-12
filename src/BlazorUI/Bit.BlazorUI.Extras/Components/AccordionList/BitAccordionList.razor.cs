@@ -1422,6 +1422,11 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     {
         if (Multiple)
         {
+            // The keys are handed over as a list of their own, which the page's value never is the same
+            // instance as - so a set it already holds would be reported back to it as a change of its own,
+            // and re-render the page for nothing. Where the list is a copy of that value, no push is due.
+            if (ExpandedKeys is not null && ExpandedKeys.SequenceEqual(_internalExpandedKeys)) return;
+
             await AssignExpandedKeys([.. _internalExpandedKeys]);
         }
         else

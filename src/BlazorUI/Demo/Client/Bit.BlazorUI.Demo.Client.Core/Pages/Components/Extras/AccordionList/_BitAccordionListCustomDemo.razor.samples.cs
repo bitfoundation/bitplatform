@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public partial class _BitAccordionListCustomDemo
 {
@@ -47,6 +47,16 @@ private readonly List<Section> basicItems =
     new() { Id = ""advanced"", Name = ""Advanced settings"", Info = ""Filtering has been entirely disabled"", Content = BodyFor(""In the beginning, there is silence, ..."") },
 ];
 " + sectionCsharpCode;
+
+    // No Content: an item that carries a body of its own takes precedence over the list's BodyTemplate.
+    private const string templateItemsCsharpCode = @"
+private readonly List<Section> templateItems =
+[
+    new() { Id = ""general"", Name = ""General settings"", Info = ""The general settings of the application"" },
+    new() { Id = ""users"", Name = ""Users"", Info = ""You are currently not an owner"" },
+    new() { Id = ""advanced"", Name = ""Advanced settings"", Info = ""Filtering has been entirely disabled"" },
+];
+";
 
     private const string keyedItemsCsharpCode = @"
 private readonly List<Section> keyedItems =
@@ -104,7 +114,7 @@ private readonly List<Section> iconItems =
 " + basicItemsCsharpCode;
 
     private readonly string example6RazorCode = @"
-<BitAccordionList Items=""keyedItems"" TItem=""Section"" NameSelectors=""nameSelectors"">
+<BitAccordionList Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"">
     <ActionsTemplate Context=""item"">
         <BitButton IconOnly
                    Variant=""BitVariant.Text""
@@ -120,7 +130,7 @@ private string? actionedTitle;
 
 // An item can also carry its own actions through the member mapped to Actions (Section.Extra here),
 // which take precedence over the ActionsTemplate.
-" + keyedItemsCsharpCode;
+" + basicItemsCsharpCode;
 
     private readonly string example7RazorCode = @"
 <BitAccordionList Multiple
@@ -182,7 +192,7 @@ protected override void OnInitialized()
 <BitCheckbox @bind-Value=""lockToggling"" Label=""Refuse every toggle"" />
 <BitCheckbox @bind-Value=""slowToggling"" Label=""Take a second to decide"" />
 
-<BitAccordionList Items=""keyedItems"" TItem=""Section"" NameSelectors=""nameSelectors"" OnToggling=""HandleOnToggling"" />
+<BitAccordionList Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" OnToggling=""HandleOnToggling"" />
 
 <div>Last request: <b>@togglingReport</b></div>";
     private readonly string example9CsharpCode = @"
@@ -202,7 +212,7 @@ private async Task HandleOnToggling(BitAccordionListToggleArgs<Section> args)
 
     args.Cancel = lockToggling;
 }
-" + keyedItemsCsharpCode;
+" + basicItemsCsharpCode;
 
     private readonly string example10RazorCode = @"
 <BitButtonGroup Toggle Items=""bindingButtons"" TItem=""BitButtonGroupItem"" @bind-ToggleKey=""boundExpandedKey"" />
@@ -279,7 +289,7 @@ private static RenderFragment<Section> TimestampBody() => section => builder =>
     private readonly string example13CsharpCode = basicItemsCsharpCode;
 
     private readonly string example14RazorCode = @"
-<BitAccordionList Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"">
+<BitAccordionList Items=""templateItems"" TItem=""Section"" NameSelectors=""nameSelectors"">
     <HeaderTemplate Context=""item"">
         <BitIcon IconName=""@BitIconName.FavoriteStarFill"" Color=""BitColor.Warning"" />
         <b>@item.Name</b>
@@ -297,18 +307,18 @@ private static RenderFragment<Section> TimestampBody() => section => builder =>
         <BitIcon IconName=""@BitIconName.ChevronDownSmall"" />
     </ExpanderTemplate>
 </BitAccordionList>";
-    private readonly string example14CsharpCode = basicItemsCsharpCode;
+    private readonly string example14CsharpCode = templateItemsCsharpCode + basicItemsCsharpCode;
 
     private readonly string example15RazorCode = @"
 <BitAccordionList Multiple
-                  Items=""keyedItems""
+                  Items=""basicItems""
                   TItem=""Section""
                   NameSelectors=""nameSelectors""
                   HeadingLevel=""2""
                   NoContentRegion
                   NoNavigationLoop
                   AriaLabel=""Application settings"" />";
-    private readonly string example15CsharpCode = keyedItemsCsharpCode;
+    private readonly string example15CsharpCode = basicItemsCsharpCode;
 
     private readonly string example16RazorCode = @"
 <BitAccordionList ExpandOnPrint Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />

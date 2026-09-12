@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public partial class _BitAccordionListItemDemo
 {
@@ -11,6 +11,16 @@ private readonly List<BitAccordionListItem> basicItems =
 ];
 
 private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
+
+    // No Body: an item that carries one of its own takes precedence over the list's BodyTemplate.
+    private const string templateItemsCsharpCode = @"
+private readonly List<BitAccordionListItem> templateItems =
+[
+    new() { Title = ""General settings"", Description = ""The general settings of the application"" },
+    new() { Title = ""Users"", Description = ""You are currently not an owner"" },
+    new() { Title = ""Advanced settings"", Description = ""Filtering has been entirely disabled"" },
+];
+";
 
     private const string keyedItemsCsharpCode = @"
 private readonly List<BitAccordionListItem> keyedItems =
@@ -87,7 +97,7 @@ private readonly List<BitAccordionListItem> iconItems =
 " + basicItemsCsharpCode;
 
     private readonly string example6RazorCode = @"
-<BitAccordionList Items=""keyedItems"" TItem=""BitAccordionListItem"">
+<BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"">
     <ActionsTemplate Context=""item"">
         <BitButton IconOnly
                    Variant=""BitVariant.Text""
@@ -103,7 +113,7 @@ private string? actionedTitle;
 
 // An item can also carry its own actions, which take precedence over the ActionsTemplate:
 // new BitAccordionListItem { Title = ""Users"", Actions = item => @<BitIcon IconName=""@BitIconName.Lock"" /> }
-" + keyedItemsCsharpCode;
+" + basicItemsCsharpCode;
 
     private readonly string example7RazorCode = @"
 <BitAccordionList Multiple
@@ -165,7 +175,7 @@ private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => ite
 <BitCheckbox @bind-Value=""lockToggling"" Label=""Refuse every toggle"" />
 <BitCheckbox @bind-Value=""slowToggling"" Label=""Take a second to decide"" />
 
-<BitAccordionList Items=""keyedItems"" TItem=""BitAccordionListItem"" OnToggling=""HandleOnToggling"" />
+<BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"" OnToggling=""HandleOnToggling"" />
 
 <div>Last request: <b>@togglingReport</b></div>";
     private readonly string example9CsharpCode = @"
@@ -185,7 +195,7 @@ private async Task HandleOnToggling(BitAccordionListToggleArgs<BitAccordionListI
 
     args.Cancel = lockToggling;
 }
-" + keyedItemsCsharpCode;
+" + basicItemsCsharpCode;
 
     private readonly string example10RazorCode = @"
 <BitButtonGroup Toggle Items=""bindingButtons"" TItem=""BitButtonGroupItem"" @bind-ToggleKey=""boundExpandedKey"" />
@@ -263,7 +273,7 @@ private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => ite
     private readonly string example13CsharpCode = basicItemsCsharpCode;
 
     private readonly string example14RazorCode = @"
-<BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"">
+<BitAccordionList Items=""templateItems"" TItem=""BitAccordionListItem"">
     <HeaderTemplate Context=""item"">
         <BitIcon IconName=""@BitIconName.FavoriteStarFill"" Color=""BitColor.Warning"" />
         <b>@item.Title</b>
@@ -281,17 +291,17 @@ private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => ite
         <BitIcon IconName=""@BitIconName.ChevronDownSmall"" />
     </ExpanderTemplate>
 </BitAccordionList>";
-    private readonly string example14CsharpCode = basicItemsCsharpCode;
+    private readonly string example14CsharpCode = templateItemsCsharpCode + basicItemsCsharpCode;
 
     private readonly string example15RazorCode = @"
 <BitAccordionList Multiple
-                  Items=""keyedItems""
+                  Items=""basicItems""
                   TItem=""BitAccordionListItem""
                   HeadingLevel=""2""
                   NoContentRegion
                   NoNavigationLoop
                   AriaLabel=""Application settings"" />";
-    private readonly string example15CsharpCode = keyedItemsCsharpCode;
+    private readonly string example15CsharpCode = basicItemsCsharpCode;
 
     private readonly string example16RazorCode = @"
 <BitAccordionList ExpandOnPrint Items=""basicItems"" TItem=""BitAccordionListItem"" />

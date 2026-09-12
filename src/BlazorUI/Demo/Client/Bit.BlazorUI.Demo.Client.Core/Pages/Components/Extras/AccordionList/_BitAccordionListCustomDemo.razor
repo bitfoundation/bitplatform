@@ -1,4 +1,4 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
         The items are provided as a custom generic type, and <code>NameSelectors</code> says which of its members
         stands for the key, the title, the description, the body and everything else the list reads. The list
@@ -104,7 +104,7 @@
         member mapped to <code>Actions</code>, which take precedence over the template.
     </div>
     <br />
-    <BitAccordionList Items="keyedItems" TItem="Section" NameSelectors="nameSelectors">
+    <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors">
         <ActionsTemplate Context="item">
             <BitButton IconOnly
                        Variant="BitVariant.Text"
@@ -174,7 +174,7 @@
     <BitCheckbox @bind-Value="lockToggling" Label="Refuse every toggle" />
     <BitCheckbox @bind-Value="slowToggling" Label="Take a second to decide" />
     <br />
-    <BitAccordionList Items="keyedItems"
+    <BitAccordionList Items="basicItems"
                       TItem="Section"
                       NameSelectors="nameSelectors"
                       OnToggling="HandleOnToggling" />
@@ -274,7 +274,7 @@
     <br /><br />
     <div class="example-content">
         <div>HeaderTemplate &amp; BodyTemplate:</div>
-        <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors">
+        <BitAccordionList Items="templateItems" TItem="Section" NameSelectors="nameSelectors">
             <HeaderTemplate Context="item">
                 <BitIcon IconName="@BitIconName.FavoriteStarFill" Color="BitColor.Warning" />
                 <b>@item.Name</b>
@@ -315,7 +315,7 @@
     </div>
     <br />
     <BitAccordionList Multiple
-                      Items="keyedItems"
+                      Items="basicItems"
                       TItem="Section"
                       NameSelectors="nameSelectors"
                       HeadingLevel="2"

@@ -1,4 +1,4 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
         The items are provided as a list of <code>BitAccordionListItem</code> objects, each carrying the
         <code>Title</code> and <code>Description</code> of its header and the <code>Body</code> of its panel. The
@@ -104,7 +104,7 @@
         which takes precedence over the template.
     </div>
     <br />
-    <BitAccordionList Items="keyedItems" TItem="BitAccordionListItem">
+    <BitAccordionList Items="basicItems" TItem="BitAccordionListItem">
         <ActionsTemplate Context="item">
             <BitButton IconOnly
                        Variant="BitVariant.Text"
@@ -172,7 +172,7 @@
     <BitCheckbox @bind-Value="lockToggling" Label="Refuse every toggle" />
     <BitCheckbox @bind-Value="slowToggling" Label="Take a second to decide" />
     <br />
-    <BitAccordionList Items="keyedItems"
+    <BitAccordionList Items="basicItems"
                       TItem="BitAccordionListItem"
                       OnToggling="HandleOnToggling" />
     <br />
@@ -270,7 +270,7 @@
     <br /><br />
     <div class="example-content">
         <div>HeaderTemplate &amp; BodyTemplate:</div>
-        <BitAccordionList Items="basicItems" TItem="BitAccordionListItem">
+        <BitAccordionList Items="templateItems" TItem="BitAccordionListItem">
             <HeaderTemplate Context="item">
                 <BitIcon IconName="@BitIconName.FavoriteStarFill" Color="BitColor.Warning" />
                 <b>@item.Title</b>
@@ -311,7 +311,7 @@
     </div>
     <br />
     <BitAccordionList Multiple
-                      Items="keyedItems"
+                      Items="basicItems"
                       TItem="BitAccordionListItem"
                       HeadingLevel="2"
                       NoContentRegion

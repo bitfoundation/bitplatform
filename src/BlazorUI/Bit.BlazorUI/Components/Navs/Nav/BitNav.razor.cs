@@ -27,6 +27,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     private DateTime _lastTypeAheadAt = DateTime.MinValue;
     internal Dictionary<TItem, bool> _itemExpandStates = [];
     private readonly HashSet<TItem> _initializedItems = [];
+    // What each item answers to across a rebuild of the tree: its key, or failing one its place in the tree,
+    // the same way the rendered items are keyed.
+    private readonly Dictionary<TItem, string> _itemIdentities = [];
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
 
 
@@ -462,6 +465,22 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         // the nav has read before and there is nothing to do.
         if (rootChanged is false && live.SetEquals(_initializedItems)) return;
 
+        // The items are held by reference, so a tree rebuilt out of new instances - a page that hands over a
+        // fresh list on every render - is all new items to the set above, and each would be given its initial
+        // state rather than the one the reader left it in. So what the outgoing items hold is kept by identity
+        // and handed to the incoming item that answers to the same one.
+        var outgoing = new Dictionary<string, bool>(StringComparer.Ordinal);
+        string? focusedIdentity = null;
+
+        foreach (var item in _initializedItems.Where(item => live.Contains(item) is false))
+        {
+            if (_itemIdentities.TryGetValue(item, out var identity) is false) continue;
+
+            outgoing[identity] = GetItemExpanded(item);
+
+            if (AreEqual(item, _focusedItem)) focusedIdentity = identity;
+        }
+
         // The expansion state of the items that are gone is dropped, so a nav whose items are swapped
         // repeatedly (a filtered list, a reloaded menu, ...) does not keep growing.
         _initializedItems.RemoveWhere(item => live.Contains(item) is false);
@@ -470,7 +489,15 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
             _itemExpandStates.Remove(item);
         }
 
-        InitializeExpandStates();
+        _itemIdentities.Clear();
+        CollectItemIdentities(_items, null);
+
+        InitializeExpandStates(outgoing);
+
+        if (focusedIdentity is not null)
+        {
+            _focusedItem = _itemIdentities.FirstOrDefault(pair => pair.Value == focusedIdentity).Key;
+        }
 
         // The match is deferred to the end of the render instead of running here, because the parameters of
         // a single SetParametersAsync are assigned one by one: matching now would read a Mode (or a Match)
@@ -481,13 +508,32 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // Applies the initial expansion state to the items the nav has not seen yet, so items that arrive
     // after the first render (loaded from a service, for instance) still honor AllExpanded and their own
     // IsExpanded, while the items already on screen keep whatever the user has expanded or collapsed.
-    private void InitializeExpandStates()
+    private void InitializeExpandStates(Dictionary<string, bool>? carried = null)
     {
         foreach (var item in Flatten(_items))
         {
             if (_initializedItems.Add(item) is false) continue;
 
+            if (carried is not null && _itemIdentities.TryGetValue(item, out var identity) && carried.TryGetValue(identity, out var expanded))
+            {
+                SetItemExpanded(item, expanded);
+                continue;
+            }
+
             SetItemExpanded(item, AllExpanded || (GetIsExpanded(item) ?? false));
+        }
+    }
+
+    private void CollectItemIdentities(IList<TItem> items, string? parentIdentity)
+    {
+        for (var idx = 0; idx < items.Count; idx++)
+        {
+            var item = items[idx];
+            var identity = GetKey(item) ?? (parentIdentity is null ? idx.ToString() : $"{parentIdentity}-{idx}");
+
+            _itemIdentities[item] = identity;
+
+            CollectItemIdentities(GetChildItems(item), identity);
         }
     }
 

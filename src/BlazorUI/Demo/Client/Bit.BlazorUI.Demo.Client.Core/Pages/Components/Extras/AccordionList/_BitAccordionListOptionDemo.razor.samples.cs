@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public partial class _BitAccordionListOptionDemo
 {
@@ -62,51 +62,81 @@ public partial class _BitAccordionListOptionDemo
 
     private readonly string example5RazorCode = @"
 <BitAccordionList TItem=""BitAccordionListOption"">
-    <BitAccordionListOption Title=""General settings"" IconName=""@BitIconName.Settings"" ExpanderIconName=""@BitIconName.ChevronDownSmall"">
+    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"" IconName=""@BitIconName.Settings"" ExpanderIconName=""@BitIconName.ChevronDownSmall"">
         Once upon a time, ...
     </BitAccordionListOption>
-    <BitAccordionListOption Title=""Users"" IconName=""@BitIconName.Contact"" ExpanderIconName=""@BitIconName.ChevronDownSmall"">
+    <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"" IconName=""@BitIconName.Contact"" ExpanderIconName=""@BitIconName.ChevronDownSmall"">
         Every story starts with a blank canvas, ...
     </BitAccordionListOption>
-    <BitAccordionListOption Title=""Advanced settings"" IconName=""@BitIconName.Ringer"">
+    <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"" IconName=""@BitIconName.Ringer"">
         In the beginning, there is silence, ...
     </BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList TItem=""BitAccordionListOption"" ExpanderIconName=""@BitIconName.Add"" ExpandedExpanderIconName=""@BitIconName.Remove"">
-    <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
-    <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
+        Once upon a time, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"">
+        Every story starts with a blank canvas, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
+        In the beginning, there is silence, ...
+    </BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList TItem=""BitAccordionListOption"" ExpanderIconPosition=""BitIconPosition.Start"">
-    <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
-    <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
+        Once upon a time, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"">
+        Every story starts with a blank canvas, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
+        In the beginning, there is silence, ...
+    </BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList HideExpanderIcon TItem=""BitAccordionListOption"">
-    <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
-    <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
+        Once upon a time, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"">
+        Every story starts with a blank canvas, ...
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
+        In the beginning, there is silence, ...
+    </BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example6RazorCode = @"
 <BitAccordionList TItem=""BitAccordionListOption"">
-    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
-        <Actions Context=""option"">
-            <BitButton IconOnly
-                       Variant=""BitVariant.Text""
-                       IconName=""@BitIconName.MoreVertical""
-                       Title=""@($""More about {option.Title}"")""
-                       OnClick=""() => actionedTitle = option.Title"" />
-        </Actions>
-        <Body Context=""option"">
+    <ActionsTemplate Context=""option"">
+        <BitButton IconOnly
+                   Variant=""BitVariant.Text""
+                   IconName=""@BitIconName.MoreVertical""
+                   Title=""@($""More about {option.Title}"")""
+                   OnClick=""() => actionedTitle = option.Title"" />
+    </ActionsTemplate>
+    <Options>
+        <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
             Once upon a time, ...
-        </Body>
-    </BitAccordionListOption>
+        </BitAccordionListOption>
+        <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"">
+            Every story starts with a blank canvas, ...
+        </BitAccordionListOption>
+        <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
+            In the beginning, there is silence, ...
+        </BitAccordionListOption>
+    </Options>
 </BitAccordionList>
 
 <div>Last action: <b>@actionedTitle</b></div>";
     private readonly string example6CsharpCode = @"
-private string? actionedTitle;";
+private string? actionedTitle;
+
+// An option can also carry its own Actions, which take precedence over the ActionsTemplate:
+// <BitAccordionListOption Title=""Users""><Actions><BitIcon IconName=""@BitIconName.Lock"" /></Actions></BitAccordionListOption>";
 
     private readonly string example7RazorCode = @"
 <BitAccordionList Multiple
@@ -149,6 +179,9 @@ private int readOnlyClickCount;";
     <BitAccordionListOption Title=""Users"" OnClick=""_ => { clickCounter++; StateHasChanged(); }"">
         Every story starts with a blank canvas, ...
     </BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"" OnClick=""_ => { clickCounter++; StateHasChanged(); }"">
+        In the beginning, there is silence, ...
+    </BitAccordionListOption>
 </BitAccordionList>
 
 <div>Item click count: <b>@clickCounter</b></div>";
@@ -165,6 +198,7 @@ private string? toggledTitle;";
 <BitAccordionList TItem=""BitAccordionListOption"" OnToggling=""HandleOnToggling"">
     <BitAccordionListOption Key=""general"" Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Key=""users"" Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Key=""advanced"" Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <div>Last request: <b>@togglingReport</b></div>";
@@ -257,38 +291,43 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
 <BitAccordionList TransitionDuration=""0"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList TransitionDuration=""1500"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example14RazorCode = @"
 <BitAccordionList TItem=""BitAccordionListOption"">
-    <BitAccordionListOption Title=""General settings"">
-        <HeaderTemplate Context=""option"">
-            <BitIcon IconName=""@BitIconName.FavoriteStarFill"" Color=""BitColor.Warning"" />
-            <b>@option.Title</b>
-        </HeaderTemplate>
-        <Body Context=""option"">
-            <BitText Typography=""BitTypography.Caption1"">The general settings of the application</BitText>
-        </Body>
-    </BitAccordionListOption>
+    <HeaderTemplate Context=""option"">
+        <BitIcon IconName=""@BitIconName.FavoriteStarFill"" Color=""BitColor.Warning"" />
+        <b>@option.Title</b>
+    </HeaderTemplate>
+    <BodyTemplate Context=""option"">
+        <BitText Typography=""BitTypography.Caption1"">@option.Description</BitText>
+    </BodyTemplate>
+    <Options>
+        <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"" />
+        <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"" />
+        <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"" />
+    </Options>
 </BitAccordionList>
 
 <BitAccordionList TItem=""BitAccordionListOption"">
-    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
-        <TitleTemplate Context=""option"">
-            <BitTag Text=""@option.Title"" Color=""BitColor.SecondaryBackground"" />
-        </TitleTemplate>
-        <ExpanderTemplate Context=""option"">
-            <BitIcon IconName=""@BitIconName.ChevronDownSmall"" />
-        </ExpanderTemplate>
-        <Body Context=""option"">
-            Once upon a time, ...
-        </Body>
-    </BitAccordionListOption>
+    <TitleTemplate Context=""option"">
+        <BitTag Text=""@option.Title"" Color=""BitColor.SecondaryBackground"" />
+    </TitleTemplate>
+    <ExpanderTemplate Context=""option"">
+        <BitIcon IconName=""@BitIconName.ChevronDownSmall"" />
+    </ExpanderTemplate>
+    <Options>
+        <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
+        <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+        <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
+    </Options>
 </BitAccordionList>";
 
     private readonly string example15RazorCode = @"
@@ -307,22 +346,26 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
 <BitAccordionList ExpandOnPrint TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example17RazorCode = @"
 <BitAccordionList Gap=""0"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList NoBorder TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example18RazorCode = @"
@@ -337,6 +380,7 @@ private BitAccordionList<BitAccordionListOption>? accordionListRef;
         {
             <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
             <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+            <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
         }
     </Options>
 </BitAccordionList>";
@@ -357,11 +401,13 @@ private bool showEmptyItems;";
 <BitAccordionList Background=""BitColorKind.Secondary"" Border=""BitColorKind.Tertiary"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList Background=""BitColorKind.Tertiary"" Border=""BitColorKind.Transparent"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example21RazorCode = @"
@@ -381,14 +427,20 @@ private bool showEmptyItems;";
     private readonly string example22RazorCode = @"
 <BitAccordionList Size=""BitSize.Small"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList Size=""BitSize.Medium"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList Size=""BitSize.Large"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example23RazorCode = @"
@@ -411,21 +463,25 @@ private bool showEmptyItems;";
 <BitAccordionList Gap=""8"" Style=""border: 1px solid var(--bit-clr-pri); border-radius: 0.5rem; padding: 0.5rem;"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList Gap=""8"" Class=""custom-item"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList Styles=""@(new() { ItemTitle = ""color: tomato;"", ItemHeader = ""background-color: var(--bit-clr-bg-sec);"" })"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>
 
 <BitAccordionList Classes=""@(new() { ItemTitle = ""custom-title"", ItemExpanded = ""custom-expanded"" })"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"">Once upon a time, ...</BitAccordionListOption>
     <BitAccordionListOption Title=""Users"">Every story starts with a blank canvas, ...</BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"">In the beginning, there is silence, ...</BitAccordionListOption>
 </BitAccordionList>";
 
     private readonly string example24RazorCode = @"
