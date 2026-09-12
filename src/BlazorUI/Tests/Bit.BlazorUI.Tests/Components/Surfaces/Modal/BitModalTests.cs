@@ -609,6 +609,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
+        var rootId = com.Find(".bit-mdl").Id;
         var containerId = com.Find(".bit-mdl-ctn").Id;
 
         com.WaitForAssertion(() =>
@@ -618,7 +619,12 @@ public class BitModalTests : BunitTestContext
             Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
         });
 
-        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+        // The trap stays on the content box, which is the element with the dialog role; the root is named to
+        // it as the anchor a press on the overlay lands the focus on, so that the trap can pass that focus
+        // on into the content.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1];
+        Assert.AreEqual(containerId, setup.Arguments[0]);
+        Assert.AreEqual(rootId, setup.Arguments[1]);
         Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][^1].Arguments[0]);
     }
 
@@ -1831,21 +1837,41 @@ public class BitModalTests : BunitTestContext
     // ------------------------------------------------------------------------------------------------
 
     [TestMethod]
-    public void BitModalShouldRefuseTheDefaultOfAPressOnItsOverlay()
+    public void BitModalOverlayShouldLeaveThePressItsDefaultAndKeepTheFocusOnTheRoot()
     {
-        // Pressing something that cannot hold the focus is what takes the focus off whatever had it, and a
-        // press on the overlay would otherwise leave the keyboard on the body - out of reach of the Escape
-        // handler on the Modal and of the focus trap on its content.
         var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
         });
 
-        Assert.IsTrue(com.Find(".bit-mdl-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
+        // The press on the overlay keeps its default action, which is what blurs the input the user was
+        // typing into - and an input only commits what was typed once it loses the focus, before the click
+        // the press turns into reaches any dismissal handler.
+        Assert.IsFalse(com.Find(".bit-mdl-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
+
+        // The focus that press moves lands on the root rather than on the body: the browser moves it to the
+        // nearest element that can hold it, and the root is made focusable for exactly that. The focus trap
+        // then passes it on into the content box, where the dialog role is.
+        Assert.AreEqual("-1", com.Find(".bit-mdl").GetAttribute("tabindex"));
+    }
+
+    // The tabindex the Modal writes is the one it needs to be able to hold the focus itself, which is a
+    // default rather than a decision about where the Modal sits in the tab sequence: a consumer who names
+    // one keeps it, the way they keep every other attribute they pass.
+    [TestMethod]
+    public void BitModalShouldLetATabIndexOfTheConsumerWin()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        Assert.AreEqual("0", com.Find(".bit-mdl").GetAttribute("tabindex"));
     }
 
     [TestMethod]
-    public void BitModalShouldStillBeDismissedByAClickOnTheOverlayItRefusedTheDefaultOf()
+    public void BitModalShouldStillBeDismissedByAClickOnTheOverlay()
     {
         var isOpen = true;
         var com = RenderComponent<BitModal>(parameters =>
