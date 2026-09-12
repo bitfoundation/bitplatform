@@ -1,18 +1,18 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class Link : IDisposable
+public partial class Link
 {
-    [Parameter(CaptureUnmatchedValues = true)] 
+    [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
 
-    [Parameter] public string Href { get; set; } = "";
+    [Parameter] public string? Href { get; set; }
 
     /// <summary>
     /// Appends the content hash of the file to the Href, so that a changed file is never served from the browser cache.
-    /// The hash is read from the web root of the ASP.NET Core host, so it is only appended where that host is part of the
-    /// app: server rendering, including the prerendering pass of an interactive component. A render on WebAssembly or in
-    /// Blazor Hybrid reuses the value that prerendering produced, and renders the Href unchanged when the component was
-    /// not prerendered.
+    /// The hash is read from the web root of the ASP.NET Core host, so it is only computed where that host is part of the
+    /// app: server rendering, including the prerendering pass of an interactive component. The render that follows
+    /// prerendering - on WebAssembly, in Blazor Hybrid, or on a server circuit - reuses the value prerendering produced,
+    /// and a render with nothing to reuse and no web root renders the Href unchanged.
     /// </summary>
     [Parameter] public bool AppendVersion { get; set; } = true;
 
@@ -23,14 +23,13 @@ public partial class Link : IDisposable
 
 
     private string? href;
-    private PersistingComponentStateSubscription stateSubscription;
 
 
 
-    // Only a component that is itself interactive renders again on the client, where the version cannot be
-    // computed, so only that one has anything to carry over. Where the framework does not say (net8.0),
-    // every component carries its value over rather than any of them losing it.
-    private bool CarryOverToClient =>
+    // Whether this component renders again after prerendering, which is when what this render computed is
+    // carried over. Where the framework does not say (net8.0), every component carries its value over: one
+    // entry per page, read by a circuit or a WebAssembly client and otherwise left where the page's state goes.
+    private bool Interactive =>
 #if NET9_0_OR_GREATER
         AssignedRenderMode is not null;
 #else
@@ -42,13 +41,6 @@ public partial class Link : IDisposable
     {
         base.OnInitialized();
 
-        (href, stateSubscription) = BitAssetVersion.Resolve(serviceProvider, nameof(Link), Href, AppendVersion, CarryOverToClient);
-    }
-
-    public void Dispose()
-    {
-        stateSubscription.Dispose();
-
-        GC.SuppressFinalize(this);
+        href = BitAssetVersion.Resolve(serviceProvider, Href, AppendVersion, Interactive);
     }
 }
