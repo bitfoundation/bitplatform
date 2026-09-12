@@ -202,13 +202,22 @@
         // is what a popup that takes the keyboard over has to do: the tab order runs on into the page behind
         // it otherwise, leaving the focus somewhere an overlay swallows every click that could bring it back.
         // Registering again on the same element replaces the previous registration.
-        public static setupFocusTrap(elementId: string) {
+        // `anchorId` names an element around the container that a surface makes programmatically focusable
+        // (tabindex="-1") for the sake of the press on its overlay: pressing something that cannot hold the
+        // focus moves it to the nearest element that can, and that press is left its default action - it is
+        // what blurs the input the user was typing into, and an input only commits what was typed once it
+        // loses the focus, which the dismissal the click runs is what most needs to see. The anchor only
+        // catches that focus: it is passed straight on into the container, where the dialog role and the
+        // accessible name are - a screen reader confined to the dialog by aria-modal would otherwise hear the
+        // focus leave it - and where this trap and the surface's Escape handler are.
+        public static setupFocusTrap(elementId: string, anchorId?: string | null) {
             Utils.disposeFocusTrap(elementId);
 
             const element = document.getElementById(elementId);
             if (!element) return;
 
             const controller = new AbortController();
+            const signal = controller.signal;
 
             element.addEventListener('keydown', e => {
                 if (e.key !== 'Tab') return;
@@ -220,7 +229,18 @@
                 if (Utils.hasNearerFocusTrap(element, e.target as Element | null)) return;
 
                 Utils.wrapFocus(element, e);
-            }, { signal: controller.signal });
+            }, { signal });
+
+            const anchor = anchorId ? document.getElementById(anchorId) : null;
+            if (anchor && anchor !== element) {
+                anchor.addEventListener('focusin', e => {
+                    // The focus landing on something inside the anchor - the container itself included, once
+                    // it is passed on below - is not the anchor being focused.
+                    if (e.target !== anchor) return;
+
+                    element.focus({ preventScroll: true });
+                }, { signal });
+            }
 
             Utils._focusTraps.set(elementId, controller);
         }
@@ -942,19 +962,14 @@
             const focusables = Array.from(root.querySelectorAll<HTMLElement>(Utils._focusables))
                 .filter(Utils.isFocusable);
 
-            // Where the focus actually is, which is not always one of the elements above: a surface makes
-            // both the element the trap is registered on and the box its content lives in programmatically
-            // focusable - the first for a press on the overlay to land on, the second for a content that
-            // holds nothing focusable - so the focus is regularly on an element the tab sequence itself
-            // never reaches.
-            const active = document.activeElement as HTMLElement | null;
-            const inside = active !== null && (active === root || root.contains(active));
+            const active = document.activeElement;
 
             if (focusables.length === 0) {
-                // Nothing inside the trap can take the focus, which leaves it on one of those anchors.
-                // Tabbing on from there would walk straight out of the trap and into the page behind it,
-                // so the key is swallowed instead of being left to the browser.
-                if (inside) {
+                // Nothing inside the container can take the focus, which leaves the container itself
+                // holding it - the components that trap the focus make it programmatically focusable for
+                // exactly this case. Tabbing on from there would walk straight out of the trap and into
+                // the page behind it, so the key is swallowed instead of being left to the browser.
+                if (active === root) {
                     e.preventDefault();
                 }
                 return;
@@ -963,20 +978,15 @@
             const first = focusables[0];
             const last = focusables[focusables.length - 1];
 
-            // The focus is on one of those anchors rather than on anything the tab sequence reaches. The key
-            // is left to the browser wherever it still has somewhere inside the trap to go - a Tab from an
-            // anchor that precedes the content reaches the content on its own - and the direction that has
-            // nothing left inside it wraps around to the other end, which is what a Shift+Tab from an anchor
-            // above the content does. An anchor in the middle of the content is left both of its neighbours.
-            if (inside && focusables.indexOf(active!) < 0) {
-                const towards = e.shiftKey ? Node.DOCUMENT_POSITION_PRECEDING : Node.DOCUMENT_POSITION_FOLLOWING;
-                const reachable = focusables.some(el => (active!.compareDocumentPosition(el) & towards) !== 0);
-
-                if (reachable === false) {
-                    (e.shiftKey ? last : first).focus();
-                    e.preventDefault();
-                }
-
+            // The container itself holding the focus - where a surface parks it as it opens, and where the
+            // focus a press on its overlay took off an input is passed on to - is inside the trap but on no
+            // edge of it, and the browser's own answer to a Tab from there is not bounded by the trap: its
+            // sequential order puts positive tabindexes first wherever on the page they are, and a Shift+Tab
+            // walks backwards out of the container altogether. Everything the trap holds is inside the
+            // container, so the next stop is its first element and the previous one its last.
+            if (active === root) {
+                (e.shiftKey ? last : first).focus();
+                e.preventDefault();
                 return;
             }
 

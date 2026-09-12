@@ -1,22 +1,25 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@* An Overlay that hosts no content and carries no accessible name of its own is a purely decorative
-   layer - a dim scrim or a transparent click catcher - so it is taken out of the accessibility tree the
-   way every surveyed backdrop is; one given content is the very thing a screen reader is meant to reach. *@
 @* Pressing something that cannot hold the focus is what takes the focus off whatever had it, and the layer
    is the largest such thing on the screen while an Overlay is open. The press is left to do exactly that -
    an input only commits what was typed into it once it loses the focus, and the handlers the click runs are
-   the ones that most need to see that value - and the layer is made focusable instead (GetTabIndex), so the
-   focus it moves lands there rather than on the body, and the next Tab walks into the content rather than
-   into the page the Overlay is there to keep out of reach. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+   the ones that most need to see that value - and the layer is made programmatically focusable instead, so
+   the focus it moves lands here, inside the Overlay, rather than on the body, from where the next Tab would
+   walk into the page the Overlay is there to keep out of reach. The focus the layer took over is handed back
+   to where it came from as the Overlay closes (Utils.captureFocusOrigin / restoreFocusOrigin).
+   That is also why a layer hosting nothing is not marked aria-hidden, the way a backdrop that is only a
+   sibling of its surface is: an element that can take the focus cannot be hidden from assistive technology
+   at the same time, and an empty, unnamed layer is nothing to a screen reader either way.
+   The tabindex is written ahead of the attributes of the consumer so that one of their own is the one that
+   lands, as it is for every other attribute they pass. *@
+<div @ref="RootElement"
+     tabindex="@(TabIndex ?? "-1")"
+     @attributes="HtmlAttributes"
      @onclick="HandleOnClick"
      @onmousedown="HandleOnMouseDown"
-     tabindex="@GetTabIndex()"
      id="@_Id"
      aria-label="@AriaLabel"
-     aria-hidden="@(IsDecorative ? "true" : null)"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()">

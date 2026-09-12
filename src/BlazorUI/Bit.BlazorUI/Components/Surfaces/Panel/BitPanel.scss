@@ -15,12 +15,8 @@
     }
 
     // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
-    // panel to leave the focus. That focus is never one the user moved there themselves, so it is not one
-    // to draw a ring around; :focus-visible still does for the consumer who puts the root into the tab
-    // sequence with a TabIndex of their own.
-    &:focus:not(:focus-visible) {
-        outline: none;
-    }
+    // panel to leave the focus.
+    @include focus-anchor;
 }
 
 // A panel laid out against a container of the page rather than against the screen. The root takes the size
@@ -51,6 +47,9 @@
     height: 100%;
     position: fixed;
     visibility: hidden;
+    // A press on the overlay is left its default action (see the markup), and the default of a press that
+    // is dragged is a text selection - one that would start at the overlay and run through the panel.
+    user-select: none;
     // The two layers are read from the root, where the ZIndex parameter writes them, so that a panel opened
     // from inside another one can be lifted over it as a pair. Unset, they fall back to the layer the whole
     // library shares.
@@ -79,7 +78,9 @@
     position: fixed;
     overflow: auto;
     visibility: hidden;
-    outline: transparent;
+    // The container is made programmatically focusable so that a panel holding nothing focusable still has
+    // somewhere to put the keyboard.
+    @include focus-anchor;
     box-sizing: border-box;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-sheet;

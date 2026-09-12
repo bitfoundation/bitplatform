@@ -1897,8 +1897,8 @@ public class BitDialogTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-dlg-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
 
         // The focus that press moves lands on the root rather than on the body: the browser moves it to the
-        // nearest element that can hold it, and the root is made focusable for exactly that. That is what
-        // keeps the Escape handler and the focus trap, both of which sit on the root, reachable.
+        // nearest element that can hold it, and the root is made focusable for exactly that. The focus trap
+        // then passes it on into the surface, where the dialog role is.
         Assert.AreEqual("-1", component.Find(".bit-dlg").GetAttribute("tabindex"));
     }
 
@@ -1918,15 +1918,18 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogShouldTrapTheFocusOnTheRootTheOverlayPressLandsOn()
+    public void BitDialogShouldNameTheRootTheOverlayPressLandsOnToItsFocusTrap()
     {
         var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
 
-        // The trap is registered on the root rather than on the surface: a press on the overlay leaves the
-        // focus on the root, and a trap on the surface would never see the Tab that follows it.
-        Assert.AreEqual(component.Find(".bit-dlg").Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+        // The trap stays on the surface, which is the element with the dialog role and the id no consumer
+        // can make collide; the root is named to it as the anchor a press on the overlay lands the focus on,
+        // so that the trap can pass that focus on into the surface.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1];
+        Assert.AreEqual(component.Find(".bit-dlg-ctn").Id, setup.Arguments[0]);
+        Assert.AreEqual(component.Find(".bit-dlg").Id, setup.Arguments[1]);
     }
 
     [TestMethod]

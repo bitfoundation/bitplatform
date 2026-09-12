@@ -1217,7 +1217,7 @@ public partial class BitModal : BitComponentBase
 
         try
         {
-            await _js.BitUtilsSetupFocusTrap(_Id);
+            await _js.BitUtilsSetupFocusTrap(_containerId, _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1230,7 +1230,7 @@ public partial class BitModal : BitComponentBase
 
         try
         {
-            await _js.BitUtilsDisposeFocusTrap(_Id);
+            await _js.BitUtilsDisposeFocusTrap(_containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1566,7 +1566,7 @@ public partial class BitModal : BitComponentBase
             {
                 if (trapped)
                 {
-                    await _js.BitUtilsDisposeFocusTrap(_Id);
+                    await _js.BitUtilsDisposeFocusTrap(_containerId);
                 }
 
                 if (locked)

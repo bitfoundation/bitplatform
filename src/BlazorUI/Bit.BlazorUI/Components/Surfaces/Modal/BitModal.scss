@@ -17,12 +17,8 @@
     background-color: transparent;
 
     // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
-    // Modal to leave the focus. That focus is never one the user moved there themselves, so it is not one
-    // to draw a ring around; :focus-visible still does for the consumer who puts the root into the tab
-    // sequence with a TabIndex of their own.
-    &:focus:not(:focus-visible) {
-        outline: none;
-    }
+    // Modal to leave the focus.
+    @include focus-anchor;
 }
 
 // Put on the drag handle of a draggable Modal (by the drag-drop script) so that a touch drag moves the
@@ -58,6 +54,9 @@
     z-index: 0;
     position: absolute;
     pointer-events: all;
+    // A press on the overlay is left its default action (see the markup), and the default of a press that
+    // is dragged is a text selection - one that would start at the overlay and run through the content.
+    user-select: none;
     background-color: transparent;
 }
 
@@ -103,9 +102,8 @@
     border-radius: $shp-radius-dialog;
 
     // The content is made programmatically focusable (tabindex="-1") so the focus has somewhere to land in
-    // a Modal that holds nothing focusable. That focus is never one the user moved there themselves, so it
-    // is not one to draw a ring around; :focus-visible still does for the keyboard.
-    outline: none;
+    // a Modal that holds nothing focusable.
+    @include focus-anchor;
 
     // backwards rather than both: the transform of the last keyframe would otherwise stay on the element
     // for good, and an element that carries a transform is the containing block of every fixed-positioned

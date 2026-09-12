@@ -982,7 +982,7 @@ public partial class BitDialog : BitComponentBase
 
         _focusTrapped = true;
 
-        await InvokeJs(_js.BitUtilsSetupFocusTrap(_Id));
+        await InvokeJs(_js.BitUtilsSetupFocusTrap(_containerId, _Id));
     }
 
     // The same for the trap: a Dialog told to stop holding the keyboard while it is standing lets it go
@@ -995,7 +995,7 @@ public partial class BitDialog : BitComponentBase
 
         _focusTrapped = false;
 
-        await InvokeJs(_js.BitUtilsDisposeFocusTrap(_Id));
+        await InvokeJs(_js.BitUtilsDisposeFocusTrap(_containerId));
     }
 
     private async Task SaveFocus()

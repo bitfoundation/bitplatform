@@ -12,13 +12,10 @@
        carry on up would dismiss the Dialog the keyboard is still working inside of along with the one it
        was meant for - and it stops only Blazor's own bubbling, so native listeners (the focus trap among
        them) still see the key.
-       tabindex="-1" makes the root programmatically focusable, which is what a press on the overlay needs:
-       pressing something that cannot hold the focus moves it to the nearest element that can, and the root
-       is the nearest one to the overlay. That keeps the focus inside the Dialog - where this handler and
-       the focus trap both are, the trap being registered on this element for the same reason - while the
-       press itself is left alone, so the input the user was typing into still blurs and still commits what
-       was typed before the click dismisses anything. It is written ahead of the attributes of the consumer
-       so that a tabindex of their own is the one that lands, as it is for every other attribute they pass. *@
+       tabindex="-1" makes the root programmatically focusable so that a press on the overlay lands the focus
+       inside the Dialog rather than on the body. The root only catches it: the focus trap passes it straight
+       on into the surface below, where the dialog role is (Utils.setupFocusTrap has the whole of it). It is
+       written ahead of the attributes of the consumer so that a tabindex of their own is the one that lands. *@
     <div @ref="RootElement"
          tabindex="@(TabIndex ?? "-1")"
          @attributes="HtmlAttributes"
@@ -34,12 +31,10 @@
         <div style="@Styles?.Document" class="bit-dlg-doc @GetPositionClass() @Classes?.Document">
             @if (IsModeless is false)
             {
-                @* Pressing something that cannot hold the focus is what takes the focus off whatever had it,
-                   and the overlay is the largest such thing on the screen while a Dialog is open. The press
-                   is left to do exactly that: the focus lands on the root, which is the nearest element to
-                   the overlay that can hold it and is inside the Dialog, so the Escape handler and the focus
-                   trap keep the keyboard - and the input the focus came off commits what was typed into it
-                   on the way, before the click the press turns into runs any dismissal handler. *@
+                @* The press on the overlay is left its default action: it is what blurs the input the user
+                   was typing into, and an input only commits what was typed once it loses the focus - before
+                   the click the press turns into runs any dismissal handler. Where that focus lands is the
+                   tabindex of the root above. *@
                 <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true"
                      @onclick="HandleOnOverlayClick" />
             }

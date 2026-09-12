@@ -619,10 +619,12 @@ public class BitModalTests : BunitTestContext
             Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
         });
 
-        // The trap is registered on the root rather than on the content box: a press on the overlay leaves
-        // the focus on the root, and a trap on the content would never see the Tab that follows it. The
-        // focus itself still starts inside the content, which is where everything worth reaching is.
-        Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+        // The trap stays on the content box, which is the element with the dialog role; the root is named to
+        // it as the anchor a press on the overlay lands the focus on, so that the trap can pass that focus
+        // on into the content.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1];
+        Assert.AreEqual(containerId, setup.Arguments[0]);
+        Assert.AreEqual(rootId, setup.Arguments[1]);
         Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][^1].Arguments[0]);
     }
 
@@ -1848,8 +1850,8 @@ public class BitModalTests : BunitTestContext
         Assert.IsFalse(com.Find(".bit-mdl-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
 
         // The focus that press moves lands on the root rather than on the body: the browser moves it to the
-        // nearest element that can hold it, and the root is made focusable for exactly that. That is what
-        // keeps the Escape handler and the focus trap, both of which sit on the root, reachable.
+        // nearest element that can hold it, and the root is made focusable for exactly that. The focus trap
+        // then passes it on into the content box, where the dialog role is.
         Assert.AreEqual("-1", com.Find(".bit-mdl").GetAttribute("tabindex"));
     }
 
@@ -1946,10 +1948,10 @@ public class BitModalTests : BunitTestContext
 
         com.WaitForAssertion(() => Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
 
-        // The inner Modal's trap is registered against its own root, not against the one it renders inside
-        // of, so Tab cycles within the Modal the keyboard is actually in.
-        var innerRootId = com.Find(".inner-modal").Id;
-        Assert.AreEqual(innerRootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+        // The inner Modal's trap is registered against its own content box, not against the one it renders
+        // inside of, so Tab cycles within the Modal the keyboard is actually in.
+        var innerContainerId = com.Find(".inner-modal .bit-mdl-ctn").Id;
+        Assert.AreEqual(innerContainerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
     }
 
 

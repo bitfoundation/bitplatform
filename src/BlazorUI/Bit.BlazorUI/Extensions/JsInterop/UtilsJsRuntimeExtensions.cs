@@ -73,9 +73,11 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsSetupFocusTrap(this IJSRuntime jsRuntime, string elementId)
+    // `anchorId` is the element around the container that catches the focus a press on the overlay moves
+    // and hands it on into the container; see Utils.setupFocusTrap.
+    internal static ValueTask BitUtilsSetupFocusTrap(this IJSRuntime jsRuntime, string elementId, string? anchorId = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupFocusTrap", elementId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupFocusTrap", elementId, anchorId);
     }
 
 

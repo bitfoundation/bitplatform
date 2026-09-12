@@ -740,12 +740,16 @@ public class BitPanelTests : BunitTestContext
         Assert.IsFalse(com.Find(".bit-pnl-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
 
         // The focus that press moves lands on the root rather than on the body: the browser moves it to the
-        // nearest element that can hold it, and the root is made focusable for exactly that. That is what
-        // keeps the Escape handler and the focus trap, both of which sit on the root, reachable.
+        // nearest element that can hold it, and the root is made focusable for exactly that. The focus trap
+        // then passes it on into the container, where the dialog role is: the trap stays on the container,
+        // and the root is named to it as the anchor the press lands on.
         Assert.AreEqual("-1", com.Find(".bit-pnl").GetAttribute("tabindex"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
-        Assert.AreEqual(com.Find(".bit-pnl").Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1];
+        Assert.AreEqual(com.Find(".bit-pnl-cnt").Id, setup.Arguments[0]);
+        Assert.AreEqual(com.Find(".bit-pnl").Id, setup.Arguments[1]);
     }
 
     // The tabindex the panel writes is the one it needs to be able to hold the focus itself, which is a

@@ -905,9 +905,9 @@ public partial class BitDialogDemo
     private bool isOpenInner = false;
 
     private string dialogValue = string.Empty;
+
     private bool isOpenKeptMounted = false;
     private bool isOpenUnmounted = false;
-
 
     private BitDialog programmaticDialogRef = default!;
 

@@ -106,3 +106,19 @@ $html-font-size: 16px;
         outline: #{$shp-focus-ring-width} solid Highlight;
     }
 }
+
+/*
+ * focus-anchor
+ * --------------------------------------------------
+ * For an element that is made programmatically focusable (tabindex="-1") only so that the focus has
+ * somewhere inside a surface to land: the root a press on the overlay focuses, the container a surface
+ * holding nothing focusable parks the keyboard on, the layer of an Overlay. That focus is never one the
+ * user moved there to operate anything, so there is nothing for a ring to advertise - and around a root
+ * that spans the whole screen a ring would be drawn along the edge of the viewport itself.
+ * The outline is dropped outright rather than only outside :focus-visible: a browser turns the focus a
+ * press placed into a "visible" one on the first key pressed afterwards - Escape on a surface that
+ * refuses to dismiss, any letter - and the viewport-sized ring would appear right then.
+ */
+@mixin focus-anchor {
+    outline: none;
+}

@@ -322,6 +322,17 @@ public partial class BitOverlay : BitComponentBase
         // opening, where it would refuse the first dismissal for no reason the user could see.
         _pressedOnContent = false;
 
+        if (isOpen)
+        {
+            await CaptureFocusOrigin();
+        }
+        else
+        {
+            await RestoreFocusOrigin();
+        }
+
+        if (Overtaken()) return;
+
         var offsetBefore = _offsetTop;
 
         _offsetTop = 0;
@@ -364,20 +375,31 @@ public partial class BitOverlay : BitComponentBase
 
 
 
-    // An Overlay that hosts no content and carries no accessible name of its own is a purely decorative
-    // layer - a dim scrim or a transparent click catcher - which is what takes it out of the accessibility
-    // tree, and out of the focus path with it. A layer the consumer has given a TabIndex of their own is
-    // none of that: something they mean the focus to reach has to be something a screen reader reaches too,
-    // so it stays in the tree rather than being hidden from it and focusable at the same time.
-    private bool IsDecorative => ChildContent is null && AriaLabel.HasNoValue() && TabIndex is null;
+    // The layer takes the focus a press on it moves off an input (see the markup), and a layer that is
+    // then hidden would leave that focus to drop to the body - the top of the page, as far as the next Tab
+    // is concerned. So the element the focus was on as the Overlay opened is remembered, and handed the
+    // focus back as it closes, for as long as the focus is still the Overlay's to hand back.
+    private async Task CaptureFocusOrigin()
+    {
+        if (IsDisposed || IsRendered is false) return;
 
-    // The layer is made programmatically focusable so that a press on it has somewhere inside the Overlay
-    // to put the focus the press takes off whatever had it: the browser moves the focus to the nearest
-    // element that can hold it, which is the body while the layer cannot, and the next Tab from there walks
-    // into the page the Overlay is there to keep out of reach. A decorative layer is left as it is - it
-    // hosts nothing the focus has to stay near, and focusing an aria-hidden element is a contradiction the
-    // browsers report. A TabIndex of the consumer's own wins over it.
-    private string? GetTabIndex() => TabIndex ?? (IsDecorative ? null : "-1");
+        try
+        {
+            await _js.BitUtilsCaptureFocusOrigin(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task RestoreFocusOrigin()
+    {
+        if (IsDisposed) return;
+
+        try
+        {
+            await _js.BitUtilsRestoreFocusOrigin(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
 
     // What the overflow toggle acts on, in the order the consumer's intent is expressed: the element it
     // named, then the selector it named, then the scroller of the application shell the Overlay is inside
@@ -595,6 +617,12 @@ public partial class BitOverlay : BitComponentBase
         await ToggleScroll(false);
 
         await StopForwardScroll();
+
+        try
+        {
+            await _js.BitUtilsDisposeFocusOrigin(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         await base.DisposeAsync(disposing);
     }

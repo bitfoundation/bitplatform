@@ -8,9 +8,10 @@
 // over the whole of it until the stylesheet of the consumer aligns it, which is two properties for the
 // scrim that centers a loader and a decision the Overlay has none of its own to make.
 // The layer is made programmatically focusable so that a press on it has somewhere inside the Overlay to
-// put the focus it takes off an input. That focus is never one the user moved there with the keyboard, so
-// it is not one to draw a ring around; :focus-visible still does for the consumer who makes the layer
-// reachable with a TabIndex of their own.
+// put the focus it takes off an input.
+// That press is left its default action, and the default of a press that is dragged is a text selection -
+// one that would start at the layer and run through whatever it is showing, or the page beside it. The
+// content is handed the selectability back, so what the consumer put on the layer reads as it always has.
 .bit-ovl {
     inset: 0;
     opacity: 0;
@@ -19,12 +20,11 @@
     display: flex;
     position: fixed;
     visibility: hidden;
+    user-select: none;
     z-index: $zindex-overlay;
     transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
 
-    &:focus:not(:focus-visible) {
-        outline: none;
-    }
+    @include focus-anchor;
 }
 
 .bit-ovl-opn {
@@ -38,6 +38,7 @@
 // flex container - the box is there for the events, and for nothing else.
 .bit-ovl-cnt {
     display: contents;
+    user-select: text;
 }
 
 // ModeFull: the Overlay dims what it covers instead of only catching the clicks meant for it. It is a
