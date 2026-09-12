@@ -85,6 +85,8 @@ namespace BitBlazorUI {
         // scroll anchoring does) would cancel the animation, so the anchoring waits for it to settle.
         private _smoothScrolling = false;
         private _smoothTimer: any = null;
+        // The signed anchor correction that arrived while the animation was running, applied once it settles.
+        private _pendingAnchor = 0;
         // index -> element, tracks which items are currently observed.
         private _observed = new Map<number, Element>();
         private _pendingMeasures = new Map<number, number>(); // index -> size, batched until the next frame
@@ -205,7 +207,14 @@ namespace BitBlazorUI {
         // Adjusts the scroll position by delta without emitting a user-scroll event.
         // Used for scroll anchoring after items above the viewport are re-measured.
         public adjustScroll(delta: number) {
-            if (this._disposed || delta === 0 || this._smoothScrolling) return;
+            if (this._disposed || delta === 0) return;
+
+            // Mid-animation the correction cannot be written (it would cancel the smooth scroll),
+            // so it is accumulated and applied in one go once the animation has settled.
+            if (this._smoothScrolling) {
+                this._pendingAnchor += delta;
+                return;
+            }
 
             this._suppressScroll = true;
             if (this._horizontal) {
@@ -281,7 +290,13 @@ namespace BitBlazorUI {
         // The animation is over once no scroll event arrived for a while (the scrollend event is not everywhere yet).
         private _armSmoothEnd() {
             if (this._smoothTimer) clearTimeout(this._smoothTimer);
-            this._smoothTimer = setTimeout(() => { this._smoothScrolling = false; this._smoothTimer = null; }, 150);
+            this._smoothTimer = setTimeout(() => {
+                this._smoothScrolling = false;
+                this._smoothTimer = null;
+                const pending = this._pendingAnchor;
+                this._pendingAnchor = 0;
+                this.adjustScroll(pending);
+            }, 150);
         }
 
         private static _reducedMotion() {
@@ -346,7 +361,9 @@ namespace BitBlazorUI {
             nodes.forEach(node => {
                 const index = parseInt(node.getAttribute('data-bit-vir-index')!, 10);
                 present.add(index);
-                if (this._observed.get(index) !== node) {
+                const previous = this._observed.get(index);
+                if (previous !== node) {
+                    if (previous) this._itemObserver.unobserve(previous);
                     this._observed.set(index, node);
                     this._reported.delete(index);
                     this._itemObserver.observe(node);

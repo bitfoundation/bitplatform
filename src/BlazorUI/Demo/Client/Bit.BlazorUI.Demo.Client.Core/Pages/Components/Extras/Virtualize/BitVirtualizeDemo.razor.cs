@@ -799,7 +799,7 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollByAsync(-500, scrollSmooth)"">-500px</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollByAsync(500, scrollSmooth)"">+500px</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollToEndAsync(scrollSmooth)"">To end</BitButton>
-    <BitTag Text=""@($""{visibleRange.Start:N0} - {visibleRange.End:N0} visible"")"" />
+    <BitTag Text=""@($""[{visibleRange.Start:N0}, {visibleRange.End:N0}) visible"")"" />
 </div>
 
 <BitVirtualize @ref=""scrollRef"" Items=""scrollItems"" ItemSize=""48""
@@ -1144,7 +1144,7 @@ public record TaskItem(int Id, string Title);";
                OnStartReached=""LoadChatHistory"" ReachedThreshold=""3""
                Class=""chat-list"">
     <HeaderTemplate>
-        <div class=""list-header"">@(chatHistoryRemaining > 0 ? ""Loading older messages..."" : ""This is the beginning of the conversation"")</div>
+        <div class=""list-header"">@(loadingChatHistory ? ""Loading older messages..."" : chatHistoryRemaining > 0 ? """" : ""This is the beginning of the conversation"")</div>
     </HeaderTemplate>
     <ItemTemplate Context=""message"">
         <div class=""message @(message.Mine ? ""mine"" : null)"">
