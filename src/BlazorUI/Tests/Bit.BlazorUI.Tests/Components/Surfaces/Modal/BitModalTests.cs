@@ -1853,6 +1853,21 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual("-1", com.Find(".bit-mdl").GetAttribute("tabindex"));
     }
 
+    // The tabindex the Modal writes is the one it needs to be able to hold the focus itself, which is a
+    // default rather than a decision about where the Modal sits in the tab sequence: a consumer who names
+    // one keeps it, the way they keep every other attribute they pass.
+    [TestMethod]
+    public void BitModalShouldLetATabIndexOfTheConsumerWin()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        Assert.AreEqual("0", com.Find(".bit-mdl").GetAttribute("tabindex"));
+    }
+
     [TestMethod]
     public void BitModalShouldStillBeDismissedByAClickOnTheOverlay()
     {

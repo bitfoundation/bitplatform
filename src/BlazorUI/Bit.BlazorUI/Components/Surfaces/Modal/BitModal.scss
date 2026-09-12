@@ -5,7 +5,6 @@
     opacity: 1;
     width: 100%;
     height: 100%;
-    outline: none;
     display: flex;
     position: fixed;
     font-weight: $tg-fw-regular;
@@ -16,6 +15,14 @@
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     background-color: transparent;
+
+    // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
+    // Modal to leave the focus. That focus is never one the user moved there themselves, so it is not one
+    // to draw a ring around; :focus-visible still does for the consumer who puts the root into the tab
+    // sequence with a TabIndex of their own.
+    &:focus:not(:focus-visible) {
+        outline: none;
+    }
 }
 
 // Put on the drag handle of a draggable Modal (by the drag-drop script) so that a touch drag moves the

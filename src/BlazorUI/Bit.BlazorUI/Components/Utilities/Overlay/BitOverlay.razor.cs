@@ -366,8 +366,10 @@ public partial class BitOverlay : BitComponentBase
 
     // An Overlay that hosts no content and carries no accessible name of its own is a purely decorative
     // layer - a dim scrim or a transparent click catcher - which is what takes it out of the accessibility
-    // tree, and out of the focus path with it.
-    private bool IsDecorative => ChildContent is null && AriaLabel.HasNoValue();
+    // tree, and out of the focus path with it. A layer the consumer has given a TabIndex of their own is
+    // none of that: something they mean the focus to reach has to be something a screen reader reaches too,
+    // so it stays in the tree rather than being hidden from it and focusable at the same time.
+    private bool IsDecorative => ChildContent is null && AriaLabel.HasNoValue() && TabIndex is null;
 
     // The layer is made programmatically focusable so that a press on it has somewhere inside the Overlay
     // to put the focus the press takes off whatever had it: the browser moves the focus to the nearest

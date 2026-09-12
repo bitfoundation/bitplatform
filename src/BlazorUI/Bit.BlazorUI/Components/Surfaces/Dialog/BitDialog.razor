@@ -17,11 +17,13 @@
        is the nearest one to the overlay. That keeps the focus inside the Dialog - where this handler and
        the focus trap both are, the trap being registered on this element for the same reason - while the
        press itself is left alone, so the input the user was typing into still blurs and still commits what
-       was typed before the click dismisses anything. *@
-    <div @ref="RootElement" @attributes="HtmlAttributes"
+       was typed before the click dismisses anything. It is written ahead of the attributes of the consumer
+       so that a tabindex of their own is the one that lands, as it is for every other attribute they pass. *@
+    <div @ref="RootElement"
+         tabindex="@(TabIndex ?? "-1")"
+         @attributes="HtmlAttributes"
          @onkeydown="HandleOnKeyDown"
          @onkeydown:stopPropagation="true"
-         tabindex="-1"
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"

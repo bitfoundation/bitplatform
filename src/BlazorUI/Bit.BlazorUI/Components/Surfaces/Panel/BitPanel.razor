@@ -11,13 +11,19 @@
    the nearest one to the overlay. That keeps the focus inside the panel - where the Escape handler and the
    focus trap both are, the trap being registered on this element for the same reason - while the press
    itself is left alone, so the input the user was typing into still blurs and still commits what was typed
-   before the click dismisses anything. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+   before the click dismisses anything. It is written ahead of the attributes of the consumer so that a
+   tabindex of their own is the one that lands, as it is for every other attribute the panel writes itself.
+   The whole of the panel is marked inert while it is closed, the root included: neither Tab nor a screen
+   reader ever reaches a content that is off the screen, and the focus a press on the overlay left on the
+   root is let go of as the panel closes rather than parked on something the user can no longer see. *@
+<div @ref="RootElement"
+     tabindex="@(TabIndex ?? "-1")"
+     @attributes="HtmlAttributes"
      @onkeydown="HandleOnKeyDown" @onkeydown:stopPropagation="DismissesOnEscape"
-     tabindex="-1"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     inert="@(IsOpen is false)"
      dir="@Dir?.ToString().ToLower()">
 
     @* The overlay stays in the page while the panel is closed so that it fades out with the panel instead
@@ -39,12 +45,11 @@
     @* The container is the surface the panel actually is, so it is the element that carries the dialog role
        and the name that goes with it - a role on the wrapper around the overlay would name the whole page
        region a dialog. It is made programmatically focusable so that a panel holding nothing focusable still
-       has somewhere to put the keyboard, and it is marked inert while the panel is closed so that neither
-       Tab nor a screen reader ever reaches a content that is off the screen. *@
+       has somewhere to put the keyboard; what keeps it out of the tab sequence and out of the reading order
+       while the panel is closed is the inert of the root above it, which covers the whole of the panel. *@
     <div id="@_containerId"
          tabindex="-1"
          role="@(Role ?? GetRole())"
-         inert="@(IsOpen is false)"
          aria-label="@AriaLabel"
          aria-modal="@GetAriaModal()"
          aria-labelledby="@GetTitleAriaId()"

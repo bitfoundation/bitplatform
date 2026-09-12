@@ -15,10 +15,6 @@
     width: 100%;
     height: 100%;
     position: fixed;
-    // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
-    // Dialog to leave the focus. That focus is never one the user moved there themselves, so it is not one
-    // to draw a ring around.
-    outline: none;
     font-weight: $tg-fw-regular;
     z-index: $zindex-modal;
     font-size: $tg-fs-sm;
@@ -29,6 +25,14 @@
     // overlay at all, and without this its invisible frame would swallow every click on the page it is
     // deliberately leaving usable.
     pointer-events: none;
+
+    // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
+    // Dialog to leave the focus. That focus is never one the user moved there themselves, so it is not one
+    // to draw a ring around; :focus-visible still does for the consumer who puts the root into the tab
+    // sequence with a TabIndex of their own.
+    &:focus:not(:focus-visible) {
+        outline: none;
+    }
 
     @keyframes bit-dlg-spinner-animation {
         0% {

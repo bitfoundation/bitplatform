@@ -942,12 +942,19 @@
             const focusables = Array.from(root.querySelectorAll<HTMLElement>(Utils._focusables))
                 .filter(Utils.isFocusable);
 
+            // Where the focus actually is, which is not always one of the elements above: a surface makes
+            // both the element the trap is registered on and the box its content lives in programmatically
+            // focusable - the first for a press on the overlay to land on, the second for a content that
+            // holds nothing focusable - so the focus is regularly on an element the tab sequence itself
+            // never reaches.
+            const active = document.activeElement as HTMLElement | null;
+            const inside = active !== null && (active === root || root.contains(active));
+
             if (focusables.length === 0) {
-                // Nothing inside the container can take the focus, which leaves the container itself
-                // holding it - the components that trap the focus make it programmatically focusable for
-                // exactly this case. Tabbing on from there would walk straight out of the trap and into
-                // the page behind it, so the key is swallowed instead of being left to the browser.
-                if (document.activeElement === root) {
+                // Nothing inside the trap can take the focus, which leaves it on one of those anchors.
+                // Tabbing on from there would walk straight out of the trap and into the page behind it,
+                // so the key is swallowed instead of being left to the browser.
+                if (inside) {
                     e.preventDefault();
                 }
                 return;
@@ -955,18 +962,21 @@
 
             const first = focusables[0];
             const last = focusables[focusables.length - 1];
-            const active = document.activeElement;
 
-            // The focus is on the container itself rather than on anything inside it, which is where a press
-            // on the overlay of a dialog surface leaves it: the container is the nearest element to the
-            // overlay that can hold the focus, and the surfaces make it focusable for that. Tab from there
-            // reaches the content on its own, since the content follows the container in the tab order, but
-            // Shift+Tab walks backwards out of the trap and into the page behind it.
-            if (active === root) {
-                if (e.shiftKey) {
-                    last.focus();
+            // The focus is on one of those anchors rather than on anything the tab sequence reaches. The key
+            // is left to the browser wherever it still has somewhere inside the trap to go - a Tab from an
+            // anchor that precedes the content reaches the content on its own - and the direction that has
+            // nothing left inside it wraps around to the other end, which is what a Shift+Tab from an anchor
+            // above the content does. An anchor in the middle of the content is left both of its neighbours.
+            if (inside && focusables.indexOf(active!) < 0) {
+                const towards = e.shiftKey ? Node.DOCUMENT_POSITION_PRECEDING : Node.DOCUMENT_POSITION_FOLLOWING;
+                const reachable = focusables.some(el => (active!.compareDocumentPosition(el) & towards) !== 0);
+
+                if (reachable === false) {
+                    (e.shiftKey ? last : first).focus();
                     e.preventDefault();
                 }
+
                 return;
             }
 

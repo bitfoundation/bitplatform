@@ -1902,6 +1902,21 @@ public class BitDialogTests : BunitTestContext
         Assert.AreEqual("-1", component.Find(".bit-dlg").GetAttribute("tabindex"));
     }
 
+    // The tabindex the Dialog writes is the one it needs to be able to hold the focus itself, which is a
+    // default rather than a decision about where the Dialog sits in the tab sequence: a consumer who names
+    // one keeps it, the way they keep every other attribute they pass.
+    [TestMethod]
+    public void BitDialogShouldLetATabIndexOfTheConsumerWin()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        Assert.AreEqual("0", component.Find(".bit-dlg").GetAttribute("tabindex"));
+    }
+
     [TestMethod]
     public void BitDialogShouldTrapTheFocusOnTheRootTheOverlayPressLandsOn()
     {

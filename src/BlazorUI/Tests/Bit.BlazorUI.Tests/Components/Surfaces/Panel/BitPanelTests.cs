@@ -44,7 +44,9 @@ public class BitPanelTests : BunitTestContext
     }
 
     // A closed panel keeps its content in the page so that closing it has something to slide out, so the
-    // content has to be taken out of the tab order and out of the accessibility tree some other way.
+    // content has to be taken out of the tab order and out of the accessibility tree some other way. The
+    // root is what carries it, so the whole of the panel is covered - the focus a press on the overlay
+    // leaves on the root included, which would otherwise stay there for as long as the panel is closed.
     [TestMethod,
         DataRow(false),
         DataRow(true)
@@ -56,9 +58,9 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
         });
 
-        var container = com.Find(".bit-pnl-cnt");
+        var root = com.Find(".bit-pnl");
 
-        Assert.AreEqual(isOpen is false, container.HasAttribute("inert"));
+        Assert.AreEqual(isOpen is false, root.HasAttribute("inert"));
     }
 
     [TestMethod,
@@ -744,6 +746,21 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
         Assert.AreEqual(com.Find(".bit-pnl").Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
+    }
+
+    // The tabindex the panel writes is the one it needs to be able to hold the focus itself, which is a
+    // default rather than a decision about where the panel sits in the tab sequence: a consumer who names
+    // one keeps it, the way they keep every other attribute they pass.
+    [TestMethod]
+    public void BitPanelShouldLetATabIndexOfTheConsumerWin()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        Assert.AreEqual("0", com.Find(".bit-pnl").GetAttribute("tabindex"));
     }
 
     [TestMethod]

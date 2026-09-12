@@ -297,7 +297,14 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>(parameters => parameters.Add(p => p.TabIndex, "0"));
 
-        Assert.AreEqual("0", component.Find(".bit-ovl").GetAttribute("tabindex"));
+        var layer = component.Find(".bit-ovl");
+
+        Assert.AreEqual("0", layer.GetAttribute("tabindex"));
+
+        // A layer the consumer means the keyboard to reach is not a decorative one, whatever else it holds:
+        // hiding it from a screen reader while leaving it in the tab sequence is the contradiction the
+        // aria-hidden of a decorative layer is there to avoid in the first place.
+        Assert.IsFalse(layer.HasAttribute("aria-hidden"));
     }
 
     [TestMethod,

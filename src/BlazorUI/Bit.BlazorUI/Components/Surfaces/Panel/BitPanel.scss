@@ -1,10 +1,6 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-pnl {
-    // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
-    // panel to leave the focus. That focus is never one the user moved there themselves, so it is not one
-    // to draw a ring around.
-    outline: none;
     font-weight: $tg-fw-regular;
     font-size: $tg-fs-md;
     z-index: $zindex-modal;
@@ -16,6 +12,14 @@
 
     &.bit-rtl {
         --bit-pnl-transform-factor: -1;
+    }
+
+    // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
+    // panel to leave the focus. That focus is never one the user moved there themselves, so it is not one
+    // to draw a ring around; :focus-visible still does for the consumer who puts the root into the tab
+    // sequence with a TabIndex of their own.
+    &:focus:not(:focus-visible) {
+        outline: none;
     }
 }
 
