@@ -182,12 +182,12 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
+            Name = "IconPlacement",
+            Type = "BitPlacement",
             LinkType = LinkType.Link,
-            Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "TimePicker icon location."
+            Href = "#placement-enum",
+            DefaultValue = "BitPlacement.End",
+            Description = "Determines the side of the input the TimePicker's icon is rendered on. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one."
         },
         new()
         {
@@ -537,27 +537,7 @@ public partial class BitCircularTimePickerDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-location-enum",
-            Name = "BitIconLocation",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Left",
-                    Description = "Show the icon at the left side.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Right",
-                    Description = "Show the icon at the right side.",
-                    Value = "1",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "edit-mode-enum",

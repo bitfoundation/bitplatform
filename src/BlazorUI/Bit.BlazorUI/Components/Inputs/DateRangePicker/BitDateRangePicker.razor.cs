@@ -489,10 +489,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public RenderFragment? IconTemplate { get; set; }
 
     /// <summary>
-    /// Determines the location of the DateRangePicker's icon.
+    /// Determines the side of the input the DateRangePicker's icon is rendered on (default is the end side).
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
+    /// other placement leaves the icon on the end side. The side follows the reading direction: Start is the
+    /// left of an LTR input and the right of an RTL one.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconLocation IconLocation { get; set; } = BitIconLocation.Right;
+    public BitPlacement IconPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -1139,7 +1144,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ClassBuilder.Register(() => BitCssClasses.CultureRtl(Dir, _culture));
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-dtrp-lic" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.Start ? "bit-dtrp-lic" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-dtrp-und" : string.Empty);
 
@@ -1204,7 +1209,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                     await _js.BitSwipesSetup(
                         id: _calloutId,
                         trigger: 0.25m,
-                        position: BitPanelPosition.Top,
+                        position: BitPlacement.Top,
                         isRtl: Dir is BitDir.Rtl,
                         orientationLock: BitSwipeOrientation.Vertical,
                         dotnetObj: _dotnetObj);

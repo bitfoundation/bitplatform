@@ -308,12 +308,12 @@ public partial class BitPivotDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitPivotPosition",
-            DefaultValue = "BitPivotPosition.Top",
-            Description = "Position of the pivot header.",
+            Name = "Placement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "Placement of the pivot header. Only Top, Bottom, Start and End are honoured; any other value, or none, puts the header at the top.",
             LinkType = LinkType.Link,
-            Href = "#pivotPosition-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -918,39 +918,7 @@ public partial class BitPivotDemo
                 },
             ]
         },
-        new()
-        {
-            Id = "pivotPosition-enum",
-            Name = "BitPivotPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="Display header at the top.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="Display header at the Bottom.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="Display header at the start (Left for LTR and Right for RTL).",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Display header at the end (Right for LTR and Left for RTL).",
-                    Value="3",
-                },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "color-enum",
@@ -1205,7 +1173,7 @@ public partial class BitPivotDemo
 </BitPivot>";
 
     private readonly string example7RazorCode = @"
-<BitPivot Position=""BitPivotPosition.Top"">
+<BitPivot Placement=""BitPlacement.Top"">
     <BitPivotItem HeaderText=""File"">
         <h3>Pivot #1: File</h3>
         <div>Everything that has been saved to this workspace, newest first.</div>
@@ -1220,19 +1188,19 @@ public partial class BitPivotDemo
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.Bottom"">
+<BitPivot Placement=""BitPlacement.Bottom"">
     <BitPivotItem HeaderText=""File"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Shared"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.Start"">
+<BitPivot Placement=""BitPlacement.Start"">
     <BitPivotItem HeaderText=""File"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.End"">
+<BitPivot Placement=""BitPlacement.End"">
     <BitPivotItem HeaderText=""File"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">...</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">...</BitPivotItem>
@@ -1285,7 +1253,7 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
+<BitPivot Placement=""@BitPlacement.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
     <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
@@ -1295,7 +1263,7 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Slide"" Style=""height:200px"">
+<BitPivot Placement=""@BitPlacement.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Slide"" Style=""height:200px"">
     <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
@@ -1305,7 +1273,7 @@ public partial class BitPivotDemo
     <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"" Style=""height:200px"">
+<BitPivot Placement=""@BitPlacement.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"" Style=""height:200px"">
     <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
     <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
@@ -1881,7 +1849,7 @@ private void AddPivotTab()
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Dir=""BitDir.Rtl"" Position=""BitPivotPosition.Start"">
+<BitPivot Dir=""BitDir.Rtl"" Placement=""BitPlacement.Start"">
     <BitPivotItem HeaderText=""اسناد"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
     </BitPivotItem>
@@ -1893,7 +1861,7 @@ private void AddPivotTab()
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Dir=""BitDir.Rtl"" Position=""BitPivotPosition.End"">
+<BitPivot Dir=""BitDir.Rtl"" Placement=""BitPlacement.End"">
     <BitPivotItem HeaderText=""اسناد"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
     </BitPivotItem>

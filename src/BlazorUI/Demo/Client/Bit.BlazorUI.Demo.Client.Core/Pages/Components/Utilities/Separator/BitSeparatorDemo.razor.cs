@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Separator;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Separator;
 
 public partial class BitSeparatorDemo
 {
@@ -7,11 +7,11 @@ public partial class BitSeparatorDemo
         new()
         {
             Name = "AlignContent",
-            Type = "BitSeparatorAlignContent?",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the content should be aligned in the separator. Defaults to the center of the line.",
             LinkType = LinkType.Link,
-            Href = "#separator-align-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -87,11 +87,11 @@ public partial class BitSeparatorDemo
         new()
         {
             Name = "LineStyle",
-            Type = "BitSeparatorLineStyle?",
+            Type = "BitLineStyle?",
             DefaultValue = "null",
             Description = "The style the line of the separator is drawn in: solid, dashed, dotted or double.",
             LinkType = LinkType.Link,
-            Href = "#separator-line-style-enum",
+            Href = "#line-style-enum",
         },
         new()
         {
@@ -156,66 +156,8 @@ public partial class BitSeparatorDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "separator-align-enum",
-            Name = "BitSeparatorAlignContent",
-            Description = "Where the content of the separator sits along its line.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "The content sits at the start of the line - the top of a vertical separator.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Center",
-                    Description = "The content sits at the middle of the line, which is the default.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "The content sits at the end of the line - the bottom of a vertical separator.",
-                    Value = "2",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "separator-line-style-enum",
-            Name = "BitSeparatorLineStyle",
-            Description = "The style the line of the separator is drawn in.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Solid",
-                    Description = "A continuous line, which is the default.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Dashed",
-                    Description = "A line of short dashes.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Dotted",
-                    Description = "A line of dots.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Double",
-                    Description = "Two parallel lines with a gap between them, which needs a line of at least three pixels to have room to be drawn.",
-                    Value = "3",
-                },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
+        SharedSubEnums.BitLineStyle,
         new()
         {
             Id = "size-enum",

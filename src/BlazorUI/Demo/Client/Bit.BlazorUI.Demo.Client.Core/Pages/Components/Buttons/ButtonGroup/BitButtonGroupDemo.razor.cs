@@ -171,7 +171,7 @@ public partial class BitButtonGroupDemo
         new()
         {
             Name = "SelectionMode",
-            Type = "BitButtonGroupSelectionMode?",
+            Type = "BitSelectionMode?",
             DefaultValue = "null",
             Description = "Determines how many items can be toggled at the same time. When not set, it falls back to Single if the Toggle parameter is enabled, otherwise None.",
             LinkType = LinkType.Link,
@@ -982,33 +982,7 @@ public partial class BitButtonGroupDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "selection-mode-enum",
-            Name = "BitButtonGroupSelectionMode",
-            Description = "Determines how many items of a BitButtonGroup can be toggled at the same time.",
-            Items =
-            [
-                new()
-                {
-                    Name= "None",
-                    Description="The items act as plain action buttons and cannot be toggled.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Single",
-                    Description="At most one item can be toggled at a time (rendered with the radiogroup accessibility pattern).",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Multiple",
-                    Description="Any number of items can be toggled at the same time (rendered with the toolbar accessibility pattern).",
-                    Value="2",
-                }
-            ]
-        },
+        SharedSubEnums.BitSelectionMode,
         new()
         {
             Id = "overflow-enum",

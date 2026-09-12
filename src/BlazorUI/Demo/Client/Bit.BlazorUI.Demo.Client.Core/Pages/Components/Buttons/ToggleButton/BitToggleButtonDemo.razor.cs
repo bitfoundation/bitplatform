@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ToggleButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ToggleButton;
 
 public partial class BitToggleButtonDemo
 {
@@ -152,12 +152,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the icon relative to the content of the toggle button.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -182,12 +182,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.End",
+            Name = "LoadingLabelPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
             Description = "The position of the loading label in regards to the spinner icon.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -660,60 +660,7 @@ public partial class BitToggleButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Start",
-                    Description="Icon renders before the content (default).",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Icon renders after the content.",
-                    Value="1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Determines the position of the loading label in regards to the spinner icon.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label renders above the spinner.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label renders after the spinner.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label renders below the spinner.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label renders before the spinner.",
-                    Value="3",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",

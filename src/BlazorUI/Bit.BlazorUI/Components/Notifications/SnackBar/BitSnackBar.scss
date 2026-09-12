@@ -126,6 +126,20 @@
     }
 }
 
+@keyframes bit-snb-ent-l {
+    from {
+        opacity: 0;
+        transform: translateX(spacing(-1.5));
+    }
+}
+
+@keyframes bit-snb-ent-r {
+    from {
+        opacity: 0;
+        transform: translateX(spacing(1.5));
+    }
+}
+
 @keyframes bit-snb-exi {
     to {
         opacity: 0;
@@ -389,4 +403,120 @@
     bottom: var(--bit-snb-off-block);
     align-items: flex-end;
     inset-inline: var(--bit-snb-off-inline);
+}
+
+// The physical corners and the vertically centred stacks. A physical stack cannot span the screen and let
+// align-items pick its side the way the logical ones do - flex-start is the right edge in RTL - so it is
+// pinned by the physical property and shrunk to its content instead, which keeps it on the same side of the
+// screen in both reading directions. max-width on .bit-snb still caps how wide it may grow. Which side its
+// items sit on within it is settled at the end of the block, by a margin rather than by align-items, for the
+// same reason.
+.bit-snb-tlf {
+    width: auto;
+    right: auto;
+    top: var(--bit-snb-off-block);
+    left: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-t;
+}
+
+.bit-snb-trg {
+    width: auto;
+    left: auto;
+    top: var(--bit-snb-off-block);
+    right: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-t;
+}
+
+.bit-snb-blf {
+    width: auto;
+    right: auto;
+    left: var(--bit-snb-off-inline);
+    bottom: var(--bit-snb-off-block);
+}
+
+.bit-snb-brg {
+    width: auto;
+    left: auto;
+    right: var(--bit-snb-off-inline);
+    bottom: var(--bit-snb-off-block);
+}
+
+// The centred stacks are pinned at the middle of the block axis and pulled back by half their own height. The
+// horizontally centred one carries both halves of the translate, since a transform is one declaration.
+// A stack pinned to a side slides its items in from that side; the logical pair names the side by the reading
+// direction, so it turns its animation around with it, and the one centred on the screen, pinned to no edge, keeps
+// the default rise from below.
+.bit-snb-cst {
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-cen {
+    top: 50%;
+    align-items: flex-end;
+    transform: translateY(-50%);
+    inset-inline: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+// Kept apart like the slider's, so a browser without :dir() drops only the rule it cannot parse and still gets
+// the turn from the class the component sets itself.
+.bit-rtl.bit-snb-cst {
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-rtl.bit-snb-cen {
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-cst:dir(rtl) {
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-snb-cen:dir(rtl) {
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-clf {
+    top: 50%;
+    width: auto;
+    right: auto;
+    transform: translateY(-50%);
+    left: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-crg {
+    top: 50%;
+    width: auto;
+    left: auto;
+    transform: translateY(-50%);
+    right: var(--bit-snb-off-inline);
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-snb-ctr {
+    top: 50%;
+    left: 50%;
+    align-items: center;
+    transform: translate(-50%, -50%);
+}
+
+// A stack shrunk to its content is only as wide as its widest item, so a shorter one has room to slide inside
+// it, and align-items would hand that room to the reading direction - the very flip these positions are named
+// to avoid. The cross axis takes no left/right (that pair is justify-* only), so the item is pushed against the
+// edge the stack is pinned to by the physical margin opposite it, which absorbs the free space before any
+// alignment is applied. The logical stacks keep align-items: they are the ones meant to turn around.
+.bit-snb-tlf > .bit-snb-itm,
+.bit-snb-blf > .bit-snb-itm,
+.bit-snb-clf > .bit-snb-itm {
+    margin-right: auto;
+}
+
+.bit-snb-trg > .bit-snb-itm,
+.bit-snb-brg > .bit-snb-itm,
+.bit-snb-crg > .bit-snb-itm {
+    margin-left: auto;
 }

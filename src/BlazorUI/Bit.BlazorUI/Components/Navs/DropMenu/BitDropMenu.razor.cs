@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that,
@@ -242,7 +242,11 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The position of the responsive panel to show on the screen.
     /// </summary>
-    [Parameter] public BitPanelPosition? PanelPosition { get; set; }
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
     /// <summary>
     /// Renders the drop menu in responsive mode on small screens.
@@ -984,10 +988,13 @@ public partial class BitDropMenu : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    // The edge the responsive panel slides in from; every consumer of PanelPlacement goes through it (see ToPanelSide).
+    private BitPlacement EffectivePanelPosition => PanelPlacement.ToPanelSide();
+
     // The geometry the swipe gestures were registered with, or null when there are none to register.
     private string? GetSwipesKey()
     {
-        return Responsive is false ? null : $"{PanelPosition}|{Dir}|{ScrollContainerId}";
+        return Responsive is false ? null : $"{EffectivePanelPosition}|{Dir}|{ScrollContainerId}";
     }
 
     private async Task SetupSwipes()
@@ -1005,14 +1012,9 @@ public partial class BitDropMenu : BitComponentBase
             await _js.BitSwipesSetup(
                 id: _calloutId,
                 trigger: 0.25m,
-                position: PanelPosition ?? BitPanelPosition.End,
+                position: EffectivePanelPosition,
                 isRtl: Dir is BitDir.Rtl,
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what
-                // takes that axis from the page: a top or bottom panel dragged with the wrong lock follows
-                // the finger while the page scrolls out from under it at the same time.
-                orientationLock: PanelPosition is BitPanelPosition.Top or BitPanelPosition.Bottom
-                                    ? BitSwipeOrientation.Vertical
-                                    : BitSwipeOrientation.Horizontal,
+                orientationLock: EffectivePanelPosition.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: true,
                 scrollContainerId: ScrollContainerId ?? "");
@@ -1073,11 +1075,11 @@ public partial class BitDropMenu : BitComponentBase
         {
             classes.Add("bit-drm-res");
 
-            classes.Add(PanelPosition switch
+            classes.Add(EffectivePanelPosition switch
             {
-                BitPanelPosition.Start => "bit-drm-sta",
-                BitPanelPosition.Top => "bit-drm-top",
-                BitPanelPosition.Bottom => "bit-drm-btm",
+                BitPlacement.Start => "bit-drm-sta",
+                BitPlacement.Top => "bit-drm-top",
+                BitPlacement.Bottom => "bit-drm-btm",
                 _ => "bit-drm-end"
             });
         }

@@ -89,7 +89,7 @@
                     cancel();
                 }
 
-                if ((!isRtl && position === BitSwipePosition.Start) || (isRtl && position === BitSwipePosition.End)) {
+                if ((!isRtl && position === 'start') || (isRtl && position === 'end')) {
                     if (diffX < 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -97,7 +97,7 @@
                     }
                 }
 
-                if ((!isRtl && position === BitSwipePosition.End) || (isRtl && position === BitSwipePosition.Start)) {
+                if ((!isRtl && position === 'end') || (isRtl && position === 'start')) {
                     if (diffX > 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -105,7 +105,7 @@
                     }
                 }
 
-                if (position === BitSwipePosition.Top) {
+                if (position === 'top') {
                     if (diffY < 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
@@ -113,7 +113,7 @@
                     }
                 }
 
-                if (position === BitSwipePosition.Bottom) {
+                if (position === 'bottom') {
                     if (diffY > 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
@@ -131,7 +131,7 @@
                     const scrollable = element!.scrollHeight - element!.clientHeight;
                     if (scrollable <= 1) return false;
 
-                    return position === BitSwipePosition.Bottom
+                    return position === 'bottom'
                         ? element!.scrollTop > 1
                         : element!.scrollTop < scrollable - 1;
                 }
@@ -159,13 +159,13 @@
                 startX = startY = -1;
                 element.style.transitionDuration = '';
                 try {
-                    if (((!isRtl && position === BitSwipePosition.Start) || (isRtl && position === BitSwipePosition.End)) && diffX < 0) {
+                    if (((!isRtl && position === 'start') || (isRtl && position === 'end')) && diffX < 0) {
                         if ((Math.abs(diffX) / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (((!isRtl && position === BitSwipePosition.End) || (isRtl && position === BitSwipePosition.Start)) && diffX > 0) {
+                    if (((!isRtl && position === 'end') || (isRtl && position === 'start')) && diffX > 0) {
                         if ((diffX / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
@@ -175,17 +175,17 @@
                     // itself was checked against, so a gesture that only scrolled the surface never ends by
                     // throwing it away.
                     const scrollable = element.scrollHeight - element.clientHeight;
-                    const scrolled = scrollable > 1 && (position === BitSwipePosition.Bottom
+                    const scrolled = scrollable > 1 && (position === 'bottom'
                         ? element.scrollTop > 1
                         : element.scrollTop < scrollable - 1);
 
-                    if (position === BitSwipePosition.Top && diffY < 0 && !scrolled) {
+                    if (position === 'top' && diffY < 0 && !scrolled) {
                         if ((Math.abs(diffY) / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (position === BitSwipePosition.Bottom && diffY > 0 && !scrolled) {
+                    if (position === 'bottom' && diffY > 0 && !scrolled) {
                         if ((diffY / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
@@ -220,8 +220,8 @@
 
                         const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
-                        if (position === BitSwipePosition.End && isScrollAtLeft) return;
-                        if (position === BitSwipePosition.Start && isScrollAtRight) return;
+                        if (position === 'end' && isScrollAtLeft) return;
+                        if (position === 'start' && isScrollAtRight) return;
 
                         e.stopPropagation();
                     });
@@ -293,12 +293,11 @@
         }
     }
 
-    enum BitSwipePosition {
-        Start = 0,
-        End = 1,
-        Top = 2,
-        Bottom = 3,
-    }
+    // The edge a swipeable surface is pinned to, handed over by name (SwipesJsRuntimeExtensions.BitSwipesSetup)
+    // rather than as the ordinal of the C# BitPlacement, so the order of that library-wide enum is no contract
+    // with this file. The placements a swipe can never be set up for - the physical pair, Center and the two
+    // combined values - have no name here: the C# side resolves its placement to one of these four first.
+    type BitSwipePosition = 'top' | 'bottom' | 'start' | 'end';
 
     enum BitSwipeOrientation {
         None,

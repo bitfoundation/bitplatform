@@ -522,17 +522,17 @@ public class BitToggleTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top, "bit-tgl-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-tgl-lbt"),
-        DataRow(BitLabelPosition.Start, "bit-tgl-lst"),
-        DataRow(BitLabelPosition.End, "bit-tgl-lnd"),
+        DataRow(BitPlacement.Top, "bit-tgl-ltp"),
+        DataRow(BitPlacement.Bottom, "bit-tgl-lbt"),
+        DataRow(BitPlacement.Start, "bit-tgl-lst"),
+        DataRow(BitPlacement.End, "bit-tgl-lnd"),
         DataRow(null, null)
     ]
-    public void BitToggleLabelPositionTest(BitLabelPosition? labelPosition, string expectedClass)
+    public void BitToggleLabelPositionTest(BitPlacement? labelPosition, string expectedClass)
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
             parameters.Add(p => p.Label, "A label");
         });
 

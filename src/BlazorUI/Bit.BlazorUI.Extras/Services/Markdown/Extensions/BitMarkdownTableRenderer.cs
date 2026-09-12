@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Rendering;
+﻿using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI;
 
@@ -47,11 +47,12 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
     private static void AddAlignment(RenderTreeBuilder b, BitMarkdownTableNode table, int col)
     {
         if (col >= table.Alignments.Count) return;
+        // The pipe-table parser only ever reads a Left, a Center or a Right out of a delimiter row.
         string? align = table.Alignments[col] switch
         {
-            BitMarkdownColumnAlignment.Left => "left",
-            BitMarkdownColumnAlignment.Center => "center",
-            BitMarkdownColumnAlignment.Right => "right",
+            BitTextAlign.Left => "left",
+            BitTextAlign.Center => "center",
+            BitTextAlign.Right => "right",
             _ => null
         };
         if (align is not null)

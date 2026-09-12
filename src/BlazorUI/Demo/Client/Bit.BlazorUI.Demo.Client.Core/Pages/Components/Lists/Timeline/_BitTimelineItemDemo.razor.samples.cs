@@ -135,13 +135,13 @@ private List<BitTimelineItem> basicItems =
 ];";
 
     private readonly string example10RazorCode = @"
-<BitTimeline LineVariant=""BitTimelineLineVariant.Dashed"" Items=""basicItems"" />
+<BitTimeline LineStyle=""BitLineStyle.Dashed"" Items=""basicItems"" />
 
-<BitTimeline LineVariant=""BitTimelineLineVariant.Dotted"" Items=""basicItems"" />
+<BitTimeline LineStyle=""BitLineStyle.Dotted"" Items=""basicItems"" />
 
 <BitTimeline Items=""lineVariantItems"" TruncateLine=""BitTimelineTruncateLine.Both"" />
 
-<BitTimeline Horizontal LineVariant=""BitTimelineLineVariant.Dashed"" Items=""basicItems"" />";
+<BitTimeline Horizontal LineStyle=""BitLineStyle.Dashed"" Items=""basicItems"" />";
     private readonly string example10CsharpCode = @"
 private List<BitTimelineItem> basicItems =
 [
@@ -153,8 +153,8 @@ private List<BitTimelineItem> basicItems =
 private List<BitTimelineItem> lineVariantItems =
 [
     new() { PrimaryText = ""Ordered"", IconName = BitIconName.Accept, Color = BitColor.Success },
-    new() { PrimaryText = ""Shipped"", IconName = BitIconName.Accept, Color = BitColor.Success, LineVariant = BitTimelineLineVariant.Dashed },
-    new() { PrimaryText = ""Delivered"", Variant = BitVariant.Outline, LineVariant = BitTimelineLineVariant.Dashed }
+    new() { PrimaryText = ""Shipped"", IconName = BitIconName.Accept, Color = BitColor.Success, LineStyle = BitLineStyle.Dashed },
+    new() { PrimaryText = ""Delivered"", Variant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed }
 ];";
 
     private readonly string example11RazorCode = @"

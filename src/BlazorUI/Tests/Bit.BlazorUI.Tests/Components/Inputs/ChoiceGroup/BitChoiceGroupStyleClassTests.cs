@@ -160,16 +160,16 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
 
     [TestMethod]
     [DataRow(null, "bit-chg-led")]
-    [DataRow(BitLabelPosition.End, "bit-chg-led")]
-    [DataRow(BitLabelPosition.Start, "bit-chg-lst")]
-    [DataRow(BitLabelPosition.Top, "bit-chg-ltp")]
-    [DataRow(BitLabelPosition.Bottom, "bit-chg-lbm")]
-    public void BitChoiceGroupShouldApplyTheLabelPositionClass(BitLabelPosition? labelPosition, string expectedClass)
+    [DataRow(BitPlacement.End, "bit-chg-led")]
+    [DataRow(BitPlacement.Start, "bit-chg-lst")]
+    [DataRow(BitPlacement.Top, "bit-chg-ltp")]
+    [DataRow(BitPlacement.Bottom, "bit-chg-lbm")]
+    public void BitChoiceGroupShouldApplyTheLabelPositionClass(BitPlacement? labelPosition, string expectedClass)
     {
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetItems());
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
         });
 
         var root = component.Find(".bit-chg");

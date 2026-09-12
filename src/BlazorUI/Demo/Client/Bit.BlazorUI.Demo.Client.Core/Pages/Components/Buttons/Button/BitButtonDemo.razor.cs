@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
 
 public partial class BitButtonDemo
 {
@@ -122,7 +122,7 @@ public partial class BitButtonDemo
             DefaultValue = "null",
             Description = "Specifies the position of the floating button.",
             LinkType = LinkType.Link,
-            Href = "#button-position"
+            Href = "#position-enum"
         },
         new()
         {
@@ -172,12 +172,12 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Gets or sets the position of the icon relative to the component's content.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -202,12 +202,12 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.End",
+            Name = "LoadingLabelPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
             Description = "The position of the loading Label in regards to the spinner icon.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -609,60 +609,7 @@ public partial class BitButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "Icon renders before the content (default).",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "Icon renders after the content.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows on the end of the button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the button.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows on the start of the button.",
-                    Value="3",
-                },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "link-rels",
@@ -786,90 +733,7 @@ public partial class BitButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "button-position",
-            Name = "BitPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "TopLeft",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "TopCenter",
-                    Value = "1"
-                },
-                new()
-                {
-                    Name = "TopRight",
-                    Value = "2"
-                },
-                new()
-                {
-                    Name = "TopStart",
-                    Value = "3"
-                },
-                new()
-                {
-                    Name = "TopEnd",
-                    Value = "4"
-                },
-                new()
-                {
-                    Name = "CenterLeft",
-                    Value = "5"
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6"
-                },
-                new()
-                {
-                    Name = "CenterRight",
-                    Value = "7"
-                },
-                new()
-                {
-                    Name = "CenterStart",
-                    Value = "8"
-                },
-                new()
-                {
-                    Name = "CenterEnd",
-                    Value = "9"
-                },
-                new()
-                {
-                    Name = "BottomLeft",
-                    Value = "10"
-                },
-                new()
-                {
-                    Name = "BottomCenter",
-                    Value = "11"
-                },
-                new()
-                {
-                    Name = "BottomRight",
-                    Value = "12"
-                },
-                new()
-                {
-                    Name = "BottomStart",
-                    Value = "13"
-                },
-                new()
-                {
-                    Name = "BottomEnd",
-                    Value = "14"
-                }
-            ]
-        },
+        SharedSubEnums.BitPosition,
     ];
 
     private bool fillIsLoading;

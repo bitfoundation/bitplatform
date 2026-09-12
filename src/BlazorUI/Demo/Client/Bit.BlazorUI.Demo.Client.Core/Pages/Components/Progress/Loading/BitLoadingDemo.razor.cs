@@ -78,12 +78,12 @@ public partial class BitLoadingDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the label of the loading component.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -300,39 +300,7 @@ public partial class BitLoadingDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Defines where the label of a loading component sits relative to its animation.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows above the animation.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows at the end side of the animation, which follows the direction of the writing.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows below the animation.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows at the start side of the animation, which follows the direction of the writing.",
-                    Value="3",
-                },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",
@@ -407,13 +375,13 @@ public partial class BitLoadingDemo
 <BitRingLoading Label=""Uploading photos..."" />";
 
     private readonly string example3RazorCode = @"
-<BitDotsRingLoading Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
+<BitDotsRingLoading Label=""Top"" LabelPlacement=""BitPlacement.Top"" />
 
-<BitDotsRingLoading Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
+<BitDotsRingLoading Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" />
 
-<BitDotsRingLoading Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
+<BitDotsRingLoading Label=""Start"" LabelPlacement=""BitPlacement.Start"" />
 
-<BitDotsRingLoading Label=""End"" LabelPosition=""BitLabelPosition.End"" />";
+<BitDotsRingLoading Label=""End"" LabelPlacement=""BitPlacement.End"" />";
 
     private readonly string example4RazorCode = @"
 <BitEllipsisLoading>
@@ -422,7 +390,7 @@ public partial class BitLoadingDemo
     </LabelTemplate>
 </BitEllipsisLoading>
 
-<BitRollerLoading LabelPosition=""BitLabelPosition.Bottom"">
+<BitRollerLoading LabelPlacement=""BitPlacement.Bottom"">
     <LabelTemplate>
         <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.SecondaryForeground"">
             Restoring your session
@@ -578,11 +546,11 @@ private async Task StartWork()
 
     private readonly string example14RazorCode = @"
 <div dir=""rtl"">
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPosition=""BitLabelPosition.Start"" />
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPlacement=""BitPlacement.Start"" />
 
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPosition=""BitLabelPosition.End"" />
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPlacement=""BitPlacement.End"" />
 
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""در حال بارگذاری"" LabelPosition=""BitLabelPosition.Bottom"" />
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""در حال بارگذاری"" LabelPlacement=""BitPlacement.Bottom"" />
 
     @* The two loaders whose motion travels across the box are mirrored, so they run toward the end of the line. *@
     <BitEllipsisLoading Dir=""BitDir.Rtl"" Label=""نقطه‌ها"" />

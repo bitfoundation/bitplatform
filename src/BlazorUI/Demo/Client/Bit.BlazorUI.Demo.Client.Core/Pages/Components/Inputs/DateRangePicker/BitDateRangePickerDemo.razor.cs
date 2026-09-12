@@ -448,12 +448,12 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "Determines the location of the DateRangePicker's icon.",
+            Name = "IconPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
+            Description = "Determines the side of the input the DateRangePicker's icon is rendered on. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.",
             LinkType = LinkType.Link,
-            Href = "#icon-location-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -1965,27 +1965,7 @@ public partial class BitDateRangePickerDemo
                 new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
             ]
         },
-        new()
-        {
-            Id = "icon-location-enum",
-            Name = "BitIconLocation",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Left",
-                    Description="Show the icon at the left side.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Right",
-                    Description="Show the icon at the right side.",
-                    Value="1",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "time-format-enum",

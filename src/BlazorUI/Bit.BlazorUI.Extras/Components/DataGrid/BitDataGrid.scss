@@ -140,8 +140,24 @@
     text-align: center;
 }
 
+/* The logical pair turns around with the reading direction; the physical pair deliberately does not. The physical
+   justify-content keywords are the newer ones in a flex box, so each is preceded by the logical keyword naming the
+   same edge in a left-to-right grid: a browser that drops the physical one still aligns an LTR column where it was
+   asked to, which is where BitDataGridColumnAlign.Right used to put it. */
+.bit-dtg-end {
+    justify-content: flex-end;
+    text-align: end;
+}
+
+.bit-dtg-left {
+    justify-content: flex-start;
+    justify-content: left;
+    text-align: left;
+}
+
 .bit-dtg-right {
     justify-content: flex-end;
+    justify-content: right;
     text-align: right;
 }
 

@@ -1,7 +1,7 @@
 <BitSwiper @ref="Swiper"
            Dir="Dir"
            Gap="@Gap"
-           Snap="Snap"
+           SnapAlign="SnapAlign"
            Size="Size"
            Color="Color"
            Wheel="Wheel"
@@ -61,7 +61,7 @@
     [Parameter] public bool Vertical { get; set; }
     [Parameter] public BitSize? Size { get; set; }
     [Parameter] public BitColor? Color { get; set; }
-    [Parameter] public BitSwiperSnap? Snap { get; set; }
+    [Parameter] public BitScrollSnapAlign? SnapAlign { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
     [Parameter] public bool NoKeyboard { get; set; }
     [Parameter] public int ItemsCount { get; set; } = 3;

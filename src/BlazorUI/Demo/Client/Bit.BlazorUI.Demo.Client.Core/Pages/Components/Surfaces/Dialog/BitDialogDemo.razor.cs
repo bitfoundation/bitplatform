@@ -343,11 +343,11 @@ public partial class BitDialogDemo
         new()
         {
             Name = "Position",
-            Type = "BitDialogPosition",
-            DefaultValue = "BitDialogPosition.Center",
+            Type = "BitPosition",
+            DefaultValue = "BitPosition.Center",
             Description = "Position of the Dialog on the screen.",
             LinkType = LinkType.Link,
-            Href = "#component-position-enum",
+            Href = "#position-enum",
         },
         new()
         {
@@ -780,30 +780,7 @@ public partial class BitDialogDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "component-position-enum",
-            Name = "BitDialogPosition",
-            Description = "The Left and Right values are physical and stay on the same side of the screen in both reading directions. The Start and End values are logical: Start is the left in an LTR Dialog and the right in an RTL one.",
-            Items =
-            [
-                new() { Name = "Center", Value = "0", Description = "Centered both ways." },
-                new() { Name = "TopLeft", Value = "1", Description = "The top left corner, in both reading directions." },
-                new() { Name = "TopCenter", Value = "2", Description = "The top edge, centered horizontally." },
-                new() { Name = "TopRight", Value = "3", Description = "The top right corner, in both reading directions." },
-                new() { Name = "CenterLeft", Value = "4", Description = "The left edge, centered vertically." },
-                new() { Name = "CenterRight", Value = "5", Description = "The right edge, centered vertically." },
-                new() { Name = "BottomLeft", Value = "6", Description = "The bottom left corner, in both reading directions." },
-                new() { Name = "BottomCenter", Value = "7", Description = "The bottom edge, centered horizontally." },
-                new() { Name = "BottomRight", Value = "8", Description = "The bottom right corner, in both reading directions." },
-                new() { Name = "TopStart", Value = "9", Description = "The top edge, on the side the reading direction starts from." },
-                new() { Name = "TopEnd", Value = "10", Description = "The top edge, on the side the reading direction ends at." },
-                new() { Name = "CenterStart", Value = "11", Description = "Centered vertically, on the side the reading direction starts from." },
-                new() { Name = "CenterEnd", Value = "12", Description = "Centered vertically, on the side the reading direction ends at." },
-                new() { Name = "BottomStart", Value = "13", Description = "The bottom edge, on the side the reading direction starts from." },
-                new() { Name = "BottomEnd", Value = "14", Description = "The bottom edge, on the side the reading direction ends at." }
-            ]
-        },
+        SharedSubEnums.BitPosition,
         new()
         {
             Id = "component-result-enum",
@@ -891,7 +868,7 @@ public partial class BitDialogDemo
     private bool IsOpen7 = false;
 
     private bool IsOpenInPosition = false;
-    private BitDialogPosition position;
+    private BitPosition position;
     private bool isOpenPhysical = false;
     private bool isOpenLogical = false;
 
@@ -962,7 +939,7 @@ public partial class BitDialogDemo
         isOpenColor = true;
     }
 
-    private void OpenDialogInPosition(BitDialogPosition positionValue)
+    private void OpenDialogInPosition(BitPosition positionValue)
     {
         IsOpenInPosition = true;
         position = positionValue;
@@ -1203,7 +1180,7 @@ private async Task HandleSlowOk()
 
 <BitDialog IsModeless
            @bind-IsOpen=""isOpenModeless""
-           Position=""BitDialogPosition.TopEnd""
+           Position=""BitPosition.TopEnd""
            Title=""Modeless""
            Message=""There is no overlay, so the page behind this one is still usable."" />
 
@@ -1381,15 +1358,15 @@ private bool IsOpen5 = false;
 private bool IsOpen7 = false;";
 
     private readonly string example12RazorCode = @"
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopLeft)"">Top Left</BitButton>
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopCenter)"">Top Center</BitButton>
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopRight)"">Top Right</BitButton>
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.CenterLeft)"">Center Left</BitButton>
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.Center)"">Center</BitButton>
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.CenterRight)"">Center Right</BitButton>
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.BottomLeft)"">Bottom Left</BitButton>
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.BottomCenter)"">Bottom Center</BitButton>
-<BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.BottomRight)"">Bottom Right</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.TopLeft)"">Top Left</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.TopCenter)"">Top Center</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.TopRight)"">Top Right</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.CenterLeft)"">Center Left</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.Center)"">Center</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.CenterRight)"">Center Right</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.BottomLeft)"">Bottom Left</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.BottomCenter)"">Bottom Center</BitButton>
+<BitButton OnClick=""() => OpenDialogInPosition(BitPosition.BottomRight)"">Bottom Right</BitButton>
 
 <BitDialog @bind-IsOpen=""IsOpenInPosition""
            Position=""position""
@@ -1402,7 +1379,7 @@ private bool IsOpen7 = false;";
 
 <BitDialog @bind-IsOpen=""isOpenPhysical""
            Dir=""BitDir.Rtl""
-           Position=""BitDialogPosition.TopLeft""
+           Position=""BitPosition.TopLeft""
            Title=""TopLeft""
            OkText=""تایید""
            CancelText=""انصراف""
@@ -1410,18 +1387,18 @@ private bool IsOpen7 = false;";
 
 <BitDialog @bind-IsOpen=""isOpenLogical""
            Dir=""BitDir.Rtl""
-           Position=""BitDialogPosition.TopStart""
+           Position=""BitPosition.TopStart""
            Title=""TopStart""
            OkText=""تایید""
            CancelText=""انصراف""
            Message=""موقعیت منطقی: ابتدای جهت خواندن"" />";
     private readonly string example12CsharpCode = @"
 private bool IsOpenInPosition = false;
-private BitDialogPosition position;
+private BitPosition position;
 private bool isOpenPhysical = false;
 private bool isOpenLogical = false;
 
-private void OpenDialogInPosition(BitDialogPosition positionValue)
+private void OpenDialogInPosition(BitPosition positionValue)
 {
     IsOpenInPosition = true;
     position = positionValue;
@@ -1658,7 +1635,7 @@ private bool IsOpenExtIcon4 = false;";
 
 <BitDialog FullWidth
            @bind-IsOpen=""isOpenFullWidth""
-           Position=""BitDialogPosition.BottomCenter""
+           Position=""BitPosition.BottomCenter""
            Title=""Missing Subject""
            Message=""Do you want to send this message without a subject?"" />
 

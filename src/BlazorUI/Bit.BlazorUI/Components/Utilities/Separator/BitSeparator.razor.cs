@@ -33,10 +33,16 @@ public partial class BitSeparator : BitComponentBase
 
 
     /// <summary>
-    /// Where the content should be aligned in the separator.
+    /// Where the content should be aligned along the line of the separator (default is the middle of it).
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/>, <see cref="BitPlacement.Center"/> and
+    /// <see cref="BitPlacement.End"/> mean anything here; every other placement centers the content. The two
+    /// logical values follow the axis the separator runs along: on a horizontal separator Start is the left in
+    /// LTR and the right in RTL, and on a vertical one it is the top in either.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSeparatorAlignContent? AlignContent { get; set; }
+    public BitPlacement? AlignContent { get; set; }
 
     /// <summary>
     /// Renders the separator with auto width or height.
@@ -145,7 +151,7 @@ public partial class BitSeparator : BitComponentBase
     /// the dots of a hairline dotted line barely read without one either.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSeparatorLineStyle? LineStyle { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// The size of the line of the separator, out of the sizes of the theme.
@@ -195,8 +201,8 @@ public partial class BitSeparator : BitComponentBase
 
         ClassBuilder.Register(() => AlignContent switch
         {
-            BitSeparatorAlignContent.Start => "bit-spr-srt",
-            BitSeparatorAlignContent.End => "bit-spr-end",
+            BitPlacement.Start => "bit-spr-srt",
+            BitPlacement.End => "bit-spr-end",
             _ => "bit-spr-ctr"
         });
 
@@ -245,9 +251,9 @@ public partial class BitSeparator : BitComponentBase
 
         ClassBuilder.Register(() => LineStyle switch
         {
-            BitSeparatorLineStyle.Dashed => "bit-spr-dsh",
-            BitSeparatorLineStyle.Dotted => "bit-spr-dot",
-            BitSeparatorLineStyle.Double => "bit-spr-dbl",
+            BitLineStyle.Dashed => "bit-spr-dsh",
+            BitLineStyle.Dotted => "bit-spr-dot",
+            BitLineStyle.Double => "bit-spr-dbl",
             _ => null
         });
 

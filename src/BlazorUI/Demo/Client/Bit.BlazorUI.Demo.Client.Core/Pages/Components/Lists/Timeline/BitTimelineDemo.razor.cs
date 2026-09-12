@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class BitTimelineDemo
 {
@@ -70,12 +70,12 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "LineVariant",
-            Type = "BitTimelineLineVariant?",
+            Name = "LineStyle",
+            Type = "BitLineStyle?",
             DefaultValue = "null",
-            Description = "The way the connecting line of the timeline is painted, which the items can override one by one.",
+            Description = "The way the connecting line of the timeline is painted, which the items can override one by one. Only Solid, Dashed and Dotted are drawn: the connector is a hairline, which leaves Double no room for its two strokes, so it is drawn solid.",
             LinkType = LinkType.Link,
-            Href = "#line-variant-enum",
+            Href = "#line-style-enum",
         },
         new()
         {
@@ -228,12 +228,12 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "LineVariant",
-                   Type = "BitTimelineLineVariant?",
+                   Name = "LineStyle",
+                   Type = "BitLineStyle?",
                    DefaultValue = "null",
-                   Description = "The way the connecting line of the item is painted, overriding the line variant of the timeline.",
+                   Description = "The way the connecting line of the item is painted, overriding the line style of the timeline. Only Solid, Dashed and Dotted are drawn; Double is drawn solid.",
                    LinkType = LinkType.Link,
-                   Href = "#line-variant-enum",
+                   Href = "#line-style-enum",
                },
                new()
                {
@@ -393,12 +393,12 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "LineVariant",
-                   Type = "BitTimelineLineVariant?",
+                   Name = "LineStyle",
+                   Type = "BitLineStyle?",
                    DefaultValue = "null",
-                   Description = "The way the connecting line of the option is painted, overriding the line variant of the timeline.",
+                   Description = "The way the connecting line of the option is painted, overriding the line style of the timeline. Only Solid, Dashed and Dotted are drawn; Double is drawn solid.",
                    LinkType = LinkType.Link,
-                   Href = "#line-variant-enum",
+                   Href = "#line-style-enum",
                },
                new()
                {
@@ -572,10 +572,10 @@ public partial class BitTimelineDemo
                 },
                 new()
                 {
-                    Name = "LineVariant",
-                    Type = "BitNameSelectorPair<TItem, BitTimelineLineVariant?>",
-                    DefaultValue = "new(nameof(BitTimelineItem.LineVariant))",
-                    Description = "LineVariant field name and selector of the custom input class.",
+                    Name = "LineStyle",
+                    Type = "BitNameSelectorPair<TItem, BitLineStyle?>",
+                    DefaultValue = "new(nameof(BitTimelineItem.LineStyle))",
+                    Description = "LineStyle field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -915,33 +915,7 @@ public partial class BitTimelineDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "line-variant-enum",
-            Name = "BitTimelineLineVariant",
-            Description = "Determines how the connecting line of the timeline is painted.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Solid",
-                    Description="An uninterrupted line.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Dashed",
-                    Description="A line drawn as a series of dashes, which usually marks a stretch of the timeline as pending or estimated.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Dotted",
-                    Description="A line drawn as a series of dots, a lighter version of the dashed line.",
-                    Value="2",
-                }
-            ]
-        },
+        SharedSubEnums.BitLineStyle,
         new()
         {
             Id = "truncate-line-enum",

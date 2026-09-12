@@ -280,22 +280,22 @@ public class BitDialogTests : BunitTestContext
     #region classes and styles
 
     [TestMethod]
-    [DataRow(BitDialogPosition.Center, "bit-dlg-ctr")]
-    [DataRow(BitDialogPosition.TopLeft, "bit-dlg-tl")]
-    [DataRow(BitDialogPosition.TopCenter, "bit-dlg-tc")]
-    [DataRow(BitDialogPosition.TopRight, "bit-dlg-tr")]
-    [DataRow(BitDialogPosition.CenterLeft, "bit-dlg-cl")]
-    [DataRow(BitDialogPosition.CenterRight, "bit-dlg-cr")]
-    [DataRow(BitDialogPosition.BottomLeft, "bit-dlg-bl")]
-    [DataRow(BitDialogPosition.BottomCenter, "bit-dlg-bc")]
-    [DataRow(BitDialogPosition.BottomRight, "bit-dlg-br")]
-    [DataRow(BitDialogPosition.TopStart, "bit-dlg-ts")]
-    [DataRow(BitDialogPosition.TopEnd, "bit-dlg-te")]
-    [DataRow(BitDialogPosition.CenterStart, "bit-dlg-cs")]
-    [DataRow(BitDialogPosition.CenterEnd, "bit-dlg-ce")]
-    [DataRow(BitDialogPosition.BottomStart, "bit-dlg-bs")]
-    [DataRow(BitDialogPosition.BottomEnd, "bit-dlg-be")]
-    public void BitDialogPositionShouldRenderItsClass(BitDialogPosition position, string expectedClass)
+    [DataRow(BitPosition.Center, "bit-dlg-ctr")]
+    [DataRow(BitPosition.TopLeft, "bit-dlg-tl")]
+    [DataRow(BitPosition.TopCenter, "bit-dlg-tc")]
+    [DataRow(BitPosition.TopRight, "bit-dlg-tr")]
+    [DataRow(BitPosition.CenterLeft, "bit-dlg-cl")]
+    [DataRow(BitPosition.CenterRight, "bit-dlg-cr")]
+    [DataRow(BitPosition.BottomLeft, "bit-dlg-bl")]
+    [DataRow(BitPosition.BottomCenter, "bit-dlg-bc")]
+    [DataRow(BitPosition.BottomRight, "bit-dlg-br")]
+    [DataRow(BitPosition.TopStart, "bit-dlg-ts")]
+    [DataRow(BitPosition.TopEnd, "bit-dlg-te")]
+    [DataRow(BitPosition.CenterStart, "bit-dlg-cs")]
+    [DataRow(BitPosition.CenterEnd, "bit-dlg-ce")]
+    [DataRow(BitPosition.BottomStart, "bit-dlg-bs")]
+    [DataRow(BitPosition.BottomEnd, "bit-dlg-be")]
+    public void BitDialogPositionShouldRenderItsClass(BitPosition position, string expectedClass)
     {
         var component = RenderComponent<BitDialog>(parameters =>
         {
@@ -306,18 +306,32 @@ public class BitDialogTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-dlg-doc").ClassList.Contains(expectedClass));
     }
 
+    // Position is one of the few parameters that is not nullable, so its default is the value the property is
+    // initialised with rather than a fallback in the class builder. It is asserted on its own because nothing
+    // else would catch it drifting to whichever member of the shared enum happens to be declared first.
+    [TestMethod]
+    public void BitDialogShouldBeCenteredByDefault()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-dlg-doc").ClassList.Contains("bit-dlg-ctr"));
+    }
+
     [TestMethod]
     public void BitDialogPositionShouldBeUpdatedOnRerender()
     {
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.Position, BitDialogPosition.TopLeft);
+            parameters.Add(p => p.Position, BitPosition.TopLeft);
         });
 
         Assert.IsTrue(component.Find(".bit-dlg-doc").ClassList.Contains("bit-dlg-tl"));
 
-        component.Render(parameters => parameters.Add(p => p.Position, BitDialogPosition.BottomEnd));
+        component.Render(parameters => parameters.Add(p => p.Position, BitPosition.BottomEnd));
 
         Assert.IsTrue(component.Find(".bit-dlg-doc").ClassList.Contains("bit-dlg-be"));
         Assert.IsFalse(component.Find(".bit-dlg-doc").ClassList.Contains("bit-dlg-tl"));

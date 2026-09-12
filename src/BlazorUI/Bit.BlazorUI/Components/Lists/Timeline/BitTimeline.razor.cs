@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -59,8 +59,13 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The way the connecting line of the timeline is painted, which the items can override one by one.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitLineStyle.Solid"/>, <see cref="BitLineStyle.Dashed"/> and
+    /// <see cref="BitLineStyle.Dotted"/> mean anything here; the connector is a hairline, which leaves
+    /// <see cref="BitLineStyle.Double"/> no room for the gap between its two strokes, so it is drawn solid.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitTimelineLineVariant? LineVariant { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -175,10 +180,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         });
 
         // A solid line is what the stylesheet paints on its own, so only the broken ones carry a class.
-        ClassBuilder.Register(() => LineVariant switch
+        ClassBuilder.Register(() => LineStyle switch
         {
-            BitTimelineLineVariant.Dashed => "bit-tln-ldd",
-            BitTimelineLineVariant.Dotted => "bit-tln-ldt",
+            BitLineStyle.Dashed => "bit-tln-ldd",
+            BitLineStyle.Dotted => "bit-tln-ldt",
             _ => string.Empty
         });
 
@@ -319,13 +324,13 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             });
         }
 
-        var lineVariant = GetLineVariant(item);
-        if (lineVariant is not null)
+        var lineStyle = GetLineStyle(item);
+        if (lineStyle is not null)
         {
-            className.Append(lineVariant switch
+            className.Append(lineStyle switch
             {
-                BitTimelineLineVariant.Dashed => " bit-tln-ild",
-                BitTimelineLineVariant.Dotted => " bit-tln-ilt",
+                BitLineStyle.Dashed => " bit-tln-ild",
+                BitLineStyle.Dotted => " bit-tln-ilt",
                 // Unlike the timeline-level solid line, an explicitly solid item needs a class of its own
                 // to win over a dashed or a dotted timeline.
                 _ => " bit-tln-ils"
@@ -864,27 +869,27 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitVariant?>(NameSelectors.Variant.Name, null);
     }
 
-    private BitTimelineLineVariant? GetLineVariant(TItem? item)
+    private BitLineStyle? GetLineStyle(TItem? item)
     {
         if (item is null) return null;
 
         if (item is BitTimelineItem timelineItem)
         {
-            return timelineItem.LineVariant;
+            return timelineItem.LineStyle;
         }
 
         if (item is BitTimelineOption timelineOption)
         {
-            return timelineOption.LineVariant;
+            return timelineOption.LineStyle;
         }
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.LineVariant.Selector is not null)
+        if (NameSelectors.LineStyle.Selector is not null)
         {
-            return NameSelectors.LineVariant.Selector!(item);
+            return NameSelectors.LineStyle.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitTimelineLineVariant?>(NameSelectors.LineVariant.Name, null);
+        return item.GetValueFromProperty<BitLineStyle?>(NameSelectors.LineStyle.Name, null);
     }
 }

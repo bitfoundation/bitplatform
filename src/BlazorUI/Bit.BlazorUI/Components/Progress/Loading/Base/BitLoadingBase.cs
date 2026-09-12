@@ -122,9 +122,12 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <remarks>
     /// The Start and End positions follow the direction of the writing and swap sides in a right-to-left
     /// layout, while Top and Bottom stay where they are.
+    /// <br />
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// The custom content of the label of the loading component.
@@ -261,10 +264,10 @@ public abstract class BitLoadingBase : BitComponentBase
                     Label = label;
                     parametersDictionary.Remove(parameter.Key);
                     break;
-                case nameof(LabelPosition):
-                    var labelPosition = (BitLabelPosition?)parameter.Value;
-                    if (LabelPosition != labelPosition) ClassBuilder.Reset();
-                    LabelPosition = labelPosition;
+                case nameof(LabelPlacement):
+                    var labelPlacement = (BitPlacement?)parameter.Value;
+                    if (LabelPlacement != labelPlacement) ClassBuilder.Reset();
+                    LabelPlacement = labelPlacement;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(LabelTemplate):
@@ -424,12 +427,12 @@ public abstract class BitLoadingBase : BitComponentBase
 
         ClassBuilder.Register(() => Paused ? "bit-ldn-pau" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-ldn-ltp",
-            BitLabelPosition.Bottom => "bit-ldn-lbm",
-            BitLabelPosition.Start => "bit-ldn-lst",
-            BitLabelPosition.End => "bit-ldn-led",
+            BitPlacement.Top => "bit-ldn-ltp",
+            BitPlacement.Bottom => "bit-ldn-lbm",
+            BitPlacement.Start => "bit-ldn-lst",
+            BitPlacement.End => "bit-ldn-led",
             _ => "bit-ldn-ltp"
         });
 

@@ -117,8 +117,8 @@ public partial class BitSwipeTrap : BitComponentBase
         // A dead heat goes to the horizontal axis, the same way the JS side resolves the axis a gesture
         // moves along: a perfect diagonal must not be reported as one axis here and locked to the other there.
         var direction = Math.Abs(diffX) >= Math.Abs(diffY)
-            ? diffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
-            : diffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
+            ? diffX > 0 ? BitPlacement.Right : BitPlacement.Left
+            : diffY > 0 ? BitPlacement.Bottom : BitPlacement.Top;
 
         await OnTrigger.InvokeAsync(new(direction, diffX, diffY, velocityX, velocityY, pointerType, duration));
     }

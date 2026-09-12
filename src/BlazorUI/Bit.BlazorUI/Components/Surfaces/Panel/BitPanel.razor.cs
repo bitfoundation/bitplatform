@@ -413,7 +413,11 @@ public partial class BitPanel : BitComponentBase
     /// The edge of the screen the panel slides in from. Start and End are the logical edges, so they follow
     /// the direction of the panel. It defaults to End.
     /// </summary>
-    [Parameter] public BitPanelPosition? Position { get; set; }
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The ARIA role the panel reports itself under, which takes over from the <c>dialog</c> it is announced
@@ -903,9 +907,10 @@ public partial class BitPanel : BitComponentBase
                                         && AbsolutePosition is false
                                         && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
 
-    // Whether the panel slides in along the horizontal axis, which is what decides both the axis the swipe
-    // gesture is locked to and which of the two coordinates the swipe callbacks are given.
-    private bool IsHorizontal => (Position ?? BitPanelPosition.End) is BitPanelPosition.Start or BitPanelPosition.End;
+    // The edge the panel actually slides in from; every consumer of Placement goes through it (see ToPanelSide).
+    private BitPlacement EffectivePosition => Placement.ToPanelSide();
+
+    private bool IsHorizontal => EffectivePosition.IsInlineSide();
 
     // Whether the content of the panel is in the page. It goes in on the first opening and comes back out
     // once the panel has finished sliding away, so every opening starts over; a KeepMounted panel keeps it
@@ -996,12 +1001,11 @@ public partial class BitPanel : BitComponentBase
     {
         List<string> classes = ["bit-pnl-cnt"];
 
-        classes.Add(Position switch
+        classes.Add(EffectivePosition switch
         {
-            BitPanelPosition.Start => "bit-pnl-start",
-            BitPanelPosition.End => "bit-pnl-end",
-            BitPanelPosition.Top => "bit-pnl-top",
-            BitPanelPosition.Bottom => "bit-pnl-bottom",
+            BitPlacement.Start => "bit-pnl-start",
+            BitPlacement.Top => "bit-pnl-top",
+            BitPlacement.Bottom => "bit-pnl-bottom",
             _ => "bit-pnl-end"
         });
 
@@ -1035,7 +1039,7 @@ public partial class BitPanel : BitComponentBase
     // The geometry the swipe gesture was registered with, or null when there is no gesture to register.
     private string? GetSwipesKey()
     {
-        return NoSwipe ? null : $"{Position ?? BitPanelPosition.End}|{Dir}|{GetSwipeTrigger()}";
+        return NoSwipe ? null : $"{EffectivePosition}|{Dir}|{GetSwipeTrigger()}";
     }
 
     // A trigger outside of the range it can mean - a fraction of the size of the panel, so greater than zero
@@ -1051,7 +1055,7 @@ public partial class BitPanel : BitComponentBase
 
         _swipesKey = GetSwipesKey();
 
-        var position = Position ?? BitPanelPosition.End;
+        var position = EffectivePosition;
 
         // Swipes.dispose releases the .NET reference it was handed, so a re-registration gets one of its own
         // rather than reusing a reference that has already been released.
@@ -1064,10 +1068,7 @@ public partial class BitPanel : BitComponentBase
                 trigger: GetSwipeTrigger(),
                 position: position,
                 isRtl: Dir is BitDir.Rtl,
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what takes
-                // that axis from the page: a top or bottom panel dragged with the wrong lock follows the finger
-                // while the page scrolls out from under it at the same time.
-                orientationLock: IsHorizontal ? BitSwipeOrientation.Horizontal : BitSwipeOrientation.Vertical,
+                orientationLock: position.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: false);
         }

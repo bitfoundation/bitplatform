@@ -322,11 +322,11 @@ public class BitTagTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitTagShape.Rounded, "bit-tag-rnd")]
-    [DataRow(BitTagShape.Circular, "bit-tag-cir")]
-    [DataRow(BitTagShape.Square, "bit-tag-sqr")]
+    [DataRow(BitShape.Rounded, "bit-tag-rnd")]
+    [DataRow(BitShape.Pill, "bit-tag-cir")]
+    [DataRow(BitShape.Square, "bit-tag-sqr")]
     [DataRow(null, "bit-tag-rnd")]
-    public void BitTagShouldRespectShape(BitTagShape? shape, string expectedClass)
+    public void BitTagShouldRespectShape(BitShape? shape, string expectedClass)
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
@@ -1769,7 +1769,7 @@ public class BitTagTests : BunitTestContext
             {
                 Color = BitColor.Success,
                 Size = BitSize.Large,
-                Shape = BitTagShape.Circular,
+                Shape = BitShape.Pill,
                 Variant = BitVariant.Outline,
                 IconName = "Add",
                 Text = "Cascaded",

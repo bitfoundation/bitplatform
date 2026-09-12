@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
@@ -235,12 +235,12 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes with: above the input in the default one, and next to it in the Underlined one.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -926,39 +926,7 @@ public partial class BitTextFieldDemo : IDisposable
                 },
             ]
         },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Defines the positions a label can take relative to the control it belongs to.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Description = "The label sits above the input.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "The label sits after the input, on the same line.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Description = "The label sits under the input.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Start",
-                    Description = "The label sits before the input, on the same line.",
-                    Value = "3",
-                },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",
@@ -1866,16 +1834,16 @@ private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString
 private BitTextField? selectionRef;";
 
     private readonly string example17RazorCode = @"
-<BitTextField Label=""Top"" LabelPosition=""BitLabelPosition.Top"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Start"" LabelPosition=""BitLabelPosition.Start"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""End"" LabelPosition=""BitLabelPosition.End"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Top"" LabelPlacement=""BitPlacement.Top"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Start"" LabelPlacement=""BitPlacement.Start"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""End"" LabelPlacement=""BitPlacement.End"" Placeholder=""Enter a text..."" />
 
 <BitTextField Label=""Start + Required + a counter""
               Required
               ShowCount
               MaxLength=""20""
-              LabelPosition=""BitLabelPosition.Start""
+              LabelPlacement=""BitPlacement.Start""
               Description=""The footer keeps its own line under the whole row."" />";
 
     private readonly string example18RazorCode = @"

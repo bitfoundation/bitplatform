@@ -509,11 +509,11 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitBadgeShape.Circular, "bit-bdg-cir")]
-    [DataRow(BitBadgeShape.Rounded, "bit-bdg-rnd")]
-    [DataRow(BitBadgeShape.Square, "bit-bdg-sqr")]
+    [DataRow(BitShape.Pill, "bit-bdg-cir")]
+    [DataRow(BitShape.Rounded, "bit-bdg-rnd")]
+    [DataRow(BitShape.Square, "bit-bdg-sqr")]
     [DataRow(null, "bit-bdg-cir")]
-    public void BitBadgeShouldRespectShape(BitBadgeShape? shape, string expectedClass)
+    public void BitBadgeShouldRespectShape(BitShape? shape, string expectedClass)
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {

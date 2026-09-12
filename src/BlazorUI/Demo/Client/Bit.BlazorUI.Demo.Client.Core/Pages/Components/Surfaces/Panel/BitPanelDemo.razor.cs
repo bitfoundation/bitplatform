@@ -247,11 +247,11 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitPanelPosition?",
+            Name = "Placement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The edge of the screen the panel slides in from. Start and End are the logical edges, so they follow the direction of the panel. It defaults to End.",
-            Href = "#position-enum",
+            Href = "#placement-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -458,19 +458,7 @@ public partial class BitPanelDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "position-enum",
-            Name = "BitPanelPosition",
-            Description = "The edge of the screen the panel slides in from.",
-            Items =
-            [
-                new() { Name = "Start", Description = "The logical start edge of the screen: the left in left-to-right, the right in right-to-left.", Value = "0" },
-                new() { Name = "End", Description = "The logical end edge of the screen: the right in left-to-right, the left in right-to-left.", Value = "1" },
-                new() { Name = "Top", Description = "The top edge of the screen.", Value = "2" },
-                new() { Name = "Bottom", Description = "The bottom edge of the screen.", Value = "3" }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "dismiss-reason-enum",
@@ -672,7 +660,7 @@ private bool isFooterTextPanelOpen;";
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenInPositionStart""
           AriaLabel=""A panel at the start of the screen""
-          Position=""BitPanelPosition.Start"">
+          Placement=""BitPlacement.Start"">
     <div class=""panel-body"">
         BitPanel with Start position and custom Size.
         <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -682,7 +670,7 @@ private bool isFooterTextPanelOpen;";
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenPositionEnd""
           AriaLabel=""A panel at the end of the screen""
-          Position=""BitPanelPosition.End"">
+          Placement=""BitPlacement.End"">
     <div class=""panel-body"">
         BitPanel with End position and custom Size.
         <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -692,7 +680,7 @@ private bool isFooterTextPanelOpen;";
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenInPositionTop""
           AriaLabel=""A panel at the top of the screen""
-          Position=""BitPanelPosition.Top"">
+          Placement=""BitPlacement.Top"">
     <div class=""panel-body"">
         BitPanel with Top position and custom Size.
         <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -702,7 +690,7 @@ private bool isFooterTextPanelOpen;";
 <BitPanel Size=""customPanelSize""
           @bind-IsOpen=""isOpenInPositionBottom""
           AriaLabel=""A panel at the bottom of the screen""
-          Position=""BitPanelPosition.Bottom"">
+          Placement=""BitPlacement.Bottom"">
     <div class=""panel-body"">
         BitPanel with Bottom position and custom Size.
         <BitNumberField @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
@@ -973,7 +961,7 @@ private bool isNoSwipePanelOpen;";
                   ModeFull
                   ZIndex=""1310""
                   AriaLabel=""The inner panel""
-                  Position=""BitPanelPosition.Start"">
+                  Placement=""BitPlacement.Start"">
             <div class=""panel-body"">
                 <h3>Inner</h3>
                 <div>Lifted over the panel it was opened from, so its own overlay covers it.</div>
@@ -1120,7 +1108,7 @@ private bool isPanelClassesOpen;";
 <BitPanel @bind-IsOpen=""isRtlPanelOpenStart""
           Dir=""BitDir.Rtl""
           AriaLabel=""پنل آغاز""
-          Position=""BitPanelPosition.Start"">
+          Placement=""BitPlacement.Start"">
     <div class=""panel-body"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
@@ -1131,7 +1119,7 @@ private bool isPanelClassesOpen;";
 <BitPanel @bind-IsOpen=""isRtlPanelOpenEnd""
           Dir=""BitDir.Rtl""
           AriaLabel=""پنل پایان""
-          Position=""BitPanelPosition.End"">
+          Placement=""BitPlacement.End"">
     <div class=""panel-body"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.

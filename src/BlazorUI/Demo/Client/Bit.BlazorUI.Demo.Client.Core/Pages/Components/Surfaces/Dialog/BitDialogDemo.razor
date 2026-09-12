@@ -305,7 +305,7 @@
 
             <BitDialog IsModeless
                        @bind-IsOpen="isOpenModeless"
-                       Position="BitDialogPosition.TopEnd"
+                       Position="BitPosition.TopEnd"
                        Title="Modeless"
                        Message="There is no overlay, so the page behind this one is still usable." />
 
@@ -526,19 +526,19 @@
             <br />
             <div class="position-btn">
                 <div>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.TopLeft)">Top Left</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.TopCenter)">Top Center</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.TopRight)">Top Right</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.TopLeft)">Top Left</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.TopCenter)">Top Center</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.TopRight)">Top Right</BitButton>
                 </div>
                 <div>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.CenterLeft)">Center Left</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.Center)">Center</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.CenterRight)">Center Right</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.CenterLeft)">Center Left</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.Center)">Center</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.CenterRight)">Center Right</BitButton>
                 </div>
                 <div>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.BottomLeft)">Bottom Left</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.BottomCenter)">Bottom Center</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.BottomRight)">Bottom Right</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.BottomLeft)">Bottom Left</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.BottomCenter)">Bottom Center</BitButton>
+                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.BottomRight)">Bottom Right</BitButton>
                 </div>
             </div>
             <BitDialog @bind-IsOpen="IsOpenInPosition"
@@ -560,7 +560,7 @@
 
             <BitDialog @bind-IsOpen="isOpenPhysical"
                        Dir="BitDir.Rtl"
-                       Position="BitDialogPosition.TopLeft"
+                       Position="BitPosition.TopLeft"
                        Title="TopLeft"
                        OkText="تایید"
                        CancelText="انصراف"
@@ -568,7 +568,7 @@
 
             <BitDialog @bind-IsOpen="isOpenLogical"
                        Dir="BitDir.Rtl"
-                       Position="BitDialogPosition.TopStart"
+                       Position="BitPosition.TopStart"
                        Title="TopStart"
                        OkText="تایید"
                        CancelText="انصراف"
@@ -850,7 +850,7 @@
 
             <BitDialog FullWidth
                        @bind-IsOpen="isOpenFullWidth"
-                       Position="BitDialogPosition.BottomCenter"
+                       Position="BitPosition.BottomCenter"
                        Title="Missing Subject"
                        Message="Do you want to send this message without a subject?" />
 

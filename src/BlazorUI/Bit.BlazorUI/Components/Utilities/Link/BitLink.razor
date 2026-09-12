@@ -76,7 +76,7 @@
         ? (splattedDescribedBy.HasValue() ? $"{splattedDescribedBy} {describedById}" : describedById)
         : splattedDescribedBy;
 
-    var iconAtEnd = IconPosition == BitIconPosition.End;
+    var iconAtEnd = IconPlacement == BitPlacement.End;
 
     RenderFragment body = @<text>
         @if (icon is not null && iconAtEnd is false)

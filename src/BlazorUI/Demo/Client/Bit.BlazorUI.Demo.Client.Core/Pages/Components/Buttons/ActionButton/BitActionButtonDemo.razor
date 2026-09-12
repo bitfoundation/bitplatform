@@ -50,22 +50,22 @@
         <BitActionButton IconOnly IconName="@BitIconName.Phone" AriaLabel="Call" />
     </DemoExample>
 
-    <DemoExample Title="IconPosition" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="IconPlacement" RazorCode="@example2RazorCode" Id="example2">
         <div>
             Move the icon to the other side of the content without touching your markup order. An end-positioned icon reads naturally for
             forward actions like Next or Open, while the default start position suits most command-style actions. The layout also flips automatically in RTL.
         </div>
 
-        <div>Using the <b>IconPosition</b> parameter and <BitLink Href="#icon-position-enum">BitIconPosition</BitLink> enum as its value:</div>
+        <div>Using the <b>IconPlacement</b> parameter and <BitLink Href="#placement-enum">BitPlacement</BitLink> enum as its value:</div>
         
         <br />
 
         <div class="example-content">
-            <BitActionButton IconPosition="BitIconPosition.Start" IconName="@BitIconName.AddFriend">
+            <BitActionButton IconPlacement="BitPlacement.Start" IconName="@BitIconName.AddFriend">
                 Start (default)
             </BitActionButton>
 
-            <BitActionButton IconPosition="BitIconPosition.End" IconName="@BitIconName.AddFriend">
+            <BitActionButton IconPlacement="BitPlacement.End" IconName="@BitIconName.AddFriend">
                 End
             </BitActionButton>
         </div>
@@ -220,7 +220,7 @@
         
         <br />
         
-        <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.Forward">
+        <BitActionButton FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.Forward">
             FullWidth with end icon
         </BitActionButton>
     </DemoExample>

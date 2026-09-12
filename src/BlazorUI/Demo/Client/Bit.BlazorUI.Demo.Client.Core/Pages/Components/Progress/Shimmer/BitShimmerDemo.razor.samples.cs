@@ -12,12 +12,12 @@ public partial class BitShimmerDemo
     private readonly string example2RazorCode = @"
 <BitShimmer Height=""2rem"" />
 
-<BitShimmer Shape=""BitShimmerShape.Square"" Height=""2rem"" />
+<BitShimmer Shape=""BitShape.Square"" Height=""2rem"" />
 
-<BitShimmer Shape=""BitShimmerShape.Pill"" Height=""2rem"" Width=""8rem"" />
+<BitShimmer Shape=""BitShape.Pill"" Height=""2rem"" Width=""8rem"" />
 
 <BitStack Horizontal Alignment=""BitAlignment.Center"">
-    <BitShimmer Shape=""BitShimmerShape.Circle"" Height=""3rem"" />
+    <BitShimmer Shape=""BitShape.Circle"" Height=""3rem"" />
     <BitShimmer Circle Width=""4rem"" />
 </BitStack>";
 
@@ -26,7 +26,7 @@ public partial class BitShimmerDemo
 
 <BitShimmer Height=""2rem"" Radius=""1rem"" />
 
-<BitShimmer Height=""2rem"" Shape=""BitShimmerShape.Pill"" Radius=""0"" />";
+<BitShimmer Height=""2rem"" Shape=""BitShape.Pill"" Radius=""0"" />";
 
     private readonly string example4RazorCode = @"
 <BitShimmer Lines=""3"" Height=""0.75rem"" />

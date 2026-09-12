@@ -6,7 +6,7 @@
 
 <div>
     <DemoPage Name="Sticky"
-              Description="BitSticky is a thin wrapper over the browser's own position:sticky: the content stays in the normal flow - keeping the room it occupies, so nothing jumps when it pins - until the scroll carries it to an edge of its nearest scrolling container, where it stays while the rest of the content passes. Which edge is either a Position (Top, Bottom, or the direction-aware Start and End for horizontal scrolling) or an exact offset from any of the four sides, and Element renders the whole thing as the header, footer, nav, aside or th it really is. CSS has no event for the moment an element actually pins, so the component derives one: OnStuckChanged reports the flips, OnStuckEdgesChanged and StuckEdges name the edge holding it, and StuckClass / StuckStyle restyle the element only while it is stuck - an element that has not moved is never reported as pinned, however exactly it rests on an edge."
+              Description="BitSticky is a thin wrapper over the browser's own position:sticky: the content stays in the normal flow - keeping the room it occupies, so nothing jumps when it pins - until the scroll carries it to an edge of its nearest scrolling container, where it stays while the rest of the content passes. Which edge is either a Placement (Top, Bottom, or the direction-aware Start and End for horizontal scrolling) or an exact offset from any of the four sides, and Element renders the whole thing as the header, footer, nav, aside or th it really is. CSS has no event for the moment an element actually pins, so the component derives one: OnStuckChanged reports the flips, OnStuckEdgesChanged and StuckEdges name the edge holding it, and StuckClass / StuckStyle restyle the element only while it is stuck - an element that has not moved is never reported as pinned, however exactly it rests on an edge."
               Parameters="componentParameters"
               PublicMembers="componentPublicMembers"
               SubEnums="componentSubEnums"
@@ -54,7 +54,7 @@
 
         <DemoExample Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
             <div class="example-desc">
-                <b>Position</b> names the edge the element pins to while its container scrolls vertically.
+                <b>Placement</b> names the edge the element pins to while its container scrolls vertically.
                 <b>Top</b> pins it at the top once the scroll reaches it, <b>Bottom</b> keeps it pinned at the
                 bottom while its place in the content is still below the fold, and <b>TopAndBottom</b> does
                 whichever the scroll calls for - pinned at the bottom on the way down to it, at the top once
@@ -74,7 +74,7 @@
                     in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
                     are boundless. This space is yours to craft, yours to shape, yours to bring to life.
                 </p>
-                <BitSticky Class="sticky" Position="@BitStickyPosition.Top">Stick to Top</BitSticky>
+                <BitSticky Class="sticky" Placement="@BitPlacement.Top">Stick to Top</BitSticky>
                 <div>
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
@@ -131,7 +131,7 @@
                     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
                     begins here, in this quiet moment where everything is possible.
                 </div>
-                <BitSticky Class="sticky" Position="@BitStickyPosition.Bottom">Stick to Bottom</BitSticky>
+                <BitSticky Class="sticky" Placement="@BitPlacement.Bottom">Stick to Bottom</BitSticky>
                 <div>
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                     These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
@@ -165,7 +165,7 @@
                     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
                     shaped into meaning, and the emotions ready to resonate with every reader.
                 </div>
-                <BitSticky Class="sticky" Position="@BitStickyPosition.TopAndBottom">Stick to Top and Bottom</BitSticky>
+                <BitSticky Class="sticky" Placement="@BitPlacement.TopAndBottom">Stick to Top and Bottom</BitSticky>
                 <div>
                     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
                     These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
@@ -192,7 +192,7 @@
 
         <DemoExample Title="Horizontal" RazorCode="@example3RazorCode" Id="example3">
             <div class="example-desc">
-                The other three members of <b>Position</b> pin the element while its container scrolls
+                The other three members of <b>Placement</b> pin the element while its container scrolls
                 horizontally, and they follow the reading direction rather than naming a physical side:
                 <b>Start</b> is the left edge in LTR and the right one in RTL, <b>End</b> the opposite, and
                 <b>StartAndEnd</b> pins to whichever of the two the scroll calls for.
@@ -205,7 +205,7 @@
                 <p>
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 </p>
-                <BitSticky Class="sticky" Position="@BitStickyPosition.Start">Stick to Start</BitSticky>
+                <BitSticky Class="sticky" Placement="@BitPlacement.Start">Stick to Start</BitSticky>
                 <p>
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 </p>
@@ -216,7 +216,7 @@
                 <p>
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 </p>
-                <BitSticky Class="sticky" Position="@BitStickyPosition.End">Stick to End</BitSticky>
+                <BitSticky Class="sticky" Placement="@BitPlacement.End">Stick to End</BitSticky>
                 <p>
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 </p>
@@ -227,7 +227,7 @@
                 <p>
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 </p>
-                <BitSticky Class="sticky" Position="@BitStickyPosition.StartAndEnd">Stick to Start and End</BitSticky>
+                <BitSticky Class="sticky" Placement="@BitPlacement.StartAndEnd">Stick to Start and End</BitSticky>
                 <p>
                     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 </p>
@@ -511,7 +511,7 @@
                     inspirations will be built.
                 </p>
                 <BitSticky Class="sticky edge-shadow"
-                           Position="@BitStickyPosition.TopAndBottom"
+                           Placement="@BitPlacement.TopAndBottom"
                            OnStuckEdgesChanged="v => stuckEdges = v">
                     @(stuckEdges is BitStickyEdges.None ? "Travelling with the content" : $"Pinned to {stuckEdges}")
                 </BitSticky>
@@ -560,7 +560,7 @@
                     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
                     vibrant narratives of tomorrow.
                 </p>
-                <BitSticky Element="footer" Class="sticky" Position="@BitStickyPosition.Bottom">A sticky footer element</BitSticky>
+                <BitSticky Element="footer" Class="sticky" Placement="@BitPlacement.Bottom">A sticky footer element</BitSticky>
             </div>
             <br /><br /><br />
             <div><b>A frozen table header</b>:</div>
@@ -739,7 +739,7 @@
                     <p>
                         روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
                     </p>
-                    <BitSticky Dir="BitDir.Rtl" Class="sticky" Position="@BitStickyPosition.Start">چسبیده به آغاز</BitSticky>
+                    <BitSticky Dir="BitDir.Rtl" Class="sticky" Placement="@BitPlacement.Start">چسبیده به آغاز</BitSticky>
                     <p>
                         روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
                     </p>
@@ -750,7 +750,7 @@
                     <p>
                         روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
                     </p>
-                    <BitSticky Dir="BitDir.Rtl" Class="sticky" Position="@BitStickyPosition.End">چسبیده به پایان</BitSticky>
+                    <BitSticky Dir="BitDir.Rtl" Class="sticky" Placement="@BitPlacement.End">چسبیده به پایان</BitSticky>
                     <p>
                         روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
                     </p>

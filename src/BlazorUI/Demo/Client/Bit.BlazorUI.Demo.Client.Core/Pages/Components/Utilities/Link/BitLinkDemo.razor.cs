@@ -83,12 +83,12 @@ public partial class BitLinkDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the icon relative to the link content. The icon goes in front of the text by default; End puts it after the text.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -399,27 +399,7 @@ public partial class BitLinkDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "Icon renders before the content (default).",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "Icon renders after the content.",
-                    Value = "1",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",

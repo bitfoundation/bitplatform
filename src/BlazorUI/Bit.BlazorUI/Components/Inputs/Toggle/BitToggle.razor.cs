@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -130,8 +130,12 @@ public partial class BitToggle : BitInputBase<bool>
     /// The position of the label in regards to the knob of the toggle.
     /// Takes precedence over <see cref="Inline"/> and <see cref="Reversed"/> when set.
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Custom label of the toggle.
@@ -346,12 +350,12 @@ public partial class BitToggle : BitInputBase<bool>
 
         ClassBuilder.Register(() => Reversed ? "bit-tgl-rvs" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-tgl-ltp",
-            BitLabelPosition.Bottom => "bit-tgl-lbt",
-            BitLabelPosition.Start => "bit-tgl-lst",
-            BitLabelPosition.End => "bit-tgl-lnd",
+            BitPlacement.Top => "bit-tgl-ltp",
+            BitPlacement.Bottom => "bit-tgl-lbt",
+            BitPlacement.Start => "bit-tgl-lst",
+            BitPlacement.End => "bit-tgl-lnd",
             _ => string.Empty
         });
 

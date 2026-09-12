@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 
 public partial class BitNumberFieldDemo
 {
@@ -238,19 +238,19 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the label in regards to the field (Top by default).",
             LinkType = LinkType.Link,
-            Href = "#labelPosition-enum",
+            Href = "#placement-enum",
         },
         new()
         {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.",
+            Description = "Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.",
         },
         new()
         {
@@ -725,39 +725,7 @@ public partial class BitNumberFieldDemo
     ];
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "labelPosition-enum",
-            Name = "BitLabelPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the spin button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows on the start of the spin button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows on the end of the spin button.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the spin button.",
-                    Value="3",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "inputMode-enum",

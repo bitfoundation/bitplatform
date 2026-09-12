@@ -134,11 +134,11 @@ public class BitShimmerTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitShimmerShape.Rounded, "bit-smr-lin")]
-    [DataRow(BitShimmerShape.Square, "bit-smr-sqr")]
-    [DataRow(BitShimmerShape.Pill, "bit-smr-pil")]
-    [DataRow(BitShimmerShape.Circle, "bit-smr-crl")]
-    public void BitShimmerShouldRespectShape(BitShimmerShape shape, string expectedClass)
+    [DataRow(BitShape.Rounded, "bit-smr-lin")]
+    [DataRow(BitShape.Square, "bit-smr-sqr")]
+    [DataRow(BitShape.Pill, "bit-smr-pil")]
+    [DataRow(BitShape.Circle, "bit-smr-crl")]
+    public void BitShimmerShouldRespectShape(BitShape shape, string expectedClass)
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Shape, shape));
 
@@ -146,9 +146,9 @@ public class BitShimmerTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitShimmerShape.Square)]
-    [DataRow(BitShimmerShape.Pill)]
-    public void BitShimmerShouldKeepTheLinearBaseClassForRectangularShapes(BitShimmerShape shape)
+    [DataRow(BitShape.Square)]
+    [DataRow(BitShape.Pill)]
+    public void BitShimmerShouldKeepTheLinearBaseClassForRectangularShapes(BitShape shape)
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Shape, shape));
 
@@ -161,7 +161,7 @@ public class BitShimmerTests : BunitTestContext
         var component = RenderComponent<BitShimmer>(parameters =>
         {
             parameters.Add(p => p.Circle, true);
-            parameters.Add(p => p.Shape, BitShimmerShape.Pill);
+            parameters.Add(p => p.Shape, BitShape.Pill);
         });
 
         var root = component.Find(".bit-smr");
@@ -177,7 +177,7 @@ public class BitShimmerTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-lin"));
 
-        component.Render(parameters => parameters.Add(p => p.Shape, BitShimmerShape.Circle));
+        component.Render(parameters => parameters.Add(p => p.Shape, BitShape.Circle));
 
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-crl"));
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-lin"));
@@ -199,7 +199,7 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters =>
         {
-            parameters.Add(p => p.Shape, BitShimmerShape.Pill);
+            parameters.Add(p => p.Shape, BitShape.Pill);
             parameters.Add(p => p.Radius, "0");
         });
 
@@ -1212,7 +1212,7 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters =>
         {
-            parameters.Add(p => p.Shape, BitShimmerShape.Circle);
+            parameters.Add(p => p.Shape, BitShape.Circle);
             parameters.Add(p => p.Lines, 3);
             parameters.Add(p => p.Template, (RenderFragment)(builder =>
             {

@@ -749,17 +749,25 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private bool HasPointData => _config.Data.Datasets.Any(d => d.Points is { Count: > 0 });
 
-    private static string AlignToFlex(BitChartAlign a) => a switch
+    // Each value is written as the CSS keyword that means what it says: the logical pair as the flex and text keywords
+    // that follow the reading direction, the physical pair as the ones that never move. The physical justify-content
+    // keywords are the newer ones in a flex box, so each is preceded by the logical keyword naming the same edge in a
+    // left-to-right layout, which a browser that drops it falls back to. Every value without an edge centers.
+    private static string AlignToFlex(BitPlacement a) => a switch
     {
-        BitChartAlign.Start => "flex-start",
-        BitChartAlign.End => "flex-end",
+        BitPlacement.Start => "flex-start",
+        BitPlacement.End => "flex-end",
+        BitPlacement.Left => "flex-start;justify-content:left",
+        BitPlacement.Right => "flex-end;justify-content:right",
         _ => "center"
     };
 
-    private static string TextAlign(BitChartAlign a) => a switch
+    private static string TextAlign(BitPlacement a) => a switch
     {
-        BitChartAlign.Start => "left",
-        BitChartAlign.End => "right",
+        BitPlacement.Start => "start",
+        BitPlacement.End => "end",
+        BitPlacement.Left => "left",
+        BitPlacement.Right => "right",
         _ => "center"
     };
 

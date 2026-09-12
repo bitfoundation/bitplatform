@@ -48,24 +48,24 @@ public partial class BitSeparatorDemo
 ";
 
     private readonly string example3RazorCode = @"
-<BitSeparator AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
-<BitSeparator AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
-<BitSeparator AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>
+<BitSeparator AlignContent=""@BitPlacement.Center"">Center</BitSeparator>
+<BitSeparator AlignContent=""@BitPlacement.Start"">Start</BitSeparator>
+<BitSeparator AlignContent=""@BitPlacement.End"">End</BitSeparator>
 
 <div style=""height: 13rem"">
-    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
-    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
-    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitPlacement.Center"">Center</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitPlacement.Start"">Start</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitPlacement.End"">End</BitSeparator>
 </div>";
 
     private readonly string example4RazorCode = @"
-<BitSeparator AlignContent=""@BitSeparatorAlignContent.Start"" ContentOffset=""2rem"">Start, 2rem</BitSeparator>
-<BitSeparator AlignContent=""@BitSeparatorAlignContent.End"" ContentOffset=""10%"">End, 10%</BitSeparator>
+<BitSeparator AlignContent=""@BitPlacement.Start"" ContentOffset=""2rem"">Start, 2rem</BitSeparator>
+<BitSeparator AlignContent=""@BitPlacement.End"" ContentOffset=""10%"">End, 10%</BitSeparator>
 
 <div style=""height: 13rem"">
-    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"" ContentOffset=""2rem"">Start</BitSeparator>
-    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.End"" ContentOffset=""2rem"">End</BitSeparator>
-    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"" ContentOffset=""25%"">25%</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitPlacement.Start"" ContentOffset=""2rem"">Start</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitPlacement.End"" ContentOffset=""2rem"">End</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitPlacement.Start"" ContentOffset=""25%"">25%</BitSeparator>
 </div>";
 
     private readonly string example5RazorCode = @"
@@ -135,17 +135,17 @@ public partial class BitSeparatorDemo
 
 
 <BitSeparator>Solid</BitSeparator>
-<BitSeparator LineStyle=""BitSeparatorLineStyle.Dashed"">Dashed</BitSeparator>
-<BitSeparator LineStyle=""BitSeparatorLineStyle.Dotted"" Thickness=""3px"">Dotted</BitSeparator>
-<BitSeparator LineStyle=""BitSeparatorLineStyle.Double"" Thickness=""3px"">Double</BitSeparator>
+<BitSeparator LineStyle=""BitLineStyle.Dashed"">Dashed</BitSeparator>
+<BitSeparator LineStyle=""BitLineStyle.Dotted"" Thickness=""3px"">Dotted</BitSeparator>
+<BitSeparator LineStyle=""BitLineStyle.Double"" Thickness=""3px"">Double</BitSeparator>
 
 <div class=""custom-horizontal-layout"">
     <span>Item 1</span>
-    <BitSeparator Vertical LineStyle=""BitSeparatorLineStyle.Dashed"" />
+    <BitSeparator Vertical LineStyle=""BitLineStyle.Dashed"" />
     <span>Item 2</span>
-    <BitSeparator Vertical LineStyle=""BitSeparatorLineStyle.Dotted"" Thickness=""3px"" />
+    <BitSeparator Vertical LineStyle=""BitLineStyle.Dotted"" Thickness=""3px"" />
     <span>Item 3</span>
-    <BitSeparator Vertical LineStyle=""BitSeparatorLineStyle.Double"" Thickness=""3px"" />
+    <BitSeparator Vertical LineStyle=""BitLineStyle.Double"" Thickness=""3px"" />
     <span>Item 4</span>
 </div>";
 
@@ -236,7 +236,7 @@ public partial class BitSeparatorDemo
     private readonly string example13RazorCode = @"
 <div dir=""rtl"">
     <BitSeparator Dir=""BitDir.Rtl"">جداکننده</BitSeparator>
-    <BitSeparator Dir=""BitDir.Rtl"" AlignContent=""@BitSeparatorAlignContent.Start"">ابتدا</BitSeparator>
-    <BitSeparator Dir=""BitDir.Rtl"" AlignContent=""@BitSeparatorAlignContent.End"">انتها</BitSeparator>
+    <BitSeparator Dir=""BitDir.Rtl"" AlignContent=""@BitPlacement.Start"">ابتدا</BitSeparator>
+    <BitSeparator Dir=""BitDir.Rtl"" AlignContent=""@BitPlacement.End"">انتها</BitSeparator>
 </div>";
 }
