@@ -7,6 +7,10 @@ namespace Boilerplate.Tests.E2E.Features.ForceUpdate;
 /// What a stale client meets: every API call it makes declares a version the deployment no longer supports - here by
 /// rewriting the X-App-Version of the browser's own API calls, as a PWA still running an old cached build would send.
 /// The refusal becomes a persistent FORCE_UPDATE message (See ExceptionDelegatingHandler), which ForceUpdateSnackBar shows.
+/// <para>
+/// Inconclusive on webkit: the rewrite never reaches the API there - the magic link goes through as if the header were
+/// untouched.
+/// </para>
 /// </summary>
 [TestClass, TestCategory(TestCategories.Web), Retry(2)]
 public partial class WebForceUpdateTests : AppTestBase
@@ -22,6 +26,9 @@ public partial class WebForceUpdateTests : AppTestBase
     [DataRow(App.AdminPanelWasmStandalone, DisplayName = "AdminPanelWasmStandalone (not prerendered)")]
     public async Task AnOutdatedClient_Should_BeShownTheForceUpdatePanel(App app)
     {
+        if (PlaywrightSettingsProvider.BrowserName is Microsoft.Playwright.BrowserType.Webkit)
+            Assert.Inconclusive("Playwright's webkit does not apply the x-app-version rewrite (See the summary).");
+
         await SkipWithoutGlobalAdminCredentials();
 
         var email = $"e2e-{Guid.NewGuid():N}"[..14] + "@bitplatform.dev";
