@@ -37,7 +37,8 @@ public abstract class SmokeTestsBase : AppTestBase
 
             try
             {
-                await Expect(menuCallout).ToBeVisibleAsync(new() { Timeout = 2_000 });
+                // On screen, not visible: a phone-sized WebView keeps the closed menu rendered, only slid out of view.
+                await Expect(menuCallout).ToBeInViewportAsync(new() { Timeout = 2_000 });
                 return;
             }
             catch (PlaywrightException) when (DateTimeOffset.UtcNow < deadline)

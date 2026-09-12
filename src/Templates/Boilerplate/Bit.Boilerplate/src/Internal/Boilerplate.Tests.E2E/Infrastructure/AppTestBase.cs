@@ -61,44 +61,35 @@ public abstract class AppTestBase : AppPageTest
     /// <summary>Opens the header's app menu and clicks the entry named <paramref name="itemName"/>.</summary>
     protected async Task ClickAppMenuItem(IPage page, string itemName)
     {
-        var item = page.GetByRole(AriaRole.Button, new() { Name = itemName });
+        await OpenAppMenu(page);
 
-        await OpenAppMenu(page, item);
-
-        try
-        {
-            await item.ClickAsync(new() { Timeout = 10_000 });
-        }
-        catch (TimeoutException)
-        {
-            // In a phone-sized Android WebView the menu is a swipeable panel that never passes Playwright's "stable"
-            // check. Blazor handles clicks by event delegation, so the click event itself is enough.
-            await item.DispatchEventAsync("click");
-        }
+        await page.GetByRole(AriaRole.Button, new() { Name = itemName }).ClickAsync();
     }
 
     /// <summary>
-    /// Opens the header's app menu until <paramref name="item"/> shows. A click landing before the app takes over the
-    /// prerendered header is swallowed, so the menu is clicked until it does (See SmokeTestsBase).
+    /// Opens the header's app menu. A click landing before the app takes over the prerendered header is swallowed, so
+    /// the menu is clicked until the app says it is open (See SmokeTestsBase).
+    /// <para>
+    /// Told by the button's aria-expanded, not by an entry being visible: under 600px the menu is a responsive panel
+    /// that stays rendered while closed, only slid out of the viewport, so its entries are "visible" either way.
+    /// </para>
     /// </summary>
-    protected async Task OpenAppMenu(IPage page, ILocator item)
+    protected async Task OpenAppMenu(IPage page)
     {
+        // The drop menu's own button, not its chevron: AppMenu hides the chevron under 600px, which is every
+        // phone-sized hybrid WebView.
+        var menuButton = page.Locator("header .bit-drm-btn").First;
+
         var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(2);
 
-        while (true)
+        // Already open: the button toggles, so another click would close it.
+        while (await menuButton.GetAttributeAsync("aria-expanded") != "true")
         {
-            // Already open: the menu button toggles, so another click would close it.
-            if (await item.IsVisibleAsync())
-                break;
-
-            // The drop menu itself, not its chevron: AppMenu hides the chevron under 600px, which is every phone-sized
-            // hybrid WebView.
-            await page.Locator("header .bit-drm").First.ClickAsync();
+            await menuButton.ClickAsync();
 
             try
             {
-                await Expect(item).ToBeVisibleAsync(new() { Timeout = 5_000 });
-                break;
+                await Expect(menuButton).ToHaveAttributeAsync("aria-expanded", "true", new() { Timeout = 5_000 });
             }
             catch (PlaywrightException) when (DateTimeOffset.UtcNow < deadline)
             {
@@ -119,14 +110,15 @@ public abstract class AppTestBase : AppPageTest
         var emailBox = page.GetByPlaceholder(AppStrings.EmailPlaceholder);
 
         await emailBox.FillEnsuringStable(email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(password);
+        var passwordBox = page.GetByPlaceholder(AppStrings.PasswordPlaceholder);
+        await passwordBox.FillEnsuringStable(password);
 
         // FillEnsuringStable watches one field. The hydration that resets the form can land while the password is being
         // filled, and then it is the email that is left empty - the password, typed after it, survives.
         if (await emailBox.InputValueAsync() != email)
             await emailBox.FillEnsuringStable(email);
 
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
+        await passwordBox.PressAsync("Enter");
 
         // Leaving the sign in page is the app saying it took the credentials; ChangeCulture waits for the layout swap
         // that follows.
@@ -150,13 +142,14 @@ public abstract class AppTestBase : AppPageTest
         var storeAdminEmailBox = page.GetByPlaceholder(AppStrings.EmailPlaceholder);
 
         await storeAdminEmailBox.FillEnsuringStable(StoreAdmin.Email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(StoreAdmin.Password);
+        var storeAdminPasswordBox = page.GetByPlaceholder(AppStrings.PasswordPlaceholder);
+        await storeAdminPasswordBox.FillEnsuringStable(StoreAdmin.Password);
 
         // See SignIn: a reset that lands while the password is filled leaves the email empty.
         if (await storeAdminEmailBox.InputValueAsync() != StoreAdmin.Email)
             await storeAdminEmailBox.FillEnsuringStable(StoreAdmin.Email);
 
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
+        await storeAdminPasswordBox.PressAsync("Enter");
 
         var getCode = page.GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaPanelAnotherWayGetCode });
         await Expect(getCode).ToBeVisibleAsync();
@@ -193,10 +186,11 @@ public abstract class AppTestBase : AppPageTest
         await WaitUntilInteractive(page);
 
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(password);
+        var passwordBox = page.GetByPlaceholder(AppStrings.PasswordPlaceholder);
+        await passwordBox.FillEnsuringStable(password);
 
         var mailedBefore = await mcp.HangfireJobIds(email, TestContext.CancellationToken);
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
+        await passwordBox.PressAsync("Enter");
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
 
         var token = await WaitForSixDigit(mcp, email, mailedBefore);

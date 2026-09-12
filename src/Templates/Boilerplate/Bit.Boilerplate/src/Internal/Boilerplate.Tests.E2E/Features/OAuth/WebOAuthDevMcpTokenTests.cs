@@ -155,8 +155,9 @@ public partial class WebOAuthDevMcpTokenTests : AppTestBase
         await WaitUntilInteractive(page);
 
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(configuration["GlobalAdminEmail"]!);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(configuration["GlobalAdminPassword"]!);
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
+        var passwordBox = page.GetByPlaceholder(AppStrings.PasswordPlaceholder);
+        await passwordBox.FillEnsuringStable(configuration["GlobalAdminPassword"]!);
+        await passwordBox.PressAsync("Enter");
 
         // TfaPanel submits on its own once all six digits are in.
         await BitOtpInputUtils.FillOtpInputs(page, new Totp(Base32Encoding.ToBytes(authenticatorKey)).ComputeTotp());

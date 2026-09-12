@@ -75,7 +75,7 @@ public abstract partial class ThemeAndAccentTestsBase : AppTestBase
         await Expect(page.Locator("style#bit-accent-css").First).ToBeAttachedAsync();
 
         var swatch = page.GetByRole(AriaRole.Button, new() { Name = SwatchLabel(pickedAccent) });
-        await OpenAppMenu(page, swatch);
+        await OpenAppMenu(page);
         await Expect(swatch).ToHaveAttributeAsync("aria-pressed", "true");
     }
 

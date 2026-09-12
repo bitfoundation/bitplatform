@@ -34,7 +34,7 @@ public class AndroidUniversalLinkTests : AppTestBase
         var (page, stop) = await LaunchApp(app, startedByLink: LinkTo(app, PageUrls.About, linkCulture), clearAppData: false);
         RegisterForCleanup(stop);
 
-        await AssertAboutPageIn(app, page,linkCulture, cultureInUrl: linkCulture);
+        await AssertAboutPageIn(app, page, linkCulture, cultureInUrl: linkCulture);
     }
 
     [TestMethod]
@@ -47,7 +47,7 @@ public class AndroidUniversalLinkTests : AppTestBase
 
         await Playwright.OpenAndroidAppLink(LinkTo(app, PageUrls.About, linkCulture));
 
-        await AssertAboutPageIn(app, page,linkCulture, cultureInUrl: linkCulture);
+        await AssertAboutPageIn(app, page, linkCulture, cultureInUrl: linkCulture);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class AndroidUniversalLinkTests : AppTestBase
         var (page, stop) = await LaunchApp(app, startedByLink: LinkTo(app, PageUrls.About), clearAppData: false);
         RegisterForCleanup(stop);
 
-        await AssertAboutPageIn(app, page,rememberedCulture);
+        await AssertAboutPageIn(app, page, rememberedCulture);
     }
 
     [TestMethod]
@@ -73,7 +73,7 @@ public class AndroidUniversalLinkTests : AppTestBase
 
         await Playwright.OpenAndroidAppLink(LinkTo(app, PageUrls.About));
 
-        await AssertAboutPageIn(app, page,rememberedCulture);
+        await AssertAboutPageIn(app, page, rememberedCulture);
     }
 
     /// <summary>The -p:ApplicationTitle each workflow publishes its Android app with.</summary>

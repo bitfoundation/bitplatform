@@ -25,7 +25,7 @@ public static class IPlaywrightExtensions
         /// <c>--remote-debugging-port=9222</c>, so a leftover instance of any of them would be the one answering on
         /// the port - hence every running Client.Windows process is killed first, then its data cleared (see
         /// <see cref="WindowsAppData"/>) unless <paramref name="clearAppData"/> is false - for the caller testing what
-        /// the app remembers. Started minimized, so a run leaves the machine's screen alone.
+        /// the app remembers. Started minimized unless the run is headed, so a run leaves the machine's screen alone.
         /// </summary>
         public async Task<(IPage Page, Func<Task> Stop)> LaunchWindowsApp(string windowsAppId, int port = 9222, bool clearAppData = true)
         {
@@ -41,7 +41,9 @@ public static class IPlaywrightExtensions
             if (clearAppData)
                 WindowsAppData.Clear(windowsAppId);
 
-            Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true, WindowStyle = ProcessWindowStyle.Minimized });
+            // HEADED=1 is Playwright's own switch for watching a run, so a headed run shows the app too.
+            var windowStyle = Environment.GetEnvironmentVariable("HEADED") is "1" ? ProcessWindowStyle.Normal : ProcessWindowStyle.Minimized;
+            Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true, WindowStyle = windowStyle });
 
             var browser = await playwright.ConnectWithRetry($"http://localhost:{port}");
 

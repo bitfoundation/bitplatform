@@ -97,10 +97,11 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         await WaitUntilInteractive(page);
 
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(userPassword);
+        var passwordBox = page.GetByPlaceholder(AppStrings.PasswordPlaceholder);
+        await passwordBox.FillEnsuringStable(userPassword);
 
         var mailedBefore = await mcp.HangfireJobIds(email, TestContext.CancellationToken);
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
+        await passwordBox.PressAsync("Enter");
         await FillElevatedAccessIfPrompted(page, email, mailedBefore, mcp);
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));

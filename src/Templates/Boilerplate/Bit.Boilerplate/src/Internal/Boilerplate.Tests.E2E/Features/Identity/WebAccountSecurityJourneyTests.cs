@@ -94,8 +94,9 @@ public partial class WebAccountSecurityJourneyTests : AppTestBase
         await Expect(BitSnackBarUtils.GetSnackBar(page, AppStrings.InvalidUserCredentials)).ToBeVisibleAsync();
 
         // 4. The new one works. The panel kept her address, so only the password is retyped.
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(secondPassword);
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
+        var passwordBox = page.GetByPlaceholder(AppStrings.PasswordPlaceholder);
+        await passwordBox.FillEnsuringStable(secondPassword);
+        await passwordBox.PressAsync("Enter");
         await Expect(page).Not.ToHaveURLAsync(SignInPageUrl);
     }
 
@@ -498,14 +499,15 @@ public partial class WebAccountSecurityJourneyTests : AppTestBase
         var emailBox = page.GetByPlaceholder(AppStrings.EmailPlaceholder);
 
         await emailBox.FillEnsuringStable(email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(password);
+        var passwordBox = page.GetByPlaceholder(AppStrings.PasswordPlaceholder);
+        await passwordBox.FillEnsuringStable(password);
 
         // FillEnsuringStable watches one field: a hydration reset landing while the password is filled leaves the
         // address empty instead (See AppTestBase.SignIn).
         if (await emailBox.InputValueAsync() != email)
             await emailBox.FillEnsuringStable(email);
 
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
+        await passwordBox.PressAsync("Enter");
     }
 
     /// <summary>
