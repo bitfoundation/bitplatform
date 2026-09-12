@@ -4,8 +4,9 @@ namespace Boilerplate.Tests.E2E.Features.UniversalLinks;
 
 /// <summary>
 /// What the installed Android app does with a link the OS hands it: closed or already running, the url naming a
-/// culture or not. A link that names one has to outrank the culture in storage in every one of those states. Not
-/// parallelized: one connected device.
+/// culture or not. A link that names one has to outrank the culture in storage in every one of those states. Each test
+/// runs on Todo, which routes with Blazor's Router, and AdminPanel, which routes with bit Brouter. Not parallelized:
+/// one connected device.
 /// </summary>
 [TestClass, TestCategory(TestCategories.Android), Retry(2), DoNotParallelize]
 public class AndroidUniversalLinkTests : AppTestBase
@@ -20,62 +21,74 @@ public class AndroidUniversalLinkTests : AppTestBase
 
     protected override IAppOpener AppOpener => new AndroidAppOpener();
 
-    private static string LinkTo(string path, string? culture = null)
-        => new Uri(new Uri(DeployedApps.AdminPanel), culture is null ? path : $"/{culture}{path}").ToString();
+    private static string LinkTo(App app, string path, string? culture = null)
+        => new Uri(new Uri(DeployedApps.AddressOf(app)), culture is null ? path : $"/{culture}{path}").ToString();
 
     [TestMethod]
-    public async Task ClosedApp_Should_OpenTheLinksCulture_WhenItDisagreesWithTheRememberedOne()
+    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    public async Task ClosedApp_Should_OpenTheLinksCulture_WhenItDisagreesWithTheRememberedOne(App app)
     {
-        await RememberCulture(rememberedCulture);
+        await RememberCulture(app, rememberedCulture);
 
-        var (page, stop) = await Playwright.LaunchAndroidApp(DeployedApps.AdminPanelAndroidAppId,
-            startedByLink: LinkTo(PageUrls.About, linkCulture), clearAppData: false);
+        var (page, stop) = await LaunchApp(app, startedByLink: LinkTo(app, PageUrls.About, linkCulture), clearAppData: false);
         RegisterForCleanup(stop);
 
-        await AssertAboutPageIn(page, linkCulture, cultureInUrl: linkCulture);
+        await AssertAboutPageIn(app, page,linkCulture, cultureInUrl: linkCulture);
     }
 
     [TestMethod]
-    public async Task RunningApp_Should_OpenTheLinksCulture_WhenItDisagreesWithTheRememberedOne()
+    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    public async Task RunningApp_Should_OpenTheLinksCulture_WhenItDisagreesWithTheRememberedOne(App app)
     {
-        var page = await OpenRunningApp();
+        var page = await OpenRunningApp(app);
         await ChangeCulture(page, rememberedCulture);
 
-        await Playwright.OpenAndroidAppLink(LinkTo(PageUrls.About, linkCulture));
+        await Playwright.OpenAndroidAppLink(LinkTo(app, PageUrls.About, linkCulture));
 
-        await AssertAboutPageIn(page, linkCulture, cultureInUrl: linkCulture);
+        await AssertAboutPageIn(app, page,linkCulture, cultureInUrl: linkCulture);
     }
 
     [TestMethod]
-    public async Task ClosedApp_Should_KeepTheRememberedCulture_WhenTheLinkNamesNone()
+    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    public async Task ClosedApp_Should_KeepTheRememberedCulture_WhenTheLinkNamesNone(App app)
     {
-        await RememberCulture(rememberedCulture);
+        await RememberCulture(app, rememberedCulture);
 
-        var (page, stop) = await Playwright.LaunchAndroidApp(DeployedApps.AdminPanelAndroidAppId,
-            startedByLink: LinkTo(PageUrls.About), clearAppData: false);
+        var (page, stop) = await LaunchApp(app, startedByLink: LinkTo(app, PageUrls.About), clearAppData: false);
         RegisterForCleanup(stop);
 
-        await AssertAboutPageIn(page, rememberedCulture);
+        await AssertAboutPageIn(app, page,rememberedCulture);
     }
 
     [TestMethod]
-    public async Task RunningApp_Should_KeepTheRememberedCulture_WhenTheLinkNamesNone()
+    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    public async Task RunningApp_Should_KeepTheRememberedCulture_WhenTheLinkNamesNone(App app)
     {
-        var page = await OpenRunningApp();
+        var page = await OpenRunningApp(app);
         await ChangeCulture(page, rememberedCulture);
 
-        await Playwright.OpenAndroidAppLink(LinkTo(PageUrls.About));
+        await Playwright.OpenAndroidAppLink(LinkTo(app, PageUrls.About));
 
-        await AssertAboutPageIn(page, rememberedCulture);
+        await AssertAboutPageIn(app, page,rememberedCulture);
     }
+
+    /// <summary>The -p:ApplicationTitle each workflow publishes its Android app with.</summary>
+    private static string AppNameOf(App app) => app is App.Todo ? "TodoSample" : "AdminPanel";
+
+    private Task<(IPage Page, Func<Task> Stop)> LaunchApp(App app, string? startedByLink = null, bool clearAppData = true)
+        => Playwright.LaunchAndroidApp(DeployedApps.AndroidAppIdOf(app)!, startedByLink: startedByLink, clearAppData: clearAppData);
 
     /// <summary>
     /// Leaves <paramref name="cultureName"/> in storage and the app closed - on a fresh install a link's culture
     /// survives by accident rather than because anything honoured it.
     /// </summary>
-    private async Task RememberCulture(string cultureName)
+    private async Task RememberCulture(App app, string cultureName)
     {
-        var (page, stop) = await Playwright.LaunchAndroidApp(DeployedApps.AdminPanelAndroidAppId);
+        var (page, stop) = await LaunchApp(app);
 
         await WaitUntilInteractive(page);
         await ChangeCulture(page, cultureName);
@@ -83,15 +96,24 @@ public class AndroidUniversalLinkTests : AppTestBase
         await stop(); // Stops the app without clearing it, so the culture just picked is what it will boot into.
     }
 
-    private async Task<IPage> OpenRunningApp()
+    private async Task<IPage> OpenRunningApp(App app)
     {
-        var page = await OpenApp(App.AdminPanel);
+        var page = await OpenApp(app);
         await WaitUntilInteractive(page);
         return page;
     }
 
-    private async Task AssertAboutPageIn(IPage page, string cultureName, string? cultureInUrl = null)
+    private async Task AssertAboutPageIn(App app, IPage page, string cultureName, string? cultureInUrl = null)
     {
+        // The About page is Client.Maui's own, showing the native AppInfo.Name and pid: the link landed in exactly
+        // this installed app, not the other one, nor a browser.
+        var appInfoCard = page.Locator(".app-info-card");
+        await Expect(appInfoCard.GetByText(AppNameOf(app), new() { Exact = true })).ToBeVisibleAsync();
+
+        var processId = await Playwright.GetAndroidAppProcessId(DeployedApps.AndroidAppIdOf(app)!);
+        await Expect(appInfoCard.Locator(".info-item").Filter(new() { HasText = "Process ID" }).Locator(".info-value"))
+            .ToHaveTextAsync(processId);
+
         var culture = CultureInfoManager.GetCultureInfo(cultureName)!;
 
         // The whole path, culture segment included: a dropped culture and a carried-then-ignored one are different

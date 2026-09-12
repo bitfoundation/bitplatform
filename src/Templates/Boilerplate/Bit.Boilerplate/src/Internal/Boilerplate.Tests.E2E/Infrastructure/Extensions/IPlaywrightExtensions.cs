@@ -24,9 +24,10 @@ public static class IPlaywrightExtensions
         /// (e.g. <see cref="DeployedApps.TodoWindowsAppId"/>) and attaches to it. Every Client.Windows app hard-codes
         /// <c>--remote-debugging-port=9222</c>, so a leftover instance of any of them would be the one answering on
         /// the port - hence every running Client.Windows process is killed first, then its data cleared (see
-        /// <see cref="WindowsAppData"/>). Started minimized, so a run leaves the machine's screen alone.
+        /// <see cref="WindowsAppData"/>) unless <paramref name="clearAppData"/> is false - for the caller testing what
+        /// the app remembers. Started minimized, so a run leaves the machine's screen alone.
         /// </summary>
-        public async Task<(IPage Page, Func<Task> Stop)> LaunchWindowsApp(string windowsAppId, int port = 9222)
+        public async Task<(IPage Page, Func<Task> Stop)> LaunchWindowsApp(string windowsAppId, int port = 9222, bool clearAppData = true)
         {
             var exePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), windowsAppId, "current", $"{windowsAppId}.exe");
 
@@ -37,7 +38,8 @@ public static class IPlaywrightExtensions
 
             // After the kill, so nothing still holds the files open.
             WindowsAppData.BackUpOnce();
-            WindowsAppData.Clear(windowsAppId);
+            if (clearAppData)
+                WindowsAppData.Clear(windowsAppId);
 
             Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true, WindowStyle = ProcessWindowStyle.Minimized });
 
@@ -45,7 +47,9 @@ public static class IPlaywrightExtensions
 
             var page = browser.SinglePage();
 
-            await AnswerConsentBanner(page);
+            // The answer lives in app storage, so a launch that kept it has no banner to answer.
+            if (clearAppData)
+                await AnswerConsentBanner(page);
 
             return (page, async () =>
             {
@@ -134,6 +138,12 @@ public static class IPlaywrightExtensions
                 throw new InvalidOperationException($"Android did not open '{link}': {output.Trim()}");
         }
 
+        /// <summary>The pid of the running <paramref name="applicationId"/>; empty when it is not running.</summary>
+        public async Task<string> GetAndroidAppProcessId(string applicationId)
+        {
+            return (await RunAdb($"shell pidof {applicationId}", allowNonZeroExit: true)).Trim();
+        }
+
         /// <summary>
         /// The CDP endpoint appears some time after the app process (and its page later still), so connecting is
         /// retried until <see cref="connectDeadline"/>.
@@ -205,12 +215,79 @@ public static class IPlaywrightExtensions
     {
         foreach (var process in Process.GetProcesses().Where(IsWindowsApp))
         {
-            process.Kill(entireProcessTree: true);
-            process.WaitForExit();
+            try
+            {
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit(TimeSpan.FromSeconds(30));
+            }
+            catch (Exception exp) when (exp is InvalidOperationException or AggregateException or System.ComponentModel.Win32Exception)
+            {
+                // Already gone, or a member of the tree that exited while it was being walked.
+            }
         }
+
+        StopOrphanedWebViews();
     }
 
     private static bool IsWindowsApp(Process process) => process.ProcessName.EndsWith(".Client.Windows", StringComparison.Ordinal);
+
+    /// <summary>
+    /// Killing the app's process tree is not enough: WebView2's browser process outlives a client that went away, and a
+    /// run that died earlier leaves one with no parent to walk down from at all. It keeps a handle on
+    /// <c>%LocalAppData%\&lt;appId&gt;.WebView2</c>, which is what made <see cref="WindowsAppData.Restore"/> fail to put
+    /// the machine's own data back. Each one names the folder it serves in its command line, so these can be told apart
+    /// from the WebView2 of any other app on the machine - which must not be touched.
+    /// </summary>
+    private static void StopOrphanedWebViews()
+    {
+        var webViews = Process.GetProcessesByName("msedgewebview2");
+
+        if (webViews.Length is 0)
+            return;
+
+        var commandLinesByPid = CommandLinesOf(webViews.Select(webView => webView.Id));
+
+        foreach (var webView in webViews)
+        {
+            if (commandLinesByPid.TryGetValue(webView.Id, out var commandLine) is false
+                || WindowsAppData.OwnsWebView2UserDataFolder(commandLine) is false)
+                continue;
+
+            try
+            {
+                webView.Kill(entireProcessTree: true);
+                webView.WaitForExit(TimeSpan.FromSeconds(30));
+            }
+            catch (Exception exp) when (exp is InvalidOperationException or AggregateException or System.ComponentModel.Win32Exception)
+            {
+            }
+        }
+    }
+
+    /// <summary>
+    /// The command line of another process is not on <see cref="Process"/>; CIM has it, and asking powershell for it
+    /// keeps this out of a Windows only package reference. Best effort - an empty answer only means nothing is killed.
+    /// </summary>
+    private static Dictionary<int, string> CommandLinesOf(IEnumerable<int> processIds)
+    {
+        var filter = string.Join(" or ", processIds.Select(id => $"ProcessId={id}"));
+
+        try
+        {
+            var output = RunProcess("powershell",
+                $"-NoProfile -NonInteractive -Command \"Get-CimInstance Win32_Process -Filter '{filter}' | ForEach-Object {{ $_.ProcessId.ToString() + '|' + $_.CommandLine }}\"",
+                allowNonZeroExit: true).GetAwaiter().GetResult();
+
+            return output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(line => line.Split('|', 2))
+                .Where(parts => parts.Length is 2 && int.TryParse(parts[0], out _))
+                .ToDictionary(parts => int.Parse(parts[0]), parts => parts[1]);
+        }
+        catch (Exception exp) when (exp is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return [];
+        }
+    }
 
     /// <summary>
     /// When adb sees no device, boots the first local AVD - and leaves it running, since the next session reuses it.

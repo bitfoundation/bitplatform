@@ -42,7 +42,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         try
         {
             var adminPanelAppForToBeInvitedUser = await OpenApp(App.AdminPanel);
-            await SignInNewUser(adminPanelAppForToBeInvitedUser, aUserToBeInvitedEmail, mcp);
+            await SignInNewUser(adminPanelAppForToBeInvitedUser, aUserToBeInvitedEmail, password, mcp);
 
             await ChangeCultureToPersian(adminPanelAppForToBeInvitedUser);
             await adminPanelAppForToBeInvitedUser.GoToInApp(PageUrls.Home);
@@ -91,24 +91,6 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         }
     }
 
-    private async Task SignInNewUser(IPage page, string email, McpClient mcp)
-    {
-        await page.GoToInApp(PageUrls.SignIn);
-        await WaitUntilInteractive(page);
-
-        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillEnsuringStable(password);
-
-        var mailedBefore = await mcp.HangfireJobIds(email, TestContext.CancellationToken);
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
-        await page.Locator(".bit-otp-inp").First.WaitForAsync();
-
-        var token = await WaitForSixDigit(mcp, email, mailedBefore);
-        await BitOtpInputUtils.FillOtpInputs(page, token);
-
-        await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
-    }
-
     private async Task SignInExistingUser(IPage page, string email, string userPassword, McpClient mcp)
     {
         await page.GoToInApp(PageUrls.SignIn);
@@ -122,6 +104,9 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         await FillElevatedAccessIfPrompted(page, email, mailedBefore, mcp);
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
+
+        // The invitee is deleted along with its sessions; the tenant admin is a seeded user that outlives the run.
+        await DeleteSessionAtCleanup(page);
     }
 
     private Task ChangeCultureToPersian(IPage page) => ChangeCulture(page, "fa-IR");
@@ -185,31 +170,6 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         var accept = Localized(nameof(AppStrings.AcceptInvitation), faCulture);
         await Expect(page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(accept, AppStrings.AcceptInvitation) }))
             .ToBeVisibleAsync();
-    }
-
-    private async Task FillElevatedAccessIfPrompted(IPage page, string recipient, IReadOnlyCollection<string> mailedBefore, McpClient mcp)
-    {
-        var otp = page.Locator(".bit-otp-inp").First;
-        try
-        {
-            await otp.WaitForAsync(new() { Timeout = 15_000 });
-        }
-        catch (TimeoutException)
-        {
-            return;
-        }
-
-        var token = await WaitForSixDigit(mcp, recipient, mailedBefore);
-        await BitOtpInputUtils.FillOtpInputs(page, token);
-    }
-
-    private async Task<string> WaitForSixDigit(McpClient mcp, string argumentContains, IReadOnlyCollection<string> mailedBefore)
-    {
-        var job = await mcp.WaitForHangfireJob(argumentContains, mailedBefore, TestContext.CancellationToken);
-        var token = job.SixDigitInArguments();
-        Assert.IsFalse(string.IsNullOrWhiteSpace(token),
-            $"The Hangfire job matching '{argumentContains}' had no 6-digit token. Arguments: '{job.DecodedArguments()}'.");
-        return token!;
     }
 
     private async Task AssertUserInTenantUsersList(IPage page, string email, bool shouldExist)

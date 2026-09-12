@@ -90,8 +90,25 @@ public static class DeployedApps
     public const string TodoAndroidAppId = "com.bitplatform.Todo.Template";
     public const string AdminPanelAndroidAppId = "com.bitplatform.AdminPanel.Template";
 
+    /// <summary>Null for an app with no Android build.</summary>
+    public static string? AndroidAppIdOf(App app) => app switch
+    {
+        App.Todo => TodoAndroidAppId,
+        App.AdminPanel => AdminPanelAndroidAppId,
+        _ => null,
+    };
+
     /// <summary>Velopack app ids of the published Windows apps, used by <see cref="IPlaywrightExtensions.LaunchWindowsApp"/>.</summary>
     public const string TodoWindowsAppId = "TodoSample.Client.Windows";
     public const string AdminPanelWindowsAppId = "AdminPanel.Client.Windows";
     public const string SalesWindowsAppId = "SalesModule.Client.Windows";
+
+    /// <summary>Null for an app with no Windows build.</summary>
+    public static string? WindowsAppIdOf(App app) => app switch
+    {
+        App.Todo => TodoWindowsAppId,
+        App.AdminPanel => AdminPanelWindowsAppId,
+        App.Sales => SalesWindowsAppId,
+        _ => null,
+    };
 }
