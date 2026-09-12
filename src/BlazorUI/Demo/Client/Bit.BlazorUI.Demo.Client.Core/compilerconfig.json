@@ -120,6 +120,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/PhoneInput/BitPhoneInputDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/PhoneInput/BitPhoneInputDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.css",
         "inputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.scss",
         "minify": { "enabled": false },
