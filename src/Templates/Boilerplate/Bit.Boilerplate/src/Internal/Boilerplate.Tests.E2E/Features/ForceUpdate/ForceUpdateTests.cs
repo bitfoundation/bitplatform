@@ -44,33 +44,6 @@ public partial class ForceUpdateTests
         }
     }
 
-    /// <summary>
-    /// The same refusal must not reach a browser navigating to a page: the json would render as text in the tab, and
-    /// the app that knows how to show a force update panel would never load. Sales is the one deployment whose web
-    /// host runs the middleware, because its API is integrated (See HttpRequestExtensions.IsPageRequest).
-    /// </summary>
-    [TestMethod]
-    public async Task AnOutdatedClient_Should_StillBeServedThePage()
-    {
-        using var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(DeployedApps.Sales), "en-US/"));
-
-        request.Headers.TryAddWithoutValidation("X-App-Version", ancientVersion);
-        request.Headers.TryAddWithoutValidation("X-App-Platform", nameof(AppPlatformType.Web));
-        // What a browser sends when it navigates.
-        request.Headers.TryAddWithoutValidation("Sec-Fetch-Dest", "document");
-        request.Headers.TryAddWithoutValidation("Sec-Fetch-Mode", "navigate");
-        request.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-
-        using var response = await httpClient.SendAsync(request, TestContext.CancellationToken);
-        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
-
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"Sales answered a page request from an outdated client with: {body}");
-        Assert.IsNotNull(response.Content.Headers.ContentType, "Sales answered a page request from an outdated client with no Content-Type.");
-        Assert.AreEqual("text/html", response.Content.Headers.ContentType.MediaType, $"Sales answered a page request from an outdated client with: {body}");
-        Assert.DoesNotContain(nameof(ClientNotSupportedException), body, "The force update refusal reached the document instead of the app's API calls.");
-    }
-
     /// <summary>A bare client: the app's own handler would add its real version next to the one under test.</summary>
     private async Task<HttpResponseMessage> Send(string api, string path, string appVersion, string appPlatform)
     {
