@@ -42,9 +42,6 @@
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
         <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**</DefaultItemExcludes>
-
-        <!-- Publish only the bit-butil.js modules the app uses. -->
-        <BitButilTrimScripts>true</BitButilTrimScripts>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 

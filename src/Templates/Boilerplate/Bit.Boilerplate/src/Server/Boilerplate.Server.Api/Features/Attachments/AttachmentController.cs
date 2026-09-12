@@ -184,7 +184,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             if (await blobStorage.ObjectExists(filePath, cancellationToken) is false)
                 throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ImageCouldNotBeFound)]);
 
-            await blobStorage.DeleteObject(filePath, cancellationToken);
+            await blobStorage.DeleteSingleObject(filePath, cancellationToken);
 
             //#if (module == "Sales" || module == "Admin")
             if (attachment.Kind is AttachmentKind.ProductPrimaryImageOriginal)

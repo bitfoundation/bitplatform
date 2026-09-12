@@ -5,6 +5,9 @@
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
         <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
         <BitButilScriptScan>TypeReferences</BitButilScriptScan>
+
+        <!-- Publish only the bit-butil.js modules the app uses. -->
+        <BitButilTrimScripts>true</BitButilTrimScripts>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Environment)' != 'Development' And '$(SelfContained)' == 'true'">

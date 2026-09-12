@@ -85,6 +85,17 @@ public static class WindowsAppData
         }
     }
 
+    /// <summary>
+    /// Whether a WebView2 process serves one of these apps - its command line carries
+    /// <c>--user-data-dir=%LocalAppData%\&lt;appId&gt;.WebView2</c>. Anything else on the machine is somebody's real
+    /// browser and is left alone.
+    /// </summary>
+    public static bool OwnsWebView2UserDataFolder(string? commandLine)
+    {
+        return string.IsNullOrWhiteSpace(commandLine) is false
+               && windowsAppIds.Any(windowsAppId => commandLine.Contains($"{windowsAppId}.WebView2", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static IEnumerable<string> PathsOf(string windowsAppId)
     {
         // Named after the app by WebView2 itself, since Client.Windows sets no user data folder of its own.

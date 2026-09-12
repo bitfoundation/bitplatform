@@ -24,8 +24,15 @@ public static class PlaywrightVideoRecordingExtensions
             if (testContext.CurrentTestOutcome is not UnitTestOutcome.Failed)
             {
                 var directory = GetVideoDirectory(testContext, testMethodFullName);
-                if (Directory.Exists(directory))
-                    Directory.Delete(directory, true);
+                try
+                {
+                    if (Directory.Exists(directory))
+                        Directory.Delete(directory, true);
+                }
+                catch (IOException)
+                {
+                    // Housekeeping: a video the driver still holds must not turn a passing test into a failed one.
+                }
             }
         }
     }
@@ -52,8 +59,12 @@ public static class PlaywrightVideoRecordingExtensions
         return Path.GetFullPath(dir);
     }
 
+    /// <summary>
+    /// The display name, not the method name: the data rows of one method run in parallel, and sharing a folder let
+    /// one row's cleanup delete it under another row's recording.
+    /// </summary>
     private static string GetTestMethodName(TestContext testContext)
     {
-        return testContext.TestName!;
+        return testContext.TestDisplayName ?? testContext.TestName!;
     }
 }

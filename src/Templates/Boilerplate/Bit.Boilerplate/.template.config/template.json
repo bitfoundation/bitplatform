@@ -722,6 +722,7 @@
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
                         "src/Tests/Features/TemplateConfig/VelopackPackagingContractTests.cs",
                         "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
+                        "src/Tests/Features/TemplateConfig/HeadContentUsageTests.cs",
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",
@@ -794,6 +795,7 @@
                         "src/Tests/Features/ErrorHandling/ProblemDetailsWireContractTests.cs",
                         "src/Tests/Features/ErrorHandling/ErrorWriterRobustnessTests.cs",
                         "src/Tests/Features/ErrorHandling/ProblemDetailsConversionTests.cs",
+                        "src/Tests/Features/ErrorHandling/ErrorPageStatusCodeTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateHeaderHardeningTests.cs",
                         "src/Tests/Features/Json/JsonOptionsContractTests.cs",
                         "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
@@ -849,6 +851,7 @@
                         "src/Tests/Features/Chatbot/AiChatPanelAnswerRoutingTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelHistoryUITests.cs",
                         "src/Tests/Features/Chatbot/PartialJsonReaderTests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotConversationMetricsTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs",
                         "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
                     ]

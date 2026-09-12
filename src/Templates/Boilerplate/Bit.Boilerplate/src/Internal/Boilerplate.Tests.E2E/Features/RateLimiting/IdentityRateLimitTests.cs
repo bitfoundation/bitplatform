@@ -5,8 +5,8 @@ namespace Boilerplate.Tests.E2E.Features.RateLimiting;
 /// <summary>
 /// The IDENTITY policy is a fixed window in the API process' own memory (See <c>RateLimitOptionsExtensions</c>).
 /// <para>
-/// Not parallelized, and it restarts the API afterwards: the burst exhausts a partition every anonymous caller of that
-/// deployment shares.
+/// Not parallelized, and it restarts the API afterwards - for Sales, the web app it is hosted in: the burst exhausts a
+/// partition every anonymous caller of that deployment shares.
 /// </para>
 /// </summary>
 [TestClass, TestCategory(TestCategories.Api), Retry(2), DoNotParallelize]
@@ -22,10 +22,13 @@ public class IdentityRateLimitTests
 
     public TestContext TestContext { get; set; } = default!;
 
+    /// <summary>Todo's API is a process of its own, Sales' runs inside its web app - the two ways the limiter ships.</summary>
     [TestMethod]
-    public async Task AnAnonymousIdentityEndpoint_Should_StopServingAfterTheBurstLimit()
+    [DataRow(App.Todo, DisplayName = "Todo (standalone API)")]
+    [DataRow(App.Sales, DisplayName = "Sales (integrated API)")]
+    public async Task AnAnonymousIdentityEndpoint_Should_StopServingAfterTheBurstLimit(App app)
     {
-        var api = DeployedApps.TodoApi;
+        var api = DeployedApps.ApiOf(app);
 
         await using var apiClient = DeployedApiClientProvider.CreateApiClientFor(api);
 
