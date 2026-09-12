@@ -17,11 +17,16 @@ public sealed record DemoSamples(
 }
 
 /// <summary>The API tables a demo page renders, read off the page type rather than out of its markup.</summary>
+/// <param name="CssVariables">
+/// The public CSS custom properties the component reads off its root - <c>componentCssVariables</c> -
+/// carried as members whose type is empty, since a custom property has a default and a meaning but no type.
+/// </param>
 public sealed record DemoTables(
     IReadOnlyList<ComponentMember> Parameters,
     IReadOnlyList<ComponentMember> PublicMembers,
     IReadOnlyList<ComponentSubType> SubClasses,
-    IReadOnlyList<ComponentSubType> SubEnums)
+    IReadOnlyList<ComponentSubType> SubEnums,
+    IReadOnlyList<ComponentMember> CssVariables)
 {
     private const BindingFlags Fields = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
@@ -49,7 +54,8 @@ public sealed record DemoTables(
             Members(page, demoPageType, $"{prefix}Parameters"),
             Members(page, demoPageType, $"{prefix}PublicMembers"),
             ReadSubClasses(page, demoPageType, $"{prefix}SubClasses"),
-            ReadSubEnums(page, demoPageType, $"{prefix}SubEnums"));
+            ReadSubEnums(page, demoPageType, $"{prefix}SubEnums"),
+            ReadCssVariables(page, demoPageType, $"{prefix}CssVariables"));
     }
 
     /// <summary>
@@ -117,6 +123,13 @@ public sealed record DemoTables(
         if (Value<List<ComponentParameter>>(page, type, fieldName) is not { } parameters) return [];
 
         return [.. parameters.Select(p => new ComponentMember(p.Name ?? string.Empty, p.Type ?? string.Empty, p.DefaultValue, p.Description))];
+    }
+
+    private static ComponentMember[] ReadCssVariables(object page, Type type, string fieldName)
+    {
+        if (Value<List<ComponentCssVariable>>(page, type, fieldName) is not { } variables) return [];
+
+        return [.. variables.Select(v => new ComponentMember(v.Name ?? string.Empty, string.Empty, v.DefaultValue, v.Description))];
     }
 
     private static ComponentSubType[] ReadSubClasses(object page, Type type, string fieldName)

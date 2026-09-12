@@ -316,6 +316,16 @@ public static class BlazorUISearchIndex
                     member.Description ?? string.Empty, member.Type));
             }
 
+            // The custom properties are the half of a component's look that no parameter reaches, so
+            // a search for "action button hover background" has to land on one rather than on the
+            // nearest enum. The default rides in the boosted text the way a parameter's type does:
+            // it is what names the global token the variable falls back to.
+            foreach (var variable in component.CssVariables)
+            {
+                entries.Add(new Entry("CSS variable", variable.Name, component.Name, call,
+                    variable.Description ?? string.Empty, variable.Default ?? string.Empty));
+            }
+
             foreach (var type in component.OwnTypes)
             {
                 // The member names go in the body rather than in the boosted text: a class-styles bag

@@ -57,12 +57,12 @@ public class ComponentCatalogTests : McpTestBase
         StringAssert.Contains(catalog, "BitComponentBase");
     }
 
-    [TestMethod]
-    public async Task Every_component_in_the_catalog_answers_with_a_table_and_examples()
+    /// <summary>The full answer for every component the catalog names, fetched once for the fixture.</summary>
+    private async Task<Dictionary<string, string>> AnswersAsync()
     {
         var names = await NamesAsync();
 
-        var answers = await OncePerFixtureAsync(async () =>
+        return await OncePerFixtureAsync(async () =>
         {
             var results = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -70,6 +70,12 @@ public class ComponentCatalogTests : McpTestBase
 
             return results;
         });
+    }
+
+    [TestMethod]
+    public async Task Every_component_in_the_catalog_answers_with_a_table_and_examples()
+    {
+        var answers = await AnswersAsync();
 
         using var scope = Assert.Scope();
 
@@ -309,5 +315,59 @@ public class ComponentCatalogTests : McpTestBase
 
             Assert.DoesNotContain("has no public type called", reference, $"{type} does not resolve by name.");
         }
+    }
+
+    /// <summary>
+    /// The public CSS custom properties a component reads off its root are the one part of its API
+    /// that has no type behind it: the demo page's own table is the whole source, reached by a field
+    /// name. So a page that renames <c>componentCssVariables</c>, or a table that loses its defaults,
+    /// drops the theming surface out of the answer without failing anything else.
+    /// </summary>
+    [TestMethod]
+    public async Task A_component_that_documents_css_variables_answers_with_them()
+    {
+        var answers = await AnswersAsync();
+
+        var documented = answers.Where(a => a.Value.Contains("## CSS variables", StringComparison.Ordinal)).ToArray();
+
+        using var scope = Assert.Scope();
+
+        Assert.IsGreaterThan(0, documented.Length, "No component answers with its CSS variables any more.");
+
+        foreach (var (name, answer) in documented)
+        {
+            // The first row is the table's own header, which every table here carries.
+            var rows = TableRows(answer, "## CSS variables").Skip(1).ToArray();
+
+            Assert.IsGreaterThan(0, rows.Length, $"{name} has a CSS variables heading with no rows under it.");
+
+            foreach (var row in rows)
+            {
+                StringAssert.StartsWith(row[0], "--bit-", $"{name} lists '{row[0]}' as a CSS variable.");
+
+                // A custom property with no default and no prose is a name an agent cannot use: it
+                // says neither what it currently is nor what setting it would change.
+                Assert.IsFalse(string.IsNullOrWhiteSpace(row[1]), $"{name}'s {row[0]} has no default.");
+                Assert.IsFalse(string.IsNullOrWhiteSpace(row[2]), $"{name}'s {row[0]} has no description.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// The variables are only worth answering with if setting one is enough to restyle the component,
+    /// so the answer states where they may be set rather than listing the names alone.
+    /// </summary>
+    [TestMethod]
+    public async Task The_css_variables_of_a_component_are_answered_with_how_they_are_set()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitActionButton" });
+
+        var names = TableRows(answer, "## CSS variables").Select(row => row[0]).ToArray();
+
+        using var scope = Assert.Scope();
+
+        CollectionAssert.Contains(names, "--bit-ActionButton-color");
+        StringAssert.Contains(answer, ":root", "The answer does not say a variable can be set app-wide.");
+        StringAssert.Contains(answer, "`Style`", "The answer does not say a variable can be set on one instance.");
     }
 }

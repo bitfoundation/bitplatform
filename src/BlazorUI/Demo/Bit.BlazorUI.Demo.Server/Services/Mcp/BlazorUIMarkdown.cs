@@ -113,6 +113,7 @@ public static class BlazorUIMarkdown
 
         AppendInherited(builder, component);
         AppendBindable(builder, component);
+        AppendCssVariables(builder, component);
 
         foreach (var type in component.OwnTypes)
         {
@@ -428,6 +429,28 @@ public static class BlazorUIMarkdown
 
         builder.AppendLine($"## {heading}").AppendLine();
         AppendMemberRows(builder, members);
+        builder.AppendLine();
+    }
+
+    /// <summary>
+    /// The public custom properties the component reads off its root. Stated with how they are set
+    /// rather than only listed: the one thing an agent needs beyond the names is that they inherit,
+    /// so a `:root` rule, an ancestor's style and an instance's `Style` are all valid places for one.
+    /// </summary>
+    private static void AppendCssVariables(StringBuilder builder, BlazorUIComponent component)
+    {
+        if (component.CssVariables.Count == 0) return;
+
+        builder.AppendLine("## CSS variables").AppendLine();
+        builder.AppendLine("Read off the root with a fallback and never declared by the component, so they inherit: set one on `:root` (or a `[bit-theme]` block) to restyle every instance, on an ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it alone.").AppendLine();
+        builder.AppendLine("| Variable | Default | Description |");
+        builder.AppendLine("| --- | --- | --- |");
+
+        foreach (var variable in component.CssVariables)
+        {
+            builder.AppendLine($"| `{variable.Name}` | {Cell(variable.Default)} | {Cell(variable.Description)} |");
+        }
+
         builder.AppendLine();
     }
 

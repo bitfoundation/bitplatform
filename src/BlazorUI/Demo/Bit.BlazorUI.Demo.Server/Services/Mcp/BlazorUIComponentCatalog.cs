@@ -75,6 +75,13 @@ public sealed record BlazorUIComponent
     public IReadOnlyList<ComponentMember> Parameters { get; init; } = [];
     public IReadOnlyList<ComponentMember> PublicMembers { get; init; } = [];
 
+    /// <summary>
+    /// The public CSS custom properties the component reads off its root, each with its default and
+    /// what it changes. They are the theming surface a stylesheet reaches rather than a parameter
+    /// markup sets, and the demo page's own table is the only place they are written down.
+    /// </summary>
+    public IReadOnlyList<ComponentMember> CssVariables { get; init; } = [];
+
     /// <summary>The classes and enums this component owns, in full - nothing else documents them.</summary>
     public IReadOnlyList<ComponentSubType> OwnTypes { get; init; } = [];
 
@@ -229,6 +236,7 @@ public static class BlazorUIComponentCatalog
                 Inherited = inherited,
                 Parameters = parameters,
                 PublicMembers = MergeMembers(tables?.PublicMembers, componentType, parameters),
+                CssVariables = tables?.CssVariables ?? [],
                 OwnTypes = own,
                 SharedTypes = shared,
                 Examples = demo?.Examples ?? []

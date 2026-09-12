@@ -188,4 +188,27 @@
             }
         }
     }
+
+    // Three columns: the variable's name is long (the full component name is part of it) and the
+    // default is a token name, so both get more room than a parameter's before the prose takes the rest.
+    .css-vars-table {
+        .th-cell,
+        .td-cell {
+            &:nth-child(1) {
+                width: 20rem;
+            }
+
+            &:nth-child(2) {
+                width: 14rem;
+            }
+        }
+    }
+
+    .css-vars-intro {
+        margin-bottom: $doc-space-sm;
+
+        code {
+            font-family: var(--demo-font-mono);
+        }
+    }
 }
