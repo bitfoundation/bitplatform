@@ -8,7 +8,9 @@ namespace Bit.BlazorUI;
 
 public static class BitFileVersionProvider
 {
-    private static readonly ConcurrentDictionary<string, string> PathCache = new();
+    // Keyed on the path base as well as the path: the same path resolves to a different file under a
+    // different base, and a lookup that missed under one base must not be answered from the cache under another.
+    private static readonly ConcurrentDictionary<(string PathBase, string Path), string> PathCache = new();
 
 
 
@@ -31,7 +33,8 @@ public static class BitFileVersionProvider
             return path;
         }
 
-        return PathCache.GetOrAdd(path, _ => GenerateVersionedPath(fileProvider, requestPathBase, path, versionKey, resolvedPath));
+        return PathCache.GetOrAdd((requestPathBase.Value ?? string.Empty, path),
+                                  _ => GenerateVersionedPath(fileProvider, requestPathBase, path, versionKey, resolvedPath));
     }
 
 
