@@ -1,6 +1,6 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 
-@if (src is not null)
+@if (string.IsNullOrEmpty(src) is false)
 {
     <script src="@src" @attributes="AdditionalAttributes"></script>
 }

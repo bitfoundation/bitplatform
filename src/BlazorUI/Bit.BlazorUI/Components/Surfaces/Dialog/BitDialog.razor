@@ -6,7 +6,21 @@
     @* While a kept-mounted Dialog is closed it is still in the page, only hidden: inert and aria-hidden
        take it out of the tab sequence and out of the reading order for the browsers that would otherwise
        still reach into a display:none subtree through a stale reference. *@
-    <div @ref="RootElement" @attributes="HtmlAttributes"
+    @* The keydown handler sits on the root so that Escape dismisses the Dialog from anywhere inside it -
+       the surface, the overlay, whichever part of it the keyboard happens to be in. The keys stop here:
+       a Dialog opened from inside another one renders inside that one's surface, so an Escape left to
+       carry on up would dismiss the Dialog the keyboard is still working inside of along with the one it
+       was meant for - and it stops only Blazor's own bubbling, so native listeners (the focus trap among
+       them) still see the key.
+       tabindex="-1" makes the root programmatically focusable so that a press on the overlay lands the focus
+       inside the Dialog rather than on the body. The root only catches it: the focus trap passes it straight
+       on into the surface below, where the dialog role is (Utils.setupFocusTrap has the whole of it). It is
+       written ahead of the attributes of the consumer so that a tabindex of their own is the one that lands. *@
+    <div @ref="RootElement"
+         tabindex="@(TabIndex ?? "-1")"
+         @attributes="HtmlAttributes"
+         @onkeydown="HandleOnKeyDown"
+         @onkeydown:stopPropagation="true"
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"
@@ -17,26 +31,19 @@
         <div style="@Styles?.Document" class="bit-dlg-doc @GetPositionClass() @Classes?.Document">
             @if (IsModeless is false)
             {
-                @* Pressing something that cannot hold the focus is what takes the focus off whatever had it,
-                   and the overlay is the largest such thing on the screen while a Dialog is open. A press on
-                   it would otherwise leave the keyboard on the body: the Escape handler sits on the surface
-                   and the focus trap with it, so neither of them is reached from there, and the next Tab
-                   walks into the page the overlay is there to keep out of reach. The default of the press is
-                   refused so that the focus stays where the Dialog put it - the click itself still arrives,
-                   and still dismisses. *@
+                @* The press on the overlay is left its default action: it is what blurs the input the user
+                   was typing into, and an input only commits what was typed once it loses the focus - before
+                   the click the press turns into runs any dismissal handler. Where that focus lands is the
+                   tabindex of the root above. *@
                 <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true"
-                     @onclick="HandleOnOverlayClick" @onmousedown:preventDefault="true" />
+                     @onclick="HandleOnOverlayClick" />
             }
 
             @* The surface is what carries the role and the accessible name, since that is the element the
                content lives in - a wrapper above the overlay would put the overlay inside the dialog for a
                screen reader. It is made programmatically focusable so that a Dialog holding nothing focusable
-               still has somewhere to put the focus, which is what both the Escape key and the focus trap need:
-               a keydown only reaches Blazor from inside the element it is bound to.
-
-               The keydown stops here rather than carrying on up the tree, which is what keeps a Dialog opened
-               from inside another one from closing both of them with a single Escape - and it stops only
-               Blazor's own bubbling, so native listeners (the focus trap among them) still see the key. *@
+               still has somewhere to put the focus, which is what both the Escape key and the focus trap
+               need: a keydown only reaches the handler on the root from inside it. *@
             <div id="@_containerId"
                  role="@GetRole()"
                  tabindex="-1"
@@ -44,8 +51,6 @@
                  aria-label="@AriaLabel"
                  aria-labelledby="@GetLabelledBy()"
                  aria-describedby="@GetDescribedBy()"
-                 @onkeydown="HandleOnKeyDown"
-                 @onkeydown:stopPropagation="true"
                  style="@GetContainerStyle()"
                  class="bit-dlg-ctn @GetPreventedClasses() @Classes?.Container">
                 @if (HasHeader)

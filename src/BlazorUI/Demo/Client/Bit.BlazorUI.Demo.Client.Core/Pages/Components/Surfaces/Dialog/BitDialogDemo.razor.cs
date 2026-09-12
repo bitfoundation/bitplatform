@@ -904,6 +904,8 @@ public partial class BitDialogDemo
     private bool isOpenOuter = false;
     private bool isOpenInner = false;
 
+    private string dialogValue = string.Empty;
+
     private bool isOpenKeptMounted = false;
     private bool isOpenUnmounted = false;
 
@@ -1524,7 +1526,8 @@ private bool isOpenInner = false;";
            ShowCloseButton=""false""
            OkText=""Send"">
     <div class=""dialog-body"">
-        <BitTextField Label=""What happened?"" Multiline Rows=""4"" />
+        <BitTextField Label=""What happened?"" Multiline Rows=""4"" @bind-Value=""dialogValue"" />
+        <div><b>Value</b> is: @dialogValue</div>
     </div>
 </BitDialog>
 
@@ -1537,6 +1540,7 @@ private bool isOpenInner = false;";
     </div>
 </BitDialog>";
     private readonly string example15CsharpCode = @"
+private string dialogValue = string.Empty;
 private bool isOpenKeptMounted = false;
 private bool isOpenUnmounted = false;";
 

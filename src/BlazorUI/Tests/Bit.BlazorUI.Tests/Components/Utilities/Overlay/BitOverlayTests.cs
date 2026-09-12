@@ -9,14 +9,16 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Overlay;
 [TestClass]
 public class BitOverlayTests : BunitTestContext
 {
-    // An Overlay that hosts no content and carries no accessible name is a purely decorative layer, so it
-    // reports itself aria-hidden; one given content is the very thing a screen reader is meant to reach.
+    // The layer is programmatically focusable, content or not: a press on it moves the focus off whatever
+    // had it, and the layer is where that focus is meant to land rather than the body. An element that can
+    // take the focus cannot be hidden from assistive technology at the same time, so an empty layer carries
+    // no aria-hidden either - it is unnamed and empty, which is nothing to a screen reader as it is.
     [TestMethod]
     public void BitOverlayShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -32,7 +34,7 @@ public class BitOverlayTests : BunitTestContext
 
         var cssClass = isEnabled ? null : " bit-dis";
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -40,14 +42,14 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-dis"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-dis"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -64,11 +66,11 @@ public class BitOverlayTests : BunitTestContext
 
         if (style.HasValue())
         {
-            component.MarkupMatches(@$"<div style=""{style}"" aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+            component.MarkupMatches(@$"<div style=""{style}"" tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+            component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
         }
     }
 
@@ -77,7 +79,7 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         var style = "padding: 1rem;";
         component.Render(parameters =>
@@ -85,7 +87,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.Style, style);
         });
 
-        component.MarkupMatches(@$"<div style=""{style}"" aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""{style}"" tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -101,7 +103,7 @@ public class BitOverlayTests : BunitTestContext
 
         var cssClass = @class.HasValue() ? $" {@class}" : null;
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -109,7 +111,7 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         var cssClass = "test-class";
 
@@ -118,7 +120,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.Class, cssClass);
         });
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl {cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl {cssClass}"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -134,7 +136,7 @@ public class BitOverlayTests : BunitTestContext
 
         var expectedId = id.HasValue() ? id : component.Instance.UniqueId.ToString();
 
-        component.MarkupMatches(@$"<div id=""{expectedId}"" aria-hidden=""true"" class=""bit-ovl""></div>");
+        component.MarkupMatches(@$"<div id=""{expectedId}"" tabindex=""-1"" class=""bit-ovl""></div>");
     }
 
     [TestMethod,
@@ -153,11 +155,11 @@ public class BitOverlayTests : BunitTestContext
         if (dir.HasValue)
         {
             var cssClass = dir is BitDir.Rtl ? " bit-rtl" : null;
-            component.MarkupMatches(@$"<div dir=""{dir.Value.ToString().ToLower()}"" aria-hidden=""true"" class=""bit-ovl{cssClass}"" id:ignore></div>");
+            component.MarkupMatches(@$"<div dir=""{dir.Value.ToString().ToLower()}"" tabindex=""-1"" class=""bit-ovl{cssClass}"" id:ignore></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+            component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
         }
     }
 
@@ -166,14 +168,14 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
 
-        component.MarkupMatches(@"<div dir=""ltr"" aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div dir=""ltr"" tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -195,7 +197,7 @@ public class BitOverlayTests : BunitTestContext
             _ => null
         };
 
-        component.MarkupMatches(@$"<div {styleAttribute} aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@$"<div {styleAttribute} tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -203,17 +205,16 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
 
-        component.MarkupMatches(@$"<div style=""display: none;"" aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display: none;"" tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
     }
 
-    // An Overlay with content is no longer decorative, so the content case must not carry aria-hidden.
     [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
@@ -231,16 +232,14 @@ public class BitOverlayTests : BunitTestContext
 
         if (childContent is not null)
         {
-            component.MarkupMatches(@$"<div class=""bit-ovl"" id:ignore><div class=""bit-ovl-cnt"">{childContent}</div></div>");
+            component.MarkupMatches(@$"<div class=""bit-ovl"" tabindex=""-1"" id:ignore><div class=""bit-ovl-cnt"">{childContent}</div></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+            component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
         }
     }
 
-    // A content-less Overlay that was given an accessible name is not decorative either, so the name is
-    // what it renders rather than aria-hidden.
     [TestMethod]
     public void BitOverlayShouldRespectAriaLabel()
     {
@@ -249,7 +248,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, "loading");
         });
 
-        component.MarkupMatches(@"<div aria-label=""loading"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div aria-label=""loading"" class=""bit-ovl"" tabindex=""-1"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -257,7 +256,83 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlayHtmlAttributesTest>();
 
-        component.MarkupMatches(@$"<div data-val-test=""bit"" class=""bit-ovl"" id:ignore><div class=""bit-ovl-cnt"">I'm an overlay</div></div>");
+        component.MarkupMatches(@$"<div data-val-test=""bit"" class=""bit-ovl"" tabindex=""-1"" id:ignore><div class=""bit-ovl-cnt"">I'm an overlay</div></div>");
+    }
+
+    // The press on the layer keeps its default action - an input only commits what was typed into it once it
+    // loses the focus, and the handlers the click runs are the ones that most need to see that value - and
+    // the layer is made focusable instead, so the focus the press moves lands there rather than on the body.
+    [TestMethod]
+    public void BitOverlayLayerShouldTakeTheFocusOfAPressOnItInsteadOfTheBody()
+    {
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.AddChildContent("<button>content</button>");
+        });
+
+        var layer = component.Find(".bit-ovl");
+
+        Assert.AreEqual("-1", layer.GetAttribute("tabindex"));
+        Assert.IsFalse(layer.HasAttribute("blazor:onmousedown:preventdefault"));
+    }
+
+    // A layer that hosts nothing is a click catcher beside a surface of the consumer's own, and the input
+    // the user was typing into is in that surface: the press on the layer has to blur it all the same, and
+    // the focus it moves has to land on the layer all the same - the body is the top of the page as far as
+    // the next Tab is concerned, under a layer that is there to keep the page out of reach.
+    [TestMethod]
+    public void BitOverlayEmptyLayerShouldTakeTheFocusOfAPressOnItToo()
+    {
+        var component = RenderComponent<BitOverlay>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        var layer = component.Find(".bit-ovl");
+
+        Assert.AreEqual("-1", layer.GetAttribute("tabindex"));
+        Assert.IsFalse(layer.HasAttribute("blazor:onmousedown:preventdefault"));
+
+        // An element that can take the focus cannot be hidden from assistive technology at the same time.
+        Assert.IsFalse(layer.HasAttribute("aria-hidden"));
+    }
+
+    // The tabindex the layer writes is the one it needs to be able to hold the focus itself, which is a
+    // default rather than a decision about where the layer sits in the tab sequence: a consumer who names
+    // one keeps it, the way they keep every other attribute they pass - the parameter and a plain attribute
+    // alike, since the layer writes its own ahead of theirs.
+    [TestMethod]
+    public void BitOverlayShouldLetATabIndexOfTheConsumerWin()
+    {
+        var component = RenderComponent<BitOverlay>(parameters => parameters.Add(p => p.TabIndex, "0"));
+
+        Assert.AreEqual("0", component.Find(".bit-ovl").GetAttribute("tabindex"));
+
+        var splatted = RenderComponent<BitOverlayTabIndexAttributeTest>();
+
+        Assert.AreEqual("0", splatted.Find(".bit-ovl").GetAttribute("tabindex"));
+    }
+
+    // The focus the layer takes over is handed back to where it came from as the Overlay closes: a layer
+    // that is hidden with the focus still on it would leave the focus to drop to the body.
+    [TestMethod]
+    public void BitOverlayShouldRememberWhereTheFocusCameFromAndHandItBackWhenItCloses()
+    {
+        var isOpen = true;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var layerId = component.Find(".bit-ovl").Id;
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count));
+        Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"][^1].Arguments[0]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]);
+
+        component.Find(".bit-ovl").Click();
+
+        Assert.IsFalse(isOpen);
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count));
+        Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"][^1].Arguments[0]);
     }
 
     [TestMethod,
@@ -273,7 +348,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.Blocking, blocking);
         });
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
 
         Assert.IsTrue(isOpen);
 
@@ -282,7 +357,7 @@ public class BitOverlayTests : BunitTestContext
 
         var cssClass = blocking ? " bit-ovl-opn" : null;
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl{cssClass}"" id:ignore></div>");
 
         if (blocking)
         {
@@ -584,7 +659,7 @@ public class BitOverlayTests : BunitTestContext
 
         var cssClass = absolutePosition ? " bit-ovl-abs" : null;
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -592,14 +667,14 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.AbsolutePosition, true);
         });
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-abs"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl bit-ovl-abs"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -615,7 +690,7 @@ public class BitOverlayTests : BunitTestContext
 
         var cssClass = modeFull ? " bit-ovl-mfl" : null;
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -623,14 +698,14 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.ModeFull, true);
         });
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-mfl"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl bit-ovl-mfl"" id:ignore></div>");
     }
 
     // The hold is what AutoToggleScroll says it is for as long as the Overlay is open, rather than only what
@@ -758,11 +833,11 @@ public class BitOverlayTests : BunitTestContext
 
         if (zIndex.HasValue)
         {
-            component.MarkupMatches(@$"<div style=""z-index:{zIndex}"" aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+            component.MarkupMatches(@$"<div style=""z-index:{zIndex}"" tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
         }
         else
         {
-            component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+            component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
         }
     }
 
@@ -771,14 +846,14 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.ZIndex, 1300);
         });
 
-        component.MarkupMatches(@"<div style=""z-index:1300"" aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div style=""z-index:1300"" tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -795,14 +870,14 @@ public class BitOverlayTests : BunitTestContext
 
         var cssClass = IsOpen ? " bit-ovl-opn" : null;
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl{cssClass}"" id:ignore></div>");
 
         Assert.AreEqual(IsOpen, isOpenBind);
 
         var element = component.Find(".bit-ovl");
         element.Click();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         Assert.IsFalse(isOpenBind);
     }
@@ -816,7 +891,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         isOpen = true;
         component.Render(parameters =>
@@ -824,7 +899,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
     }
 
     // The uncontrolled starting state, which only applies while the consumer is not driving IsOpen itself.
@@ -841,7 +916,7 @@ public class BitOverlayTests : BunitTestContext
 
         var cssClass = defaultIsOpen ? " bit-ovl-opn" : null;
 
-        component.MarkupMatches(@$"<div aria-hidden=""true"" class=""bit-ovl{cssClass}"" id:ignore></div>");
+        component.MarkupMatches(@$"<div tabindex=""-1"" class=""bit-ovl{cssClass}"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -853,7 +928,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.DefaultIsOpen, true);
         });
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
     }
 
     // The click only means anything on an Overlay the user can actually see: a closed one is invisible in
@@ -912,7 +987,7 @@ public class BitOverlayTests : BunitTestContext
 
         Assert.AreEqual(1, clickedValue);
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
     }
 
     // The layer is what a dismissal is aimed at: the content it hosts is the thing the user is reaching
@@ -934,7 +1009,7 @@ public class BitOverlayTests : BunitTestContext
         component.Find("button").Click();
 
         Assert.IsTrue(isOpen);
-        component.MarkupMatches(@"<div class=""bit-ovl bit-ovl-opn"" id:ignore><div class=""bit-ovl-cnt""><button>inside</button></div></div>");
+        component.MarkupMatches(@"<div class=""bit-ovl bit-ovl-opn"" tabindex=""-1"" id:ignore><div class=""bit-ovl-cnt""><button>inside</button></div></div>");
     }
 
     // The click is still reported, which is what makes OnClick the one place a consumer closing the Overlay
@@ -1083,19 +1158,19 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>();
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         await component.InvokeAsync(() => component.Instance.Open());
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
 
         await component.InvokeAsync(() => component.Instance.Close());
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
 
         await component.InvokeAsync(() => component.Instance.Toggle());
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
 
         await component.InvokeAsync(() => component.Instance.Toggle());
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl"" id:ignore></div>");
     }
 
     // A disabled Overlay takes nothing from the user and is not opened by code either, but the code that
@@ -1109,7 +1184,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.Open());
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-dis"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-dis"" id:ignore></div>");
 
         component.Render(parameters =>
         {
@@ -1117,7 +1192,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.Open());
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
 
         component.Render(parameters =>
         {
@@ -1125,7 +1200,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.Close());
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-dis"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-dis"" id:ignore></div>");
     }
 
     // Toggle goes through Open and Close, so it inherits their stance on being disabled: it must not open a
@@ -1139,7 +1214,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.Toggle());
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-dis"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-dis"" id:ignore></div>");
 
         var isOpen = true;
         component.Render(parameters =>
@@ -1148,12 +1223,12 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, false);
         });
 
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-ovl-opn bit-dis"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-ovl-opn bit-dis"" id:ignore></div>");
 
         await component.InvokeAsync(() => component.Instance.Toggle());
 
         Assert.IsFalse(isOpen);
-        component.MarkupMatches(@"<div aria-hidden=""true"" class=""bit-ovl bit-dis"" id:ignore></div>");
+        component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-dis"" id:ignore></div>");
     }
 
     // toggleOverflow reports the scroller's scrollTop, which only an absolutely positioned Overlay uses to
