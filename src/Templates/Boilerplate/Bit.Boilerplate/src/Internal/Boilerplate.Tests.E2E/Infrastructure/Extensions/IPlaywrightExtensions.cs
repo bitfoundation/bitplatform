@@ -138,6 +138,18 @@ public static class IPlaywrightExtensions
                 throw new InvalidOperationException($"Android did not open '{link}': {output.Trim()}");
         }
 
+        /// <summary>
+        /// Runs <paramref name="command"/> in the device's own shell, for the half of a hybrid app that is not in its
+        /// WebView - a runtime permission, or the notifications Android itself is holding. A non-zero exit is returned
+        /// rather than thrown: what the caller asserts on is the output.
+        /// </summary>
+        public async Task<string> RunAndroidShell(string command)
+        {
+            await EnsureAndroidDeviceOnline();
+
+            return await RunAdb($"shell {command}", allowNonZeroExit: true);
+        }
+
         /// <summary>The pid of the running <paramref name="applicationId"/>; empty when it is not running.</summary>
         public async Task<string> GetAndroidAppProcessId(string applicationId)
         {

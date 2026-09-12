@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using ImageMagick;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentStorage.Storage;
@@ -45,7 +46,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
     /// </summary>
     public async Task<JsonNode?> Export(Guid userId, CancellationToken cancellationToken)
     {
-        // Materialised before mapping: the file name is built with Path.GetExtension, which no provider translates.
+        // Materialised before mapping: the file name is built outside the database, and reads storage besides.
         var attachments = await dbContext.Attachments
             .AsNoTracking()
             .Where(attachment => attachment.Id == userId && profileImageKinds.Contains(attachment.Kind))
@@ -53,13 +54,18 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
             .Select(attachment => new { attachment.Kind, attachment.CreatedOn, attachment.Path })
             .ToArrayAsync(cancellationToken);
 
-        var export = attachments.Select(attachment => new
+        List<object> export = [];
+
+        foreach (var attachment in attachments)
         {
-            attachment.Kind,
-            attachment.CreatedOn,
-            // Name of the image inside files/attachments/, or null when the stored file could not be found.
-            File = attachment.Path is null ? null : BuildFileName(attachment.Kind, attachment.Path)
-        });
+            export.Add(new
+            {
+                attachment.Kind,
+                attachment.CreatedOn,
+                // Name of the image inside files/attachments/, or null when the stored file could not be found.
+                File = attachment.Path is null ? null : await BuildFileName(attachment.Kind, attachment.Path, cancellationToken)
+            });
+        }
 
         return JsonSerializer.SerializeToNode(export, IPersonalDataSource.SerializerOptions);
     }
@@ -81,14 +87,58 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
             if (await blobStorage.ObjectExists(blob.Path, cancellationToken) is false)
                 continue;
 
-            files.Add(new(BuildFileName(blob.Kind, blob.Path), ct => blobStorage.OpenRead(blob.Path, ct)));
+            files.Add(new(await BuildFileName(blob.Kind, blob.Path, cancellationToken), ct => blobStorage.OpenRead(blob.Path, ct)));
         }
 
         return [.. files];
     }
 
-    /// <summary>The kind is the name, so the two profile images do not arrive as two unrelated files.</summary>
-    private static string BuildFileName(AttachmentKind kind, string blobPath) => $"{kind}{Path.GetExtension(blobPath)}";
+    /// <summary>
+    /// The kind is the name, so the two profile images do not arrive as two unrelated files. The <c>*Original</c>
+    /// kinds are stored under a path with no extension (See <c>AttachmentController.GetFilePath</c>), so theirs comes
+    /// from the bytes: a file the subject has to guess the format of is a poor answer to an Article 20 request.
+    /// </summary>
+    private async Task<string> BuildFileName(AttachmentKind kind, string blobPath, CancellationToken cancellationToken)
+    {
+        var extension = Path.GetExtension(blobPath);
+
+        if (string.IsNullOrEmpty(extension))
+        {
+            extension = await ReadFormatExtension(blobPath, cancellationToken);
+        }
+
+        return $"{kind}{extension}";
+    }
+
+    /// <summary>
+    /// The upload re-encodes every kind it stores, so the bytes really are one of the formats Magick names - and it
+    /// names one from the header alone. A blob that is missing or unreadable keeps today's extension-less name rather
+    /// than failing the whole export.
+    /// </summary>
+    private async Task<string> ReadFormatExtension(string blobPath, CancellationToken cancellationToken)
+    {
+        const int headerBytes = 64 * 1024;
+
+        try
+        {
+            await using var blob = await blobStorage.OpenRead(blobPath, cancellationToken);
+
+            if (blob is null)
+                return string.Empty;
+
+            // Copied into memory because the header has to be seekable, and capped because only the header is read.
+            var buffer = new byte[headerBytes];
+            var read = await blob.ReadAtLeastAsync(buffer, headerBytes, throwOnEndOfStream: false, cancellationToken);
+
+            using MemoryStream header = new(buffer, 0, read, writable: false);
+
+            return $".{new MagickImageInfo(header).Format.ToString().ToLowerInvariant()}";
+        }
+        catch (MagickException)
+        {
+            return string.Empty;
+        }
+    }
 
     public async Task PrepareErase(PersonalDataErasureContext context, CancellationToken cancellationToken)
     {

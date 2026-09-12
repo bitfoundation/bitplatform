@@ -111,4 +111,17 @@ public static class DeployedApps
         App.Sales => SalesWindowsAppId,
         _ => null,
     };
+
+    /// <summary>
+    /// The Velopack release feed an installed Windows app updates itself from - the R2 bucket
+    /// <c>vpk upload s3</c> publishes to, and the <c>WindowsUpdate.FilesUrl</c> the CD workflow builds the app with
+    /// (See .github/workflows/*.cd.yml). Null for an app with no Windows build.
+    /// </summary>
+    public static string? WindowsUpdateFeedOf(App app) => app switch
+    {
+        App.Todo => "https://windows-todo.bitplatform.dev/",
+        App.AdminPanel => "https://windows-adminpanel.bitplatform.dev/",
+        App.Sales => "https://windows-sales.bitplatform.dev/",
+        _ => null,
+    };
 }
