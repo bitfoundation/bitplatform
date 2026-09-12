@@ -106,12 +106,14 @@ public partial class WebProductCacheTests : AppTestBase
     }
 
     /// <summary>
-    /// A purge reaches Cloudflare's edge in seconds rather than at once, so new visitors are tried until the deadline -
-    /// each in a context of its own, so no attempt is answered by the cache of the one before.
+    /// The edge purge is a background job: it lands in seconds, or after its retries when Cloudflare rate limits it. So
+    /// new visitors are tried until the deadline - each in a context of its own, so no attempt is answered by the cache
+    /// of the one before.
     /// </summary>
     private async Task ExpectANewVisitorToSee(string pageUrl, string productName)
     {
-        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(1);
+        // Past the job's first two retries (15 s, then 60 s).
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(2);
 
         while (true)
         {
@@ -162,7 +164,7 @@ public partial class WebProductCacheTests : AppTestBase
 
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true }).ClickAsync();
 
-        // Save goes back to the list only once ProductController.Update - and with it the purge - has returned.
+        // Save goes back to the list once ProductController.Update has saved; the edge purge it queued follows.
         await Expect(page).ToHaveURLAsync(new Regex($"{Regex.Escape(PageUrls.Products)}/?$"));
     }
 

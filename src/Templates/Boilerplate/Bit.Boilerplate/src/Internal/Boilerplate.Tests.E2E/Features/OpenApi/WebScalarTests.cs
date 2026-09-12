@@ -61,10 +61,11 @@ public partial class WebScalarTests : AppTestBase
         await Expect(client).ToBeVisibleAsync();
 
         // The client's own shortcut: its address bar Send button is hidden below a container width.
+        // Cmd+Enter on macOS (Scalar's isMacOS), so the remote mac's webkit needs Meta.
         var response = await Page.RunAndWaitForResponseAsync(async () =>
         {
             await client.ClickAsync(new() { Position = new() { X = 20, Y = 20 } });
-            await Page.Keyboard.PressAsync("Control+Enter");
+            await Page.Keyboard.PressAsync("ControlOrMeta+Enter");
         }, r => new Uri(r.Url).AbsolutePath.EndsWith(operation, StringComparison.OrdinalIgnoreCase));
 
         await Expect(client).ToContainTextAsync(new Regex($@"Status:\s*{response.Status}"));

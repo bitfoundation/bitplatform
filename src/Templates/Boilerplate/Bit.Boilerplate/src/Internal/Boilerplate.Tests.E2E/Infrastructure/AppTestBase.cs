@@ -124,7 +124,12 @@ public abstract class AppTestBase : AppPageTest
         // that follows.
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
 
-        await DeleteSessionAtCleanup(page);
+        // A hybrid WebView (https://0.0.0.1) keeps its token natively, out of ReadSignedInUser's reach; the caller's own
+        // cleanup has to take that session.
+        if (new Uri(page.Url).Host.StartsWith("0.0.0.", StringComparison.Ordinal) is false)
+        {
+            await DeleteSessionAtCleanup(page);
+        }
     }
 
     /// <summary>
