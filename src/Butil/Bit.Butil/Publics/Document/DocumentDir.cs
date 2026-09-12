@@ -15,5 +15,11 @@ public enum DocumentDir
     /// <summary>
     /// Right to left.
     /// </summary>
-    Rtl
+    Rtl,
+
+    /// <summary>
+    /// Let the browser pick from the document's content: the first strongly directional character
+    /// decides it.
+    /// </summary>
+    Auto
 }

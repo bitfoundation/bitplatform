@@ -18,12 +18,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return ('Notification' in window);
     }
 
+    // Where the API is missing (e.g. an iOS page not installed to the home screen) the bare
+    // `Notification` reference throws. Nothing can be shown there, which is what "denied" tells a caller.
     function getPermission() {
-        return Notification.permission;
+        return isSupported() ? Notification.permission : 'denied';
     }
 
     async function requestPermission() {
-        return await Notification.requestPermission();
+        return isSupported() ? await Notification.requestPermission() : 'denied';
     }
 
     function normalize(options?: NotificationOptions) {

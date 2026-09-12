@@ -64,7 +64,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         setDir(element: HTMLElement, value: string) { element.dir = value },
         getEnterKeyHint(element: HTMLElement) { return element.enterKeyHint },
         setEnterKeyHint(element: HTMLElement, value: string) { element.enterKeyHint = value },
-        getHidden(element: HTMLElement) { return element.hidden },
+        // `hidden` is `true`, `false` or the string "until-found"; one string type keeps the .NET side
+        // from depending on how a JSON boolean happens to print.
+        getHidden(element: HTMLElement) { const h = element.hidden as boolean | string; return h === 'until-found' ? h : String(!!h) },
         setHidden(element: HTMLElement, value: boolean) { element.hidden = value },
         getInert(element: HTMLElement) { return element.inert },
         setInert(element: HTMLElement, value: boolean) { element.inert = value },

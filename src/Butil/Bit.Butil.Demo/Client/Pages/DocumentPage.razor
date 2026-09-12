@@ -80,17 +80,19 @@ CompatMode compatMode = await document.GetCompatMode(); // CSS1Compat | BackComp
 
     <DemoSection Title="Text direction"
                  Api="GetDir / SetDir"
-                 Description="Read or flip the directionality of the whole document between left-to-right and right-to-left - handy for runtime language switching."
+                 Description="Read or flip the directionality of the whole document between left-to-right and right-to-left - handy for runtime language switching. Auto hands the choice to the browser, which takes it from the first strongly directional character in the content - the right setting when the language is not known up front."
                  Code=@("""
 DocumentDir dir = await document.GetDir();
 
 await document.SetDir(DocumentDir.Rtl);
 await document.SetDir(DocumentDir.Ltr);
+await document.SetDir(DocumentDir.Auto);
 """)>
         <div class="controls">
             <button @onclick="ReadDir">GetDir</button>
-            <button class="secondary" @onclick="SetRtl">SetDir(Rtl)</button>
-            <button class="secondary" @onclick="SetLtr">SetDir(Ltr)</button>
+            <button class="secondary" @onclick="() => SetDir(DocumentDir.Rtl)">SetDir(Rtl)</button>
+            <button class="secondary" @onclick="() => SetDir(DocumentDir.Ltr)">SetDir(Ltr)</button>
+            <button class="secondary" @onclick="() => SetDir(DocumentDir.Auto)">SetDir(Auto)</button>
         </div>
         <DemoConsole @ref="dirOutput" Title="text direction output" />
     </DemoSection>
@@ -197,7 +199,7 @@ ButilSubscription sub = await document.SubscribeDomContentLoaded(
     <ApiMember Name="GetContentType" Signature="Task<string> GetContentType()" Description="The Content-Type from the MIME header of the current document." />
     <ApiMember Name="GetDocumentURI" Signature="Task<string> GetDocumentURI()" Description="The document location as a string." />
     <ApiMember Name="GetDesignMode / SetDesignMode" Signature="Task<DesignMode> GetDesignMode() / Task SetDesignMode(DesignMode mode)" Description="Reads or toggles whole-document editability." />
-    <ApiMember Name="GetDir / SetDir" Signature="Task<DocumentDir> GetDir() / Task SetDir(DocumentDir dir)" Description="Reads or sets the document's text directionality (Ltr/Rtl)." />
+    <ApiMember Name="GetDir / SetDir" Signature="Task<DocumentDir> GetDir() / Task SetDir(DocumentDir dir)" Description="Reads or sets the document's text directionality (Ltr/Rtl/Auto). An unset dir reads as Ltr." />
     <ApiMember Name="GetReferrer" Signature="Task<string> GetReferrer()" Description="The URI of the page that linked to this page." />
     <ApiMember Name="GetTitle / SetTitle" Signature="Task<string> GetTitle() / Task SetTitle(string title)" Description="Reads or sets the document title." />
     <ApiMember Name="GetUrl" Signature="Task<string> GetUrl()" Description="The document location (document.URL) as a string." />
@@ -323,25 +325,12 @@ ButilSubscription sub = await document.SubscribeDomContentLoaded(
         }
     }
 
-    private async Task SetRtl()
+    private async Task SetDir(DocumentDir dir)
     {
         try
         {
-            await document.SetDir(DocumentDir.Rtl);
-            await dirOutput.Log("Document direction set to Rtl.");
-        }
-        catch (Exception ex)
-        {
-            await dirOutput.Error("SetDir failed:", ex.Message);
-        }
-    }
-
-    private async Task SetLtr()
-    {
-        try
-        {
-            await document.SetDir(DocumentDir.Ltr);
-            await dirOutput.Log("Document direction set to Ltr.");
+            await document.SetDir(dir);
+            await dirOutput.Log($"Document direction set to {dir}.");
         }
         catch (Exception ex)
         {

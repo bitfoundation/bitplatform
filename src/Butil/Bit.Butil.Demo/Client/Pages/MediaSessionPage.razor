@@ -91,24 +91,33 @@ await mediaSession.SetActionHandler(MediaSessionAction.SeekForward,
 await mediaSession.ClearActionHandler(MediaSessionAction.NextTrack);
 """)>
         <div class="controls">
-            <button @onclick="RegisterHandlers">Register handlers</button>
-            <button class="danger" @onclick="ClearHandlers">Clear handlers</button>
+            <button @onclick="() => RegisterHandlers(PlaybackActions, _playback, actionOutput)">Register handlers</button>
+            <button class="danger" @onclick="() => ClearHandlers(PlaybackActions, _playback, actionOutput)">Clear handlers</button>
         </div>
-        @if (_registered.Count > 0)
-        {
-            <div class="field">
-                <span class="field-label">Registered</span>
-                <span><code>@string.Join(", ", _registered)</code></span>
-            </div>
-        }
-        @if (_unsupported.Count > 0)
-        {
-            <div class="field">
-                <span class="field-label">Not supported here</span>
-                <span><code>@string.Join(", ", _unsupported)</code></span>
-            </div>
-        }
+        @Summary(_playback)
         <DemoConsole @ref="actionOutput" Title="action output" />
+    </DemoSection>
+
+    <DemoSection Title="Calls, slides and picture-in-picture"
+                 Api="SetActionHandler / ClearActionHandler"
+                 Description="The same mechanism drives more than a music player. A call gets microphone, camera and hang-up buttons, and VoiceActivity when the user starts talking while muted (voice detection only runs while the page holds the microphone). A presentation gets previous/next slide, and EnterPictureInPicture is offered when the user switches away from a playing video - the one moment a page may open a picture-in-picture window without a click. Support is patchier than for the playback actions, so the false return is the answer to read here."
+                 Code=@("""
+await mediaSession.SetActionHandler(MediaSessionAction.ToggleMicrophone, _ => ToggleMute());
+await mediaSession.SetActionHandler(MediaSessionAction.HangUp, _ => EndCall());
+await mediaSession.SetActionHandler(MediaSessionAction.VoiceActivity, _ => SuggestUnmute());
+
+await mediaSession.SetActionHandler(MediaSessionAction.NextSlide, _ => Next());
+await mediaSession.SetActionHandler(MediaSessionAction.PreviousSlide, _ => Previous());
+
+var ok = await mediaSession.SetActionHandler(MediaSessionAction.EnterPictureInPicture,
+    _ => OpenPictureInPicture());
+""")>
+        <div class="controls">
+            <button @onclick="() => RegisterHandlers(SessionActions, _session, sessionOutput)">Register handlers</button>
+            <button class="danger" @onclick="() => ClearHandlers(SessionActions, _session, sessionOutput)">Clear handlers</button>
+        </div>
+        @Summary(_session)
+        <DemoConsole @ref="sessionOutput" Title="session action output" />
     </DemoSection>
 
     <DemoSection Title="The scrubber"
@@ -156,6 +165,9 @@ await mediaSession.ClearPositionState();
     <ApiMember Name="DisposeAsync"
                Signature="ValueTask DisposeAsync()"
                Description="On scope/circuit teardown, clears every handler this instance registered and resets the session." />
+    <ApiMember Name="MediaSessionAction"
+               Signature="Play, Pause, Stop, SeekBackward, SeekForward, SeekTo, PreviousTrack, NextTrack, SkipAd, ToggleMicrophone, ToggleCamera, HangUp, PreviousSlide, NextSlide, EnterPictureInPicture, VoiceActivity"
+               Description="The platform controls a handler can be registered for. Engines implement different subsets; SetActionHandler reports the ones this engine lacks." />
     <ApiMember Name="MediaSessionActionDetails"
                Signature="Action, SeekTime, SeekOffset, FastSeek"
                Description="SeekTime is the absolute target for SeekTo; SeekOffset is the step for the seek-by actions, and is null when the platform left the choice to you." />
@@ -166,16 +178,23 @@ await mediaSession.ClearPositionState();
     private DemoConsole metadataOutput = default!;
     private DemoConsole actionOutput = default!;
     private DemoConsole positionOutput = default!;
+    private DemoConsole sessionOutput = default!;
 
     private string _title = "A test tone";
     private string _artist = "Bit.Butil";
     private string _playbackState = "None";
-    private readonly List<string> _registered = [];
-    private readonly List<string> _unsupported = [];
+    private readonly HandlerSet _playback = new();
+    private readonly HandlerSet _session = new();
+
+    private sealed class HandlerSet
+    {
+        public List<string> Registered { get; } = [];
+        public List<string> Unsupported { get; } = [];
+    }
 
     // The handlers the demo registers. Play/Pause are universal; the rest are the ones engines
     // differ on, which is what makes the false return value from SetActionHandler worth showing.
-    private static readonly MediaSessionAction[] DemoActions =
+    private static readonly MediaSessionAction[] PlaybackActions =
     [
         MediaSessionAction.Play,
         MediaSessionAction.Pause,
@@ -185,7 +204,37 @@ await mediaSession.ClearPositionState();
         MediaSessionAction.SeekBackward,
         MediaSessionAction.SeekForward,
         MediaSessionAction.SeekTo,
+        MediaSessionAction.SkipAd,
     ];
+
+    // Everything that is not transport control: calls, presentations and picture-in-picture.
+    private static readonly MediaSessionAction[] SessionActions =
+    [
+        MediaSessionAction.ToggleMicrophone,
+        MediaSessionAction.ToggleCamera,
+        MediaSessionAction.HangUp,
+        MediaSessionAction.VoiceActivity,
+        MediaSessionAction.PreviousSlide,
+        MediaSessionAction.NextSlide,
+        MediaSessionAction.EnterPictureInPicture,
+    ];
+
+    private static RenderFragment Summary(HandlerSet set) => @<text>
+        @if (set.Registered.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Registered</span>
+                <span><code>@string.Join(", ", set.Registered)</code></span>
+            </div>
+        }
+        @if (set.Unsupported.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Not supported here</span>
+                <span><code>@string.Join(", ", set.Unsupported)</code></span>
+            </div>
+        }
+    </text>;
 
     private async Task CheckSupported()
     {
@@ -239,50 +288,50 @@ await mediaSession.ClearPositionState();
         }
     }
 
-    private async Task RegisterHandlers()
+    private async Task RegisterHandlers(MediaSessionAction[] actions, HandlerSet set, DemoConsole output)
     {
-        _registered.Clear();
-        _unsupported.Clear();
+        set.Registered.Clear();
+        set.Unsupported.Clear();
 
         try
         {
-            foreach (var action in DemoActions)
+            foreach (var action in actions)
             {
                 var ok = await mediaSession.SetActionHandler(action, details => InvokeAsync(async () =>
                 {
                     var extra = details.SeekTime is not null ? $" to {details.SeekTime:0.0}s"
                         : details.SeekOffset is not null ? $" by {details.SeekOffset:0.0}s"
                         : "";
-                    await actionOutput.Success($"Platform triggered {details.Action}{extra}.");
+                    await output.Success($"Platform triggered {details.Action}{extra}.");
                 }));
 
-                (ok ? _registered : _unsupported).Add(action.ToString());
+                (ok ? set.Registered : set.Unsupported).Add(action.ToString());
             }
 
-            await actionOutput.Success($"Registered {_registered.Count} handler(s); {_unsupported.Count} unsupported here.");
+            await output.Success($"Registered {set.Registered.Count} handler(s); {set.Unsupported.Count} unsupported here.");
         }
         catch (Exception ex)
         {
-            await actionOutput.Error("SetActionHandler failed →", ex.Message);
+            await output.Error("SetActionHandler failed →", ex.Message);
         }
     }
 
-    private async Task ClearHandlers()
+    private async Task ClearHandlers(MediaSessionAction[] actions, HandlerSet set, DemoConsole output)
     {
         try
         {
-            foreach (var action in DemoActions)
+            foreach (var action in actions)
             {
                 await mediaSession.ClearActionHandler(action);
             }
 
-            _registered.Clear();
-            _unsupported.Clear();
-            await actionOutput.Log("All handlers cleared.");
+            set.Registered.Clear();
+            set.Unsupported.Clear();
+            await output.Log("All handlers cleared.");
         }
         catch (Exception ex)
         {
-            await actionOutput.Error("ClearActionHandler failed →", ex.Message);
+            await output.Error("ClearActionHandler failed →", ex.Message);
         }
     }
 
@@ -362,7 +411,12 @@ await mediaSession.ClearPositionState();
     {
         try
         {
-            await ClearHandlers();
+            // The service outlives this page, so the handlers both sections registered have to go
+            // explicitly - or the platform keeps showing controls for a page that has moved on.
+            foreach (var action in PlaybackActions.Concat(SessionActions))
+            {
+                await mediaSession.ClearActionHandler(action);
+            }
             await mediaSession.SetMetadata(null);
             await mediaSession.SetPlaybackState(MediaSessionPlaybackState.None);
         }

@@ -5,7 +5,12 @@ internal class InternalNotificationOptions(NotificationOptions options)
     public string? badge { get; set; } = options.Badge;
     public string? body { get; set; } = options.Body;
     public object? data { get; set; } = options.Data;
-    public string? dir { get; set; } = options.Dir.ToString().ToLower();
+    public string? dir { get; set; } = options.Dir switch
+    {
+        NotificationDirection.Ltr => "ltr",
+        NotificationDirection.Rtl => "rtl",
+        _ => "auto",
+    };
     public string? icon { get; set; } = options.Icon;
     public string? image { get; set; } = options.Image;
     public string? lang { get; set; } = options.Lang;
