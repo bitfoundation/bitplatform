@@ -9,4 +9,10 @@
 
 @inherits LayoutComponentBase
 
+@* MainLayout - and with it AppHeadCoordinator, which normally hosts this outlet - never renders here, so this layout
+   hosts it instead. The two are mutually exclusive by construction, so the document still has only one of them. *@
+<HeadContent>
+    <SectionOutlet SectionName="@AppPageData.HeadSectionName" />
+</HeadContent>
+
 @Body

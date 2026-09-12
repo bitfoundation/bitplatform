@@ -23,6 +23,13 @@ public static partial class AppPlatform
     [SupportedOSPlatformGuard("browser")]
     public static bool IsBrowser => OperatingSystem.IsBrowser();
 
+    /// <summary>
+    /// Blazor WebAssembly Standalone: Client.Web on its own (a Static Web App, for instance), with no Server.Web in
+    /// front of it, so nothing but the app itself renders the document's head. Set in Client.Web's Program.
+    /// <see cref="IsBrowser"/> is true for both Blazor WebAssembly Standalone and Blazor WebAssembly Hosted, so this property is needed to distinguish between the two.
+    /// </summary>
+    public static bool IsWasmStandalone { get; set; }
+
     [SupportedOSPlatformGuard("macOS")]
     public static bool IsMacOS => IsBlazorHybrid && OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst() || IsIosOnMacOS;
 

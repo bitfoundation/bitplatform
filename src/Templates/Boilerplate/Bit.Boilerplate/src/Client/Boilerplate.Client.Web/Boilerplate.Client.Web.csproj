@@ -20,6 +20,9 @@
 
         <WasmApplicationEnvironmentName>$(Environment)</WasmApplicationEnvironmentName>
         <WasmEnableWebcil Condition="'$(Environment)' == 'Development'">false</WasmEnableWebcil>
+
+        <!-- Publish only the bit-butil.js modules the app uses. -->
+        <BitButilTrimScripts>true</BitButilTrimScripts>
     </PropertyGroup>
 
     <ItemGroup>

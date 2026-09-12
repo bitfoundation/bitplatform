@@ -123,7 +123,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
                 if (await blobStorage.ObjectExists(blobPath, cancellationToken) is false)
                     continue;
 
-                await blobStorage.DeleteObject(blobPath, cancellationToken);
+                await blobStorage.DeleteSingleObject(blobPath, cancellationToken);
             }
 
             await responseCacheService.PurgeAttachmentCache(context.UserId);

@@ -50,7 +50,7 @@ public partial class AiChatImagesRetentionJobRunner
             {
                 if (attachment.Path is not null && await blobStorage.ObjectExists(attachment.Path, cancellationToken))
                 {
-                    await blobStorage.DeleteObject(attachment.Path, cancellationToken);
+                    await blobStorage.DeleteSingleObject(attachment.Path, cancellationToken);
                 }
             }
             catch (Exception exp)

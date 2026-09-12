@@ -722,6 +722,7 @@
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
                         "src/Tests/Features/TemplateConfig/VelopackPackagingContractTests.cs",
                         "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
+                        "src/Tests/Features/TemplateConfig/HeadContentUsageTests.cs",
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",

@@ -166,14 +166,11 @@ public static partial class WebApplicationExtensions
                 var baseUrl = context.Request.GetBaseUrl();
 
                 // A sitemap file may carry at most 50,000 urls, and every product url is emitted once per supported
-                // culture below, so this is the most products one document can hold. It is also what bounds the read:
-                // ProductViewController.Get sets no PageSize, and EnableQueryFeatures(maxTopValue) only rejects an
-                // oversized explicit $top - it cannot cap a request that sends none - so without a $top of our own an
-                // anonymous request reads the whole Products table and materializes a url per row per culture.
+                // culture below, so this is the most products one document can hold.
                 // A catalogue larger than this needs the document split into /products-1.xml, /products-2.xml, ...
                 // listed in sitemap_index.xml; until then the tail is not advertised, and the warning below says so.
                 var maxProducts = 50_000 / (CultureInfoManager.InvariantGlobalization ? 1 : CultureInfoManager.SupportedCultures.Length);
-                const int pageSize = 100; // The largest $top Program.Services.cs's EnableQueryFeatures(maxTopValue) accepts.
+                const int pageSize = 100; // ProductViewController.Get's EnableQuery(PageSize), and the largest $top EnableQueryFeatures(maxTopValue) accepts.
 
                 List<string> pagedProductsUrls = [];
 

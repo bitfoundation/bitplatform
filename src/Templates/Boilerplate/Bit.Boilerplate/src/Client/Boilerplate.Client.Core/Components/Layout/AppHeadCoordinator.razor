@@ -1,0 +1,35 @@
+@*+:cnd:noEmit*@
+@* You are probably not looking for this file. A tag that belongs in the head of every project goes in
+   AppHead; one that belongs to a single page goes in that page's <AppPageData Head="..." />. This component
+   is what takes both and gets them into the head, through the complications documented below.
+
+   It is rendered from two call sites, and only one of them carries AppHead in any given host:
+   1- App.razor, inside <head> with @@rendermode=null and `InHead`, so the tags are in the first HTML the browser
+      parses - before blazor.web.js, and whether or not pre-rendering is on.
+   2- MainLayout, as part of the app. The only instance in Client.Web standalone, Client.Maui and Client.Windows.
+
+   Nothing else may open a <HeadContent>: the document has one HeadOutlet and only the LAST one rendered into it
+   survives, so a second one silently drops this. HeadContentUsageTests keeps it that way. *@
+
+@if (InHead)
+{
+    <AppHead />
+}
+else
+{
+    <HeadContent>
+        @if (RenderedInHeadByServerWeb is false)
+        {
+            <AppHead />
+        }
+        @*#if (appInsights == true)*@
+        else if (RendererInfo.IsInteractive)
+        {
+            @* Already in the document from App.razor; this only hands the JS SDK to the interactive renderer
+               (InitJSRuntime), which is what IApplicationInsights calls from C# need. *@
+            <BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="true" />
+        }
+        @*#endif*@
+        <SectionOutlet SectionName="@AppPageData.HeadSectionName" />
+    </HeadContent>
+}
