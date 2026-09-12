@@ -209,7 +209,7 @@ is allowed to use, that a csproj list is *added* to what the others found rather
 assets removed from the build list are also removed from the publish list, and that a name meaning nothing
 fails the build. So these publish a real consumer app - a two-class web app next door, published in seconds
 rather than the minutes a WebAssembly one takes - and read the JavaScript back out of its publish output.
-Twelve `dotnet publish` runs and one `dotnet msbuild`, about fifteen seconds in total, untrimmed runs only:
+Fifteen `dotnet publish` runs and one `dotnet msbuild`, about a minute in total, untrimmed runs only:
 
 - with **no signal at all** the full bundle is published - the case that has to keep working for every
   consumer who never asked for any of this. Reached by setting `BitButilScriptScan=None`, since the switch
@@ -226,17 +226,17 @@ Twelve `dotnet publish` runs and one `dotnet msbuild`, about fifteen seconds in 
 - `BitButilTrimScripts=false` publishes the full bundle even when given a scan and a list to work from;
 - a project that **does not publish an app's static web assets** - a Razor class library, a hybrid head, the
   shape a shared `Directory.Build.props` reaches by accident - leaves the JavaScript alone, because its
-  reference closure is not the app's. The fixture stands in for one by unsetting the two things the SDK sets
-  on a project that does publish an app;
+  reference closure is not the app's. The fixture stands in for one by unsetting the SDK marker that says a
+  project publishes an app;
 - a **hybrid head**, which is the root of its own asset graph and still must not trim: it reaches the publish
   asset stage before its references are resolved, and the dependency that would resolve them closes a cycle
-  in its target graph. Being `StaticWebAssetProjectMode=Root` is therefore not enough on its own - a Web or
-  WebAssembly SDK marker has to be there beside it - and the fixture stands in for one by forcing Root with
-  the Web SDK marker off;
+  in its target graph. So `StaticWebAssetProjectMode=Root` is not what the gate reads - the SDK a project
+  loaded is - and the fixture stands in for a hybrid head by forcing Root with the Web SDK marker off, which
+  is the shape that fails the moment anyone reads the mode as "this project is the app's head";
 - a **misspelled module name**, and a **scan mode that is not one of the three**, each fail the publish with
   the error naming what was wrong.
 
-The `dotnet msbuild` run is the thirteenth, and it is not a publish: it drives the two trimming targets by name
+The `dotnet msbuild` run is the sixteenth, and it is not a publish: it drives the two trimming targets by name
 so they land in a project instance where nothing else has run, which is the position the SDK puts them in on
 a referenced project. The untrimmed `Bit.Butil.dll` has to resolve there too - `@(ReferenceCopyLocalPaths)`
 is only populated because the target names `ResolveReferences` itself - and the scan reporting what it read

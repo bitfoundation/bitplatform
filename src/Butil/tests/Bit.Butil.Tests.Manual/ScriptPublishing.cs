@@ -134,22 +134,24 @@ internal static class ScriptPublishing
         // must leave the JavaScript alone: their reference closure is not the app's, so trimming against it
         // would hand the head a bundle short of the modules only the head names.
         //
-        // The gate reads both halves of what the SDK says about a project, so both are forced here: Root is
-        // the .NET 10 Web SDK's StaticWebAssetProjectMode (the .NET 8 and 9 Web SDKs leave a head at
-        // 'Default', which is why the marker below is read as well), and UsingMicrosoftNETSdkWeb is what
-        // says a Web SDK was loaded at all. A class library sets neither, and this fixture - a Web SDK app -
-        // stands in for one by unsetting both.
+        // What the gate reads is the SDK a project loaded: UsingMicrosoftNETSdkWeb and the two WebAssembly
+        // markers, which are set identically on 8, 9 and 10. A class library sets none of them, and this
+        // fixture - a Web SDK app - stands in for one by unsetting the one it has. StaticWebAssetProjectMode
+        // is set to the 'Default' a library carries as well, so the shape being stood in for is the whole
+        // shape, even though the gate no longer reads that half.
         new("a project that does not publish the app's static web assets does not trim",
             ["StaticWebAssetProjectMode=Default", "UsingMicrosoftNETSdkWeb=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
             FullBundle: true),
 
-        // Root is not enough on its own, and this is the shape that says so: a MAUI/Blazor Hybrid head IS the
-        // root of its asset graph - the WebView package makes it one so that it can package its wwwroot - and
-        // it reaches the publish asset stage from ConvertStaticWebAssetsToMauiAssets, before ResolveReferences
+        // Root is not the signal, and this is the shape that says so: a MAUI/Blazor Hybrid head IS the root
+        // of its asset graph - the WebView package makes it one so that it can package its wwwroot - and it
+        // reaches the publish asset stage from ConvertStaticWebAssetsToMauiAssets, before ResolveReferences
         // rather than after. Trimming there reads references that are not resolved yet, and the dependency
         // that would resolve them closes a cycle in that head's target graph (MSB4006), which is a failed
-        // build rather than a wrong bundle. So one of the SDK markers is required alongside Root, and the
-        // fixture stands in for a hybrid head by forcing Root with the Web SDK marker off.
+        // build rather than a wrong bundle. Reading StaticWebAssetProjectMode as "this is the app's head" is
+        // therefore the tempting mistake, and this is what catches it: the previous scenario would still pass
+        // if Root were let back into the gate, and this one - Root forced on with the Web SDK marker off -
+        // would not.
         new("the asset root of a hybrid head does not trim",
             ["StaticWebAssetProjectMode=Root", "UsingMicrosoftNETSdkWeb=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
             FullBundle: true),

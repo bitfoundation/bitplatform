@@ -30,10 +30,10 @@
                                          it, dotnet run and dotnet watch included - is left untouched, so
                                          what a developer debugs is always the full, untrimmed JavaScript.
                                          And head only: it takes effect in the project that publishes the
-                                         app's static web assets (StaticWebAssetProjectMode=Root, which the
-                                         Web SDK and the Blazor WebAssembly SDK set), never in a Razor class
-                                         library or a hybrid head that only contributes to one. See the gate
-                                         in _BitButilResolveScriptTrimming for why that is not the same as
+                                         app's static web assets - the one that loaded the Web or the
+                                         WebAssembly SDK - never in a Razor class library or a hybrid head
+                                         that only contributes to one. See the gate in
+                                         _BitButilResolveScriptTrimming for why that is not the same as
                                          "hangs off a publish target".
                                          Default: true in a Blazor WebAssembly project (the one case where
                                          the assembly that is trimmed is the assembly that calls the served
@@ -400,45 +400,23 @@
                  references, which are not the app's - it cannot know what the app that consumes it calls -
                  and hand the app a bundle short of the modules only the app names.
 
-                 StaticWebAssetProjectMode is the SDK's own answer to "is this the root of the asset graph
-                 or a library contributing to someone else's", and Root is the answer this wants. It is not
-                 enough on its own, though: only the .NET 10 Web SDK sets it (Sdk.Server.props), while the
-                 .NET 8 and .NET 9 Web SDKs leave a Blazor Server app or a Blazor Web App host on the
-                 'Default' that ResolveStaticWebAssetsConfiguration fills in for everything. Gating on Root
-                 alone would stand the whole feature down on exactly the hosts the scan was written for, on
-                 two of the three frameworks this package targets. So the SDK a project loaded is read
-                 alongside it: UsingMicrosoftNETSdkWeb and the two WebAssembly markers are set identically
-                 on 8, 9 and 10, and between them they name every project shape that publishes an app
-                 rather than contributing to one. A Razor class library (Sdk.Razor) and a hybrid head (the
-                 plain SDK plus UseMaui) match none of them, which is the point.
+                 The SDK a project loaded is what says which it is: _BitButilIsScriptTrimmingHead, at the
+                 foot of this file, and it is read here rather than restated, because it is the same
+                 property that arms the ResolveReferences dependency - so the trimming can never be on in a
+                 project where that dependency was not taken. See it for why the SDK markers are the signal
+                 and StaticWebAssetProjectMode is not.
 
-                 Either way the trimming stays in the one project whose reference closure IS the app's,
+                 The trimming therefore stays in the one project whose reference closure IS the app's,
                  which is also the project whose publish the whole feature was written for. The
-                 referenced-project stage then hands its full bundle up and the root trims it there, which
+                 referenced-project stage then hands its full bundle up and the head trims it there, which
                  is where the answer is right.
 
                  The remaining two counts are unchanged: the assemblies read here are a publish's, and a
                  design-time build is excluded outright. A build, and so dotnet run and dotnet watch, keeps
                  the JavaScript exactly as the package ships it - what a developer debugs is always the
                  full, untrimmed set. -->
-            <_BitButilIsAssetRoot>false</_BitButilIsAssetRoot>
-            <_BitButilIsAssetRoot Condition="'$(StaticWebAssetProjectMode)' == 'Root' or '$(UsingMicrosoftNETSdkWeb)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">true</_BitButilIsAssetRoot>
-
-            <!-- And never on Root alone, which is the correction to the paragraph above: a MAUI hybrid
-                 head IS Root - Microsoft.AspNetCore.Components.WebView.Maui makes it the root of the asset
-                 graph so that it can package its wwwroot - so the disjunction let in exactly the shape it
-                 was written to keep out. It is also the one shape that reaches this stage BEFORE
-                 ResolveReferences rather than after: the assets are converted from
-                 ConvertStaticWebAssetsToMauiAssets while the references are still unresolved, and the
-                 dependency that would force them cannot be taken there without closing a cycle in that
-                 head's target graph (MSB4006 - see _BitButilAssembleTrimmedBundleDependsOn). So one of the
-                 SDK markers is required and Root alone is not enough: the answer is only both reachable
-                 and right in a head that loaded the Web or WebAssembly SDK. A hybrid head publishes the
-                 full bundle, exactly as a build does. -->
-            <_BitButilIsAssetRoot Condition="'$(_BitButilIsScriptTrimmingHead)' != 'true'">false</_BitButilIsAssetRoot>
-
             <_BitButilPublishTrimming>false</_BitButilPublishTrimming>
-            <_BitButilPublishTrimming Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(_BitButilIsAssetRoot)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitButilPublishTrimming>
+            <_BitButilPublishTrimming Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(_BitButilIsScriptTrimmingHead)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitButilPublishTrimming>
 
             <!-- Said out loud, because "I set the properties and nothing happened" is otherwise a silent
                  dead end - and because the properties landing in a shared Directory.Build.props, where they
@@ -449,7 +427,7 @@
                  shared and everything right. A scan written out by hand, or a module list, is the shape of
                  the mistake this is here to catch. -->
             <_BitButilTrimmingStoodDown>false</_BitButilTrimmingStoodDown>
-            <_BitButilTrimmingStoodDown Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(_BitButilIsAssetRoot)' != 'true' and '$(DesignTimeBuild)' != 'true' and ('$(_BitButilScriptScanRequested)' == 'true' or '@(BitButilScriptModule)' != '')">true</_BitButilTrimmingStoodDown>
+            <_BitButilTrimmingStoodDown Condition="'$(BitButilTrimScripts)' == 'true' and '$(_BitButilHasSignal)' == 'true' and '$(_BitButilIsScriptTrimmingHead)' != 'true' and '$(DesignTimeBuild)' != 'true' and ('$(_BitButilScriptScanRequested)' == 'true' or '@(BitButilScriptModule)' != '')">true</_BitButilTrimmingStoodDown>
 
             <!-- The bundle half: rebuild bit-butil.js from the modules the app can reach. Needs a bundle to
                  rebuild. -->
@@ -490,9 +468,25 @@
     the target graph: the publish asset stage is reached from ConvertStaticWebAssetsToMauiAssets, while
     ResolveReferences pulls in the Android resource targets, one of which runs
     BeforeTargets="ConvertStaticWebAssetsToMauiAssets", and the build fails with MSB4006 before any of this
-    runs. The gate below keeps that head out of the trimming altogether, and so out of this dependency
+    runs. The gate above keeps that head out of the trimming altogether, and so out of this dependency
     with it; the property is what says so at the one place the dependency is taken, so that widening the
     gate cannot quietly put ResolveReferences back into a graph that cannot take it.
+
+    Which project that is, is read off the SDK it loaded, and only off that. StaticWebAssetProjectMode
+    looks like the SDK's own answer to "is this the root of the asset graph or a library contributing to
+    someone else's", but it answers neither half of the question this asks. It is not sufficient: a MAUI
+    hybrid head IS Root - Microsoft.AspNetCore.Components.WebView.Maui makes it the root of its own graph
+    so that it can package its wwwroot - which is the one shape the cycle above stands the feature down
+    for. And it is not necessary: only the .NET 10 Web SDK sets Root (Sdk.Server.props), while the .NET 8
+    and .NET 9 Web SDKs leave a Blazor Server app or a Blazor Web App host on the 'Default' that
+    ResolveStaticWebAssetsConfiguration fills in for everything, so requiring it would stand the whole
+    feature down on exactly the hosts the scan was written for, on two of the three frameworks this
+    package targets. Being neither, it is not read at all. UsingMicrosoftNETSdkWeb and the two WebAssembly
+    markers are what is left: set identically on 8, 9 and 10, and between them they name every project
+    shape that publishes an app rather than contributing to one. A Razor class library (Sdk.Razor) and a
+    hybrid head (the plain SDK plus UseMaui) match none of them, which is the point. All three are set in
+    the SDK's .props, so they are readable here, at evaluation time, which is what lets the dependency
+    above be decided in a property at all.
     -->
     <PropertyGroup>
         <_BitButilIsScriptTrimmingHead>false</_BitButilIsScriptTrimmingHead>
