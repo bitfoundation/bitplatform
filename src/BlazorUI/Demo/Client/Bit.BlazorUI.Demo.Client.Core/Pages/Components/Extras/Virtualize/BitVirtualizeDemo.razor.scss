@@ -17,6 +17,28 @@
     border-bottom: 1px solid $bit-color-border-secondary;
 }
 
+.basic-item.target {
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary;
+}
+
+.news-item {
+    display: flex;
+    height: 100%;
+    padding: 0 1rem;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    border-bottom: 1px solid $bit-color-border-secondary;
+}
+
+.list-header,
+.list-footer {
+    padding: 0.75rem 1rem;
+    text-align: center;
+    background-color: $bit-color-background-secondary;
+}
+
 .provider-item {
     display: flex;
     height: 100%;
@@ -57,6 +79,10 @@
     align-items: center;
     box-sizing: border-box;
     background-color: $bit-color-background-secondary;
+}
+
+.group-header.pinned {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .contact {
@@ -107,5 +133,29 @@
     .horizontal-list {
         height: 9rem;
         border: 1px solid $bit-color-border-secondary;
+    }
+
+    .news-list .bit-vir-itm:focus-visible {
+        outline-offset: -2px;
+        outline: 2px solid $bit-color-primary;
+    }
+
+    .custom-class {
+        box-shadow: $bit-color-primary 0 0 1rem;
+    }
+
+    .custom-root {
+        height: 15rem;
+        border: 1px solid seagreen;
+    }
+
+    .custom-item:nth-child(odd) {
+        background-color: #2e8b5722;
+    }
+
+    .custom-footer {
+        color: white;
+        padding: 0.5rem 1rem;
+        background-color: seagreen;
     }
 }

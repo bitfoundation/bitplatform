@@ -6,10 +6,21 @@ internal static class BitVirtualizeJsRuntimeExtensions
                                                                               string id,
                                                                               ElementReference rootElement,
                                                                               bool horizontal,
+                                                                              bool dynamic,
                                                                               double scrollThreshold,
                                                                               DotNetObjectReference<BitVirtualize<T>> dotnetObj)
     {
-        return jsRuntime.Invoke<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", id, rootElement, horizontal, scrollThreshold, dotnetObj);
+        return jsRuntime.Invoke<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", id, rootElement, horizontal, dynamic, scrollThreshold, dotnetObj);
+    }
+
+    public static ValueTask BitVirtualizeUpdate(this IJSRuntime jsRuntime, string id, bool horizontal, bool dynamic, double scrollThreshold)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.update", id, horizontal, dynamic, scrollThreshold);
+    }
+
+    public static ValueTask BitVirtualizeSync(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.sync", id);
     }
 
     public static ValueTask BitVirtualizeFocusIndex(this IJSRuntime jsRuntime, string id, int index)
@@ -17,19 +28,14 @@ internal static class BitVirtualizeJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.focusIndex", id, index);
     }
 
-    public static ValueTask BitVirtualizeSyncMeasurements(this IJSRuntime jsRuntime, string id)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.syncMeasurements", id);
-    }
-
-    public static ValueTask BitVirtualizeUpdateSticky(this IJSRuntime jsRuntime, string id)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.updateSticky", id);
-    }
-
     public static ValueTask BitVirtualizeScrollToOffset(this IJSRuntime jsRuntime, string id, double offset, bool smooth)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.scrollToOffset", id, offset, smooth);
+    }
+
+    public static ValueTask BitVirtualizeScrollToEdge(this IJSRuntime jsRuntime, string id, bool end, bool smooth)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.scrollToEdge", id, end, smooth);
     }
 
     public static ValueTask BitVirtualizeAdjustScroll(this IJSRuntime jsRuntime, string id, double delta)

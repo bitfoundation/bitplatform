@@ -6,10 +6,26 @@ public partial class BitVirtualizeDemo
     [
          new()
          {
+            Name = "AlignToEnd",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Pushes the items to the end (bottom, or the right in horizontal mode) of the viewport while they are too few to fill it, the way a chat conversation starts at the bottom. Pairs naturally with Reversed.",
+         },
+         new()
+         {
             Name = "ChildContent",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "The custom template to render each item.",
+         },
+         new()
+         {
+            Name = "Classes",
+            Type = "BitVirtualizeClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitVirtualize.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
          },
          new()
          {
@@ -34,6 +50,20 @@ public partial class BitVirtualizeDemo
          },
          new()
          {
+            Name = "FooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render after the last item, inside the scroll container (for example, a loading indicator at the end of an infinite list).",
+         },
+         new()
+         {
+            Name = "HeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render before the first item, inside the scroll container.",
+         },
+         new()
+         {
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
@@ -51,7 +81,7 @@ public partial class BitVirtualizeDemo
             Name = "IsStickyItem",
             Type = "Func<TItem, bool>?",
             DefaultValue = "null",
-            Description = "A predicate that marks certain items (for example, group headers) as sticky. The active sticky item gets pinned to the leading edge of the viewport while its group scrolls. Fully supported with in-memory Items; in provider mode it is applied on a best-effort basis to the currently loaded window.",
+            Description = "A predicate that marks certain items (for example, group headers) as sticky. The active sticky item gets pinned to the leading edge of the viewport while its group scrolls. Fully supported with in-memory Items; in provider mode it is applied on a best-effort basis to the currently loaded window. A change in the state the predicate reads, rather than in the predicate itself, gets applied by RefreshDataAsync.",
          },
          new()
          {
@@ -65,7 +95,14 @@ public partial class BitVirtualizeDemo
             Name = "ItemKey",
             Type = "Func<TItem, object>?",
             DefaultValue = "null",
-            Description = "A function that returns a stable identity key for an item. When provided, rendered rows are keyed by identity (instead of by index) so per-item DOM/component state survives insertions, removals and reordering, and dynamic measurements follow their item across those mutations.",
+            Description = "A function that returns a stable and unique identity key for an item. When provided, rendered rows are keyed by identity (instead of by index) so per-item DOM/component state survives insertions, removals and reordering, dynamic measurements follow their item across those mutations, and the item in view stays in place when items get inserted or removed before it.",
+         },
+         new()
+         {
+            Name = "ItemRole",
+            Type = "string?",
+            DefaultValue = "listitem",
+            Description = "The ARIA role of each item element.",
          },
          new()
          {
@@ -95,7 +132,7 @@ public partial class BitVirtualizeDemo
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render before the component performs its first load.",
+            Description = "The custom template to render until the component has performed its first load.",
          },
          new()
          {
@@ -109,7 +146,7 @@ public partial class BitVirtualizeDemo
             Name = "OnStartReached",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "The callback to be called when the first item comes within ReachedThreshold items of the visible window, useful for prepending older data (for example, loading chat history when scrolling up).",
+            Description = "The callback to be called when the first item comes within ReachedThreshold items of the visible window, useful for prepending older data (for example, loading chat history when scrolling up). Fires again when items get prepended while the start is still within reach.",
          },
          new()
          {
@@ -150,10 +187,26 @@ public partial class BitVirtualizeDemo
          },
          new()
          {
+            Name = "Role",
+            Type = "string?",
+            DefaultValue = "list",
+            Description = "The ARIA role of the root element.",
+         },
+         new()
+         {
             Name = "StickyTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "The custom template to render the pinned sticky item. Falls back to the item template when not provided.",
+         },
+         new()
+         {
+            Name = "Styles",
+            Type = "BitVirtualizeClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitVirtualize.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
          },
     ];
 
@@ -171,7 +224,7 @@ public partial class BitVirtualizeDemo
             Name = "ScrollToIndexAsync",
             Type = "Func<int, BitVirtualizeScrollAlignment, bool, Task>",
             DefaultValue = "",
-            Description = "Scrolls the viewport so that the item at the provided index becomes visible.",
+            Description = "Scrolls the viewport so that the item at the provided index becomes visible. A call made before the component is ready (for example, before its data arrives) gets applied once it is.",
             LinkType = LinkType.Link,
             Href = "#scroll-alignment-enum",
          },
@@ -180,21 +233,28 @@ public partial class BitVirtualizeDemo
             Name = "ScrollToOffsetAsync",
             Type = "Func<double, bool, Task>",
             DefaultValue = "",
-            Description = "Scrolls to an absolute pixel offset along the scroll axis.",
+            Description = "Scrolls to an absolute pixel offset along the scroll axis, measured from the start of the first item.",
+         },
+         new()
+         {
+            Name = "ScrollByAsync",
+            Type = "Func<double, bool, Task>",
+            DefaultValue = "",
+            Description = "Scrolls the viewport by the provided number of pixels along the scroll axis (negative values scroll back).",
          },
          new()
          {
             Name = "ScrollToStartAsync",
             Type = "Func<bool, Task>",
             DefaultValue = "",
-            Description = "Scrolls to the start (top/left) of the list.",
+            Description = "Scrolls to the very start (top/left) of the list, including the HeaderTemplate.",
          },
          new()
          {
             Name = "ScrollToEndAsync",
             Type = "Func<bool, Task>",
             DefaultValue = "",
-            Description = "Scrolls to the end (bottom/right) of the list. Useful for chat and log views.",
+            Description = "Scrolls to the very end (bottom/right) of the list, including the FooterTemplate. Useful for chat and log views.",
          },
     ];
 
@@ -276,6 +336,64 @@ public partial class BitVirtualizeDemo
                 },
             ]
         },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitVirtualizeClassStyles",
+            Description = "Custom CSS classes/styles for the different parts of the BitVirtualize.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root (scroll container) element of the BitVirtualize.",
+                },
+                new()
+                {
+                    Name = "Header",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header container of the BitVirtualize.",
+                },
+                new()
+                {
+                    Name = "Item",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper element of each rendered item (and placeholder) of the BitVirtualize.",
+                },
+                new()
+                {
+                    Name = "Sticky",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the pinned sticky item container of the BitVirtualize.",
+                },
+                new()
+                {
+                    Name = "Footer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the footer container of the BitVirtualize.",
+                },
+                new()
+                {
+                    Name = "Loading",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the loading container of the BitVirtualize.",
+                },
+                new()
+                {
+                    Name = "Empty",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the empty container of the BitVirtualize.",
+                },
+            ]
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -317,22 +435,7 @@ public partial class BitVirtualizeDemo
 
 
 
-    private BitVirtualize<int> basicRef = default!;
     private readonly int[] basicItems = Enumerable.Range(0, 1_000_000).ToArray();
-    private int basicTargetIndex;
-    private int basicVisibleStart;
-    private int basicVisibleEnd;
-
-    private async Task ScrollToBasicIndex()
-    {
-        await basicRef.ScrollToIndexAsync(basicTargetIndex, BitVirtualizeScrollAlignment.Start, smooth: true);
-    }
-
-    private void OnBasicRangeChanged((int Start, int End) range)
-    {
-        (basicVisibleStart, basicVisibleEnd) = range;
-        StateHasChanged();
-    }
 
 
     private const int TotalProducts = 100_000;
@@ -363,6 +466,26 @@ public partial class BitVirtualizeDemo
 
 
     private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
+
+
+    private BitVirtualize<int> scrollRef = default!;
+    private readonly int[] scrollItems = Enumerable.Range(0, 100_000).ToArray();
+    private int scrollTargetIndex = 5_000;
+    private bool scrollSmooth = true;
+    private (int Start, int End) visibleRange;
+
+    private async Task ScrollToTarget(BitVirtualizeScrollAlignment alignment)
+    {
+        await scrollRef.ScrollToIndexAsync(scrollTargetIndex, alignment, scrollSmooth);
+    }
+
+
+    private readonly Article[] articles = Enumerable.Range(1, 10_000)
+                                                    .Select(i => new Article($"Headline number {i:N0}", $"A short summary of the story number {i:N0}."))
+                                                    .ToArray();
+
+
+    private List<int> templateItems = [.. Enumerable.Range(0, 1_000)];
 
 
     private BitVirtualize<string> feedRef = default!;
@@ -401,6 +524,20 @@ public partial class BitVirtualizeDemo
     }
 
 
+    private List<TaskItem> tasks = [.. Enumerable.Range(1, 1_000).Select(i => new TaskItem(i, $"Task {i}"))];
+    private int nextTaskId = 1_001;
+
+    private void AddTasks()
+    {
+        tasks = [.. Enumerable.Range(0, 5).Select(_ => new TaskItem(nextTaskId, $"New task {nextTaskId++}")), .. tasks];
+    }
+
+    private void RemoveTasks()
+    {
+        tasks = [.. tasks.Skip(5)];
+    }
+
+
     private BitVirtualize<Message> chatRef = default!;
     private List<Message> messages = [];
     private string? draftMessage;
@@ -436,8 +573,17 @@ public partial class BitVirtualizeDemo
         chatHistoryRemaining -= batch;
         loadingChatHistory = false;
 
-        await chatRef.RefreshDataAsync(); // Reversed mode preserves the scroll position
+        await chatRef.RefreshDataAsync(); // the message in view stays where it was
     }
+
+    private void NewConversation()
+    {
+        chatHistoryRemaining = 0;
+        messages = [new Message(1000, false, "Hi! How can I help you?")];
+    }
+
+
+    private readonly int[] styleItems = Enumerable.Range(0, 1_000).ToArray();
 
 
     protected override void OnInitialized()
@@ -450,7 +596,9 @@ public partial class BitVirtualizeDemo
 
     public record Product(int Id, string Name, string LoadedAt);
     public record Post(string Author, string Time, string Body);
+    public record Article(string Title, string Summary);
     public record Contact(bool IsHeader, string Name, string Email);
+    public record TaskItem(int Id, string Title);
     public record Message(int Id, bool Mine, string Text);
 
 
@@ -473,13 +621,8 @@ public partial class BitVirtualizeDemo
     }
 </style>
 
-<BitNumberField @bind-Value=""basicTargetIndex"" Min=""0"" Max=""999999"" />
-<BitButton OnClick=""ScrollToBasicIndex"">Scroll to index</BitButton>
-<BitTag Text=""@($""{basicVisibleStart:N0} - {basicVisibleEnd:N0} visible"")"" />
-
-<BitVirtualize @ref=""basicRef"" Items=""basicItems"" ItemSize=""56""
+<BitVirtualize Items=""basicItems"" ItemSize=""56""
                TItem=""int"" Context=""item""
-               OnVisibleRangeChanged=""OnBasicRangeChanged""
                Class=""list"">
     <div class=""basic-item"">
         <b>#@item.ToString(""N0"")</b>
@@ -487,22 +630,7 @@ public partial class BitVirtualizeDemo
     </div>
 </BitVirtualize>";
     private readonly string example1CsharpCode = @"
-private BitVirtualize<int> basicRef = default!;
-private readonly int[] basicItems = Enumerable.Range(0, 1_000_000).ToArray();
-private int basicTargetIndex;
-private int basicVisibleStart;
-private int basicVisibleEnd;
-
-private async Task ScrollToBasicIndex()
-{
-    await basicRef.ScrollToIndexAsync(basicTargetIndex, BitVirtualizeScrollAlignment.Start, smooth: true);
-}
-
-private void OnBasicRangeChanged((int Start, int End) range)
-{
-    (basicVisibleStart, basicVisibleEnd) = range;
-    StateHasChanged();
-}";
+private readonly int[] basicItems = Enumerable.Range(0, 1_000_000).ToArray();";
 
     private readonly string example2RazorCode = @"
 <style>
@@ -534,6 +662,9 @@ private void OnBasicRangeChanged((int Start, int End) range)
             <BitShimmer Height=""@($""{context.Size / 2}px"")"" Width=""@($""{100 - (context.Index % 3) * 15}%"")"" />
         </div>
     </PlaceholderTemplate>
+    <LoadingTemplate>
+        <BitSpinnerLoading />
+    </LoadingTemplate>
 </BitVirtualize>";
     private readonly string example2CsharpCode = @"
 private const int TotalProducts = 100_000;
@@ -604,14 +735,13 @@ public record Post(string Author, string Time, string Body);";
 
     .tile {
         display: flex;
-        height: 100%;
         margin: 0.5rem;
         border-radius: 0.5rem;
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        border: 1px solid lightgray;
         height: calc(100% - 1rem);
+        border: 1px solid lightgray;
     }
 </style>
 
@@ -641,17 +771,187 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
         box-sizing: border-box;
         border-bottom: 1px solid lightgray;
     }
+
+    .basic-item.target {
+        color: white;
+        background-color: dodgerblue;
+    }
+
+    .toolbar {
+        gap: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+</style>
+
+<div class=""toolbar"">
+    <BitNumberField @bind-Value=""scrollTargetIndex"" Min=""0"" Max=""99999"" Style=""max-width:9rem"" />
+    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Start)"">Start</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Center)"">Center</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.End)"">End</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Auto)"">Auto</BitButton>
+    <BitToggle @bind-Value=""scrollSmooth"" Label=""Smooth"" Inline />
+</div>
+
+<div class=""toolbar"">
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollToStartAsync(scrollSmooth)"">To start</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollByAsync(-500, scrollSmooth)"">-500px</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollByAsync(500, scrollSmooth)"">+500px</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollToEndAsync(scrollSmooth)"">To end</BitButton>
+    <BitTag Text=""@($""[{visibleRange.Start:N0}, {visibleRange.End:N0}) visible"")"" />
+</div>
+
+<BitVirtualize @ref=""scrollRef"" Items=""scrollItems"" ItemSize=""48""
+               TItem=""int"" Context=""item""
+               InitialIndex=""500""
+               OnVisibleRangeChanged=""range => visibleRange = range""
+               Class=""list"">
+    <div class=""basic-item @(item == scrollTargetIndex ? ""target"" : null)"">
+        <b>#@item.ToString(""N0"")</b>
+    </div>
+</BitVirtualize>";
+    private readonly string example5CsharpCode = @"
+private BitVirtualize<int> scrollRef = default!;
+private readonly int[] scrollItems = Enumerable.Range(0, 100_000).ToArray();
+private int scrollTargetIndex = 5_000;
+private bool scrollSmooth = true;
+private (int Start, int End) visibleRange;
+
+private async Task ScrollToTarget(BitVirtualizeScrollAlignment alignment)
+{
+    await scrollRef.ScrollToIndexAsync(scrollTargetIndex, alignment, scrollSmooth);
+}";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .list {
+        height: 25rem;
+        border: 1px solid gray;
+    }
+
+    .news-item {
+        display: flex;
+        height: 100%;
+        padding: 0 1rem;
+        flex-direction: column;
+        justify-content: center;
+        box-sizing: border-box;
+        border-bottom: 1px solid lightgray;
+    }
+
+    .news-list .bit-vir-itm:focus-visible {
+        outline-offset: -2px;
+        outline: 2px solid dodgerblue;
+    }
+</style>
+
+<BitVirtualize Items=""articles"" ItemSize=""72""
+               TItem=""Article"" Context=""article""
+               Role=""feed"" ItemRole=""article"" AriaLabel=""News feed""
+               Class=""list news-list"">
+    <div class=""news-item"">
+        <b>@article.Title</b>
+        <span>@article.Summary</span>
+    </div>
+</BitVirtualize>";
+    private readonly string example6CsharpCode = @"
+private readonly Article[] articles = Enumerable.Range(1, 10_000)
+                                                .Select(i => new Article($""Headline number {i:N0}"", $""A short summary of the story number {i:N0}.""))
+                                                .ToArray();
+
+public record Article(string Title, string Summary);";
+
+    private readonly string example7RazorCode = @"
+<style>
+    .list {
+        height: 25rem;
+        border: 1px solid gray;
+    }
+
+    .basic-item {
+        gap: 0.5rem;
+        display: flex;
+        height: 100%;
+        padding: 0 1rem;
+        align-items: center;
+        box-sizing: border-box;
+        border-bottom: 1px solid lightgray;
+    }
+
+    .list-header,
+    .list-footer {
+        padding: 0.75rem 1rem;
+        background-color: #f4f4f4;
+    }
+
+    .toolbar {
+        gap: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+</style>
+
+<div class=""toolbar"">
+    <BitButton OnClick=""() => templateItems = []"">Empty the list</BitButton>
+    <BitButton OnClick=""() => templateItems = [.. Enumerable.Range(0, 1_000)]"">Refill the list</BitButton>
+</div>
+
+<BitVirtualize Items=""templateItems"" ItemSize=""48""
+               TItem=""int"" Context=""item""
+               Class=""list"">
+    <HeaderTemplate>
+        <div class=""list-header"">Header · @templateItems.Count.ToString(""N0"") items</div>
+    </HeaderTemplate>
+    <ItemTemplate>
+        <div class=""basic-item"">Item @item</div>
+    </ItemTemplate>
+    <FooterTemplate>
+        <div class=""list-footer"">Footer · end of the list</div>
+    </FooterTemplate>
+    <EmptyTemplate>
+        <b>No items to show</b>
+    </EmptyTemplate>
+</BitVirtualize>";
+    private readonly string example7CsharpCode = @"
+private List<int> templateItems = [.. Enumerable.Range(0, 1_000)];";
+
+    private readonly string example8RazorCode = @"
+<style>
+    .list {
+        height: 25rem;
+        border: 1px solid gray;
+    }
+
+    .basic-item {
+        gap: 0.5rem;
+        display: flex;
+        height: 100%;
+        padding: 0 1rem;
+        align-items: center;
+        box-sizing: border-box;
+        border-bottom: 1px solid lightgray;
+    }
+
+    .list-footer {
+        padding: 0.75rem 1rem;
+        background-color: #f4f4f4;
+    }
 </style>
 
 <BitVirtualize @ref=""feedRef"" Items=""feedItems"" ItemSize=""56""
-               TItem=""string"" Context=""item""
+               TItem=""string""
                OnEndReached=""LoadMoreFeedItems"" ReachedThreshold=""6""
                Class=""list"">
-    <div class=""basic-item"">@item</div>
-</BitVirtualize>
-
-<div>@(feedLoading ? ""Loading more..."" : $""{feedItems.Count:N0} items loaded · scroll down to load more"")</div>";
-    private readonly string example5CsharpCode = @"
+    <ItemTemplate Context=""item"">
+        <div class=""basic-item"">@item</div>
+    </ItemTemplate>
+    <FooterTemplate>
+        <div class=""list-footer"">@(feedLoading ? ""Loading more..."" : $""{feedItems.Count:N0} items loaded"")</div>
+    </FooterTemplate>
+</BitVirtualize>";
+    private readonly string example8CsharpCode = @"
 private BitVirtualize<string> feedRef = default!;
 private readonly List<string> feedItems = [.. Enumerable.Range(0, 25).Select(i => $""Feed item {i:N0}"")];
 private bool feedLoading;
@@ -670,7 +970,7 @@ private async Task LoadMoreFeedItems()
     await feedRef.RefreshDataAsync();
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .list {
         height: 25rem;
@@ -685,6 +985,10 @@ private async Task LoadMoreFeedItems()
         align-items: center;
         box-sizing: border-box;
         background-color: #f4f4f4;
+    }
+
+    .group-header.pinned {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
     .contact {
@@ -719,7 +1023,7 @@ private async Task LoadMoreFeedItems()
         <div class=""group-header pinned"">@contact.Name</div>
     </StickyTemplate>
 </BitVirtualize>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private List<Contact> contacts = [];
 
 protected override void OnInitialized()
@@ -739,11 +1043,70 @@ protected override void OnInitialized()
 
 public record Contact(bool IsHeader, string Name, string Email);";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example10RazorCode = @"
+<style>
+    .list {
+        height: 25rem;
+        border: 1px solid gray;
+    }
+
+    .basic-item {
+        gap: 0.5rem;
+        display: flex;
+        height: 100%;
+        padding: 0 1rem;
+        align-items: center;
+        box-sizing: border-box;
+        border-bottom: 1px solid lightgray;
+    }
+
+    .toolbar {
+        gap: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+</style>
+
+<div class=""toolbar"">
+    <BitButton OnClick=""AddTasks"">Add 5 at the top</BitButton>
+    <BitButton OnClick=""RemoveTasks"" IsEnabled=""@(tasks.Count > 0)"">Remove the first 5</BitButton>
+</div>
+
+<BitVirtualize Items=""tasks"" ItemSize=""48"" ItemKey=""t => t.Id""
+               TItem=""TaskItem"" Context=""task""
+               Class=""list"">
+    <div class=""basic-item"">
+        <BitCheckbox Label=""@task.Title"" />
+    </div>
+</BitVirtualize>";
+    private readonly string example10CsharpCode = @"
+private List<TaskItem> tasks = [.. Enumerable.Range(1, 1_000).Select(i => new TaskItem(i, $""Task {i}""))];
+private int nextTaskId = 1_001;
+
+private void AddTasks()
+{
+    tasks = [.. Enumerable.Range(0, 5).Select(_ => new TaskItem(nextTaskId, $""New task {nextTaskId++}"")), .. tasks];
+}
+
+private void RemoveTasks()
+{
+    tasks = [.. tasks.Skip(5)];
+}
+
+public record TaskItem(int Id, string Title);";
+
+    private readonly string example11RazorCode = @"
 <style>
     .chat-list {
         height: 25rem;
         border: 1px solid gray;
+    }
+
+    .list-header {
+        padding: 0.75rem 1rem;
+        text-align: center;
+        background-color: #f4f4f4;
     }
 
     .message {
@@ -776,19 +1139,28 @@ public record Contact(bool IsHeader, string Name, string Email);";
 </style>
 
 <BitVirtualize @ref=""chatRef"" Items=""messages"" Dynamic EstimatedItemSize=""48""
-               TItem=""Message"" Context=""message""
-               Reversed ItemKey=""m => m.Id""
+               TItem=""Message""
+               Reversed AlignToEnd ItemKey=""m => m.Id""
                OnStartReached=""LoadChatHistory"" ReachedThreshold=""3""
                Class=""chat-list"">
-    <div class=""message @(message.Mine ? ""mine"" : null)"">
-        <div class=""bubble"">@message.Text</div>
-    </div>
+    <HeaderTemplate>
+        <div class=""list-header"">@(loadingChatHistory ? ""Loading older messages..."" : chatHistoryRemaining > 0 ? """" : ""This is the beginning of the conversation"")</div>
+    </HeaderTemplate>
+    <ItemTemplate Context=""message"">
+        <div class=""message @(message.Mine ? ""mine"" : null)"">
+            <div class=""bubble"">@message.Text</div>
+        </div>
+    </ItemTemplate>
 </BitVirtualize>
 <div class=""composer"">
     <BitTextField @bind-Value=""draftMessage"" Immediate Placeholder=""Write a message..."" Style=""flex-grow:1"" />
     <BitButton OnClick=""SendChatMessage"" IsEnabled=""@(string.IsNullOrWhiteSpace(draftMessage) is false)"">Send</BitButton>
+</div>
+<div class=""composer"">
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => chatRef.ScrollToEndAsync(smooth: true)"">Jump to latest</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""NewConversation"">New conversation</BitButton>
 </div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private BitVirtualize<Message> chatRef = default!;
 private List<Message> messages = [];
 private string? draftMessage;
@@ -824,8 +1196,106 @@ private async Task LoadChatHistory()
     chatHistoryRemaining -= batch;
     loadingChatHistory = false;
 
-    await chatRef.RefreshDataAsync(); // Reversed mode preserves the scroll position
+    await chatRef.RefreshDataAsync(); // the message in view stays where it was
+}
+
+private void NewConversation()
+{
+    chatHistoryRemaining = 0;
+    messages = [new Message(1000, false, ""Hi! How can I help you?"")];
 }
 
 public record Message(int Id, bool Mine, string Text);";
+
+    private readonly string example12RazorCode = @"
+<style>
+    .basic-item {
+        gap: 0.5rem;
+        display: flex;
+        height: 100%;
+        padding: 0 1rem;
+        align-items: center;
+        box-sizing: border-box;
+        border-bottom: 1px solid lightgray;
+    }
+
+    .custom-class {
+        box-shadow: dodgerblue 0 0 1rem;
+    }
+
+    .custom-root {
+        height: 15rem;
+        border: 1px solid seagreen;
+    }
+
+    .custom-item:nth-child(odd) {
+        background-color: #2e8b5722;
+    }
+
+    .custom-footer {
+        color: white;
+        padding: 0.5rem 1rem;
+        background-color: seagreen;
+    }
+</style>
+
+<BitVirtualize Items=""styleItems"" ItemSize=""48""
+               TItem=""int"" Context=""item""
+               Style=""height: 15rem; border: 2px solid dodgerblue; border-radius: 0.5rem;""
+               Class=""custom-class"">
+    <div class=""basic-item"">Item @item</div>
+</BitVirtualize>
+
+<BitVirtualize Items=""styleItems"" ItemSize=""48""
+               TItem=""int""
+               IsStickyItem=""i => i % 10 == 0""
+               Styles=""@(new() { Root = ""height: 15rem; border: 1px solid tomato;"",
+                                 Header = ""padding: 0.5rem 1rem; color: white; background: tomato;"",
+                                 Sticky = ""color: white; background: darkorange;"",
+                                 Item = ""padding-inline-start: 1rem;"" })"">
+    <HeaderTemplate>Header</HeaderTemplate>
+    <ItemTemplate Context=""item"">
+        <div class=""basic-item"">@(item % 10 == 0 ? $""Group {item / 10}"" : $""Item {item}"")</div>
+    </ItemTemplate>
+</BitVirtualize>
+
+<BitVirtualize Items=""styleItems"" ItemSize=""48""
+               TItem=""int"" Context=""item""
+               Classes=""@(new() { Root = ""custom-root"", Item = ""custom-item"", Footer = ""custom-footer"" })"">
+    <ItemTemplate>
+        <div class=""basic-item"">Item @item</div>
+    </ItemTemplate>
+    <FooterTemplate>Footer</FooterTemplate>
+</BitVirtualize>";
+    private readonly string example12CsharpCode = @"
+private readonly int[] styleItems = Enumerable.Range(0, 1_000).ToArray();";
+
+    private readonly string example13RazorCode = @"
+<style>
+    .horizontal-list {
+        height: 9rem;
+        border: 1px solid gray;
+    }
+
+    .tile {
+        display: flex;
+        margin: 0.5rem;
+        border-radius: 0.5rem;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        height: calc(100% - 1rem);
+        border: 1px solid lightgray;
+    }
+</style>
+
+<BitVirtualize Items=""horizontalItems"" ItemSize=""120"" Horizontal Dir=""BitDir.Rtl""
+               TItem=""int"" Context=""item""
+               Class=""horizontal-list"">
+    <div class=""tile"">
+        <b>مورد @item.ToString(""N0"")</b>
+    </div>
+</BitVirtualize>";
+    private readonly string example13CsharpCode = @"
+private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();";
 }
