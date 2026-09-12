@@ -288,8 +288,14 @@
 
         public dispose() {
             this.disposer();
-            this.dotnetObj?.dispose();
-            this.dotnetObj = undefined;
+            // Let any teardown failure from dotnetObj.dispose() surface (consistent with the other disposal
+            // paths in this cohort) instead of swallowing it, but still clear the reference afterwards so the
+            // failure signal is preserved before dotnetObj is set to undefined.
+            try {
+                this.dotnetObj?.dispose();
+            } finally {
+                this.dotnetObj = undefined;
+            }
         }
     }
 

@@ -52,7 +52,7 @@ public partial class BitSwiper : BitComponentBase
     private string _prevButtonStyle = "display:none;";
     private readonly List<BitSwiperItem> _allItems = [];
     private ElementReference _swiperContainer = default!;
-    private DotNetObjectReference<BitSwiper> _dotnetObj = default!;
+    private DotNetObjectReference<BitSwiper>? _dotnetObj;
 
     // The keys the swiper acts on are also the keys the browser scrolls the page with, so they are
     // swallowed on the way in. They are handled in the browser rather than with Blazor's preventDefault
@@ -849,11 +849,11 @@ public partial class BitSwiper : BitComponentBase
 
         if (firstRender)
         {
-            _dotnetObj = DotNetObjectReference.Create(this);
-
             _afterFirstRender = true;
             _needsSetup = false;
             _laidOutItemsCount = _allItems.Count;
+
+            _dotnetObj = DotNetObjectReference.Create(this);
 
             await _js.BitSwiperSetup(_Id, RootElement, _swiperContainer, _dotnetObj, GetOptions());
 
@@ -1251,16 +1251,19 @@ public partial class BitSwiper : BitComponentBase
             _autoPlayTimer = null;
         }
 
-        if (_dotnetObj is not null)
+        try
         {
-            //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
-            try
-            {
-                await _js.BitSwiperDispose(_Id);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            await _js.BitSwiperDispose(_Id);
         }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // The reference is owned here: whatever the JS dispose answered (or whether it could run at
+            // all), it is released on this side, after the JS cleanup so its callbacks kept a live target.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
 
-        await base.DisposeAsync(disposing);
+            await base.DisposeAsync(disposing);
+        }
     }
 }

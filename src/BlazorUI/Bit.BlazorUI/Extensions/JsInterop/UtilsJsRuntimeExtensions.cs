@@ -6,19 +6,19 @@ internal static class UtilsJsRuntimeExtensions
 {
     internal static ValueTask<decimal> BitUtilsGetBodyWidth(this IJSRuntime jsRuntime)
     {
-        return jsRuntime.Invoke<decimal>("BitBlazorUI.Utils.getBodyWidth");
+        return jsRuntime.FastInvoke<decimal>("BitBlazorUI.Utils.getBodyWidth");
     }
 
 
     internal static ValueTask BitUtilsSetProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object? value)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setProperty", element, property, value);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Utils.setProperty", element, property, value);
     }
 
 
     internal static ValueTask<string> BitUtilsGetProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
     {
-        return jsRuntime.Invoke<string>("BitBlazorUI.Utils.getProperty", element, property);
+        return jsRuntime.FastInvoke<string>("BitBlazorUI.Utils.getProperty", element, property);
     }
 
 
@@ -28,9 +28,9 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask<BoundingClientRect> BitUtilsGetBoundingClientRect(this IJSRuntime jsRuntime, ElementReference element)
+    internal static ValueTask<BoundingClientRect?> BitUtilsGetBoundingClientRect(this IJSRuntime jsRuntime, ElementReference element)
     {
-        return jsRuntime.Invoke<BoundingClientRect>("BitBlazorUI.Utils.getBoundingClientRect", element);
+        return jsRuntime.FastInvoke<BoundingClientRect?>("BitBlazorUI.Utils.getBoundingClientRect", element);
     }
 
 
@@ -207,7 +207,7 @@ internal static class UtilsJsRuntimeExtensions
 
     internal static ValueTask BitUtilsScrollElementIntoView(this IJSRuntime jsRuntime, string targetElementId, bool focus = false)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.scrollElementIntoView", targetElementId, focus);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Utils.scrollElementIntoView", targetElementId, focus);
     }
 
 
@@ -268,13 +268,13 @@ internal static class UtilsJsRuntimeExtensions
 
     internal static ValueTask BitUtilsSelectText(this IJSRuntime jsRuntime, ElementReference element)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.selectText", element);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Utils.selectText", element);
     }
 
 
     internal static ValueTask BitUtilsSetStyle(this IJSRuntime jsRuntime, ElementReference element, string key, string value)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setStyle", element, key, value);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Utils.setStyle", element, key, value);
     }
 
 
@@ -286,11 +286,11 @@ internal static class UtilsJsRuntimeExtensions
     // as padding, the way the counted lock above gives it back.
     internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, string scrollerSelector, bool isHidden, bool compensate = false)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerSelector, isHidden, compensate);
+        return jsRuntime.FastInvoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerSelector, isHidden, compensate);
     }
 
     internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string key, ElementReference scrollerElement, bool isHidden, bool compensate = false)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerElement, isHidden, compensate);
+        return jsRuntime.FastInvoke<float>("BitBlazorUI.Utils.toggleOverflow", key, scrollerElement, isHidden, compensate);
     }
 }

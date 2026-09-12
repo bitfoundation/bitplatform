@@ -23,7 +23,13 @@ namespace BitBlazorUI {
                 for (const entry of entries) {
                     if (entry.isIntersecting) {
                         observer.unobserve(lastElement);
-                        await dotnetObj.invokeMethodAsync("Load");
+                        try {
+                            await dotnetObj.invokeMethodAsync("Load");
+                        } catch (e) {
+                            // Swallow the rejection so it doesn't surface as an unhandled promise rejection.
+                            // The .NET object can already be disposed (component torn down) or the circuit gone.
+                            console.error('BitBlazorUI.InfiniteScrolling.setup:', e);
+                        }
                     }
                 }
             }, {

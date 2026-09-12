@@ -64,11 +64,31 @@ public sealed class IJSRuntimeExtensionsProbeContractTests
     }
 
     [TestMethod]
+    public void WebViewJsRuntimeInstanceNotAttachedIsReportedInvalid()
+    {
+        var type = FindTypeByName("Microsoft.AspNetCore.Components.WebView", "WebViewJSRuntime");
+        Assert.IsNotNull(type);
+
+        // End-to-end through the real probe: a Hybrid runtime that has not been attached to a page yet
+        // (its _ipcSender is still null) can't reach the browser, so it must be reported invalid.
+        var instance = (IJSRuntime)Activator.CreateInstance(type, nonPublic: true)!;
+        Assert.IsTrue(instance.IsRuntimeInvalid());
+    }
+
+    [TestMethod]
     public void UnknownRuntimeTypesAreTreatedAsValid()
     {
         // The documented fail-safe: anything the probe does not recognize (WASM, test doubles,
         // custom runtimes) must be treated as valid so interop proceeds and surfaces real errors.
         Assert.IsFalse(new FakeJsRuntime().IsRuntimeInvalid());
+    }
+
+    [TestMethod]
+    public void NullRuntimeIsRejected()
+    {
+        // A missing runtime is a wiring bug to surface, not a state to service: it must not be reported
+        // as "invalid", which would turn every interop call into a silent no-op.
+        Assert.ThrowsExactly<ArgumentNullException>(() => ((IJSRuntime)null!).IsRuntimeInvalid());
     }
 
     private static Type? FindTypeByName(string assemblyName, string typeName)

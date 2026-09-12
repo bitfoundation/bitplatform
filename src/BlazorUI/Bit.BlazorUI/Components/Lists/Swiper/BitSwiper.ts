@@ -256,7 +256,7 @@ namespace BitBlazorUI {
 
             try { this.ac.abort(); } catch (e) { }
 
-            this.dotnetObj?.dispose();
+            // The .NET reference is owned and disposed by the component itself.
         }
 
 

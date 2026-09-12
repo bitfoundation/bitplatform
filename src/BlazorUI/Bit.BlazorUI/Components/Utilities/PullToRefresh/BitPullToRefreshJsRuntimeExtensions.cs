@@ -14,9 +14,9 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     int threshold,
                                                                     int maxPull,
                                                                     bool enabled,
-                                                                    DotNetObjectReference<BitPullToRefresh>? dotnetObjectReference)
+                                                                    DotNetObjectReference<BitPullToRefresh> dotnetObjectReference)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, dotnetObjectReference);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, maxPull, enabled, dotnetObjectReference);
     }
 
     internal static ValueTask BitPullToRefreshUpdate(this IJSRuntime jsRuntime,
@@ -40,6 +40,6 @@ internal static class BitPullToRefreshJsRuntimeExtensions
 
     internal static ValueTask BitPullToRefreshDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.dispose", id);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.PullToRefresh.dispose", id);
     }
 }
