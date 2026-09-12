@@ -19,11 +19,15 @@
        The pointer press on it is refused its default action so that the click never takes the focus out of
        the panel: the overlay is not focusable, so a browser left to itself drops the focus on the body,
        which takes the Escape key away from the panel and starts the next Tab at the top of the very page
-       the overlay is there to keep the user off. *@
+       the overlay is there to keep the user off. The focus is still taken off whatever had it, onto the
+       container (data-bit-press-focus, handled by the script): an input only commits what was typed into it
+       once it loses the focus, and the dismissal handlers the click runs are the ones that most need to see
+       that value. *@
     @if (Modeless is false)
     {
         <div @onclick="HandleOnOverlayClick"
              @onmousedown:preventDefault
+             data-bit-press-focus="@_containerId"
              aria-hidden="true"
              style="@Styles?.Overlay"
              class="@GetOverlayCssClasses()" />

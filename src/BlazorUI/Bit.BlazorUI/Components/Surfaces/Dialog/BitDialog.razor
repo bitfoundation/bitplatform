@@ -23,8 +23,12 @@
                    and the focus trap with it, so neither of them is reached from there, and the next Tab
                    walks into the page the overlay is there to keep out of reach. The default of the press is
                    refused so that the focus stays where the Dialog put it - the click itself still arrives,
-                   and still dismisses. *@
+                   and still dismisses. The focus is still taken off whatever had it, onto the surface
+                   (data-bit-press-focus, handled by the script): an input only commits what was typed into it
+                   once it loses the focus, and the dismissal handlers the click runs are the ones that most
+                   need to see that value. *@
                 <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true"
+                     data-bit-press-focus="@_containerId"
                      @onclick="HandleOnOverlayClick" @onmousedown:preventDefault="true" />
             }
 

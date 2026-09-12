@@ -8,11 +8,17 @@
    is the largest such thing on the screen while an Overlay is open. A press on it would otherwise leave the
    keyboard on the body, walking the next Tab into the page the Overlay is there to keep out of reach. The
    default of the press is refused so that the focus stays where the content put it - the click itself still
-   arrives, and still dismisses. Only the presses on the layer reach here: the content stops its own. *@
+   arrives, and still dismisses. Only the presses on the layer reach here: the content stops its own.
+   The focus is still taken off whatever had it, onto the layer itself (data-bit-press-focus, handled by the
+   script, which is what tabindex="-1" makes the layer able to hold): an input only commits what was typed
+   into it once it loses the focus, and the handlers the click runs are the ones that most need to see that
+   value. A TabIndex of the consumer's own still wins over it. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     tabindex="@(TabIndex ?? "-1")"
      @onclick="HandleOnClick"
      @onmousedown="HandleOnMouseDown"
      @onmousedown:preventDefault="true"
+     data-bit-press-focus="@_Id"
      id="@_Id"
      aria-label="@AriaLabel"
      aria-hidden="@(ChildContent is null && AriaLabel.HasNoValue() ? "true" : null)"

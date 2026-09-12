@@ -181,6 +181,21 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(1, currentCount);
     }
 
+    [TestMethod]
+    public void BitModalOverlayShouldHandTheFocusOfAPressToTheContent()
+    {
+        var com = RenderComponent<BitModal>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // The press on the overlay has its default refused, so the focus would never leave an input the user
+        // typed into - and the input would never commit its value before the dismissal handlers run. The
+        // overlay names the content for the script to move the focus onto instead, which keeps it inside.
+        var overlay = com.Find(".bit-mdl-ovl");
+        var content = com.Find(".bit-mdl-ctn");
+
+        Assert.AreEqual(content.Id, overlay.GetAttribute("data-bit-press-focus"));
+        Assert.AreEqual("-1", content.GetAttribute("tabindex"));
+    }
+
 
 
     // ------------------------------------------------------------------------------------------------

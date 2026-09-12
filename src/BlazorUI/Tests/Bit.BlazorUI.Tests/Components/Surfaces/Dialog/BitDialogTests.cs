@@ -1897,6 +1897,21 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogOverlayShouldHandTheFocusOfAPressToTheSurface()
+    {
+        var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // Refusing the default of the press also keeps the focus on an input the user typed into, which then
+        // never commits its value before the dismissal handlers run. The overlay names the surface for the
+        // script to move the focus onto instead, which takes it off the input without leaving the Dialog.
+        var overlay = component.Find(".bit-dlg-ovl");
+        var surface = component.Find(".bit-dlg-ctn");
+
+        Assert.AreEqual(surface.Id, overlay.GetAttribute("data-bit-press-focus"));
+        Assert.AreEqual("-1", surface.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
     public void BitDialogOverlayClickShouldNotChaseTheFocusAcrossTheInterop()
     {
         var isOpen = true;
