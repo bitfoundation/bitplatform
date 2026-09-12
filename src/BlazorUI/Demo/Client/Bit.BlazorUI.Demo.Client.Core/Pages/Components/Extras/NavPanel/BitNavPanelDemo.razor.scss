@@ -1,10 +1,19 @@
 ﻿@import "../../../../Styles/abstracts/_media-queries.scss";
 
+.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 .open-btn {
     display: none;
     justify-content: center;
 
-    @include lt-lg {
+    // The panel is an off-canvas drawer below the md breakpoint, so that is where the button that opens it
+    // has anything to do.
+    @include lt-md {
         display: flex;
     }
 }

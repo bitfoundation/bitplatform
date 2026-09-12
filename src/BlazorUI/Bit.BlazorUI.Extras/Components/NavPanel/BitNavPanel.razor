@@ -2,28 +2,35 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (IsOpen)
+@if (IsOpen && NoOverlay is false && IsEnabled)
 {
-    <div style="@Styles?.Overlay" class="bit-npn-ovl @Classes?.Overlay" @onclick="ClosePanel"></div>
+    @* The overlay is a duplicate of what the Escape key and the swipe gesture already do, so it is left out
+       of the accessibility tree instead of being announced as a control of its own. A disabled panel draws
+       none at all: nothing of it answers a click while it is disabled, and an overlay over a page that
+       nothing left can dismiss is a page that cannot be used any more. *@
+    <div style="@Styles?.Overlay"
+         class="bit-npn-ovl @Classes?.Overlay"
+         aria-hidden="true"
+         @onclick="HandleOverlayClick"></div>
 }
+
+@* Reports which of its two shapes the panel currently has: the off-canvas drawer of a small screen, or the
+   column of a wide one. Nothing is rendered through it - the shape itself is CSS - but the page it covers
+   and the focus it holds while it covers one are decided in C#, and only the browser knows which it is. *@
+<BitMediaQuery NoWrapper ScreenQuery="BitScreenQuery.LtMd" OnChange="HandleScreenChange" />
 
 @{
-    var isToggled = (NoToggle is false) && IsToggled;
-}
+    var isToggled = _IsToggled;
+    var items = Items ?? [];
+    var isEmpty = items.Count > 0 && _filteredNavItems.Count == 0;
+    var searchAnnouncement = GetSearchAnnouncement();
+    // The drawer that covers the page is a modal surface, and says so. Only the one that holds the focus
+    // reports itself as a modal one, though: a drawer the keyboard can walk out of is not a surface the rest
+    // of the page is inert behind, whatever the overlay in front of it looks like.
+    var isModal = _IsModalDrawer;
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
-     style="@GetPanelStyle(isToggled)"
-     class="@((ClassBuilder.Value + $"{(isToggled ? $" bit-npn-tgl {Classes?.Toggled}" : "")}").Trim())"
-     dir="@Dir?.ToString().ToLower()">
-    <BitSwipeTrap Style="width:100%; height:100%"
-                  Threshold="5"
-                  Throttle="10"
-                  OnEnd="HandleOnSwipeEnd"
-                  OnMove="HandleOnSwipeMove"
-                  OnTrigger="HandleOnSwipeTrigger"
-                  OrientationLock="BitSwipeOrientation.Horizontal">
-        <div style="@Styles?.Container" class="bit-npn-cnt @Classes?.Container">
+    RenderFragment content =
+        @<div style="@Styles?.Container" class="bit-npn-cnt @Classes?.Container">
             @if (Header is not null)
             {
                 @Header
@@ -33,10 +40,15 @@
                 <div style="@Styles?.Header" class="bit-npn-hdr @Classes?.Header">
                     @if (IconUrl.HasValue())
                     {
+                        var logoLabel = IconAriaLabel ?? AriaLabel ?? DefaultLogoAriaLabel;
+
                         if (IconNavUrl.HasValue())
                         {
-                            <a href="@IconNavUrl">
+                            @* The logo itself is decorative, so the link it sits in is the one carrying the
+                               name: a link whose only content is an image with an empty alt has none at all. *@
+                            <a href="@IconNavUrl" aria-label="@logoLabel">
                                 <img src="@IconUrl"
+                                     alt=""
                                      class="bit-npn-img @Classes?.HeaderIcon"
                                      style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
                             </a>
@@ -44,6 +56,7 @@
                         else
                         {
                             <img src="@IconUrl"
+                                 alt="@(IconAriaLabel ?? AriaLabel ?? string.Empty)"
                                  class="bit-npn-img @Classes?.HeaderIcon"
                                  style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
                         }
@@ -53,15 +66,50 @@
 
                     @if (NoToggle is false && HideToggle is false)
                     {
+                        @* The default glyph ships with the Extras package rather than with the icon font of the
+                           core library, so it is drawn from its own class instead of from an icon name. *@
+                        var customToggleIcon = BitIconInfo.From(ToggleIcon, ToggleIconName);
+                        var toggleLabel = ToggleAriaLabel ?? (isToggled ? DefaultExpandAriaLabel : DefaultCollapseAriaLabel);
+
                         <BitButton IconOnly
                                    Color="Color"
                                    Size="BitSize.Large"
+                                   Title="@toggleLabel"
+                                   IsEnabled="IsEnabled"
+                                   AriaLabel="@toggleLabel"
                                    OnClick="ToggleNavPanel"
                                    Variant="BitVariant.Text"
                                    Style="@Styles?.ToggleButton"
-                                   IconName="ColumnRightTwoThirds"
+                                   Icon="@customToggleIcon"
+                                   IconName="@(customToggleIcon is null ? "ColumnRightTwoThirds" : null)"
                                    Class="@($"bit-npn-tbn {Classes?.ToggleButton}".Trim())"
-                                   Classes="@(new() { Icon = "bit-icon-ex bit-icon-ex--ColumnRightTwoThirds" })" />
+                                   aria-controls="@_Id"
+                                   aria-expanded="@(isToggled ? "false" : "true")"
+                                   Classes="@(customToggleIcon is null ? new() { Icon = "bit-icon-ex bit-icon-ex--ColumnRightTwoThirds" } : null)" />
+                    }
+
+                    @if (ShowCloseButton)
+                    {
+                        @* The button belongs to the drawer, so the wrapper is what the stylesheet takes away
+                           on the screens the panel is a column on: hiding the button itself would mean giving
+                           its own display back later, and a display is not this component's to decide. *@
+                        var customCloseIcon = BitIconInfo.From(CloseIcon, CloseIconName);
+                        var closeLabel = CloseAriaLabel ?? DefaultCloseAriaLabel;
+
+                        <div class="bit-npn-cbw">
+                            <BitButton IconOnly
+                                       Color="Color"
+                                       Size="BitSize.Large"
+                                       Title="@closeLabel"
+                                       IsEnabled="IsEnabled"
+                                       OnClick="ClosePanel"
+                                       AriaLabel="@closeLabel"
+                                       Icon="@customCloseIcon"
+                                       Variant="BitVariant.Text"
+                                       Style="@Styles?.CloseButton"
+                                       IconName="@(customCloseIcon is null ? "Cancel" : null)"
+                                       Class="@($"bit-npn-cbn {Classes?.CloseButton}".Trim())" />
+                        </div>
                     }
                 </div>
             }
@@ -71,76 +119,99 @@
                 <BitSearchBox @ref="_searchBoxRef"
                               Underlined
                               Color="Color"
-                              OnChange="SearchNavItems"
+                              Immediate
+                              IsEnabled="IsEnabled"
+                              Value="@_searchText"
                               Styles="SearchBoxStyles"
                               Classes="SearchBoxClasses"
                               Class="@Classes?.SearchBox"
-                              Immediate DebounceTime="500"
+                              OnChange="HandleSearchChange"
+                              DebounceTime="SearchDebounceTime"
                               Placeholder="@SearchBoxPlaceholder"
+                              AriaLabel="@(SearchBoxPlaceholder ?? DefaultSearchAriaLabel)"
                               Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
 
                 @if (isToggled)
                 {
+                    var customSearchIcon = BitIconInfo.From(SearchIcon, SearchIconName);
+
                     <BitButton IconOnly
                                Color="Color"
-                               IconName="Search"
                                Size="BitSize.Large"
+                               IsEnabled="IsEnabled"
+                               Icon="@customSearchIcon"
                                OnClick="ToggleForSearch"
                                Variant="BitVariant.Text"
                                Style="@Styles?.ToggleSearchButton"
-                               Class="@Classes?.ToggleSearchButton" />
+                               IconName="@(customSearchIcon is null ? "Search" : null)"
+                               Class="@($"bit-npn-tsb {Classes?.ToggleSearchButton}".Trim())"
+                               Title="@(SearchBoxPlaceholder ?? DefaultSearchAriaLabel)"
+                               AriaLabel="@(SearchBoxPlaceholder ?? DefaultSearchAriaLabel)" />
                 }
             }
 
-            @if (Items.Any() && _filteredNavItems.Any() is false)
+            @* The only channel a screen reader has for the outcome of a search: how many items it matched, or
+               that it matched none. A filtered list of links reports nothing of its own.
+               The region itself is always rendered, empty until there is something to say: a live region that
+               enters the DOM together with its first message is not announced at all - only a change of the
+               text of one that was already there is. *@
+            <div role="status" aria-live="polite" aria-atomic="true" class="bit-npn-lvr">@searchAnnouncement</div>
+
+            @* The empty message is rendered beside the nav rather than in place of it, so the nav keeps its
+               registrations (and the expansion state of the branches) while a search matches nothing. *@
+            @if (isEmpty && isToggled is false)
             {
-                if (isToggled is false)
+                if (EmptyListTemplate is not null)
                 {
-                    if (EmptyListTemplate is not null)
-                    {
-                        @EmptyListTemplate
-                    }
-                    else
-                    {
-                        <BitText Style="@Styles?.EmptyListMessage" Class="@Classes?.EmptyListMessage">
-                            @(EmptyListMessage ?? "Nothing found!")
-                        </BitText>
-                    }
+                    @EmptyListTemplate
+                }
+                else
+                {
+                    <BitText Style="@Styles?.EmptyListMessage" Class="@Classes?.EmptyListMessage">
+                        @(EmptyListMessage ?? "Nothing found!")
+                    </BitText>
                 }
             }
-            else
-            {
-                <BitNav @ref=_bitNavRef
-                        Accent="Accent"
-                        AllExpanded="AllExpanded"
-                        ChevronDownIcon="@ChevronDownIcon"
-                        Classes="NavClasses"
-                        Color="Color"
-                        DefaultSelectedItem="_filteredNavItems.Any() ? _filteredNavItems[0] : null"
-                        FullWidth
-                        HeaderTemplate="HeaderTemplate"
-                        HeaderTemplateRenderMode="HeaderTemplateRenderMode"
-                        IconOnly="isToggled"
-                        IndentPadding="IndentPadding"
-                        IndentReversedPadding="IndentReversedPadding"
-                        IndentValue="IndentValue"
-                        Items="_filteredNavItems"
-                        ItemTemplate="ItemTemplate"
-                        ItemTemplateRenderMode="ItemTemplateRenderMode"
-                        Match="NavMatch"
-                        Mode="NavMode"
-                        NoCollapse="NoCollapse"
-                        OnItemClick="(TItem item) => HandleNavItemClick(item)"
-                        OnItemToggle="OnItemToggle"
-                        OnSelectItem="OnSelectItem"
-                        RenderType="RenderType"
-                        Reselectable="Reselectable"
-                        ReversedChevron="ReversedChevron"
-                        SingleExpand="SingleExpand"
-                        Styles="NavStyles"
-                        Class="@Classes?.Nav"
-                        Style="@Styles?.Nav" />
-            }
+
+            <BitNav @ref=_bitNavRef
+                    TItem="TItem"
+                    Accent="Accent"
+                    AllExpanded="AllExpanded"
+                    AriaLabel="@AriaLabel"
+                    ChevronDownIcon="ChevronDownIcon"
+                    ChevronDownIconName="@ChevronDownIconName"
+                    Classes="NavClasses"
+                    CollapseAriaLabel="@CollapseAriaLabel"
+                    Color="Color"
+                    ExpandAriaLabel="@ExpandAriaLabel"
+                    FullWidth
+                    HeaderTemplate="HeaderTemplate"
+                    HeaderTemplateRenderMode="HeaderTemplateRenderMode"
+                    IconOnly="isToggled"
+                    IndentPadding="IndentPadding"
+                    IndentReversedPadding="IndentReversedPadding"
+                    IndentValue="IndentValue"
+                    IsEnabled="IsEnabled"
+                    Items="_filteredNavItems"
+                    ItemTemplate="ItemTemplate"
+                    ItemTemplateRenderMode="ItemTemplateRenderMode"
+                    Match="NavMatch"
+                    Mode="NavMode"
+                    NameSelectors="NameSelectors"
+                    NoCollapse="NoCollapse"
+                    OnItemClick="(TItem item) => HandleNavItemClick(item)"
+                    OnItemToggle="OnItemToggle"
+                    OnSelectItem="OnSelectItem"
+                    RenderType="RenderType"
+                    Reselectable="Reselectable"
+                    ReversedChevron="ReversedChevron"
+                    SelectedItem="SelectedItem"
+                    SelectedItemChanged="@((TItem? item) => HandleSelectedItemChanged(item))"
+                    SingleExpand="SingleExpand"
+                    Size="Size"
+                    Styles="NavStyles"
+                    Class="@Classes?.Nav"
+                    Style="@Styles?.Nav" />
 
             <BitSpacer />
 
@@ -148,6 +219,36 @@
             {
                 @Footer
             }
-        </div>
-    </BitSwipeTrap>
+        </div>;
+}
+
+@* Every listener of the panel's own is added to the splatted attributes rather than written out beside them,
+   where one of the same name silently replaces what the caller passed. *@
+<div @ref="RootElement" @attributes="GetRootAttributes()"
+     id="@_Id"
+     role="@(isModal ? "dialog" : null)"
+     aria-modal="@(isModal && NoFocusTrap is false ? "true" : null)"
+     aria-label="@(isModal ? (AriaLabel ?? DefaultPanelAriaLabel) : null)"
+     style="@GetPanelStyle(isToggled)"
+     class="@((ClassBuilder.Value + $"{(isToggled ? $" bit-npn-tgl {Classes?.Toggled}" : "")}").Trim())"
+     dir="@Dir?.ToString().ToLower()">
+    @* A panel whose swipe gesture is turned off gets a plain wrapper instead: the trap of a gesture nothing
+       listens for is a set of pointer listeners installed on every panel of every page for nothing. *@
+    @if (NoSwipe)
+    {
+        <div class="bit-npn-swp">@content</div>
+    }
+    else
+    {
+        <BitSwipeTrap Class="bit-npn-swp"
+                      Style="width:100%; height:100%"
+                      Threshold="5"
+                      Throttle="10"
+                      OnEnd="HandleOnSwipeEnd"
+                      OnMove="HandleOnSwipeMove"
+                      OnTrigger="HandleOnSwipeTrigger"
+                      OrientationLock="BitSwipeOrientation.Horizontal">
+            @content
+        </BitSwipeTrap>
+    }
 </div>
