@@ -25,22 +25,39 @@ public partial class WebAiChatbotAttachmentTests : AppTestBase
         await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(TestContext.CancellationToken);
 
         // Unfiltered: the products belong to the deployment's store tenant, and this host carries no tenant of its own.
-        var product = await dbContext.Products.IgnoreQueryFilters()
+        var products = await dbContext.Products.IgnoreQueryFilters()
             .Where(product => product.HasPrimaryImage)
+            .OrderBy(product => product.ShortId)
             .Select(product => new { product.Id, product.Version, Name = product.Name!, Manufacturer = product.Category!.Name })
-            .FirstOrDefaultAsync(TestContext.CancellationToken);
+            .ToArrayAsync(TestContext.CancellationToken);
 
-        Assert.IsNotNull(product, "No product in the deployment's database has a primary image, so there is no photo of a real car to show the assistant.");
+        Assert.IsNotEmpty(products, "No product in the deployment's database has a primary image, so there is no photo of a real car to show the assistant.");
 
-        // The same url ProductDto.GetPrimaryMediumImageUrl builds for the app's own pages, so it's the picture a
-        // visitor sees.
-        var imageUrl = new Uri(new Uri(DeployedApps.Sales), $"/api/v1/Attachment/GetAttachment/{product.Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={product.Version}");
-
-        var imageFile = Path.Combine(Path.GetTempPath(), $"{product.Id}.webp");
+        // HasPrimaryImage outlives a blob the storage no longer has, so the photo is the first one that still downloads.
+        var product = products[0];
+        byte[]? image = null;
         using (var httpClient = new HttpClient())
         {
-            await File.WriteAllBytesAsync(imageFile, await httpClient.GetByteArrayAsync(imageUrl, TestContext.CancellationToken), TestContext.CancellationToken);
+            foreach (var candidate in products)
+            {
+                // The same url ProductDto.GetPrimaryMediumImageUrl builds for the app's own pages, so it's the picture a
+                // visitor sees.
+                var imageUrl = new Uri(new Uri(DeployedApps.Sales), $"/api/v1/Attachment/GetAttachment/{candidate.Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={candidate.Version}");
+
+                using var response = await httpClient.GetAsync(imageUrl, TestContext.CancellationToken);
+                if (response.IsSuccessStatusCode is false)
+                    continue;
+
+                product = candidate;
+                image = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
+                break;
+            }
         }
+
+        Assert.IsNotNull(image, $"None of the {products.Length} products flagged with a primary image has one the deployment still serves.");
+
+        var imageFile = Path.Combine(Path.GetTempPath(), $"{product.Id}.webp");
+        await File.WriteAllBytesAsync(imageFile, image, TestContext.CancellationToken);
 
         var page = await OpenApp(App.Sales);
 
