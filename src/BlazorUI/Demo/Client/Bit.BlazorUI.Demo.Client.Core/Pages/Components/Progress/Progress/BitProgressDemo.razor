@@ -302,7 +302,7 @@
                 <b>GapDegree</b> cuts a gap out of the bottom of the ring, which turns it from a loop into a gauge -
                 the shape for a reading taken against a scale rather than an operation running to an end. It is a
                 number of degrees between 0 (a closed ring, the default) and 295, so 180 leaves a half circle and 90
-                leaves the three-quarter dial. <b>GapPosition</b> moves the opening to the <b>Top</b>, the
+                leaves the three-quarter dial. <b>GapPlacement</b> moves the opening to the <b>Top</b>, the
                 <b>Start</b> or the <b>End</b> instead. It pairs naturally with <b>Value</b>, <b>Min</b> and
                 <b>Max</b>, which is what lets the ring read a real quantity, and with <b>Rounded</b> for a softer
                 arc. A gauge that reads a measurement rather than progress - the third one here - should also be a
@@ -337,11 +337,11 @@
             <br />
             <div class="circular-box">
                 <BitProgress Circular Rounded AriaLabel="Gauge with the gap at the top" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
-                             GapPosition="BitProgressGapPosition.Top" />
+                             GapPlacement="BitPlacement.Top" />
                 <BitProgress Circular Rounded AriaLabel="Gauge with the gap at the start" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
-                             GapPosition="BitProgressGapPosition.Start" />
+                             GapPlacement="BitPlacement.Start" />
                 <BitProgress Circular Rounded AriaLabel="Gauge with the gap at the end" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
-                             GapPosition="BitProgressGapPosition.End" />
+                             GapPlacement="BitPlacement.End" />
             </div>
         </DemoExample>
 

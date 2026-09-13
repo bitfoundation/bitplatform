@@ -1249,7 +1249,7 @@ public class BitCalloutTests : BunitTestContext
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
-            parameters.Add(p => p.Side, BitCalloutSide.Top);
+            parameters.Add(p => p.Placement, BitPlacement.Top);
             parameters.Add(p => p.NoFlip, noFlip);
             parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
         });
@@ -1439,16 +1439,16 @@ public class BitCalloutTests : BunitTestContext
 
     [DataTestMethod]
     [DataRow(BitResponsiveMode.Panel, null, "bit-clo-end")]
-    [DataRow(BitResponsiveMode.Panel, BitPanelPosition.Start, "bit-clo-sta")]
-    [DataRow(BitResponsiveMode.Panel, BitPanelPosition.End, "bit-clo-end")]
+    [DataRow(BitResponsiveMode.Panel, BitPlacement.Start, "bit-clo-sta")]
+    [DataRow(BitResponsiveMode.Panel, BitPlacement.End, "bit-clo-end")]
     [DataRow(BitResponsiveMode.Top, null, "bit-clo-top")]
     [DataRow(BitResponsiveMode.Bottom, null, "bit-clo-btm")]
-    public void BitCalloutShouldRenderTheResponsivePanelClasses(BitResponsiveMode mode, BitPanelPosition? position, string expectedClass)
+    public void BitCalloutShouldRenderTheResponsivePanelClasses(BitResponsiveMode mode, BitPlacement? position, string expectedClass)
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
             parameters.Add(p => p.ResponsiveMode, mode);
-            parameters.Add(p => p.PanelPosition, position);
+            parameters.Add(p => p.PanelPlacement, position);
         });
 
         var callout = component.Find(".bit-clo-cal");
@@ -1692,15 +1692,15 @@ public class BitCalloutTests : BunitTestContext
 
     [DataTestMethod]
     [DataRow(null, "")]
-    [DataRow(BitCalloutSide.Top, "top")]
-    [DataRow(BitCalloutSide.Bottom, "bottom")]
-    [DataRow(BitCalloutSide.Start, "start")]
-    [DataRow(BitCalloutSide.End, "end")]
-    public void BitCalloutShouldPassThePreferredSideToThePositioning(BitCalloutSide? side, string expected)
+    [DataRow(BitPlacement.Top, "top")]
+    [DataRow(BitPlacement.Bottom, "bottom")]
+    [DataRow(BitPlacement.Start, "start")]
+    [DataRow(BitPlacement.End, "end")]
+    public void BitCalloutShouldPassThePreferredSideToThePositioning(BitPlacement? side, string expected)
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
-            parameters.Add(p => p.Side, side);
+            parameters.Add(p => p.Placement, side);
             parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
         });
 
@@ -1714,10 +1714,16 @@ public class BitCalloutTests : BunitTestContext
 
     [DataTestMethod]
     [DataRow(null, "")]
-    [DataRow(BitCalloutAlignment.Start, "")]
-    [DataRow(BitCalloutAlignment.Center, "center")]
-    [DataRow(BitCalloutAlignment.End, "end")]
-    public void BitCalloutShouldPassTheAlignmentToThePositioning(BitCalloutAlignment? alignment, string expected)
+    [DataRow(BitPlacement.Start, "")]
+    [DataRow(BitPlacement.Center, "center")]
+    [DataRow(BitPlacement.End, "end")]
+    [DataRow(BitPlacement.Left, "left")]
+    [DataRow(BitPlacement.Right, "right")]
+    [DataRow(BitPlacement.Top, "top")]
+    [DataRow(BitPlacement.Bottom, "bottom")]
+    [DataRow(BitPlacement.TopAndBottom, "")]
+    [DataRow(BitPlacement.StartAndEnd, "")]
+    public void BitCalloutShouldPassTheAlignmentToThePositioning(BitPlacement? alignment, string expected)
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -2127,7 +2133,7 @@ public class BitCalloutTests : BunitTestContext
         Assert.AreEqual(component.Find(".bit-clo-cal").Id, setup[^1].Arguments[0]);
         // A sheet is swiped away along the axis it slid in on, and the lock is what takes that axis from
         // the page underneath it.
-        Assert.AreEqual(BitPanelPosition.Bottom, setup[^1].Arguments[2]);
+        Assert.AreEqual("bottom", setup[^1].Arguments[2]);
         Assert.AreEqual(BitSwipeOrientation.Vertical, setup[^1].Arguments[4]);
     }
 
@@ -2153,11 +2159,11 @@ public class BitCalloutTests : BunitTestContext
 
         // Every input of that geometry is a parameter that can change at runtime - the responsive mode
         // itself can be bound to a media query - so the gestures follow it rather than the first render.
-        component.Render(parameters => parameters.Add(p => p.PanelPosition, BitPanelPosition.Start));
+        component.Render(parameters => parameters.Add(p => p.PanelPlacement, BitPlacement.Start));
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.dispose"].Count);
         Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count);
-        Assert.AreEqual(BitPanelPosition.Start, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[2]);
+        Assert.AreEqual("start", Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[2]);
     }
 
     [DataTestMethod]

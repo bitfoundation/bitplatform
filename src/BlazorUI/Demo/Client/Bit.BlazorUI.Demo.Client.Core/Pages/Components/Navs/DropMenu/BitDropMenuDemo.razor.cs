@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
 
 public partial class BitDropMenuDemo
 {
@@ -241,12 +241,12 @@ public partial class BitDropMenuDemo
         },
         new()
         {
-            Name = "PanelPosition",
-            Type = "BitPanelPosition?",
+            Name = "PanelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The position of the responsive panel to show on the screen.",
             LinkType = LinkType.Link,
-            Href = "#panel-position-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -541,19 +541,7 @@ public partial class BitDropMenuDemo
                 },
             ]
         },
-        new()
-        {
-            Id = "panel-position-enum",
-            Name = "BitPanelPosition",
-            Description = "Determines the edge the responsive panel slides in from.",
-            Items =
-            [
-                new() { Name = "Start", Description = "The panel is positioned at the start edge (left in LTR).", Value = "0" },
-                new() { Name = "End", Description = "The panel is positioned at the end edge (right in LTR).", Value = "1" },
-                new() { Name = "Top", Description = "The panel is positioned at the top edge.", Value = "2" },
-                new() { Name = "Bottom", Description = "The panel is positioned at the bottom edge.", Value = "3" },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",

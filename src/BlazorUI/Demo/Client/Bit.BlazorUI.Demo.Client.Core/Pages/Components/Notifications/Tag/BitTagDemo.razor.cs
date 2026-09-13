@@ -264,9 +264,9 @@ public partial class BitTagDemo
         new()
         {
             Name = "Shape",
-            Type = "BitTagShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the tag.",
+            Description = "The corner shape of the tag. Only Rounded, Pill and Square are honoured: a tag takes its box from its own content, so Circle has no proportions to impose and falls back to the default.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -650,33 +650,7 @@ public partial class BitTagDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitTagShape",
-            Description = "Determines the corner shape of the BitTag.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Rounded",
-                    Description="Takes the chip corner of the current theme, which is a pill in Cupertino and a small radius in Fluent and Material.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Circular",
-                    Description="Rounds the corner fully, so the tag is always a pill whatever the theme says.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Square",
-                    Description="Drops the corner altogether, so the tag is a rectangle.",
-                    Value="2",
-                }
-            ]
-        },
+        SharedSubEnums.BitShape,
         new()
         {
             Id = "size-enum",
@@ -937,9 +911,9 @@ public partial class BitTagDemo
 <BitTag Text=""Text"" Variant=""BitVariant.Text"" IsEnabled=""false"" />";
 
     private readonly string example3RazorCode = @"
-<BitTag Text=""Rounded"" Shape=""BitTagShape.Rounded"" />
-<BitTag Text=""Circular"" Shape=""BitTagShape.Circular"" />
-<BitTag Text=""Square"" Shape=""BitTagShape.Square"" />";
+<BitTag Text=""Rounded"" Shape=""BitShape.Rounded"" />
+<BitTag Text=""Circular"" Shape=""BitShape.Pill"" />
+<BitTag Text=""Square"" Shape=""BitShape.Square"" />";
 
     private readonly string example4RazorCode = @"
 <BitTag Text=""Calendar"" IconName=""@BitIconName.Calendar"" />

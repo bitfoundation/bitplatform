@@ -155,13 +155,13 @@ public partial class _BitTimelineOptionDemo
 </BitTimeline>";
 
     private readonly string example10RazorCode = @"
-<BitTimeline TItem=""BitTimelineOption"" LineVariant=""BitTimelineLineVariant.Dashed"">
+<BitTimeline TItem=""BitTimelineOption"" LineStyle=""BitLineStyle.Dashed"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
     <BitTimelineOption PrimaryText=""Option 3"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" LineVariant=""BitTimelineLineVariant.Dotted"">
+<BitTimeline TItem=""BitTimelineOption"" LineStyle=""BitLineStyle.Dotted"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
     <BitTimelineOption PrimaryText=""Option 3"" />
@@ -169,11 +169,11 @@ public partial class _BitTimelineOptionDemo
 
 <BitTimeline TItem=""BitTimelineOption"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""Ordered"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" />
-    <BitTimelineOption PrimaryText=""Shipped"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" LineVariant=""BitTimelineLineVariant.Dashed"" />
-    <BitTimelineOption PrimaryText=""Delivered"" Variant=""BitVariant.Outline"" LineVariant=""BitTimelineLineVariant.Dashed"" />
+    <BitTimelineOption PrimaryText=""Shipped"" IconName=""@BitIconName.Accept"" Color=""BitColor.Success"" LineStyle=""BitLineStyle.Dashed"" />
+    <BitTimelineOption PrimaryText=""Delivered"" Variant=""BitVariant.Outline"" LineStyle=""BitLineStyle.Dashed"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" Horizontal LineVariant=""BitTimelineLineVariant.Dashed"">
+<BitTimeline TItem=""BitTimelineOption"" Horizontal LineStyle=""BitLineStyle.Dashed"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
     <BitTimelineOption PrimaryText=""Option 3"" />

@@ -60,7 +60,7 @@ public class BitTimelineItem
     /// <summary>
     /// The way the connecting line of the timeline item is painted, overriding the line variant of the timeline.
     /// </summary>
-    public BitTimelineLineVariant? LineVariant { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// Click event handler of the timeline item.

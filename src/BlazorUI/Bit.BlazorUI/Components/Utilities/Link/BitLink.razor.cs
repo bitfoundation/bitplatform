@@ -163,15 +163,17 @@ public partial class BitLink : BitComponentBase
     /// Gets or sets the position of the icon relative to the link content.
     /// </summary>
     /// <remarks>
-    /// The icon goes in front of the text by default, the way it does everywhere else in the library.
-    /// <see cref="BitIconPosition.End"/> puts it after the text instead, which is where the two glyphs a link
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
+    /// other placement leaves the icon where Start would put it. The icon goes in front of the text by
+    /// default, the way it does everywhere else in the library.
+    /// <see cref="BitPlacement.End"/> puts it after the text instead, which is where the two glyphs a link
     /// carries most often - the arrow of a link opening a new tab and the tray of a download - belong.
     /// <br />
     /// The icon is drawn as decoration and hidden from assistive technologies, so whatever it says has to be
     /// said by the link text or by an <see cref="BitComponentBase.AriaLabel"/> as well.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Replaces the text a new-tab link is announced with, for translating it or for saying it another way.

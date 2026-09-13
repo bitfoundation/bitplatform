@@ -65,7 +65,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     // Dynamic ScrollToIndex precision: re-align once the target region is measured.
     private int _pendingScrollIndex = -1;
-    private BitVirtualizeScrollAlignment _pendingScrollAlignment;
+    private BitScrollAlignment _pendingScrollAlignment = BitScrollAlignment.Nearest;
 
     private DotNetObjectReference<BitVirtualize<TItem>>? _dotnetObj;
 
@@ -246,10 +246,10 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// <param name="index">The zero-based index of the target item.</param>
     /// <param name="alignment">Where the item should be positioned within the viewport.</param>
     /// <param name="smooth">Whether to animate the scroll.</param>
-    public Task ScrollToIndexAsync(int index, BitVirtualizeScrollAlignment alignment = BitVirtualizeScrollAlignment.Start, bool smooth = false)
+    public Task ScrollToIndexAsync(int index, BitScrollAlignment alignment = BitScrollAlignment.Start, bool smooth = false)
         => ScrollToIndexCoreAsync(index, alignment, smooth, markPending: Dynamic);
 
-    private async Task ScrollToIndexCoreAsync(int index, BitVirtualizeScrollAlignment alignment, bool smooth, bool markPending)
+    private async Task ScrollToIndexCoreAsync(int index, BitScrollAlignment alignment, bool smooth, bool markPending)
     {
         if (_initialized is false || _itemCount == 0) return;
 
@@ -258,9 +258,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         var size = GetItemSize(index);
         var target = alignment switch
         {
-            BitVirtualizeScrollAlignment.Start => offset,
-            BitVirtualizeScrollAlignment.Center => offset - (ViewportVirtual - size) / 2d,
-            BitVirtualizeScrollAlignment.End => offset - (ViewportVirtual - size),
+            BitScrollAlignment.Start => offset,
+            BitScrollAlignment.Center => offset - (ViewportVirtual - size) / 2d,
+            BitScrollAlignment.End => offset - (ViewportVirtual - size),
             _ => ResolveAutoAlignment(offset, size)
         };
 

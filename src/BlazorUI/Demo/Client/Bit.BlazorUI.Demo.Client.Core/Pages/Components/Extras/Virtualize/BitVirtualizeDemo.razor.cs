@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Virtualize;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Virtualize;
 
 public partial class BitVirtualizeDemo
 {
@@ -169,7 +169,7 @@ public partial class BitVirtualizeDemo
          new()
          {
             Name = "ScrollToIndexAsync",
-            Type = "Func<int, BitVirtualizeScrollAlignment, bool, Task>",
+            Type = "Func<int, BitScrollAlignment, bool, Task>",
             DefaultValue = "",
             Description = "Scrolls the viewport so that the item at the provided index becomes visible.",
             LinkType = LinkType.Link,
@@ -283,34 +283,34 @@ public partial class BitVirtualizeDemo
         new()
         {
             Id = "scroll-alignment-enum",
-            Name = "BitVirtualizeScrollAlignment",
+            Name = "BitScrollAlignment",
             Description = "Determines where a target item is positioned within the viewport when scrolling to it.",
             Items =
             [
                 new()
                 {
-                    Name = "Auto",
-                    Value = "0",
-                    Description = "Scroll the minimum amount required to bring the item fully into view.",
-                },
-                new()
-                {
                     Name = "Start",
-                    Value = "1",
-                    Description = "Align the item to the start (top/left) of the viewport.",
+                    Value = "0",
+                    Description = "The element is brought to the start of the pane: its top edge to the top of the pane, and its leading edge to the leading edge of the pane."
                 },
                 new()
                 {
                     Name = "Center",
-                    Value = "2",
-                    Description = "Center the item within the viewport.",
+                    Value = "1",
+                    Description = "The element is centered in the pane along both axes."
                 },
                 new()
                 {
                     Name = "End",
-                    Value = "3",
-                    Description = "Align the item to the end (bottom/right) of the viewport.",
+                    Value = "2",
+                    Description = "The element is brought to the end of the pane: its bottom edge to the bottom of the pane, and its trailing edge to the trailing edge of the pane."
                 },
+                new()
+                {
+                    Name = "Nearest",
+                    Value = "3",
+                    Description = "The pane moves as little as it can: an element that is already fully in view is not moved to at all, and one that is not is brought to whichever edge it is nearest."
+                }
             ]
         },
     ];
@@ -325,7 +325,7 @@ public partial class BitVirtualizeDemo
 
     private async Task ScrollToBasicIndex()
     {
-        await basicRef.ScrollToIndexAsync(basicTargetIndex, BitVirtualizeScrollAlignment.Start, smooth: true);
+        await basicRef.ScrollToIndexAsync(basicTargetIndex, BitScrollAlignment.Start, smooth: true);
     }
 
     private void OnBasicRangeChanged((int Start, int End) range)
@@ -495,7 +495,7 @@ private int basicVisibleEnd;
 
 private async Task ScrollToBasicIndex()
 {
-    await basicRef.ScrollToIndexAsync(basicTargetIndex, BitVirtualizeScrollAlignment.Start, smooth: true);
+    await basicRef.ScrollToIndexAsync(basicTargetIndex, BitScrollAlignment.Start, smooth: true);
 }
 
 private void OnBasicRangeChanged((int Start, int End) range)

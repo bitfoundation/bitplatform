@@ -429,30 +429,7 @@ public partial class BitModalDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "position-enum",
-            Name = "BitPosition",
-            Description = "Where the Modal sits inside the area it covers. The Start and End members are the direction-aware counterparts of Left and Right.",
-            Items =
-            [
-                new() { Name = "TopLeft", Value = "0" },
-                new() { Name = "TopCenter", Value = "1" },
-                new() { Name = "TopRight", Value = "2" },
-                new() { Name = "TopStart", Value = "3" },
-                new() { Name = "TopEnd", Value = "4" },
-                new() { Name = "CenterLeft", Value = "5" },
-                new() { Name = "Center", Value = "6" },
-                new() { Name = "CenterRight", Value = "7" },
-                new() { Name = "CenterStart", Value = "8" },
-                new() { Name = "CenterEnd", Value = "9" },
-                new() { Name = "BottomLeft", Value = "10" },
-                new() { Name = "BottomCenter", Value = "11" },
-                new() { Name = "BottomRight", Value = "12" },
-                new() { Name = "BottomStart", Value = "13" },
-                new() { Name = "BottomEnd", Value = "14" }
-            ]
-        }
+        SharedSubEnums.BitPosition
     ];
 
 

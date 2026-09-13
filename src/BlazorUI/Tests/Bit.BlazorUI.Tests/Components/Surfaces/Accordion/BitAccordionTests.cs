@@ -527,15 +527,15 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitIconPosition.Start, true),
-        DataRow(BitIconPosition.End, false),
+        DataRow(BitPlacement.Start, true),
+        DataRow(BitPlacement.End, false),
         DataRow(null, false)
     ]
-    public void BitAccordionShouldRenderTheExpanderIconPositionClass(BitIconPosition? position, bool expected)
+    public void BitAccordionShouldRenderTheExpanderIconPositionClass(BitPlacement? position, bool expected)
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.ExpanderIconPosition, position);
+            parameters.Add(p => p.ExpanderIconPlacement, position);
         });
 
         Assert.AreEqual(expected, com.Find(".bit-acd").ClassList.Contains("bit-acd-sei"));

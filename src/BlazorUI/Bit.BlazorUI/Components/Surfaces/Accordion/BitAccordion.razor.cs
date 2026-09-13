@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The Accordion component allows the user to show and hide sections of related content on a page.
@@ -103,10 +103,15 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Gets or sets the side of the header the expander icon sits on.
     /// <br />
-    /// The default value is <see cref="BitIconPosition.End"/>.
+    /// The default value is <see cref="BitPlacement.End"/>.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon at the end, where an unset one puts it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? ExpanderIconPosition { get; set; }
+    public BitPlacement? ExpanderIconPlacement { get; set; }
 
     /// <summary>
     /// The custom content to render in place of the expander icon, leaving the rest of the header - the
@@ -389,7 +394,7 @@ public partial class BitAccordion : BitComponentBase
 
         ClassBuilder.Register(() => ReadOnly ? "bit-acd-rdo" : string.Empty);
 
-        ClassBuilder.Register(() => ExpanderIconPosition is BitIconPosition.Start ? "bit-acd-sei" : string.Empty);
+        ClassBuilder.Register(() => ExpanderIconPlacement is BitPlacement.Start ? "bit-acd-sei" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {

@@ -72,8 +72,9 @@ namespace BitBlazorUI {
             // 'end'), or '' to leave the placement entirely to the drop direction, which is what every
             // component that does not offer the choice passes.
             preferredSide: string = '',
-            // How the callout is lined up with the component across the side it is placed on ('center' or
-            // 'end'), or '' for the start-edge alignment every component without the choice gets.
+            // How the callout is lined up with the component across the side it is placed on ('center', 'end',
+            // or a physical 'left', 'right', 'top' or 'bottom'), or '' for the start-edge alignment every
+            // component without the choice gets.
             alignment: string = '',
             // Keeps the callout on the preferred side even when it does not fit there, instead of flipping
             // it to the opposite one. It has nothing to hold in place without a preferred side.
@@ -320,13 +321,20 @@ namespace BitBlazorUI {
 
             // How the callout lines up with the component across the side it is placed on. 'start' - the
             // default every component that does not offer the choice gets - keeps the edge the component
-            // starts at, which is its right edge in a right-to-left layout.
+            // starts at, which is its right edge in a right-to-left layout on the horizontal axis; the
+            // vertical one reads top to bottom in both. A physical name only means something on its own
+            // axis - 'left' and 'right' above or below the component, 'top' and 'bottom' beside it - and
+            // falls back to the start off it, since which axis that is is only known once a side is picked.
             // The offset runs inwards from whichever edge the alignment picked, so the same value moves a
             // start-aligned callout and an end-aligned one towards each other, and a centered callout has
             // no edge for it to run from.
-            const alignAcross = (componentStart: number, componentSize: number, calloutSize: number, mirrored: boolean) => {
+            const alignAcross = (componentStart: number, componentSize: number, calloutSize: number, horizontal: boolean) => {
                 if (alignment === 'center') return componentStart + (componentSize - calloutSize) / 2;
-                const atEnd = alignment === 'end' ? !mirrored : mirrored;
+                const mirrored = horizontal && isRtl;
+                const physicalEnd = horizontal
+                    ? (alignment === 'right' ? true : alignment === 'left' ? false : null)
+                    : (alignment === 'bottom' ? true : alignment === 'top' ? false : null);
+                const atEnd = physicalEnd ?? (alignment === 'end' ? !mirrored : mirrored);
                 return atEnd
                     ? (componentStart + componentSize - calloutSize - alignmentOffset)
                     : (componentStart + alignmentOffset);
@@ -334,7 +342,7 @@ namespace BitBlazorUI {
 
             // Horizontal placement is computed in getBoundingClientRect space then converted to a
             // style.left value via the measured offset.
-            let left = alignAcross(componentX, componentWidth, calloutWidth, isRtl);
+            let left = alignAcross(componentX, componentWidth, calloutWidth, true);
             const right = left + calloutWidth;
             const correctedLeft = visibleRight - calloutWidth - 3;
             if (maxWindowWidth) {
@@ -476,7 +484,7 @@ namespace BitBlazorUI {
             scrollOffset: number,
             headerHeight: number,
             footerHeight: number,
-            alignAcross: (componentStart: number, componentSize: number, calloutSize: number, mirrored: boolean) => number,
+            alignAcross: (componentStart: number, componentSize: number, calloutSize: number, horizontal: boolean) => number,
             noFlip: boolean,
         ): BitCalloutPlacement | null {
             // The logical sides are resolved against the direction the callout is laid out in; the

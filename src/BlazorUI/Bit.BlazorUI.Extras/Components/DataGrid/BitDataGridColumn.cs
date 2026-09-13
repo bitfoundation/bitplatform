@@ -91,7 +91,20 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     [Parameter] public bool Visible { get; set; } = true;
 
-    [Parameter] public BitDataGridColumnAlign Align { get; set; } = BitDataGridColumnAlign.Left;
+    /// <summary>
+    /// How the content of the column's cells is aligned across their width (default is the leading edge).
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitTextAlign.Start"/>, <see cref="BitTextAlign.Center"/>,
+    /// <see cref="BitTextAlign.End"/>, <see cref="BitTextAlign.Left"/> and <see cref="BitTextAlign.Right"/>
+    /// mean anything here; a cell is a flex box rather than a run of prose, so the justification and cascade
+    /// keywords have nothing to do and leave the column aligned to its leading edge.
+    /// <br />
+    /// Start and End follow the reading direction, so a numeric column set to End sits against the trailing
+    /// edge of an LTR and of an RTL grid alike. Left and Right name a side of the screen and stay there in
+    /// both.
+    /// </remarks>
+    [Parameter] public BitTextAlign Align { get; set; } = BitTextAlign.Start;
 
     /// <summary>A .NET format string applied to the value (e.g. "C2", "yyyy-MM-dd").</summary>
     [Parameter] public string? Format { get; set; }

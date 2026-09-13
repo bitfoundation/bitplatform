@@ -163,19 +163,19 @@ private List<BitButtonGroupItem> basicItems =
 
     private readonly string example10RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 Items=""formatItems""
                 @bind-ToggleKeys=""formatKeys"" />
 <div>Toggle keys: <b>@string.Join("", "", formatKeys ?? [])</b></div>
 
 <BitButtonGroup Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 MaxToggles=""2""
                 Items=""maxToggleItems""
                 DefaultToggleKeys=""@maxDefaultKeys"" />
 
 <BitButtonGroup Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 FixedToggle
                 Items=""fixedToggleItems""
                 DefaultToggleKeys=""@fixedDefaultKeys"" />";
@@ -264,13 +264,13 @@ private List<BitButtonGroupItem> overflowItems =
     private readonly string example15RazorCode = @"
 <BitButtonGroup ShowSelectionIndicator
                 Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 Items=""indicatorSingleItems""
                 DefaultToggleKey=""list"" />
 
 <BitButtonGroup ShowSelectionIndicator
                 Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 Items=""indicatorMultipleItems""
                 DefaultToggleKeys=""@indicatorDefaultKeys"" />";
     private readonly string example15CsharpCode = @"
@@ -420,14 +420,14 @@ private List<BitButtonGroupItem> toggleTitleItems =
     private readonly string example20RazorCode = @"
 <BitButtonGroup AriaLabel=""Text alignment""
                 Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 Items=""a11yItems""
                 DefaultToggleKey=""start"" />
 
 <BitButtonGroup AriaLabel=""Text alignment (selection follows focus)""
                 SelectOnFocus
                 Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 Items=""selectOnFocusItems""
                 DefaultToggleKey=""start"" />
 

@@ -219,23 +219,23 @@ public class BitNumberFieldTests : BunitTestContext
 
     [TestMethod,
          DataRow(null),
-         DataRow(BitLabelPosition.Start),
-         DataRow(BitLabelPosition.End),
-         DataRow(BitLabelPosition.Top),
-         DataRow(BitLabelPosition.Bottom)
+         DataRow(BitPlacement.Start),
+         DataRow(BitPlacement.End),
+         DataRow(BitPlacement.Top),
+         DataRow(BitPlacement.Bottom)
     ]
-    public void BitNumberFieldShouldHaveLabelPositionClassName(BitLabelPosition? labelPosition)
+    public void BitNumberFieldShouldHaveLabelPositionClassName(BitPlacement? labelPosition)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
         });
 
         var lblClass = labelPosition switch
         {
-            BitLabelPosition.Bottom => "bit-nfl-lbt",
-            BitLabelPosition.Start => "bit-nfl-lst",
-            BitLabelPosition.End => "bit-nfl-led",
+            BitPlacement.Bottom => "bit-nfl-lbt",
+            BitPlacement.Start => "bit-nfl-lst",
+            BitPlacement.End => "bit-nfl-led",
             _ => "bit-nfl-ltp"
         };
 

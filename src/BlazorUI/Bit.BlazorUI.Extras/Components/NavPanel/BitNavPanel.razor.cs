@@ -377,8 +377,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     {
         if (IsOpen is false) return;
 
-        if ((Dir != BitDir.Rtl && args.Direction == BitSwipeDirection.Left) ||
-            (Dir == BitDir.Rtl && args.Direction == BitSwipeDirection.Right))
+        if ((Dir != BitDir.Rtl && args.Direction == BitPlacement.Left) ||
+            (Dir == BitDir.Rtl && args.Direction == BitPlacement.Right))
         {
             diffXPanel = 0;
             await ClosePanel();

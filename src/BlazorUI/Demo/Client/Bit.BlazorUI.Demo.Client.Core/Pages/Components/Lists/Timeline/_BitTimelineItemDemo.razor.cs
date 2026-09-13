@@ -44,8 +44,8 @@ public partial class _BitTimelineItemDemo
     private List<BitTimelineItem> lineVariantItems =
     [
         new() { PrimaryText = "Ordered", IconName = BitIconName.Accept, Color = BitColor.Success },
-        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineVariant = BitTimelineLineVariant.Dashed },
-        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineVariant = BitTimelineLineVariant.Dashed }
+        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineStyle = BitLineStyle.Dashed },
+        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed }
     ];
 
     private List<BitTimelineItem> customizedItems =

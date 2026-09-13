@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.SnackBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.SnackBar;
 
 public partial class BitSnackBarDemo
 {
@@ -216,11 +216,11 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "Position",
-            Type = "BitSnackBarPosition?",
+            Type = "BitPosition?",
             DefaultValue = "null",
             Description = "The position of the snack bars to show (default is bottom right).",
             LinkType = LinkType.Link,
-            Href = "#snackbar-position-enum"
+            Href = "#position-enum"
         },
         new()
         {
@@ -318,51 +318,7 @@ public partial class BitSnackBarDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "snackbar-position-enum",
-            Name = "BitSnackBarPosition",
-            Description = "Determines the corner or edge of the screen the snack bars are stacked at. The start/end naming follows the text direction.",
-            Items =
-            [
-                new()
-                {
-                    Name = "TopStart",
-                    Description = "Top of the screen, at the inline start.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "TopCenter",
-                    Description = "Top of the screen, centered.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "TopEnd",
-                    Description = "Top of the screen, at the inline end.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "BottomStart",
-                    Description = "Bottom of the screen, at the inline start.",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "BottomCenter",
-                    Description = "Bottom of the screen, centered.",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "BottomEnd",
-                    Description = "Bottom of the screen, at the inline end (the default).",
-                    Value = "5",
-                },
-            ]
-        },
+        SharedSubEnums.BitPosition,
         new()
         {
             Id = "snackbar-overflow-behavior-enum",
@@ -1020,7 +976,7 @@ public partial class BitSnackBarDemo
 
     private string offset = "8px";
     private BitSnackBar positionRef = default!;
-    private BitSnackBarPosition position = BitSnackBarPosition.BottomEnd;
+    private BitPosition position = BitPosition.BottomEnd;
     private async Task OpenPositionSnackBar()
     {
         await positionRef.Info($"{position}", $"Pinned to the selected position, {offset} from the edges.");
@@ -1345,7 +1301,7 @@ public partial class BitSnackBarDemo
     private string basicSnackBarBody = "This is body";
     private string basicSnackBarTitle = "This is title";
     private BitColor basicSnackBarColor = BitColor.Info;
-    private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
+    private BitPosition basicSnackBarPosition = BitPosition.BottomEnd;
 
     private async Task OpenCustomizationSnackBar()
     {

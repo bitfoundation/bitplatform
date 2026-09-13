@@ -184,11 +184,11 @@ public partial class BitSwipeTrapDemo
                 new()
                 {
                     Name = "Direction",
-                    Type = "BitSwipeDirection",
+                    Type = "BitPlacement",
                     DefaultValue = "",
                     Description = "The swipe direction in which the action triggered.",
                     LinkType = LinkType.Link,
-                    Href = "#swipe-direction-enum"
+                    Href = "#placement-enum"
 
                 },
                 new()
@@ -272,39 +272,7 @@ public partial class BitSwipeTrapDemo
                 },
             ]
         },
-        new()
-        {
-            Id = "swipe-direction-enum",
-            Name = "BitSwipeDirection",
-            Description = "The direction in which the swipe trap triggers.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Right",
-                    Value = "0",
-                    Description = "Swipe to right direction."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "1",
-                    Description = "Swipe to left direction."
-                },
-                new()
-                {
-                    Name = "Top",
-                    Value = "2",
-                    Description = "Swipe to top direction."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "3",
-                    Description = "Swipe to bottom direction."
-                },
-            ]
-        }
+        SharedSubEnums.BitPlacement
     ];
 
 
@@ -437,7 +405,7 @@ public partial class BitSwipeTrapDemo
     }
     private void HandleOnTriggerPanel(BitSwipeTrapTriggerArgs args)
     {
-        if (args.Direction == BitSwipeDirection.Left)
+        if (args.Direction == BitPlacement.Left)
         {
             diffXPanel = 0;
             ClosePanel();
@@ -467,7 +435,7 @@ public partial class BitSwipeTrapDemo
     }
     private async Task HandleOnTriggerList(BitSwipeTrapTriggerArgs args, int index)
     {
-        if (args.Direction == BitSwipeDirection.Right)
+        if (args.Direction == BitPlacement.Right)
         {
             deletingIndex = index;
             listTcs = new();
@@ -543,9 +511,9 @@ public partial class BitSwipeTrapDemo
 
 
     private decimal? diffXPanelAdvanced;
-    private BitSwipeDirection? direction;
-    private BitSwipeDirection? panelOpen;
-    private void OpenPanelAdvanced(BitSwipeDirection swipeDirection)
+    private BitPlacement? direction;
+    private BitPlacement? panelOpen;
+    private void OpenPanelAdvanced(BitPlacement swipeDirection)
     {
         if (panelOpen == swipeDirection) return;
 
@@ -565,8 +533,8 @@ public partial class BitSwipeTrapDemo
         if (Math.Abs(args.DiffX) > 2 || Math.Abs(args.DiffY) > 2)
         {
             direction = Math.Abs(args.DiffX) >= Math.Abs(args.DiffY)
-            ? args.DiffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
-            : args.DiffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
+            ? args.DiffX > 0 ? BitPlacement.Right : BitPlacement.Left
+            : args.DiffY > 0 ? BitPlacement.Bottom : BitPlacement.Top;
         }
         else
         {
@@ -586,24 +554,24 @@ public partial class BitSwipeTrapDemo
     }
     private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
     {
-        if (args.Direction == BitSwipeDirection.Left)
+        if (args.Direction == BitPlacement.Left)
         {
-            if (panelOpen.HasValue is false || panelOpen == BitSwipeDirection.Right)
+            if (panelOpen.HasValue is false || panelOpen == BitPlacement.Right)
             {
-                OpenPanelAdvanced(BitSwipeDirection.Right);
+                OpenPanelAdvanced(BitPlacement.Right);
             }
-            else if (panelOpen == BitSwipeDirection.Left)
+            else if (panelOpen == BitPlacement.Left)
             {
                 ClosePanelAdvanced();
             }
         }
-        else if (args.Direction == BitSwipeDirection.Right)
+        else if (args.Direction == BitPlacement.Right)
         {
-            if (panelOpen.HasValue is false || panelOpen == BitSwipeDirection.Left)
+            if (panelOpen.HasValue is false || panelOpen == BitPlacement.Left)
             {
-                OpenPanelAdvanced(BitSwipeDirection.Left);
+                OpenPanelAdvanced(BitPlacement.Left);
             }
-            else if (panelOpen == BitSwipeDirection.Right)
+            else if (panelOpen == BitPlacement.Right)
             {
                 ClosePanelAdvanced();
             }
@@ -611,11 +579,11 @@ public partial class BitSwipeTrapDemo
     }
     private string GetLeftPanelAdvancedStyle()
     {
-        if (panelOpen == BitSwipeDirection.Left && direction != BitSwipeDirection.Left)
+        if (panelOpen == BitPlacement.Left && direction != BitPlacement.Left)
         {
             return "transform: translateX(0px)";
         }
-        else if((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || (panelOpen == BitSwipeDirection.Left && direction == BitSwipeDirection.Left))
+        else if((panelOpen.HasValue is false && direction == BitPlacement.Right) || (panelOpen == BitPlacement.Left && direction == BitPlacement.Left))
         {
             return diffXPanelAdvanced switch
             {
@@ -630,11 +598,11 @@ public partial class BitSwipeTrapDemo
     }
     private string GetRightPanelAdvancedStyle()
     {
-        if (panelOpen == BitSwipeDirection.Right && direction != BitSwipeDirection.Right)
+        if (panelOpen == BitPlacement.Right && direction != BitPlacement.Right)
         {
             return "transform: translateX(0px)";
         }
-        else if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) || (panelOpen == BitSwipeDirection.Right && direction == BitSwipeDirection.Right))
+        else if ((panelOpen.HasValue is false && direction == BitPlacement.Left) || (panelOpen == BitPlacement.Right && direction == BitPlacement.Right))
         {
             return diffXPanelAdvanced switch
             {

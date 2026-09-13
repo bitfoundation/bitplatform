@@ -473,28 +473,28 @@ public class BitStickyTests : BunitTestContext
 
     [TestMethod,
        DataRow(null),
-       DataRow(BitStickyPosition.Top),
-       DataRow(BitStickyPosition.Bottom),
-       DataRow(BitStickyPosition.TopAndBottom),
-       DataRow(BitStickyPosition.Start),
-       DataRow(BitStickyPosition.End),
-       DataRow(BitStickyPosition.StartAndEnd)
+       DataRow(BitPlacement.Top),
+       DataRow(BitPlacement.Bottom),
+       DataRow(BitPlacement.TopAndBottom),
+       DataRow(BitPlacement.Start),
+       DataRow(BitPlacement.End),
+       DataRow(BitPlacement.StartAndEnd)
     ]
-    public void BitStickyShouldRespectPosition(BitStickyPosition? position)
+    public void BitStickyShouldRespectPosition(BitPlacement? position)
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
-            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Placement, position);
         });
 
         var cssClass = position switch
         {
-            BitStickyPosition.Top => " bit-stk-top",
-            BitStickyPosition.Bottom => " bit-stk-btm",
-            BitStickyPosition.TopAndBottom => " bit-stk-tab",
-            BitStickyPosition.Start => " bit-stk-srt",
-            BitStickyPosition.End => " bit-stk-end",
-            BitStickyPosition.StartAndEnd => " bit-stk-sae",
+            BitPlacement.Top => " bit-stk-top",
+            BitPlacement.Bottom => " bit-stk-btm",
+            BitPlacement.TopAndBottom => " bit-stk-tab",
+            BitPlacement.Start => " bit-stk-srt",
+            BitPlacement.End => " bit-stk-end",
+            BitPlacement.StartAndEnd => " bit-stk-sae",
             _ => " bit-stk-top"
         };
 
@@ -510,7 +510,7 @@ public class BitStickyTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.Position, BitStickyPosition.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
         });
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-srt"" id:ignore></div>");
@@ -521,7 +521,7 @@ public class BitStickyTests : BunitTestContext
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
-            parameters.Add(p => p.Position, BitStickyPosition.Top);
+            parameters.Add(p => p.Placement, BitPlacement.Top);
             parameters.Add(p => p.Top, "10px");
         });
 
@@ -609,7 +609,7 @@ public class BitStickyTests : BunitTestContext
         var component = RenderComponent<BitSticky>(parameters =>
         {
             parameters.Add(p => p.Element, "  header  ");
-            parameters.Add(p => p.Position, BitStickyPosition.Bottom);
+            parameters.Add(p => p.Placement, BitPlacement.Bottom);
             parameters.Add(p => p.ZIndex, 2);
             parameters.Add(p => p.AriaLabel, "pinned bar");
             parameters.Add(p => p.Dir, BitDir.Rtl);

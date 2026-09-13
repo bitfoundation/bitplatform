@@ -51,21 +51,21 @@ public partial class BitButtonDemo
 <BitButton IconName=""@BitIconName.Emoji"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Start</BitButton>
 <BitButton IconName=""@BitIconName.Emoji"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Start</BitButton>
 
-<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"" IconPosition=""BitIconPosition.End"">End</BitButton>
-<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"" IconPosition=""BitIconPosition.End"">End</BitButton>
-<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"" IconPosition=""BitIconPosition.End"">End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"" IconPlacement=""BitPlacement.End"">End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"" IconPlacement=""BitPlacement.End"">End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"" IconPlacement=""BitPlacement.End"">End</BitButton>
 
-<BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Fill"" IconPosition=""BitIconPosition.End"">End</BitButton>
-<BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"" IconPosition=""BitIconPosition.End"">End</BitButton>
-<BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"" IconPosition=""BitIconPosition.End"">End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Fill"" IconPlacement=""BitPlacement.End"">End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"" IconPlacement=""BitPlacement.End"">End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"" IconPlacement=""BitPlacement.End"">End</BitButton>
 
 <BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Fill"">Start</BitButton>
 <BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Outline"">Start</BitButton>
 <BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Text"">Start</BitButton>
 
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Fill"" IconPosition=""BitIconPosition.End"">End</BitButton>
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Outline"" IconPosition=""BitIconPosition.End"">End</BitButton>
-<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Text"" IconPosition=""BitIconPosition.End"">End</BitButton>";
+<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Fill"" IconPlacement=""BitPlacement.End"">End</BitButton>
+<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Outline"" IconPlacement=""BitPlacement.End"">End</BitButton>
+<BitButton IconUrl=""/images/bit-logo.svg"" SecondaryText=""IconUrl"" Variant=""BitVariant.Text"" IconPlacement=""BitPlacement.End"">End</BitButton>";
 
     private readonly string example7RazorCode = @"
 <BitButton IconOnly AriaLabel=""Add"" IconName=""@BitIconName.Add"" Variant=""BitVariant.Fill"" />
@@ -167,7 +167,7 @@ private Task AutoLoadingReclick(bool isLoading)
            LoadingLabel=""End...""
            Style=""min-width: 6.5rem;""
            Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.End"">
+           LoadingLabelPlacement=""BitPlacement.End"">
     End
 </BitButton>
 
@@ -175,7 +175,7 @@ private Task AutoLoadingReclick(bool isLoading)
            LoadingLabel=""Start...""
            Style=""min-width: 6.5rem;""
            Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Start"">
+           LoadingLabelPlacement=""BitPlacement.Start"">
     Start
 </BitButton>
 
@@ -183,7 +183,7 @@ private Task AutoLoadingReclick(bool isLoading)
            LoadingLabel=""Bottom...""
            Style=""min-width: 6.5rem;""
            Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Bottom"">
+           LoadingLabelPlacement=""BitPlacement.Bottom"">
     Bottom
 </BitButton>
 
@@ -191,7 +191,7 @@ private Task AutoLoadingReclick(bool isLoading)
            LoadingLabel=""Top...""
            Style=""min-width: 6.5rem;""
            Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Top"">
+           LoadingLabelPlacement=""BitPlacement.Top"">
     Top
 </BitButton>";
 

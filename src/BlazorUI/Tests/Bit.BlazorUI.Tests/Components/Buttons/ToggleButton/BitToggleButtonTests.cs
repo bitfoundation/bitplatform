@@ -497,21 +497,21 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitIconPosition.Start),
-        DataRow(BitIconPosition.End)
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.End)
     ]
-    public void BitToggleButtonIconPositionTest(BitIconPosition iconPosition)
+    public void BitToggleButtonIconPositionTest(BitPlacement iconPosition)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IconPosition, iconPosition);
+            parameters.Add(p => p.IconPlacement, iconPosition);
             parameters.Add(p => p.IconName, "Microphone");
             parameters.Add(p => p.Text, "Microphone");
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
 
-        Assert.AreEqual(iconPosition is BitIconPosition.End, bitToggleButton.ClassList.Contains("bit-tgb-eni"));
+        Assert.AreEqual(iconPosition is BitPlacement.End, bitToggleButton.ClassList.Contains("bit-tgb-eni"));
     }
 
     [TestMethod,

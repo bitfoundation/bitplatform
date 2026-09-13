@@ -422,7 +422,7 @@ private BitDatePicker? programmaticPicker;";
 
 <BitDatePicker Label=""HasBorder (false)"" HasBorder=""false"" />
 
-<BitDatePicker Label=""IconLocation (Left)"" IconLocation=""BitIconLocation.Left"" />
+<BitDatePicker Label=""IconPlacement (Start)"" IconPlacement=""BitPlacement.Start"" />
 
 <BitDatePicker Label=""IconName"" IconName=""@BitIconName.Calendar"" />";
 

@@ -301,21 +301,21 @@ private List<Operation> basicCustoms =
 
     private readonly string example10RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 Items=""formatCustoms""
                 NameSelectors=""multiNameSelectors""
                 @bind-ToggleKeys=""formatKeys"" />
 <div>Toggle keys: <b>@string.Join("", "", formatKeys ?? [])</b></div>
 
 <BitButtonGroup Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 MaxToggles=""2""
                 Items=""maxToggleCustoms""
                 NameSelectors=""multiNameSelectors""
                 DefaultToggleKeys=""@defaultKeys"" />
 
 <BitButtonGroup Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 FixedToggle
                 Items=""fixedToggleCustoms""
                 NameSelectors=""multiNameSelectors""
@@ -403,14 +403,14 @@ private List<Operation> overflowCustoms =
     private readonly string example15RazorCode = @"
 <BitButtonGroup ShowSelectionIndicator
                 Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 Items=""indicatorSingleCustoms""
                 NameSelectors=""multiNameSelectors""
                 DefaultToggleKey=""list"" />
 
 <BitButtonGroup ShowSelectionIndicator
                 Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 Items=""indicatorMultipleCustoms""
                 NameSelectors=""multiNameSelectors""
                 DefaultToggleKeys=""@indicatorDefaultKeys"" />";
@@ -619,7 +619,7 @@ private List<Operation> toggleTitleCustoms =
     private readonly string example20RazorCode = @"
 <BitButtonGroup AriaLabel=""Text alignment""
                 Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 Items=""a11yCustoms""
                 NameSelectors=""a11yNameSelectors""
                 DefaultToggleKey=""start"" />
@@ -627,7 +627,7 @@ private List<Operation> toggleTitleCustoms =
 <BitButtonGroup AriaLabel=""Text alignment (selection follows focus)""
                 SelectOnFocus
                 Variant=""BitVariant.Outline""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 Items=""selectOnFocusCustoms""
                 NameSelectors=""a11yNameSelectors""
                 DefaultToggleKey=""start"" />

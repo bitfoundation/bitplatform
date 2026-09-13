@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Declarative marker definition used by <see cref="BitMap{TMapProvider}"/>.
@@ -33,7 +33,7 @@ public sealed class BitMapMarker
     /// <para>
     /// <b>Provider support:</b> tooltips are currently rendered by the Leaflet provider only. Other providers
     /// (MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium) ignore <see cref="TooltipHtml"/>,
-    /// <see cref="TooltipText"/>, <see cref="TooltipPermanent"/>, and <see cref="TooltipDirection"/>.
+    /// <see cref="TooltipText"/>, <see cref="TooltipPermanent"/>, and <see cref="TooltipPlacement"/>.
     /// Use <see cref="Title"/> for a hover label, but note that its rendering varies by provider
     /// (see <see cref="Title"/> for details).
     /// </para>
@@ -58,8 +58,17 @@ public sealed class BitMapMarker
     /// <summary>When true, the tooltip stays visible (use sparingly). Leaflet only.</summary>
     public bool TooltipPermanent { get; init; }
 
-    /// <summary>Tooltip placement direction. Leaflet only.</summary>
-    public BitMapTooltipDirection TooltipDirection { get; init; } = BitMapTooltipDirection.Auto;
+    /// <summary>
+    /// Which side of the marker the tooltip is placed on, or <see langword="null"/> - the default - to leave
+    /// the provider to pick the best one. Leaflet only.
+    /// </summary>
+    /// <remarks>
+    /// Leaflet names its directions physically, so only <see cref="BitPlacement.Top"/>,
+    /// <see cref="BitPlacement.Bottom"/>, <see cref="BitPlacement.Left"/>, <see cref="BitPlacement.Right"/>
+    /// and <see cref="BitPlacement.Center"/> are passed through. The logical pair and the two combined
+    /// placements have no Leaflet equivalent and leave the provider to pick, exactly as leaving this unset does.
+    /// </remarks>
+    public BitPlacement? TooltipPlacement { get; init; }
 
     /// <summary>
     /// Hover label for the marker. Rendering varies by provider:

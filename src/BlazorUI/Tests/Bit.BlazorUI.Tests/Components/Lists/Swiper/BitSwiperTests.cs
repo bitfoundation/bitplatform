@@ -337,14 +337,14 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitSwiperSnap.Start, "bit-swp-sns"),
-        DataRow(BitSwiperSnap.Center, "bit-swp-snc"),
-        DataRow(BitSwiperSnap.End, "bit-swp-sne")]
-    public void BitSwiperShouldRespectSnap(BitSwiperSnap snap, string expectedClass)
+        DataRow(BitScrollSnapAlign.Start, "bit-swp-sns"),
+        DataRow(BitScrollSnapAlign.Center, "bit-swp-snc"),
+        DataRow(BitScrollSnapAlign.End, "bit-swp-sne")]
+    public void BitSwiperShouldRespectSnap(BitScrollSnapAlign snap, string expectedClass)
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>
         {
-            parameters.Add(p => p.Snap, snap);
+            parameters.Add(p => p.SnapAlign, snap);
         });
 
         var root = component.Find(".bit-swp");
@@ -1128,7 +1128,7 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.Vertical, true);
             parameters.Add(p => p.NoDrag, true);
             parameters.Add(p => p.Wheel, true);
-            parameters.Add(p => p.Snap, BitSwiperSnap.Center);
+            parameters.Add(p => p.SnapAlign, BitScrollSnapAlign.Center);
             parameters.Add(p => p.DefaultItem, 3);
             parameters.Add(p => p.DragThreshold, 12);
             parameters.Add(p => p.ScrollItemsCount, 2);

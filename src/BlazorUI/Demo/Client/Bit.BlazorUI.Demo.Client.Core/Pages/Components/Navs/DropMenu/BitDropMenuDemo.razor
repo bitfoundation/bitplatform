@@ -173,13 +173,13 @@
     <DemoExample Title="Responsive" RazorCode="@example5RazorCode" Id="example5">
         <div>
             With <b>Responsive</b>, the callout becomes a panel on small screens (under 600px) that slides in from the
-            edge given by <b>PanelPosition</b> and is swiped away along the same axis it slid in on: sideways for
+            edge given by <b>PanelPlacement</b> and is swiped away along the same axis it slid in on: sideways for
             <b>Start</b> and <b>End</b>, up or down for <b>Top</b> and <b>Bottom</b>. Point <b>ScrollContainerId</b> at
             the scrollable element inside the content so the swipe gesture does not fight its scrolling. Resize the
             window to see it.
         </div>
         <br />
-        <BitDropMenu Text="End PanelPosition" Responsive ScrollContainerId="sc-con1" PanelPosition="BitPanelPosition.End">
+        <BitDropMenu Text="End PanelPlacement" Responsive ScrollContainerId="sc-con1" PanelPlacement="BitPlacement.End">
             <div style="max-width:200px;overflow:auto" id="sc-con1">
                 <BitStack FitWidth Gap="0.5rem" Style="padding:0.5rem">
                     <BitText Typography="BitTypography.Subtitle1" NoWrap>A list that scrolls inside the panel</BitText>
@@ -192,7 +192,7 @@
             </div>
         </BitDropMenu>
         <br />
-        <BitDropMenu Text="Start PanelPosition" Responsive ScrollContainerId="sc-con2" PanelPosition="BitPanelPosition.Start">
+        <BitDropMenu Text="Start PanelPlacement" Responsive ScrollContainerId="sc-con2" PanelPlacement="BitPlacement.Start">
             <div style="max-width:200px;overflow:auto" id="sc-con2">
                 <BitStack FitWidth Gap="0.5rem" Style="padding:0.5rem">
                     <BitText Typography="BitTypography.Subtitle1" NoWrap>A list that scrolls inside the panel</BitText>
@@ -205,7 +205,7 @@
             </div>
         </BitDropMenu>
         <br />
-        <BitDropMenu Text="Top PanelPosition" Responsive PanelPosition="BitPanelPosition.Top">
+        <BitDropMenu Text="Top PanelPlacement" Responsive PanelPlacement="BitPlacement.Top">
             <BitStack Gap="0.5rem" Style="padding:0.5rem">
                 <BitText Typography="BitTypography.Subtitle1">Swipe up to dismiss it</BitText>
                 <BitSeparator />
@@ -215,7 +215,7 @@
             </BitStack>
         </BitDropMenu>
         <br />
-        <BitDropMenu Text="Bottom PanelPosition" Responsive PanelPosition="BitPanelPosition.Bottom">
+        <BitDropMenu Text="Bottom PanelPlacement" Responsive PanelPlacement="BitPlacement.Bottom">
             <BitStack Gap="0.5rem" Style="padding:0.5rem">
                 <BitText Typography="BitTypography.Subtitle1">Swipe down to dismiss it</BitText>
                 <BitSeparator />
@@ -784,7 +784,7 @@
                 </div>
             </BitDropMenu>
             <br />
-            <BitDropMenu Text="ریسپانسیو منو در ابتدا" Dir="BitDir.Rtl" Responsive ScrollContainerId="sc-con-rtl2" PanelPosition="BitPanelPosition.Start">
+            <BitDropMenu Text="ریسپانسیو منو در ابتدا" Dir="BitDir.Rtl" Responsive ScrollContainerId="sc-con-rtl2" PanelPlacement="BitPlacement.Start">
                 <div style="max-width:200px;overflow:auto" id="sc-con-rtl2">
                     <BitStack Gap="0.5rem" Style="padding:0.5rem">
                         <BitText Typography="BitTypography.Subtitle1" NoWrap>لیستی که داخل پنل اسکرول می شود</BitText>

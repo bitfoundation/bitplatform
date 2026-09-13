@@ -49,7 +49,7 @@ public static class FileSystemData
                     File("BitDataGrid.razor", 24_500),
                     File("BitDataGrid.razor.cs", 41_200),
                     Folder("Models",
-                        File("BitDataGridColumnAlign.cs", 320),
+                        File("BitTextAlign.cs", 320),
                         File("BitDataGridSortDescriptor.cs", 540),
                         File("BitDataGridFilterOperator.cs", 610)),
                     Folder("Infrastructure",

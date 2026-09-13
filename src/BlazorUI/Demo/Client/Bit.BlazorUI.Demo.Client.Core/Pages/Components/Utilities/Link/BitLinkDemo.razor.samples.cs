@@ -15,7 +15,7 @@ public partial class BitLinkDemo
 
     private readonly string example4RazorCode = @"
 <BitLink IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a leading icon</BitLink>
-<BitLink IconName=""@BitIconName.NavigateExternalInline"" IconPosition=""BitIconPosition.End"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a trailing icon</BitLink>
+<BitLink IconName=""@BitIconName.NavigateExternalInline"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a trailing icon</BitLink>
 <BitLink IconName=""@BitIconName.Download"" Underlined Href=""https://github.com/bitfoundation/bitplatform"">Icon on an underlined link</BitLink>";
 
     private readonly string example5RazorCode = @"
@@ -29,7 +29,7 @@ public partial class BitLinkDemo
 
 <BitLink Target=""_blank"" NewTabHint=""(در زبانه جدید باز می‌شود)"" Href=""https://github.com/bitfoundation/bitplatform"">Announced with a translated sentence</BitLink>
 
-<BitLink Target=""_blank"" NoNewTabHint IconName=""@BitIconName.OpenInNewWindow"" IconPosition=""BitIconPosition.End"" Href=""https://github.com/bitfoundation/bitplatform"">
+<BitLink Target=""_blank"" NoNewTabHint IconName=""@BitIconName.OpenInNewWindow"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">
     Opens in a new tab (said in the text already)
 </BitLink>";
 
@@ -203,13 +203,13 @@ starting point. The possibilities are endless, and the journey begins now.
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitLink Icon=""@BitIconInfo.Fa(""brands github"")"" Href=""https://github.com/bitfoundation/bitplatform"">bit platform on GitHub</BitLink>
-<BitLink Icon=""@BitIconInfo.Fa(""solid arrow-up-right-from-square"")"" IconPosition=""BitIconPosition.End"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>
+<BitLink Icon=""@BitIconInfo.Fa(""solid arrow-up-right-from-square"")"" IconPlacement=""BitPlacement.End"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>
 
 
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitLink Icon=""@BitIconInfo.Bi(""github"")"" Href=""https://github.com/bitfoundation/bitplatform"">bit platform on GitHub</BitLink>
-<BitLink Icon=""@BitIconInfo.Bi(""box-arrow-up-right"")"" IconPosition=""BitIconPosition.End"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>";
+<BitLink Icon=""@BitIconInfo.Bi(""box-arrow-up-right"")"" IconPlacement=""BitPlacement.End"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>";
 
     private readonly string example19RazorCode = @"
 <BitLink Size=""BitSize.Small"" Href=""https://github.com/bitfoundation/bitplatform"">Small link</BitLink>

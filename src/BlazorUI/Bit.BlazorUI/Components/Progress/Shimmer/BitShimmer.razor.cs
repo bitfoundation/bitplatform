@@ -15,7 +15,7 @@ public partial class BitShimmer : BitComponentBase
 
     // Circle is the older spelling of Shape.Circle and stays the fallback for a component that was written
     // before the shape had a name of its own; an explicit Shape always wins over it.
-    private BitShimmerShape _shape => Shape ?? (Circle ? BitShimmerShape.Circle : BitShimmerShape.Rounded);
+    private BitShape _shape => Shape ?? (Circle ? BitShape.Circle : BitShape.Rounded);
 
     // Pulse is the older spelling of Animation.Pulse, with the same precedence.
     private BitShimmerAnimation _animation => Animation ?? (Pulse ? BitShimmerAnimation.Pulse : BitShimmerAnimation.Wave);
@@ -23,7 +23,7 @@ public partial class BitShimmer : BitComponentBase
     // A circle is one shape rather than a stack of lines, and a count below one is not a stack either.
     // An overlay is one shape as well: it covers a box whose size the content underneath already decides,
     // and a stack of bars inside that box would be a second layout rather than a cover for the first.
-    private int _lineCount => Overlay || _shape == BitShimmerShape.Circle ? 1 : Math.Max(1, Lines);
+    private int _lineCount => Overlay || _shape == BitShape.Circle ? 1 : Math.Max(1, Lines);
 
     // A template draws the placeholder itself, which an overlay cannot let it do: the cover has to be the one
     // box laid over the content, so the template is left to the in-place placeholder it was written for.
@@ -160,7 +160,7 @@ public partial class BitShimmer : BitComponentBase
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
-    /// This is the short spelling of <c>Shape="BitShimmerShape.Circle"</c>, which wins over it when both are set.
+    /// This is the short spelling of <c>Shape="BitShape.Circle"</c>, which wins over it when both are set.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Circle { get; set; }
@@ -293,7 +293,7 @@ public partial class BitShimmer : BitComponentBase
     /// with the last one shortened to <see cref="LastLineWidth"/> and any of them given a measure of its own by
     /// <see cref="LineWidths"/>. <see cref="Stagger"/> offsets their animations against one another.
     /// <br />
-    /// A <see cref="BitShimmerShape.Circle"/> is a single shape rather than a stack, so it ignores this, and
+    /// A <see cref="BitShape.Circle"/> is a single shape rather than a stack, so it ignores this, and
     /// so does an <see cref="Overlay"/>, which is one box laid over the whole of the content it covers.
     /// </remarks>
     [Parameter, ResetClassBuilder]
@@ -399,7 +399,7 @@ public partial class BitShimmer : BitComponentBase
     /// that has to match a surface of its own - a card, a thumbnail, a control with a radius the theme does not
     /// have a name for - and it wins over the shape wherever both are set.
     /// <br />
-    /// A <see cref="BitShimmerShape.Circle"/> is round by construction, so it ignores this.
+    /// A <see cref="BitShape.Circle"/> is round by construction, so it ignores this.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Radius { get; set; }
@@ -412,9 +412,13 @@ public partial class BitShimmer : BitComponentBase
     /// <remarks>
     /// Shape the placeholder like the thing it stands in for: a circle for an avatar, a pill for a button or a
     /// tag, a square for an image that meets its container edge to edge.
+    /// <br />
+    /// The shimmer is the one component that honours all four shapes, and the only one where
+    /// <see cref="BitShape.Circle"/> means something: it takes its diameter from whichever of the height and
+    /// the width is set, and draws a single shape rather than a stack of <see cref="Lines"/>.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitShimmerShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// The wait in ms before the placeholder appears.
@@ -488,7 +492,7 @@ public partial class BitShimmer : BitComponentBase
     /// content that replaces it occupy the same column.
     /// <br />
     /// A block shimmer takes the full width of its container when it is not set, and a
-    /// <see cref="BitShimmerShape.Circle"/> takes its diameter from <see cref="Height"/> or <see cref="Size"/>.
+    /// <see cref="BitShape.Circle"/> takes its diameter from <see cref="Height"/> or <see cref="Size"/>.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Width { get; set; }
@@ -628,9 +632,9 @@ public partial class BitShimmer : BitComponentBase
                                     ? "bit-smr-tpl"
                                     : _shape switch
                                     {
-                                        BitShimmerShape.Circle => "bit-smr-crl",
-                                        BitShimmerShape.Square => "bit-smr-lin bit-smr-sqr",
-                                        BitShimmerShape.Pill => "bit-smr-lin bit-smr-pil",
+                                        BitShape.Circle => "bit-smr-crl",
+                                        BitShape.Square => "bit-smr-lin bit-smr-sqr",
+                                        BitShape.Pill => "bit-smr-lin bit-smr-pil",
                                         _ => "bit-smr-lin"
                                     });
 
