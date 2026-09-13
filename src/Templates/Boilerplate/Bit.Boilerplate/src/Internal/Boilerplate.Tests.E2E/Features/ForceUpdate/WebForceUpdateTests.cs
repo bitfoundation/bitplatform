@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Microsoft.Playwright.TestAdapter;
 using Boilerplate.Tests.E2E.Infrastructure.Services;
 
 namespace Boilerplate.Tests.E2E.Features.ForceUpdate;
